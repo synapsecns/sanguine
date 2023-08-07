@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import {
   setFromChainId,
@@ -42,6 +42,7 @@ export const InputContainer = () => {
   }, [bridgeTxHashes])
 
   const { isConnected } = useAccount()
+  const { chain } = useNetwork()
 
   const dispatch = useDispatch()
 
@@ -101,21 +102,10 @@ export const InputContainer = () => {
       `}
     >
       <div className="flex justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <FromChainSelector />
-          {/* {(fromChainId || fromToken) && (
-            <button
-              className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
-              onClick={() => {
-                dispatch(setFromChainId(null))
-                dispatch(setFromToken(null))
-              }}
-            >
-              clear
-            </button>
-          )} */}
-        </div>
-        {hasMounted && isConnected && <ConnectedIndicator />}
+        <FromChainSelector />
+        {hasMounted && isConnected && fromChainId === chain.id && (
+          <ConnectedIndicator />
+        )}
       </div>
       <div className="flex h-16 mb-2 space-x-2">
         <div

@@ -8,7 +8,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import { setFromToken, setToToken } from '@/slices/bridge/reducer'
+import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -23,6 +23,7 @@ import {
 
 import * as ALL_TOKENS from '@constants/tokens/master'
 import { sortByBalances } from './helpers/sortByBalance'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -193,6 +194,7 @@ export const FromTokenListOverlay = () => {
               token={token}
               selectedToken={fromToken}
               active={idx === currentIdx}
+              showAllChains={false}
               onClick={() => {
                 const eventTitle = '[Bridge User Action] Sets new fromToken'
                 const eventData = {
@@ -209,7 +211,7 @@ export const FromTokenListOverlay = () => {
       {remainingTokens && (
         <>
           <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
-            Other tokens
+            Other {CHAINS_BY_ID[fromChainId]?.name} tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {remainingTokens.map((token, idx) => {
@@ -220,6 +222,7 @@ export const FromTokenListOverlay = () => {
                   token={token}
                   selectedToken={fromToken}
                   active={idx === currentIdx}
+                  showAllChains={false}
                   onClick={() => {
                     const eventTitle = '[Bridge User Action] Sets new fromToken'
                     const eventData = {
@@ -247,6 +250,7 @@ export const FromTokenListOverlay = () => {
               token={token}
               selectedToken={fromToken}
               active={idx === currentIdx}
+              showAllChains={true}
               onClick={() => {
                 const eventTitle = '[Bridge User Action] Sets new fromToken'
                 const eventData = {

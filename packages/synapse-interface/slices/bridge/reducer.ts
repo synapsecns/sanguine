@@ -78,32 +78,6 @@ export const bridgeSlice = createSlice({
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
     },
-    resetState: (state) => {
-      const {
-        fromChainId,
-        fromToken,
-        toChainId,
-        toToken,
-        fromChainIds,
-        fromTokens,
-        toChainIds,
-        toTokens,
-      } = getRoutePossibilities({
-        fromChainId: null,
-        fromToken: null,
-        toChainId: null,
-        toToken: null,
-      })
-
-      state.fromChainId = fromChainId
-      state.fromToken = fromToken
-      state.toChainId = toChainId
-      state.toToken = toToken
-      state.fromChainIds = fromChainIds
-      state.fromTokens = fromTokens
-      state.toChainIds = toChainIds
-      state.toTokens = toTokens
-    },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
 
@@ -443,7 +417,6 @@ export const bridgeSlice = createSlice({
 })
 
 export const {
-  resetState,
   setBridgeQuote,
   setFromChainId,
   setToChainId,

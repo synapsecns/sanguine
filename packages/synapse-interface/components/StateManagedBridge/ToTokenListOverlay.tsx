@@ -22,6 +22,7 @@ import * as ALL_TOKENS from '@constants/tokens/master'
 import { toTokenText } from './helpers/toTokensText'
 import { sortByBalances } from './helpers/sortByBalance'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken } =
@@ -103,6 +104,9 @@ export const ToTokenListOverlay = () => {
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
     remainingChainTokens = results.filter(
       (item) => item.source === 'remainingChainTokens'
+    )
+    allOtherToTokens = results.filter(
+      (item) => item.source === 'allOtherToTokens'
     )
   }
 
@@ -191,6 +195,7 @@ export const ToTokenListOverlay = () => {
               token={token}
               selectedToken={toToken}
               active={idx === currentIdx}
+              showAllChains={false}
               onClick={() => {
                 const eventTitle = `[Bridge User Action] Sets new toToken`
                 const eventData = {
@@ -207,7 +212,7 @@ export const ToTokenListOverlay = () => {
       {remainingChainTokens && (
         <>
           <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
-            Other tokens
+            Other {CHAINS_BY_ID[toChainId]?.name} tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {remainingChainTokens.map((token, idx) => {
@@ -218,6 +223,7 @@ export const ToTokenListOverlay = () => {
                   token={token}
                   selectedToken={toToken}
                   active={idx === currentIdx}
+                  showAllChains={false}
                   onClick={() => {
                     const eventTitle = `[Bridge User Action] Sets new toToken`
                     const eventData = {
@@ -235,7 +241,7 @@ export const ToTokenListOverlay = () => {
       )}
 
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
-        All Other receivable tokens
+        All other receivable tokens
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
         {allOtherToTokens.map((token, idx) => {
@@ -246,6 +252,7 @@ export const ToTokenListOverlay = () => {
               token={token}
               selectedToken={toToken}
               active={idx === currentIdx}
+              showAllChains={true}
               onClick={() => {
                 const eventTitle = `[Bridge User Action] Sets new toToken`
                 const eventData = {

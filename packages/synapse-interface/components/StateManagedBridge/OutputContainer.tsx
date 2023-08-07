@@ -32,20 +32,7 @@ export const OutputContainer = ({}) => {
       `}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <ToChainSelector />
-          {/* {(toChainId || toToken) && (
-            <button
-              className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
-              onClick={() => {
-                dispatch(setToChainId(null))
-                dispatch(setToToken(null))
-              }}
-            >
-              clear
-            </button>
-          )} */}
-        </div>
+        <ToChainSelector />
         {address && (
           <div className="h-5">
             <DisplayAddress address={address} />
