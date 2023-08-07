@@ -8,12 +8,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import {
-  resetState,
-  setFromChainId,
-  setFromToken,
-  setToToken,
-} from '@/slices/bridge/reducer'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -125,17 +120,8 @@ export const FromTokenListOverlay = () => {
   }
 
   function onMenuItemClick(token: Token) {
-    if (allFromChainTokens.includes(token)) {
-      dispatch(setFromToken(token))
-      onClose()
-    } else {
-      dispatch(resetState())
-      dispatch(setFromToken(token))
-      const fromChainId = Object.keys(token.addresses)[0]
-      dispatch(setFromChainId(Number(fromChainId)))
-      dispatch(setToToken(token))
-      onClose()
-    }
+    dispatch(setFromToken(token))
+    onClose()
   }
 
   function escFunc() {

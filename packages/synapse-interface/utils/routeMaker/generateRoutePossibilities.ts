@@ -29,14 +29,14 @@ export const getRoutePossibilities = ({
   const fromTokenRouteSymbol = fromToken && fromToken.routeSymbol
   const toTokenRouteSymbol = toToken && toToken.routeSymbol
 
-  const fromChainIds = getFromChainIds({
+  const fromChainIds: number[] = getFromChainIds({
     fromChainId,
     fromTokenRouteSymbol,
     toChainId,
     toTokenRouteSymbol,
   })
 
-  const fromTokens = _(
+  const fromTokens: Token[] = _(
     getFromTokens({
       fromChainId,
       fromTokenRouteSymbol,
@@ -51,14 +51,14 @@ export const getRoutePossibilities = ({
     .compact()
     .value()
 
-  const toChainIds = getToChainIds({
+  const toChainIds: number[] = getToChainIds({
     fromChainId,
     fromTokenRouteSymbol,
     toChainId,
     toTokenRouteSymbol,
   })?.filter((chainId) => chainId !== fromChainId)
 
-  const toTokens = _(
+  const toTokens: Token[] = _(
     getToTokens({
       fromChainId,
       fromTokenRouteSymbol,
