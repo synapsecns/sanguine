@@ -192,7 +192,6 @@ func (c *chainManager) setupMetrics() error {
 				attributeSet := attribute.NewSet(attribute.Int64(metrics.ChainID, int64(chainID)), attribute.String("rpc_url", rpc.URL))
 
 				if rpc.HasError {
-
 					continue
 				}
 
