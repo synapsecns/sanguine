@@ -180,14 +180,6 @@ const StateManagedBridge = () => {
     })
   }, [query])
 
-  // Commenting out for a bit to debug, but basic issue is we need
-  // a mapping for allowable routes/tokens, and how we set them on
-  // init and state changes
-
-  // const toChainIds = BRIDGE_CHAINS_BY_TYPE[fromToken.swapableType]
-  //   .filter((chainId) => Number(chainId) !== fromChainId)
-  //   .map((chainId) => Number(chainId))
-
   // Check destination chain has available token output given
   // origin chain and origin token. If no route exists, set
   // destination token to empty state
@@ -224,76 +216,7 @@ const StateManagedBridge = () => {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue])
-
-  // Can be smarter about breaking out which calls happen assoc with which
-  // dependencies (like some stuff should only change on fromChainId changes)
-  // useEffect(() => {
-  //   let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
-  //   const toTokens = BRIDGABLE_TOKENS[toChainId]
-
-  //   // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-  //   if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
-  //     // Sort the tokens based on priorityRank in ascending order
-  //     const sortedTokens = fromTokens.sort(
-  //       (a, b) => a.priorityRank - b.priorityRank
-  //     )
-  //     // Select the token with the highest priority rank
-  //     dispatch(setFromToken(sortedTokens[0]))
-  //     // Update fromTokens for the selected fromToken
-  //     fromTokens = [fromToken]
-  //   }
-
-  //   let { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
-  //     findSupportedChainsAndTokens(
-  //       fromToken,
-  //       toChainId,
-  //       toToken?.symbol,
-  //       fromChainId
-  //     )
-
-  //   let bridgeableToChainId = toChainId
-  //   if (!bridgeableChainIds?.includes(toChainId)) {
-  //     const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
-  //       const chainA = CHAINS_ARR.find((chain) => chain.id === a)
-  //       const chainB = CHAINS_ARR.find((chain) => chain.id === b)
-  //       return chainB.priorityRank - chainA.priorityRank
-  //     })
-  //     bridgeableToChainId = sortedChainIds?.[0]
-  //   }
-
-  //   dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
-  //   dispatch(setToToken(bridgeableToken))
-  //   dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
-  //   dispatch(setFromChainIds(fromChainIds))
-  //   dispatch(setToChainIds(bridgeableChainIds))
-
-  //   if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
-  //     dispatch(setToChainId(bridgeableToChainId))
-  //   }
-
-  //   console.log(`[useEffect] fromToken`, fromToken?.symbol)
-  //   console.log(`[useEffect] toToken`, toToken?.symbol)
-  //   // TODO: Double serialization happening somewhere??
-  //   if (
-  //     fromToken?.decimals[fromChainId] &&
-  //     stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
-  //   ) {
-  //     console.log('trying to set bridge quote')
-  //     getAndSetBridgeQuote()
-  //   } else {
-  //     dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-  //     dispatch(setIsLoading(false))
-  //   }
-  // }, [
-  //   fromChainId,
-  //   toChainId,
-  //   fromToken,
-  //   toToken,
-  //   fromValue,
-  //   address,
-  //   portfolioBalances,
-  // ])
+  }, [fromChainId, toChainId, fromToken, toToken, fromValue, portfolioBalances])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
@@ -595,8 +518,6 @@ const StateManagedBridge = () => {
   }
 
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
-
-  console.log('toToken: ', toToken)
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
