@@ -62,13 +62,15 @@ const SelectTokenDropdown = ({
                   src={selectedToken?.icon}
                 />
               ) : (
-                <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+                <QuestionMarkCircleIcon className="w-6 h-6 text-white rounded-md" />
               )}
             </div>
           </div>
           <div className="text-left cursor-pointer">
             <h4 className="w-24 text-lg font-medium text-white">
-              <span data-test-id={dataId}>{symbol}</span>
+              <span data-test-id={dataId}>
+                {selectedToken ? symbol : 'Select'}
+              </span>
               <ChevronDownIcon
                 className={`
                 inline w-4 ml-2 -mt-1 transition-all ease-in
