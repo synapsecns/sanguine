@@ -9,11 +9,10 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"log"
 	"net"
-	"os"
 	"time"
 
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -50,13 +49,8 @@ var logger = log.Logger("explorer-api")
 // nolint:cyclop
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
-	router.Use(handler.Gin())
 	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		return fmt.Errorf("could not get hostname %w", err)
-	}
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true, handler)
 	if err != nil {
@@ -80,14 +74,14 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 
 	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
 
-	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
+	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 
 	ticker := time.NewTicker(cacheRehydrationInterval * time.Second)
 	defer ticker.Stop()
 	first := make(chan bool, 1)
 	first <- true
 	g, ctx := errgroup.WithContext(ctx)
-	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
+	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort("localhost", fmt.Sprintf("%d", cfg.HTTPPort)))
 	client := gqlClient.NewClient(httpClient, url)
 
 	err = registerObservableMetrics(handler, consumerDB)
