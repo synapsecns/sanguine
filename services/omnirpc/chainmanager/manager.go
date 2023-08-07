@@ -165,7 +165,7 @@ const (
 // note: because of missing support for  https://github.com/open-telemetry/opentelemetry-specification/issues/2318
 // this is done from the struct rather than recorded at refresh time.
 //
-// in a future version, thsi should be a synchronous gauge.
+// in a future version, this should be a synchronous gauge.
 func (c *chainManager) setupMetrics() error {
 	meterMaid := c.handler.Meter(meter)
 	blockGauge, err := meterMaid.Int64ObservableGauge(blockNumberMetric)
