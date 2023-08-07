@@ -48,7 +48,7 @@ export const DestinationChainLabel = ({
         Dest.
       </div>
       <div className="relative flex w-full">
-        <div className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide md:ml-auto">
+        <div className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide">
           <div
             className={`
             flex items-center
@@ -75,7 +75,7 @@ export const DestinationChainLabel = ({
           </div>
         </div>
 
-        <div className="max-[475px]:pl-1 ml-auto md:ml-0">
+        <div className="max-[475px]:pl-1 ml-auto">
           <button
             onClick={() => {
               dispatch(setShowToChainSlideOver(true))
