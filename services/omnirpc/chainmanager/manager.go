@@ -2,13 +2,19 @@ package chainmanager
 
 import (
 	"context"
+	"fmt"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"sort"
 	"sync"
 	"time"
 )
+
+var logger = log.Logger("chainmanager")
 
 // rpcTimeout is how long to wait for a response.
 const rpcTimeout = time.Second * 5
@@ -139,6 +145,63 @@ func (c *chainManager) RefreshRPCInfo(ctx context.Context, chainID uint32) {
 	c.mux.Lock()
 	c.chainList[chainID].rpcs = rpcInfoList
 	c.mux.Unlock()
+
+	// only setup callbacks after the first round
+	err := c.setupMetrics()
+	if err != nil {
+		logger.Errorf("could not setup metrics: %v", err)
+	}
+}
+
+const (
+	meter             = "github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
+	blockNumberMetric = "block_number"
+	latencyMetric     = "latency"
+	blockAgeMetric    = "block_age"
+)
+
+// records metrics for various rpcs.
+//
+// note: because of missing support for  https://github.com/open-telemetry/opentelemetry-specification/issues/2318
+// this is done from the struct rather than recorded at refresh time.
+//
+// in a future version, thsi should be a synchronous gauge.
+func (c *chainManager) setupMetrics() error {
+	meterMaid := c.handler.Meter(meter)
+	blockGauge, err := meterMaid.Int64ObservableGauge(blockNumberMetric)
+	if err != nil {
+		return fmt.Errorf("could not create histogram: %w", err)
+	}
+
+	latencyGauge, err := meterMaid.Float64ObservableGauge(latencyMetric, metric.WithUnit("seconds"))
+	if err != nil {
+		return fmt.Errorf("could not create histogram: %w", err)
+	}
+
+	ageGauge, err := meterMaid.Float64ObservableGauge(blockAgeMetric, metric.WithUnit("seconds"))
+	if err != nil {
+		return fmt.Errorf("could not create histogram: %w", err)
+	}
+
+	if _, err := meterMaid.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		c.mux.RLock()
+		defer c.mux.RUnlock()
+
+		for chainID, chainInfo := range c.chainList {
+			for _, rpc := range chainInfo.rpcs {
+				attributeSet := attribute.NewSet(attribute.Int64(metrics.ChainID, int64(chainID)), attribute.String("rpc_url", rpc.URL))
+
+				o.ObserveInt64(blockGauge, int64(rpc.BlockNumber), metric.WithAttributeSet(attributeSet))
+				o.ObserveFloat64(latencyGauge, rpc.Latency.Seconds(), metric.WithAttributeSet(attributeSet))
+				o.ObserveFloat64(ageGauge, rpc.BlockAge.Seconds(), metric.WithAttributeSet(attributeSet))
+			}
+		}
+
+		return nil
+	}, blockGauge, latencyGauge, ageGauge); err != nil {
+		return fmt.Errorf("could not register callback for gauges: %w", err)
+	}
+	return nil
 }
 
 func sortInfoList(rpcInfoList []rpcinfo.Result) []rpcinfo.Result {
