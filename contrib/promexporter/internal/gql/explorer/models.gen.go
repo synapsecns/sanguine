@@ -88,6 +88,7 @@ type DateResultByChain struct {
 	Harmony   *float64 `json:"harmony,omitempty"`
 	Canto     *float64 `json:"canto,omitempty"`
 	Dogechain *float64 `json:"dogechain,omitempty"`
+	Base      *float64 `json:"base,omitempty"`
 	Total     *float64 `json:"total,omitempty"`
 }
 
@@ -135,6 +136,8 @@ type PartialInfo struct {
 	BlockNumber        *int64   `json:"blockNumber,omitempty"`
 	Time               *int64   `json:"time,omitempty"`
 	FormattedTime      *string  `json:"formattedTime,omitempty"`
+	FormattedEventType *string  `json:"formattedEventType,omitempty"`
+	EventType          *int64   `json:"eventType,omitempty"`
 }
 
 type PartialMessageBusInfo struct {
