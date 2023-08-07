@@ -36,9 +36,8 @@ func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher
 		),
 	)
 	// TODO; investigate WithCreateSpanFromFields(predicate)
-	if false {
-		server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(handler.GetTracerProvider())))
-	}
+	server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(handler.GetTracerProvider())))
+
 	engine.GET(GraphqlEndpoint, graphqlHandler(server))
 	engine.POST(GraphqlEndpoint, graphqlHandler(server))
 	engine.GET(GraphiqlEndpoint, graphiqlHandler())
