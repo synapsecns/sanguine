@@ -14,7 +14,7 @@ To access the clickhouse database, you can use the following command from the do
 $ clickhouse-client --database=clickhouse_test --user=clickhouse_test --password=clickhouse_test
 ```
 
-## Directory Structure
+## Directory Structure.
 
 <pre>
 explorer

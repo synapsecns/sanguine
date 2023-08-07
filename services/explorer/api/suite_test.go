@@ -1,32 +1,33 @@
 package api_test
 
 import (
+	"context"
 	gosql "database/sql"
 	"fmt"
 	"github.com/phayes/freeport"
+	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
+	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/client"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
+	"go.uber.org/atomic"
 	"math/big"
 	"net/http"
 	"testing"
-
-	. "github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/explorer/db"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/client"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server"
-	"go.uber.org/atomic"
 )
 
 type MvBridgeEvent struct {
@@ -189,7 +190,8 @@ func (g *APISuite) SetupSuite() {
 	var err error
 	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
 	g.Require().Nil(err)
-	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	// TODO: there may be an issue w/ syncer for local test nevs, investigate, but this probably comes from heavy load ending every span of every field synchronously
+	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	g.Require().Nil(err)
 }
 
@@ -216,7 +218,7 @@ func (g *APISuite) SetupTest() {
 
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
 	go func() {
-		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
+		Nil(g.T(), api.Start(g.GetTestContext(), api.Config{
 			HTTPPort:  uint16(httpport),
 			Address:   address,
 			ScribeURL: g.gqlClient.Client.BaseURL,
@@ -227,7 +229,7 @@ func (g *APISuite) SetupTest() {
 
 	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
-	g.Eventually(func() bool {
+	err = retry.WithBackoff(g.GetTestContext(), func(ctx context.Context) error {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		Nil(g.T(), err)
 		res, err := g.client.Client.Client.Do(request)
@@ -235,10 +237,12 @@ func (g *APISuite) SetupTest() {
 			defer func() {
 				_ = res.Body.Close()
 			}()
-			return true
+			return nil
 		}
-		return false
-	})
+		return fmt.Errorf("failed to connect to graphql server: %w", err)
+	}, retry.WithMaxAttempts(1000))
+
+	g.Require().Nil(err)
 }
 
 func TestAPISuite(t *testing.T) {
