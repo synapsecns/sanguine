@@ -212,6 +212,7 @@ const StateManagedBridge = () => {
       dispatch(setSupportedToTokens([]))
     } else {
       console.log('hit in second')
+      dispatch(setToToken(bridgeableToken))
       dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     }
   }, [fromChainId, toChainId, fromToken, toToken])
