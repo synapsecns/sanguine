@@ -629,7 +629,7 @@ const StateManagedBridge = () => {
             <OutputContainer />
             {!toToken && (
               <WarningMessage
-                message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
+                message={`No output tokens found for ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
               />
             )}
             <Warning
