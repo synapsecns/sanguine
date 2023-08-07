@@ -1,4 +1,4 @@
-package cmd
+package metadata
 
 import "github.com/synapsecns/sanguine/core/config"
 
