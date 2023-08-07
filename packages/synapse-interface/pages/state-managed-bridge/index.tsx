@@ -188,6 +188,21 @@ const StateManagedBridge = () => {
   //   .filter((chainId) => Number(chainId) !== fromChainId)
   //   .map((chainId) => Number(chainId))
 
+  // Check destination chain has available token output given
+  // origin chain and origin token. If no route exists, set
+  // destination token to empty state
+  useEffect(() => {
+    const fromTokens: Token[] = BRIDGABLE_TOKENS[fromChainId] ?? []
+
+    const { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
+      findSupportedChainsAndTokens(
+        fromToken,
+        toChainId,
+        toToken?.symbol,
+        fromChainId
+      )
+  }, [fromChainId, toChainId, fromToken, toToken])
+
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
