@@ -153,7 +153,6 @@ export const TokenSlideOver = ({
         {!isOrigin && !toToken && (
           <WarningMessage
             twClassName="!mt-0"
-            header={`Please select another origin asset.`}
             message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
           />
         )}
@@ -196,7 +195,20 @@ export const TokenSlideOver = ({
           )
         })}
 
-        {searchStr && (
+        {isOrigin && searchStr && (
+          <div className="px-12 py-4 text-xl text-center text-white">
+            No other results found for{' '}
+            <i className="text-white text-opacity-60">{searchStr}</i>.
+            <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">
+              Want to see a token supported on Synapse? Submit a request{' '}
+              <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">
+                here
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!isOrigin && toToken && searchStr && (
           <div className="px-12 py-4 text-xl text-center text-white">
             No other results found for{' '}
             <i className="text-white text-opacity-60">{searchStr}</i>.

@@ -629,7 +629,6 @@ const StateManagedBridge = () => {
             <OutputContainer />
             {!toToken && (
               <WarningMessage
-                header={`Please select another origin asset.`}
                 message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
               />
             )}
