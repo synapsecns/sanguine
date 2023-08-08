@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
-import { useNetwork } from 'wagmi'
 
 import * as ALL_CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -77,7 +76,6 @@ export const ToChainListOverlay = () => {
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
@@ -104,13 +102,6 @@ export const ToChainListOverlay = () => {
     }
   }
 
-  const enterPressedFunc = () => {
-    if (enterPressed && currentIdx > -1) {
-      const chain = masterList[currentIdx]
-      dispatch(setToChainId(chain.id))
-      onClose()
-    }
-  }
   const onSearch = (str: string) => {
     setSearchStr(str)
     setCurrentIdx(-1)
@@ -119,7 +110,6 @@ export const ToChainListOverlay = () => {
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
-  useEffect(enterPressedFunc, [enterPressed])
 
   const toChainsText = useMemo(() => {
     return toChainText({
@@ -129,6 +119,18 @@ export const ToChainListOverlay = () => {
       toToken,
     })
   }, [fromChainId, fromToken, toChainId, toToken])
+
+  const handleSetToChainId = (chainId) => {
+    const eventTitle = `[Bridge User Action] Sets new toChainId`
+    const eventData = {
+      previousToChainId: toChainId,
+      newToChainId: chainId,
+    }
+
+    segmentAnalyticsEvent(eventTitle, eventData)
+    dispatch(setToChainId(chainId))
+    onClose()
+  }
 
   return (
     <div
@@ -152,31 +154,19 @@ export const ToChainListOverlay = () => {
           {toChainsText}
         </div>
         {possibleChains.map(({ id: mapChainId }, idx) => {
-          let onClickSpecificNetwork
-          if (toChainId === mapChainId) {
-            onClickSpecificNetwork = () => {
-              onClose()
-            }
-          } else {
-            onClickSpecificNetwork = () => {
-              const eventTitle = `[Bridge User Action] Sets new toChainId`
-              const eventData = {
-                previousToChainId: toChainId,
-                newToChainId: mapChainId,
-              }
-
-              segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setToChainId(mapChainId))
-              onClose()
-            }
-          }
           return (
             <SelectSpecificNetworkButton
               key={idx}
               itemChainId={mapChainId}
               isCurrentChain={toChainId === mapChainId}
               active={idx === currentIdx}
-              onClick={onClickSpecificNetwork}
+              onClick={() => {
+                if (toChainId === mapChainId) {
+                  onClose()
+                } else {
+                  handleSetToChainId(mapChainId)
+                }
+              }}
               dataId={dataId}
             />
           )
@@ -185,31 +175,13 @@ export const ToChainListOverlay = () => {
           Other chains
         </div>
         {remainingChains.map(({ id: mapChainId }, idx) => {
-          let onClickSpecificNetwork
-          if (toChainId === mapChainId) {
-            onClickSpecificNetwork = () => {
-              onClose()
-            }
-          } else {
-            onClickSpecificNetwork = () => {
-              const eventTitle = `[Bridge User Action] Sets new toChainId`
-              const eventData = {
-                previousToChainId: toChainId,
-                newToChainId: mapChainId,
-              }
-
-              segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setToChainId(mapChainId))
-              onClose()
-            }
-          }
           return (
             <SelectSpecificNetworkButton
               key={idx}
               itemChainId={mapChainId}
               isCurrentChain={toChainId === mapChainId}
-              active={idx === currentIdx}
-              onClick={onClickSpecificNetwork}
+              active={idx + possibleChains.length === currentIdx}
+              onClick={() => handleSetToChainId(mapChainId)}
               dataId={dataId}
             />
           )

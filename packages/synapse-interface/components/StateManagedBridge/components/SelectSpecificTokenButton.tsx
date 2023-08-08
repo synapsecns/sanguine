@@ -5,7 +5,7 @@ import {
   getMenuItemStyleForCoin,
   getMenuItemStyleForCoinCombined,
 } from '@styles/tokens'
-import { memo, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -26,8 +26,15 @@ const SelectSpecificTokenButton = ({
   selectedToken: Token
   onClick: () => void
 }) => {
+  const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId } = useBridgeState()
+
+  useEffect(() => {
+    if (active) {
+      ref?.current?.focus()
+    }
+  }, [active])
 
   const chainId = isOrigin ? fromChainId : toChainId
 
@@ -43,7 +50,8 @@ const SelectSpecificTokenButton = ({
   }
 
   return (
-    <div
+    <button
+      ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={`
@@ -65,7 +73,7 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
-    </div>
+    </button>
   )
 }
 

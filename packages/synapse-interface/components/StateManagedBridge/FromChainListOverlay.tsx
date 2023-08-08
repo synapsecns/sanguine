@@ -74,17 +74,12 @@ export const FromChainListOverlay = () => {
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
     setSearchStr('')
     dispatch(setShowFromChainListOverlay(false))
   }, [setShowFromChainListOverlay])
-
-  function onMenuItemClick(chainId: number) {
-    dispatch(setFromChainId(chainId))
-  }
 
   const escFunc = () => {
     if (escPressed) {
@@ -105,13 +100,6 @@ export const FromChainListOverlay = () => {
     }
   }
 
-  const enterPressedFunc = () => {
-    if (enterPressed && currentIdx > -1) {
-      const chain = masterList[currentIdx]
-      dispatch(setFromChainId(chain.id))
-      onClose()
-    }
-  }
   const onSearch = (str: string) => {
     setSearchStr(str)
     setCurrentIdx(-1)
@@ -120,7 +108,6 @@ export const FromChainListOverlay = () => {
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
-  useEffect(enterPressedFunc, [enterPressed])
 
   const fromChainsText = useMemo(() => {
     return fromChainText({
@@ -130,6 +117,18 @@ export const FromChainListOverlay = () => {
       toToken,
     })
   }, [fromChainId, fromToken, toChainId, toToken])
+
+  const handleSetFromChainId = (chainId) => {
+    const eventTitle = `[Bridge User Action] Sets new fromChainId`
+    const eventData = {
+      previousFromChainId: fromChainId,
+      newFromChainId: chainId,
+    }
+
+    segmentAnalyticsEvent(eventTitle, eventData)
+    dispatch(setFromChainId(chainId))
+    onClose()
+  }
 
   return (
     <div
@@ -160,17 +159,11 @@ export const FromChainListOverlay = () => {
               isCurrentChain={fromChainId === mapChainId}
               active={idx === currentIdx}
               onClick={() => {
-                if (fromChainId !== mapChainId) {
-                  const eventTitle = `[Bridge User Action] Sets new fromChainId`
-                  const eventData = {
-                    previousFromChainId: fromChainId,
-                    newFromChainId: mapChainId,
-                  }
-
-                  segmentAnalyticsEvent(eventTitle, eventData)
-                  onMenuItemClick(mapChainId)
+                if (fromChainId === mapChainId) {
+                  onClose()
+                } else {
+                  handleSetFromChainId(mapChainId)
                 }
-                onClose()
               }}
               dataId={dataId}
             />
@@ -180,31 +173,13 @@ export const FromChainListOverlay = () => {
           All other chains
         </div>
         {remainingChains.map(({ id: mapChainId }, idx) => {
-          let onClickSpecificNetwork
-          if (fromChainId === mapChainId) {
-            onClickSpecificNetwork = () => {
-              onClose()
-            }
-          } else {
-            onClickSpecificNetwork = () => {
-              const eventTitle = `[Bridge User Action] Sets new fromChainId`
-              const eventData = {
-                previousFromChainId: fromChainId,
-                newFromChainId: mapChainId,
-              }
-
-              segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setFromChainId(mapChainId))
-              onClose()
-            }
-          }
           return (
             <SelectSpecificNetworkButton
-              key={idx}
+              key={mapChainId}
               itemChainId={mapChainId}
               isCurrentChain={fromChainId === mapChainId}
-              active={idx === currentIdx}
-              onClick={onClickSpecificNetwork}
+              active={idx + possibleChains.length === currentIdx}
+              onClick={() => handleSetFromChainId(mapChainId)}
               dataId={dataId}
             />
           )

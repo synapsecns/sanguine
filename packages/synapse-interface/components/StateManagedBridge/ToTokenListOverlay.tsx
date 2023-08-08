@@ -113,17 +113,11 @@ export const ToTokenListOverlay = () => {
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
 
   function onClose() {
     setCurrentIdx(-1)
     setSearchStr('')
     dispatch(setShowToTokenListOverlay(false))
-  }
-
-  function onMenuItemClick(token: Token) {
-    dispatch(setToToken(token))
-    onClose()
   }
 
   function escFunc() {
@@ -152,14 +146,6 @@ export const ToTokenListOverlay = () => {
 
   useEffect(arrowUpFunc, [arrowUp])
 
-  function enterPressedFunc() {
-    if (enterPressed && currentIdx > -1) {
-      onMenuItemClick(masterList[currentIdx])
-    }
-  }
-
-  useEffect(enterPressedFunc, [enterPressed])
-
   function onSearch(str: string) {
     setSearchStr(str)
     setCurrentIdx(-1)
@@ -168,6 +154,17 @@ export const ToTokenListOverlay = () => {
   const toTokensText = useMemo(() => {
     return toTokenText({ fromChainId, fromToken, toChainId, toToken })
   }, [fromChainId, fromToken, toChainId, toToken])
+
+  const handleSetToToken = (oldToken: Token, newToken: Token) => {
+    const eventTitle = `[Bridge User Action] Sets new toToken`
+    const eventData = {
+      previousToToken: oldToken?.symbol,
+      newToToken: newToken?.symbol,
+    }
+    segmentAnalyticsEvent(eventTitle, eventData)
+    dispatch(setToToken(newToken))
+    onClose()
+  }
 
   return (
     <div
@@ -197,13 +194,11 @@ export const ToTokenListOverlay = () => {
               active={idx === currentIdx}
               showAllChains={false}
               onClick={() => {
-                const eventTitle = `[Bridge User Action] Sets new toToken`
-                const eventData = {
-                  previousToToken: toToken?.symbol,
-                  newToToken: token?.symbol,
+                if (token === toToken) {
+                  onClose()
+                } else {
+                  handleSetToToken(toToken, token)
                 }
-                segmentAnalyticsEvent(eventTitle, eventData)
-                onMenuItemClick(token)
               }}
             />
           )
@@ -222,17 +217,9 @@ export const ToTokenListOverlay = () => {
                   key={idx}
                   token={token}
                   selectedToken={toToken}
-                  active={idx === currentIdx}
+                  active={idx + possibleTokens.length === currentIdx}
                   showAllChains={false}
-                  onClick={() => {
-                    const eventTitle = `[Bridge User Action] Sets new toToken`
-                    const eventData = {
-                      previousToToken: toToken?.symbol,
-                      newToToken: token?.symbol,
-                    }
-                    segmentAnalyticsEvent(eventTitle, eventData)
-                    onMenuItemClick(token)
-                  }}
+                  onClick={() => handleSetToToken(toToken, token)}
                 />
               )
             })}
@@ -251,17 +238,12 @@ export const ToTokenListOverlay = () => {
               key={idx}
               token={token}
               selectedToken={toToken}
-              active={idx === currentIdx}
+              active={
+                idx + possibleTokens.length + remainingChainTokens.length ===
+                currentIdx
+              }
               showAllChains={true}
-              onClick={() => {
-                const eventTitle = `[Bridge User Action] Sets new toToken`
-                const eventData = {
-                  previousToToken: toToken?.symbol,
-                  newToToken: token?.symbol,
-                }
-                segmentAnalyticsEvent(eventTitle, eventData)
-                onMenuItemClick(token)
-              }}
+              onClick={() => handleSetToToken(toToken, token)}
             />
           )
         })}
