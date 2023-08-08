@@ -2,12 +2,13 @@ import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 
-import bridgeReducer from '@/slices/bridgeSlice'
+import bridgeReducer from '@/slices/bridge/reducer'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
 import poolUserDataReducer from '@/slices/poolUserDataSlice'
 import poolDepositReducer from '@/slices/poolDepositSlice'
 import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
+import portfolioReducer from '@/slices/portfolio/reducer'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
@@ -18,6 +19,7 @@ export const store = configureStore({
     poolUserData: poolUserDataReducer,
     poolDeposit: poolDepositReducer,
     poolWithdraw: poolWithdrawReducer,
+    portfolio: portfolioReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
