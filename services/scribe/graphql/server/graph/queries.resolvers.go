@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 )
 
 // Logs is the resolver for the logs field.
@@ -93,6 +94,7 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
 	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
 	if err != nil {
+		fmt.Println(err, "TESTING")
 		blockTimeRaw, err := r.getBlockTime(ctx, uint32(chainID), uint64(blockNumber))
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving block time: %w", err)
@@ -177,7 +179,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 
 // LastIndexed is the resolver for the lastIndexed field.
 func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string, chainID int) (*int, error) {
-	blockNumber, err := r.DB.RetrieveLastIndexed(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+	blockNumber, err := r.DB.RetrieveLastIndexed(ctx, common.HexToAddress(contractAddress), uint32(chainID), scribeTypes.IndexingConfirmed)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
 	}
@@ -221,6 +223,42 @@ func (r *queryResolver) BlockTimeCount(ctx context.Context, chainID int) (*int, 
 	blockTimesCountInt := int(blockTimesCount)
 
 	return &blockTimesCountInt, nil
+}
+
+// LogsAtHeadRange is the resolver for the logsAtHeadRange field.
+func (r *queryResolver) LogsAtHeadRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error) {
+	logsFilter := db.BuildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index, confirmed)
+	logsFilter.ChainID = uint32(chainID)
+	logs, err := r.DB.RetrieveLogsFromHeadRangeQuery(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving logs: %w", err)
+	}
+
+	return r.logsToModelLogs(logs, logsFilter.ChainID), nil
+}
+
+// ReceiptsAtHeadRange is the resolver for the receiptsAtHeadRange field.
+func (r *queryResolver) ReceiptsAtHeadRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error) {
+	receiptsFilter := db.BuildReceiptFilter(txHash, contractAddress, blockHash, blockNumber, txIndex, confirmed)
+	receiptsFilter.ChainID = uint32(chainID)
+	receipts, err := r.DB.RetrieveReceiptsFromHeadRangeQuery(ctx, receiptsFilter, uint64(startBlock), uint64(endBlock), page)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving receipts: %w", err)
+	}
+
+	return r.receiptsToModelReceipts(receipts, receiptsFilter.ChainID), nil
+}
+
+// TransactionsAtHeadRange is the resolver for the transactionsAtHeadRange field.
+func (r *queryResolver) TransactionsAtHeadRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, lastIndexed int, page int) ([]*model.Transaction, error) {
+	transactionsFilter := db.BuildEthTxFilter(txHash, blockNumber, blockHash, confirmed)
+	transactionsFilter.ChainID = uint32(chainID)
+	transactions, err := r.DB.RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx, transactionsFilter, uint64(startBlock), uint64(endBlock), uint64(lastIndexed), page)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving transactions: %w", err)
+	}
+
+	return r.ethTxsToModelTransactions(ctx, transactions, transactionsFilter.ChainID), nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

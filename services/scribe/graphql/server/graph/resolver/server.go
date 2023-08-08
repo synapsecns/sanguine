@@ -79,11 +79,14 @@ type ComplexityRoot struct {
 		LastStoredBlockNumber    func(childComplexity int, chainID int) int
 		LogCount                 func(childComplexity int, contractAddress string, chainID int) int
 		Logs                     func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
+		LogsAtHeadRange          func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
 		LogsRange                func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
 		ReceiptCount             func(childComplexity int, chainID int) int
 		Receipts                 func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
+		ReceiptsAtHeadRange      func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
 		ReceiptsRange            func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
 		Transactions             func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) int
+		TransactionsAtHeadRange  func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, lastIndexed int, page int) int
 		TransactionsRange        func(childComplexity int, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) int
 		TxSender                 func(childComplexity int, txHash string, chainID int) int
 	}
@@ -149,6 +152,9 @@ type QueryResolver interface {
 	LogCount(ctx context.Context, contractAddress string, chainID int) (*int, error)
 	ReceiptCount(ctx context.Context, chainID int) (*int, error)
 	BlockTimeCount(ctx context.Context, chainID int) (*int, error)
+	LogsAtHeadRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error)
+	ReceiptsAtHeadRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error)
+	TransactionsAtHeadRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, lastIndexed int, page int) ([]*model.Transaction, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -391,6 +397,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Logs(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["page"].(int)), true
 
+	case "Query.logsAtHeadRange":
+		if e.complexity.Query.LogsAtHeadRange == nil {
+			break
+		}
+
+		args, err := ec.field_Query_logsAtHeadRange_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.LogsAtHeadRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
+
 	case "Query.logsRange":
 		if e.complexity.Query.LogsRange == nil {
 			break
@@ -427,6 +445,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Receipts(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["confirmed"].(*bool), args["page"].(int)), true
 
+	case "Query.receiptsAtHeadRange":
+		if e.complexity.Query.ReceiptsAtHeadRange == nil {
+			break
+		}
+
+		args, err := ec.field_Query_receiptsAtHeadRange_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ReceiptsAtHeadRange(childComplexity, args["chain_id"].(int), args["tx_hash"].(*string), args["contract_address"].(*string), args["block_hash"].(*string), args["block_number"].(*int), args["tx_index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
+
 	case "Query.receiptsRange":
 		if e.complexity.Query.ReceiptsRange == nil {
 			break
@@ -450,6 +480,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Transactions(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["block_hash"].(*string), args["confirmed"].(*bool), args["page"].(int)), true
+
+	case "Query.transactionsAtHeadRange":
+		if e.complexity.Query.TransactionsAtHeadRange == nil {
+			break
+		}
+
+		args, err := ec.field_Query_transactionsAtHeadRange_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.TransactionsAtHeadRange(childComplexity, args["tx_hash"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["block_hash"].(*string), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["last_indexed"].(int), args["page"].(int)), true
 
 	case "Query.transactionsRange":
 		if e.complexity.Query.TransactionsRange == nil {
@@ -916,6 +958,45 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   blockTimeCount(
     chain_id: Int!
   ): Int
+  # returns all logs that match the given filter and range (including from the unconfirmed logs table)
+  logsAtHeadRange(
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Log]
+  # returns all receipts that match the given filter and range (including from the unconfirmed receipts table)
+  receiptsAtHeadRange(
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Receipt]
+  # returns all transactions that match the given filter and range (including from the unconfirmed transactions table)
+  transactionsAtHeadRange(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    block_hash: String
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    last_indexed: Int!
+    page: Int!
+  ): [Transaction]
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON
@@ -1137,6 +1218,111 @@ func (ec *executionContext) field_Query_logCount_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_logsAtHeadRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contract_address"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_number"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_hash"] = arg3
+	var arg4 *int
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
+		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_index"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_hash"] = arg5
+	var arg6 *int
+	if tmp, ok := rawArgs["index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+		arg6, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["index"] = arg6
+	var arg7 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg7, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg7
+	var arg8 int
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
+		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["start_block"] = arg8
+	var arg9 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg9, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg9
+	var arg10 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg10, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg10
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_logsRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1344,6 +1530,102 @@ func (ec *executionContext) field_Query_receiptCount_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_receiptsAtHeadRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_hash"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["contract_address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contract_address"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contract_address"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_hash"] = arg3
+	var arg4 *int
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
+		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_number"] = arg4
+	var arg5 *int
+	if tmp, ok := rawArgs["tx_index"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_index"))
+		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_index"] = arg5
+	var arg6 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg6, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg6
+	var arg7 int
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
+		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["start_block"] = arg7
+	var arg8 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg8
+	var arg9 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg9, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg9
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_receiptsRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1515,6 +1797,93 @@ func (ec *executionContext) field_Query_receipts_args(ctx context.Context, rawAr
 		}
 	}
 	args["page"] = arg7
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_transactionsAtHeadRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["tx_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tx_hash"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tx_hash"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["block_number"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_number"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_number"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["block_hash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("block_hash"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["block_hash"] = arg3
+	var arg4 *bool
+	if tmp, ok := rawArgs["confirmed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmed"))
+		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["confirmed"] = arg4
+	var arg5 int
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
+		arg5, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["start_block"] = arg5
+	var arg6 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg6, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg6
+	var arg7 int
+	if tmp, ok := rawArgs["last_indexed"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_indexed"))
+		arg7, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last_indexed"] = arg7
+	var arg8 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg8, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg8
 	return args, nil
 }
 
@@ -3510,6 +3879,262 @@ func (ec *executionContext) fieldContext_Query_blockTimeCount(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_blockTimeCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_logsAtHeadRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_logsAtHeadRange(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().LogsAtHeadRange(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Log)
+	fc.Result = res
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_logsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "contract_address":
+				return ec.fieldContext_Log_contract_address(ctx, field)
+			case "chain_id":
+				return ec.fieldContext_Log_chain_id(ctx, field)
+			case "topics":
+				return ec.fieldContext_Log_topics(ctx, field)
+			case "data":
+				return ec.fieldContext_Log_data(ctx, field)
+			case "block_number":
+				return ec.fieldContext_Log_block_number(ctx, field)
+			case "tx_hash":
+				return ec.fieldContext_Log_tx_hash(ctx, field)
+			case "tx_index":
+				return ec.fieldContext_Log_tx_index(ctx, field)
+			case "block_hash":
+				return ec.fieldContext_Log_block_hash(ctx, field)
+			case "index":
+				return ec.fieldContext_Log_index(ctx, field)
+			case "removed":
+				return ec.fieldContext_Log_removed(ctx, field)
+			case "page":
+				return ec.fieldContext_Log_page(ctx, field)
+			case "transaction":
+				return ec.fieldContext_Log_transaction(ctx, field)
+			case "receipt":
+				return ec.fieldContext_Log_receipt(ctx, field)
+			case "json":
+				return ec.fieldContext_Log_json(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Log", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_logsAtHeadRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_receiptsAtHeadRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receiptsAtHeadRange(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReceiptsAtHeadRange(rctx, fc.Args["chain_id"].(int), fc.Args["tx_hash"].(*string), fc.Args["contract_address"].(*string), fc.Args["block_hash"].(*string), fc.Args["block_number"].(*int), fc.Args["tx_index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Receipt)
+	fc.Result = res
+	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_receiptsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chain_id":
+				return ec.fieldContext_Receipt_chain_id(ctx, field)
+			case "type":
+				return ec.fieldContext_Receipt_type(ctx, field)
+			case "post_state":
+				return ec.fieldContext_Receipt_post_state(ctx, field)
+			case "status":
+				return ec.fieldContext_Receipt_status(ctx, field)
+			case "cumulative_gas_used":
+				return ec.fieldContext_Receipt_cumulative_gas_used(ctx, field)
+			case "bloom":
+				return ec.fieldContext_Receipt_bloom(ctx, field)
+			case "tx_hash":
+				return ec.fieldContext_Receipt_tx_hash(ctx, field)
+			case "contract_address":
+				return ec.fieldContext_Receipt_contract_address(ctx, field)
+			case "gas_used":
+				return ec.fieldContext_Receipt_gas_used(ctx, field)
+			case "block_number":
+				return ec.fieldContext_Receipt_block_number(ctx, field)
+			case "transaction_index":
+				return ec.fieldContext_Receipt_transaction_index(ctx, field)
+			case "page":
+				return ec.fieldContext_Receipt_page(ctx, field)
+			case "logs":
+				return ec.fieldContext_Receipt_logs(ctx, field)
+			case "transaction":
+				return ec.fieldContext_Receipt_transaction(ctx, field)
+			case "json":
+				return ec.fieldContext_Receipt_json(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_receiptsAtHeadRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_transactionsAtHeadRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_transactionsAtHeadRange(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TransactionsAtHeadRange(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["block_hash"].(*string), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["last_indexed"].(int), fc.Args["page"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Transaction)
+	fc.Result = res
+	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋscribeᚋgraphqlᚋserverᚋgraphᚋmodelᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_transactionsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chain_id":
+				return ec.fieldContext_Transaction_chain_id(ctx, field)
+			case "tx_hash":
+				return ec.fieldContext_Transaction_tx_hash(ctx, field)
+			case "protected":
+				return ec.fieldContext_Transaction_protected(ctx, field)
+			case "type":
+				return ec.fieldContext_Transaction_type(ctx, field)
+			case "data":
+				return ec.fieldContext_Transaction_data(ctx, field)
+			case "gas":
+				return ec.fieldContext_Transaction_gas(ctx, field)
+			case "gas_price":
+				return ec.fieldContext_Transaction_gas_price(ctx, field)
+			case "gas_tip_cap":
+				return ec.fieldContext_Transaction_gas_tip_cap(ctx, field)
+			case "gas_fee_cap":
+				return ec.fieldContext_Transaction_gas_fee_cap(ctx, field)
+			case "value":
+				return ec.fieldContext_Transaction_value(ctx, field)
+			case "nonce":
+				return ec.fieldContext_Transaction_nonce(ctx, field)
+			case "to":
+				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
+			case "logs":
+				return ec.fieldContext_Transaction_logs(ctx, field)
+			case "receipt":
+				return ec.fieldContext_Transaction_receipt(ctx, field)
+			case "json":
+				return ec.fieldContext_Transaction_json(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_transactionsAtHeadRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7543,6 +8168,63 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_blockTimeCount(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "logsAtHeadRange":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_logsAtHeadRange(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "receiptsAtHeadRange":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_receiptsAtHeadRange(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "transactionsAtHeadRange":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_transactionsAtHeadRange(ctx, field)
 				return res
 			}
 
