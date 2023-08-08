@@ -4,6 +4,10 @@ import (
 	"context"
 	gosql "database/sql"
 	"fmt"
+	"math/big"
+	"net/http"
+	"testing"
+
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -25,9 +29,6 @@ import (
 	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"go.uber.org/atomic"
-	"math/big"
-	"net/http"
-	"testing"
 )
 
 type MvBridgeEvent struct {
@@ -200,7 +201,6 @@ func (g *APISuite) SetupTest() {
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
-	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	NotNil(g.T(), cleanup)
 	NotNil(g.T(), port)
@@ -217,6 +217,8 @@ func (g *APISuite) SetupTest() {
 	Nil(g.T(), err)
 
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
+	httpport := freeport.GetPort()
+
 	go func() {
 		Nil(g.T(), api.Start(g.GetTestContext(), api.Config{
 			HTTPPort:  uint16(httpport),
