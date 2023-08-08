@@ -3,6 +3,7 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -319,12 +320,12 @@ func (b *BackfillSuite) TestBackfill() {
 	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
 		//  the last block store per contract
-		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock, scribeTypes.IndexingConfirmed)
 		Nil(b.T(), err)
 	}
 	for i := range chainConfigsV1[0].Contracts {
 		//  the last block store per contract
-		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigsV1[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigsV1[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock, scribeTypes.IndexingConfirmed)
 		Nil(b.T(), err)
 	}
 
