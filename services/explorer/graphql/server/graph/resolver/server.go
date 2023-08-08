@@ -96,7 +96,6 @@ type ComplexityRoot struct {
 		Arbitrum  func(childComplexity int) int
 		Aurora    func(childComplexity int) int
 		Avalanche func(childComplexity int) int
-		Base      func(childComplexity int) int
 		Boba      func(childComplexity int) int
 		Bsc       func(childComplexity int) int
 		Canto     func(childComplexity int) int
@@ -148,8 +147,6 @@ type ComplexityRoot struct {
 		BlockNumber        func(childComplexity int) int
 		ChainID            func(childComplexity int) int
 		DestinationChainID func(childComplexity int) int
-		EventType          func(childComplexity int) int
-		FormattedEventType func(childComplexity int) int
 		FormattedTime      func(childComplexity int) int
 		FormattedValue     func(childComplexity int) int
 		Time               func(childComplexity int) int
@@ -185,7 +182,7 @@ type ComplexityRoot struct {
 		AddressData            func(childComplexity int, address string) int
 		AddressRanking         func(childComplexity int, hours *int) int
 		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) int
-		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) int
+		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) int
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
@@ -227,7 +224,7 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) ([]*model.BridgeTransaction, error)
+	BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error)
 	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -472,13 +469,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Avalanche(childComplexity), true
-
-	case "DateResultByChain.base":
-		if e.complexity.DateResultByChain.Base == nil {
-			break
-		}
-
-		return e.complexity.DateResultByChain.Base(childComplexity), true
 
 	case "DateResultByChain.boba":
 		if e.complexity.DateResultByChain.Boba == nil {
@@ -732,20 +722,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialInfo.DestinationChainID(childComplexity), true
 
-	case "PartialInfo.eventType":
-		if e.complexity.PartialInfo.EventType == nil {
-			break
-		}
-
-		return e.complexity.PartialInfo.EventType(childComplexity), true
-
-	case "PartialInfo.formattedEventType":
-		if e.complexity.PartialInfo.FormattedEventType == nil {
-			break
-		}
-
-		return e.complexity.PartialInfo.FormattedEventType(childComplexity), true
-
 	case "PartialInfo.formattedTime":
 		if e.complexity.PartialInfo.FormattedTime == nil {
 			break
@@ -953,7 +929,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainIDFrom"].([]*int), args["chainIDTo"].([]*int), args["addressFrom"].(*string), args["addressTo"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["maxAmountUsd"].(*int), args["minAmountUsd"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["useMv"].(*bool), args["page"].(*int), args["tokenAddressFrom"].([]*string), args["tokenAddressTo"].([]*string), args["onlyCCTP"].(*bool)), true
+		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainIDFrom"].([]*int), args["chainIDTo"].([]*int), args["addressFrom"].(*string), args["addressTo"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["maxAmountUsd"].(*int), args["minAmountUsd"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["useMv"].(*bool), args["page"].(*int), args["tokenAddressFrom"].([]*string), args["tokenAddressTo"].([]*string)), true
 
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
@@ -1272,7 +1248,6 @@ type UnknownType {
     page:           Int = 1
     tokenAddressFrom:   [String]
     tokenAddressTo:   [String]
-    onlyCCTP:           Boolean = false
   ): [BridgeTransaction]
 
   """
@@ -1289,7 +1264,6 @@ type UnknownType {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-  
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -1425,8 +1399,6 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
-  formattedEventType: String
-  eventType: Int
 }
 
 enum BridgeTxType {
@@ -1574,7 +1546,6 @@ type DateResultByChain {
   harmony: Float
   canto: Float
   dogechain: Float
-  base: Float
   total:  Float
 }
 
@@ -1899,15 +1870,6 @@ func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Cont
 		}
 	}
 	args["tokenAddressTo"] = arg16
-	var arg17 *bool
-	if tmp, ok := rawArgs["onlyCCTP"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("onlyCCTP"))
-		arg17, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["onlyCCTP"] = arg17
 	return args, nil
 }
 
@@ -3083,10 +3045,6 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
-			case "formattedEventType":
-				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
-			case "eventType":
-				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -3154,10 +3112,6 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
-			case "formattedEventType":
-				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
-			case "eventType":
-				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -3348,10 +3302,6 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_bridgeTx(ctx context.Co
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
-			case "formattedEventType":
-				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
-			case "eventType":
-				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -4331,47 +4281,6 @@ func (ec *executionContext) _DateResultByChain_dogechain(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_DateResultByChain_dogechain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "DateResultByChain",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _DateResultByChain_base(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DateResultByChain_base(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Base, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_DateResultByChain_base(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DateResultByChain",
 		Field:      field,
@@ -5596,88 +5505,6 @@ func (ec *executionContext) fieldContext_PartialInfo_formattedTime(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _PartialInfo_formattedEventType(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FormattedEventType, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PartialInfo_formattedEventType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PartialInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PartialInfo_eventType(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PartialInfo_eventType(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.EventType, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PartialInfo_eventType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PartialInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _PartialMessageBusInfo_chainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
 	if err != nil {
@@ -6316,7 +6143,7 @@ func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainIDFrom"].([]*int), fc.Args["chainIDTo"].([]*int), fc.Args["addressFrom"].(*string), fc.Args["addressTo"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["maxAmountUsd"].(*int), fc.Args["minAmountUsd"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["useMv"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddressFrom"].([]*string), fc.Args["tokenAddressTo"].([]*string), fc.Args["onlyCCTP"].(*bool))
+		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainIDFrom"].([]*int), fc.Args["chainIDTo"].([]*int), fc.Args["addressFrom"].(*string), fc.Args["addressTo"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["maxAmountUsd"].(*int), fc.Args["minAmountUsd"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["useMv"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddressFrom"].([]*string), fc.Args["tokenAddressTo"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6734,8 +6561,6 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_canto(ctx, field)
 			case "dogechain":
 				return ec.fieldContext_DateResultByChain_dogechain(ctx, field)
-			case "base":
-				return ec.fieldContext_DateResultByChain_base(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -9828,8 +9653,6 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_canto(ctx, field, obj)
 		case "dogechain":
 			out.Values[i] = ec._DateResultByChain_dogechain(ctx, field, obj)
-		case "base":
-			out.Values[i] = ec._DateResultByChain_base(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:
@@ -10062,10 +9885,6 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = ec._PartialInfo_time(ctx, field, obj)
 		case "formattedTime":
 			out.Values[i] = ec._PartialInfo_formattedTime(ctx, field, obj)
-		case "formattedEventType":
-			out.Values[i] = ec._PartialInfo_formattedEventType(ctx, field, obj)
-		case "eventType":
-			out.Values[i] = ec._PartialInfo_eventType(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
