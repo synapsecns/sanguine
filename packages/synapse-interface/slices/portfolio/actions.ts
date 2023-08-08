@@ -6,6 +6,7 @@ import { Token } from '@/utils/types'
 export enum PortfolioTabs {
   HOME = 'home',
   PORTFOLIO = 'portfolio',
+  ACTIVITY = 'activity',
 }
 
 export enum FetchState {

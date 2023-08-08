@@ -25,6 +25,12 @@ export const PortfolioTabManager = () => {
         tabType={PortfolioTabs.PORTFOLIO}
         handleTabChange={handleTabChange}
       />
+      <Tab
+        display="Activity"
+        activeTab={activeTab}
+        tabType={PortfolioTabs.ACTIVITY}
+        handleTabChange={handleTabChange}
+      />
     </div>
   )
 }
