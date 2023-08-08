@@ -386,6 +386,10 @@ class SynapseSDK {
     amountIn: BigintIsh,
     deadline?: BigNumber
   ): Promise<BridgeQuote | undefined> {
+    invariant(
+      originChainId !== destChainId,
+      'Origin chainId cannot be equal to destination chainId'
+    )
     tokenOut = handleNativeToken(tokenOut)
     tokenIn = handleNativeToken(tokenIn)
 
@@ -579,6 +583,10 @@ class SynapseSDK {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
+    invariant(
+      originChainId !== destChainId,
+      'Origin chainId cannot be equal to destination chainId'
+    )
     token = handleNativeToken(token)
 
     // Create new query objects and check the correct subtype to avoid type errors
