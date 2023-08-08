@@ -251,8 +251,10 @@ func (e Executor) Run(parentCtx context.Context) error {
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
+	fmt.Printf("executor config: %v\n", e.config)
 
 	for _, chain := range e.config.Chains {
+		fmt.Printf("setting up chain: %v\n", chain)
 		chain := chain
 
 		// Listen for sentEvents on origin.
@@ -635,6 +637,8 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 				span.AddEvent("message executed")
 				return true, nil
 			}
+			fmt.Printf("raw executed: %v\n", executed)
+			fmt.Printf("message status: %v\n", execTypes.MessageStatusType(executed))
 
 			span.AddEvent("message not executed")
 			return false, nil
@@ -646,6 +650,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 //
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
+	fmt.Printf("streamLogs on chain %v at addr %v, type %v\n", chainID, address, contractType)
 	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -716,13 +721,16 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
+	fmt.Printf("processLog: %v\n", log)
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
 	}
 	if datatypeInterface == nil {
+		fmt.Println("nil interface type")
 		return nil
 	}
+	fmt.Printf("processLog on chain %v with type %v: %v\n", chainID, datatypeInterface, log)
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
@@ -733,6 +741,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	fmt.Printf("datatypeInterface: %v\n", datatypeInterface)
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
 		return e.processMessage(ctx, datatype, log.BlockNumber)
