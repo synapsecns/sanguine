@@ -8,6 +8,7 @@ import {
   getNetworkButtonBgClassName,
   getNetworkButtonBgClassNameActive,
   getNetworkButtonBorderActive,
+  getMenuItemStyleForChain,
 } from '@/styles/chains'
 
 export const SelectSpecificNetworkButton = ({
@@ -42,6 +43,8 @@ export const SelectSpecificNetworkButton = ({
     `
   }
 
+  const classNameForMenuItemStyle = getMenuItemStyleForChain(chain?.color)
+
   return (
     <button
       ref={ref}
@@ -59,6 +62,7 @@ export const SelectSpecificNetworkButton = ({
         ${getNetworkHover(chain.color)}
         ${getNetworkButtonBgClassNameActive(chain.color)}
         ${getNetworkButtonBorderActive(chain.color)}
+        ${classNameForMenuItemStyle}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}

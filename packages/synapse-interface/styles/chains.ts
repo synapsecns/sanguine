@@ -330,6 +330,37 @@ export const getNetworkLinkTextColor = (chainColor: string): string => {
   }
 }
 
+export const getMenuItemStyleForChain = (color: string): string => {
+  switch (color) {
+    case ColorOptions.ETH:
+      return `hover:bg-opacity-20 hover:bg-[#3f4f8c] focus:bg-[#3f4f8c] active:bg-[#314367] active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.GRAY:
+      return `hover:bg-opacity-20 hover:bg-gray-500 focus:bg-gray-500 active:bg-gray-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.YELLOW:
+      return `hover:bg-opacity-20 hover:bg-yellow-500 focus:bg-yellow-500 active:bg-yellow-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.GREEN:
+      return `hover:bg-opacity-20 hover:bg-green-500 focus:bg-green-500 active:bg-green-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.LIME:
+      return `hover:bg-opacity-20 hover:bg-lime-500 focus:bg-lime-500 active:bg-lime-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.SKY:
+      return `hover:bg-opacity-20 hover:bg-sky-500 focus:bg-sky-500 active:bg-sky-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.BLUE:
+      return `hover:bg-opacity-20 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.ORANGE:
+      return `hover:bg-opacity-20 hover:bg-orange-500 focus:bg-orange-500 active:bg-orange-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.PURPLE:
+      return `hover:bg-opacity-20 hover:bg-purple-500 focus:bg-purple-500 active:bg-purple-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.INDIGO:
+      return `hover:bg-opacity-20 hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.CYAN:
+      return `hover:bg-opacity-20 hover:bg-cyan-500 focus:bg-cyan-500 active:bg-cyan-500 active:bg-opacity-20 focus:bg-opacity-20`
+    case ColorOptions.RED:
+      return `hover:bg-opacity-20 hover:bg-red-500 focus:bg-red-500 active:bg-red-500 active:bg-opacity-20 focus:bg-opacity-20`
+    default:
+      return ''
+  }
+}
+
 export const getNetworkTextColorContrast = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:

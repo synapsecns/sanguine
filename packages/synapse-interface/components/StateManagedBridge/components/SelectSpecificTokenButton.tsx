@@ -28,7 +28,7 @@ const SelectSpecificTokenButton = ({
 }) => {
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
-  const { fromChainId, toChainId } = useBridgeState()
+  const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
 
   useEffect(() => {
     if (active) {
@@ -41,9 +41,7 @@ const SelectSpecificTokenButton = ({
   let bgClassName
 
   const classNameForBorderStyle = getBorderStyleForCoinHover(token?.color)
-  const classNameForMenuItemStyle = getMenuItemStyleForCoinCombined(
-    token?.color
-  )
+  const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
 
   if (isCurrentlySelected) {
     bgClassName = getMenuItemBgForCoin(token?.color)
