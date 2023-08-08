@@ -100,4 +100,3 @@ jobs:
               pull_number: context.issue.number,
               body: newBody
             });
-

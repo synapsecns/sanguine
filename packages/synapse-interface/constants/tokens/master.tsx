@@ -800,6 +800,7 @@ export const SYN = new Token({
     [CHAINS.AURORA.id]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [CHAINS.DOGE.id]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
     [CHAINS.CANTO.id]: '0x555982d2E211745b96736665e19D9308B615F78e',
+    [CHAINS.BASE.id]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
   },
   decimals: 18,
   symbol: 'SYN',
@@ -942,6 +943,7 @@ export const NETH = new Token({
     [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     [CHAINS.CANTO.id]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    [CHAINS.BASE.id]: '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c',
   },
   decimals: 18,
   symbol: 'nETH',
@@ -957,6 +959,7 @@ export const NETH = new Token({
     CHAINS.OPTIMISM.id,
     CHAINS.METIS.id,
     CHAINS.CANTO.id,
+    CHAINS.BASE.id,
   ],
   color: 'purple',
   visibilityRank: 50,
@@ -986,6 +989,7 @@ export const ETH = new Token({
     [CHAINS.BOBA.id]: zeroAddress,
     [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.BASE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -997,6 +1001,7 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
+  swapableOn: [CHAINS.BASE.id],
 })
 
 export const MOVR = new Token({

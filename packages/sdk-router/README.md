@@ -62,4 +62,4 @@ const { data, to } = await Synapse.bridge(
 )
 ```
 
-The Synapse SDK allows quick and easy interaction with Synapse Protocol routers and bridges across multiple chains.
+The Synapse SDK allows quick and easy interaction with Synapse Protocol routers and bridges across multiple chains
