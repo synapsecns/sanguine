@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
@@ -24,11 +24,13 @@ import {
 import * as ALL_TOKENS from '@constants/tokens/master'
 import { sortByBalances } from './helpers/sortByBalance'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
+  const overlayRef = useRef(null)
 
   const { fromTokens, fromChainId, fromToken, toChainId, toToken } =
     useBridgeState()
@@ -125,16 +127,12 @@ export const FromTokenListOverlay = () => {
     }
   }
 
-  useEffect(escFunc, [escPressed])
-
   function arrowDownFunc() {
     const nextIdx = currentIdx + 1
     if (arrowDown && nextIdx < masterList.length) {
       setCurrentIdx(nextIdx)
     }
   }
-
-  useEffect(arrowDownFunc, [arrowDown])
 
   function arrowUpFunc() {
     const nextIdx = currentIdx - 1
@@ -143,12 +141,15 @@ export const FromTokenListOverlay = () => {
     }
   }
 
-  useEffect(arrowUpFunc, [arrowUp])
-
   function onSearch(str: string) {
     setSearchStr(str)
     setCurrentIdx(-1)
   }
+
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
 
   const fromTokensText = useMemo(() => {
     return fromTokenText({ fromChainId, fromToken, toChainId, toToken })
@@ -167,6 +168,7 @@ export const FromTokenListOverlay = () => {
 
   return (
     <div
+      ref={overlayRef}
       data-test-id="token-slide-over"
       className="max-h-full pb-4 overflow-auto scrollbar-hide"
     >

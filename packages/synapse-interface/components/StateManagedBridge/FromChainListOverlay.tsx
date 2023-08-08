@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as ALL_CHAINS from '@constants/chains/master'
@@ -12,6 +12,7 @@ import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { fromChainText } from './helpers/fromChainText'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId, fromToken, toChainId, toToken } =
@@ -20,6 +21,7 @@ export const FromChainListOverlay = () => {
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   const dataId = 'bridge-origin-chain-list'
+  const overlayRef = useRef(null)
 
   let possibleChains = _(ALL_CHAINS)
     .pickBy((value) => _.includes(fromChainIds, value.id))
@@ -108,6 +110,7 @@ export const FromChainListOverlay = () => {
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
 
   const fromChainsText = useMemo(() => {
     return fromChainText({
@@ -132,7 +135,8 @@ export const FromChainListOverlay = () => {
 
   return (
     <div
-      data-test-id="chain-slide-over"
+      ref={overlayRef}
+      data-test-id="fromChain-list-overlay"
       className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">

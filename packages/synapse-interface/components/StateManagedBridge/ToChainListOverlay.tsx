@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -13,6 +13,7 @@ import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { toChainText } from './helpers/toChainText'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const ToChainListOverlay = () => {
   const { fromChainId, fromToken, toChainIds, toChainId, toToken } =
@@ -20,6 +21,7 @@ export const ToChainListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
+  const overlayRef = useRef(null)
 
   const dataId = 'bridge-destination-chain-list'
 
@@ -110,6 +112,7 @@ export const ToChainListOverlay = () => {
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
 
   const toChainsText = useMemo(() => {
     return toChainText({
@@ -134,7 +137,8 @@ export const ToChainListOverlay = () => {
 
   return (
     <div
-      data-test-id="chain-slide-over"
+      ref={overlayRef}
+      data-test-id="toChain-list-overlay"
       className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">

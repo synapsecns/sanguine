@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
@@ -23,6 +23,7 @@ import { toTokenText } from './helpers/toTokensText'
 import { sortByBalances } from './helpers/sortByBalance'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken } =
@@ -32,6 +33,7 @@ export const ToTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
+  const overlayRef = useRef(null)
 
   let possibleTokens = sortTokens(toTokens).sort((t) =>
     sortByBalances(t, toChainId, portfolioBalances)
@@ -126,16 +128,12 @@ export const ToTokenListOverlay = () => {
     }
   }
 
-  useEffect(escFunc, [escPressed])
-
   function arrowDownFunc() {
     const nextIdx = currentIdx + 1
     if (arrowDown && nextIdx < masterList.length) {
       setCurrentIdx(nextIdx)
     }
   }
-
-  useEffect(arrowDownFunc, [arrowDown])
 
   function arrowUpFunc() {
     const nextIdx = currentIdx - 1
@@ -144,12 +142,15 @@ export const ToTokenListOverlay = () => {
     }
   }
 
-  useEffect(arrowUpFunc, [arrowUp])
-
   function onSearch(str: string) {
     setSearchStr(str)
     setCurrentIdx(-1)
   }
+
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
 
   const toTokensText = useMemo(() => {
     return toTokenText({ fromChainId, fromToken, toChainId, toToken })
@@ -168,6 +169,7 @@ export const ToTokenListOverlay = () => {
 
   return (
     <div
+      ref={overlayRef}
       data-test-id="token-slide-over"
       className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
