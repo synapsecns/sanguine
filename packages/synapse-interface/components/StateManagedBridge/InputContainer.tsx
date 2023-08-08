@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import {
-  setFromChainId,
-  setFromToken,
-  updateFromValue,
-} from '@/slices/bridge/reducer'
+import { updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { ConnectedIndicator } from './ConnectedIndicator'
+import {
+  ConnectButton,
+  ConnectedIndicator,
+  DisconnectedIndicator,
+} from './components/ConnectedIndicator'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -93,6 +93,16 @@ export const InputContainer = () => {
     )
   }, [balance, fromChainId, fromToken])
 
+  const connectedStatus = useMemo(() => {
+    if (!hasMounted || !isConnected) {
+      return <DisconnectedIndicator />
+    } else if (hasMounted && isConnected && fromChainId === chain.id) {
+      return <ConnectedIndicator />
+    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+      return <ConnectButton chainId={fromChainId} />
+    }
+  }, [chain, fromChainId, isConnected])
+
   return (
     <div
       data-test-id="input-container"
@@ -101,11 +111,9 @@ export const InputContainer = () => {
         bg-bgLight
       `}
     >
-      <div className="flex justify-between mb-3">
+      <div className="flex items-center justify-between mb-3">
         <FromChainSelector />
-        {hasMounted && isConnected && fromChainId === chain.id && (
-          <ConnectedIndicator />
-        )}
+        {connectedStatus}
       </div>
       <div className="flex h-16 mb-2 space-x-2">
         <div
