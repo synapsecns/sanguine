@@ -221,6 +221,13 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart u
 			if err != nil {
 				return err
 			}
+
+			// Check RPC flake
+			if startHeight > endHeight {
+				timeout = b.Duration()
+				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.ErroneousHeadBlock)
+				continue
+			}
 			err = indexer.Index(parentContext, startHeight, endHeight)
 			if err != nil {
 				timeout = b.Duration()
@@ -369,6 +376,13 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 				startHeight = *endHeight - c.chainConfig.Confirmations
 			}
 
+			// Check for RPC flake
+			if startHeight > *endHeight {
+				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.ErroneousHeadBlock)
+				timeout = b.Duration()
+				continue
+			}
+
 			err = tipLivefillIndexer.Index(parentContext, startHeight, *endHeight)
 			if err != nil {
 				timeout = b.Duration()
@@ -422,6 +436,13 @@ func (c *ChainIndexer) livefill(parentContext context.Context) error {
 			endHeight, err = c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
 			if err != nil {
 				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
+				timeout = b.Duration()
+				continue
+			}
+
+			// Check for RPC flake
+			if startHeight > *endHeight {
+				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.ErroneousHeadBlock)
 				timeout = b.Duration()
 				continue
 			}
