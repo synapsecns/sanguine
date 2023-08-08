@@ -40,6 +40,7 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 //nolint:maintidx
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
+
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
 	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
@@ -363,8 +364,10 @@ func (b *BackfillSuite) TestBackfill() {
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
-	// cp is the cctp ref for getting token data
-	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, tokenPriceService)
+	// msr is the meta swap ref for getting token data
+	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
+	Nil(b.T(), err)
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}
@@ -384,16 +387,23 @@ func (b *BackfillSuite) TestBackfill() {
 	// Backfill the blocks
 	var count int64
 	err = chainBackfiller.Backfill(b.GetTestContext(), false, 1)
+
 	Nil(b.T(), err)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(11), count)
+
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(10), count)
+	Equal(b.T(), int64(12), count) // 10 + 2 cctp events
+
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageBusEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
 	Equal(b.T(), int64(3), count)
+
+	cctpEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.CCTPEvent{}).Count(&count)
+	Nil(b.T(), cctpEvents.Error)
+	Equal(b.T(), int64(2), count)
 
 	// Test cctp parity
 	err = b.sendCircleTokenParity(requestSentLog, cp)
@@ -475,8 +485,9 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	bridgeEvents = b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(16), count)
+	Equal(b.T(), int64(18), count) // 16 + 2 cctp events
 
 	lastBlockStored, err := b.db.GetLastStoredBlock(b.GetTestContext(), uint32(testChainID.Uint64()), chainConfigsV1[0].Contracts[0].Address)
 
@@ -516,10 +527,7 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 		Int64: int64(parsedLog.Nonce),
 		Valid: true,
 	}
-	burnToken := gosql.NullString{
-		String: parsedLog.Token.String(),
-		Valid:  true,
-	}
+
 	requestVersion := gosql.NullInt32{
 		Int32: int32(parsedLog.RequestVersion),
 		Valid: true,
@@ -538,8 +546,8 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			DestinationChainID: parsedLog.ChainId,
 			Sender:             sender,
 			Nonce:              nonce,
-			BurnToken:          burnToken,
-			SentAmount:         parsedLog.Amount,
+			Token:              parsedLog.Token.String(),
+			Amount:             parsedLog.Amount,
 			RequestVersion:     requestVersion,
 			FormattedRequest:   formattedRequest,
 		}).Count(&count)
@@ -567,10 +575,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 		String: parsedLog.Recipient.String(),
 		Valid:  true,
 	}
-	token := gosql.NullString{
-		String: parsedLog.Token.String(),
-		Valid:  true,
-	}
+	domainToChain := []int64{1, 43114, 10, 42161}
 	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
 		Where(&sql.CCTPEvent{
 			ContractAddress: log.Address.String(),
@@ -578,12 +583,12 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			TxHash:          log.TxHash.String(),
 			EventType:       cctpTypes.CircleRequestFulfilledEvent.Int(),
 			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
-			OriginChainID:   big.NewInt(int64(parsedLog.OriginDomain)),
+			OriginChainID:   big.NewInt(domainToChain[parsedLog.OriginDomain]),
 			MintToken:       mintToken,
-			ReceivedAmount:  parsedLog.Amount,
+			Amount:          parsedLog.Amount,
 			Recipient:       recipient,
 			Fee:             parsedLog.Fee,
-			Token:           token,
+			Token:           parsedLog.Token.String(),
 		}).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
