@@ -81,4 +81,13 @@ export const TransactionHeader = ({
   )
 }
 
-export const TransactionDetails = () => {}
+export const Transaction = () => {
+  return (
+    <div className="grid grid-cols-4 gap-2 text-sm text-white">
+      <div></div>
+      <div></div>
+      <div className="flex justify-end"></div>
+      <div className="flex justify-end"></div>
+    </div>
+  )
+}
