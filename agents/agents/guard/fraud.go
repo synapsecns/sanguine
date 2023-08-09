@@ -46,7 +46,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not check if should submit state report: %w", err)
 		}
 		if !shouldSubmit {
-			continue
+			return nil
 		}
 
 		// Submit the state report.
@@ -101,7 +101,7 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent co
 		return false, fmt.Errorf("could not check validity of state: %w", err)
 	}
 	if isValid {
-		return true, nil
+		return false, nil
 	}
 
 	// Verify that the agent is in a slashable status.
