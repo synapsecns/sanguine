@@ -16,9 +16,9 @@ export const Activity = () => {
   const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
 
-  const userHistoricalActivity: GetUserHistoricalActivityQuery = useMemo(() => {
-    return historicalActivity?.data
-  }, [historicalActivity?.data])
+  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
+    return historicalActivity?.data?.bridgeTransactions
+  }, [historicalActivity?.data?.bridgeTransactions])
 
   useEffect(() => {
     address &&
