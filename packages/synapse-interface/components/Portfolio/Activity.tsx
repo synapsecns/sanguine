@@ -26,6 +26,25 @@ export const Activity = () => {
       fetchUserHistoricalActivity({ address: address, startTime: queryTime })
   }, [address])
 
-  console.log('userHistoricalActivity: ', userHistoricalActivity)
-  return <>Activity</>
+  return (
+    <div>
+      <ActivitySection title="Stuck"></ActivitySection>
+      <ActivitySection title="Recent"></ActivitySection>
+    </div>
+  )
+}
+
+export const ActivitySection = ({
+  title,
+  children,
+}: {
+  title: string
+  children?: React.ReactNode
+}) => {
+  return (
+    <div>
+      <h3 className="text-lg text-white">{title}</h3>
+      {children}
+    </div>
+  )
 }
