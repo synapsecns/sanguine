@@ -44,7 +44,7 @@ export const TRANSITION_PROPS: TransitionClassesProps = {
     transition-all
     w-full h-full
     bg-bgBase
-    z-20 rounded-3xl
+    z-20 rounded-lg
     left-0
   `,
 }

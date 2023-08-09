@@ -8,7 +8,7 @@ export default function MiniMaxButton({
   disabled: boolean
 }) {
   const baseClassName =
-    'pl-3 pr-3 pt-2 pb-2 mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
+    'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
 
   const className = disabled
     ? `${baseClassName} opacity-60 cursor-default`

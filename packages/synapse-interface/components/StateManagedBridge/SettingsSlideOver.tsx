@@ -38,7 +38,7 @@ const SettingsSlideOver = () => {
   useEffect(escFunc, [escPressed])
 
   return (
-    <div className="max-h-full pb-4 overflow-auto rounded-3xl">
+    <div className="max-h-full pb-4 overflow-auto rounded-lg">
       <div
         className={`
          px-3 md:px-6 rounded-md text-base focus:outline-none

@@ -53,7 +53,7 @@ export const FromChainSelector = () => {
       data-test-id="bridge-origin-chain-list-button"
       className={`
         bg-transparent
-        p-1
+        pl-sm pr-sm pt-md pb-md
         ${getNetworkHover(fromChain?.color)}
         ${getNetworkButtonBgClassNameActive(fromChain?.color)}
         border border-transparent

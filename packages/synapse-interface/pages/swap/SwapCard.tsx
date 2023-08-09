@@ -607,9 +607,8 @@ const SwapCard = ({
       w-full h-full
       md:w-[95%] md:h-[95%]
       -ml-0 md:-ml-3
-      md:mt-3
       bg-bgBase
-      z-20 rounded-3xl
+      z-20 rounded-lg
     `,
   }
 
@@ -798,8 +797,7 @@ const SwapCard = ({
             setDisplayType={setDisplayType}
           />
         </Transition>
-        <Grid cols={{ xs: 1 }} gap={4} className="place-content-center">
-          <div className="pt-3 "></div>
+        <Grid cols={{ xs: 1 }} className="place-content-center">
           <BridgeInputContainer
             address={address}
             isOrigin={true}
@@ -814,6 +812,7 @@ const SwapCard = ({
             setDisplayType={setDisplayType}
             fromTokenBalance={fromTokenBalance}
           />
+          <div className="mb-4"></div>
           <BridgeInputContainer
             address={address}
             isOrigin={false}

@@ -77,7 +77,7 @@ export const TRANSITIONS_PROPS = {
     -ml-0 md:-ml-3
     md:mt-3
     bg-bgBase
-    z-20 rounded-3xl
+    z-20 rounded-lg
   `,
 }
 
@@ -90,7 +90,7 @@ export const SETTINGS_TRANSITIONS_PROPS = {
   -ml-0 md:-ml-3
   md:-mt-3
   bg-bgBase
-  z-20 rounded-3xl
+  z-20 rounded-lg
   `,
 }
 

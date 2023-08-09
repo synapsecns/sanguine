@@ -46,7 +46,7 @@ export const ToTokenSelector = () => {
     <button
       data-test-id="bridge-destination-token"
       className={`
-        pl-2 pr-2 pt-1 pb-1 rounded-sm min-w-[80px]
+        p-md rounded-sm min-w-[80px]
         bg-[#565058]
         ${getMenuItemHoverBgForCoin(toToken?.color)}
         border border-transparent

@@ -68,6 +68,12 @@ module.exports = {
         md: '0.5rem',
         sm: '0.25rem',
       },
+      spacing: {
+        xl: '3rem',
+        lg: '1.5rem',
+        md: '0.5rem',
+        sm: '0.25rem',
+      },
       borderWidth: {
         3: '3px',
       },

@@ -1,9 +1,9 @@
 import { displaySymbol } from '@utils/displaySymbol'
 import {
+  getBorderStyleForCoin,
   getBorderStyleForCoinHover,
   getMenuItemBgForCoin,
   getMenuItemStyleForCoin,
-  getMenuItemStyleForCoinCombined,
 } from '@styles/tokens'
 import { memo, useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
@@ -40,11 +40,14 @@ const SelectSpecificTokenButton = ({
 
   let bgClassName
 
-  const classNameForBorderStyle = getBorderStyleForCoinHover(token?.color)
   const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
 
   if (isCurrentlySelected) {
-    bgClassName = getMenuItemBgForCoin(token?.color)
+    bgClassName = `${getMenuItemBgForCoin(
+      token?.color
+    )} ${getBorderStyleForCoin(token?.color)}`
+  } else {
+    bgClassName = getBorderStyleForCoinHover(token?.color)
   }
 
   return (
@@ -61,7 +64,6 @@ const SelectSpecificTokenButton = ({
         border-[1px] border-[#423F44]
         mb-1
         ${bgClassName}
-        ${classNameForBorderStyle}
         ${classNameForMenuItemStyle}
       `}
     >
