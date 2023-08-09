@@ -103,7 +103,7 @@ func (a lightManagerContract) UpdateAgentStatus(
 	}
 	tx, err := a.contract.UpdateAgentStatus(transactOpts, agentAddress, lightManagerAgentStatus, agentProof)
 	if err != nil {
-		return nil, fmt.Errorf("could not submit attestation: %w", err)
+		return nil, fmt.Errorf("could not update agent status: %w", err)
 	}
 
 	return tx, nil
