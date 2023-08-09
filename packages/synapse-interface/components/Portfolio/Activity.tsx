@@ -18,6 +18,7 @@ export const Activity = () => {
       startTime: currentTime,
     },
     {
+      pollingInterval: 5000,
       skip: shouldSkip,
     }
   )
