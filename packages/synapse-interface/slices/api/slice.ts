@@ -53,5 +53,51 @@ export const api = createApi({
         }
       `,
     }),
+    userPendingActivityQuery: builder.query({
+      query: ({ address, startTime }) => gql`
+        query GetUserHistoricalActivity($address: String!, $startTime: Int!) {
+          bridgeTransactions(
+            pending: true
+            addressFrom: $address
+            startTime: $startTime
+            page: 1
+          ) {
+            fromInfo {
+              chainID
+              destinationChainID
+              address
+              txnHash
+              value
+              formattedValue
+              USDValue
+              tokenAddress
+              tokenSymbol
+              blockNumber
+              time
+              formattedTime
+              formattedEventType
+              eventType
+            }
+            toInfo {
+              chainID
+              destinationChainID
+              address
+              txnHash
+              value
+              formattedValue
+              USDValue
+              tokenAddress
+              tokenSymbol
+              blockNumber
+              time
+              formattedTime
+              formattedEventType
+              eventType
+            }
+            kappa
+          }
+        }
+      `,
+    }),
   }),
 })
