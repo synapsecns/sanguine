@@ -23,7 +23,7 @@ export const FromTokenSelector = () => {
     buttonContent = (
       <div className="flex items-center space-x-2">
         <div className="flex-none hidden md:inline-block">
-          <img src={src} alt={symbol} className="w-5 h-5" />
+          <img src={src} alt={symbol} className="w-6 h-6" />
         </div>
         <div className="text-left">
           <div className="text-lg text-primaryTextColor">{symbol}</div>
@@ -46,7 +46,7 @@ export const FromTokenSelector = () => {
     <button
       data-test-id="bridge-origin-token"
       className={`
-        pl-2 pr-2 pt-1 pb-1 rounded-md min-w-[80px]
+        pl-2 pr-2 pt-1 pb-1 rounded-sm min-w-[80px]
         bg-[#565058]
         ${getMenuItemHoverBgForCoin(fromToken?.color)}
         border border-transparent

@@ -26,7 +26,7 @@ export const FromChainSelector = () => {
           <img
             src={fromChain.chainImg.src}
             alt={fromChain.name}
-            className="w-6 h-6"
+            className="w-6 h-6 rounded-sm"
           />
         </div>
         <div className="text-left">
@@ -59,7 +59,7 @@ export const FromChainSelector = () => {
         border border-transparent
         ${getNetworkButtonBorderActive(fromChain?.color)}
         ${getNetworkButtonBorderHover(fromChain?.color)}
-        rounded-md
+        rounded-sm
       `}
       onClick={() => dispatch(setShowFromChainListOverlay(true))}
     >

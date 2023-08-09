@@ -26,7 +26,7 @@ export const ToChainSelector = () => {
           <img
             src={toChain.chainImg.src}
             alt={toChain.name}
-            className="w-6 h-6"
+            className="w-6 h-6 rounded-sm"
           />
         </div>
         <div className="text-left">
@@ -58,7 +58,7 @@ export const ToChainSelector = () => {
         border border-transparent
         ${getNetworkButtonBorderActive(toChain?.color)}
         ${getNetworkButtonBorderHover(toChain?.color)}
-        rounded-md
+        rounded-sm
       `}
       onClick={() => dispatch(setShowToChainListOverlay(true))}
     >
