@@ -154,42 +154,50 @@ export const FromChainListOverlay = () => {
         data-test-id={dataId}
         className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
-        <div className="mt-2 mb-4 text-sm text-primaryTextColor">
-          {fromChainsText}
-        </div>
-        {possibleChains.map(({ id: mapChainId }, idx) => {
-          return (
-            <SelectSpecificNetworkButton
-              key={idx}
-              itemChainId={mapChainId}
-              isCurrentChain={fromChainId === mapChainId}
-              active={idx === currentIdx}
-              onClick={() => {
-                if (fromChainId === mapChainId) {
-                  onClose()
-                } else {
-                  handleSetFromChainId(mapChainId)
-                }
-              }}
-              dataId={dataId}
-            />
-          )
-        })}
-        <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
-          All other chains
-        </div>
-        {remainingChains.map(({ id: mapChainId }, idx) => {
-          return (
-            <SelectSpecificNetworkButton
-              key={mapChainId}
-              itemChainId={mapChainId}
-              isCurrentChain={fromChainId === mapChainId}
-              active={idx + possibleChains.length === currentIdx}
-              onClick={() => handleSetFromChainId(mapChainId)}
-              dataId={dataId}
-            />
-          )
-        })}
+        {possibleChains && possibleChains.length > 0 && (
+          <>
+            <div className="mt-2 mb-4 text-sm text-primaryTextColor">
+              {fromChainsText}
+            </div>
+            {possibleChains.map(({ id: mapChainId }, idx) => {
+              return (
+                <SelectSpecificNetworkButton
+                  key={idx}
+                  itemChainId={mapChainId}
+                  isCurrentChain={fromChainId === mapChainId}
+                  active={idx === currentIdx}
+                  onClick={() => {
+                    if (fromChainId === mapChainId) {
+                      onClose()
+                    } else {
+                      handleSetFromChainId(mapChainId)
+                    }
+                  }}
+                  dataId={dataId}
+                />
+              )
+            })}
+          </>
+        )}
+        {remainingChains && remainingChains.length > 0 && (
+          <>
+            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
+              All other chains
+            </div>
+            {remainingChains.map(({ id: mapChainId }, idx) => {
+              return (
+                <SelectSpecificNetworkButton
+                  key={mapChainId}
+                  itemChainId={mapChainId}
+                  isCurrentChain={fromChainId === mapChainId}
+                  active={idx + possibleChains.length === currentIdx}
+                  onClick={() => handleSetFromChainId(mapChainId)}
+                  dataId={dataId}
+                />
+              )
+            })}
+          </>
+        )}
         {searchStr && (
           <div className="px-12 py-4 text-center text-primaryTextColor text-md">
             No other results found for{' '}

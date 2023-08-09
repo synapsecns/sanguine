@@ -183,31 +183,35 @@ export const FromTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      <div className="px-2 pb-4 pt-4 text-primaryTextColor text-sm bg-[#343036]">
-        {fromTokensText}
-      </div>
-      <div className="px-2 pb-4 bg-[#343036] md:px-2 ">
-        {possibleTokens.map((token, idx) => {
-          return (
-            <SelectSpecificTokenButton
-              isOrigin={true}
-              key={idx}
-              token={token}
-              selectedToken={fromToken}
-              active={idx === currentIdx}
-              showAllChains={false}
-              onClick={() => {
-                if (token === fromToken) {
-                  onClose()
-                } else {
-                  handleSetFromToken(fromToken, token)
-                }
-              }}
-            />
-          )
-        })}
-      </div>
-      {remainingTokens && (
+      {possibleTokens && possibleTokens.length > 0 && (
+        <>
+          <div className="px-2 pb-4 pt-4 text-primaryTextColor text-sm bg-[#343036]">
+            {fromTokensText}
+          </div>
+          <div className="px-2 pb-2 bg-[#343036] md:px-2 ">
+            {possibleTokens.map((token, idx) => {
+              return (
+                <SelectSpecificTokenButton
+                  isOrigin={true}
+                  key={idx}
+                  token={token}
+                  selectedToken={fromToken}
+                  active={idx === currentIdx}
+                  showAllChains={false}
+                  onClick={() => {
+                    if (token === fromToken) {
+                      onClose()
+                    } else {
+                      handleSetFromToken(fromToken, token)
+                    }
+                  }}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
+      {remainingTokens && remainingTokens.length > 0 && (
         <>
           <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
             Other {CHAINS_BY_ID[fromChainId]?.name} tokens
@@ -229,34 +233,38 @@ export const FromTokenListOverlay = () => {
           </div>
         </>
       )}
-      <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
-        All other sendable tokens
-      </div>
-      <div className="px-2 pb-2 bg-[#343036] md:px-2">
-        {allOtherFromTokens.map((token, idx) => {
-          return (
-            <SelectSpecificTokenButton
-              isOrigin={true}
-              key={idx}
-              token={token}
-              selectedToken={fromToken}
-              active={
-                idx + possibleTokens.length + remainingTokens.length ===
-                currentIdx
-              }
-              showAllChains={true}
-              onClick={() => handleSetFromToken(fromToken, token)}
-            />
-          )
-        })}
-      </div>
+      {allOtherFromTokens && allOtherFromTokens.length > 0 && (
+        <>
+          <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
+            All other sendable tokens
+          </div>
+          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+            {allOtherFromTokens.map((token, idx) => {
+              return (
+                <SelectSpecificTokenButton
+                  isOrigin={true}
+                  key={idx}
+                  token={token}
+                  selectedToken={fromToken}
+                  active={
+                    idx + possibleTokens.length + remainingTokens.length ===
+                    currentIdx
+                  }
+                  showAllChains={true}
+                  onClick={() => handleSetFromToken(fromToken, token)}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
       <div>
         {searchStr && (
           <div className="px-12 py-4 text-center text-primaryTextColor text-md">
             No other results found for{' '}
             <i className="text-primaryTextColor text-opacity-60">{searchStr}</i>
             .
-            <div className="align-bottom text-primaryTextColor text-md">
+            <div className="pt-2 align-bottom text-primaryTextColor text-md">
               Want to see a token supported on Synapse? Let us know!
             </div>
           </div>
