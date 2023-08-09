@@ -1,14 +1,15 @@
 package notary_test
 
 import (
-	"github.com/synapsecns/sanguine/agents/agents/notary"
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/agents/agents/notary"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -122,8 +123,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		err = guard.Start(u.GetTestContext())
-		u.Nil(err)
+		_ = guard.Start(u.GetTestContext())
 	}()
 
 	u.Eventually(func() bool {
