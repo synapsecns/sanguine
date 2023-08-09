@@ -26,10 +26,15 @@ export const Activity = () => {
       fetchUserHistoricalActivity({ address: address, startTime: queryTime })
   }, [address])
 
+  console.log('userHistoricalActivity: ', userHistoricalActivity)
   return (
     <div>
-      <ActivitySection title="Stuck"></ActivitySection>
-      <ActivitySection title="Recent"></ActivitySection>
+      <ActivitySection title="Pending">
+        <TransactionHeader transactionType={ActivityType.PENDING} />
+      </ActivitySection>
+      <ActivitySection title="Recent">
+        <TransactionHeader transactionType={ActivityType.RECENT} />
+      </ActivitySection>
     </div>
   )
 }
@@ -44,19 +49,34 @@ export const ActivitySection = ({
   return (
     <div>
       <h3 className="text-lg text-white">{title}</h3>
-      <TransactionHeader />
       {children}
     </div>
   )
 }
 
-export const TransactionHeader = () => {
+export enum ActivityType {
+  PENDING,
+  STUCK,
+  RECENT,
+}
+
+export const TransactionHeader = ({
+  transactionType,
+}: {
+  transactionType: ActivityType
+}) => {
   return (
     <div className="grid grid-cols-4 gap-2 text-[#C0BCC2] text-sm">
       <div>From</div>
       <div>To</div>
-      <div className="flex justify-end">Blocks</div>
-      <div className="flex justify-end">Elapsed</div>
+      <div className="flex justify-end">
+        {transactionType === ActivityType.PENDING && 'Blocks'}
+        {transactionType === ActivityType.RECENT && 'Rate'}
+      </div>
+      <div className="flex justify-end">
+        {transactionType === ActivityType.PENDING && 'Elapsed'}
+        {transactionType === ActivityType.RECENT && 'Completed'}
+      </div>
     </div>
   )
 }
