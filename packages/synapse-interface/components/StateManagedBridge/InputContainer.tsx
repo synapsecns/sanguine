@@ -173,7 +173,7 @@ export const InputContainer = () => {
             {hasMounted && isConnected && (
               <div className="m">
                 <MiniMaxButton
-                  disabled={balance && balance === 0n}
+                  disabled={!balance || balance === 0n ? true : false}
                   onClickBalance={onMaxBalance}
                 />
               </div>
