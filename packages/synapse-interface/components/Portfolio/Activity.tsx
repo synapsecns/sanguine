@@ -6,10 +6,6 @@ export const Activity = () => {
   const { address } = useAccount()
   const currentTime: number = getTimeMinutesFromNow(0)
   const shouldSkip: boolean = !address || !currentTime
-  console.log('address: ', address)
-  console.log('currentTime: ', currentTime)
-  console.log('shouldSkip: ', shouldSkip)
-
   const {
     data: history,
     isLoading,
