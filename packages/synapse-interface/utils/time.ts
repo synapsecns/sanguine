@@ -3,6 +3,13 @@ export const getTimeMinutesFromNow = (minutesFromNow) => {
 
   return Math.round(currentTimeSeconds + 60 * minutesFromNow)
 }
+
+export const getTimeMinutesBeforeNow = (minutesBeforeNow) => {
+  const currentTimeSeconds = new Date().getTime() / 1000
+
+  return Math.round(currentTimeSeconds - 60 * minutesBeforeNow)
+}
+
 export const formatDate = (date) => {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
