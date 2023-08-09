@@ -184,13 +184,12 @@ func eventToCCTPEvent(event cctpTypes.EventLog, chainID uint32) model.CCTPEvent 
 func cctpEventToBridgeEvent(cctpEvent model.CCTPEvent) model.BridgeEvent {
 	bridgeType := bridgeTypes.CircleRequestSentEvent
 
-	destinationKappa := fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
+	destinationKappa := cctpEvent.RequestID
 	var kappa *string
 	if cctpEvent.EventType == cctpTypes.CircleRequestFulfilledEvent.Int() {
 		bridgeType = bridgeTypes.CircleRequestFulfilledEvent
 		destinationKappa = ""
-		kappaStr := fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
-		kappa = &kappaStr
+		kappa = &cctpEvent.RequestID
 	}
 	return model.BridgeEvent{
 		InsertTime:       cctpEvent.InsertTime,
