@@ -1,6 +1,9 @@
 package executor_test
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,8 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"math/big"
-	"time"
 )
 
 func (e *ExecutorSuite) TestVerifyState() {
@@ -605,7 +606,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	gasData := types.NewGasData(uint16(1), uint16(1), uint16(1), uint16(1), uint16(1), uint16(1))
 	originState := types.NewState(rootB32, chainID, nonce, big.NewInt(1), big.NewInt(1), gasData)
 	randomGasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	randomState := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID+1, gofakeit.Uint32(), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), randomGasData)
+	randomState := types.NewState(common.BigToHash(big.NewInt(int64(gofakeit.Int32()))), chainID+1, gofakeit.Uint32(), big.NewInt(int64(gofakeit.Int32())), big.NewInt(int64(gofakeit.Int32())), randomGasData)
 	originSnapshot := types.NewSnapshot([]types.State{originState, randomState})
 
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
@@ -675,22 +676,22 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		1,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state1 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		2,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state2 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		5,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 
 	snapshot0 := types.NewSnapshot([]types.State{state0})
