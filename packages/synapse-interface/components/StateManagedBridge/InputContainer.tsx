@@ -10,7 +10,7 @@ import {
   ConnectButton,
   ConnectedIndicator,
   DisconnectedIndicator,
-} from './components/ConnectedIndicator'
+} from './ConnectionIndicators'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -94,14 +94,14 @@ export const InputContainer = () => {
   }, [balance, fromChainId, fromToken])
 
   const connectedStatus = useMemo(() => {
-    if (!hasMounted || !isConnected) {
+    if (hasMounted && !isConnected) {
       return <DisconnectedIndicator />
     } else if (hasMounted && isConnected && fromChainId === chain.id) {
       return <ConnectedIndicator />
     } else if (hasMounted && isConnected && fromChainId !== chain.id) {
       return <ConnectButton chainId={fromChainId} />
     }
-  }, [chain, fromChainId, isConnected])
+  }, [chain, fromChainId, isConnected, hasMounted])
 
   return (
     <div
