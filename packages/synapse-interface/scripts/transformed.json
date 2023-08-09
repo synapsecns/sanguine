@@ -301,135 +301,39 @@
     "GOHM-42161",
     "GOHM-43114"
   ],
-  "LINK-1": [
-    "LINK-8217"
-  ],
-  "LINK-8217": [
-    "LINK-1"
-  ],
-  "HIGHSTREET-1": [
-    "HIGHSTREET-56"
-  ],
-  "HIGHSTREET-56": [
-    "HIGHSTREET-1"
-  ],
-  "JUMP-56": [
-    "JUMP-250",
-    "JUMP-1088"
-  ],
-  "JUMP-250": [
-    "JUMP-56",
-    "JUMP-1088"
-  ],
-  "JUMP-1088": [
-    "JUMP-56",
-    "JUMP-250"
-  ],
-  "SFI-1": [
-    "SFI-43114"
-  ],
-  "SFI-43114": [
-    "SFI-1"
-  ],
-  "DOG-1": [
-    "DOG-56",
-    "DOG-137"
-  ],
-  "DOG-56": [
-    "DOG-1",
-    "DOG-137"
-  ],
-  "DOG-137": [
-    "DOG-1",
-    "DOG-56"
-  ],
-  "NFD-56": [
-    "NFD-137",
-    "NFD-2000",
-    "NFD-43114"
-  ],
-  "NFD-137": [
-    "NFD-56",
-    "NFD-2000",
-    "NFD-43114"
-  ],
-  "NFD-2000": [
-    "NFD-56",
-    "NFD-137",
-    "NFD-43114"
-  ],
-  "NFD-43114": [
-    "NFD-56",
-    "NFD-137",
-    "NFD-2000"
-  ],
-  "SOLAR-1284": [
-    "SOLAR-1285"
-  ],
-  "SOLAR-1285": [
-    "SOLAR-1284"
-  ],
-  "GMX-42161": [
-    "GMX-43114"
-  ],
-  "GMX-43114": [
-    "GMX-42161"
-  ],
-  "SDT-1": [
-    "SDT-250",
-    "SDT-42161",
-    "SDT-43114",
-    "SDT-1666600000"
-  ],
-  "SDT-250": [
-    "SDT-1",
-    "SDT-42161",
-    "SDT-43114",
-    "SDT-1666600000"
-  ],
-  "SDT-42161": [
-    "SDT-1",
-    "SDT-250",
-    "SDT-43114",
-    "SDT-1666600000"
-  ],
-  "SDT-43114": [
-    "SDT-1",
-    "SDT-250",
-    "SDT-42161",
-    "SDT-1666600000"
-  ],
-  "SDT-1666600000": [
-    "SDT-1",
-    "SDT-250",
-    "SDT-42161",
-    "SDT-43114"
-  ],
-  "NEWO-1": [
-    "NEWO-42161",
-    "NEWO-43114"
-  ],
-  "NEWO-42161": [
-    "NEWO-1",
-    "NEWO-43114"
-  ],
-  "NEWO-43114": [
-    "NEWO-1",
-    "NEWO-42161"
-  ],
+  "LINK-1": ["LINK-8217"],
+  "LINK-8217": ["LINK-1"],
+  "HIGHSTREET-1": ["HIGHSTREET-56"],
+  "HIGHSTREET-56": ["HIGHSTREET-1"],
+  "JUMP-56": ["JUMP-250", "JUMP-1088"],
+  "JUMP-250": ["JUMP-56", "JUMP-1088"],
+  "JUMP-1088": ["JUMP-56", "JUMP-250"],
+  "SFI-1": ["SFI-43114"],
+  "SFI-43114": ["SFI-1"],
+  "DOG-1": ["DOG-56", "DOG-137"],
+  "DOG-56": ["DOG-1", "DOG-137"],
+  "DOG-137": ["DOG-1", "DOG-56"],
+  "NFD-56": ["NFD-137", "NFD-2000", "NFD-43114"],
+  "NFD-137": ["NFD-56", "NFD-2000", "NFD-43114"],
+  "NFD-2000": ["NFD-56", "NFD-137", "NFD-43114"],
+  "NFD-43114": ["NFD-56", "NFD-137", "NFD-2000"],
+  "SOLAR-1284": ["SOLAR-1285"],
+  "SOLAR-1285": ["SOLAR-1284"],
+  "GMX-42161": ["GMX-43114"],
+  "GMX-43114": ["GMX-42161"],
+  "SDT-1": ["SDT-250", "SDT-42161", "SDT-43114", "SDT-1666600000"],
+  "SDT-250": ["SDT-1", "SDT-42161", "SDT-43114", "SDT-1666600000"],
+  "SDT-42161": ["SDT-1", "SDT-250", "SDT-43114", "SDT-1666600000"],
+  "SDT-43114": ["SDT-1", "SDT-250", "SDT-42161", "SDT-1666600000"],
+  "SDT-1666600000": ["SDT-1", "SDT-250", "SDT-42161", "SDT-43114"],
+  "NEWO-1": ["NEWO-42161", "NEWO-43114"],
+  "NEWO-42161": ["NEWO-1", "NEWO-43114"],
+  "NEWO-43114": ["NEWO-1", "NEWO-42161"],
   "USDB-56": [],
-  "PEPE-1": [
-    "PEPE-42161"
-  ],
-  "PEPE-42161": [
-    "PEPE-1"
-  ],
-  "VSTA-1": [
-    "VSTA-42161"
-  ],
-  "VSTA-42161": [
-    "VSTA-1"
-  ],
+  "PEPE-1": ["PEPE-42161"],
+  "PEPE-42161": ["PEPE-1"],
+  "VSTA-1": ["VSTA-42161"],
+  "VSTA-42161": ["VSTA-1"],
   "H2O-1": [
     "H2O-10",
     "H2O-56",
@@ -502,31 +406,17 @@
     "H2O-1285",
     "H2O-42161"
   ],
-  "L2DAO-10": [
-    "L2DAO-42161"
-  ],
-  "L2DAO-42161": [
-    "L2DAO-10"
-  ],
-  "PLS-10": [
-    "PLS-42161"
-  ],
-  "PLS-42161": [
-    "PLS-10"
-  ],
-  "AGEUR-1": [
-    "AGEUR-10",
-    "AGEUR-42161"
-  ],
-  "AGEUR-10": [
-    "AGEUR-1",
-    "AGEUR-42161"
-  ],
-  "AGEUR-42161": [
-    "AGEUR-1",
-    "AGEUR-10"
-  ],
-  "UNIDX-42161": [],
+  "L2DAO-10": ["L2DAO-42161"],
+  "L2DAO-42161": ["L2DAO-10"],
+  "PLS-10": ["PLS-42161"],
+  "PLS-42161": ["PLS-10"],
+  "AGEUR-1": ["AGEUR-10", "AGEUR-42161"],
+  "AGEUR-10": ["AGEUR-1", "AGEUR-42161"],
+  "AGEUR-42161": ["AGEUR-1", "AGEUR-10"],
+  "UNIDX-1": ["UNIDX-10", "UNIDX-250", "UNIDX-42161"],
+  "UNIDX-10": ["UNIDX-1", "UNIDX-250", "UNIDX-42161"],
+  "UNIDX-250": ["UNIDX-1", "UNIDX-10", "UNIDX-42161"],
+  "UNIDX-42161": ["UNIDX-1", "UNIDX-10", "UNIDX-250"],
   "BUSD-56": [
     "USDC-1",
     "USDC-10",
@@ -578,11 +468,7 @@
     "BUSD-2000",
     "DOGECHAIN_BUSD-2000"
   ],
-  "BUSD-2000": [
-    "BUSD-56",
-    "DOGECHAIN_BUSD-56",
-    "DOGECHAIN_BUSD-2000"
-  ],
+  "BUSD-2000": ["BUSD-56", "DOGECHAIN_BUSD-56", "DOGECHAIN_BUSD-2000"],
   "USDC-1": [
     "BUSD-56",
     "USDC-10",
@@ -1426,11 +1312,7 @@
     "BUSD-2000",
     "DOGECHAIN_BUSD-2000"
   ],
-  "DOGECHAIN_BUSD-2000": [
-    "BUSD-56",
-    "BUSD-2000",
-    "DOGECHAIN_BUSD-56"
-  ],
+  "DOGECHAIN_BUSD-2000": ["BUSD-56", "BUSD-2000", "DOGECHAIN_BUSD-56"],
   "USDT-1": [
     "BUSD-56",
     "USDC-1",
@@ -2170,18 +2052,9 @@
     "USDCe-43114",
     "USDTe-43114"
   ],
-  "WBTC-1": [
-    "WBTC-2000",
-    "WBTC-8217"
-  ],
-  "WBTC-2000": [
-    "WBTC-1",
-    "WBTC-8217"
-  ],
-  "WBTC-8217": [
-    "WBTC-1",
-    "WBTC-2000"
-  ],
+  "WBTC-1": ["WBTC-2000", "WBTC-8217"],
+  "WBTC-2000": ["WBTC-1", "WBTC-8217"],
+  "WBTC-8217": ["WBTC-1", "WBTC-2000"],
   "WETHE-43114": [
     "ETH-1",
     "ETH-10",
@@ -3700,10 +3573,7 @@
     "NETH-42161",
     "NETH-43114"
   ],
-  "MOVR-1285": [
-    "WMOVR-1284",
-    "WMOVR-1285"
-  ],
+  "MOVR-1285": ["WMOVR-1284", "WMOVR-1285"],
   "AVAX-43114": [
     "WAVAX-1284",
     "WAVAX-43114",
@@ -3712,14 +3582,8 @@
     "SYNAVAX-1666600000",
     "MULTIAVAX-1666600000"
   ],
-  "WMOVR-1284": [
-    "MOVR-1285",
-    "WMOVR-1285"
-  ],
-  "WMOVR-1285": [
-    "MOVR-1285",
-    "WMOVR-1284"
-  ],
+  "WMOVR-1284": ["MOVR-1285", "WMOVR-1285"],
+  "WMOVR-1285": ["MOVR-1285", "WMOVR-1284"],
   "WAVAX-1284": [
     "AVAX-43114",
     "WAVAX-43114",
@@ -3810,12 +3674,8 @@
     "WJEWEL-53935",
     "SYNJEWEL-43114"
   ],
-  "XJEWEL-53935": [
-    "XJEWEL-1666600000"
-  ],
-  "XJEWEL-1666600000": [
-    "XJEWEL-53935"
-  ],
+  "XJEWEL-53935": ["XJEWEL-1666600000"],
+  "XJEWEL-1666600000": ["XJEWEL-53935"],
   "USDCe-42161": [
     "BUSD-56",
     "USDC-1",
