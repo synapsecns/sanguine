@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query'
 import { gql } from 'graphql-request'
 
-const SCRIBE_URL: string = 'https://explorer.omnirpc.io/graphiql'
+const SCRIBE_URL: string = 'https://explorer.omnirpc.io/graphql'
 
 export const api = createApi({
   baseQuery: graphqlRequestBaseQuery({

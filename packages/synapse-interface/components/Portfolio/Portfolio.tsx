@@ -22,7 +22,22 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 
+import { useGetUserHistoricalActivityQuery } from '@/slices/api/generated'
+
 export const Portfolio = () => {
+  const {
+    data: history,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetUserHistoricalActivityQuery({
+    address: '0x14D0447f49BF52f76138CBEB313C147cFa372A28',
+    startTime: 1688815939,
+  })
+
+  console.log('history: ', history)
+
   const dispatch = useAppDispatch()
   const { fromChainId }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
