@@ -26,7 +26,7 @@ export const ToChainSelector = () => {
           <img
             src={toChain.chainImg.src}
             alt={toChain.name}
-            className="w-5 h-5"
+            className="w-6 h-6"
           />
         </div>
         <div className="text-left">
