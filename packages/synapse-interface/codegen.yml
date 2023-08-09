@@ -1,8 +1,7 @@
 overrideExisting: true
-schema: 'https://explorer.omnirpc.io/'
-documents: 'src/**/**/!(*.d).{ts,tsx}'
+schema: 'https://explorer.omnirpc.io/graphql'
 generates:
-  ./src/slices/api/generated.ts:
+  ./slices/api/generated.ts:
     plugins:
       - typescript
       - typescript-operations
