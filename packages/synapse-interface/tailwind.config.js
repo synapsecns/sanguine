@@ -62,6 +62,12 @@ module.exports = {
         '4/5': '80%',
         full: '100%',
       },
+      borderRadius: {
+        xl: '3rem',
+        lg: '1.5rem',
+        md: '0.5rem',
+        sm: '0.25rem',
+      },
       borderWidth: {
         3: '3px',
       },

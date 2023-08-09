@@ -763,7 +763,7 @@ const SwapCard = ({
   return (
     <Card
       divider={false}
-      className="max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
+      className="max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-md bg-bgBase md:px-6 lg:px-6"
     >
       <div className="mb-8">
         <Transition show={displayType === 'from'} {...transitionProps}>

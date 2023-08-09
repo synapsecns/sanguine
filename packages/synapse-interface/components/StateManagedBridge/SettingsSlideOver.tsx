@@ -41,7 +41,7 @@ const SettingsSlideOver = () => {
     <div className="max-h-full pb-4 overflow-auto rounded-3xl">
       <div
         className={`
-         px-3 md:px-6 rounded-xl text-base focus:outline-none
+         px-3 md:px-6 rounded-md text-base focus:outline-none
           overflow-hidden z-10 w-full
           space-y-4
         `}
@@ -94,7 +94,7 @@ const SettingsSlideOver = () => {
 
 const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
   return (
-    <div className="w-full p-4 bg-bgLight rounded-xl">
+    <div className="w-full p-4 bg-bgLight rounded-md">
       <div className="flex items-center justify-between space-x-1">
         <div className="w-3/4 text-xs text-white md:text-sm">
           Do not send your funds to a custodial wallet or exchange address!{' '}
@@ -104,7 +104,7 @@ const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
         </div>
         <Button
           className={`
-            p-4 rounded-xl
+            p-4 rounded-md
             text-sm font-medium text-white
             bg-bgLighter hover:bg-bgLightest active:bg-bgLightest
           `}
@@ -131,7 +131,7 @@ const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
           hover:border-gradient-br-magenta-melrose-bgLight hover:border-solid
           focus-within:border-gradient-br-magenta-melrose-bgLight focus-within:border-solid
           pl-1
-          py-0.5 rounded-xl
+          py-0.5 rounded-md
         `}
       >
         <input

@@ -479,7 +479,7 @@ const StateManagedBridge = () => {
           divider={false}
           className={`
                  pb-3 mt-5 overflow-hidden
-                transition-all duration-100 transform rounded-xl
+                transition-all duration-100 transform rounded-md
                 bg-bgBase
               `}
         >

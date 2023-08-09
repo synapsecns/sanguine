@@ -48,7 +48,7 @@ export const DisconnectedIndicator = () => {
       data-test-id="disconnected-button"
       className={`
         flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
+        text-base text-white px-3 py-1 rounded-md
         text-center transform-gpu transition-all duration-75
         border border-solid border-transparent
         h-8

@@ -23,7 +23,7 @@ const EventCard = memo((event: BridgeWatcherTx) => {
       <div className="pb-1 text-sm text-gray-500">
         {event?.timestamp && formatTimestampToDate(event.timestamp)}
       </div>
-      <div className="flex items-center p-1 border border-gray-700 rounded-lg">
+      <div className="flex items-center p-1 border border-gray-700 rounded-md">
         <div className="flex-shrink-0">
           <img
             className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"

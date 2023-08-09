@@ -35,7 +35,7 @@ const SelectTokenDropdown = ({
     >
       <div
         className={`
-          group rounded-xl
+          group rounded-md
           -ml-2
           bg-white bg-opacity-10
         `}
@@ -49,7 +49,7 @@ const SelectTokenDropdown = ({
             border border-transparent
             ${getBorderStyleForCoinHover(selectedToken?.color)}
             items-center
-            rounded-lg
+            rounded-md
             py-1.5 pl-2 h-14
           `}
         >

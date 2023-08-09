@@ -27,7 +27,7 @@ export const OutputContainer = ({}) => {
     <div
       className={`
         mt-6
-        text-left px-2 sm:px-4 pt-4 pb-1 rounded-xl
+        text-left px-2 sm:px-4 pt-4 pb-1 rounded-md
         bg-bgLight
       `}
     >
@@ -46,7 +46,7 @@ export const OutputContainer = ({}) => {
             flex flex-grow items-center
             pl-3 
             w-full h-16
-            rounded-xl
+            rounded-md
             border border-white border-opacity-20
           `}
         >
@@ -88,7 +88,7 @@ export const OutputContainer = ({}) => {
 
 const DisplayAddress = ({ address }) => {
   return (
-    <div className="border-[0.5px] border-secondaryTextColor rounded-xl pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
+    <div className="border-[0.5px] border-secondaryTextColor rounded-md pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
       {shortenAddress(address, 3)}
     </div>
   )

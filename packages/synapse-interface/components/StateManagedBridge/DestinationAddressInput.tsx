@@ -30,7 +30,7 @@ export const DestinationAddressInput = ({
             bg-transparent
             border border-bgLight hover:border-bgLightest focus-within:border-bgLightest
             pl-3 sm:pl-4
-            py-0.5 rounded-xl
+            py-0.5 rounded-md
           `}
         >
           <input

@@ -8,7 +8,7 @@
 // // Undergoing Network Upgrades
 
 // const PAUSED_BASE_PROPERTIES = `
-//     w-full rounded-lg my-2 px-4 py-3
+//     w-full rounded-md my-2 px-4 py-3
 //     text-white text-opacity-100 transition-all
 //     hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
 //     disabled:from-bgLight disabled:to-bgLight
@@ -45,7 +45,7 @@
 //   return (
 //     <div
 //       className={`
-//         group rounded-lg hover:bg-gray-900 ${className} p-1`}
+//         group rounded-md hover:bg-gray-900 ${className} p-1`}
 //       onClick={onClick}
 //     >
 //       <CogIcon className="w-6 h-6 text-gray-500 group-hover:text-gray-300" />

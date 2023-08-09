@@ -194,7 +194,7 @@ const Deposit = ({
 
   return (
     <div className="flex-col">
-      <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
+      <div className="px-2 pt-1 pb-4 bg-bgLight rounded-md">
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (

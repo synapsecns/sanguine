@@ -107,7 +107,7 @@ export const InputContainer = () => {
     <div
       data-test-id="input-container"
       className={`
-        text-left px-2 sm:px-4 pt-4 mt-2 pb-1 rounded-xl
+        text-left px-2 sm:px-4 pt-4 mt-2 pb-1 rounded-md
         bg-bgLight
       `}
     >
@@ -121,7 +121,7 @@ export const InputContainer = () => {
             flex flex-grow items-center justify-between
             pl-3 
             w-full h-16
-            rounded-xl
+            rounded-md
             border border-white border-opacity-20
           `}
         >

@@ -28,7 +28,7 @@ const Banner = ({ setShowBanner }) => {
     <div className="flex items-center justify-center px-4 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:px-8 md:px-12">
       <div
         id="banner-default"
-        className="flex items-center w-8/12 p-3 border border-[#AC8FFF] rounded-lg text-primaryTextColor"
+        className="flex items-center w-8/12 p-3 border border-[#AC8FFF] rounded-md text-primaryTextColor"
         role="alert"
         style={{
           background:
