@@ -5,13 +5,13 @@ const config: CodegenConfig = {
   documents: 'graphql/*.graphql',
   schema: 'https://explorer.omnirpc.io/graphql',
   generates: {
-    './slices/api/generated.ts': {
+    'slices/api/generated.ts': {
       plugins: [
         'typescript',
         'typescript-operations',
         {
           'typescript-rtk-query': {
-            importBaseApiFrom: 'slices/api/slice',
+            importBaseApiFrom: '@/slices/api/slice',
             exportHooks: true,
           },
         },
