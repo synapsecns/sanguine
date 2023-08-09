@@ -229,4 +229,4 @@ chains:
         start_block: -1
       - contract_type: swap #ETH Pool
         address: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89'
-        start_block: 2055004
+        start_block: -1
