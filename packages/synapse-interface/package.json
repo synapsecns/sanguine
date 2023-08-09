@@ -17,7 +17,8 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "graphql:codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@depay/web3-mock": "^14.0.0",
@@ -48,6 +49,7 @@
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
     "@wagmi/core": "^1.3.2",
+    "add": "^2.0.6",
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
     "bignumber": "^1.1.0",
@@ -56,6 +58,7 @@
     "eslint": "^8.37.0",
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
+    "graphql": "^16.7.1",
     "keccak": "^3.0.3",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
@@ -78,7 +81,8 @@
     "typescript": "5.1.6",
     "use-persisted-state": "^0.3.3",
     "viem": "^1.2.5",
-    "wagmi": "^1.3.2"
+    "wagmi": "^1.3.2",
+    "yarn": "^1.22.19"
   },
   "browserslist": {
     "production": [
@@ -98,5 +102,10 @@
   "main": ".eslintrc.js",
   "author": "",
   "license": "ISC",
-  "keywords": []
+  "keywords": [],
+  "devDependencies": {
+    "@graphql-codegen/cli": "5.0.0",
+    "@graphql-codegen/introspection": "4.0.0",
+    "@graphql-codegen/client-preset": "4.1.0"
+  }
 }
