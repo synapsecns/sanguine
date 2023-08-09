@@ -44,7 +44,21 @@ export const ActivitySection = ({
   return (
     <div>
       <h3 className="text-lg text-white">{title}</h3>
+      <TransactionHeader />
       {children}
     </div>
   )
 }
+
+export const TransactionHeader = () => {
+  return (
+    <div className="grid grid-cols-4 gap-2 text-[#C0BCC2] text-sm">
+      <div>From</div>
+      <div>To</div>
+      <div className="flex justify-end">Blocks</div>
+      <div className="flex justify-end">Elapsed</div>
+    </div>
+  )
+}
+
+export const TransactionDetails = () => {}
