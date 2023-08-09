@@ -429,11 +429,63 @@ export type GetUserHistoricalActivityQueryVariables = Exact<{
 
 export type GetUserHistoricalActivityQuery = { __typename?: 'Query', bridgeTransactions?: Array<{ __typename?: 'BridgeTransaction', kappa?: string | null, fromInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null, toInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null } | null> | null };
 
+export type GetUserPendingTransactionsQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  startTime: Scalars['Int']['input'];
+}>;
+
+
+export type GetUserPendingTransactionsQuery = { __typename?: 'Query', bridgeTransactions?: Array<{ __typename?: 'BridgeTransaction', kappa?: string | null, fromInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null, toInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null } | null> | null };
+
 
 export const GetUserHistoricalActivityDocument = `
     query GetUserHistoricalActivity($address: String!, $startTime: Int!) {
   bridgeTransactions(
     pending: false
+    addressFrom: $address
+    startTime: $startTime
+    page: 1
+  ) {
+    fromInfo {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    toInfo {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    kappa
+  }
+}
+    `;
+export const GetUserPendingTransactionsDocument = `
+    query GetUserPendingTransactions($address: String!, $startTime: Int!) {
+  bridgeTransactions(
+    pending: true
     addressFrom: $address
     startTime: $startTime
     page: 1
@@ -480,9 +532,12 @@ const injectedRtkApi = api.injectEndpoints({
     GetUserHistoricalActivity: build.query<GetUserHistoricalActivityQuery, GetUserHistoricalActivityQueryVariables>({
       query: (variables) => ({ document: GetUserHistoricalActivityDocument, variables })
     }),
+    GetUserPendingTransactions: build.query<GetUserPendingTransactionsQuery, GetUserPendingTransactionsQueryVariables>({
+      query: (variables) => ({ document: GetUserPendingTransactionsDocument, variables })
+    }),
   }),
 });
 
 export { injectedRtkApi as api };
-export const { useGetUserHistoricalActivityQuery, useLazyGetUserHistoricalActivityQuery } = injectedRtkApi;
+export const { useGetUserHistoricalActivityQuery, useLazyGetUserHistoricalActivityQuery, useGetUserPendingTransactionsQuery, useLazyGetUserPendingTransactionsQuery } = injectedRtkApi;
 
