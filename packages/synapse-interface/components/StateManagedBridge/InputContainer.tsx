@@ -139,7 +139,7 @@ export const InputContainer = () => {
                     max-w-[190px]
                     p-0
                     placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-lg md:text-2xl font-medium
+                    text-white text-opacity-80 text-xl md:text-2xl font-medium
                   `}
                   placeholder="0.0000"
                   onChange={handleFromValueChange}
@@ -154,7 +154,7 @@ export const InputContainer = () => {
               {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
-                  className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onMaxBalance}
                 >
                   {parsedBalance ?? '0.0'}

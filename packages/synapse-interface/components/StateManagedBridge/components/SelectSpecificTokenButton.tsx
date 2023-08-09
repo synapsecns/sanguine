@@ -161,7 +161,7 @@ const AvailableChains = ({ token }: { token: Token }) => {
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center hover-trigger"
+      className="flex flex-row items-center space-x-1 hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -186,9 +186,10 @@ const AvailableChains = ({ token }: { token: Token }) => {
         {isHovered && (
           <div
             className={`
-            absolute z-50 hover-content p-2 text-white
-            border border-solid border-[#252537]
-            bg-[#101018] rounded-md`}
+              absolute z-50 hover-content p-2 text-white
+              border border-solid border-[#252537]
+              bg-[#101018] rounded-md
+            `}
           >
             {chainIds.map((chainId) => {
               const chainName = CHAINS_BY_ID[chainId].name

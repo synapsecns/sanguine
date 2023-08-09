@@ -61,7 +61,7 @@ export const OutputContainer = ({}) => {
                   bg-transparent
                   max-w-[190px]
                 placeholder:text-[#88818C]
-                text-white text-opacity-80 text-lg md:text-2xl font-medium
+                text-white text-opacity-80 text-xl md:text-2xl font-medium
                 `}
                 placeholder="0.0000"
                 value={
