@@ -25,7 +25,7 @@ import (
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 
-    "github.com/Flaque/filet"
+	"github.com/Flaque/filet"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
