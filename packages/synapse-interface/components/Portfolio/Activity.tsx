@@ -8,14 +8,16 @@ export const Activity = () => {
   const oneMonthInMinutes: number = 43200
   const queryTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 
-  const [trigger, result, lastPromiseInfo] =
+  const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
 
   useEffect(() => {
-    address && queryTime && trigger({ address: address, startTime: queryTime })
+    address &&
+      queryTime &&
+      fetchUserHistoricalActivity({ address: address, startTime: queryTime })
   }, [address])
 
-  console.log('result: ', result)
+  console.log('historicalActivity: ', historicalActivity)
 
   return <>Activity</>
 }
