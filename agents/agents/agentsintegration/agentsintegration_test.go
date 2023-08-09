@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -25,6 +24,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
+
+    "github.com/Flaque/filet"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
