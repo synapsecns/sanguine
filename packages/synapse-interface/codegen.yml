@@ -1,5 +1,5 @@
 overrideExisting: true
-schema: 'https://explorer.omnirpc.io/graphiql'
+schema: 'https://explorer.omnirpc.io/'
 documents: 'src/**/**/!(*.d).{ts,tsx}'
 generates:
   ./src/slices/api/generated.ts:
