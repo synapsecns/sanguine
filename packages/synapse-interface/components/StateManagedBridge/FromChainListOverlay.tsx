@@ -13,6 +13,7 @@ import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { fromChainText } from './helpers/fromChainText'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import { CloseButton } from './components/CloseButton'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId, fromToken, toChainId, toToken } =
@@ -146,6 +147,7 @@ export const FromChainListOverlay = () => {
             searchStr={searchStr}
             onSearch={onSearch}
           />
+          <CloseButton onClick={onClose} />
         </div>
       </div>
       <div

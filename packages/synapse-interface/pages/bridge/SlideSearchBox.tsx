@@ -21,13 +21,12 @@ export default function SlideSearchBox({
         focus:ring-0
         focus:border-none
         border-none
-        hidden sm:inline-block
         flex-grow
         h-full min-w-[70%]
         py-2 p-2
         rounded bg-[#252226] custom-shadow
-       font-normal  text-sm
-       placeholder-white placeholder-opacity-40
+        font-normal  text-sm
+      placeholder-white placeholder-opacity-40
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}

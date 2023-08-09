@@ -25,6 +25,7 @@ import * as ALL_TOKENS from '@constants/tokens/master'
 import { sortByBalances } from './helpers/sortByBalance'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import { CloseButton } from './components/CloseButton'
 
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -179,6 +180,7 @@ export const FromTokenListOverlay = () => {
             searchStr={searchStr}
             onSearch={onSearch}
           />
+          <CloseButton onClick={onClose} />
         </div>
       </div>
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">

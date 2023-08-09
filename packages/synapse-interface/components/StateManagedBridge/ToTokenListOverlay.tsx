@@ -24,6 +24,7 @@ import { sortByBalances } from './helpers/sortByBalance'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import { CloseButton } from './components/CloseButton'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken } =
@@ -180,6 +181,7 @@ export const ToTokenListOverlay = () => {
             searchStr={searchStr}
             onSearch={onSearch}
           />
+          <CloseButton onClick={onClose} />
         </div>
       </div>
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
