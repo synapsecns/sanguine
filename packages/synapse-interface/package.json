@@ -18,7 +18,7 @@
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
-    "graphql:codegen": "graphql-codegen --config codegen.ts"
+    "graphql:generate": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@depay/web3-mock": "^14.0.0",
