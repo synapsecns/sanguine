@@ -154,7 +154,7 @@ export const FromChainListOverlay = () => {
         data-test-id={dataId}
         className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
-        <div className="mb-2 text-sm font-normal text-white">
+        <div className="mt-2 mb-4 text-sm text-primaryTextColor">
           {fromChainsText}
         </div>
         {possibleChains.map(({ id: mapChainId }, idx) => {
@@ -175,7 +175,7 @@ export const FromChainListOverlay = () => {
             />
           )
         })}
-        <div className="mt-2 mb-2 text-sm font-normal text-white">
+        <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
           All other chains
         </div>
         {remainingChains.map(({ id: mapChainId }, idx) => {
@@ -191,10 +191,10 @@ export const FromChainListOverlay = () => {
           )
         })}
         {searchStr && (
-          <div className="px-12 py-4 text-center text-white text-md">
+          <div className="px-12 py-4 text-center text-primaryTextColor text-md">
             No other results found for{' '}
-            <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-2 text-white text-opacity-50 align-bottom text-md">
+            <i className="opacity-80 text-secondaryTextColor">{searchStr}</i>.
+            <div className="pt-2 align-bottom text-primaryTextColor text-md">
               Want to see a chain supported on Synapse? Let us know!
             </div>
           </div>

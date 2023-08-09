@@ -183,7 +183,7 @@ export const FromTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+      <div className="px-2 pb-4 pt-4 text-primaryTextColor text-sm bg-[#343036]">
         {fromTokensText}
       </div>
       <div className="px-2 pb-4 bg-[#343036] md:px-2 ">
@@ -209,7 +209,7 @@ export const FromTokenListOverlay = () => {
       </div>
       {remainingTokens && (
         <>
-          <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
+          <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
             Other {CHAINS_BY_ID[fromChainId]?.name} tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
@@ -229,7 +229,7 @@ export const FromTokenListOverlay = () => {
           </div>
         </>
       )}
-      <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
+      <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
         All other sendable tokens
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
@@ -252,10 +252,11 @@ export const FromTokenListOverlay = () => {
       </div>
       <div>
         {searchStr && (
-          <div className="px-12 py-4 text-center text-white text-md">
+          <div className="px-12 py-4 text-center text-primaryTextColor text-md">
             No other results found for{' '}
-            <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-2 text-white text-opacity-50 align-bottom text-md">
+            <i className="text-primaryTextColor text-opacity-60">{searchStr}</i>
+            .
+            <div className="align-bottom text-primaryTextColor text-md">
               Want to see a token supported on Synapse? Let us know!
             </div>
           </div>

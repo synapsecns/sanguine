@@ -184,7 +184,7 @@ export const ToTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+      <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
         {toTokensText}
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
@@ -210,7 +210,7 @@ export const ToTokenListOverlay = () => {
       </div>
       {remainingChainTokens && (
         <>
-          <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+          <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
             Other {CHAINS_BY_ID[toChainId]?.name} tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
@@ -231,7 +231,7 @@ export const ToTokenListOverlay = () => {
         </>
       )}
 
-      <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+      <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
         All other receivable tokens
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
@@ -255,14 +255,12 @@ export const ToTokenListOverlay = () => {
 
       <div>
         {searchStr && (
-          <div className="px-12 py-4 text-xl text-center text-white">
+          <div className="px-12 py-4 text-center text-primaryTextColor text-md">
             No other results found for{' '}
-            <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">
-              Want to see a token supported on Synapse? Submit a request{' '}
-              <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">
-                here
-              </span>
+            <i className="text-primaryTextColor text-opacity-60">{searchStr}</i>
+            .
+            <div className="align-bottom text-primaryTextColor text-md">
+              Want to see a token supported on Synapse? Let us know!
             </div>
           </div>
         )}
