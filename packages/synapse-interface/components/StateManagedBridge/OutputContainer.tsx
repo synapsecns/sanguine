@@ -33,11 +33,11 @@ export const OutputContainer = ({}) => {
     >
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
-        {address && (
+        {/* {address && (
           <div className="h-5">
             <DisplayAddress address={address} />
           </div>
-        )}
+        )} */}
       </div>
 
       <div className="flex h-16 mb-2 space-x-2">

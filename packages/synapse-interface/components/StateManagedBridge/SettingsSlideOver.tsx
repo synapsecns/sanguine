@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Switch } from '@headlessui/react'
@@ -15,15 +15,15 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { RootState } from '@/store/store'
 
 const SettingsSlideOver = () => {
   const dispatch = useDispatch()
   const escPressed = useKeyPress('Escape')
 
-  const [expertMode, setExpertMode] = useState(false)
-
-  const { deadlineMinutes } = useBridgeState()
+  const { showDestinationAddress } = useSelector(
+    (state: RootState) => state.bridgeDisplay
+  )
 
   function onClose() {
     dispatch(setShowSettingsSlideOver(false))
@@ -46,15 +46,7 @@ const SettingsSlideOver = () => {
           space-y-4
         `}
       >
-        <div className="pt-2">
-          {/* <div className="flex items-center mb-4 text-sm font-light text-white">
-            Deadline
-            <Tooltip content="Enter deadline in minutes">
-              <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
-            </Tooltip>
-          </div>
-          <DeadlineInput deadlineMinutes={deadlineMinutes} /> */}
-        </div>
+        <div className="pt-2"></div>
         <div className="text-sm font-light text-white">Options</div>
         {/* @ts-ignore */}
         <Switch.Group>
@@ -66,21 +58,19 @@ const SettingsSlideOver = () => {
               </Tooltip>
             </Switch.Label>
             <Switch
-              checked={expertMode}
+              checked={showDestinationAddress}
               onChange={(selected: boolean) => {
                 if (selected) {
                   dispatch(setShowDestinationAddress(true))
-                  setExpertMode(true)
                 } else {
                   dispatch(setShowDestinationAddress(false))
                   dispatch(setDestinationAddress(null))
-                  setExpertMode(false)
                 }
               }}
               className={`
                 bg-gradient-to-r
                 ${
-                  expertMode
+                  showDestinationAddress
                     ? ' from-[#FF00FF] to-[#AC8FFF]'
                     : 'from-gray-900 to-gray-900'
                 }
@@ -89,14 +79,14 @@ const SettingsSlideOver = () => {
             >
               <span
                 className={`
-                  ${expertMode ? 'translate-x-6' : 'translate-x-1'}
+                  ${showDestinationAddress ? 'translate-x-6' : 'translate-x-1'}
                   inline-block w-6 h-6 transform bg-white rounded-full transition-transform
                 `}
               />
             </Switch>
           </div>
         </Switch.Group>
-        {expertMode && <WithdrawalWarning onClose={onClose} />}
+        {showDestinationAddress && <WithdrawalWarning onClose={onClose} />}
       </div>
     </div>
   )
