@@ -1,0 +1,11 @@
+overrideExisting: true
+schema: 'https://explorer.omnirpc.io/graphiql'
+documents: 'src/**/**/!(*.d).{ts,tsx}'
+generates:
+  ./src/slices/api/generated.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-rtk-query:
+          importBaseApiFrom: './slice'
+          exportHooks: true
