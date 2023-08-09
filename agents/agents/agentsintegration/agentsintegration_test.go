@@ -1,6 +1,11 @@
 package agentsintegration_test
 
 import (
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
@@ -20,10 +25,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -246,7 +247,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
 		err = guard.Start(u.GetTestContext())
-		u.Nil(err)
+		if !testDone {
+			u.Nil(err)
+		}
 	}()
 
 	u.Eventually(func() bool {
