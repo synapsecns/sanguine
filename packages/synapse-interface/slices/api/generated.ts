@@ -1,3 +1,4 @@
+import { api } from 'slices/api/slice';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -420,4 +421,68 @@ export type VolumeByChainId = {
   total?: Maybe<Scalars['Float']['output']>;
 };
 
+export type GetUserHistoricalActivityQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  startTime: Scalars['Int']['input'];
+}>;
+
+
+export type GetUserHistoricalActivityQuery = { __typename?: 'Query', bridgeTransactions?: Array<{ __typename?: 'BridgeTransaction', kappa?: string | null, fromInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null, toInfo?: { __typename?: 'PartialInfo', chainID?: number | null, destinationChainID?: number | null, address?: string | null, txnHash?: string | null, value?: string | null, formattedValue?: number | null, USDValue?: number | null, tokenAddress?: string | null, tokenSymbol?: string | null, blockNumber?: number | null, time?: number | null, formattedTime?: string | null, formattedEventType?: string | null, eventType?: number | null } | null } | null> | null };
+
+
+export const GetUserHistoricalActivityDocument = `
+    query GetUserHistoricalActivity($address: String!, $startTime: Int!) {
+  bridgeTransactions(
+    pending: false
+    addressFrom: $address
+    startTime: $startTime
+    page: 1
+  ) {
+    fromInfo {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    toInfo {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    kappa
+  }
+}
+    `;
+
+const injectedRtkApi = api.injectEndpoints({
+  endpoints: (build) => ({
+    GetUserHistoricalActivity: build.query<GetUserHistoricalActivityQuery, GetUserHistoricalActivityQueryVariables>({
+      query: (variables) => ({ document: GetUserHistoricalActivityDocument, variables })
+    }),
+  }),
+});
+
+export { injectedRtkApi as api };
+export const { useGetUserHistoricalActivityQuery, useLazyGetUserHistoricalActivityQuery } = injectedRtkApi;
 

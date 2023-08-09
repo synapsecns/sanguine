@@ -2,6 +2,7 @@ import { CodegenConfig } from '@graphql-codegen/cli'
 
 const config: CodegenConfig = {
   overwrite: true,
+  documents: 'graphql/*.graphql',
   schema: 'https://explorer.omnirpc.io/graphql',
   generates: {
     './slices/api/generated.ts': {
@@ -10,7 +11,7 @@ const config: CodegenConfig = {
         'typescript-operations',
         {
           'typescript-rtk-query': {
-            importBaseApiFrom: './slice',
+            importBaseApiFrom: 'slices/api/slice',
             exportHooks: true,
           },
         },
