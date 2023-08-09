@@ -15,6 +15,7 @@ import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkB
 import { toChainText } from './helpers/toChainText'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
+import { SearchResults } from './components/SearchResults'
 
 export const ToChainListOverlay = () => {
   const { fromChainId, fromToken, toChainIds, toChainId, toToken } =
@@ -200,15 +201,7 @@ export const ToChainListOverlay = () => {
             })}
           </>
         )}
-        {searchStr && (
-          <div className="px-12 py-4 text-center text-primaryTextColor text-md">
-            No other results found for{' '}
-            <i className="opacity-80 text-secondaryTextColor">{searchStr}</i>.
-            <div className="pt-2 align-bottom text-primaryTextColor text-md">
-              Want to see a chain supported on Synapse? Let us know!
-            </div>
-          </div>
-        )}
+        <SearchResults searchStr={searchStr} type="chain" />
       </div>
     </div>
   )

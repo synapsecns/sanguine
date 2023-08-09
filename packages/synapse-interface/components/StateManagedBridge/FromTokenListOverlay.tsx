@@ -26,6 +26,7 @@ import { sortByBalances } from './helpers/sortByBalance'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
+import { SearchResults } from './components/SearchResults'
 
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -258,18 +259,7 @@ export const FromTokenListOverlay = () => {
           </div>
         </>
       )}
-      <div>
-        {searchStr && (
-          <div className="px-12 py-4 text-center text-primaryTextColor text-md">
-            No other results found for{' '}
-            <i className="text-primaryTextColor text-opacity-60">{searchStr}</i>
-            .
-            <div className="pt-2 align-bottom text-primaryTextColor text-md">
-              Want to see a token supported on Synapse? Let us know!
-            </div>
-          </div>
-        )}
-      </div>
+      <SearchResults searchStr={searchStr} type="token" />
     </div>
   )
 }
