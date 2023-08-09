@@ -1,6 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { useLazyGetUserHistoricalActivityQuery } from '@/slices/api/generated'
+import {
+  useLazyGetUserHistoricalActivityQuery,
+  PartialInfo,
+  BridgeTransaction,
+  GetUserHistoricalActivityQuery,
+} from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 export const Activity = () => {
@@ -11,13 +16,16 @@ export const Activity = () => {
   const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
 
+  const userHistoricalActivity: GetUserHistoricalActivityQuery = useMemo(() => {
+    return historicalActivity?.data
+  }, [historicalActivity?.data])
+
   useEffect(() => {
     address &&
       queryTime &&
       fetchUserHistoricalActivity({ address: address, startTime: queryTime })
   }, [address])
 
-  console.log('historicalActivity: ', historicalActivity)
-
+  console.log('userHistoricalActivity: ', userHistoricalActivity)
   return <>Activity</>
 }
