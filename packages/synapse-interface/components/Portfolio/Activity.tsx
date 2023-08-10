@@ -155,6 +155,14 @@ export const TransactionPayloadDetail = ({
         </div>
       )}
 
+      {token && (
+        <div data-test-id="transaction-payload-token" className="flex flex-row">
+          <Image src={token.icon} width={7} height={7} alt="token-icon" />
+          {tokenAmount && <div>{tokenAmount}</div>}
+          <div>{token.name}</div>
+        </div>
+      )}
+
       <div data-test-id="transaction-payload-token"></div>
     </div>
   )
