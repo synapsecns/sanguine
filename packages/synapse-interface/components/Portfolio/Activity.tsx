@@ -111,6 +111,8 @@ export const Transaction = ({
     originTokenSymbol
   )
 
+  console.log('originToken: ', originToken)
+
   const {
     chainID: destinationChainId,
     formattedValue: destinationFormattedValue,
@@ -176,8 +178,8 @@ export const TransactionPayloadDetail = ({
             className="w-6 h-6 mr-3 rounded-md"
             alt={`${token.name} icon`}
           />
-          {tokenAmount && <div>{tokenAmount}</div>}
-          <div>{token.name}</div>
+          {tokenAmount && <div className="mr-1">{tokenAmount}</div>}
+          <div>{token.description}</div>
         </div>
       )}
 
