@@ -9,7 +9,8 @@ import {
 } from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { Chain } from '@/utils/types'
+import { Chain, Token } from '@/utils/types'
+import { tokenSymbolToToken } from '@/constants/tokens'
 
 export const Activity = () => {
   const { address } = useAccount()
@@ -104,6 +105,10 @@ export const Transaction = ({
     time: bridgeOriginTime,
   } = fromInfo || {}
   const originChain: Chain = CHAINS_BY_ID[originChainId]
+  const originToken: Token = tokenSymbolToToken(
+    originChainId,
+    originTokenSymbol
+  )
 
   const {
     chainID: destinationChainId,
@@ -114,7 +119,10 @@ export const Transaction = ({
     time: bridgeDestinationTime,
   } = toInfo || {}
   const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-
+  const destinationToken: Token = tokenSymbolToToken(
+    destinationChainId,
+    destinationTokenSymbol
+  )
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
       <div>{originChainId}</div>
@@ -125,7 +133,15 @@ export const Transaction = ({
   )
 }
 
-export const TransactionPayloadDetail = () => {
+export const TransactionPayloadDetail = ({
+  chain,
+  token,
+  tokenAmount,
+}: {
+  chain: Chain
+  token: Token
+  tokenAmount: number
+}) => {
   return (
     <div className="flex flex-col">
       <div data-test-id="transaction-payload-network"></div>
