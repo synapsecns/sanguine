@@ -81,7 +81,32 @@ export const TransactionHeader = ({
   )
 }
 
-export const Transaction = () => {
+export const Transaction = ({
+  bridgeTransaction,
+}: {
+  bridgeTransaction: BridgeTransaction
+}) => {
+  const { fromInfo, toInfo }: { fromInfo?: PartialInfo; toInfo?: PartialInfo } =
+    bridgeTransaction || {}
+
+  const {
+    chainID: originChainId,
+    formattedValue: originFormattedValue,
+    tokenAddress: originTokenAddress,
+    tokenSymbol: originTokenSymbol,
+    blockNumber: bridgeOriginBlockNumber,
+    time: bridgeOriginTime,
+  } = fromInfo || {}
+
+  const {
+    chainID: destinationChainId,
+    formattedValue: destinationFormattedValue,
+    tokenAddress: destinationTokenAddress,
+    tokenSymbol: destinationTokenSymbol,
+    blockNumber: bridgeDestinationBlockNumber,
+    time: bridgeDestinationTime,
+  } = toInfo || {}
+
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
       <div></div>
