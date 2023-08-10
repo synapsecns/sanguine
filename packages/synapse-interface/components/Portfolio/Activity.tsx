@@ -149,7 +149,14 @@ export const Transaction = ({
         token={destinationToken}
         tokenAmount={destinationFormattedValue}
       />
-      <div className="flex justify-end"></div>
+      <div className="flex justify-end">
+        {transactionType === ActivityType.RECENT && (
+          <ExchangeRate
+            originValue={originFormattedValue}
+            destinationValue={destinationFormattedValue}
+          />
+        )}
+      </div>
       <div className="flex justify-end"></div>
     </div>
   )
@@ -163,10 +170,11 @@ export const ExchangeRate = ({
   destinationValue: number
 }) => {
   const exchangeRate: number = originValue / destinationValue
+  const formattedExchangeRate: string = exchangeRate.toFixed(4)
   return (
     <div className="flex">
       <div className="text-[#C0BCC2]">{`1 : `}</div>
-      <div className="text-white">{exchangeRate}</div>
+      <div className="text-white">{formattedExchangeRate}</div>
     </div>
   )
 }
