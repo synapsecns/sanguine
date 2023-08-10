@@ -250,10 +250,13 @@ export const getToChainIds = ({
   }
 
   if (fromChainId && fromTokenRouteSymbol && toChainId && toTokenRouteSymbol) {
-    return _.uniq(
-      EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`].map(
-        (token) => getTokenAndChainId(token).chainId
+    return _(EXISTING_BRIDGE_ROUTES)
+      .pickBy((values, key) =>
+        values.some((token) => token.startsWith(`${toTokenRouteSymbol}-`))
       )
-    )
+      .keys()
+      .map((t) => getTokenAndChainId(t).chainId)
+      .uniq()
+      .value()
   }
 }
