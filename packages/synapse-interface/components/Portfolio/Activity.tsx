@@ -17,7 +17,7 @@ export const Activity = () => {
     useLazyGetUserHistoricalActivityQuery()
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
-    return historicalActivity?.data?.bridgeTransactions
+    return historicalActivity?.data?.bridgeTransactions || []
   }, [historicalActivity?.data?.bridgeTransactions])
 
   useEffect(() => {
@@ -34,6 +34,9 @@ export const Activity = () => {
       </ActivitySection>
       <ActivitySection title="Recent">
         <TransactionHeader transactionType={ActivityType.RECENT} />
+        {userHistoricalActivity.map((transaction: BridgeTransaction) => (
+          <Transaction bridgeTransaction={transaction} />
+        ))}
       </ActivitySection>
     </div>
   )
@@ -109,8 +112,8 @@ export const Transaction = ({
 
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
-      <div></div>
-      <div></div>
+      <div>{originChainId}</div>
+      <div>{destinationChainId}</div>
       <div className="flex justify-end"></div>
       <div className="flex justify-end"></div>
     </div>
