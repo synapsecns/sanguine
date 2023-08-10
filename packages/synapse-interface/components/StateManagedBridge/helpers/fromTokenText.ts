@@ -48,6 +48,10 @@ export const fromTokenText = ({
     return `${fromChainName} tokens you can send`
   }
 
+  if (fromChainId && fromToken && toChainId === null && toToken) {
+    return `${fromChainName} tokens you can send to receive ${toToken.symbol}`
+  }
+
   if (
     fromChainId === null &&
     fromToken === null &&

@@ -48,6 +48,10 @@ export const toTokenText = ({
     return `Tokens you can receive by ${fromToken.symbol} on ${fromChainName}`
   }
 
+  if (fromChainId && fromToken && toChainId === null && toToken) {
+    return `Tokens you can receive by ${fromToken.symbol} on ${fromChainName}`
+  }
+
   if (
     fromChainId === null &&
     fromToken === null &&

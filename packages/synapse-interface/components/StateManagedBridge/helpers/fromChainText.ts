@@ -48,6 +48,10 @@ export const fromChainText = ({
     return `Chains you can bridge ${fromToken.symbol} from`
   }
 
+  if (fromChainId && fromToken && toChainId === null && toToken) {
+    return `Chains you can bridge ${fromToken.symbol} from`
+  }
+
   if (
     fromChainId === null &&
     fromToken === null &&
