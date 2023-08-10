@@ -7,7 +7,10 @@ import {
   BridgeTransaction,
   GetUserHistoricalActivityQuery,
 } from '@/slices/api/generated'
-import { getTimeMinutesBeforeNow, formatTimestampToDate } from '@/utils/time'
+import {
+  getTimeMinutesBeforeNow,
+  convertUnixTimestampToMonthAndDate,
+} from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
@@ -188,7 +191,10 @@ export const Completed = ({
 }: {
   transactionCompletedTime: number
 }) => {
-  return <div>{transactionCompletedTime}</div>
+  const formattedTime: string =
+    transactionCompletedTime &&
+    convertUnixTimestampToMonthAndDate(transactionCompletedTime)
+  return <div>{formattedTime}</div>
 }
 
 export const TransactionPayloadDetail = ({

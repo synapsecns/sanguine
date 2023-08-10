@@ -24,7 +24,9 @@ export const formatTimestampToDate = (timestamp) => {
   return formatDate(new Date(timestamp * 1000))
 }
 
-export const convertUnixTimestampToMonthAndDate = (unixTimestamp) => {
+export const convertUnixTimestampToMonthAndDate = (
+  unixTimestamp: number
+): string => {
   const months = [
     'Jan',
     'Feb',
