@@ -32,7 +32,7 @@ export const Activity = () => {
 
   console.log('userHistoricalActivity: ', userHistoricalActivity)
   return (
-    <div>
+    <div data-test-id="activity">
       <ActivitySection title="Pending">
         <TransactionHeader transactionType={ActivityType.PENDING} />
       </ActivitySection>
@@ -54,7 +54,7 @@ export const ActivitySection = ({
   children?: React.ReactNode
 }) => {
   return (
-    <div>
+    <div data-test-id="activity-section">
       <h3 className="text-lg text-white">{title}</h3>
       {children}
     </div>
@@ -73,7 +73,10 @@ export const TransactionHeader = ({
   transactionType: ActivityType
 }) => {
   return (
-    <div className="grid grid-cols-4 gap-2 text-[#C0BCC2] text-sm">
+    <div
+      data-test-id="transaction-header"
+      className="grid grid-cols-4 gap-2 text-[#C0BCC2] text-sm"
+    >
       <div>From</div>
       <div>To</div>
       <div className="flex justify-end">
@@ -111,8 +114,6 @@ export const Transaction = ({
     originTokenSymbol
   )
 
-  console.log('originToken: ', originToken)
-
   const {
     chainID: destinationChainId,
     formattedValue: destinationFormattedValue,
@@ -129,7 +130,10 @@ export const Transaction = ({
   )
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-sm text-white border-b border-[#565058]">
+    <div
+      data-test-id="transaction"
+      className="grid grid-cols-4 gap-2 text-sm text-white border-b border-[#565058]"
+    >
       <TransactionPayloadDetail
         chain={originChain}
         token={originToken}
@@ -156,7 +160,7 @@ export const TransactionPayloadDetail = ({
   tokenAmount?: number
 }) => {
   return (
-    <div className="flex flex-col">
+    <div data-test-id="transaction-payload-detail" className="flex flex-col">
       {chain && (
         <div
           data-test-id="transaction-payload-network"
@@ -182,8 +186,6 @@ export const TransactionPayloadDetail = ({
           <div>{token.description}</div>
         </div>
       )}
-
-      <div data-test-id="transaction-payload-token"></div>
     </div>
   )
 }
