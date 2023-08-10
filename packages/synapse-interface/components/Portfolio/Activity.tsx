@@ -39,7 +39,10 @@ export const Activity = () => {
       <ActivitySection title="Recent">
         <TransactionHeader transactionType={ActivityType.RECENT} />
         {userHistoricalActivity.map((transaction: BridgeTransaction) => (
-          <Transaction bridgeTransaction={transaction} />
+          <Transaction
+            bridgeTransaction={transaction}
+            transactionType={ActivityType.RECENT}
+          />
         ))}
       </ActivitySection>
     </div>
@@ -93,8 +96,10 @@ export const TransactionHeader = ({
 
 export const Transaction = ({
   bridgeTransaction,
+  transactionType,
 }: {
   bridgeTransaction: BridgeTransaction
+  transactionType: ActivityType
 }) => {
   const { fromInfo, toInfo }: { fromInfo?: PartialInfo; toInfo?: PartialInfo } =
     bridgeTransaction || {}
