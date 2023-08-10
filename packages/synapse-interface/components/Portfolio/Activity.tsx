@@ -155,6 +155,22 @@ export const Transaction = ({
   )
 }
 
+export const ExchangeRate = ({
+  originValue,
+  destinationValue,
+}: {
+  originValue: number
+  destinationValue: number
+}) => {
+  const exchangeRate: number = originValue / destinationValue
+  return (
+    <div className="flex">
+      <div className="text-[#C0BCC2]">{`1 : `}</div>
+      <div className="text-white">{exchangeRate}</div>
+    </div>
+  )
+}
+
 export const TransactionPayloadDetail = ({
   chain,
   token,
