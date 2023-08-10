@@ -126,8 +126,16 @@ export const Transaction = ({
 
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
-      <div>{originChainId}</div>
-      <div>{destinationChainId}</div>
+      <TransactionPayloadDetail
+        chain={originChain}
+        token={originToken}
+        tokenAmount={originFormattedValue}
+      />
+      <TransactionPayloadDetail
+        chain={destinationChain}
+        token={destinationToken}
+        tokenAmount={destinationFormattedValue}
+      />
       <div className="flex justify-end"></div>
       <div className="flex justify-end"></div>
     </div>
