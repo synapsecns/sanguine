@@ -7,7 +7,7 @@ import {
   BridgeTransaction,
   GetUserHistoricalActivityQuery,
 } from '@/slices/api/generated'
-import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { getTimeMinutesBeforeNow, formatTimestampToDate } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
@@ -157,7 +157,11 @@ export const Transaction = ({
           />
         )}
       </div>
-      <div className="flex justify-end"></div>
+      <div className="flex justify-end">
+        {transactionType === ActivityType.RECENT && (
+          <Completed transactionCompletedTime={bridgeDestinationTime} />
+        )}
+      </div>
     </div>
   )
 }
@@ -177,6 +181,14 @@ export const ExchangeRate = ({
       <div className="text-white">{formattedExchangeRate}</div>
     </div>
   )
+}
+
+export const Completed = ({
+  transactionCompletedTime,
+}: {
+  transactionCompletedTime: number
+}) => {
+  return <div>{transactionCompletedTime}</div>
 }
 
 export const TransactionPayloadDetail = ({
