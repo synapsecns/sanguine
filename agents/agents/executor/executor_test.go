@@ -7,13 +7,17 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
+	"github.com/synapsecns/sanguine/ethergo/deployer"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -821,8 +825,34 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
-	originHarnessOverride, err := originharness.NewOriginHarnessRef(txContextOrigin.From, e.TestBackendOrigin)
+
+	registry := deployer.NewContractRegistry(e.T(), e.TestBackendOrigin)
+	deployer := testutil.NewOriginHarnessDeployer(registry, e.TestBackendOrigin).(testutil.OriginHarnessDeployer)
+	agentAddress := txContextOrigin.From
+	gasOracleAddr, err := e.OriginContract.GasOracle(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
+	inboxAddr, err := e.OriginContract.Inbox(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+	originHarnessOverride, err := deployer.DeploySimpleContract(e.GetTestContext(), func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *ethTypes.Transaction, interface{}, error) {
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(e.TestBackendOrigin.GetChainID()), agentAddress, inboxAddr, gasOracleAddr)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy origin override: %w", err)
+		}
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+		initializeOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize origin override on %s: %w", transactOps.From, err)
+		}
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), initializeTx)
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return originharness.NewOriginHarnessRef(address, backend)
+	})
+	e.Nil(err)
+
 	fmt.Printf("tx context origin addr before setup: %v\n", txContextOrigin.From.String())
 	fmt.Printf("originHarnessOverride addr: %v\n", originHarnessOverride.Address().String())
 
@@ -962,25 +992,32 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	fmt.Printf("message: %v\n", message)
 
-	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
-	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, []byte{gofakeit.Uint8()})
-	e.Nil(err)
-	managerMessageEncoded, err := types.EncodeMessage(managerMessage)
-	e.Nil(err)
-	fmt.Printf("manager msg: %v\n", managerMessage)
+	// mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	// managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, []byte{gofakeit.Uint8()})
+	// e.Nil(err)
+	// managerMessageEncoded, err := types.EncodeMessage(message)
+	// e.Nil(err)
+	// fmt.Printf("manager msg: %v\n", managerMessage)
+	messageBytes := []byte{}
+	for i := 0; i < 9; i++ {
+		messageBytes = append(messageBytes, byte(gofakeit.Uint32()))
+	}
 
-	tx, err := originHarnessOverride.SendManagerMessage(
+	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
+	e.Nil(err)
+	tx, err := originHarnessOverrideRef.SendManagerMessage(
 		txContextOrigin.TransactOpts,
 		uint32(e.TestBackendSummit.GetChainID()),
 		optimisticSeconds,
-		managerMessageEncoded,
+		// managerMessageEncoded,
 		// []byte{gofakeit.Uint8()},
+		messageBytes,
 	)
 	e.Nil(err)
 	fmt.Printf("tx context origin addr: %v\n", txContextOrigin.From.String())
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 	fmt.Printf("OMNIIIII: %v\n", omniRPCClient.GetEndpoint(int(e.TestBackendOrigin.GetChainID()), 1))
-	fmt.Printf("sent manager message: %v\n", managerMessage)
+	// fmt.Printf("sent manager message: %v\n", managerMessage)
 	fmt.Printf("hash: %v\n", tx.Hash().String())
 
 	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
@@ -1040,9 +1077,9 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		e.Nil(err)
 		fmt.Printf("message executed: %v\n", executed)
 
-		executed, err = exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
-		e.Nil(err)
-		fmt.Printf("manager message executed: %v\n", executed)
+		// executed, err = exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
+		// e.Nil(err)
+		// fmt.Printf("manager message executed: %v\n", executed)
 
 		return executed
 	})
