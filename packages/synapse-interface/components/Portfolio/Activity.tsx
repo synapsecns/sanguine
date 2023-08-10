@@ -104,6 +104,7 @@ export const Transaction = ({
     blockNumber: bridgeOriginBlockNumber,
     time: bridgeOriginTime,
   } = fromInfo || {}
+
   const originChain: Chain = CHAINS_BY_ID[originChainId]
   const originToken: Token = tokenSymbolToToken(
     originChainId,
@@ -118,6 +119,7 @@ export const Transaction = ({
     blockNumber: bridgeDestinationBlockNumber,
     time: bridgeDestinationTime,
   } = toInfo || {}
+
   const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
   const destinationToken: Token = tokenSymbolToToken(
     destinationChainId,
@@ -158,14 +160,22 @@ export const TransactionPayloadDetail = ({
           data-test-id="transaction-payload-network"
           className="flex flex-row"
         >
-          <Image src={chain.chainImg} width={7} height={7} alt="chain-icon" />
+          <Image
+            src={chain.chainImg}
+            className="w-6 h-6 mr-3 rounded-md"
+            alt={`${chain.name} icon`}
+          />
           <div>{chain.name}</div>
         </div>
       )}
 
       {token && (
         <div data-test-id="transaction-payload-token" className="flex flex-row">
-          <Image src={token.icon} width={7} height={7} alt="token-icon" />
+          <Image
+            src={token.icon}
+            className="w-6 h-6 mr-3 rounded-md"
+            alt={`${token.name} icon`}
+          />
           {tokenAmount && <div>{tokenAmount}</div>}
           <div>{token.name}</div>
         </div>
