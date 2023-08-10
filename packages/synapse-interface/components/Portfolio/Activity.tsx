@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import Image from 'next/image'
 import {
   useLazyGetUserHistoricalActivityQuery,
   PartialInfo,
@@ -7,6 +8,8 @@ import {
   GetUserHistoricalActivityQuery,
 } from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 
 export const Activity = () => {
   const { address } = useAccount()
@@ -100,6 +103,7 @@ export const Transaction = ({
     blockNumber: bridgeOriginBlockNumber,
     time: bridgeOriginTime,
   } = fromInfo || {}
+  const originChain: Chain = CHAINS_BY_ID[originChainId]
 
   const {
     chainID: destinationChainId,
@@ -109,6 +113,7 @@ export const Transaction = ({
     blockNumber: bridgeDestinationBlockNumber,
     time: bridgeDestinationTime,
   } = toInfo || {}
+  const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
 
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
@@ -116,6 +121,15 @@ export const Transaction = ({
       <div>{destinationChainId}</div>
       <div className="flex justify-end"></div>
       <div className="flex justify-end"></div>
+    </div>
+  )
+}
+
+export const TransactionPayloadDetail = () => {
+  return (
+    <div className="flex flex-col">
+      <div data-test-id="transaction-payload-network"></div>
+      <div data-test-id="transaction-payload-token"></div>
     </div>
   )
 }
