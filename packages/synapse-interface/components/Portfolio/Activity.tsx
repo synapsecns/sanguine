@@ -109,6 +109,7 @@ export const Transaction = ({
 
   const {
     chainID: originChainId,
+    value: originRawValue,
     formattedValue: originFormattedValue,
     tokenAddress: originTokenAddress,
     tokenSymbol: originTokenSymbol,
@@ -124,6 +125,7 @@ export const Transaction = ({
 
   const {
     chainID: destinationChainId,
+    value: destinationRawValue,
     formattedValue: destinationFormattedValue,
     tokenAddress: destinationTokenAddress,
     tokenSymbol: destinationTokenSymbol,
