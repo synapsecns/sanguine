@@ -123,6 +123,7 @@ export const Transaction = ({
     destinationChainId,
     destinationTokenSymbol
   )
+
   return (
     <div className="grid grid-cols-4 gap-2 text-sm text-white">
       <div>{originChainId}</div>
@@ -138,13 +139,22 @@ export const TransactionPayloadDetail = ({
   token,
   tokenAmount,
 }: {
-  chain: Chain
-  token: Token
-  tokenAmount: number
+  chain?: Chain
+  token?: Token
+  tokenAmount?: number
 }) => {
   return (
     <div className="flex flex-col">
-      <div data-test-id="transaction-payload-network"></div>
+      {chain && (
+        <div
+          data-test-id="transaction-payload-network"
+          className="flex flex-row"
+        >
+          <Image src={chain.chainImg} width={7} height={7} alt="chain-icon" />
+          <div>{chain.name}</div>
+        </div>
+      )}
+
       <div data-test-id="transaction-payload-token"></div>
     </div>
   )
