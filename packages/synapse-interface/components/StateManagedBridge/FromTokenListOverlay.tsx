@@ -15,13 +15,8 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { fromTokenText } from './helpers/fromTokenText'
-import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
-import {
-  getRoutePossibilities,
-  getSymbol,
-} from '@/utils/routeMaker/generateRoutePossibilities'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import * as ALL_TOKENS from '@constants/tokens/master'
 import { sortByBalances } from './helpers/sortByBalance'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
@@ -42,16 +37,12 @@ export const FromTokenListOverlay = () => {
     sortByBalances(t, fromChainId, portfolioBalances)
   )
 
-  const allFromChainTokens = _.uniq(
-    getFromTokens({
-      fromChainId,
-      fromTokenRouteSymbol: null,
-      toChainId: null,
-      toTokenRouteSymbol: null,
-    })
-      .map(getSymbol)
-      .map((symbol) => ALL_TOKENS[symbol])
-  )
+  const { fromTokens: allFromChainTokens } = getRoutePossibilities({
+    fromChainId,
+    fromToken: null,
+    toChainId: null,
+    toToken: null,
+  })
 
   let remainingTokens = _.difference(allFromChainTokens, fromTokens).sort((t) =>
     sortByBalances(t, fromChainId, portfolioBalances)

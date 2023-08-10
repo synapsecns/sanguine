@@ -12,13 +12,8 @@ import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { getToTokens } from '@/utils/routeMaker/getToTokens'
-import {
-  getRoutePossibilities,
-  getSymbol,
-} from '@/utils/routeMaker/generateRoutePossibilities'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import * as ALL_TOKENS from '@constants/tokens/master'
 import { toTokenText } from './helpers/toTokensText'
 import { sortByBalances } from './helpers/sortByBalance'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -41,16 +36,12 @@ export const ToTokenListOverlay = () => {
     sortByBalances(t, toChainId, portfolioBalances)
   )
 
-  const allToChainTokens = _.uniq(
-    getToTokens({
-      fromChainId,
-      fromTokenRouteSymbol: null,
-      toChainId,
-      toTokenRouteSymbol: null,
-    })
-      .map(getSymbol)
-      .map((symbol) => ALL_TOKENS[symbol])
-  )
+  const { toTokens: allToChainTokens } = getRoutePossibilities({
+    fromChainId,
+    fromToken: null,
+    toChainId,
+    toToken: null,
+  })
 
   let remainingChainTokens = _.difference(allToChainTokens, toTokens).sort(
     (t) => sortByBalances(t, toChainId, portfolioBalances)

@@ -99,6 +99,6 @@ export const fromTokenText = ({
   }
 
   if (fromChainId && fromToken && toChainId && toToken) {
-    return `${fromChainName} tokens you can send and receieve ${toToken.symbol} on ${toChainName}`
+    return `${fromChainName} tokens you can send and receive ${toToken.symbol} on ${toChainName}`
   }
 }

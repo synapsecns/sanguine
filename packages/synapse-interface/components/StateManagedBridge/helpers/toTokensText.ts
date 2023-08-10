@@ -32,7 +32,7 @@ export const toTokenText = ({
     toChainId === null &&
     toToken === null
   ) {
-    return `Tokens you can receive from $${fromChainName}`
+    return `Tokens you can receive from ${fromChainName}`
   }
 
   if (
