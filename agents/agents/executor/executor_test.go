@@ -821,7 +821,10 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	originHarnessOverride, err := originharness.NewOriginHarnessRef(txContextOrigin.From, e.TestBackendOrigin)
+	e.Nil(err)
 	fmt.Printf("tx context origin addr before setup: %v\n", txContextOrigin.From.String())
+	fmt.Printf("originHarnessOverride addr: %v\n", originHarnessOverride.Address().String())
 
 	// testContractSummit, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendSummit)
 
@@ -833,13 +836,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
-		// Address: txContextOrigin.From.String(),
-		Address:    e.OriginContract.Address().String(),
-		StartBlock: 0,
-	}
-	originConfigOverride := config.ContractConfig{
-		Address: txContextOrigin.From.String(),
 		// Address:    e.OriginContract.Address().String(),
+		Address:    originHarnessOverride.Address().String(),
 		StartBlock: 0,
 	}
 	originChainConfig := config.ChainConfig{
@@ -852,7 +850,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts: []config.ContractConfig{originConfig, originConfigOverride},
+		Contracts: []config.ContractConfig{originConfig},
 	}
 	destinationConfig := config.ContractConfig{
 		Address:    e.DestinationContract.Address().String(),
@@ -917,14 +915,9 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		SummitAddress: e.SummitContract.Address().String(),
 		Chains: []execConfig.ChainConfig{
 			{
-				ChainID:       chainID,
-				OriginAddress: e.OriginContract.Address().String(),
-				// OriginAddress: txContextOrigin.From.String(),
-			},
-			{
 				ChainID: chainID,
 				// OriginAddress: e.OriginContract.Address().String(),
-				OriginAddress: txContextOrigin.From.String(),
+				OriginAddress: originHarnessOverride.Address().String(),
 			},
 			{
 				ChainID:            destination,
@@ -976,11 +969,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	fmt.Printf("manager msg: %v\n", managerMessage)
 
-	originHarnessLightManager, err := originharness.NewOriginHarnessRef(txContextOrigin.From, e.TestBackendOrigin)
-	e.Nil(err)
-	// txContextLightManager := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.LightManagerMetadataOnOrigin.OwnerPtr())
-	// tx, err := e.OriginContract.SendManagerMessage(
-	tx, err := originHarnessLightManager.SendManagerMessage(
+	tx, err := originHarnessOverride.SendManagerMessage(
 		txContextOrigin.TransactOpts,
 		uint32(e.TestBackendSummit.GetChainID()),
 		optimisticSeconds,
@@ -998,37 +987,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 	fmt.Println("emitted")
-
-	// // Create a fraudulent snapshot
-	// getState := func(nonce uint32) types.State {
-	// 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	// 	state := types.NewState(
-	// 		common.BigToHash(big.NewInt(gofakeit.Int64())),
-	// 		g.OriginDomainClient.Config().DomainID,
-	// 		nonce,
-	// 		big.NewInt(int64(gofakeit.Int32())),
-	// 		big.NewInt(int64(gofakeit.Int32())),
-	// 		gasData,
-	// 	)
-
-	// 	return state
-	// }
-	// fraudulentSnapshot := types.NewSnapshot([]types.State{getState(1), getState(2)})
-
-	// // Submit the snapshot with a guard then notary
-	// guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
-	// Nil(g.T(), err)
-	// tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
-	// Nil(g.T(), err)
-	// NotNil(g.T(), tx)
-	// g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-
-	// notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
-	// Nil(g.T(), err)
-	// tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
-	// Nil(g.T(), err)
-	// NotNil(g.T(), tx)
-	// g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Get the origin state so we can submit it on the Summit.
 	originState, err := e.OriginDomainClient.Origin().SuggestLatestState(e.GetTestContext())
