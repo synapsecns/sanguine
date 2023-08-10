@@ -127,7 +127,7 @@ export const Transaction = ({
   )
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-sm text-white">
+    <div className="grid grid-cols-4 gap-2 text-sm text-white border-b border-[#565058]">
       <TransactionPayloadDetail
         chain={originChain}
         token={originToken}
