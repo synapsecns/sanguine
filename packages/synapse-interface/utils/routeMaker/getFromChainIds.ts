@@ -209,11 +209,13 @@ export const getFromChainIds = ({
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
       .chain()
-      .filter((values, _key) => {
-        return values.some((v) => {
-          const { symbol } = getTokenAndChainId(v)
-          return symbol === toTokenRouteSymbol
-        })
+      .filter((values, key) => {
+        return (
+          values.some((v) => {
+            const { symbol } = getTokenAndChainId(v)
+            return symbol === toTokenRouteSymbol
+          }) && key.startsWith(`${fromTokenRouteSymbol}-`)
+        )
       })
       .flatten()
       .map((token) => getTokenAndChainId(token).chainId)
@@ -264,6 +266,7 @@ export const getFromChainIds = ({
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })
       .keys()
+      .filter((k) => k.startsWith(`${fromTokenRouteSymbol}-`))
       .map((token) => getTokenAndChainId(token).chainId)
       .uniq()
       .value()
@@ -275,6 +278,7 @@ export const getFromChainIds = ({
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })
       .keys()
+      .filter((k) => k.startsWith(`${fromTokenRouteSymbol}-`))
       .map((token) => getTokenAndChainId(token).chainId)
       .uniq()
       .value()

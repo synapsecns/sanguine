@@ -251,7 +251,7 @@ export const getToChainIds = ({
 
   if (fromChainId && fromTokenRouteSymbol && toChainId && toTokenRouteSymbol) {
     return _(EXISTING_BRIDGE_ROUTES)
-      .pickBy((values, key) =>
+      .pickBy((values, _key) =>
         values.some((token) => token.startsWith(`${toTokenRouteSymbol}-`))
       )
       .keys()

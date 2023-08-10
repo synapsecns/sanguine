@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -12,14 +12,12 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import { toChainText } from './helpers/toChainText'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 
 export const ToChainListOverlay = () => {
-  const { fromChainId, fromToken, toChainIds, toChainId, toToken } =
-    useBridgeState()
+  const { toChainIds, toChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
@@ -116,15 +114,6 @@ export const ToChainListOverlay = () => {
   useEffect(arrowUpFunc, [arrowUp])
   useCloseOnOutsideClick(overlayRef, onClose)
 
-  const toChainsText = useMemo(() => {
-    return toChainText({
-      fromChainId,
-      fromToken,
-      toChainId,
-      toToken,
-    })
-  }, [fromChainId, fromToken, toChainId, toToken])
-
   const handleSetToChainId = (chainId) => {
     const eventTitle = `[Bridge User Action] Sets new toChainId`
     const eventData = {
@@ -160,7 +149,7 @@ export const ToChainListOverlay = () => {
         {possibleChains && possibleChains.length > 0 && (
           <>
             <div className="mt-2 mb-4 text-sm font-normal text-primaryTextColor">
-              {toChainsText}
+              Receive on…
             </div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (

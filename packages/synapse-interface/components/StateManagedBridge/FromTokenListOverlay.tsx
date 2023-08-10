@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
@@ -14,7 +14,6 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { fromTokenText } from './helpers/fromTokenText'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import { sortByBalances } from './helpers/sortByBalance'
@@ -29,8 +28,7 @@ export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()
   const overlayRef = useRef(null)
 
-  const { fromTokens, fromChainId, fromToken, toChainId, toToken } =
-    useBridgeState()
+  const { fromTokens, fromChainId, fromToken } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
   let possibleTokens = sortTokens(fromTokens).sort((t) =>
@@ -144,10 +142,6 @@ export const FromTokenListOverlay = () => {
   useEffect(arrowUpFunc, [arrowUp])
   useCloseOnOutsideClick(overlayRef, onClose)
 
-  const fromTokensText = useMemo(() => {
-    return fromTokenText({ fromChainId, fromToken, toChainId, toToken })
-  }, [fromChainId, fromToken, toChainId, toToken])
-
   const handleSetFromToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = '[Bridge User Action] Sets new fromToken'
     const eventData = {
@@ -178,7 +172,7 @@ export const FromTokenListOverlay = () => {
       {possibleTokens && possibleTokens.length > 0 && (
         <>
           <div className="px-2 pb-4 pt-4 text-primaryTextColor text-sm bg-[#343036]">
-            {fromTokensText}
+            Send…
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2 ">
             {possibleTokens.map((token, idx) => {

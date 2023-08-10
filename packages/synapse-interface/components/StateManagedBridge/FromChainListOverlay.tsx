@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as ALL_CHAINS from '@constants/chains/master'
@@ -11,14 +11,12 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import { fromChainText } from './helpers/fromChainText'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 
 export const FromChainListOverlay = () => {
-  const { fromChainIds, fromChainId, fromToken, toChainId, toToken } =
-    useBridgeState()
+  const { fromChainIds, fromChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
@@ -114,15 +112,6 @@ export const FromChainListOverlay = () => {
   useEffect(arrowUpFunc, [arrowUp])
   useCloseOnOutsideClick(overlayRef, onClose)
 
-  const fromChainsText = useMemo(() => {
-    return fromChainText({
-      fromChainId,
-      fromToken,
-      toChainId,
-      toToken,
-    })
-  }, [fromChainId, fromToken, toChainId, toToken])
-
   const handleSetFromChainId = (chainId) => {
     const eventTitle = `[Bridge User Action] Sets new fromChainId`
     const eventData = {
@@ -158,7 +147,7 @@ export const FromChainListOverlay = () => {
         {possibleChains && possibleChains.length > 0 && (
           <>
             <div className="mt-2 mb-4 text-sm text-primaryTextColor">
-              {fromChainsText}
+              Send from…
             </div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
