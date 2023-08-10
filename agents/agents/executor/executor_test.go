@@ -1,6 +1,7 @@
 package executor_test
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math/big"
 	"time"
@@ -978,30 +979,36 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	// Create and send a manager message.
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	optimisticSeconds := uint32(1)
-	recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
+	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
 	nonce := uint32(1)
-	body := []byte{byte(gofakeit.Uint32())}
+	// body := []byte{byte(gofakeit.Uint32())}
 	// paddedRequest := big.NewInt(0)
 
 	txContextOrigin.Value = types.TotalTips(tips)
-	msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
-	baseHeader := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
-	msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
-	baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
-	message, err := types.NewMessageFromBaseMessage(baseHeader, baseMessage)
-	e.Nil(err)
-	fmt.Printf("message: %v\n", message)
+	// msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
+	// baseHeader := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	// msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
+	// baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
+	// message, err := types.NewMessageFromBaseMessage(baseHeader, baseMessage)
+	// e.Nil(err)
+	// fmt.Printf("message: %v\n", message)
 
-	// mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
-	// managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, []byte{gofakeit.Uint8()})
-	// e.Nil(err)
-	// managerMessageEncoded, err := types.EncodeMessage(message)
-	// e.Nil(err)
-	// fmt.Printf("manager msg: %v\n", managerMessage)
-	messageBytes := []byte{}
-	for i := 0; i < 9; i++ {
-		messageBytes = append(messageBytes, byte(gofakeit.Uint32()))
+	body := []byte{}
+	addUint32 := func(x uint32) {
+		xBytes := make([]byte, 4)
+		binary.BigEndian.PutUint32(xBytes, x)
+		body = append(body, xBytes...)
 	}
+	for i := 0; i < 9; i++ {
+		addUint32(gofakeit.Uint32())
+	}
+	fmt.Printf("len body: %v\n", len(body))
+	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
+	e.Nil(err)
+	managerMessageEncoded, err := types.EncodeMessage(managerMessage)
+	e.Nil(err)
+	fmt.Printf("manager msg: %v\n", managerMessage)
 
 	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
 	e.Nil(err)
@@ -1011,7 +1018,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		optimisticSeconds,
 		// managerMessageEncoded,
 		// []byte{gofakeit.Uint8()},
-		messageBytes,
+		managerMessageEncoded,
 	)
 	e.Nil(err)
 	fmt.Printf("tx context origin addr: %v\n", txContextOrigin.From.String())
@@ -1073,13 +1080,13 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {
-		executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
-		e.Nil(err)
-		fmt.Printf("message executed: %v\n", executed)
-
-		// executed, err = exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
+		// executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
 		// e.Nil(err)
-		// fmt.Printf("manager message executed: %v\n", executed)
+		// fmt.Printf("message executed: %v\n", executed)
+
+		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
+		e.Nil(err)
+		fmt.Printf("manager message executed: %v\n", executed)
 
 		return executed
 	})
