@@ -34,6 +34,9 @@ type Query struct {
 	LogCount                 *int                 "json:\"logCount\" graphql:\"logCount\""
 	ReceiptCount             *int                 "json:\"receiptCount\" graphql:\"receiptCount\""
 	BlockTimeCount           *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	LogsAtHeadRange          []*model.Log         "json:\"logsAtHeadRange\" graphql:\"logsAtHeadRange\""
+	ReceiptsAtHeadRange      []*model.Receipt     "json:\"receiptsAtHeadRange\" graphql:\"receiptsAtHeadRange\""
+	TransactionsAtHeadRange  []*model.Transaction "json:\"transactionsAtHeadRange\" graphql:\"transactionsAtHeadRange\""
 }
 type GetLogsRange struct {
 	Response []*struct {

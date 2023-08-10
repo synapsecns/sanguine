@@ -68,10 +68,11 @@ func WithMaxAttemptsTime(maxAttemptTime time.Duration) WithBackoffConfigurator {
 
 func defaultConfig() retryWithBackoffConfig {
 	return retryWithBackoffConfig{
-		factor:      2,
-		jitter:      true,
-		min:         200 * time.Millisecond,
-		max:         5 * time.Second,
+		factor: 2,
+		jitter: true,
+		min:    200 * time.Millisecond,
+		max:    5 * time.Second,
+		// TODO: default to negative, do not enforce a max when negative
 		maxAttempts: 3,
 	}
 }
