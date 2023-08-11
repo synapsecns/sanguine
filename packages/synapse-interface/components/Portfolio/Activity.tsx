@@ -55,6 +55,7 @@ export const Activity = () => {
       })
   }, [address])
 
+  console.log('lastPromiseInfo: ', lastPromiseInfo)
   console.log('userHistoricalActivity: ', userHistoricalActivity)
   console.log('userPendingActivity: ', userPendingActivity)
 
@@ -248,7 +249,7 @@ export const ExchangeRate = ({
   originValue: number
   destinationValue: number
 }) => {
-  const exchangeRate: number = originValue / destinationValue
+  const exchangeRate: number = destinationValue / originValue
   const formattedExchangeRate: string = exchangeRate.toFixed(4)
   return (
     <span>
