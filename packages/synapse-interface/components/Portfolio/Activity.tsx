@@ -203,7 +203,7 @@ export const Transaction = ({
       className={`
         grid grid-cols-10 mt-auto py-3
         text-sm text-white border-b border-[#565058]
-        items-end
+        items-end hover:cursor-pointer hover:bg-[#272731]
         `}
       onClick={handleTransactionClick}
     >
