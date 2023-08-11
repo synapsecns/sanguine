@@ -223,7 +223,7 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={chain.chainImg}
-            className="w-6 h-6 mr-3 rounded-md"
+            className="w-6 h-6 mr-3 rounded-full"
             alt={`${chain.name} icon`}
           />
           <div>{chain.name}</div>
@@ -234,7 +234,7 @@ export const TransactionPayloadDetail = ({
         <div data-test-id="transaction-payload-token" className="flex flex-row">
           <Image
             src={token.icon}
-            className="w-6 h-6 mr-3 rounded-md"
+            className="w-6 h-6 mr-3 rounded-full"
             alt={`${token.name} icon`}
           />
           {typeof tokenAmount === 'number' && (
