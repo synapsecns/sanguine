@@ -34,6 +34,7 @@ export const Activity = () => {
   }, [address])
 
   console.log('userHistoricalActivity: ', userHistoricalActivity)
+
   return (
     <div data-test-id="activity">
       <ActivitySection title="Pending">
@@ -196,7 +197,12 @@ export const Completed = ({
   const formattedTime: string =
     transactionCompletedTime &&
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
-  return <div>{formattedTime}</div>
+  return (
+    <span className="my-auto">
+      <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '}
+      {formattedTime}
+    </span>
+  )
 }
 
 export const TransactionPayloadDetail = ({
