@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
+  useGetUserHistoricalActivityQuery,
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
   PartialInfo,
