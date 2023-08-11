@@ -143,18 +143,26 @@ export const Transaction = ({
   return (
     <div
       data-test-id="transaction"
-      className="grid grid-cols-4 gap-2 text-sm text-white border-b border-[#565058]"
+      className={`
+        grid grid-cols-4 gap-2 mt-auto mb-1 py-3
+        text-sm text-white border-b border-[#565058]
+        items-end
+        `}
     >
-      <TransactionPayloadDetail
-        chain={originChain}
-        token={originToken}
-        tokenAmount={originFormattedValue}
-      />
-      <TransactionPayloadDetail
-        chain={destinationChain}
-        token={destinationToken}
-        tokenAmount={destinationFormattedValue}
-      />
+      <div>
+        <TransactionPayloadDetail
+          chain={originChain}
+          token={originToken}
+          tokenAmount={originFormattedValue}
+        />
+      </div>
+      <div>
+        <TransactionPayloadDetail
+          chain={destinationChain}
+          token={destinationToken}
+          tokenAmount={destinationFormattedValue}
+        />
+      </div>
       <div className="flex justify-end">
         {transactionType === ActivityType.RECENT && (
           <ExchangeRate
@@ -182,7 +190,7 @@ export const ExchangeRate = ({
   const exchangeRate: number = originValue / destinationValue
   const formattedExchangeRate: string = exchangeRate.toFixed(4)
   return (
-    <span className="my-auto">
+    <span>
       <span className="text-[#C0BCC2]">{`1 : `}</span>
       <span className="text-white">{formattedExchangeRate}</span>
     </span>
@@ -198,7 +206,7 @@ export const Completed = ({
     transactionCompletedTime &&
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
   return (
-    <span className="my-auto">
+    <span>
       <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '}
       {formattedTime}
     </span>
@@ -215,11 +223,14 @@ export const TransactionPayloadDetail = ({
   tokenAmount?: number
 }) => {
   return (
-    <div data-test-id="transaction-payload-detail" className="flex flex-col">
+    <div
+      data-test-id="transaction-payload-detail"
+      className="flex flex-col space-y-1"
+    >
       {chain && (
         <div
           data-test-id="transaction-payload-network"
-          className="flex flex-row"
+          className="flex flex-row items-center"
         >
           <Image
             src={chain.chainImg}
@@ -231,10 +242,13 @@ export const TransactionPayloadDetail = ({
       )}
 
       {token && (
-        <div data-test-id="transaction-payload-token" className="flex flex-row">
+        <div
+          data-test-id="transaction-payload-token"
+          className="flex flex-row items-center"
+        >
           <Image
             src={token.icon}
-            className="w-6 h-6 mr-3 rounded-full"
+            className="items-center w-6 h-6 mr-3 rounded-full"
             alt={`${token.name} icon`}
           />
           {typeof tokenAmount === 'number' && (
