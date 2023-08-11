@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import Image from 'next/image'
 import {
   useLazyGetUserHistoricalActivityQuery,
@@ -16,18 +17,12 @@ import {
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
-import { ANALYTICS_KAPPA } from '@/constants/urls'
+import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 
 export const Activity = () => {
   const { address } = useAccount()
-  const oneMonthInMinutes: number = 43200
-  const oneDayInMinutes: number = 1440
-  const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
-  const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
-
   const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
-
   const [fetchUserPendingActivity, pendingActivity, lastPendingPromiseInfo] =
     useLazyGetUserPendingTransactionsQuery()
 
@@ -38,6 +33,11 @@ export const Activity = () => {
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
     return pendingActivity?.data?.bridgeTransactions || []
   }, [pendingActivity?.data?.bridgeTransactions])
+
+  const oneMonthInMinutes: number = 43200
+  const oneDayInMinutes: number = 1440
+  const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+  const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
   useEffect(() => {
     address &&
@@ -73,7 +73,18 @@ export const Activity = () => {
           />
         ))}
       </ActivitySection>
+      <ExplorerLink />
     </div>
+  )
+}
+
+export const ExplorerLink = () => {
+  return (
+    <span className="text-[#99E6FF]">
+      <Link href={ANALYTICS_PATH} target="_blank">
+        Explorer →
+      </Link>
+    </span>
   )
 }
 
