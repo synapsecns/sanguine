@@ -182,10 +182,10 @@ export const ExchangeRate = ({
   const exchangeRate: number = originValue / destinationValue
   const formattedExchangeRate: string = exchangeRate.toFixed(4)
   return (
-    <div className="flex">
-      <div className="text-[#C0BCC2]">{`1 : `}</div>
-      <div className="text-white">{formattedExchangeRate}</div>
-    </div>
+    <span className="my-auto">
+      <span className="text-[#C0BCC2]">{`1 : `}</span>
+      <span className="text-white">{formattedExchangeRate}</span>
+    </span>
   )
 }
 
