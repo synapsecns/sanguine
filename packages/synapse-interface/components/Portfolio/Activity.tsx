@@ -82,15 +82,15 @@ export const TransactionHeader = ({
   return (
     <div
       data-test-id="transaction-header"
-      className="grid grid-cols-4 gap-2 text-[#C0BCC2] text-sm"
+      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm"
     >
-      <div>From</div>
-      <div>To</div>
-      <div className="flex justify-end">
+      <div className="col-span-3">From</div>
+      <div className="col-span-3">To</div>
+      <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.PENDING && 'Blocks'}
         {transactionType === ActivityType.RECENT && 'Rate'}
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.PENDING && 'Elapsed'}
         {transactionType === ActivityType.RECENT && 'Completed'}
       </div>
@@ -144,26 +144,27 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        grid grid-cols-4 gap-2 mt-auto mb-1 py-3
+        grid grid-cols-10 mt-auto mb-1 py-3
         text-sm text-white border-b border-[#565058]
         items-end
         `}
     >
-      <div>
+      <div className="flex col-span-3">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
           tokenAmount={originFormattedValue}
         />
+        <div className="flex items-end mb-[3px] ml-auto px-4">→</div>
       </div>
-      <div>
+      <div className="col-span-3">
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
           tokenAmount={destinationFormattedValue}
         />
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.RECENT && (
           <ExchangeRate
             originValue={originFormattedValue}
@@ -171,7 +172,7 @@ export const Transaction = ({
           />
         )}
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.RECENT && (
           <Completed transactionCompletedTime={bridgeDestinationTime} />
         )}
