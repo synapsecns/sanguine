@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import {
   useLazyGetUserHistoricalActivityQuery,
+  useLazyGetUserPendingTransactionsQuery,
   PartialInfo,
   BridgeTransaction,
   GetUserHistoricalActivityQuery,
@@ -23,9 +24,16 @@ export const Activity = () => {
   const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
 
+  const [fetchUserPendingActivity, pendingActivity, lastPendingPromiseInfo] =
+    useLazyGetUserPendingTransactionsQuery()
+
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return historicalActivity?.data?.bridgeTransactions || []
   }, [historicalActivity?.data?.bridgeTransactions])
+
+  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+    return pendingActivity?.data?.bridgeTransactions || []
+  }, [pendingActivity?.data?.bridgeTransactions])
 
   useEffect(() => {
     address &&
@@ -34,6 +42,7 @@ export const Activity = () => {
   }, [address])
 
   console.log('userHistoricalActivity: ', userHistoricalActivity)
+  console.log('userPendingActivity: ', userPendingActivity)
 
   return (
     <div data-test-id="activity">
