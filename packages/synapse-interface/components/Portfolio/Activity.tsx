@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { useAccount } from 'wagmi'
+import { useRouter } from 'next/router'
 import Image from 'next/image'
 import {
   useLazyGetUserHistoricalActivityQuery,
@@ -120,12 +121,16 @@ export const TransactionHeader = ({
   )
 }
 
-export const getExplorerLink = ({ kappa, fromChainId, toChainId }): string => {
-  return useMemo(
-    () =>
-      `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`,
-    [kappa, fromChainId, toChainId]
-  )
+export const getExplorerLink = ({
+  kappa,
+  fromChainId,
+  toChainId,
+}: {
+  kappa: string
+  fromChainId: number
+  toChainId: number
+}): string => {
+  return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
 }
 
 export const Transaction = ({
@@ -135,7 +140,12 @@ export const Transaction = ({
   bridgeTransaction: BridgeTransaction
   transactionType: ActivityType
 }) => {
-  const { fromInfo, toInfo }: { fromInfo?: PartialInfo; toInfo?: PartialInfo } =
+  const router = useRouter()
+  const {
+    fromInfo,
+    toInfo,
+    kappa,
+  }: { fromInfo?: PartialInfo; toInfo?: PartialInfo; kappa?: string } =
     bridgeTransaction || {}
 
   const {
@@ -170,6 +180,23 @@ export const Transaction = ({
     destinationTokenSymbol
   )
 
+  const explorerLink: string = getExplorerLink({
+    kappa,
+    fromChainId: originChainId,
+    toChainId: destinationChainId,
+  })
+
+  const handleTransactionClick: () => void = useCallback(() => {
+    if (kappa && originChainId) {
+      const explorerLink = getExplorerLink({
+        kappa,
+        fromChainId: originChainId,
+        toChainId: destinationChainId,
+      })
+      window.open(explorerLink, '_blank')
+    }
+  }, [kappa, originChainId, destinationChainId])
+
   return (
     <div
       data-test-id="transaction"
@@ -178,6 +205,7 @@ export const Transaction = ({
         text-sm text-white border-b border-[#565058]
         items-end
         `}
+      onClick={handleTransactionClick}
     >
       <div className="flex col-span-3">
         <TransactionPayloadDetail
