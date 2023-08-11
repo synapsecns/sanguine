@@ -85,7 +85,7 @@ export const ActivitySection = ({
   children?: React.ReactNode
 }) => {
   return (
-    <div data-test-id="activity-section">
+    <div data-test-id="activity-section" className="py-6">
       <h3 className="text-lg text-white">{title}</h3>
       {children}
     </div>
