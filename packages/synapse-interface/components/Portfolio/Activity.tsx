@@ -82,7 +82,7 @@ export const TransactionHeader = ({
   return (
     <div
       data-test-id="transaction-header"
-      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm"
+      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm mt-4 mb-2"
     >
       <div className="col-span-3">From</div>
       <div className="col-span-3">To</div>
@@ -144,7 +144,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        grid grid-cols-10 mt-auto mb-1 py-3
+        grid grid-cols-10 mt-auto py-3
         text-sm text-white border-b border-[#565058]
         items-end
         `}
