@@ -19,7 +19,9 @@ import { tokenSymbolToToken } from '@/constants/tokens'
 export const Activity = () => {
   const { address } = useAccount()
   const oneMonthInMinutes: number = 43200
-  const queryTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+  const oneDayInMinutes: number = 1440
+  const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+  const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
   const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
     useLazyGetUserHistoricalActivityQuery()
@@ -37,8 +39,18 @@ export const Activity = () => {
 
   useEffect(() => {
     address &&
-      queryTime &&
-      fetchUserHistoricalActivity({ address: address, startTime: queryTime })
+      queryHistoricalTime &&
+      fetchUserHistoricalActivity({
+        address: address,
+        startTime: queryHistoricalTime,
+      })
+
+    address &&
+      queryPendingTime &&
+      fetchUserPendingActivity({
+        address: address,
+        startTime: queryPendingTime,
+      })
   }, [address])
 
   console.log('userHistoricalActivity: ', userHistoricalActivity)
