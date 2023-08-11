@@ -15,6 +15,7 @@ import {
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
+import { ANALYTICS_KAPPA } from '@/constants/urls'
 
 export const Activity = () => {
   const { address } = useAccount()
@@ -119,6 +120,14 @@ export const TransactionHeader = ({
   )
 }
 
+export const getExplorerLink = ({ kappa, fromChainId, toChainId }): string => {
+  return useMemo(
+    () =>
+      `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`,
+    [kappa, fromChainId, toChainId]
+  )
+}
+
 export const Transaction = ({
   bridgeTransaction,
   transactionType,
@@ -174,6 +183,7 @@ export const Transaction = ({
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
+          tokenSymbol={originTokenSymbol}
           tokenAmount={originFormattedValue}
         />
         <div className="flex items-end mb-[3px] ml-auto px-4">→</div>
@@ -182,6 +192,7 @@ export const Transaction = ({
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
+          tokenSymbol={destinationTokenSymbol}
           tokenAmount={destinationFormattedValue}
         />
       </div>
@@ -238,10 +249,12 @@ export const Completed = ({
 export const TransactionPayloadDetail = ({
   chain,
   token,
+  tokenSymbol,
   tokenAmount,
 }: {
   chain?: Chain
   token?: Token
+  tokenSymbol?: string
   tokenAmount?: number
 }) => {
   return (
@@ -276,7 +289,7 @@ export const TransactionPayloadDetail = ({
           {typeof tokenAmount === 'number' && (
             <div className="mr-1">{tokenAmount}</div>
           )}
-          <div>{token.description}</div>
+          <div>{tokenSymbol}</div>
         </div>
       )}
     </div>
