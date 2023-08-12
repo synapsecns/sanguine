@@ -107,7 +107,7 @@ export const OPTIMISM: Chain = {
   layer: 2,
   codeName: 'optimism',
   blockTime: 10000,
-  rpc: 'https://rpc.ankr.com/optimism',
+  rpc: 'https://mainnet.optimism.io',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
   color: 'red',
