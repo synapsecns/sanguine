@@ -3,13 +3,12 @@ import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAppDispatch } from '@/store/hooks'
 import {
-  useGetUserHistoricalActivityQuery,
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
   PartialInfo,
   BridgeTransaction,
-  GetUserHistoricalActivityQuery,
 } from '@/slices/api/generated'
 import {
   getTimeMinutesBeforeNow,
@@ -21,10 +20,11 @@ import { tokenSymbolToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 
 export const Activity = () => {
+  const dispatch = useAppDispatch()
   const { address } = useAccount()
-  const [fetchUserHistoricalActivity, historicalActivity, lastPromiseInfo] =
+  const [fetchUserHistoricalActivity, historicalActivity] =
     useLazyGetUserHistoricalActivityQuery()
-  const [fetchUserPendingActivity, pendingActivity, lastPendingPromiseInfo] =
+  const [fetchUserPendingActivity, pendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
@@ -56,7 +56,7 @@ export const Activity = () => {
       })
   }, [address])
 
-  console.log('lastPromiseInfo: ', lastPromiseInfo)
+  useEffect(() => {}, [])
   console.log('userHistoricalActivity: ', userHistoricalActivity)
   console.log('userPendingActivity: ', userPendingActivity)
 
