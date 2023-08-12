@@ -25,8 +25,10 @@ export const Activity = () => {
   const dispatch = useAppDispatch()
   const { userHistoricalTransactions } = useTransactionsState()
   const { address } = useAccount()
+
   const [fetchUserHistoricalActivity, historicalActivity] =
     useLazyGetUserHistoricalActivityQuery()
+
   const [fetchUserPendingActivity, pendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
 
@@ -90,7 +92,7 @@ export const Activity = () => {
 
 export const ExplorerLink = () => {
   return (
-    <span className="text-[#99E6FF]">
+    <span data-test-id="explorer-link" className="text-[#99E6FF]">
       <Link href={ANALYTICS_PATH} target="_blank">
         Explorer →
       </Link>
@@ -273,7 +275,7 @@ export const ExchangeRate = ({
   const exchangeRate: number = destinationValue / originValue
   const formattedExchangeRate: string = exchangeRate.toFixed(4)
   return (
-    <span>
+    <span data-test-id="exchange-rate">
       <span className="text-[#C0BCC2]">{`1 : `}</span>
       <span className="text-white">{formattedExchangeRate}</span>
     </span>
@@ -289,7 +291,7 @@ export const Completed = ({
     transactionCompletedTime &&
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
   return (
-    <span>
+    <span data-test-id="completed">
       <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '}
       {formattedTime}
     </span>
