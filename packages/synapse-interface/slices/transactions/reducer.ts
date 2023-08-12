@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { updateUserHistoricalTransactions } from './actions'
 import { BridgeTransaction } from '../api/generated'
 
 export interface TransactionsState {
@@ -15,6 +16,11 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase()
+    builder.addCase(
+      updateUserHistoricalTransactions,
+      (state, action: PayloadAction<BridgeTransaction[]>) => {
+        state.userHistoricalTransactions = action.payload
+      }
+    )
   },
 })
