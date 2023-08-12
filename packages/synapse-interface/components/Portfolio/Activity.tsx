@@ -4,6 +4,8 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+import { updateUserHistoricalTransactions } from '@/slices/transactions/actions'
 import {
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
@@ -21,6 +23,7 @@ import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 
 export const Activity = () => {
   const dispatch = useAppDispatch()
+  const { userHistoricalTransactions } = useTransactionsState()
   const { address } = useAccount()
   const [fetchUserHistoricalActivity, historicalActivity] =
     useLazyGetUserHistoricalActivityQuery()
@@ -56,7 +59,11 @@ export const Activity = () => {
       })
   }, [address])
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+  }, [userHistoricalActivity])
+
+  console.log('userHistoricalTransactions: ', userHistoricalTransactions)
   console.log('userHistoricalActivity: ', userHistoricalActivity)
   console.log('userPendingActivity: ', userPendingActivity)
 
