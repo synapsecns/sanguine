@@ -23,7 +23,8 @@ import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 
 export const Activity = () => {
   const dispatch = useAppDispatch()
-  const { userHistoricalTransactions } = useTransactionsState()
+  const { userHistoricalTransactions, userPendingTransactions } =
+    useTransactionsState()
   const { address } = useAccount()
 
   const [fetchUserHistoricalActivity, historicalActivity] =
@@ -69,13 +70,18 @@ export const Activity = () => {
 
   console.log('userHistoricalTransactions: ', userHistoricalTransactions)
   console.log('userHistoricalActivity: ', userHistoricalActivity)
-  console.log('userPendingActivity: ', userPendingActivity)
 
+  const hasPendingTransactions: boolean = useMemo(
+    () => userPendingTransactions.length > 0,
+    [userPendingTransactions]
+  )
   return (
     <div data-test-id="activity">
-      <ActivitySection title="Pending">
-        <TransactionHeader transactionType={ActivityType.PENDING} />
-      </ActivitySection>
+      {hasPendingTransactions && (
+        <ActivitySection title="Pending">
+          <TransactionHeader transactionType={ActivityType.PENDING} />
+        </ActivitySection>
+      )}
       <ActivitySection title="Recent">
         <TransactionHeader transactionType={ActivityType.RECENT} />
         {userHistoricalTransactions.map((transaction: BridgeTransaction) => (
