@@ -5,10 +5,12 @@ import { BridgeTransaction } from '../api/generated'
 
 export interface TransactionsState {
   userHistoricalTransactions: BridgeTransaction[]
+  userPendingTransactions: BridgeTransaction[]
 }
 
 const initialState: TransactionsState = {
   userHistoricalTransactions: [],
+  userPendingTransactions: [],
 }
 
 export const transactionsSlice = createSlice({
