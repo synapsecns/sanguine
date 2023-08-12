@@ -9,6 +9,7 @@ import poolUserDataReducer from '@/slices/poolUserDataSlice'
 import poolDepositReducer from '@/slices/poolDepositSlice'
 import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
 import portfolioReducer from '@/slices/portfolio/reducer'
+import transactionsReducer from '@/slices/transactions/reducer'
 import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -21,6 +22,7 @@ export const store = configureStore({
     poolDeposit: poolDepositReducer,
     poolWithdraw: poolWithdrawReducer,
     portfolio: portfolioReducer,
+    transactions: transactionsReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
