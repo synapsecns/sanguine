@@ -60,7 +60,9 @@ export const Activity = () => {
   }, [address])
 
   useEffect(() => {
-    dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+    if (userHistoricalActivity.length > 0) {
+      dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+    }
   }, [userHistoricalActivity])
 
   console.log('userHistoricalTransactions: ', userHistoricalTransactions)
@@ -74,7 +76,7 @@ export const Activity = () => {
       </ActivitySection>
       <ActivitySection title="Recent">
         <TransactionHeader transactionType={ActivityType.RECENT} />
-        {userHistoricalActivity.map((transaction: BridgeTransaction) => (
+        {userHistoricalTransactions.map((transaction: BridgeTransaction) => (
           <Transaction
             bridgeTransaction={transaction}
             transactionType={ActivityType.RECENT}
