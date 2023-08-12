@@ -397,7 +397,7 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 }
 
 // GetOriginBridgeTx is the resolver for the getOriginBridgeTx field.
-func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string) (*model.BridgeWatcherTx, error) {
+func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error) {
 	if chainID == nil || txnHash == nil {
 		return nil, fmt.Errorf("chainID and txnHash must be provided")
 	}
@@ -409,7 +409,7 @@ func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txn
 }
 
 // GetDestinationBridgeTx is the resolver for the getDestinationBridgeTx field.
-func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int) (*model.BridgeWatcherTx, error) {
+func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error) {
 	if chainID == nil || address == nil || kappa == nil || timestamp == nil {
 		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	gosql "database/sql"
 	"fmt"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"math/big"
 	"net/http"
 	"testing"
@@ -219,12 +220,31 @@ func (g *APISuite) SetupTest() {
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
 	httpport := freeport.GetPort()
 
+	config := serverConfig.Config{
+		HTTPPort:            uint16(httpport),
+		DBAddress:           address,
+		ScribeURL:           "https://scribe.interoperability.institute/graphql",
+		HydrateCache:        false,
+		RPCURL:              "https://rpc.omnirpc.io/confirmations/1/rpc/",
+		BridgeConfigAddress: "0x5217c83ca75559B1f8a8803824E5b7ac233A12a1",
+		BridgeConfigChainID: 1,
+		Chains: []serverConfig.ChainConfig{
+			{
+				ChainID: 1,
+				Contracts: serverConfig.ContractsConfig{
+					CCTP: "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",
+				},
+			},
+			{
+				ChainID: 56,
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+				},
+			},
+		},
+	}
 	go func() {
-		Nil(g.T(), api.Start(g.GetTestContext(), api.Config{
-			HTTPPort:  uint16(httpport),
-			Address:   address,
-			ScribeURL: g.gqlClient.Client.BaseURL,
-		}, g.explorerMetrics))
+		Nil(g.T(), api.Start(g.GetTestContext(), config, g.explorerMetrics))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)

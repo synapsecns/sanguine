@@ -37,7 +37,7 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler) (Scri
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable list is returned, otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresses []common.Address, expectedChainID uint64, chunks []*util.Chunk) (*immutable.List[*[]types.Log], error) {
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresses []common.Address, expectedChainID uint64, chunks []*util.Chunk, topics [][]common.Hash) (*immutable.List[*[]types.Log], error) {
 	calls := make([]w3types.Caller, len(chunks)+2)
 	results := make([][]types.Log, len(chunks))
 	chainID := new(uint64)
@@ -50,6 +50,7 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresse
 			FromBlock: chunks[i].StartBlock,
 			ToBlock:   chunks[i].EndBlock,
 			Addresses: contractAddresses,
+			Topics:    topics,
 		}
 		calls[i+2] = eth.Logs(filter).Returns(&results[i])
 	}

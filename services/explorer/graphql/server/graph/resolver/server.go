@@ -189,8 +189,8 @@ type ComplexityRoot struct {
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
-		GetDestinationBridgeTx func(childComplexity int, chainID *int, address *string, kappa *string, timestamp *int) int
-		GetOriginBridgeTx      func(childComplexity int, chainID *int, txnHash *string) int
+		GetDestinationBridgeTx func(childComplexity int, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) int
+		GetOriginBridgeTx      func(childComplexity int, chainID *int, txnHash *string, bridgeType *model.BridgeType) int
 		Leaderboard            func(childComplexity int, duration *model.Duration, chainID *int, useMv *bool, page *int) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
 		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration, useCache *bool) int
@@ -237,8 +237,8 @@ type QueryResolver interface {
 	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error)
 	AddressData(ctx context.Context, address string) (*model.AddressData, error)
 	Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error)
-	GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string) (*model.BridgeWatcherTx, error)
-	GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int) (*model.BridgeWatcherTx, error)
+	GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error)
+	GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error)
 }
 
 type executableSchema struct {
@@ -1001,7 +1001,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(*int), args["address"].(*string), args["kappa"].(*string), args["timestamp"].(*int)), true
+		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(*int), args["address"].(*string), args["kappa"].(*string), args["timestamp"].(*int), args["bridgeType"].(*model.BridgeType)), true
 
 	case "Query.getOriginBridgeTx":
 		if e.complexity.Query.GetOriginBridgeTx == nil {
@@ -1013,7 +1013,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOriginBridgeTx(childComplexity, args["chainID"].(*int), args["txnHash"].(*string)), true
+		return e.complexity.Query.GetOriginBridgeTx(childComplexity, args["chainID"].(*int), args["txnHash"].(*string), args["bridgeType"].(*model.BridgeType)), true
 
 	case "Query.leaderboard":
 		if e.complexity.Query.Leaderboard == nil {
@@ -1289,7 +1289,7 @@ type UnknownType {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-  
+
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -1380,6 +1380,7 @@ Ranked chainIDs by volume
   getOriginBridgeTx(
     chainID:      Int
     txnHash:       String
+    bridgeType:   BridgeType
   ): BridgeWatcherTx
 
 
@@ -1391,6 +1392,7 @@ Ranked chainIDs by volume
     address:     String
     kappa:      String
     timestamp:   Int
+    bridgeType:   BridgeType
   ): BridgeWatcherTx
 
 }
@@ -1611,6 +1613,11 @@ type Leaderboard {
   txs: Int
   rank: Int
   avgVolumeUSD: Float
+}
+
+enum BridgeType{
+  BRIDGE
+  CCTP
 }
 `, BuiltIn: false},
 }
@@ -2094,6 +2101,15 @@ func (ec *executionContext) field_Query_getDestinationBridgeTx_args(ctx context.
 		}
 	}
 	args["timestamp"] = arg3
+	var arg4 *model.BridgeType
+	if tmp, ok := rawArgs["bridgeType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bridgeType"))
+		arg4, err = ec.unmarshalOBridgeType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["bridgeType"] = arg4
 	return args, nil
 }
 
@@ -2118,6 +2134,15 @@ func (ec *executionContext) field_Query_getOriginBridgeTx_args(ctx context.Conte
 		}
 	}
 	args["txnHash"] = arg1
+	var arg2 *model.BridgeType
+	if tmp, ok := rawArgs["bridgeType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bridgeType"))
+		arg2, err = ec.unmarshalOBridgeType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["bridgeType"] = arg2
 	return args, nil
 }
 
@@ -6968,7 +6993,7 @@ func (ec *executionContext) _Query_getOriginBridgeTx(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOriginBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["txnHash"].(*string))
+		return ec.resolvers.Query().GetOriginBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["txnHash"].(*string), fc.Args["bridgeType"].(*model.BridgeType))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7030,7 +7055,7 @@ func (ec *executionContext) _Query_getDestinationBridgeTx(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["kappa"].(*string), fc.Args["timestamp"].(*int))
+		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["kappa"].(*string), fc.Args["timestamp"].(*int), fc.Args["bridgeType"].(*model.BridgeType))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11563,6 +11588,22 @@ func (ec *executionContext) unmarshalOBridgeTxType2ᚖgithubᚗcomᚋsynapsecns�
 }
 
 func (ec *executionContext) marshalOBridgeTxType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeTxType(ctx context.Context, sel ast.SelectionSet, v *model.BridgeTxType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOBridgeType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx context.Context, v interface{}) (*model.BridgeType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.BridgeType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBridgeType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx context.Context, sel ast.SelectionSet, v *model.BridgeType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

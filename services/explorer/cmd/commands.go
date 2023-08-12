@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	"github.com/synapsecns/sanguine/services/explorer/config"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/node"
 	"github.com/urfave/cli/v2"
 )
@@ -48,6 +49,13 @@ var scribeURL = &cli.StringFlag{
 	Usage:    "--scribe-url <scribe-url>",
 	Required: true,
 }
+
+var omnirpcURL = &cli.StringFlag{
+	Name:     "omnirpc-url",
+	Usage:    "--omnirpc-url <omnirpc-url>",
+	Required: true,
+}
+
 var clickhouseAddressFlag = &cli.StringFlag{
 	Name:     "address",
 	Usage:    "--address pass 'default' to use the default clickhouse address",
@@ -60,18 +68,19 @@ var configFlag = &cli.StringFlag{
 	TakesFile: true,
 	Required:  true,
 }
+
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL},
+	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL, omnirpcURL, configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
-		err := api.Start(c.Context, api.Config{
-			HTTPPort:     uint16(c.Uint(portFlag.Name)),
-			Address:      c.String(addressFlag.Name),
-			ScribeURL:    c.String(scribeURL.Name),
-			HydrateCache: true, // TODO make this a flag
-		}, metrics.Get())
+		decodeConfig, err := serverConfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+		}
+
+		err = api.Start(c.Context, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}

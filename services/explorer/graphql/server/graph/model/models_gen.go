@@ -240,6 +240,47 @@ func (e BridgeTxType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type BridgeType string
+
+const (
+	BridgeTypeBridge BridgeType = "BRIDGE"
+	BridgeTypeCctp   BridgeType = "CCTP"
+)
+
+var AllBridgeType = []BridgeType{
+	BridgeTypeBridge,
+	BridgeTypeCctp,
+}
+
+func (e BridgeType) IsValid() bool {
+	switch e {
+	case BridgeTypeBridge, BridgeTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e BridgeType) String() string {
+	return string(e)
+}
+
+func (e *BridgeType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BridgeType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BridgeType", str)
+	}
+	return nil
+}
+
+func (e BridgeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type DailyStatisticType string
 
 const (

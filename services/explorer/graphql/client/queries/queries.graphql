@@ -264,10 +264,11 @@ query GetLeaderboard($duration: Duration, $chainID: Int, $useMv: Boolean, $page:
 }
 
 
-query GetOriginBridgeTx($chainID: Int, $txnHash: String) {
+query GetOriginBridgeTx($chainID: Int, $txnHash: String, $bridgeType: BridgeType) {
   response: getOriginBridgeTx(
     chainID: $chainID
     txnHash: $txnHash
+    bridgeType: $bridgeType
   ) {
     bridgeTx {
       chainID
@@ -288,13 +289,13 @@ query GetOriginBridgeTx($chainID: Int, $txnHash: String) {
     kappa
   }
 }
-query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int) {
+query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType) {
   response: getDestinationBridgeTx(
     chainID: $chainID
     address: $address
     kappa: $kappa
     timestamp: $timestamp
-
+    bridgeType: $bridgeType
   ) {
     bridgeTx {
       chainID

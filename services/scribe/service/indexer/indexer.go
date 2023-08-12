@@ -172,7 +172,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	x.indexerConfig.EndHeight = endHeight
 
 	// Start fetching logs
-	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
+	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig, true)
 	logsChan := logFetcher.GetFetchedLogsChan()
 	g.Go(func() error {
 		return logFetcher.Start(groupCtx)

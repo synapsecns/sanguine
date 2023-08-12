@@ -341,9 +341,9 @@ func (b *BackfillSuite) TestBackfill() {
 	tokenPriceService, err := tokenprice.NewPriceDataService()
 	Nil(b.T(), err)
 
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
 	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data

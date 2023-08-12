@@ -42,13 +42,17 @@ type BridgeParser struct {
 	consumerFetcher fetcher.ScribeFetcher
 	// coinGeckoIDs is the mapping of token id to coin gecko ID
 	coinGeckoIDs map[string]string
+	// fromAPI is true if the parser is being called from the API.
+	fromAPI bool
 }
 
 const noTokenID = "NO_TOKEN"
 const noPrice = "NO_PRICE"
 
+// TODO these parsers need a custom struct with config with the services.
+
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service, fromAPI bool) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
@@ -211,6 +215,19 @@ func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chai
 //
 // nolint:gocognit,cyclop,dupl,maintidx
 func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
+	bridgeEvent, iFace, err := p.ParseLog(log, chainID)
+	if err != nil {
+		return nil, err
+	}
+	bridgeEventInterface, err := p.MatureLogs(ctx, bridgeEvent, iFace, chainID)
+	if err != nil {
+		return nil, err
+	}
+	return bridgeEventInterface, nil
+}
+
+// ParseLog parses the bridge logs and returns a model that can be stored
+func (p *BridgeParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.BridgeEvent, bridgeTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 
 	iFace, err := func(log ethTypes.Log) (bridgeTypes.EventLog, error) {
@@ -357,15 +374,32 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	if err != nil {
 		// Switch failed.
-		return nil, err
+		return nil, nil, err
 	}
-
 	bridgeEvent := eventToBridgeEvent(iFace, chainID)
-	g, groupCtx := errgroup.WithContext(ctx)
 
+	return &bridgeEvent, iFace, nil
+}
+
+// MatureLogs takes a bridge event and matures it by fetching the sender and timestamp from the API and more.
+func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.BridgeEvent, iFace bridgeTypes.EventLog, chainID uint32) (interface{}, error) {
+	g, groupCtx := errgroup.WithContext(ctx)
+	var err error
 	var sender *string
 	var timeStamp *uint64
 	g.Go(func() error {
+		if p.fromAPI {
+			rawTimeStamp, err := p.consumerFetcher.FetchBlockTime(groupCtx, int(chainID), int(bridgeEvent.BlockNumber))
+			if err != nil {
+				return fmt.Errorf("could not get timestamp, sender on chain %d and tx %s from tx %w", chainID, iFace.GetTxHash().String(), err)
+			}
+			fmt.Println("rawTimeStamp", rawTimeStamp)
+			uint64TimeStamp := uint64(*rawTimeStamp)
+			timeStamp = &uint64TimeStamp
+			senderStr := "" // empty for bridge watcher/api parser
+			sender = &senderStr
+			return nil
+		}
 		timeStamp, sender, err = p.consumerFetcher.FetchTx(groupCtx, iFace.GetTxHash().String(), int(chainID), int(bridgeEvent.BlockNumber))
 		if err != nil {
 			return fmt.Errorf("could not get timestamp, sender on chain %d and tx %s from tx %w", chainID, iFace.GetTxHash().String(), err)
@@ -389,15 +423,15 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 		return nil, fmt.Errorf("could not parse bridge event: %w", err)
 	}
 	if *timeStamp == 0 {
-		logger.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
-		return nil, fmt.Errorf("empty block time: chain: %d address %s", chainID, log.Address.Hex())
+		logger.Errorf("empty block time: chain: %d address %s", chainID, bridgeEvent.ContractAddress)
+		return nil, fmt.Errorf("empty block time: chain: %d address %s", chainID, bridgeEvent.ContractAddress)
 	}
 
 	bridgeEvent.TimeStamp = timeStamp
 	bridgeEvent.Sender = *sender
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
-		logger.Errorf("could not get token data token id chain: %d address %s", chainID, log.Address.Hex())
+		logger.Errorf("could not get token data token id chain: %d address %s", chainID, bridgeEvent.ContractAddress)
 		// handle an inauthentic token.
 		return bridgeEvent, nil
 	}

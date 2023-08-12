@@ -132,7 +132,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
 		case "bridge":
-			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), tokenDataService, fetcher, priceDataService)
+			bridgeParser, err = parser.NewBridgeParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), tokenDataService, fetcher, priceDataService, false)
 			if err != nil || bridgeParser == nil {
 				return nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}
@@ -167,7 +167,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			}
 		case "cctp":
 			cctpService, err = fetcherpkg.NewCCTPFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
-			if err != nil || swapService == nil {
+			if err != nil || cctpService == nil {
 				return nil, fmt.Errorf("could not create cctpService: %w", err)
 			}
 			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, cctpService, tokenDataService, priceDataService)

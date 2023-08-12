@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("error creating null handler, %w", err))
 	}
-	gqlServer.EnableGraphql(router, nil, nil, nil, nullHandler)
+	gqlServer.EnableGraphql(router, nil, nil, nil, "", nullHandler)
 
 	tmpPort, err := freeport.GetFreePort()
 	if err != nil {

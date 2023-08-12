@@ -1606,7 +1606,6 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 		query = fmt.Sprintf("%s FROM ( SELECT %s, tchain_id AS chain_id, sumKahan(tfee_amount_usd) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
 		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, fsender) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
-
 	case model.DailyStatisticTypeTransactions:
 		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, ftx_hash) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	default:
@@ -1614,13 +1613,11 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 	}
 	return &query, nil
 }
-
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeOrigin
 	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events WHERE chain_id = %d AND tx_hash = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", chainID, txnHash)
 	bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
@@ -1628,56 +1625,18 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 	var kappa string
 	isPending := true
 	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
-		// TODO retrieve from chain
-		return &model.BridgeWatcherTx{
-			BridgeTx: &bridgeTx,
-			Pending:  &isPending,
-			Type:     &txType,
-			Kappa:    &kappa,
-		}, nil
+		txFromChain, err := r.bwOriginFallback(ctx, uint32(chainID), txnHash)
+		if err != nil {
+			return &model.BridgeWatcherTx{
+				BridgeTx: &bridgeTx,
+				Pending:  &isPending,
+				Type:     &txType,
+				Kappa:    &kappa,
+			}, nil
+		}
+		return txFromChain, nil
 	}
-	isPending = false
-	destinationChainID := int(bridgeEvent.DestinationChainID.Uint64())
-	blockNumber := int(bridgeEvent.BlockNumber)
-	value := bridgeEvent.Amount.String()
-	var timestamp int
-	var formattedValue *float64
-	var timeStampFormatted string
-
-	if bridgeEvent.TokenDecimal != nil {
-		formattedValue = getAdjustedValue(bridgeEvent.Amount, *bridgeEvent.TokenDecimal)
-	} else {
-		return nil, fmt.Errorf("token decimal is not valid")
-	}
-	if bridgeEvent.TimeStamp != nil {
-		timestamp = int(*bridgeEvent.TimeStamp)
-		timeStampFormatted = time.Unix(int64(*bridgeEvent.TimeStamp), 0).String()
-	} else {
-		return nil, fmt.Errorf("timestamp is not valid")
-	}
-
-	bridgeTx = model.PartialInfo{
-		ChainID:            &chainID,
-		DestinationChainID: &destinationChainID,
-		Address:            &bridgeEvent.Recipient.String,
-		TxnHash:            &bridgeEvent.TxHash,
-		Value:              &value,
-		FormattedValue:     formattedValue,
-		USDValue:           bridgeEvent.AmountUSD,
-		TokenAddress:       &bridgeEvent.Token,
-		TokenSymbol:        &bridgeEvent.TokenSymbol.String,
-		BlockNumber:        &blockNumber,
-		Time:               &timestamp,
-		FormattedTime:      &timeStampFormatted,
-	}
-
-	result := &model.BridgeWatcherTx{
-		BridgeTx: &bridgeTx,
-		Pending:  &isPending,
-		Type:     &txType,
-		Kappa:    &bridgeEvent.DestinationKappa,
-	}
-	return result, nil
+	return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeOrigin)
 }
 
 // GetDestinationBridgeTxBW returns the destination bridge transaction for the bridgewatcher.
@@ -1689,7 +1648,6 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
-
 	var bridgeTx model.PartialInfo
 	isPending := true
 	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
@@ -1708,7 +1666,6 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 	var timestamp int
 	var formattedValue *float64
 	var timeStampFormatted string
-
 	if bridgeEvent.TokenDecimal != nil {
 		formattedValue = getAdjustedValue(bridgeEvent.Amount, *bridgeEvent.TokenDecimal)
 	} else {
@@ -1720,7 +1677,6 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 	} else {
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
-
 	bridgeTx = model.PartialInfo{
 		ChainID:            &chainID,
 		DestinationChainID: &destinationChainID,
@@ -1735,12 +1691,61 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 		Time:               &timestamp,
 		FormattedTime:      &timeStampFormatted,
 	}
-
 	result := &model.BridgeWatcherTx{
 		BridgeTx: &bridgeTx,
 		Pending:  &isPending,
 		Type:     &txType,
 		Kappa:    &bridgeEvent.Kappa.String,
+	}
+	return result, nil
+}
+
+func bwBridgeToBWTx(bridgeEvent *sql.BridgeEvent, txType model.BridgeTxType) (*model.BridgeWatcherTx, error) {
+	var bridgeTx model.PartialInfo
+	chainID := int(bridgeEvent.ChainID)
+	isPending := false
+	blockNumber := int(bridgeEvent.BlockNumber)
+	value := bridgeEvent.Amount.String()
+	var timestamp int
+	var formattedValue *float64
+	var timeStampFormatted string
+	if bridgeEvent.TokenDecimal != nil {
+		formattedValue = getAdjustedValue(bridgeEvent.Amount, *bridgeEvent.TokenDecimal)
+	} else {
+		return nil, fmt.Errorf("token decimal is not valid")
+	}
+	if bridgeEvent.TimeStamp != nil {
+		timestamp = int(*bridgeEvent.TimeStamp)
+		timeStampFormatted = time.Unix(int64(*bridgeEvent.TimeStamp), 0).String()
+	} else {
+		return nil, fmt.Errorf("timestamp is not valid")
+	}
+
+	kappa := bridgeEvent.DestinationKappa
+	destinationChainID := int(bridgeEvent.DestinationChainID.Uint64())
+	if txType == model.BridgeTxTypeDestination {
+		kappa = bridgeEvent.Kappa.String
+		destinationChainID = int(bridgeEvent.ChainID)
+	}
+	bridgeTx = model.PartialInfo{
+		ChainID:            &chainID,
+		DestinationChainID: &destinationChainID,
+		Address:            &bridgeEvent.Recipient.String,
+		TxnHash:            &bridgeEvent.TxHash,
+		Value:              &value,
+		FormattedValue:     formattedValue,
+		USDValue:           bridgeEvent.AmountUSD,
+		TokenAddress:       &bridgeEvent.Token,
+		TokenSymbol:        &bridgeEvent.TokenSymbol.String,
+		BlockNumber:        &blockNumber,
+		Time:               &timestamp,
+		FormattedTime:      &timeStampFormatted,
+	}
+	result := &model.BridgeWatcherTx{
+		BridgeTx: &bridgeTx,
+		Pending:  &isPending,
+		Type:     &txType,
+		Kappa:    &kappa,
 	}
 	return result, nil
 }
