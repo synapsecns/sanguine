@@ -152,6 +152,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
+	fmt.Printf("processSnapshot: %v\n", snapshot)
 	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
 	if err != nil {
 		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
@@ -167,6 +168,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) error {
+	fmt.Printf("processAttestation on %v: %v\n", chainID, attestation)
 	// If the attestation is on the SynChain, we can directly use its block number and timestamp.
 	if chainID == e.config.SummitChainID {
 		err := e.executorDB.StoreAttestation(ctx, attestation, chainID, attestation.BlockNumber().Uint64(), attestation.Timestamp().Uint64())

@@ -799,6 +799,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
+				fmt.Printf("got executable msgs: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -859,6 +860,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
+	fmt.Printf("setMinimumTime: %v\n", chainID)
 	backoffInterval := time.Duration(0)
 
 	for {
@@ -881,6 +883,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
+				fmt.Printf("got unset min time msgs: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -909,6 +912,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
+				fmt.Printf("got min timestamp: %v\n", minimumTimestamp)
 
 				if minimumTimestamp == nil {
 					continue
@@ -924,6 +928,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
+				fmt.Printf("set min time to %v on msg: %v\n", message.OptimisticSeconds(), message)
 			}
 
 			metrics.EndSpanWithErr(span, err)

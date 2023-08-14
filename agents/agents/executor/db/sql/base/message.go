@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
@@ -59,6 +60,7 @@ func (s Store) SetMinimumTime(ctx context.Context, messageMask db.DBMessage, min
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to set minimum time: %w", dbTx.Error)
 	}
+	fmt.Printf("set minimum time: %v, %v\n", messageMask, minimumTime)
 
 	return nil
 }

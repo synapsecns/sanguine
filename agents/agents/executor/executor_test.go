@@ -903,6 +903,10 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		Address:    e.SummitContract.Address().String(),
 		StartBlock: 0,
 	}
+	inboxConfig := config.ContractConfig{
+		Address:    e.InboxOnSummit.Address().String(),
+		StartBlock: 0,
+	}
 	summitChainConfig := config.ChainConfig{
 		ChainID:            summit,
 		GetLogsBatchAmount: 1,
@@ -913,7 +917,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts: []config.ContractConfig{summitConfig},
+		Contracts: []config.ContractConfig{summitConfig, inboxConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
@@ -944,6 +948,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	excCfg := execConfig.Config{
 		SummitChainID: summit,
 		SummitAddress: e.SummitContract.Address().String(),
+		InboxAddress:  e.InboxOnSummit.Address().String(),
 		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
@@ -980,7 +985,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	optimisticSeconds := uint32(1)
 	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
-	// nonce := uint32(1)
+	nonce := uint32(1)
 	// body := []byte{byte(gofakeit.Uint32())}
 	// paddedRequest := big.NewInt(0)
 
@@ -1003,8 +1008,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		addUint32(gofakeit.Uint32())
 	}
 	fmt.Printf("len body: %v\n", len(body))
-	// mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
-	// managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
+	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
 	// managerMessageEncoded, err := types.EncodeMessage(managerMessage)
 	e.Nil(err)
@@ -1039,7 +1044,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 	stateHash, err := originState.Hash()
 	e.Nil(err)
-	notaryState := types.NewState(
+	originState = types.NewState(
 		stateHash,
 		e.OriginDomainClient.Config().DomainID,
 		originState.Nonce()+1,
@@ -1047,50 +1052,62 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		originState.Timestamp(),
 		originState.GasData(),
 	)
-	notarySnapshot := types.NewSnapshot([]types.State{notaryState})
+	// snapshot := types.NewSnapshot([]types.State{notaryState})
 
 	// Submit snapshot with Guard.
 	fmt.Println("submitting guard snapshot")
 	fmt.Printf("state: %v\n", originState)
 	fmt.Printf("state origin: %v, nonce: %v\n", originState.Origin(), originState.Nonce())
-	// snapshot := types.NewSnapshot([]types.State{originState})
-	guardSnapshotSignature, encodedSnapshot, _, err := notarySnapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
+
+	snapshot := types.NewSnapshot([]types.State{originState})
+	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
 	e.Nil(err)
 	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.GuardBondedSigner,
+		e.GuardUnbondedSigner,
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	fmt.Printf("OMNIIIII SUMMIT: %v\n", omniRPCClient.GetEndpoint(int(e.TestBackendSummit.GetChainID()), 1))
+	fmt.Printf("guard snapshot tx: %v\n", tx.Hash().String())
+
+	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	fmt.Println("emitted")
 
 	// Submit snapshot with Notary.
 	fmt.Println("submitting notary snapshot")
-	notarySnapshotSignature, encodedSnapshot, _, err := notarySnapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
+	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.NotaryBondedSigner,
+		e.NotaryUnbondedSigner,
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	fmt.Printf("notary snapshot tx: %v\n", tx.Hash().String())
 
-	time.Sleep(15 * time.Minute)
+	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	fmt.Println("emitted")
 
 	// Check that the message is eventually executed.
-	// e.Eventually(func() bool {
-	// 	// executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
-	// 	// e.Nil(err)
-	// 	// fmt.Printf("message executed: %v\n", executed)
+	e.Eventually(func() bool {
+		// executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
+		// e.Nil(err)
+		// fmt.Printf("message executed: %v\n", executed)
 
-	// 	// executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
-	// 	// e.Nil(err)
-	// 	// fmt.Printf("manager message executed: %v\n", executed)
+		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
+		e.Nil(err)
+		fmt.Printf("manager message executed: %v\n", executed)
 
-	// 	return executed
-	// })
+		return executed
+	})
 }
