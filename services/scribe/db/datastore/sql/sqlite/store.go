@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	scribeLogger "github.com/synapsecns/sanguine/services/scribe/logger"
 	gormLogger "gorm.io/gorm/logger"
 
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -21,6 +22,7 @@ type Store struct {
 // NewSqliteStore creates a new sqlite data store.
 func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
+	scribeLogger.ReportScribeState(0, 0, nil, scribeLogger.CreatingSQLStore)
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
 	defer func() {

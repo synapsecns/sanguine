@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -93,7 +94,10 @@ var testTokens = []TestToken{{
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 
-	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
+	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, _, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
+
+	chainID := big.NewInt(1)
+	b.testBackend = geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
 	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient, b.metrics)

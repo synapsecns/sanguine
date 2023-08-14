@@ -67,9 +67,10 @@ var serverCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
 		err := api.Start(c.Context, api.Config{
-			HTTPPort:  uint16(c.Uint(portFlag.Name)),
-			Address:   c.String(addressFlag.Name),
-			ScribeURL: c.String(scribeURL.Name),
+			HTTPPort:     uint16(c.Uint(portFlag.Name)),
+			Address:      c.String(addressFlag.Name),
+			ScribeURL:    c.String(scribeURL.Name),
+			HydrateCache: true, // TODO make this a flag
 		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)

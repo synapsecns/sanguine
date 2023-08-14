@@ -81,6 +81,8 @@ var PageSize = 100
 type CCTPEvent struct {
 	// InsertTime is the time the event was inserted into the database.
 	InsertTime uint64 `gorm:"column:insert_time"`
+	// ChainID is the chain ID of the chain in which the indexed event occurred.
+	ChainID uint32 `gorm:"column:chain_id"`
 	// TxHash is the transaction hash of the event.
 	TxHash string `gorm:"column:tx_hash"`
 	// ContractAddress is the address of the contract that generated the event.
@@ -91,24 +93,25 @@ type CCTPEvent struct {
 	EventType uint8 `gorm:"column:event_type"`
 	// RequestID is the request ID of the CCTP transfer.
 	RequestID string `gorm:"column:request_id"`
+
+	// Token is either the address of the received token on destination or the address of the token burnt on origin.
+	Token string `gorm:"column:token"`
+	// Amount is the amount of the CCTP transfer.
+	Amount *big.Int `gorm:"column:amount;type:UInt256"`
+	// EventIndex is the index of the log.
+	EventIndex uint64 `gorm:"column:event_index"`
+	// AmountUSD is the amount of the CCTP transfer in USD.
+	AmountUSD float64 `gorm:"column:amount_usd;type:Float64"`
 	// OriginChainID is the chain ID of the CCTP transfer.
 	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the CCTP transfer.
 	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
-	// Sender is the sender of the CCTP transfer.
+	// Sender is the address of the sender.
 	Sender sql.NullString `gorm:"column:sender"`
 	// Nonce is the nonce of the CCTP transfer.
 	Nonce sql.NullInt64 `gorm:"column:nonce"`
-	// BurnToken is the burn token of the CCTP transfer.
-	BurnToken sql.NullString `gorm:"column:burn_token"`
-	// MintToken is the mint token of the CCTP transfer.
+	// MintToken is the address of the minted token on destination
 	MintToken sql.NullString `gorm:"column:mint_token"`
-	// SentAmount is the sent amount of the CCTP transfer.
-	SentAmount *big.Int `gorm:"column:sent_amount;type:UInt256"`
-	// SentAmountUSD is the sent amount of the CCTP transfer in USD terms.
-	SentAmountUSD *float64 `gorm:"column:sent_amount_usd;type:Float64"`
-	// ReceivedAmount is the received amount of the CCTP transfer.
-	ReceivedAmount *big.Int `gorm:"column:received_amount;type:UInt256"`
 	// RequestVersion is the request version of the CCTP transfer.
 	RequestVersion sql.NullInt32 `gorm:"column:request_version"`
 	// FormattedRequest is the formatted request of the CCTP transfer.
@@ -119,8 +122,10 @@ type CCTPEvent struct {
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
 	// FeeUSD is the fee of the CCTP transfer in USD terms.
 	FeeUSD *float64 `gorm:"column:fee_usd;type:Float64"`
-	// Token is the address of the received token.
-	Token sql.NullString `gorm:"column:token"`
+	// TokenDecimal is the token's decimal.
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coin gecko.
+	TokenSymbol string `gorm:"column:token_symbol"`
 	// TimeStamp is the timestamp in which the record was inserted.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
