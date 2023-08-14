@@ -1040,19 +1040,25 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Println("emitted")
 
 	// Get the origin state so we can submit it on the Summit.
-	originState, err := e.OriginDomainClient.Origin().SuggestLatestState(e.GetTestContext())
+	originStateRaw, err := originHarnessOverrideRef.SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
+	originState, err := types.DecodeState(originStateRaw)
+	e.Nil(err)
+	// originState, err := e.OriginDomainClient.Origin().SuggestLatestState(e.GetTestContext())
+	// e.Nil(err)
 
-	stateHash, err := originState.Hash()
-	e.Nil(err)
-	originState = types.NewState(
-		stateHash,
-		e.OriginDomainClient.Config().DomainID,
-		originState.Nonce()+1,
-		originState.BlockNumber(),
-		originState.Timestamp(),
-		originState.GasData(),
-	)
+	snapshot := types.NewSnapshot([]types.State{originState})
+	// stateHash, err := originState.Hash()
+	// e.Nil(err)
+	// originState = types.NewState(
+	// 	stateHash,
+	// 	e.OriginDomainClient.Config().DomainID,
+	// 	originState.Nonce(),
+	// 	// originState.Nonce()+1,
+	// 	originState.BlockNumber(),
+	// 	originState.Timestamp(),
+	// 	originState.GasData(),
+	// )
 	// snapshot := types.NewSnapshot([]types.State{notaryState})
 
 	// Submit snapshot with Guard.
@@ -1060,7 +1066,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Printf("state: %v\n", originState)
 	fmt.Printf("state origin: %v, nonce: %v\n", originState.Origin(), originState.Nonce())
 
-	snapshot := types.NewSnapshot([]types.State{originState})
 	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
 	e.Nil(err)
 	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
