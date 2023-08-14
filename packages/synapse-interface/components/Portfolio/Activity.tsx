@@ -74,6 +74,29 @@ export const Activity = () => {
   }, [address])
 
   useEffect(() => {
+    let pollingInterval
+
+    if (userPendingTransactions.length > 0) {
+      pollingInterval = setInterval(() => {
+        fetchUserPendingActivity({
+          address: address,
+          startTime: queryPendingTime,
+        })
+      }, 5000)
+    }
+
+    if (userPendingTransactions.length === 0 && pollingInterval) {
+      clearInterval(pollingInterval)
+    }
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+      }
+    }
+  }, [address, userPendingTransactions.length])
+
+  useEffect(() => {
     const { isLoading, isUninitialized } = fetchedHistoricalActivity
 
     if (isUserHistoricalTransactionsLoading) {
