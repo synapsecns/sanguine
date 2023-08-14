@@ -36,7 +36,7 @@ export const Banner = () => {
     <div className="flex items-center justify-center px-4 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:px-8 md:px-12">
       <div
         id="banner-default"
-        className="flex items-center w-8/12 p-3 border border-[#AC8FFF] rounded-md text-primaryTextColor"
+        className="flex items-center p-3 border border-[#AC8FFF] rounded-md text-primaryTextColor"
         role="alert"
         style={{
           background:
@@ -44,9 +44,11 @@ export const Banner = () => {
           borderRadius: '10px',
         }}
       >
-        <div className="ml-3 text-lg font-thin ">
-          New and improved bridge navigation! See all possible routes you can
-          bridge assets.
+        <div className="m-1 font-thin">
+          <div className="container mx-auto text-center">
+            <h1 className="text-lg ">New and improved bridge navigation</h1>
+            <p className="text-md">See all routes you can bridge assets</p>
+          </div>
         </div>
         <button
           type="button"
