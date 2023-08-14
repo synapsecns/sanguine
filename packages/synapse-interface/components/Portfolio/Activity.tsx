@@ -27,11 +27,18 @@ export const Activity = () => {
     useTransactionsState()
   const { address } = useAccount()
 
-  const [fetchUserHistoricalActivity, historicalActivity] =
+  const [fetchUserHistoricalActivity, historicalActivity, lastFetchArgs] =
     useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, pendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
+
+  const isHistoricalActivityLoading: boolean = useMemo(() => {
+    const { isLoading, isUninitialized } = historicalActivity
+    return isLoading || isUninitialized
+  }, [historicalActivity])
+
+  console.log('isHistoricalActivityLoading: ', isHistoricalActivityLoading)
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return historicalActivity?.data?.bridgeTransactions || []
@@ -82,15 +89,19 @@ export const Activity = () => {
           <TransactionHeader transactionType={ActivityType.PENDING} />
         </ActivitySection>
       )}
-      <ActivitySection title="Recent">
-        <TransactionHeader transactionType={ActivityType.RECENT} />
-        {userHistoricalTransactions.map((transaction: BridgeTransaction) => (
-          <Transaction
-            bridgeTransaction={transaction}
-            transactionType={ActivityType.RECENT}
-          />
-        ))}
-      </ActivitySection>
+      {isHistoricalActivityLoading ? (
+        <div className="text-[#A3A3C2]"> Loading activity... </div>
+      ) : (
+        <ActivitySection title="Recent">
+          <TransactionHeader transactionType={ActivityType.RECENT} />
+          {userHistoricalTransactions.map((transaction: BridgeTransaction) => (
+            <Transaction
+              bridgeTransaction={transaction}
+              transactionType={ActivityType.RECENT}
+            />
+          ))}
+        </ActivitySection>
+      )}
       <ExplorerLink />
     </div>
   )
