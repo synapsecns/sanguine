@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from 'react'
+import { useEffect, useMemo, useCallback, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -303,6 +303,33 @@ export const Transaction = ({
           <Completed transactionCompletedTime={bridgeDestinationTime} />
         )}
       </div>
+    </div>
+  )
+}
+
+export const TimeElapsed = ({ startTime }: { startTime: number }) => {
+  const [elapsedTime, setElapsedTime] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = Math.floor(Date.now() / 1000)
+      const elapsedSeconds = currentTime - startTime
+      setElapsedTime(elapsedSeconds)
+    }, 1000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [startTime])
+
+  const hours = Math.floor(elapsedTime / 3600)
+  const minutes = Math.floor((elapsedTime % 3600) / 60)
+  const seconds = elapsedTime % 60
+
+  return (
+    <div>
+      {hours > 0 ? `${hours}:` : ''}
+      {minutes}:{seconds}
     </div>
   )
 }
