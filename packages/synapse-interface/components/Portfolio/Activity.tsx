@@ -33,6 +33,8 @@ export const Activity = () => {
   const [fetchUserPendingActivity, pendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
 
+  console.log('historicalActivity:', historicalActivity)
+
   const isHistoricalActivityLoading: boolean = useMemo(() => {
     const { isLoading, isUninitialized } = historicalActivity
     return isLoading || isUninitialized

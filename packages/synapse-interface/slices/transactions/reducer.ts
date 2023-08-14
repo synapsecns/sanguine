@@ -8,11 +8,13 @@ import { BridgeTransaction } from '../api/generated'
 
 export interface TransactionsState {
   userHistoricalTransactions: BridgeTransaction[]
+  isUserHistoricalTransactionsLoading: boolean
   userPendingTransactions: BridgeTransaction[]
 }
 
 const initialState: TransactionsState = {
   userHistoricalTransactions: [],
+  isUserHistoricalTransactionsLoading: true,
   userPendingTransactions: [],
 }
 
