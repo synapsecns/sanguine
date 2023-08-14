@@ -8,6 +8,7 @@ import { useTransactionsState } from '@/slices/transactions/hooks'
 import {
   updateUserHistoricalTransactions,
   updateIsUserHistoricalTransactionsLoading,
+  updateUserPendingTransactions,
 } from '@/slices/transactions/actions'
 import {
   useLazyGetUserHistoricalActivityQuery,
@@ -87,6 +88,12 @@ export const Activity = () => {
     }
   }, [userHistoricalActivity])
 
+  useEffect(() => {
+    if (userPendingActivity.length > 0) {
+      dispatch(updateUserPendingTransactions(userPendingActivity))
+    }
+  }, [userPendingActivity])
+
   const hasPendingTransactions: boolean = useMemo(
     () => userPendingTransactions.length > 0,
     [userPendingTransactions]
@@ -96,11 +103,19 @@ export const Activity = () => {
     () => userHistoricalActivity.length > 0,
     [userHistoricalActivity]
   )
+
+  console.log('userPendingActivity: ', userPendingActivity)
   return (
     <div data-test-id="activity">
       {hasPendingTransactions && (
         <ActivitySection title="Pending">
           <TransactionHeader transactionType={ActivityType.PENDING} />
+          {userPendingTransactions.map((transaction: BridgeTransaction) => (
+            <Transaction
+              bridgeTransaction={transaction}
+              transactionType={ActivityType.PENDING}
+            />
+          ))}
         </ActivitySection>
       )}
       {isUserHistoricalTransactionsLoading ? (
@@ -165,7 +180,7 @@ export const TransactionHeader = ({
       <div className="col-span-3">From</div>
       <div className="col-span-3">To</div>
       <div className="flex justify-end col-span-2">
-        {transactionType === ActivityType.PENDING && 'Blocks'}
+        {transactionType === ActivityType.PENDING && 'Block Initiated'}
         {transactionType === ActivityType.RECENT && 'Rate'}
       </div>
       <div className="flex justify-end col-span-2">
@@ -234,12 +249,6 @@ export const Transaction = ({
     destinationChainId,
     destinationTokenSymbol
   )
-
-  const explorerLink: string = getExplorerLink({
-    kappa,
-    fromChainId: originChainId,
-    toChainId: destinationChainId,
-  })
 
   const handleTransactionClick: () => void = useCallback(() => {
     if (kappa && originChainId) {
