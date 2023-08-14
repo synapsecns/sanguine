@@ -302,6 +302,9 @@ export const Transaction = ({
         {transactionType === ActivityType.RECENT && (
           <Completed transactionCompletedTime={bridgeDestinationTime} />
         )}
+        {transactionType === ActivityType.PENDING && (
+          <TimeElapsed startTime={bridgeOriginTime} />
+        )}
       </div>
     </div>
   )
