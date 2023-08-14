@@ -203,7 +203,9 @@ export const ToTokenListOverlay = () => {
       {remainingChainTokens && remainingChainTokens.length > 0 && (
         <>
           <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
-            More on {CHAINS_BY_ID[toChainId]?.name}
+            {toChainId
+              ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
+              : 'All receivable tokens'}
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {remainingChainTokens.map((token, idx) => {

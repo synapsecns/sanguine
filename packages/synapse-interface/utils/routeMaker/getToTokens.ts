@@ -163,15 +163,14 @@ export const getToTokens = ({
     toTokenRouteSymbol
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
-      .pickBy((values, _key) =>
-        values.includes(`${toTokenRouteSymbol}-${toChainId}`)
+      .mapValues((values) =>
+        values.filter((token) => token === `${toTokenRouteSymbol}-${toChainId}`)
       )
       .values()
       .flatten()
       .uniq()
       .value()
   }
-
   if (
     fromChainId &&
     fromTokenRouteSymbol === null &&
@@ -179,8 +178,8 @@ export const getToTokens = ({
     toTokenRouteSymbol
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
-      .pickBy((values, _key) =>
-        values.includes(`${toTokenRouteSymbol}-${toChainId}`)
+      .mapValues((values) =>
+        values.filter((token) => token === `${toTokenRouteSymbol}-${toChainId}`)
       )
       .pickBy((_values, key) => key.endsWith(`-${fromChainId}`))
       .values()
@@ -196,9 +195,10 @@ export const getToTokens = ({
     toTokenRouteSymbol
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
-      .pickBy((values, _key) => {
-        return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
-      })
+      .mapValues((values) =>
+        values.filter((token) => token === `${toTokenRouteSymbol}-${toChainId}`)
+      )
+      .pickBy((_values, key) => key.startsWith(`${fromTokenRouteSymbol}-`))
       .values()
       .flatten()
       .uniq()
