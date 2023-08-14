@@ -45,7 +45,7 @@ import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
@@ -103,7 +103,9 @@ import {
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { useLazyGetUserPendingTransactionsQuery } from '@/slices/api/generated'
-import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { getTimeMinutesBeforeNow, oneDayInMinutes } from '@/utils/time'
+import { updateUserPendingTransactions } from '@/slices/transactions/actions'
+import { BridgeTransaction } from '@/slices/api/generated'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -140,8 +142,18 @@ const StateManagedBridge = () => {
   const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
-  const [fetchUserPendingActivity, pendingActivity] =
+  const [fetchUserPendingActivity, fetchedPendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
+
+  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+    return fetchedPendingActivity?.data?.bridgeTransactions || []
+  }, [fetchedPendingActivity?.data?.bridgeTransactions])
+
+  useEffect(() => {
+    if (userPendingActivity.length > 0) {
+      dispatch(updateUserPendingTransactions(userPendingActivity))
+    }
+  }, [userPendingActivity])
 
   const {
     fromChainId,
@@ -526,6 +538,9 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
+        const queryPendingTime: number =
+          getTimeMinutesBeforeNow(oneDayInMinutes)
+
         setTimeout(async () => {
           await dispatch(
             fetchAndStoreSingleTokenBalance({
@@ -536,6 +551,14 @@ const StateManagedBridge = () => {
             })
           )
         }, 3000)
+
+        setTimeout(async () => {
+          await fetchUserPendingActivity({
+            address: address,
+            startTime: queryPendingTime,
+          })
+          console.log('hit this')
+        }, 5000)
 
         return tx
       } catch (error) {
@@ -686,14 +709,14 @@ const StateManagedBridge = () => {
         </Card>
         {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
       </div>
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <BridgeWatcher
           fromChainId={fromChainId}
           toChainId={toChainId}
           address={address}
           destinationAddress={destinationAddress}
         />
-      </div>
+      </div> */}
     </div>
   )
 }
