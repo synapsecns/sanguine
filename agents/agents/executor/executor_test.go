@@ -960,7 +960,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 				DestinationAddress: e.DestinationContract.Address().String(),
 			},
 			{
-				ChainID: summit,
+				ChainID:            summit,
+				DestinationAddress: e.DestinationContractOnSummit.Address().String(),
 			},
 		},
 		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
@@ -1080,6 +1081,9 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Println("emitted")
 
 	// Submit snapshot with Notary.
+	notaryStatus, err := e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
+	e.Nil(err)
+	fmt.Printf("notary status: %v\n", notaryStatus)
 	fmt.Println("submitting notary snapshot")
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
@@ -1093,10 +1097,12 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 	fmt.Printf("notary snapshot tx: %v\n", tx.Hash().String())
 
-	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Println("emitted")
+	for i := 0; i < 5; i++ {
+		tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		e.Nil(err)
+		e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+		fmt.Println("emitted")
+	}
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {
@@ -1106,7 +1112,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
 		e.Nil(err)
-		fmt.Printf("manager message executed: %v\n", executed)
+		// fmt.Printf("manager message executed: %v\n", executed)
 
 		return executed
 	})

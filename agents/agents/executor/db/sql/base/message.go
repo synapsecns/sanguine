@@ -154,7 +154,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractT
 			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
-	case types.LightInboxContract:
+	case types.LightInboxContract, types.SummitContract:
 		dbTx = preDBTx.Model(&Attestation{}).
 			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).

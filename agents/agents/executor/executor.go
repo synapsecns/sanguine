@@ -251,7 +251,10 @@ func (e Executor) Run(parentCtx context.Context) error {
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
-	fmt.Printf("executor config: %v\n", e.config)
+
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
+	})
 
 	for _, chain := range e.config.Chains {
 		fmt.Printf("setting up chain: %v\n", chain)
@@ -298,6 +301,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	fmt.Println("executing")
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -316,6 +320,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
+		fmt.Println("nonce is nil")
 		return false, nil
 	}
 
@@ -326,6 +331,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if state == nil {
+		fmt.Println("state is nil")
 		return false, nil
 	}
 
@@ -341,6 +347,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedMessageProof {
+		fmt.Println("message proof not verified")
 		return false, nil
 	}
 
@@ -350,6 +357,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedStateProof {
+		fmt.Println("state proof not verified")
 		return false, nil
 	}
 
@@ -369,6 +377,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if snapshotProof == nil || stateIndex == nil {
+		fmt.Printf("snapshot proof / state index is nil: %v, %v\n", snapshotProof, stateIndex)
 		return false, nil
 	}
 
@@ -508,6 +517,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	}
 
 	if messageMinimumTime == nil {
+		fmt.Println("min time is nil")
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -548,6 +558,7 @@ retryLoop:
 
 	if *messageMinimumTime > currentTime {
 		//nolint:nilnil
+		fmt.Printf("time not advanced: %v, %v\n", *messageMinimumTime, currentTime)
 		return nil, nil
 	}
 
@@ -637,8 +648,8 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 				span.AddEvent("message executed")
 				return true, nil
 			}
-			fmt.Printf("raw executed: %v\n", executed)
-			fmt.Printf("message status: %v\n", execTypes.MessageStatusType(executed))
+			// fmt.Printf("raw executed: %v\n", executed)
+			// fmt.Printf("message status: %v\n", execTypes.MessageStatusType(executed))
 
 			span.AddEvent("message not executed")
 			return false, nil
@@ -823,14 +834,17 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						attribute.Bool(metrics.MessageExecuted, messageExecuted),
 					))
 
+					fmt.Printf("messageExecuted: %v\n", messageExecuted)
 					if !messageExecuted {
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)
 							continue
 						}
+						fmt.Printf("executed: %v\n", executed)
 
 						if !executed {
+							fmt.Println("not executed")
 							continue
 						}
 					}

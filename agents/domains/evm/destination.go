@@ -3,10 +3,11 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -89,7 +90,7 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 		return 0, fmt.Errorf("could not get message status: %w", err)
 	}
 
-	fmt.Println("status: ", status)
+	// fmt.Println("status: ", status)
 
 	return status, nil
 }
