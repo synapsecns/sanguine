@@ -34,6 +34,7 @@ import {
   getDefaultWallets,
   connectorsForWallets,
 } from '@rainbow-me/rainbowkit'
+import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
@@ -100,7 +101,13 @@ const { wallets } = getDefaultWallets({
   chains,
 })
 
-const connectors = connectorsForWallets([...wallets])
+const connectors = connectorsForWallets([
+  ...wallets,
+  {
+    groupName: 'Other',
+    wallets: [rabbyWallet({ chains })],
+  },
+])
 
 export const wagmiConfig = createConfig({
   autoConnect: true,
