@@ -160,7 +160,7 @@ export const FromTokenListOverlay = () => {
       className="max-h-full pb-4 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">
-        <div className="flex items-center mt-2 mb-2 font-medium justfiy-between sm:float-none">
+        <div className="relative flex items-center mt-2 mb-2 font-medium">
           <SlideSearchBox
             placeholder="Filter by symbol, contract, or name..."
             searchStr={searchStr}

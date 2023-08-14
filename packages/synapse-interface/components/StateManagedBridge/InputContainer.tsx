@@ -116,7 +116,7 @@ export const InputContainer = () => {
         <div
           className={`
             flex flex-grow items-center justify-between
-            pl-3 
+            pl-md
             w-full h-16
             rounded-md
             border border-white border-opacity-20

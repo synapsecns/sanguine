@@ -52,7 +52,7 @@ export const ToChainSelector = () => {
     <button
       className={`
         bg-transparent
-        pl-sm pr-sm pt-md pb-md
+        p-md
         ${getNetworkHover(toChain?.color)}
         ${getNetworkButtonBgClassNameActive(toChain?.color)}
         border border-transparent

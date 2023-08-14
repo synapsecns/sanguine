@@ -7,6 +7,7 @@ export const CloseButton = ({ onClick }: { onClick: () => void }) => {
         flex items-center justify-center
         w-8 h-8
         hover:cursor-pointer
+        absolute right-2
       `}
       onClick={onClick}
     >
