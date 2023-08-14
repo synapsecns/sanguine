@@ -200,7 +200,7 @@ export const FromTokenListOverlay = () => {
       {remainingTokens && remainingTokens.length > 0 && (
         <>
           <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
-            Other {CHAINS_BY_ID[fromChainId]?.name} tokens
+            More on {CHAINS_BY_ID[fromChainId]?.name}
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {remainingTokens.map((token, idx) => {
@@ -222,7 +222,7 @@ export const FromTokenListOverlay = () => {
       {allOtherFromTokens && allOtherFromTokens.length > 0 && (
         <>
           <div className="px-2 pb-4 text-primaryTextColor text-sm bg-[#343036]">
-            All other sendable tokens
+            All sendable tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {allOtherFromTokens.map((token, idx) => {

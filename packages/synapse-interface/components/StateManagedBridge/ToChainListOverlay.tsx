@@ -149,7 +149,7 @@ export const ToChainListOverlay = () => {
         {possibleChains && possibleChains.length > 0 && (
           <>
             <div className="mt-2 mb-4 text-sm font-normal text-primaryTextColor">
-              Receive on…
+              To…
             </div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
@@ -174,7 +174,7 @@ export const ToChainListOverlay = () => {
         {remainingChains && remainingChains.length > 0 && (
           <>
             <div className="pt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              Other chains
+              All chains
             </div>
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (

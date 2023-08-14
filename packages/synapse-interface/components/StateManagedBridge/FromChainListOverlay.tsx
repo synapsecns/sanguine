@@ -146,9 +146,7 @@ export const FromChainListOverlay = () => {
       >
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mt-2 mb-4 text-sm text-primaryTextColor">
-              Send from…
-            </div>
+            <div className="mt-2 mb-4 text-sm text-primaryTextColor">From…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -172,7 +170,7 @@ export const FromChainListOverlay = () => {
         {remainingChains && remainingChains.length > 0 && (
           <>
             <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All other chains
+              All chains
             </div>
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
