@@ -18,6 +18,7 @@ import {
   resetPortfolioState,
   setActiveTab,
 } from '@/slices/portfolio/actions'
+import { resetTransactionsState } from '@/slices/transactions/actions'
 import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -34,6 +35,7 @@ export const Portfolio = () => {
     // },
     onDisconnect() {
       dispatch(resetPortfolioState())
+      dispatch(resetTransactionsState())
     },
   })
   const { balancesAndAllowances: portfolioData, status: fetchState } =
