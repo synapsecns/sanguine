@@ -38,8 +38,6 @@ export const Activity = () => {
     return isLoading || isUninitialized
   }, [historicalActivity])
 
-  console.log('isHistoricalActivityLoading: ', isHistoricalActivityLoading)
-
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return historicalActivity?.data?.bridgeTransactions || []
   }, [historicalActivity?.data?.bridgeTransactions])
@@ -75,12 +73,14 @@ export const Activity = () => {
     }
   }, [userHistoricalActivity])
 
-  console.log('userHistoricalTransactions: ', userHistoricalTransactions)
-  console.log('userHistoricalActivity: ', userHistoricalActivity)
-
   const hasPendingTransactions: boolean = useMemo(
     () => userPendingTransactions.length > 0,
     [userPendingTransactions]
+  )
+
+  const hasHistoricalTransactions: boolean = useMemo(
+    () => userHistoricalActivity.length > 0,
+    [userHistoricalActivity]
   )
   return (
     <div data-test-id="activity">
