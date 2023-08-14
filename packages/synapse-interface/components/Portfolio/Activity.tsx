@@ -123,11 +123,11 @@ export const Activity = () => {
 
 export const ExplorerLink = () => {
   return (
-    <span data-test-id="explorer-link" className="text-[#99E6FF]">
+    <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
       <Link href={ANALYTICS_PATH} target="_blank">
         Explorer →
       </Link>
-    </span>
+    </div>
   )
 }
 

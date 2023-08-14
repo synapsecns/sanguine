@@ -72,10 +72,11 @@ export const PortfolioContent = ({
           )
         )
       ) : (
-        <React.Fragment>
-          <PortfolioHeader />
-          <UnconnectedPortfolioContent />
-        </React.Fragment>
+        // <React.Fragment>
+        //   <PortfolioHeader />
+        //   <UnconnectedPortfolioContent />
+        // </React.Fragment>
+        <HomeContent />
       )}
     </div>
   )

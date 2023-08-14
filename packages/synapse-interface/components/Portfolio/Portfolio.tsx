@@ -29,9 +29,9 @@ export const Portfolio = () => {
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
-    onConnect() {
-      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-    },
+    // onConnect() {
+    //   dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    // },
     onDisconnect() {
       dispatch(resetPortfolioState())
     },
@@ -58,7 +58,7 @@ export const Portfolio = () => {
     >
       <PortfolioTabManager />
       <div className="mt-4">
-        {activeTab === PortfolioTabs.HOME && <HomeContent />}
+        {/* {activeTab === PortfolioTabs.HOME && <HomeContent />} */}
         {activeTab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
