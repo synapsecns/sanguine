@@ -6,7 +6,7 @@ package cctp
 type EventType uint8
 
 const (
-	// CircleRequestSentEvent is emitted when a Circle token is sent with an attached action request..
+	// CircleRequestSentEvent is emitted when a Circle token is sent with an attached action request.
 	CircleRequestSentEvent EventType = iota
 	// CircleRequestFulfilledEvent is emitted when a Circle token is received with an attached action request.
 	CircleRequestFulfilledEvent

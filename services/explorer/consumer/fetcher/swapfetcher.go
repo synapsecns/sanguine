@@ -32,13 +32,13 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend, is
 	if isMetaSwap {
 		metaSwap, err := metaswap.NewMetaSwapRef(swapAddress, backend)
 		if err != nil {
-			return nil, fmt.Errorf("could not bind metaswap config contract: %w", err)
+			return nil, fmt.Errorf("could not bind metaswap contract: %w", err)
 		}
 		return &swapFetcher{nil, metaSwap, backend, swapAddress}, nil
 	}
 	swap, err := swap.NewSwapRef(swapAddress, backend)
 	if err != nil {
-		return nil, fmt.Errorf("could not bind swap config contract: %w", err)
+		return nil, fmt.Errorf("could not bind swap contract: %w", err)
 	}
 
 	return &swapFetcher{swap, nil, backend, swapAddress}, nil
