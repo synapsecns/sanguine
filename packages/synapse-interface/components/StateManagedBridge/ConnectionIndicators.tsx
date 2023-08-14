@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { setFromChainId } from '@/slices/bridge/reducer'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
@@ -38,7 +41,7 @@ export const ConnectedIndicator = () => {
   )
 }
 
-export const DisconnectedIndicator = () => {
+const DisconnectedIndicator = () => {
   const { openConnectModal } = useConnectModal()
   const { fromChainId } = useBridgeState()
   const chain = CHAINS_BY_ID[fromChainId]
@@ -72,7 +75,7 @@ export const DisconnectedIndicator = () => {
   )
 }
 
-export const ConnectButton = ({ chainId }: { chainId: number }) => {
+export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
   const chain = CHAINS_BY_ID[chainId]
@@ -131,5 +134,49 @@ export const ConnectButton = ({ chainId }: { chainId: number }) => {
         </div>
       )}
     </button>
+  )
+}
+
+export function ConnectWalletButton() {
+  const [clientReady, setClientReady] = useState<boolean>(false)
+  const { address } = useAccount()
+
+  useEffect(() => {
+    setClientReady(true)
+  }, [])
+
+  return (
+    <div data-test-id="">
+      {clientReady && (
+        <ConnectButton.Custom>
+          {({ account, chain, openConnectModal, mounted, openChainModal }) => {
+            return (
+              <>
+                {(() => {
+                  if (!mounted || !account || !chain || !address) {
+                    return (
+                      <button
+                        className={`
+                          flex items-center text-sm text-white mr-2
+                        `}
+                        onClick={openConnectModal}
+                      >
+                        <div
+                          className={`
+                            my-auto ml-auto mr-2 text-transparent w-2 h-2
+                            border border-indigo-300 border-solid rounded-full
+                          `}
+                        />
+                        Connect
+                      </button>
+                    )
+                  }
+                })()}
+              </>
+            )
+          }}
+        </ConnectButton.Custom>
+      )}
+    </div>
   )
 }

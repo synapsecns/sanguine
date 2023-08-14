@@ -7,9 +7,9 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
-  ConnectButton,
+  ConnectToNetworkButton,
+  ConnectWalletButton,
   ConnectedIndicator,
-  DisconnectedIndicator,
 } from './ConnectionIndicators'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
@@ -95,11 +95,11 @@ export const InputContainer = () => {
 
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
-      return <DisconnectedIndicator />
+      return <ConnectWalletButton />
     } else if (hasMounted && isConnected && fromChainId === chain.id) {
       return <ConnectedIndicator />
     } else if (hasMounted && isConnected && fromChainId !== chain.id) {
-      return <ConnectButton chainId={fromChainId} />
+      return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
