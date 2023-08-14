@@ -19,6 +19,8 @@ import {
 import {
   getTimeMinutesBeforeNow,
   convertUnixTimestampToMonthAndDate,
+  oneDayInMinutes,
+  oneMonthInMinutes,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
@@ -52,8 +54,6 @@ export const Activity = () => {
     return pendingActivity?.data?.bridgeTransactions || []
   }, [pendingActivity?.data?.bridgeTransactions])
 
-  const oneMonthInMinutes: number = 43200
-  const oneDayInMinutes: number = 1440
   const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
   const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
@@ -406,15 +406,15 @@ export const TransactionPayloadDetail = ({
         </div>
       )}
 
-      {token && (
+      {tokenSymbol && (
         <div
           data-test-id="transaction-payload-token"
           className="flex flex-row items-center"
         >
           <Image
-            src={token.icon}
+            src={token?.icon}
             className="items-center w-6 h-6 mr-3 rounded-full"
-            alt={`${token.name} icon`}
+            alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'number' && (
             <div className="mr-1">{tokenAmount}</div>

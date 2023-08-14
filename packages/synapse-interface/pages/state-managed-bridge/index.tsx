@@ -102,6 +102,8 @@ import {
 } from '@/slices/portfolio/hooks'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import { useLazyGetUserPendingTransactionsQuery } from '@/slices/api/generated'
+import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -137,6 +139,9 @@ const StateManagedBridge = () => {
 
   const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
+
+  const [fetchUserPendingActivity, pendingActivity] =
+    useLazyGetUserPendingTransactionsQuery()
 
   const {
     fromChainId,
@@ -530,7 +535,7 @@ const StateManagedBridge = () => {
               chainId: fromChainId,
             })
           )
-        }, 2000)
+        }, 3000)
 
         return tx
       } catch (error) {
