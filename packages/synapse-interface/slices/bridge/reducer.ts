@@ -67,10 +67,6 @@ export const initialState: BridgeState = {
   bridgeTxHashes: [],
 }
 
-/*
-are swapExceptions still vaild
-*/
-
 export const bridgeSlice = createSlice({
   name: 'bridge',
   initialState,
@@ -120,7 +116,10 @@ export const bridgeSlice = createSlice({
         validFromToken = null
       }
 
-      if (validToChainIds?.includes(state.toChainId)) {
+      if (
+        validToChainIds?.includes(state.toChainId) &&
+        incomingFromChainId !== state.toChainId
+      ) {
         validToChainId = state.toChainId
       } else {
         validToChainId = null
@@ -270,7 +269,10 @@ export const bridgeSlice = createSlice({
       let validFromToken
       let validToToken
 
-      if (validFromChainIds?.includes(state.fromChainId)) {
+      if (
+        validFromChainIds?.includes(state.fromChainId) &&
+        incomingToChainId !== state.fromChainId
+      ) {
         validFromChainId = state.fromChainId
       } else {
         validFromChainId = null

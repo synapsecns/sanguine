@@ -88,15 +88,3 @@ export const getRoutePossibilities = ({
 export const getSymbol = (tokenAndChainId: string): string => {
   return tokenAndChainId.split('-')[0]
 }
-
-/*NOTES
-
-  * Set intelligent defaults when fromTokens/toTokens change
-  * check if from/to token is allowed in list
-
-
-  -- To strip out --
-  * paused tokens [x]
-  * swap exceptions?
-
-*/
