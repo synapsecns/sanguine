@@ -114,9 +114,9 @@ export const Activity = () => {
               transactionType={ActivityType.RECENT}
             />
           ))}
+          <ExplorerLink />
         </ActivitySection>
       )}
-      <ExplorerLink />
     </div>
   )
 }
