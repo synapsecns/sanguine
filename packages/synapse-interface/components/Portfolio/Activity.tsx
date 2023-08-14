@@ -85,6 +85,7 @@ export const Activity = () => {
   useEffect(() => {
     if (userHistoricalActivity.length > 0) {
       dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+      dispatch(updateUserPendingTransactions(userPendingActivity))
     }
   }, [userHistoricalActivity])
 
@@ -179,7 +180,7 @@ export const TransactionHeader = ({
       <div className="col-span-3">From</div>
       <div className="col-span-3">To</div>
       <div className="flex justify-end col-span-2">
-        {transactionType === ActivityType.PENDING && 'Block Initiated'}
+        {transactionType === ActivityType.PENDING && 'Block'}
         {transactionType === ActivityType.RECENT && 'Rate'}
       </div>
       <div className="flex justify-end col-span-2">
@@ -219,6 +220,7 @@ export const Transaction = ({
 
   const {
     chainID: originChainId,
+    destinationChainID: destinationChainId,
     value: originRawValue,
     formattedValue: originFormattedValue,
     tokenAddress: originTokenAddress,
@@ -234,7 +236,6 @@ export const Transaction = ({
   )
 
   const {
-    chainID: destinationChainId,
     value: destinationRawValue,
     formattedValue: destinationFormattedValue,
     tokenAddress: destinationTokenAddress,
@@ -329,10 +330,13 @@ export const TimeElapsed = ({ startTime }: { startTime: number }) => {
   const minutes = Math.floor((elapsedTime % 3600) / 60)
   const seconds = elapsedTime % 60
 
+  const formattedMinutes = String(minutes).padStart(2, '0')
+  const formattedSeconds = String(seconds).padStart(2, '0')
+
   return (
     <div>
       {hours > 0 ? `${hours}:` : ''}
-      {minutes}:{seconds}
+      {formattedMinutes}:{formattedSeconds}
     </div>
   )
 }
