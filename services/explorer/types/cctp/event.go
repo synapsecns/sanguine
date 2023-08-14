@@ -10,16 +10,22 @@ import (
 //
 //nolint:interfacebloat
 type EventLog interface {
+	// GetTxHash returns the transaction hash of the log.
+	GetTxHash() common.Hash
 	// GetContractAddress returns the contract address of the log.
 	GetContractAddress() common.Address
 	// GetBlockNumber returns the block number of the log.
 	GetBlockNumber() uint64
-	// GetTxHash returns the transaction hash of the log.
-	GetTxHash() common.Hash
 	// GetEventType returns the event type of the log.
 	GetEventType() EventType
+	// GetEventIndex returns the index of the log.
+	GetEventIndex() uint64
 	// GetRequestID returns the request id of the CCTP transfer.
 	GetRequestID() [32]byte
+	// GetToken returns the address of the received token.
+	GetToken() string
+	// GetAmount returns the amount of the CCTP transfer.
+	GetAmount() *big.Int
 	// GetOriginChainID returns the chain id of the CCTP transfer.
 	GetOriginChainID() *big.Int
 	// GetDestinationChainID returns the chain id of the CCTP transfer.
@@ -28,14 +34,9 @@ type EventLog interface {
 	GetSender() *string
 	// GetNonce returns the nonce of the CCTP transfer.
 	GetNonce() *uint64
-	// GetBurnToken returns the burn token of the CCTP transfer.
-	GetBurnToken() *string
 	// GetMintToken returns the mint token of the CCTP transfer.
 	GetMintToken() *string
-	// GetSentAmount returns the sent amount of the CCTP transfer.
-	GetSentAmount() *big.Int
-	// GetReceivedAmount returns the received amount of the CCTP transfer.
-	GetReceivedAmount() *big.Int
+
 	// GetRequestVersion returns the request version of the CCTP transfer.
 	GetRequestVersion() *uint32
 	// GetFormattedRequest returns the formatted request of the CCTP transfer.
@@ -44,6 +45,4 @@ type EventLog interface {
 	GetRecipient() *string
 	// GetFee returns the fee of the CCTP transfer.
 	GetFee() *big.Int
-	// GetToken returns the address of the received token.
-	GetToken() *string
 }
