@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
   updateUserHistoricalTransactions,
+  updateIsUserHistoricalTransactionsLoading,
   updateUserPendingTransactions,
 } from './actions'
 import { BridgeTransaction } from '../api/generated'
@@ -28,6 +29,12 @@ export const transactionsSlice = createSlice({
         updateUserHistoricalTransactions,
         (state, action: PayloadAction<BridgeTransaction[]>) => {
           state.userHistoricalTransactions = action.payload
+        }
+      )
+      .addCase(
+        updateIsUserHistoricalTransactionsLoading,
+        (state, action: PayloadAction<boolean>) => {
+          state.isUserHistoricalTransactionsLoading = action.payload
         }
       )
       .addCase(
