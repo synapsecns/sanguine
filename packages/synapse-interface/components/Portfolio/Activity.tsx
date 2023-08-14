@@ -104,7 +104,6 @@ export const Activity = () => {
     [userHistoricalActivity]
   )
 
-  console.log('userPendingActivity: ', userPendingActivity)
   return (
     <div data-test-id="activity">
       {hasPendingTransactions && (
@@ -294,6 +293,9 @@ export const Transaction = ({
             originValue={originFormattedValue}
             destinationValue={destinationFormattedValue}
           />
+        )}
+        {transactionType === ActivityType.PENDING && (
+          <div>{bridgeOriginBlockNumber}</div>
         )}
       </div>
       <div className="flex justify-end col-span-2">
