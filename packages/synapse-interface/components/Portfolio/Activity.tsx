@@ -24,6 +24,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
+import EtherscanIcon from '../icons/EtherscanIcon'
 
 export const Activity = () => {
   const dispatch = useAppDispatch()
@@ -334,7 +335,8 @@ export const TimeElapsed = ({ startTime }: { startTime: number }) => {
   const formattedSeconds = String(seconds).padStart(2, '0')
 
   return (
-    <div>
+    <div className="flex items-center">
+      <EtherscanIcon className="mr-1" />
       {hours > 0 ? `${hours}:` : ''}
       {formattedMinutes}:{formattedSeconds}
     </div>
