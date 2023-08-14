@@ -5,7 +5,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import { useTransactionsState } from '@/slices/transactions/hooks'
-import { updateUserHistoricalTransactions } from '@/slices/transactions/actions'
+import {
+  updateUserHistoricalTransactions,
+  updateIsUserHistoricalTransactionsLoading,
+} from '@/slices/transactions/actions'
 import {
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
@@ -23,26 +26,25 @@ import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 
 export const Activity = () => {
   const dispatch = useAppDispatch()
-  const { userHistoricalTransactions, userPendingTransactions } =
-    useTransactionsState()
+  const {
+    userHistoricalTransactions,
+    userPendingTransactions,
+    isUserHistoricalTransactionsLoading,
+  } = useTransactionsState()
   const { address } = useAccount()
 
-  const [fetchUserHistoricalActivity, historicalActivity, lastFetchArgs] =
-    useLazyGetUserHistoricalActivityQuery()
+  const [
+    fetchUserHistoricalActivity,
+    fetchedHistoricalActivity,
+    lastFetchArgs,
+  ] = useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, pendingActivity] =
     useLazyGetUserPendingTransactionsQuery()
 
-  console.log('historicalActivity:', historicalActivity)
-
-  const isHistoricalActivityLoading: boolean = useMemo(() => {
-    const { isLoading, isUninitialized } = historicalActivity
-    return isLoading || isUninitialized
-  }, [historicalActivity])
-
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
-    return historicalActivity?.data?.bridgeTransactions || []
-  }, [historicalActivity?.data?.bridgeTransactions])
+    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
+  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
 
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
     return pendingActivity?.data?.bridgeTransactions || []
@@ -70,6 +72,16 @@ export const Activity = () => {
   }, [address])
 
   useEffect(() => {
+    const { isLoading, isUninitialized } = fetchedHistoricalActivity
+
+    if (isUserHistoricalTransactionsLoading) {
+      !isLoading &&
+        !isUninitialized &&
+        dispatch(updateIsUserHistoricalTransactionsLoading(false))
+    }
+  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
+
+  useEffect(() => {
     if (userHistoricalActivity.length > 0) {
       dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
     }
@@ -91,7 +103,7 @@ export const Activity = () => {
           <TransactionHeader transactionType={ActivityType.PENDING} />
         </ActivitySection>
       )}
-      {isHistoricalActivityLoading ? (
+      {isUserHistoricalTransactionsLoading ? (
         <div className="text-[#A3A3C2]"> Loading activity... </div>
       ) : (
         <ActivitySection title="Recent">
