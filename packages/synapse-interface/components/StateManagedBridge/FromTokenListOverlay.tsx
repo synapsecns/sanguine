@@ -42,8 +42,10 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = _.difference(allFromChainTokens, fromTokens).sort((t) =>
-    sortByBalances(t, fromChainId, portfolioBalances)
+  let remainingTokens = sortTokens(
+    _.difference(allFromChainTokens, fromTokens).sort((t) =>
+      sortByBalances(t, fromChainId, portfolioBalances)
+    )
   )
 
   const { fromTokens: allTokens } = getRoutePossibilities({
@@ -53,7 +55,9 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherFromTokens = _.difference(allTokens, allFromChainTokens)
+  let allOtherFromTokens = sortTokens(
+    _.difference(allTokens, allFromChainTokens)
+  )
 
   const possibleTokensWithSource = possibleTokens.map((token) => ({
     ...token,
