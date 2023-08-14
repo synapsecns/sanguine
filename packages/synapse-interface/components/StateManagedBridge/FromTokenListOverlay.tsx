@@ -6,7 +6,6 @@ import Fuse from 'fuse.js'
 
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
@@ -16,7 +15,8 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import { sortByBalances } from './helpers/sortByBalance'
+import { hasBalance } from './helpers/sortByBalance'
+import { sortByPriorityRank } from './helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
@@ -31,9 +31,16 @@ export const FromTokenListOverlay = () => {
   const { fromTokens, fromChainId, fromToken } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
-  let possibleTokens = sortTokens(fromTokens).sort((t) =>
-    sortByBalances(t, fromChainId, portfolioBalances)
-  )
+  let possibleTokens = sortByPriorityRank(fromTokens)
+
+  possibleTokens = [
+    ...possibleTokens.filter((t) =>
+      hasBalance(t, fromChainId, portfolioBalances)
+    ),
+    ...possibleTokens.filter(
+      (t) => !hasBalance(t, fromChainId, portfolioBalances)
+    ),
+  ]
 
   const { fromTokens: allFromChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -42,11 +49,18 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = sortTokens(
-    _.difference(allFromChainTokens, fromTokens).sort((t) =>
-      sortByBalances(t, fromChainId, portfolioBalances)
-    )
+  let remainingTokens = sortByPriorityRank(
+    _.difference(allFromChainTokens, fromTokens)
   )
+
+  remainingTokens = [
+    ...remainingTokens.filter((t) =>
+      hasBalance(t, fromChainId, portfolioBalances)
+    ),
+    ...remainingTokens.filter(
+      (t) => !hasBalance(t, fromChainId, portfolioBalances)
+    ),
+  ]
 
   const { fromTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
@@ -55,7 +69,7 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherFromTokens = sortTokens(
+  let allOtherFromTokens = sortByPriorityRank(
     _.difference(allTokens, allFromChainTokens)
   )
 

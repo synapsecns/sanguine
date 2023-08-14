@@ -5,7 +5,6 @@ import Fuse from 'fuse.js'
 
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
 import { setToToken } from '@/slices/bridge/reducer'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
@@ -14,7 +13,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import { sortByBalances } from './helpers/sortByBalance'
+import { sortByPriorityRank } from './helpers/sortByPriorityRank'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
@@ -30,9 +29,7 @@ export const ToTokenListOverlay = () => {
   const dispatch = useDispatch()
   const overlayRef = useRef(null)
 
-  let possibleTokens = sortTokens(toTokens).sort((t) =>
-    sortByBalances(t, toChainId, portfolioBalances)
-  )
+  let possibleTokens = sortByPriorityRank(toTokens)
 
   const { toTokens: allToChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -41,10 +38,8 @@ export const ToTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingChainTokens = sortTokens(
-    _.difference(allToChainTokens, toTokens).sort((t) =>
-      sortByBalances(t, toChainId, portfolioBalances)
-    )
+  let remainingChainTokens = sortByPriorityRank(
+    _.difference(allToChainTokens, toTokens)
   )
 
   const { toTokens: allTokens } = getRoutePossibilities({
@@ -54,7 +49,9 @@ export const ToTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherToTokens = sortTokens(_.difference(allTokens, allToChainTokens))
+  let allOtherToTokens = sortByPriorityRank(
+    _.difference(allTokens, allToChainTokens)
+  )
 
   const possibleTokenswithSource = possibleTokens.map((token) => ({
     ...token,
