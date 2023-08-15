@@ -51,8 +51,10 @@ export const Activity = () => {
   }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
 
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-    return pendingActivity?.data?.bridgeTransactions || []
-  }, [pendingActivity?.data?.bridgeTransactions])
+    if (pendingActivity?.status === 'fulfilled') {
+      return pendingActivity?.data?.bridgeTransactions
+    } else return userPendingTransactions
+  }, [pendingActivity])
 
   const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
   const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -90,6 +92,8 @@ export const Activity = () => {
   }, [userHistoricalActivity])
 
   useEffect(() => {
+    console.log('pendingActivity from useEffect:', pendingActivity)
+    console.log('userPendingActivity from useEffect:')
     dispatch(updateUserPendingTransactions(userPendingActivity))
 
     fetchUserHistoricalActivity({
@@ -110,7 +114,7 @@ export const Activity = () => {
 
   return (
     <div data-test-id="activity">
-      {userPendingTransactions && (
+      {hasPendingTransactions && (
         <ActivitySection title="Pending">
           <TransactionHeader transactionType={ActivityType.PENDING} />
           {userPendingTransactions.map((transaction: BridgeTransaction) => (
