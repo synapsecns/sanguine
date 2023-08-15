@@ -41,36 +41,36 @@ import {
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
-const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
-const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
+// const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+// const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
   const { fromChainId }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
-  const {
-    userPendingTransactions,
-    isUserHistoricalTransactionsLoading,
-  }: TransactionsState = useTransactionsState()
+  // const {
+  //   userPendingTransactions,
+  //   isUserHistoricalTransactionsLoading,
+  // }: TransactionsState = useTransactionsState()
 
-  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery()
+  // const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
+  //   useLazyGetUserHistoricalActivityQuery()
 
-  const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
+  // const [fetchUserPendingActivity, fetchedPendingActivity] =
+  //   useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
 
   const { chain } = useNetwork()
   const { address } = useAccount({
     onConnect() {
       dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-      fetchUserHistoricalActivity({
-        address: address,
-        startTime: queryHistoricalTime,
-      })
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
+      // fetchUserHistoricalActivity({
+      //   address: address,
+      //   startTime: queryHistoricalTime,
+      // })
+      // fetchUserPendingActivity({
+      //   address: address,
+      //   startTime: queryPendingTime,
+      // })
     },
     onDisconnect() {
       dispatch(resetPortfolioState())
@@ -84,40 +84,41 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-    if (fetchedPendingActivity?.status === 'fulfilled') {
-      return fetchedPendingActivity?.data?.bridgeTransactions
-    } else return userPendingTransactions
-  }, [fetchedPendingActivity])
+  // useEffect(() => {
+  //   const {
+  //     isLoading,
+  //     isUninitialized,
+  //     isSuccess,
+  //     data: historicalData,
+  //   } = fetchedHistoricalActivity
 
-  useEffect(() => {
-    const {
-      isLoading,
-      isUninitialized,
-      isSuccess,
-      data: historicalData,
-    } = fetchedHistoricalActivity
+  //   if (address && isUserHistoricalTransactionsLoading) {
+  //     !isLoading &&
+  //       !isUninitialized &&
+  //       dispatch(updateIsUserHistoricalTransactionsLoading(false))
+  //   }
 
-    if (address && isUserHistoricalTransactionsLoading) {
-      !isLoading &&
-        !isUninitialized &&
-        dispatch(updateIsUserHistoricalTransactionsLoading(false))
-    }
+  //   if (address && isSuccess) {
+  //     dispatch(
+  //       updateUserHistoricalTransactions(historicalData?.bridgeTransactions)
+  //     )
+  //   }
+  // }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
 
-    if (address && isSuccess) {
-      dispatch(
-        updateUserHistoricalTransactions(historicalData?.bridgeTransactions)
-      )
-    }
-  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
+  // const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+  //   const { isSuccess, data: pendingData } = fetchedPendingActivity
+  //   // console.log('fetchedPendingActivity useMemo:', fetchedPendingActivity)
+  //   // console.log('pendingData:', pendingData)
+  //   return isSuccess ? pendingData?.bridgeTransactions : userPendingTransactions
+  // }, [fetchedPendingActivity, address])
 
-  useEffect(() => {
-    dispatch(updateUserPendingTransactions(userPendingActivity))
-    fetchUserHistoricalActivity({
-      address: address,
-      startTime: queryHistoricalTime,
-    })
-  }, [userPendingActivity])
+  // useEffect(() => {
+  //   dispatch(updateUserPendingTransactions(userPendingActivity))
+  //   fetchUserHistoricalActivity({
+  //     address: address,
+  //     startTime: queryHistoricalTime,
+  //   })
+  // }, [userPendingActivity])
 
   useEffect(() => {
     ;(async () => {
