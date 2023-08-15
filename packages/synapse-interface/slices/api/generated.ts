@@ -445,6 +445,7 @@ export const GetUserHistoricalActivityDocument = `
     addressFrom: $address
     startTime: $startTime
     page: 1
+    useMv: true
   ) {
     fromInfo {
       chainID
@@ -489,6 +490,7 @@ export const GetUserPendingTransactionsDocument = `
     addressFrom: $address
     startTime: $startTime
     page: 1
+    useMv: true
   ) {
     fromInfo {
       chainID
