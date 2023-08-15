@@ -44,7 +44,7 @@ export const Activity = () => {
   ] = useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, pendingActivity] =
-    useLazyGetUserPendingTransactionsQuery()
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 5000 })
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return fetchedHistoricalActivity?.data?.bridgeTransactions || []
@@ -72,29 +72,6 @@ export const Activity = () => {
         startTime: queryPendingTime,
       })
   }, [address])
-
-  useEffect(() => {
-    let pollingInterval
-
-    if (userPendingTransactions.length > 0) {
-      pollingInterval = setInterval(() => {
-        fetchUserPendingActivity({
-          address: address,
-          startTime: queryPendingTime,
-        })
-      }, 5000)
-    }
-
-    if (userPendingTransactions.length === 0 && pollingInterval) {
-      clearInterval(pollingInterval)
-    }
-
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval)
-      }
-    }
-  }, [address, userPendingTransactions.length])
 
   useEffect(() => {
     const { isLoading, isUninitialized } = fetchedHistoricalActivity

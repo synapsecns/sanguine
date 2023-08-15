@@ -143,7 +143,7 @@ const StateManagedBridge = () => {
     useFetchPortfolioBalances()
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery()
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 5000 })
 
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
     return fetchedPendingActivity?.data?.bridgeTransactions || []
@@ -542,6 +542,11 @@ const StateManagedBridge = () => {
         const queryPendingTime: number =
           getTimeMinutesBeforeNow(oneDayInMinutes)
 
+        await fetchUserPendingActivity({
+          address: address,
+          startTime: queryPendingTime,
+        })
+
         setTimeout(async () => {
           await dispatch(
             fetchAndStoreSingleTokenBalance({
@@ -552,14 +557,6 @@ const StateManagedBridge = () => {
             })
           )
         }, 3000)
-
-        setTimeout(async () => {
-          await fetchUserPendingActivity({
-            address: address,
-            startTime: queryPendingTime,
-          })
-          console.log('hit this')
-        }, 5000)
 
         return tx
       } catch (error) {
