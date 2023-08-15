@@ -143,7 +143,7 @@ const StateManagedBridge = () => {
     useFetchPortfolioBalances()
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 5000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
 
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
     return fetchedPendingActivity?.data?.bridgeTransactions || []

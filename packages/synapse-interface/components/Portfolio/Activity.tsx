@@ -44,7 +44,7 @@ export const Activity = () => {
   ] = useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, pendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 5000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return fetchedHistoricalActivity?.data?.bridgeTransactions || []
@@ -110,7 +110,7 @@ export const Activity = () => {
 
   return (
     <div data-test-id="activity">
-      {hasPendingTransactions && (
+      {userPendingTransactions && (
         <ActivitySection title="Pending">
           <TransactionHeader transactionType={ActivityType.PENDING} />
           {userPendingTransactions.map((transaction: BridgeTransaction) => (
