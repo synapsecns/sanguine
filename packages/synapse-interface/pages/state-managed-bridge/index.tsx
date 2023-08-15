@@ -106,6 +106,8 @@ import { useLazyGetUserPendingTransactionsQuery } from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow, oneDayInMinutes } from '@/utils/time'
 import { updateUserPendingTransactions } from '@/slices/transactions/actions'
 import { BridgeTransaction } from '@/slices/api/generated'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+import { TransactionsState } from '@/slices/transactions/reducer'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -142,15 +144,18 @@ const StateManagedBridge = () => {
   const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
+  const { userPendingTransactions }: TransactionsState = useTransactionsState()
+
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
 
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-    return fetchedPendingActivity?.data?.bridgeTransactions || []
-  }, [fetchedPendingActivity?.data?.bridgeTransactions])
+    if (fetchedPendingActivity?.status === 'fulfilled') {
+      return fetchedPendingActivity?.data?.bridgeTransactions
+    } else return userPendingTransactions
+  }, [fetchedPendingActivity])
 
   useEffect(() => {
-    console.log('dispatch pending query from Bridge')
     dispatch(updateUserPendingTransactions(userPendingActivity))
   }, [userPendingActivity])
 

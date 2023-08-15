@@ -19,8 +19,6 @@ import {
 import {
   getTimeMinutesBeforeNow,
   convertUnixTimestampToMonthAndDate,
-  oneDayInMinutes,
-  oneMonthInMinutes,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
@@ -30,7 +28,6 @@ import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
 export const Activity = () => {
-  const dispatch = useAppDispatch()
   const {
     userHistoricalTransactions,
     userPendingTransactions,
