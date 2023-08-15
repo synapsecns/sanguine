@@ -14,6 +14,8 @@ type ContractConfig struct {
 	Address string `yaml:"address"`
 	// StartBlock is the block number to start indexing events from.
 	StartBlock uint64 `yaml:"start_block"`
+	// EndBlock is the block number to stop indexing events at. If this is set, it will enforce the start block and ignore the last indexed block.
+	EndBlock uint64 `yaml:"end_block"`
 	// RefreshRate is the rate at which the contract is refreshed.
 	RefreshRate uint64 `yaml:"refresh_rate"`
 }

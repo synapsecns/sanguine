@@ -1,4 +1,4 @@
-package backfill_test
+package backend_test
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -18,7 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 )
 
-type BackfillSuite struct {
+type BackendSuite struct {
 	*testsuite.TestSuite
 	testDB  db.EventDB
 	manager *testutil.DeployManager
@@ -27,16 +27,16 @@ type BackfillSuite struct {
 	metrics metrics.Handler
 }
 
-// NewBackfillSuite creates a new backfill test suite.
-func NewBackfillSuite(tb testing.TB) *BackfillSuite {
+// NewBackendSuite creates a new backfill test suite.
+func NewBackendSuite(tb testing.TB) *BackendSuite {
 	tb.Helper()
-	return &BackfillSuite{
+	return &BackendSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
 // SetupTest sets up the test suite.
-func (b *BackfillSuite) SetupTest() {
+func (b *BackendSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 	b.SetTestTimeout(time.Minute * 3)
 	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""), b.metrics, false)
@@ -48,7 +48,7 @@ func (b *BackfillSuite) SetupTest() {
 	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
 }
 
-func (b *BackfillSuite) SetupSuite() {
+func (b *BackendSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
 	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
@@ -57,7 +57,7 @@ func (b *BackfillSuite) SetupSuite() {
 	Nil(b.T(), err)
 }
 
-// TestBackfillSuite tests the backfill suite.
-func TestBackfillSuite(t *testing.T) {
-	suite.Run(t, NewBackfillSuite(t))
+// TestBackendSuite tests the backfill suite.
+func TestBackendSuite(t *testing.T) {
+	suite.Run(t, NewBackendSuite(t))
 }
