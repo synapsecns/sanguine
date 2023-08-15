@@ -144,20 +144,6 @@ const StateManagedBridge = () => {
   const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
-  // const { userPendingTransactions }: TransactionsState = useTransactionsState()
-
-  // const [fetchUserPendingActivity, fetchedPendingActivity] =
-  //   useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
-
-  // const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-  //   const { isSuccess, data: pendingData } = fetchedPendingActivity
-  //   return isSuccess ? pendingData?.bridgeTransactions : userPendingTransactions
-  // }, [fetchedPendingActivity])
-
-  // useEffect(() => {
-  //   dispatch(updateUserPendingTransactions(userPendingActivity))
-  // }, [userPendingActivity])
-
   const {
     fromChainId,
     toChainId,
@@ -540,14 +526,6 @@ const StateManagedBridge = () => {
         })
 
         toast.dismiss(pendingPopup)
-
-        // const queryPendingTime: number =
-        //   getTimeMinutesBeforeNow(oneDayInMinutes)
-
-        // await fetchUserPendingActivity({
-        //   address: address,
-        //   startTime: queryPendingTime,
-        // })
 
         setTimeout(async () => {
           await dispatch(
