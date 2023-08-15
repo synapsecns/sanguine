@@ -84,10 +84,6 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
-    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
-  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
-
   const userPendingActivity: BridgeTransaction[] = useMemo(() => {
     if (fetchedPendingActivity?.status === 'fulfilled') {
       return fetchedPendingActivity?.data?.bridgeTransactions
@@ -95,20 +91,25 @@ export const Portfolio = () => {
   }, [fetchedPendingActivity])
 
   useEffect(() => {
-    const { isLoading, isUninitialized } = fetchedHistoricalActivity
+    const {
+      isLoading,
+      isUninitialized,
+      isSuccess,
+      data: historicalData,
+    } = fetchedHistoricalActivity
 
-    if (isUserHistoricalTransactionsLoading) {
+    if (address && isUserHistoricalTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserHistoricalTransactionsLoading(false))
     }
-  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
 
-  useEffect(() => {
-    if (userHistoricalActivity.length > 0) {
-      dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+    if (address && isSuccess) {
+      dispatch(
+        updateUserHistoricalTransactions(historicalData?.bridgeTransactions)
+      )
     }
-  }, [userHistoricalActivity])
+  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
 
   useEffect(() => {
     dispatch(updateUserPendingTransactions(userPendingActivity))

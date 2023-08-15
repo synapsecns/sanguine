@@ -19,6 +19,8 @@ import {
 import {
   getTimeMinutesBeforeNow,
   convertUnixTimestampToMonthAndDate,
+  oneDayInMinutes,
+  oneMonthInMinutes,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
