@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	scribeLogger "github.com/synapsecns/sanguine/services/scribe/logger"
 	gormLogger "gorm.io/gorm/logger"
+
 	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
@@ -32,7 +34,7 @@ var NamingStrategy = schema.NamingStrategy{
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debug("creating mysql store")
-
+	scribeLogger.ReportScribeState(0, 0, nil, scribeLogger.CreatingSQLStore)
 	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
