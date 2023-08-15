@@ -73,18 +73,26 @@ export default function Updater(): null {
     }
   }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
 
-  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+  useEffect(() => {
     const { isSuccess, data: pendingData } = fetchedPendingActivity
-    return isSuccess ? pendingData?.bridgeTransactions : userPendingTransactions
+
+    if (address && isSuccess) {
+      dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
+    }
   }, [fetchedPendingActivity, address])
 
-  useEffect(() => {
-    dispatch(updateUserPendingTransactions(userPendingActivity))
-    fetchUserHistoricalActivity({
-      address: address,
-      startTime: queryHistoricalTime,
-    })
-  }, [userPendingActivity])
+  // const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+  //   const { isSuccess, data: pendingData } = fetchedPendingActivity
+  //   return isSuccess ? pendingData?.bridgeTransactions : userPendingTransactions
+  // }, [fetchedPendingActivity, address])
+
+  // useEffect(() => {
+  //   dispatch(updateUserPendingTransactions(userPendingActivity))
+  //   fetchUserHistoricalActivity({
+  //     address: address,
+  //     startTime: queryHistoricalTime,
+  //   })
+  // }, [userPendingActivity])
 
   return null
 }

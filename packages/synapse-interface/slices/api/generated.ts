@@ -490,7 +490,7 @@ export const GetUserPendingTransactionsDocument = `
     addressFrom: $address
     startTime: $startTime
     page: 1
-    useMv: true
+    useMv: false
   ) {
     fromInfo {
       chainID
