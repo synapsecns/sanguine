@@ -100,7 +100,7 @@ export const Activity = () => {
   }, [userPendingActivity])
 
   const hasPendingTransactions: boolean = useMemo(
-    () => userPendingTransactions.length > 0,
+    () => userPendingTransactions && userPendingTransactions.length > 0,
     [userPendingTransactions]
   )
 
