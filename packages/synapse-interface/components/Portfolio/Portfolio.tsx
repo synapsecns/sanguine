@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -23,26 +23,73 @@ import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  updateUserHistoricalTransactions,
+  updateIsUserHistoricalTransactionsLoading,
+} from '@/slices/transactions/actions'
+import {
+  useLazyGetUserHistoricalActivityQuery,
+  BridgeTransaction,
+} from '@/slices/api/generated'
+import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+
+const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
+  const {
+    userHistoricalTransactions,
+    userPendingTransactions,
+    isUserHistoricalTransactionsLoading,
+  } = useTransactionsState()
+  const [
+    fetchUserHistoricalActivity,
+    fetchedHistoricalActivity,
+    lastFetchArgs,
+  ] = useLazyGetUserHistoricalActivityQuery()
   const { fromChainId }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
     onConnect() {
       dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+      fetchUserHistoricalActivity({
+        address: address,
+        startTime: queryHistoricalTime,
+      })
     },
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
     },
   })
+
+  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
+    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
+  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
+
   const { balancesAndAllowances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
+
+  useEffect(() => {
+    const { isLoading, isUninitialized } = fetchedHistoricalActivity
+
+    if (isUserHistoricalTransactionsLoading) {
+      !isLoading &&
+        !isUninitialized &&
+        dispatch(updateIsUserHistoricalTransactionsLoading(false))
+    }
+  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
+
+  useEffect(() => {
+    if (userHistoricalActivity.length > 0) {
+      dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
+    }
+  }, [userHistoricalActivity])
 
   useEffect(() => {
     ;(async () => {

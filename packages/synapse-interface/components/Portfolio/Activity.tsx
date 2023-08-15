@@ -61,31 +61,31 @@ export const Activity = () => {
 
   console.log('queryPendingTime:', queryPendingTime)
 
-  useEffect(() => {
-    address &&
-      queryHistoricalTime &&
-      fetchUserHistoricalActivity({
-        address: address,
-        startTime: queryHistoricalTime,
-      })
+  // useEffect(() => {
+  //   address &&
+  //     queryHistoricalTime &&
+  //     fetchUserHistoricalActivity({
+  //       address: address,
+  //       startTime: queryHistoricalTime,
+  //     })
 
-    address &&
-      queryPendingTime &&
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
-  }, [address])
+  //   address &&
+  //     queryPendingTime &&
+  //     fetchUserPendingActivity({
+  //       address: address,
+  //       startTime: queryPendingTime,
+  //     })
+  // }, [address])
 
-  useEffect(() => {
-    const { isLoading, isUninitialized } = fetchedHistoricalActivity
+  // useEffect(() => {
+  //   const { isLoading, isUninitialized } = fetchedHistoricalActivity
 
-    if (isUserHistoricalTransactionsLoading) {
-      !isLoading &&
-        !isUninitialized &&
-        dispatch(updateIsUserHistoricalTransactionsLoading(false))
-    }
-  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
+  //   if (isUserHistoricalTransactionsLoading) {
+  //     !isLoading &&
+  //       !isUninitialized &&
+  //       dispatch(updateIsUserHistoricalTransactionsLoading(false))
+  //   }
+  // }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
 
   useEffect(() => {
     if (userHistoricalActivity.length > 0) {
