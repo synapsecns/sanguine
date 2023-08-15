@@ -3,10 +3,17 @@ package guard
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
+	"math/big"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
@@ -27,12 +34,13 @@ type Guard struct {
 	// TODO: change to metrics type
 	originLatestStates map[uint32]types.State
 	handler            metrics.Handler
+	txSubmitter        submitter.TransactionSubmitter
 }
 
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Guard, err error) {
+func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, txDB db.GuardDB, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -51,7 +59,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
 		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
@@ -66,6 +74,8 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
 
 	guard.handler = handler
+
+	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, txDB.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return guard, nil
 }
@@ -176,13 +186,22 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 	}
 
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, g.bondedSigner)
+
+	//nolint:nestif
 	if err != nil {
 		logger.Errorf("Error signing snapshot: %v", err)
 		span.AddEvent("Error signing snapshot", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		err = g.summitDomain.Inbox().SubmitSnapshot(ctx, g.unbondedSigner, encodedSnapshot, snapshotSignature)
+		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = g.summitDomain.Inbox().SubmitSnapshot(transactor, g.unbondedSigner, encodedSnapshot, snapshotSignature)
+			if err != nil {
+				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
+			}
+
+			return
+		})
 		if err != nil {
 			logger.Errorf("Failed to submit snapshot to inbox: %v", err)
 			span.AddEvent("Failed to submit snapshot to inbox", trace.WithAttributes(
@@ -199,19 +218,37 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 // Start starts the guard.
 //
 //nolint:cyclop
-func (g Guard) Start(ctx context.Context) error {
+func (g Guard) Start(parentCtx context.Context) error {
 	// First initialize a map to track what was the last state signed by this guard
-	g.loadSummitLatestStates(ctx)
+	g.loadSummitLatestStates(parentCtx)
 
-	for {
-		select {
-		// parent loop terminated
-		case <-ctx.Done():
-			logger.Info("Guard exiting without error")
-			return nil
-		case <-time.After(g.refreshInterval):
-			g.loadOriginLatestStates(ctx)
-			g.submitLatestSnapshot(ctx)
+	group, ctx := errgroup.WithContext(parentCtx)
+
+	group.Go(func() error {
+		err := g.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
 		}
+		return err
+	})
+
+	group.Go(func() error {
+		for {
+			select {
+			// parent loop terminated
+			case <-ctx.Done():
+				logger.Info("Guard exiting without error")
+				return nil
+			case <-time.After(g.refreshInterval):
+				g.loadOriginLatestStates(ctx)
+				g.submitLatestSnapshot(ctx)
+			}
+		}
+	})
+
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("guard error: %w", err)
 	}
+
+	return nil
 }

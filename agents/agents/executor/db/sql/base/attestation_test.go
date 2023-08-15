@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	"math/big"
 	"testing"
 )

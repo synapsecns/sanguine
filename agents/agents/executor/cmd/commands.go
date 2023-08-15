@@ -7,8 +7,8 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/agents/agents/executor/api"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/mysql"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -63,10 +63,10 @@ var debugFlag = &cli.BoolFlag{
 	Usage: "--debug",
 }
 
-func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig execConfig.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
+func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig execConfig.Config, executorDB db.ExecutorDB, err error) {
 	executorConfig, err = execConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
-		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
+		return executorConfig, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
 	if executorConfig.DBPrefix == "" && executorConfig.DBConfig.Type == dbcommon.Mysql.String() {
@@ -85,28 +85,10 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 		metrics,
 	)
 	if err != nil {
-		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
+		return executorConfig, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	clients = make(map[uint32]executor.Backend)
-
-	var baseOmniRPCClient omnirpcClient.RPCClient
-	if debugFlag.IsSet() {
-		baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, metrics, omnirpcClient.WithCaptureReqRes())
-	} else {
-		baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, metrics)
-	}
-
-	for _, execClient := range executorConfig.Chains {
-		ethClient, err := baseOmniRPCClient.GetConfirmationsClient(ctx, int(execClient.ChainID), 1)
-		if err != nil {
-			return executorConfig, nil, nil, fmt.Errorf("failed to get confirmations client: %w", err)
-		}
-
-		clients[execClient.ChainID] = ethClient
-	}
-
-	return executorConfig, executorDB, clients, nil
+	return executorConfig, executorDB, nil
 }
 
 // ExecutorRunCommand runs the executor.
@@ -125,7 +107,7 @@ var ExecutorRunCommand = &cli.Command{
 			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
 
-		executorConfig, executorDB, clients, err := createExecutorParameters(ctx, c, handler)
+		executorConfig, executorDB, err := createExecutorParameters(ctx, c, handler)
 		if err != nil {
 			return err
 		}
@@ -196,7 +178,14 @@ var ExecutorRunCommand = &cli.Command{
 			return fmt.Errorf("invalid scribe type: %s", executorConfig.ScribeConfig.Type)
 		}
 
-		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, clients, handler)
+		var baseOmniRPCClient omnirpcClient.RPCClient
+		if debugFlag.IsSet() {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
+		} else {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, handler)
+		}
+
+		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, baseOmniRPCClient, handler)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
@@ -246,7 +235,7 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 	}()
 
 	switch {
-	case database == "sqlite":
+	case database == dbcommon.Sqlite.String():
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
@@ -254,7 +243,7 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 
 		return sqliteStore, nil
 
-	case database == "mysql":
+	case database == dbcommon.Mysql.String():
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)

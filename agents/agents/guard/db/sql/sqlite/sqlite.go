@@ -3,13 +3,12 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
+	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/base"
 	"os"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -19,7 +18,7 @@ type Store struct {
 	*base.Store
 }
 
-var logger = log.Logger("scribe-sqlite")
+var logger = log.Logger("guard-sqlite")
 
 // NewSqliteStore creates a new sqlite data store.
 func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
@@ -36,7 +35,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not create sqlite store")
 	}
 
-	logger.Warnf("cctp database is at %s/synapse.db", dbPath)
+	logger.Warnf("guard database is at %s/synapse.db", dbPath)
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -58,5 +57,3 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	}
 	return &Store{base.NewStore(gdb, handler)}, nil
 }
-
-var _ db.CCTPRelayerDB = &Store{}

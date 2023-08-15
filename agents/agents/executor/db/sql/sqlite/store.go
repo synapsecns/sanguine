@@ -3,7 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/driver/sqlite"
@@ -51,5 +51,5 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		}
 	}
 
-	return &Store{base.NewStore(gdb)}, nil
+	return &Store{base.NewStore(gdb, handler)}, nil
 }

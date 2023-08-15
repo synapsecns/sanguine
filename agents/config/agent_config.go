@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
 
@@ -14,6 +15,8 @@ import (
 
 // AgentConfig is used for configuring the guard.
 type AgentConfig struct {
+	// DBConfig is the database configuration.
+	DBConfig DBConfig `yaml:"db_config"`
 	// Domains stores all the domains
 	Domains DomainConfigs `yaml:"domains"`
 	// DomainID is the domain of the chain that this agent is assigned to.
@@ -33,6 +36,10 @@ type AgentConfig struct {
 	// The format is "https://omnirpc.url". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
+	DBPrefix string `yaml:"db_prefix"`
+	// SubmitterConfig is the config for the submitter.
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
