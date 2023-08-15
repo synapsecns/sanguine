@@ -87,14 +87,11 @@ export const Activity = () => {
   useEffect(() => {
     if (userHistoricalActivity.length > 0) {
       dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
-      dispatch(updateUserPendingTransactions(userPendingActivity))
     }
   }, [userHistoricalActivity])
 
   useEffect(() => {
-    if (userPendingActivity.length) {
-      dispatch(updateUserPendingTransactions(userPendingActivity))
-    }
+    dispatch(updateUserPendingTransactions(userPendingActivity))
   }, [userPendingActivity])
 
   const hasPendingTransactions: boolean = useMemo(
