@@ -400,7 +400,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		// fmt.Printf("submitting tx: %v\n", tx.Hash())
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -413,6 +412,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
 
+		fmt.Printf("submitting tx: %v\n", tx.Hash())
 		return
 	})
 	if err != nil {

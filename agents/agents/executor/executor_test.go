@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -984,7 +985,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 	// Create and send a manager message.
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	optimisticSeconds := uint32(1)
+	optimisticSeconds := uint32(86400)
 	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
 	nonce := uint32(1)
 	// body := []byte{byte(gofakeit.Uint32())}
@@ -999,21 +1000,27 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	// e.Nil(err)
 	// fmt.Printf("message: %v\n", message)
 
-	body := []byte{}
-	addUint32 := func(x uint32) {
-		xBytes := make([]byte, 4)
-		binary.BigEndian.PutUint32(xBytes, x)
-		body = append(body, xBytes...)
-	}
-	for i := 0; i < 9; i++ {
-		addUint32(gofakeit.Uint32())
-	}
-	fmt.Printf("len body: %v\n", len(body))
-	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	// body := []byte{}
+	// addUint32 := func(x uint32) {
+	// 	xBytes := make([]byte, 4)
+	// 	binary.BigEndian.PutUint32(xBytes, x)
+	// 	body = append(body, xBytes...)
+	// }
+	// for i := 0; i < 9; i++ {
+	// 	addUint32(gofakeit.Uint32())
+	// }
+	// fmt.Printf("len body: %v\n", len(body))
+	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
+	// selector, err := abiutil.GetSelectorByName("remoteSlashAgent", bondingmanager.BondingManagerMetaData)
+	// e.Nil(err)
+	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
+	e.Nil(err)
+
+	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.GuardBondedSigner.Address())
+	e.Nil(err)
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
 	// managerMessageEncoded, err := types.EncodeMessage(managerMessage)
-	e.Nil(err)
 	// fmt.Printf("manager msg: %v\n", managerMessage)
 	// messageBytes := []byte{byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32())}
 
@@ -1121,4 +1128,11 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 		return executed
 	})
+}
+
+func wrap64(wrappable *big.Int) []byte {
+	wrapper := make([]byte, 8)
+	binary.BigEndian.PutUint64(wrapper, wrappable.Uint64())
+
+	return wrapper
 }
