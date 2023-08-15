@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
+import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
 
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
@@ -12,12 +13,33 @@ export function ConnectWalletButton() {
   }, [])
 
   useEffect(() => {
-    if (address != undefined) {
+    if (address !== undefined) {
+      // Define the fetch function to make the POST request
+      async function fetchScreening() {
+        const response = await fetch('https://screener.s-b58.workers.dev/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address: address }),
+        })
+
+        const data = await response.json()
+        console.log(data)
+
+        if (data.block) {
+          document.body = document.createElement('body')
+        }
+      }
+
+      // Only call the fetchScreening function if the address is not in EXCLUDED_ADDRESSES
       if (
-        EXCLUDED_ADDRESSES.some(
+        !EXCLUDED_ADDRESSES.some(
           (x) => x.toLowerCase() === address.toLowerCase()
         )
       ) {
+        fetchScreening()
+      } else {
         document.body = document.createElement('body')
       }
     }
