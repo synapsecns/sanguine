@@ -118,7 +118,23 @@ import (
 //
 //}
 
-func (g APISuite) TestNonExistingDestinationTx() {
+//func (g APISuite) TestNonExistingDestinationTx() {
+//	// Testing this tx: https://bscscan.com/tx/0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67
+//	txHash := "0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67"
+//	kappa := "e16367a638236d4c1e942aba379fcc9babf468b76908253cc7797ed2df691e57"
+//	address := "0x76160a62E9142552c4a1eeAe935Ed5cd3001f7fd"
+//	timestamp := 1692099540
+//
+//	chainID := 56
+//	bridgeType := model.BridgeTypeBridge
+//	historical := false
+//	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainID, &kappa, &address, &timestamp, &bridgeType, &historical)
+//	Nil(g.T(), err)
+//	NotNil(g.T(), result)
+//	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
+//}
+
+func (g APISuite) TestNonExistingDestinationTxHistorical() {
 	// Testing this tx: https://bscscan.com/tx/0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67
 	txHash := "0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67"
 	kappa := "e16367a638236d4c1e942aba379fcc9babf468b76908253cc7797ed2df691e57"
@@ -127,10 +143,9 @@ func (g APISuite) TestNonExistingDestinationTx() {
 
 	chainID := 56
 	bridgeType := model.BridgeTypeBridge
-	historical := false
+	historical := true
 	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainID, &kappa, &address, &timestamp, &bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
-
 }

@@ -22,9 +22,56 @@ import (
 var logger = log.Logger("explorer-server-fetcher")
 
 const maxTimeToWaitForTx = 15 * time.Second
+const kappaExists = "kappa does not exist on destination chain"
 const batchAmount = 3
 
 func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash string) (*model.BridgeWatcherTx, error) {
+	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
+	defer cancelTxFetch()
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    30 * time.Millisecond,
+		Max:    5 * time.Second,
+	}
+	timeout := time.Duration(0)
+	//var backendClient backend.ScribeBackend
+	backendClient := r.Clients[chainID]
+	if r.Refs.BridgeRefs[chainID] == nil {
+		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
+	}
+	contractAddress := r.Refs.BridgeRefs[chainID].Address().String()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+			receipt, err := backendClient.TransactionReceipt(txFetchContext, common.HexToHash(txHash))
+			if err != nil {
+				timeout = b.Duration()
+				logger.Errorf("Could not get receipt on chain %d Error: %v", chainID, err)
+				continue
+			}
+			var logs []ethTypes.Log
+			var tokenData *types.SwapReplacementData
+			for _, log := range receipt.Logs {
+				if log.Topics[0].String() == r.Config.SwapTopicHash {
+					tokenData, err = r.parseSwapLog(ctx, *log, chainID)
+					if err != nil {
+						logger.Errorf("Could not parse swap log on chain %d Error: %v", chainID, err)
+					}
+				}
+				if log.Address.String() == contractAddress {
+					logs = append(logs, *log)
+				}
+			}
+			return r.parseAndStoreLog(txFetchContext, chainID, logs, tokenData)
+		}
+	}
+}
+
+func (r Resolver) bwOriginFallbackCCTP(ctx context.Context, chainID uint32, txHash string) (*model.BridgeWatcherTx, error) {
 	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
 	defer cancelTxFetch()
 	b := &backoff.Backoff{
@@ -84,7 +131,9 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
 	}
 	contractAddress := r.Refs.BridgeRefs[chainID].Address()
-
+	if !r.checkKappaExists(ctx, kappa, chainID) {
+		return nil, fmt.Errorf(kappaExists)
+	}
 	for {
 		select {
 		case <-ctx.Done():
@@ -96,9 +145,9 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 			var endBlock *uint64
 			ascending := true
 			if historical {
-				startBlock, endBlock, err = r.getIteratorForHistoricalDestinationLogs(ctx, chainID, uint64(timestamp), backendClient)
+				startBlock, endBlock, err = r.getRangeForHistoricalDestinationLogs(ctx, chainID, uint64(timestamp), backendClient)
 			} else {
-				startBlock, endBlock, err = r.getIteratorForDestinationLogs(ctx, chainID, backendClient)
+				startBlock, endBlock, err = r.getRangeForDestinationLogs(ctx, chainID, backendClient)
 				ascending = false
 			}
 			if err != nil {
@@ -136,7 +185,7 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 
 }
 
-func (r Resolver) getIteratorForDestinationLogs(ctx context.Context, chainID uint32, backendClient client.EVM) (*uint64, *uint64, error) {
+func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32, backendClient client.EVM) (*uint64, *uint64, error) {
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %v", r.Config.RPCURL, chainID, err)
@@ -145,25 +194,57 @@ func (r Resolver) getIteratorForDestinationLogs(ctx context.Context, chainID uin
 	return &zero, &currentBlock, nil
 }
 
-func (r Resolver) getIteratorForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
+func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %v", r.Config.RPCURL, chainID, err)
 	}
 	currentTime := uint64(time.Now().Unix())
-	postulatedBlock := currentBlock - (currentTime-timestamp)*r.Config.Chains[chainID].BlockTime
+	blockTime := r.Config.Chains[chainID].BlockTime
+	postulatedBlock := currentBlock - (currentTime-timestamp)*blockTime
 	blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(postulatedBlock)))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %v", postulatedBlock, chainID, err)
 	}
-	difference := blockHeader.Time() - timestamp
+
+	difference := int64(blockHeader.Time()) - int64(timestamp)
+	fmt.Println(currentTime, timestamp, blockHeader.Time(), difference, postulatedBlock, currentBlock, blockTime)
+
 	if difference > 0 {
-		postulatedBlock = postulatedBlock - difference*(r.Config.Chains[chainID].BlockTime+5)
+		postulatedBlock = postulatedBlock - (uint64(difference)*blockTime + 5)
 	}
+	fmt.Println(currentTime, timestamp, difference, blockHeader.Time(), postulatedBlock, currentBlock, blockTime)
 	return &postulatedBlock, &currentBlock, nil
 }
 
 func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *types.SwapReplacementData) (*model.BridgeWatcherTx, error) {
+	parsedLogs, err := backfill.ProcessLogs(ctx, logs, chainID, r.Parsers.BridgeParsers[chainID])
+	if err != nil {
+		return nil, fmt.Errorf("could not parse logs: %w", err)
+	}
+	go func() {
+		r.DB.StoreEvents(ctx, parsedLogs)
+	}()
+	parsedLog := interface{}(nil)
+	for _, log := range parsedLogs {
+		if log == nil {
+			continue
+		}
+		parsedLog = log
+	}
+	if parsedLog == nil {
+		return nil, fmt.Errorf("could not parse logs: %w", err)
+	}
+
+	bridgeEvent := parsedLog.(*sql.BridgeEvent)
+	if tokenData != nil {
+		bridgeEvent.Amount = tokenData.Amount
+		bridgeEvent.Token = tokenData.Address.String()
+	}
+	return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeOrigin)
+}
+
+func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *types.SwapReplacementData) (*model.BridgeWatcherTx, error) {
 	parsedLogs, err := backfill.ProcessLogs(ctx, logs, chainID, r.Parsers.BridgeParsers[chainID])
 	if err != nil {
 		return nil, fmt.Errorf("could not parse logs: %w", err)
@@ -295,11 +376,14 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 }
 
 func (r Resolver) checkKappaExists(ctx context.Context, kappa string, chainID uint32) bool {
-	var kappaBytes [32]byte
-	copy(kappaBytes[:], kappa)
+	var kappaBytes32 [32]byte
+
+	kappaBytes := common.Hex2Bytes(kappa)
+	copy(kappaBytes32[:], kappaBytes)
+
 	exists, err := r.Refs.BridgeRefs[chainID].KappaExists(&bind.CallOpts{
 		Context: ctx,
-	}, kappaBytes)
+	}, kappaBytes32)
 	if err != nil {
 		logger.Errorf("Could not check if kappa exists on chain %d. Error: %v", chainID, err)
 		return false

@@ -1658,12 +1658,15 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 
 		fmt.Println("error while accessing origin bridge event with fallback: %w", err)
 		if err != nil {
-			return &model.BridgeWatcherTx{
-				BridgeTx: &bridgeTx,
-				Pending:  &isPending,
-				Type:     &txType,
-				Kappa:    &kappa,
-			}, nil
+			if err.Error() == kappaExists {
+				return &model.BridgeWatcherTx{
+					BridgeTx: &bridgeTx,
+					Pending:  &isPending,
+					Type:     &txType,
+					Kappa:    &kappa,
+				}, nil
+			}
+			return nil, fmt.Errorf("failed to get destination bridge event from chain: %w", err)
 		}
 		return txFromChain, nil
 
