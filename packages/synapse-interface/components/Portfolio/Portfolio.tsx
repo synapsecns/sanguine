@@ -49,16 +49,12 @@ export const Portfolio = () => {
   const { fromChainId }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
   const {
-    userHistoricalTransactions,
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
-  const [
-    fetchUserHistoricalActivity,
-    fetchedHistoricalActivity,
-    lastFetchArgs,
-  ] = useLazyGetUserHistoricalActivityQuery()
+  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
+    useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
     useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })

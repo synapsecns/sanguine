@@ -29,9 +29,6 @@ import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
-const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
-const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
-
 export const Activity = () => {
   const dispatch = useAppDispatch()
   const {
@@ -39,63 +36,6 @@ export const Activity = () => {
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
-  const { address } = useAccount()
-
-  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery()
-
-  const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
-
-  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
-    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
-  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
-
-  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-    if (fetchedPendingActivity?.status === 'fulfilled') {
-      return fetchedPendingActivity?.data?.bridgeTransactions
-    } else return userPendingTransactions
-  }, [fetchedPendingActivity])
-
-  // useEffect(() => {
-  //   address &&
-  //     queryHistoricalTime &&
-  //     fetchUserHistoricalActivity({
-  //       address: address,
-  //       startTime: queryHistoricalTime,
-  //     })
-
-  //   address &&
-  //     queryPendingTime &&
-  //     fetchUserPendingActivity({
-  //       address: address,
-  //       startTime: queryPendingTime,
-  //     })
-  // }, [address])
-
-  // useEffect(() => {
-  //   const { isLoading, isUninitialized } = fetchedHistoricalActivity
-
-  //   if (isUserHistoricalTransactionsLoading) {
-  //     !isLoading &&
-  //       !isUninitialized &&
-  //       dispatch(updateIsUserHistoricalTransactionsLoading(false))
-  //   }
-  // }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading])
-
-  useEffect(() => {
-    if (userHistoricalActivity.length > 0) {
-      dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
-    }
-  }, [userHistoricalActivity])
-
-  useEffect(() => {
-    dispatch(updateUserPendingTransactions(userPendingActivity))
-    fetchUserHistoricalActivity({
-      address: address,
-      startTime: queryHistoricalTime,
-    })
-  }, [userPendingActivity])
 
   const hasPendingTransactions: boolean = useMemo(
     () => userPendingTransactions && userPendingTransactions.length > 0,
