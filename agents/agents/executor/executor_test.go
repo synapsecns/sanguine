@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -985,7 +986,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 	// Create and send a manager message.
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	optimisticSeconds := uint32(86400)
+	optimisticSeconds := uint32(1)
 	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
 	nonce := uint32(1)
 	// body := []byte{byte(gofakeit.Uint32())}
@@ -1010,13 +1011,34 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	// 	addUint32(gofakeit.Uint32())
 	// }
 	// fmt.Printf("len body: %v\n", len(body))
+	notaryStatus, err := e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
+	e.Nil(err)
+	notaryProof, err := e.SummitDomainClient.BondingManager().GetProof(e.GetTestContext(), e.NotaryBondedSigner)
+	e.Nil(err)
+	err = e.DestinationDomainClient.LightManager().UpdateAgentStatus(
+		e.GetTestContext(),
+		e.NotaryUnbondedSigner,
+		e.NotaryBondedSigner,
+		notaryStatus,
+		notaryProof,
+	)
+	e.Nil(err)
+	err = e.OriginDomainClient.LightManager().UpdateAgentStatus(
+		e.GetTestContext(),
+		e.NotaryUnbondedSigner,
+		e.NotaryBondedSigner,
+		notaryStatus,
+		notaryProof,
+	)
+	e.Nil(err)
+
 	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
 	// selector, err := abiutil.GetSelectorByName("remoteSlashAgent", bondingmanager.BondingManagerMetaData)
 	// e.Nil(err)
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
 	e.Nil(err)
 
-	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.GuardBondedSigner.Address())
+	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.NotaryBondedSigner.Address())
 	e.Nil(err)
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
@@ -1093,7 +1115,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Println("emitted")
 
 	// Submit snapshot with Notary.
-	notaryStatus, err := e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
+	notaryStatus, err = e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
 	fmt.Printf("notary status: %v\n", notaryStatus)
 	fmt.Println("submitting notary snapshot")
@@ -1108,6 +1130,13 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 	fmt.Printf("notary snapshot tx: %v\n", tx.Hash().String())
+
+	// Increase EVM time to allow agent status to be updated to Slashed on origin.
+	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
+	e.Nil(err)
+	optimisticPeriodSeconds := 86400
+	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(optimisticPeriodSeconds))
+	e.Nil(err)
 
 	for i := 0; i < 5; i++ {
 		tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
