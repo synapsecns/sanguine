@@ -23,6 +23,7 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -52,9 +53,12 @@ type exporter struct {
 
 // StartExporterServer starts the exporter server.
 func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
+	// the main server serves metrics since this is only a prom exporter
+	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
+
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
-	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
+	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig
 	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.Port))

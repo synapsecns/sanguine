@@ -179,19 +179,9 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 	}
 }
 
-// ParseAndStore parses the swap logs and returns a model that can be stored
-// Deprecated: use Parse and store separately.
-func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	swapEvent, err := p.Parse(ctx, log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not parse event: %w", err)
-	}
-	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
-	}
-	return nil
+// ParserType returns the type of parser.
+func (p *SwapParser) ParserType() string {
+	return "swap"
 }
 
 // Parse parses the swap logs.

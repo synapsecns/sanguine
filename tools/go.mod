@@ -15,10 +15,10 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/thoas/go-funk v0.9.0
-	github.com/urfave/cli/v2 v2.24.4
+	github.com/urfave/cli/v2 v2.25.5
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
-	golang.org/x/mod v0.9.0
-	golang.org/x/tools v0.7.0
+	golang.org/x/mod v0.10.0
+	golang.org/x/tools v0.9.3
 )
 
 require (
@@ -69,7 +69,7 @@ require (
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect

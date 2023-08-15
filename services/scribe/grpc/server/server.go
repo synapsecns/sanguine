@@ -151,7 +151,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				// TODO: Make wait time configurable (?).
 				time.Sleep(time.Duration(wait) * time.Second)
 				wait = 1
-				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId, false)
 				if err != nil {
 					continue
 				}
@@ -203,7 +203,7 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 	for i, block := range blocks {
 		switch block {
 		case "latest":
-			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId, false)
 			if err != nil {
 				return 0, 0, fmt.Errorf("could not retrieve last indexed block: %w", err)
 			}
