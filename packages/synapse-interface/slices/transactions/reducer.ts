@@ -4,6 +4,7 @@ import {
   updateUserHistoricalTransactions,
   updateIsUserHistoricalTransactionsLoading,
   updateUserPendingTransactions,
+  updateIsUserPendingTransactionsLoading,
   resetTransactionsState,
 } from './actions'
 import { BridgeTransaction } from '../api/generated'
@@ -12,12 +13,14 @@ export interface TransactionsState {
   userHistoricalTransactions: BridgeTransaction[]
   isUserHistoricalTransactionsLoading: boolean
   userPendingTransactions: BridgeTransaction[]
+  isUserPendingTransactionsLoading: boolean
 }
 
 const initialState: TransactionsState = {
   userHistoricalTransactions: [],
   isUserHistoricalTransactionsLoading: true,
   userPendingTransactions: [],
+  isUserPendingTransactionsLoading: true,
 }
 
 export const transactionsSlice = createSlice({
@@ -42,6 +45,12 @@ export const transactionsSlice = createSlice({
         updateUserPendingTransactions,
         (state, action: PayloadAction<BridgeTransaction[]>) => {
           state.userPendingTransactions = action.payload
+        }
+      )
+      .addCase(
+        updateIsUserPendingTransactionsLoading,
+        (state, action: PayloadAction<boolean>) => {
+          state.isUserPendingTransactionsLoading = action.payload
         }
       )
       .addCase(resetTransactionsState, (state) => {

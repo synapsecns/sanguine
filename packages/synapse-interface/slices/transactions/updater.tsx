@@ -76,6 +76,9 @@ export default function Updater(): null {
   useEffect(() => {
     const { isSuccess, data: pendingData } = fetchedPendingActivity
 
+    console.log('pendingData: ', pendingData)
+
+    console.log('fetchedPendingActivity:', fetchedPendingActivity)
     if (address && isSuccess) {
       dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
     }

@@ -11,6 +11,9 @@ export const updateIsUserHistoricalTransactionsLoading = createAction<boolean>(
 export const updateUserPendingTransactions = createAction<BridgeTransaction[]>(
   'transactions/updateUserPendingTransactions'
 )
+export const updateIsUserPendingTransactionsLoading = createAction<boolean>(
+  'transactions/updateIsUserPendingTransactionsLoading'
+)
 export const resetTransactionsState = createAction<void>(
   'transactions/resetTransactionsState'
 )
