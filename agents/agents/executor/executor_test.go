@@ -13,10 +13,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func (e *ExecutorSuite) TestVerifyState() {
@@ -45,17 +46,8 @@ func (e *ExecutorSuite) TestVerifyState() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	roots := [][32]byte{
@@ -138,23 +130,19 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: config.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []config.ContractConfig{contractConfig},
+		Confirmations:      0,
+		Contracts:          []config.ContractConfig{contractConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	simulatedClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -188,17 +176,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     e.TestBackendOrigin,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID).Root(1)
@@ -394,17 +373,8 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -484,11 +454,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	originClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	summitClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -500,12 +470,8 @@ func (e *ExecutorSuite) TestExecutor() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: config.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []config.ContractConfig{originConfig},
+		Confirmations:      0,
+		Contracts:          []config.ContractConfig{originConfig},
 	}
 	destinationConfig := config.ContractConfig{
 		Address:    e.DestinationContract.Address().String(),
@@ -516,11 +482,8 @@ func (e *ExecutorSuite) TestExecutor() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: config.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
+		Confirmations:      0,
+
 		Contracts: []config.ContractConfig{destinationConfig},
 	}
 	summitConfig := config.ContractConfig{
@@ -532,23 +495,20 @@ func (e *ExecutorSuite) TestExecutor() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: config.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
+		Confirmations:      0,
+
 		Contracts: []config.ContractConfig{summitConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		chainID:     {originClient, originClient},
 		destination: {destinationClient, destinationClient},
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -588,19 +548,8 @@ func (e *ExecutorSuite) TestExecutor() {
 		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     e.TestBackendOrigin,
-		destination: e.TestBackendDestination,
-		summit:      e.TestBackendSummit,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-		summit:      e.TestBackendSummit.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {
@@ -810,17 +759,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {

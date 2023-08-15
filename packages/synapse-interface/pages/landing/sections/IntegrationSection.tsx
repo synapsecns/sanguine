@@ -5,6 +5,9 @@ import { SectionContainer } from '../../../components/landing/shared'
 import { ORDERED_CHAINS_BY_ID, ChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
 import { getNetworkButtonBorderHover } from '@/styles/chains'
+import { useAppDispatch } from '@/store/hooks'
+import { setFromChainId } from '@/slices/bridge/reducer'
+import { NAVIGATION } from '@/constants/routes'
 
 export default function IntegrationSection() {
   const OrderedSupportedNetworks: Chain[] = ORDERED_CHAINS_BY_ID.filter(
@@ -62,31 +65,6 @@ export default function IntegrationSection() {
   )
 }
 
-function generateNetworkCardHref(chainId) {
-  let inputCurrency
-  let outputCurrency
-
-  switch (chainId) {
-    case ChainId.DOGECHAIN:
-      inputCurrency = 'ETH'
-      outputCurrency = 'WETH'
-      break
-    case ChainId.MOONBEAM:
-      inputCurrency = 'SYN'
-      outputCurrency = 'SYN'
-      break
-    case ChainId.MOONRIVER:
-      inputCurrency = 'SYN'
-      outputCurrency = 'SYN'
-      break
-    default:
-      inputCurrency = 'USDC'
-      outputCurrency = 'USDC'
-  }
-
-  return `/?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}&outputChain=${chainId}`
-}
-
 function ChainImg({ src }: { src: string }) {
   return (
     <div className="overflow-visible sm:px-1 md:px-2 lg:px-4">
@@ -108,10 +86,15 @@ function NetworkCard({
   layer,
   chainImg,
 }: NetworkCardProps) {
-  const href = generateNetworkCardHref(chainId)
+  const dispatch = useAppDispatch()
   const chain = CHAINS_BY_ID[chainId]
+
+  const handleSelection = () => {
+    dispatch(setFromChainId(chainId))
+  }
+
   return (
-    <Link href={href}>
+    <Link href={NAVIGATION.Bridge.path} onClick={handleSelection}>
       <Card
         className={`
           text-center

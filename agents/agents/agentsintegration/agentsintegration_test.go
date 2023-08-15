@@ -1,12 +1,12 @@
 package agentsintegration_test
 
 import (
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -18,12 +18,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
-
-	"github.com/Flaque/filet"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -39,11 +40,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
+	originClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
+	summitClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig.ContractConfig{
@@ -55,12 +56,8 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []scribeConfig.ContractConfig{originConfig},
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
@@ -71,12 +68,8 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []scribeConfig.ContractConfig{destinationConfig},
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
@@ -87,23 +80,20 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
+		Confirmations:      0,
+
 		Contracts: []scribeConfig.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
+	scribe, err := service.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
 	u.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
@@ -147,21 +137,16 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		SubmitterConfig: submitterConfig.Config{
+			ChainConfig: submitterConfig.ChainConfig{
+				GasEstimate: uint64(5000000),
+			},
+		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     u.TestBackendOrigin,
-		destination: u.TestBackendDestination,
-		summit:      u.TestBackendSummit,
-	}
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.ExecutorMetrics, omniClient.WithCaptureReqRes())
 
-	urls := map[uint32]string{
-		chainID:     u.TestBackendOrigin.RPCAddress(),
-		destination: u.TestBackendDestination.RPCAddress(),
-		summit:      u.TestBackendSummit.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, u.ExecutorMetrics)
+	exec, err := executor.NewExecutor(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, u.ExecutorMetrics)
 	Nil(u.T(), err)
 
 	go func() {
@@ -226,12 +211,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	rpcURLs := map[uint32]string{
-		chainID:     u.TestBackendOrigin.RPCAddress(),
-		destination: u.TestBackendDestination.RPCAddress(),
-		summit:      u.TestBackendSummit.RPCAddress(),
-	}
-	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), guardTestConfig, u.GuardMetrics, rpcURLs)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
@@ -309,7 +289,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotaryInjectedBackend(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics, rpcURLs)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
 
 	go func() {

@@ -10,7 +10,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"net"
-	"os"
 	"time"
 
 	"github.com/ipfs/go-log"
@@ -39,6 +38,8 @@ type Config struct {
 	Address string
 	// ScribeURL is the url of the scribe service
 	ScribeURL string
+	// HydrateCache is whether or not to hydrate the cache
+	HydrateCache bool
 }
 
 const cacheRehydrationInterval = 1800
@@ -50,13 +51,8 @@ var logger = log.Logger("explorer-api")
 // nolint:cyclop
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
-	router.Use(handler.Gin())
 	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		return fmt.Errorf("could not get hostname %w", err)
-	}
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true, handler)
 	if err != nil {
@@ -80,14 +76,14 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 
 	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
 
-	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
+	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 
 	ticker := time.NewTicker(cacheRehydrationInterval * time.Second)
 	defer ticker.Stop()
 	first := make(chan bool, 1)
 	first <- true
 	g, ctx := errgroup.WithContext(ctx)
-	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
+	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort("localhost", fmt.Sprintf("%d", cfg.HTTPPort)))
 	client := gqlClient.NewClient(httpClient, url)
 
 	err = registerObservableMetrics(handler, consumerDB)
@@ -95,29 +91,30 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 		return fmt.Errorf("could not register observable metrics: %w", err)
 	}
 
-	// refill cache
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				ticker.Stop()
-				return
-			case <-ticker.C:
-				err = RehydrateCache(ctx, client, responseCache, handler)
-				if err != nil {
-					logger.Warnf("rehydration failed: %s", err)
-				}
-			case <-first:
-				// buffer to wait for everything to get initialized
-				time.Sleep(10 * time.Second)
-				err = RehydrateCache(ctx, client, responseCache, handler)
-				if err != nil {
-					logger.Errorf("initial rehydration failed: %s", err)
+	if cfg.HydrateCache {
+		// refill cache
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					ticker.Stop()
+					return
+				case <-ticker.C:
+					err = RehydrateCache(ctx, client, responseCache, handler)
+					if err != nil {
+						logger.Warnf("rehydration failed: %s", err)
+					}
+				case <-first:
+					// buffer to wait for everything to get initialized
+					time.Sleep(10 * time.Second)
+					err = RehydrateCache(ctx, client, responseCache, handler)
+					if err != nil {
+						logger.Errorf("initial rehydration failed: %s", err)
+					}
 				}
 			}
-		}
-	}()
-
+		}()
+	}
 	g.Go(func() error {
 		connection := baseServer.Server{}
 		err = connection.ListenAndServe(ctx, fmt.Sprintf(":%d", cfg.HTTPPort), router)

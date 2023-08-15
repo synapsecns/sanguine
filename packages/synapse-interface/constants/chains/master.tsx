@@ -107,7 +107,7 @@ export const OPTIMISM: Chain = {
   layer: 2,
   codeName: 'optimism',
   blockTime: 10000,
-  rpc: 'https://rpc.ankr.com/optimism',
+  rpc: 'https://mainnet.optimism.io',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
   color: 'red',
@@ -294,7 +294,7 @@ export const BASE: Chain = {
   codeName: 'base',
   chainImg: baseImg,
   layer: 2,
-  rpc: 'https://developer-access-mainnet.base.org',
+  rpc: 'https://base.blockpi.network/v1/rpc/public',
   explorerUrl: 'https://basescan.org',
   blockTime: 5000,
   nativeCurrency: {

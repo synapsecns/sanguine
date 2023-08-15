@@ -252,6 +252,22 @@ describe('SynapseSDK', () => {
       expect(data?.length).toBeGreaterThan(0)
       expect(to?.length).toBeGreaterThan(0)
     })
+    it('throws if origin == destination', async () => {
+      const chainIds = [43114]
+      const providers = [avalancheProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      await expect(
+        Synapse.bridgeQuote(
+          43114,
+          43114,
+          '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46',
+          '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
+          BigNumber.from('1000000000000000000000')
+        )
+      ).rejects.toThrowError(
+        'Origin chainId cannot be equal to destination chainId'
+      )
+    })
   })
 
   // // test avax usdc.e > bsc usdc
@@ -408,6 +424,36 @@ describe('SynapseSDK', () => {
       )
       expect(data?.length).toBeGreaterThan(0)
       expect(to?.length).toBeGreaterThan(0)
+    })
+    it('throws if origin == destination', async () => {
+      const chainIds = [1, 42161]
+      const providers = [ethProvider, arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const result = await Synapse.bridgeQuote(
+        1,
+        42161,
+        '',
+        '',
+        BigNumber.from('1000000000000000000')
+      )
+      if (!result) {
+        throw Error
+      }
+      const { originQuery, destQuery } = result
+      await expect(
+        Synapse.bridge(
+          '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+          '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
+          1,
+          1,
+          '',
+          BigNumber.from('10000000000000000000'),
+          originQuery!,
+          destQuery!
+        )
+      ).rejects.toThrowError(
+        'Origin chainId cannot be equal to destination chainId'
+      )
     })
   })
 

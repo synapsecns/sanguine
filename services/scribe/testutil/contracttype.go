@@ -36,7 +36,7 @@ type contractTypeImpl int
 
 const (
 	// TestContractType is the type of the test contract.
-	TestContractType contractTypeImpl = 0 // TestContract
+	TestContractType contractTypeImpl = iota
 )
 
 // ID gets the contract type as an id.
