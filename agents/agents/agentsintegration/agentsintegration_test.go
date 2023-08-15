@@ -1,8 +1,6 @@
 package agentsintegration_test
 
 import (
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"math/big"
 	"os"
 	"testing"
@@ -20,6 +18,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/service"
@@ -135,21 +137,16 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		SubmitterConfig: submitterConfig.Config{
+			ChainConfig: submitterConfig.ChainConfig{
+				GasEstimate: uint64(5000000),
+			},
+		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     u.TestBackendOrigin,
-		destination: u.TestBackendDestination,
-		summit:      u.TestBackendSummit,
-	}
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.ExecutorMetrics, omniClient.WithCaptureReqRes())
 
-	urls := map[uint32]string{
-		chainID:     u.TestBackendOrigin.RPCAddress(),
-		destination: u.TestBackendDestination.RPCAddress(),
-		summit:      u.TestBackendSummit.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, u.ExecutorMetrics)
+	exec, err := executor.NewExecutor(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, u.ExecutorMetrics)
 	Nil(u.T(), err)
 
 	go func() {
@@ -214,12 +211,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	rpcURLs := map[uint32]string{
-		chainID:     u.TestBackendOrigin.RPCAddress(),
-		destination: u.TestBackendDestination.RPCAddress(),
-		summit:      u.TestBackendSummit.RPCAddress(),
-	}
-	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), guardTestConfig, u.GuardMetrics, rpcURLs)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
@@ -297,7 +289,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotaryInjectedBackend(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics, rpcURLs)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
 
 	go func() {

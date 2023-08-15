@@ -60,7 +60,7 @@ Executor
 ├── <a href="./cmd">cmd</a>: CLI commands
 ├── <a href="./config">config</a>: Configuration files
 ├── <a href="./db">db</a>: Database interface
-│   └── <a href="./db/datastore/sql">sql</a>: Database writer, reader, and migrations
+│   └── <a href="db/sql">sql</a>: Database writer, reader, and migrations
 ├── <a href="./main">main</a>: CLI entrypoint
 └── <a href="./types">types</a>: Executor types
 </pre>

@@ -3,11 +3,16 @@ package notary
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/agents/notary/db"
 	"github.com/synapsecns/sanguine/core/metrics"
-
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -36,12 +41,13 @@ type Notary struct {
 	summitParser                       summit.Parser
 	lastSummitBlock                    uint64
 	handler                            metrics.Handler
+	txSubmitter                        submitter.TransactionSubmitter
 }
 
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, txDB db.NotaryDB, handler metrics.Handler) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -60,7 +66,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
 		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Notary{}, fmt.Errorf("failing to create evm for domain, could not create notary for: %w", err)
@@ -83,6 +89,8 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 	}
 
 	notary.handler = handler
+
+	notary.txSubmitter = submitter.NewTransactionSubmitter(handler, notary.unbondedSigner, omniRPCClient, txDB.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return notary, nil
 }
@@ -378,13 +386,22 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	}
 
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, n.bondedSigner)
+
+	//nolint:nestif
 	if err != nil {
 		span.AddEvent("Error signing snapshot", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
-		err := n.summitDomain.Inbox().SubmitSnapshot(ctx, n.unbondedSigner, encodedSnapshot, snapshotSignature)
+		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, n.unbondedSigner, encodedSnapshot, snapshotSignature)
+			if err != nil {
+				return nil, fmt.Errorf("could not submit snapshot: %w", err)
+			}
+
+			return
+		})
 		if err != nil {
 			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
 				attribute.String("err", err.Error()),
@@ -454,13 +471,20 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		err = n.destinationDomain.LightInbox().SubmitAttestation(
-			ctx,
-			n.unbondedSigner,
-			n.myLatestNotaryAttestation.AttPayload(),
-			attestationSignature,
-			n.myLatestNotaryAttestation.AgentRoot(),
-			n.myLatestNotaryAttestation.SnapGas())
+		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
+				transactor,
+				n.myLatestNotaryAttestation.AttPayload(),
+				attestationSignature,
+				n.myLatestNotaryAttestation.AgentRoot(),
+				n.myLatestNotaryAttestation.SnapGas(),
+			)
+			if err != nil {
+				return nil, fmt.Errorf("could not submit attestation: %w", err)
+			}
+
+			return
+		})
 		if err != nil {
 			span.AddEvent("Error submitting attestation", trace.WithAttributes(
 				attribute.String("err", err.Error()),
@@ -474,8 +498,8 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 // codebeat:disable[CYCLO,DEPTH]
 //
 //nolint:cyclop
-func (n *Notary) Start(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+func (n *Notary) Start(parentCtx context.Context) error {
+	g, ctx := errgroup.WithContext(parentCtx)
 
 	logger.Info("Starting the notary")
 
@@ -494,6 +518,14 @@ func (n *Notary) Start(ctx context.Context) error {
 
 	logger.Infof("Notary loadSummitMyLatestStates")
 	n.loadSummitMyLatestStates(ctx)
+
+	g.Go(func() error {
+		err := n.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
+		}
+		return err
+	})
 
 	g.Go(func() error {
 		for {

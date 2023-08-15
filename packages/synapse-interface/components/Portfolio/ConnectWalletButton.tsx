@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
+import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
 
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
