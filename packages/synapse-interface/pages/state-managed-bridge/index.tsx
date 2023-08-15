@@ -150,10 +150,8 @@ const StateManagedBridge = () => {
   }, [fetchedPendingActivity?.data?.bridgeTransactions])
 
   useEffect(() => {
-    if (userPendingActivity.length > 0) {
-      console.log('dispatch pending query from Bridge')
-      dispatch(updateUserPendingTransactions(userPendingActivity))
-    }
+    console.log('dispatch pending query from Bridge')
+    dispatch(updateUserPendingTransactions(userPendingActivity))
   }, [userPendingActivity])
 
   const {

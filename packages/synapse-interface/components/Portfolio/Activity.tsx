@@ -92,6 +92,11 @@ export const Activity = () => {
 
   useEffect(() => {
     dispatch(updateUserPendingTransactions(userPendingActivity))
+
+    fetchUserHistoricalActivity({
+      address: address,
+      startTime: queryHistoricalTime,
+    })
   }, [userPendingActivity])
 
   const hasPendingTransactions: boolean = useMemo(
