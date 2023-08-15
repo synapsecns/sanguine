@@ -13,7 +13,10 @@ import {
   oneMonthInMinutes,
   oneDayInMinutes,
 } from '@/utils/time'
-import { resetTransactionsState } from './actions'
+import {
+  resetTransactionsState,
+  updateIsUserPendingTransactionsLoading,
+} from './actions'
 import {
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
@@ -28,6 +31,7 @@ export default function Updater(): null {
   const {
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
@@ -74,28 +78,23 @@ export default function Updater(): null {
   }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
 
   useEffect(() => {
-    const { isSuccess, data: pendingData } = fetchedPendingActivity
+    const {
+      isLoading,
+      isUninitialized,
+      isSuccess,
+      data: pendingData,
+    } = fetchedPendingActivity
 
-    console.log('pendingData: ', pendingData)
+    if (address && isUserHistoricalTransactionsLoading) {
+      !isLoading &&
+        !isUninitialized &&
+        dispatch(updateIsUserPendingTransactionsLoading(false))
+    }
 
-    console.log('fetchedPendingActivity:', fetchedPendingActivity)
     if (address && isSuccess) {
       dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
     }
-  }, [fetchedPendingActivity, address])
-
-  // const userPendingActivity: BridgeTransaction[] = useMemo(() => {
-  //   const { isSuccess, data: pendingData } = fetchedPendingActivity
-  //   return isSuccess ? pendingData?.bridgeTransactions : userPendingTransactions
-  // }, [fetchedPendingActivity, address])
-
-  // useEffect(() => {
-  //   dispatch(updateUserPendingTransactions(userPendingActivity))
-  //   fetchUserHistoricalActivity({
-  //     address: address,
-  //     startTime: queryHistoricalTime,
-  //   })
-  // }, [userPendingActivity])
+  }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
 
   return null
 }
