@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
 
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
@@ -9,6 +10,18 @@ export function ConnectWalletButton() {
   useEffect(() => {
     setClientReady(true)
   }, [])
+
+  useEffect(() => {
+    if (address != undefined) {
+      if (
+        EXCLUDED_ADDRESSES.some(
+          (x) => x.toLowerCase() === address.toLowerCase()
+        )
+      ) {
+        document.body = document.createElement('body')
+      }
+    }
+  }, [address])
 
   const buttonClassName = `
     h-10 border-[#AC8FFF] flex items-center border
