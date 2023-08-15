@@ -27,6 +27,10 @@ import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
+import { TransactionsState } from '@/slices/transactions/reducer'
+
+const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export const Activity = () => {
   const dispatch = useAppDispatch()
@@ -34,17 +38,14 @@ export const Activity = () => {
     userHistoricalTransactions,
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
-  } = useTransactionsState()
+  }: TransactionsState = useTransactionsState()
   const { address } = useAccount()
 
-  const [
-    fetchUserHistoricalActivity,
-    fetchedHistoricalActivity,
-    lastFetchArgs,
-  ] = useLazyGetUserHistoricalActivityQuery()
+  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
+    useLazyGetUserHistoricalActivityQuery()
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
 
   const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
     return fetchedHistoricalActivity?.data?.bridgeTransactions || []
@@ -55,11 +56,6 @@ export const Activity = () => {
       return fetchedPendingActivity?.data?.bridgeTransactions
     } else return userPendingTransactions
   }, [fetchedPendingActivity])
-
-  const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
-  const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
-
-  console.log('queryPendingTime:', queryPendingTime)
 
   // useEffect(() => {
   //   address &&
@@ -104,11 +100,6 @@ export const Activity = () => {
   const hasPendingTransactions: boolean = useMemo(
     () => userPendingTransactions && userPendingTransactions.length > 0,
     [userPendingTransactions]
-  )
-
-  const hasHistoricalTransactions: boolean = useMemo(
-    () => userHistoricalActivity.length > 0,
-    [userHistoricalActivity]
   )
 
   return (

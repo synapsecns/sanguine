@@ -26,30 +26,43 @@ import { BridgeState } from '@/slices/bridge/reducer'
 import {
   updateUserHistoricalTransactions,
   updateIsUserHistoricalTransactionsLoading,
+  updateUserPendingTransactions,
 } from '@/slices/transactions/actions'
 import {
   useLazyGetUserHistoricalActivityQuery,
+  useLazyGetUserPendingTransactionsQuery,
   BridgeTransaction,
 } from '@/slices/api/generated'
-import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
+import {
+  getTimeMinutesBeforeNow,
+  oneMonthInMinutes,
+  oneDayInMinutes,
+} from '@/utils/time'
 import { useTransactionsState } from '@/slices/transactions/hooks'
+import { TransactionsState } from '@/slices/transactions/reducer'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
+  const { fromChainId }: BridgeState = useBridgeState()
+  const { activeTab }: PortfolioState = usePortfolioState()
   const {
     userHistoricalTransactions,
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
-  } = useTransactionsState()
+  }: TransactionsState = useTransactionsState()
+
   const [
     fetchUserHistoricalActivity,
     fetchedHistoricalActivity,
     lastFetchArgs,
   ] = useLazyGetUserHistoricalActivityQuery()
-  const { fromChainId }: BridgeState = useBridgeState()
-  const { activeTab }: PortfolioState = usePortfolioState()
+
+  const [fetchUserPendingActivity, fetchedPendingActivity] =
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
+
   const { chain } = useNetwork()
   const { address } = useAccount({
     onConnect() {
@@ -58,6 +71,10 @@ export const Portfolio = () => {
         address: address,
         startTime: queryHistoricalTime,
       })
+      fetchUserPendingActivity({
+        address: address,
+        startTime: queryPendingTime,
+      })
     },
     onDisconnect() {
       dispatch(resetPortfolioState())
@@ -65,15 +82,21 @@ export const Portfolio = () => {
     },
   })
 
-  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
-    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
-  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
-
   const { balancesAndAllowances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
+
+  const userHistoricalActivity: BridgeTransaction[] = useMemo(() => {
+    return fetchedHistoricalActivity?.data?.bridgeTransactions || []
+  }, [fetchedHistoricalActivity?.data?.bridgeTransactions])
+
+  const userPendingActivity: BridgeTransaction[] = useMemo(() => {
+    if (fetchedPendingActivity?.status === 'fulfilled') {
+      return fetchedPendingActivity?.data?.bridgeTransactions
+    } else return userPendingTransactions
+  }, [fetchedPendingActivity])
 
   useEffect(() => {
     const { isLoading, isUninitialized } = fetchedHistoricalActivity
@@ -90,6 +113,14 @@ export const Portfolio = () => {
       dispatch(updateUserHistoricalTransactions(userHistoricalActivity))
     }
   }, [userHistoricalActivity])
+
+  useEffect(() => {
+    dispatch(updateUserPendingTransactions(userPendingActivity))
+    fetchUserHistoricalActivity({
+      address: address,
+      startTime: queryHistoricalTime,
+    })
+  }, [userPendingActivity])
 
   useEffect(() => {
     ;(async () => {
