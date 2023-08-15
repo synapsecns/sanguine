@@ -511,12 +511,7 @@ const StateManagedBridge = () => {
             </Transition>
             <InputContainer />
             <OutputContainer />
-            <Warning
-              originChainId={fromChainId}
-              destinationChainId={toChainId}
-              originToken={fromToken}
-              destinationToken={toToken}
-            />
+            <Warning />
             <Transition
               appear={true}
               unmount={false}

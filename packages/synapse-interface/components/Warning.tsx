@@ -1,64 +1,49 @@
-import { Token } from '@/utils/types'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 import {
   ARBITRUM,
   AVALANCHE,
+  DOGE,
   ETH,
   FANTOM,
   HARMONY,
 } from '@/constants/chains/master'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
-interface WarningProps {
-  originChainId: number
-  destinationChainId: number
-  originToken: Token | undefined
-  destinationToken: Token
-}
+export const Warning = () => {
+  const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
 
-export const Warning = ({
-  originChainId,
-  destinationChainId,
-  originToken,
-  destinationToken,
-}: WarningProps) => {
-  if (!originToken || !destinationToken) {
-    return null
-  }
-
-  const originTokenSymbol = originToken && originToken.symbol
-  const destinationTokenSymbol = destinationToken && destinationToken.symbol
+  const fromTokenSymbol = fromToken && fromToken?.symbol
+  const toTokenSymbol = toToken && toToken?.symbol
 
   const isTokenUSDCAndUSDCe =
-    (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
-    (originTokenSymbol === 'USDCe' && destinationTokenSymbol === 'USDC')
+    (fromToken?.symbol === 'USDC' && toToken?.symbol === 'USDCe') ||
+    (fromToken?.symbol === 'USDCe' && toToken?.symbol === 'USDC')
 
   const isChainAvalancheOrArbitrum =
-    originChainId === AVALANCHE.id ||
-    originChainId === ARBITRUM.id ||
-    destinationChainId === AVALANCHE.id ||
-    destinationChainId === ARBITRUM.id
+    fromChainId === AVALANCHE.id ||
+    fromChainId === ARBITRUM.id ||
+    toChainId === AVALANCHE.id ||
+    toChainId === ARBITRUM.id
 
-  const isTokenUSDC =
-    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isTokenUSDC = fromTokenSymbol === 'USDC' && toTokenSymbol === 'USDC'
 
   const isChainOtherThanAvalancheArbitrumEthereum =
-    (destinationChainId != AVALANCHE.id &&
-      destinationChainId != ARBITRUM.id &&
-      destinationChainId != ETH.id) ||
-    (originChainId != AVALANCHE.id &&
-      originChainId != ARBITRUM.id &&
-      originChainId != ETH.id)
+    (toChainId != AVALANCHE.id &&
+      toChainId != ARBITRUM.id &&
+      toChainId != ETH.id) ||
+    (fromChainId != AVALANCHE.id &&
+      fromChainId != ARBITRUM.id &&
+      fromChainId != ETH.id)
 
   const isTokenUSDCAndChainEthereumArbitrumAvalanche =
     isTokenUSDC &&
-    ((originChainId === ETH.id && destinationChainId === ARBITRUM.id) ||
-      (originChainId === ARBITRUM.id && destinationChainId === AVALANCHE.id) ||
-      (originChainId === AVALANCHE.id && destinationChainId === ARBITRUM.id))
+    ((fromChainId === ETH.id && toChainId === ARBITRUM.id) ||
+      (fromChainId === ARBITRUM.id && toChainId === AVALANCHE.id) ||
+      (fromChainId === AVALANCHE.id && toChainId === ARBITRUM.id))
 
-  const isChainHarmony =
-    originChainId === HARMONY.id || destinationChainId === HARMONY.id
-  const isChainFantom =
-    originChainId === FANTOM.id || destinationChainId === FANTOM.id
+  const isChainHarmony = [fromChainId, toChainId].includes(HARMONY.id)
+  const isChainFantom = [fromChainId, toChainId].includes(FANTOM.id)
+  const isChainDoge = [fromChainId, toChainId].includes(DOGE.id)
 
   if (isTokenUSDCAndUSDCe && isChainAvalancheOrArbitrum) {
     return (
@@ -161,6 +146,20 @@ export const Warning = ({
           <>
             <p>
               Do not bridge via Fantom unless you understand the risks involved.
+            </p>
+          </>
+        }
+      />
+    )
+  } else if (isChainDoge) {
+    return (
+      <WarningMessage
+        header="Alert: Transactions to Dogechain are temporarily paused."
+        message={
+          <>
+            <p>
+              You may still bridge funds from Dogechain to any supported
+              destination chain.
             </p>
           </>
         }
