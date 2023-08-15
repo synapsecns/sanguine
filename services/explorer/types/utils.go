@@ -7,6 +7,7 @@ import (
 	cctpContract "github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	"math/big"
 )
 
@@ -23,6 +24,11 @@ type ServerRefs struct {
 type IFaceBridgeEvent struct {
 	IFace       bridge.EventLog
 	BridgeEvent *sql.BridgeEvent
+}
+
+type IFaceCCTPEvent struct {
+	IFace     cctp.EventLog
+	CCTPEvent *sql.CCTPEvent
 }
 
 type SwapReplacementData struct {

@@ -170,7 +170,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			if err != nil || cctpService == nil {
 				return nil, fmt.Errorf("could not create cctpService: %w", err)
 			}
-			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, cctpService, tokenDataService, priceDataService)
+			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, cctpService, tokenDataService, priceDataService, false)
 			if err != nil || cctpParser == nil {
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}

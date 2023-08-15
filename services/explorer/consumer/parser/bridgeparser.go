@@ -78,6 +78,7 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tok
 		tokenPriceService: tokenPriceService,
 		consumerFetcher:   consumerFetcher,
 		coinGeckoIDs:      idCoinGeckoIDs,
+		fromAPI:           fromAPI,
 	}, nil
 }
 
@@ -393,7 +394,6 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 			if err != nil {
 				return fmt.Errorf("could not get timestamp, sender on chain %d and tx %s from tx %w", chainID, iFace.GetTxHash().String(), err)
 			}
-			fmt.Println("rawTimeStamp", rawTimeStamp)
 			uint64TimeStamp := uint64(*rawTimeStamp)
 			timeStamp = &uint64TimeStamp
 			senderStr := "" // empty for bridge watcher/api parser

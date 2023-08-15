@@ -367,7 +367,7 @@ func (b *BackfillSuite) TestBackfill() {
 	// msr is the meta swap ref for getting token data
 	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
 	Nil(b.T(), err)
-	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService)
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}

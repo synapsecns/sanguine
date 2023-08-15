@@ -89,7 +89,7 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 				return nil, nil, nil, fmt.Errorf("could not create cctp ref: %w", err)
 			}
 			cctpRefs[chain.ChainID] = cctpRef
-			cctpParser, err := parser.NewCCTPParser(db, common.HexToAddress(chain.Contracts.CCTP), fetcher, cctpService, tokenDataService, priceDataService)
+			cctpParser, err := parser.NewCCTPParser(db, common.HexToAddress(chain.Contracts.CCTP), fetcher, cctpService, tokenDataService, priceDataService, true)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("could not create cctp parser: %w", err)
 			}
@@ -101,7 +101,7 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 				return nil, nil, nil, fmt.Errorf("could not create bridge ref: %w", err)
 			}
 			bridgeRefs[chain.ChainID] = bridgeRef
-			bridgeParser, err := parser.NewBridgeParser(db, common.HexToAddress(chain.Contracts.Bridge), tokenDataService, fetcher, priceDataService, false)
+			bridgeParser, err := parser.NewBridgeParser(db, common.HexToAddress(chain.Contracts.Bridge), tokenDataService, fetcher, priceDataService, true)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}

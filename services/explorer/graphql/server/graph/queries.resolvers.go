@@ -401,7 +401,15 @@ func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txn
 	if chainID == nil || txnHash == nil {
 		return nil, fmt.Errorf("chainID and txnHash must be provided")
 	}
-	results, err := r.GetOriginBridgeTxBW(ctx, *chainID, *txnHash)
+
+	var results *model.BridgeWatcherTx
+	var err error
+	switch *bridgeType {
+	case model.BridgeTypeBridge:
+		results, err = r.GetOriginBridgeTxBW(ctx, *chainID, *txnHash)
+	case model.BridgeTypeCctp:
+		results, err = r.GetOriginBridgeTxBWCCTP(ctx, *chainID, *txnHash)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get message bus transactions %w", err)
 	}
@@ -413,7 +421,14 @@ func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int
 	if chainID == nil || address == nil || kappa == nil || timestamp == nil || bridgeType == nil || historical == nil {
 		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
 	}
-	results, err := r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp, *bridgeType, *historical)
+	var results *model.BridgeWatcherTx
+	var err error
+	switch *bridgeType {
+	case model.BridgeTypeBridge:
+		results, err = r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp, *historical)
+	case model.BridgeTypeCctp:
+		results, err = r.GetDestinationBridgeTxBWCCTP(ctx, *chainID, *address, *kappa, *timestamp, *historical)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get message bus transactions %w", err)
 	}
