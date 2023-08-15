@@ -5,9 +5,9 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
-//0xc6c1e0630dbe9130cc068028486c0d118ddcea348550819defd5cb8c257f8a38
+// 0xc6c1e0630dbe9130cc068028486c0d118ddcea348550819defd5cb8c257f8a38
 
-//func (g APISuite) TestExistingOriginTx() {
+// func (g APISuite) TestExistingOriginTx() {
 //	chainID := uint32(1)
 //
 //	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
@@ -47,7 +47,7 @@ import (
 //
 //}
 
-//func (g APISuite) TestNonExistingOriginTx() {
+// func (g APISuite) TestNonExistingOriginTx() {
 //	// Testing this tx: https://bscscan.com/tx/0x0478fa7e15d61498ed00bdde6254368df416bbc66a11a2aed88f4ce2983b5470
 //	txHash := "0x0478fa7e15d61498ed00bdde6254368df416bbc66a11a2aed88f4ce2983b5470"
 //	chainID := 56
@@ -73,7 +73,7 @@ import (
 //}
 
 //
-//func (g APISuite) TestExistingDestinationTx() {
+// func (g APISuite) TestExistingDestinationTx() {
 //	chainID := uint32(1)
 //
 //	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
@@ -118,7 +118,7 @@ import (
 //
 //}
 
-//func (g APISuite) TestNonExistingDestinationTx() {
+// func (g APISuite) TestNonExistingDestinationTx() {
 //	// Testing this tx: https://bscscan.com/tx/0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67
 //	txHash := "0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67"
 //	kappa := "e16367a638236d4c1e942aba379fcc9babf468b76908253cc7797ed2df691e57"

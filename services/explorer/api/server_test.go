@@ -1,7 +1,7 @@
 package api_test
 
 //
-//func TestHandleJSONAmountStat(t *testing.T) {
+// func TestHandleJSONAmountStat(t *testing.T) {
 //	valueString := gofakeit.Word()
 //	valueStruct := gqlClient.GetAmountStatistic{
 //		Response: &struct {
@@ -15,7 +15,7 @@ package api_test
 //	Equal(t, valueString, *res.Value)
 //}
 //
-//func TestHandleJSONDailyStat(t *testing.T) {
+// func TestHandleJSONDailyStat(t *testing.T) {
 //	valueFloat := gofakeit.Float64()
 //	valueStruct := gqlClient.GetDailyStatisticsByChain{
 //		Response: []*struct {

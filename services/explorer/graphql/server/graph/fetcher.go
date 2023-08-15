@@ -23,7 +23,6 @@ var logger = log.Logger("explorer-server-fetcher")
 
 const maxTimeToWaitForTx = 15 * time.Second
 const kappaExists = "kappa does not exist on destination chain"
-const batchAmount = 3
 
 func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash string) (*model.BridgeWatcherTx, error) {
 	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
@@ -35,7 +34,7 @@ func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash s
 		Max:    5 * time.Second,
 	}
 	timeout := time.Duration(0)
-	//var backendClient backend.ScribeBackend
+	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
 	if r.Refs.BridgeRefs[chainID] == nil {
 		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
@@ -81,7 +80,7 @@ func (r Resolver) bwOriginFallbackCCTP(ctx context.Context, chainID uint32, txHa
 		Max:    5 * time.Second,
 	}
 	timeout := time.Duration(0)
-	//var backendClient backend.ScribeBackend
+	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
 	if r.Refs.BridgeRefs[chainID] == nil {
 		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
@@ -125,7 +124,7 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 		Max:    5 * time.Second,
 	}
 	timeout := time.Duration(0)
-	//var backendClient backend.ScribeBackend
+	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
 	if r.Refs.BridgeRefs[chainID] == nil {
 		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
@@ -179,10 +178,8 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 			}()
 			bridgeEvent := maturedBridgeEvent.(*sql.BridgeEvent)
 			return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeDestination)
-
 		}
 	}
-
 }
 
 func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32, backendClient client.EVM) (*uint64, *uint64, error) {
@@ -308,7 +305,6 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 				}
 
 				if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
-
 					ifaceBridgeEvent := &types.IFaceBridgeEvent{
 						IFace:       iFace,
 						BridgeEvent: bridgeEvent,
@@ -343,10 +339,9 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 		return nil, <-errorChan
 	}
 	return maturedBridgeEvent, nil
-
 }
 
-// parseSwapLog this is a swap event, we need to get the address from it
+// parseSwapLog this is a swap event, we need to get the address from it.
 func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainID uint32) (*types.SwapReplacementData, error) {
 	// parse swap with swap filter
 	var swapReplacementData types.SwapReplacementData

@@ -118,7 +118,6 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 				}
 				swapFilterers[chain.ChainID] = append(swapFilterers[chain.ChainID], swapFilterer)
 			}
-
 		}
 	}
 	serverParser := types.ServerParsers{
@@ -131,7 +130,6 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 		CCTPRefs:   cctpRefs,
 	}
 	return &serverParser, &serverRefs, swapFilterers, nil
-
 }
 
 // Start starts the api server.

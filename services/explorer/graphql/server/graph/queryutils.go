@@ -1669,7 +1669,6 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 			return nil, fmt.Errorf("failed to get destination bridge event from chain: %w", err)
 		}
 		return txFromChain, nil
-
 	}
 	return bwBridgeToBWTx(bridgeEvent, txType)
 }

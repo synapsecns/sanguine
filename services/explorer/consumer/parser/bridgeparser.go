@@ -226,7 +226,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	return bridgeEventInterface, nil
 }
 
-// ParseLog parses the bridge logs and returns a model that can be stored
+// ParseLog parses the bridge logs and returns a model that can be stored.
 func (p *BridgeParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.BridgeEvent, bridgeTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 
