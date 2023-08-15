@@ -114,7 +114,7 @@ export const Activity = () => {
   }, [userHistoricalActivity])
 
   useEffect(() => {
-    if (userPendingActivity.length > 0) {
+    if (userPendingActivity.length) {
       dispatch(updateUserPendingTransactions(userPendingActivity))
     }
   }, [userPendingActivity])
