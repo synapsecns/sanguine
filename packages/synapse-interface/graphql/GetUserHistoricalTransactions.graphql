@@ -4,6 +4,7 @@ query GetUserHistoricalActivity($address: String!, $startTime: Int!) {
     addressFrom: $address
     startTime: $startTime
     page: 1
+    useMv: true
   ) {
     fromInfo {
       chainID

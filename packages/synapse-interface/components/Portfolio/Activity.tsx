@@ -59,6 +59,8 @@ export const Activity = () => {
   const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
   const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
+  console.log('queryPendingTime:', queryPendingTime)
+
   useEffect(() => {
     address &&
       queryHistoricalTime &&
