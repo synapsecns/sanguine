@@ -289,13 +289,14 @@ query GetOriginBridgeTx($chainID: Int, $txnHash: String, $bridgeType: BridgeType
     kappa
   }
 }
-query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType) {
+query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType, $historical: Boolean) {
   response: getDestinationBridgeTx(
     chainID: $chainID
     address: $address
     kappa: $kappa
     timestamp: $timestamp
     bridgeType: $bridgeType
+    historical: $historical
   ) {
     bridgeTx {
       chainID

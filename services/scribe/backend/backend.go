@@ -45,10 +45,19 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresse
 
 	maxHeight := new(big.Int)
 	calls[1] = eth.BlockNumber().Returns(maxHeight)
+
 	for i := 0; i < len(chunks); i++ {
+		startBlock := chunks[i].StartBlock
+		endBlock := chunks[i].EndBlock
+
+		// handle desc iterator
+		if startBlock.Uint64() > endBlock.Uint64() {
+			startBlock = chunks[i].EndBlock
+			endBlock = chunks[i].StartBlock
+		}
 		filter := ethereum.FilterQuery{
-			FromBlock: chunks[i].StartBlock,
-			ToBlock:   chunks[i].EndBlock,
+			FromBlock: startBlock,
+			ToBlock:   endBlock,
 			Addresses: contractAddresses,
 			Topics:    topics,
 		}

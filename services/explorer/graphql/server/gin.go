@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
@@ -28,18 +29,19 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, clients map[uint32]etherClient.EVM, parsers *types.ServerParsers, refs *types.ServerRefs, config serverConfig.Config, handler metrics.Handler) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, clients map[uint32]etherClient.EVM, parsers *types.ServerParsers, refs *types.ServerRefs, swapFilters map[uint32][]*swap.SwapFlashLoanFilterer, config serverConfig.Config, handler metrics.Handler) {
 
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB:      consumerDB,
-				Fetcher: fetcher,
-				Cache:   apiCache,
-				Clients: clients,
-				Parsers: parsers,
-				Refs:    refs,
-				Config:  config,
+				DB:          consumerDB,
+				Fetcher:     fetcher,
+				Cache:       apiCache,
+				Clients:     clients,
+				Parsers:     parsers,
+				Refs:        refs,
+				SwapFilters: swapFilters,
+				Config:      config,
 			}},
 		),
 	)

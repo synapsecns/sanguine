@@ -189,7 +189,7 @@ type ComplexityRoot struct {
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
-		GetDestinationBridgeTx func(childComplexity int, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) int
+		GetDestinationBridgeTx func(childComplexity int, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType, historical *bool) int
 		GetOriginBridgeTx      func(childComplexity int, chainID *int, txnHash *string, bridgeType *model.BridgeType) int
 		Leaderboard            func(childComplexity int, duration *model.Duration, chainID *int, useMv *bool, page *int) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
@@ -238,7 +238,7 @@ type QueryResolver interface {
 	AddressData(ctx context.Context, address string) (*model.AddressData, error)
 	Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error)
 	GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error)
-	GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error)
+	GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error)
 }
 
 type executableSchema struct {
@@ -1001,7 +1001,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(*int), args["address"].(*string), args["kappa"].(*string), args["timestamp"].(*int), args["bridgeType"].(*model.BridgeType)), true
+		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(*int), args["address"].(*string), args["kappa"].(*string), args["timestamp"].(*int), args["bridgeType"].(*model.BridgeType), args["historical"].(*bool)), true
 
 	case "Query.getOriginBridgeTx":
 		if e.complexity.Query.GetOriginBridgeTx == nil {
@@ -1393,6 +1393,7 @@ Ranked chainIDs by volume
     kappa:      String
     timestamp:   Int
     bridgeType:   BridgeType
+    historical:  Boolean = false
   ): BridgeWatcherTx
 
 }
@@ -2110,6 +2111,15 @@ func (ec *executionContext) field_Query_getDestinationBridgeTx_args(ctx context.
 		}
 	}
 	args["bridgeType"] = arg4
+	var arg5 *bool
+	if tmp, ok := rawArgs["historical"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("historical"))
+		arg5, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["historical"] = arg5
 	return args, nil
 }
 
@@ -7055,7 +7065,7 @@ func (ec *executionContext) _Query_getDestinationBridgeTx(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["kappa"].(*string), fc.Args["timestamp"].(*int), fc.Args["bridgeType"].(*model.BridgeType))
+		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["kappa"].(*string), fc.Args["timestamp"].(*int), fc.Args["bridgeType"].(*model.BridgeType), fc.Args["historical"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

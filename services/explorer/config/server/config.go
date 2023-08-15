@@ -27,8 +27,10 @@ type Config struct {
 	BridgeConfigAddress string `yaml:"bridge_config_address"`
 	// BridgeConfigChainID is the ChainID of BridgeConfig contract.
 	BridgeConfigChainID uint32 `yaml:"bridge_config_chain_id"`
+	// SwapTopicHash is the hash of the swap topic.
+	SwapTopicHash string `yaml:"swap_topic_hash"`
 	// Chains stores the chain configurations.
-	Chains []ChainConfig `yaml:"chains"`
+	Chains map[uint32]ChainConfig `yaml:"chains"`
 }
 
 type ChainConfig struct {
@@ -40,6 +42,8 @@ type ChainConfig struct {
 	GetLogsBatchAmount uint64 `yaml:"get_logs_batch_amount"`
 	// BlockTime is the block time of the chain.
 	BlockTime uint64 `yaml:"block_time"`
+	// Swaps are the addresses of the swaps on the chain for parsing token address logs.
+	Swaps []string `yaml:"swaps"`
 	// Chains stores the chain configurations.
 	Contracts ContractsConfig `yaml:"contracts"`
 }

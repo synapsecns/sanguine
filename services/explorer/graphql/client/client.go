@@ -676,8 +676,8 @@ func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *s
 	return &res, nil
 }
 
-const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType) {
-	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp, bridgeType: $bridgeType) {
+const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType, $historical: Boolean) {
+	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp, bridgeType: $bridgeType, historical: $historical) {
 		bridgeTx {
 			chainID
 			destinationChainID
@@ -699,13 +699,14 @@ const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: 
 }
 `
 
-func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID *int, kappa *string, address *string, timestamp *int, bridgeType *model.BridgeType, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
+func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID *int, kappa *string, address *string, timestamp *int, bridgeType *model.BridgeType, historical *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
 	vars := map[string]interface{}{
 		"chainID":    chainID,
 		"kappa":      kappa,
 		"address":    address,
 		"timestamp":  timestamp,
 		"bridgeType": bridgeType,
+		"historical": historical,
 	}
 
 	var res GetDestinationBridgeTx

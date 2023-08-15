@@ -228,15 +228,24 @@ func (g *APISuite) SetupTest() {
 		RPCURL:              "https://rpc.omnirpc.io/confirmations/1/rpc/",
 		BridgeConfigAddress: "0x5217c83ca75559B1f8a8803824E5b7ac233A12a1",
 		BridgeConfigChainID: 1,
-		Chains: []serverConfig.ChainConfig{
-			{
-				ChainID: 1,
+		SwapTopicHash:       "0xc6c1e0630dbe9130cc068028486c0d118ddcea348550819defd5cb8c257f8a38",
+		Chains: map[uint32]serverConfig.ChainConfig{
+			1: {
+				ChainID:            1,
+				GetLogsRange:       256,
+				GetLogsBatchAmount: 1,
+				BlockTime:          13,
+				Swaps:              []string{"0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8"},
 				Contracts: serverConfig.ContractsConfig{
 					CCTP: "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",
 				},
 			},
-			{
-				ChainID: 56,
+			56: {
+				ChainID:            56,
+				GetLogsRange:       256,
+				GetLogsBatchAmount: 1,
+				BlockTime:          3,
+				Swaps:              []string{"0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13"},
 				Contracts: serverConfig.ContractsConfig{
 					Bridge: "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
 				},

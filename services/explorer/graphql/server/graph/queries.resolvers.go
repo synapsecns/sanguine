@@ -409,11 +409,11 @@ func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txn
 }
 
 // GetDestinationBridgeTx is the resolver for the getDestinationBridgeTx field.
-func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error) {
-	if chainID == nil || address == nil || kappa == nil || timestamp == nil {
+func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error) {
+	if chainID == nil || address == nil || kappa == nil || timestamp == nil || bridgeType == nil || historical == nil {
 		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
 	}
-	results, err := r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp)
+	results, err := r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp, *bridgeType, *historical)
 	if err != nil {
 		return nil, fmt.Errorf("could not get message bus transactions %w", err)
 	}

@@ -142,6 +142,7 @@ Ranked chainIDs by volume
     kappa:      String
     timestamp:   Int
     bridgeType:   BridgeType
+    historical:  Boolean = false
   ): BridgeWatcherTx
 
 }

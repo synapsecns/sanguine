@@ -1,11 +1,13 @@
 package types
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	bridgeContract "github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	cctpContract "github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	"math/big"
 )
 
 type ServerParsers struct {
@@ -21,4 +23,9 @@ type ServerRefs struct {
 type IFaceBridgeEvent struct {
 	IFace       bridge.EventLog
 	BridgeEvent *sql.BridgeEvent
+}
+
+type SwapReplacementData struct {
+	Address common.Address
+	Amount  *big.Int
 }

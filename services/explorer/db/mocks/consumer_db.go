@@ -374,6 +374,27 @@ func (_m *ConsumerDB) GetRankedChainsByVolume(ctx context.Context, query string)
 	return r0, r1
 }
 
+// GetString provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetString(ctx context.Context, query string) (string, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStringArray provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetStringArray(ctx context.Context, query string) ([]string, error) {
 	ret := _m.Called(ctx, query)

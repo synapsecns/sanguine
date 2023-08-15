@@ -112,7 +112,6 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
-
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
