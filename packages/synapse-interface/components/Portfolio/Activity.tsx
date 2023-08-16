@@ -101,7 +101,7 @@ export const ExplorerLink = ({
   connectedAddress?: Address | string
 }) => {
   const explorerLink: string = connectedAddress
-    ? `${ANALYTICS_PATH}/address/${connectedAddress}`
+    ? `${ANALYTICS_PATH}address/${connectedAddress}`
     : ANALYTICS_PATH
   return (
     <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
