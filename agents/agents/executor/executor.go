@@ -301,6 +301,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	fmt.Println("executing")
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -402,6 +403,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			big.NewInt(int64(*stateIndex)),
 			uint64(1000000),
 		)
+		fmt.Printf("submitting tx: %v\n", tx.Hash())
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
@@ -722,6 +724,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
 	datatypeInterface, err := e.logToInterface(log, chainID)
+	fmt.Printf("processLog with type %v, inboxParser %v summitparser %v\n", datatypeInterface, e.chainExecutors[chainID].inboxParser, e.chainExecutors[chainID].summitParser)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
 	}
