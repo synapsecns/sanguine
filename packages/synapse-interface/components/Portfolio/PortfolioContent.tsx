@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Address } from 'wagmi'
+import { Address, useAccount } from 'wagmi'
+import Link from 'next/link'
 import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
   SingleNetworkPortfolio,
@@ -9,6 +10,8 @@ import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
+import { DISCORD_URL } from '@/constants/urls'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
@@ -79,13 +82,7 @@ export const PortfolioContent = ({
             )
           }
         )}
-      {mounted && !connectedAddress && (
-        <HomeContent />
-        // <React.Fragment>
-        //   <PortfolioHeader />
-        //   <UnconnectedPortfolioContent />
-        // </React.Fragment>
-      )}
+      {mounted && !connectedAddress && <HomeContent />}
     </div>
   )
 }
@@ -153,6 +150,38 @@ export const EmptyPortfolioContent = () => {
       >
         No balances found.
       </p>
+    </>
+  )
+}
+
+export const UnsupportedAssetContent = () => {
+  const { address } = useAccount()
+  const shortened = shortenAddress(address, 3)
+  return (
+    <>
+      <p
+        data-test-id="empty-portfolio-content"
+        className={`
+        text-[#CCCAD3BF] pb-4
+        `}
+      >
+        No supported assets found {address && `for ${shortened}`}.
+      </p>
+      <p
+        data-test-id="empty-portfolio-content"
+        className={`
+        text-[#CCCAD3BF] pb-4
+        `}
+      >
+        Don't see a chain or token you want to bridge?
+      </p>
+      <Link
+        className="text-[#99E6FF] underline"
+        href={DISCORD_URL}
+        target="_blank"
+      >
+        Contact support
+      </Link>
     </>
   )
 }
