@@ -10,7 +10,7 @@ import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
-import { DISCORD_URL } from '@/constants/urls'
+import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 import { shortenAddress } from '@/utils/shortenAddress'
 
 type PortfolioContentProps = {
@@ -170,13 +170,25 @@ export const UnsupportedAssetContent = () => {
       >
         Don't see a chain or token you want to bridge?
       </p>
-      <Link
-        className="text-[#99E6FF] underline"
-        href={DISCORD_URL}
-        target="_blank"
-      >
-        Contact support
-      </Link>
+      <a className="text-[#CCCAD3BF]">
+        Let us know on
+        <Link
+          className="text-[#99E6FF] underline px-1"
+          href={TWITTER_URL}
+          target="_blank"
+        >
+          Twitter
+        </Link>
+        or
+        <Link
+          className="text-[#99E6FF] underline pl-1"
+          href={DISCORD_URL}
+          target="_blank"
+        >
+          Discord
+        </Link>
+        .
+      </a>
     </>
   )
 }
