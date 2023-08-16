@@ -803,6 +803,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	}
 }
 
+//nolint:maintidx
 func (e *ExecutorSuite) TestSendManagerMessage() {
 	testDone := false
 	defer func() {
@@ -813,6 +814,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
 	registry := deployer.NewContractRegistry(e.T(), e.TestBackendOrigin)
+	//nolint:forcetypeassert
 	deployer := testutil.NewOriginHarnessDeployer(registry, e.TestBackendOrigin).(testutil.OriginHarnessDeployer)
 	gasOracleAddr, err := e.OriginContract.GasOracle(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
@@ -837,8 +839,9 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		}
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), initializeTx)
 
-		return address, tx, rawHandle, err
+		return address, tx, rawHandle, fmt.Errorf("could not deploy origin override: %w", err)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		//nolint:wrapcheck
 		return originharness.NewOriginHarnessRef(address, backend)
 	})
 	e.Nil(err)
@@ -952,35 +955,13 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		}
 	}()
 
-	// Create and send a manager message.
+	// Build a manager message. For this message we will do a call to `remoteSlashAgent`.
+	// Note that we remove the first two "security params", as the `execute()` call will
+	// inject these into the calldata.
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	optimisticSeconds := uint32(1)
 	nonce := uint32(1)
 	txContextOrigin.Value = types.TotalTips(tips)
-	notaryStatus, err := e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
-	e.Nil(err)
-	notaryProof, err := e.SummitDomainClient.BondingManager().GetProof(e.GetTestContext(), e.NotaryBondedSigner)
-	e.Nil(err)
-	err = e.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		e.GetTestContext(),
-		e.NotaryUnbondedSigner,
-		e.NotaryBondedSigner,
-		notaryStatus,
-		notaryProof,
-	)
-	e.Nil(err)
-	err = e.OriginDomainClient.LightManager().UpdateAgentStatus(
-		e.GetTestContext(),
-		e.NotaryUnbondedSigner,
-		e.NotaryBondedSigner,
-		notaryStatus,
-		notaryProof,
-	)
-	e.Nil(err)
-
-	// Build a manager message. For this message we will do a call to `remoteSlashAgent`.
-	// Note that we remove the first two "security params", as the `execute()` call will
-	// inject these into the calldata.
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
 	e.Nil(err)
 	method, ok := abi.Methods["remoteSlashAgent"]
@@ -1032,8 +1013,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 
 	// Submit snapshot with Notary.
-	notaryStatus, err = e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
-	e.Nil(err)
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
