@@ -35,12 +35,7 @@ export const Activity = () => {
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
   const isLoading: boolean =
-    isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
-
-  console.log('address: ', address)
-  console.log('isLoading: ', isLoading)
-
-  console.log('hasNoTransactions:', hasNoTransactions)
+    isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
 
   return (
     <div data-test-id="activity">
@@ -54,12 +49,14 @@ export const Activity = () => {
         <div className="text-[#A3A3C2]">Loading activity...</div>
       )}
 
-      {address && !isLoading && hasNoTransactions ? (
+      {address && !isLoading && hasNoTransactions && (
         <div className="text-[#A3A3C2]">
           Your pending and recent transactions will appear here.
           <ExplorerLink connectedAddress={address} />
         </div>
-      ) : (
+      )}
+
+      {address && !isLoading && !hasNoTransactions && (
         <>
           {hasPendingTransactions && (
             <ActivitySection title="Pending">
@@ -300,7 +297,7 @@ export const TimeElapsed = ({ startTime }: { startTime: number }) => {
   const formattedSeconds = String(seconds).padStart(2, '0')
 
   return (
-    <div className="flex items-center">
+    <div data-test-id="time-elapsed" className="flex items-center">
       <EtherscanIcon className="mr-1" />
       {hours > 0 ? `${hours}:` : ''}
       {formattedMinutes}:{formattedSeconds}
