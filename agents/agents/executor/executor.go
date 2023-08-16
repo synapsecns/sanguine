@@ -257,7 +257,6 @@ func (e Executor) Run(parentCtx context.Context) error {
 	})
 
 	for _, chain := range e.config.Chains {
-		fmt.Printf("setting up chain: %v\n", chain)
 		chain := chain
 
 		// Listen for sentEvents on origin.
@@ -301,7 +300,6 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
-	fmt.Println("executing")
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -320,7 +318,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
-		fmt.Println("nonce is nil")
 		return false, nil
 	}
 
@@ -331,7 +328,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if state == nil {
-		fmt.Println("state is nil")
 		return false, nil
 	}
 
@@ -347,7 +343,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedMessageProof {
-		fmt.Println("message proof not verified")
 		return false, nil
 	}
 
@@ -357,7 +352,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedStateProof {
-		fmt.Println("state proof not verified")
 		return false, nil
 	}
 
@@ -377,7 +371,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if snapshotProof == nil || stateIndex == nil {
-		fmt.Printf("snapshot proof / state index is nil: %v, %v\n", snapshotProof, stateIndex)
 		return false, nil
 	}
 
@@ -408,7 +401,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			big.NewInt(int64(*stateIndex)),
 			uint64(1000000),
 		)
-		fmt.Printf("submitting tx: %v\n", tx.Hash())
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
@@ -518,7 +510,6 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	}
 
 	if messageMinimumTime == nil {
-		fmt.Println("min time is nil")
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -559,7 +550,6 @@ retryLoop:
 
 	if *messageMinimumTime > currentTime {
 		//nolint:nilnil
-		fmt.Printf("time not advanced: %v, %v\n", *messageMinimumTime, currentTime)
 		return nil, nil
 	}
 
@@ -649,8 +639,6 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 				span.AddEvent("message executed")
 				return true, nil
 			}
-			// fmt.Printf("raw executed: %v\n", executed)
-			// fmt.Printf("message status: %v\n", execTypes.MessageStatusType(executed))
 
 			span.AddEvent("message not executed")
 			return false, nil
@@ -662,7 +650,6 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 //
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
-	fmt.Printf("streamLogs on chain %v at addr %v, type %v\n", chainID, address, contractType)
 	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -733,16 +720,13 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
-	fmt.Printf("processLog: %v\n", log)
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
 	}
 	if datatypeInterface == nil {
-		fmt.Println("nil interface type")
 		return nil
 	}
-	fmt.Printf("processLog on chain %v with type %v: %v\n", chainID, datatypeInterface, log)
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
@@ -753,7 +737,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	fmt.Printf("datatypeInterface: %v\n", datatypeInterface)
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
 		return e.processMessage(ctx, datatype, log.BlockNumber)
@@ -811,7 +794,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
-				fmt.Printf("got executable msgs: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -835,17 +817,14 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						attribute.Bool(metrics.MessageExecuted, messageExecuted),
 					))
 
-					fmt.Printf("messageExecuted: %v\n", messageExecuted)
 					if !messageExecuted {
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)
 							continue
 						}
-						fmt.Printf("executed: %v\n", executed)
 
 						if !executed {
-							fmt.Println("not executed")
 							continue
 						}
 					}
@@ -875,7 +854,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
-	fmt.Printf("setMinimumTime: %v\n", chainID)
 	backoffInterval := time.Duration(0)
 
 	for {
@@ -898,7 +876,6 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
-				fmt.Printf("got unset min time msgs: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -927,7 +904,6 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
-				fmt.Printf("got min timestamp: %v\n", minimumTimestamp)
 
 				if minimumTimestamp == nil {
 					continue
@@ -943,7 +919,6 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
-				fmt.Printf("set min time to %v on msg: %v\n", message.OptimisticSeconds(), message)
 			}
 
 			metrics.EndSpanWithErr(span, err)

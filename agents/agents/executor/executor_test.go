@@ -1,7 +1,6 @@
 package executor_test
 
 import (
-	"encoding/binary"
 	"fmt"
 	"math/big"
 	"time"
@@ -987,30 +986,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	// Create and send a manager message.
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	optimisticSeconds := uint32(1)
-	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
 	nonce := uint32(1)
-	// body := []byte{byte(gofakeit.Uint32())}
-	// paddedRequest := big.NewInt(0)
-
 	txContextOrigin.Value = types.TotalTips(tips)
-	// msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
-	// baseHeader := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
-	// msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
-	// baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
-	// message, err := types.NewMessageFromBaseMessage(baseHeader, baseMessage)
-	// e.Nil(err)
-	// fmt.Printf("message: %v\n", message)
-
-	// body := []byte{}
-	// addUint32 := func(x uint32) {
-	// 	xBytes := make([]byte, 4)
-	// 	binary.BigEndian.PutUint32(xBytes, x)
-	// 	body = append(body, xBytes...)
-	// }
-	// for i := 0; i < 9; i++ {
-	// 	addUint32(gofakeit.Uint32())
-	// }
-	// fmt.Printf("len body: %v\n", len(body))
 	notaryStatus, err := e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
 	notaryProof, err := e.SummitDomainClient.BondingManager().GetProof(e.GetTestContext(), e.NotaryBondedSigner)
@@ -1033,8 +1010,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 
 	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
-	// selector, err := abiutil.GetSelectorByName("remoteSlashAgent", bondingmanager.BondingManagerMetaData)
-	// e.Nil(err)
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
 	e.Nil(err)
 
@@ -1047,9 +1022,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
-	// managerMessageEncoded, err := types.EncodeMessage(managerMessage)
-	// fmt.Printf("manager msg: %v\n", managerMessage)
-	// messageBytes := []byte{byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32())}
 
 	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
 	e.Nil(err)
@@ -1057,49 +1029,23 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		txContextOrigin.TransactOpts,
 		uint32(e.TestBackendSummit.GetChainID()),
 		optimisticSeconds,
-		// managerMessageEncoded,
-		// []byte{gofakeit.Uint8()},
 		body,
 	)
 	e.Nil(err)
-	fmt.Printf("tx context origin addr: %v\n", txContextOrigin.From.String())
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("OMNIIIII: %v\n", omniRPCClient.GetEndpoint(int(e.TestBackendOrigin.GetChainID()), 1))
-	// fmt.Printf("sent manager message: %v\n", managerMessage)
-	fmt.Printf("hash: %v\n", tx.Hash().String())
 
 	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Println("emitted")
 
 	// Get the origin state so we can submit it on the Summit.
 	originStateRaw, err := originHarnessOverrideRef.SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
 	originState, err := types.DecodeState(originStateRaw)
 	e.Nil(err)
-	// originState, err := e.OriginDomainClient.Origin().SuggestLatestState(e.GetTestContext())
-	// e.Nil(err)
-
 	snapshot := types.NewSnapshot([]types.State{originState})
-	// stateHash, err := originState.Hash()
-	// e.Nil(err)
-	// originState = types.NewState(
-	// 	stateHash,
-	// 	e.OriginDomainClient.Config().DomainID,
-	// 	originState.Nonce(),
-	// 	// originState.Nonce()+1,
-	// 	originState.BlockNumber(),
-	// 	originState.Timestamp(),
-	// 	originState.GasData(),
-	// )
-	// snapshot := types.NewSnapshot([]types.State{notaryState})
 
 	// Submit snapshot with Guard.
-	fmt.Println("submitting guard snapshot")
-	fmt.Printf("state: %v\n", originState)
-	fmt.Printf("state origin: %v, nonce: %v\n", originState.Origin(), originState.Nonce())
-
 	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
 	e.Nil(err)
 	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
@@ -1111,19 +1057,14 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("OMNIIIII SUMMIT: %v\n", omniRPCClient.GetEndpoint(int(e.TestBackendSummit.GetChainID()), 1))
-	fmt.Printf("guard snapshot tx: %v\n", tx.Hash().String())
 
 	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Println("emitted")
 
 	// Submit snapshot with Notary.
 	notaryStatus, err = e.SummitDomainClient.BondingManager().GetAgentStatus(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
-	fmt.Printf("notary status: %v\n", notaryStatus)
-	fmt.Println("submitting notary snapshot")
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
 	e.Nil(err)
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
@@ -1134,7 +1075,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("notary snapshot tx: %v\n", tx.Hash().String())
 
 	// Increase EVM time to allow agent status to be updated to Slashed on origin.
 	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
@@ -1147,26 +1087,12 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 		e.Nil(err)
 		e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-		fmt.Println("emitted")
 	}
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {
-		// executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
-		// e.Nil(err)
-		// fmt.Printf("message executed: %v\n", executed)
-
 		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
 		e.Nil(err)
-		// fmt.Printf("manager message executed: %v\n", executed)
-
 		return executed
 	})
-}
-
-func wrap64(wrappable *big.Int) []byte {
-	wrapper := make([]byte, 8)
-	binary.BigEndian.PutUint64(wrapper, wrappable.Uint64())
-
-	return wrapper
 }
