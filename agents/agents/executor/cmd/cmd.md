@@ -68,8 +68,8 @@ submitter_config:
       gas_estimate: 7500000
 ```
 
-The last component that this config needs is a `Scribe` config. There are two types of `Scribes` that will have different configs:
-1. Embedded Scribe: This is a scribe that is embedded in the Executor. When running an Executor locally, this is the simplest option. The config for this is as follows:
+The last component that this config needs is a `Scribe` config. There are two types of Scribes that will have different configs:
+1. Embedded Scribe: This is a `Scribe` that is embedded in the Executor. When running an Executor locally, this is the simplest option. The config for this is as follows:
 ```yaml
 type: embedded
 
@@ -126,13 +126,13 @@ embedded_scribe_config:
   refresh_rate: 0
 ```
 
-2. Remote Scribe: This is a Scribe that is running separately, but accessible to the Executor via a gRPC connection. This is the recommended option for running an Executor in production. The config for this is as follows:
+2. Remote Scribe: This is a `Scribe` that is running separately, but accessible to the Executor via a gRPC connection. This is the recommended option for running an Executor in production. The config for this is as follows:
 ```yaml
 scribe_config:
   type: remote
   port: 80
   url: executor-scribe.url
 ```
-Note that the remote Scribe instance also needs to be listening for all chains and contracts that the Executor will need, but the configuration for the remote Scribe is used when deploying the remote Scribe.
+Note that the remote `Scribe` instance also needs to be listening for all chains and contracts that the Executor will need, but the configuration for the remote `Scribe` is used when deploying the remote `Scribe`.
 
 Append whichever `Scribe` config you choose to the end of the Executor config file, and the Executor should be ready to run.
