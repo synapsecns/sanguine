@@ -102,12 +102,6 @@ import {
 } from '@/slices/portfolio/hooks'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
-import { useLazyGetUserPendingTransactionsQuery } from '@/slices/api/generated'
-import { getTimeMinutesBeforeNow, oneDayInMinutes } from '@/utils/time'
-import { updateUserPendingTransactions } from '@/slices/transactions/actions'
-import { BridgeTransaction } from '@/slices/api/generated'
-import { useTransactionsState } from '@/slices/transactions/hooks'
-import { TransactionsState } from '@/slices/transactions/reducer'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism

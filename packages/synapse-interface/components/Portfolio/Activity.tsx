@@ -3,25 +3,9 @@ import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useAppDispatch } from '@/store/hooks'
 import { useTransactionsState } from '@/slices/transactions/hooks'
-import {
-  updateUserHistoricalTransactions,
-  updateIsUserHistoricalTransactionsLoading,
-  updateUserPendingTransactions,
-} from '@/slices/transactions/actions'
-import {
-  useLazyGetUserHistoricalActivityQuery,
-  useLazyGetUserPendingTransactionsQuery,
-  PartialInfo,
-  BridgeTransaction,
-} from '@/slices/api/generated'
-import {
-  getTimeMinutesBeforeNow,
-  convertUnixTimestampToMonthAndDate,
-  oneDayInMinutes,
-  oneMonthInMinutes,
-} from '@/utils/time'
+import { PartialInfo, BridgeTransaction } from '@/slices/api/generated'
+import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'

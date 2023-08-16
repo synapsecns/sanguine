@@ -29,7 +29,6 @@ const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
-    userPendingTransactions,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
