@@ -41,23 +41,20 @@ export default function Updater(): null {
     useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
 
   const { address } = useAccount({
-    onConnect() {
-      fetchUserHistoricalActivity({
-        address: address,
-        startTime: queryHistoricalTime,
-      })
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
-    },
     onDisconnect() {
       dispatch(resetTransactionsState())
     },
   })
 
   useEffect(() => {
-    dispatch(api.util.resetApiState())
+    fetchUserHistoricalActivity({
+      address: address,
+      startTime: queryHistoricalTime,
+    })
+    fetchUserPendingActivity({
+      address: address,
+      startTime: queryPendingTime,
+    })
   }, [address])
 
   useEffect(() => {
