@@ -826,15 +826,17 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
-	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
-
 	registry := deployer.NewContractRegistry(e.T(), e.TestBackendOrigin)
 	deployer := testutil.NewOriginHarnessDeployer(registry, e.TestBackendOrigin).(testutil.OriginHarnessDeployer)
-	agentAddress := txContextOrigin.From
 	gasOracleAddr, err := e.OriginContract.GasOracle(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
 	inboxAddr, err := e.OriginContract.Inbox(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
+
+	// Manually deploy an "override" origin contract, so that we can call SendManagerMessage as
+	// onlyAgentManager from our tx context.
+	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	agentAddress := txContextOrigin.From
 	originHarnessOverride, err := deployer.DeploySimpleContract(e.GetTestContext(), func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *ethTypes.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(e.TestBackendOrigin.GetChainID()), agentAddress, inboxAddr, gasOracleAddr)
 		if err != nil {
@@ -855,11 +857,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	})
 	e.Nil(err)
 
-	fmt.Printf("tx context origin addr before setup: %v\n", txContextOrigin.From.String())
-	fmt.Printf("originHarnessOverride addr: %v\n", originHarnessOverride.Address().String())
-
-	// testContractSummit, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendSummit)
-
 	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
@@ -868,7 +865,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
-		// Address:    e.OriginContract.Address().String(),
 		Address:    originHarnessOverride.Address().String(),
 		StartBlock: 0,
 	}
@@ -952,8 +948,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		InboxAddress:  e.InboxOnSummit.Address().String(),
 		Chains: []execConfig.ChainConfig{
 			{
-				ChainID: chainID,
-				// OriginAddress: e.OriginContract.Address().String(),
+				ChainID:       chainID,
 				OriginAddress: originHarnessOverride.Address().String(),
 			},
 			{
@@ -1009,20 +1004,22 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 
-	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
+	// Build a manager message. For this message we will do a call to `remotSlashAgent`.
+	// Note that we remove the first two "security params", as the `execute()` call will
+	// inject these into the calldata.
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
 	e.Nil(err)
-
-	// Remove the first two security params from the remoteSlashAgent ABI
 	method, ok := abi.Methods["remoteSlashAgent"]
 	e.True(ok)
 	method.Inputs = abi.Methods["remoteSlashAgent"].Inputs[2:]
 	abi.Methods["remoteSlashAgent"] = method
 	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.NotaryBondedSigner.Address())
 	e.Nil(err)
+	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
 
+	// Send the manager message.
 	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
 	e.Nil(err)
 	tx, err := originHarnessOverrideRef.SendManagerMessage(
@@ -1033,7 +1030,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-
 	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1057,7 +1053,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-
 	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1076,13 +1071,13 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 
-	// Increase EVM time to allow agent status to be updated to Slashed on origin.
+	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
+	// the manager message can be executed.
 	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
 	e.Nil(err)
-	optimisticPeriodSeconds := 86400
-	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(optimisticPeriodSeconds))
+	bondingManagerOptimisticSecs := 86400
+	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(bondingManagerOptimisticSecs))
 	e.Nil(err)
-
 	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
