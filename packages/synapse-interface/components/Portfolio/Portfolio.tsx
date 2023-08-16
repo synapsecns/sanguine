@@ -30,9 +30,6 @@ export const Portfolio = () => {
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
-    // onConnect() {
-    //   dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-    // },
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
@@ -44,6 +41,10 @@ export const Portfolio = () => {
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
+
+  useEffect(() => {
+    dispatch(resetPortfolioState())
+  }, [address])
 
   useEffect(() => {
     ;(async () => {
