@@ -80,10 +80,11 @@ export const PortfolioContent = ({
           }
         )}
       {mounted && !connectedAddress && (
-        <React.Fragment>
-          <PortfolioHeader />
-          <UnconnectedPortfolioContent />
-        </React.Fragment>
+        <HomeContent />
+        // <React.Fragment>
+        //   <PortfolioHeader />
+        //   <UnconnectedPortfolioContent />
+        // </React.Fragment>
       )}
     </div>
   )
@@ -115,8 +116,7 @@ const LoadingPortfolioContent = () => {
       <p
         data-test-id="loading-portfolio-content"
         className={`
-        text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
-          border-b border-solid border-[#3D3D5C]
+        text-[#CCCAD3BF] mt-6 mb-4 pb-6
         `}
       >
         Loading assets...
