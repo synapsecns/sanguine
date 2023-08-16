@@ -9,16 +9,6 @@ import (
 
 // TODO add tests for this config type
 
-// ConfirmationConfig holds config data for reorg protection.
-type ConfirmationConfig struct {
-	// RequiredConfirmations is the number of confirmations required for a block to be finalized.
-	RequiredConfirmations uint32 `yaml:"required_confirmations"`
-	// ConfirmationThreshold is the number of blocks to wait until doing a reorg check.
-	ConfirmationThreshold uint64 `yaml:"confirmation_threshold"`
-	// ConfirmationMinWait is the amount of time in seconds to wait before checking confirmations
-	ConfirmationRefreshRate int `yaml:"confirmation_min_wait"`
-}
-
 // ChainConfig defines the config for a specific chain.
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
@@ -35,8 +25,14 @@ type ChainConfig struct {
 	ConcurrencyThreshold uint64 `yaml:"concurrency_threshold"`
 	// GetBlockBatchSize is the amount of blocks to get at a time when doing confirmations.
 	GetBlockBatchAmount int `yaml:"get_block_batch_amount"`
-	// ConfirmationConfig holds config data for reorg protection.
-	ConfirmationConfig ConfirmationConfig `yaml:"confirmation_config"`
+	// Confirmations is the number of blocks away from the head to livefill to.
+	Confirmations uint64 `yaml:"confirmations"`
+	// LivefillThreshold is the number of blocks away from the head minus confirmations to livefill to.
+	LivefillThreshold uint64 `yaml:"livefill_threshold"`
+	// LivefillRange is the number of blocks that the livefill indexer with request for with get logs at once.
+	LivefillRange uint64 `yaml:"livefill_range"`
+	// LivefillFlushInterval is how long to wait before flushing the livefill indexer db (in seconds)
+	LivefillFlushInterval uint64 `yaml:"livefill_flush_interval"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

@@ -7,7 +7,7 @@ import { setShowToTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { DestinationChainLabel } from './DestinationChainLabel'
 import SwitchButton from '../buttons/SwitchButton'
-import { setFromChainId, setToChainId } from '@/slices/bridgeSlice'
+import { setFromChainId, setToChainId } from '@/slices/bridge/reducer'
 
 export const OutputContainer = ({}) => {
   const dispatch = useDispatch()
@@ -72,6 +72,10 @@ export const OutputContainer = ({}) => {
                 disabled={true}
                 className={`
                 focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                p-0
                 bg-transparent
                 max-w-[190px]
                placeholder:text-[#88818C]

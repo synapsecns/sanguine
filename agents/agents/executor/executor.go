@@ -252,6 +252,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
 
+	// Listen for sentEvents on summit.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
 	})

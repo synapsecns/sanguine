@@ -125,6 +125,8 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 	var messageBusParser *parser.MessageBusParser
 	var cctpParser *parser.CCTPParser
 	var swapService fetcherpkg.SwapService
+	var cctpService fetcherpkg.CCTPService
+
 	swapParsers := make(map[common.Address]*parser.SwapParser)
 
 	for i := range chainConfig.Contracts {
@@ -164,7 +166,11 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
 		case "cctp":
-			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, priceDataService)
+			cctpService, err = fetcherpkg.NewCCTPFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			if err != nil || swapService == nil {
+				return nil, fmt.Errorf("could not create cctpService: %w", err)
+			}
+			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, cctpService, tokenDataService, priceDataService)
 			if err != nil || cctpParser == nil {
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
