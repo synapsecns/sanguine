@@ -1004,7 +1004,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("sent mgr msg: %v\n", tx.Hash())
 	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1028,7 +1027,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("submitted guard snapshot: %v\n", tx.Hash())
 	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1049,7 +1047,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	fmt.Printf("submitted notary snapshot: %v\n", tx.Hash())
 
 	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
 	// the manager message can be executed.
