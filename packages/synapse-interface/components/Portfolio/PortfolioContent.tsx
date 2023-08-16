@@ -19,6 +19,7 @@ type PortfolioContentProps = {
   selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchState: FetchState
+  visibility: boolean
 }
 
 export const PortfolioContent = ({
@@ -27,10 +28,8 @@ export const PortfolioContent = ({
   selectedFromChainId,
   networkPortfolioWithBalances,
   fetchState,
+  visibility,
 }: PortfolioContentProps) => {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
     getCurrentNetworkPortfolio(
       selectedFromChainId,
@@ -46,12 +45,13 @@ export const PortfolioContent = ({
     !portfolioExists && fetchState === FetchState.LOADING
 
   return (
-    <div data-test-id="portfolio-content">
-      {mounted && connectedAddress && isInitialFetchLoading && (
-        <LoadingPortfolioContent />
-      )}
-      {mounted &&
-        currentNetworkPortfolio &&
+    <div
+      data-test-id="portfolio-content"
+      className={`${visibility ? 'block' : 'hidden'}`}
+    >
+      {!connectedAddress && <HomeContent />}
+      {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
+      {currentNetworkPortfolio &&
         connectedChainId &&
         selectedFromChainId &&
         !isInitialFetchLoading && (
@@ -64,8 +64,7 @@ export const PortfolioContent = ({
             fetchState={fetchState}
           />
         )}
-      {mounted &&
-        connectedAddress &&
+      {connectedAddress &&
         !isInitialFetchLoading &&
         Object.keys(remainingNetworksPortfolios).map(
           (chainId: string, index: number) => {
@@ -82,7 +81,6 @@ export const PortfolioContent = ({
             )
           }
         )}
-      {mounted && !connectedAddress && <HomeContent />}
     </div>
   )
 }

@@ -62,7 +62,18 @@ export const Portfolio = () => {
     >
       <PortfolioTabManager />
       <div className="mt-4">
-        {activeTab === PortfolioTabs.HOME && <HomeContent />}
+        <PortfolioContent
+          connectedAddress={address}
+          connectedChainId={chain?.id}
+          selectedFromChainId={fromChainId}
+          networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+          fetchState={fetchState}
+          visibility={activeTab === PortfolioTabs.PORTFOLIO}
+        />
+        <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
+
+        {/* Temporarily comment out approach below until resolving SSR hydration issues */}
+        {/* {activeTab === PortfolioTabs.HOME && <HomeContent />}
         {activeTab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
@@ -72,7 +83,7 @@ export const Portfolio = () => {
             fetchState={fetchState}
           />
         )}
-        {activeTab === PortfolioTabs.ACTIVITY && <Activity />}
+        {activeTab === PortfolioTabs.ACTIVITY && <Activity />} */}
       </div>
     </div>
   )

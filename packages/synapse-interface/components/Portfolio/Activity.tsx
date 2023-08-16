@@ -13,7 +13,7 @@ import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
-export const Activity = () => {
+export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
   const {
     userHistoricalTransactions,
@@ -38,7 +38,10 @@ export const Activity = () => {
     isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
 
   return (
-    <div data-test-id="activity">
+    <div
+      data-test-id="activity"
+      className={`${visibility ? 'block' : 'hidden'}`}
+    >
       {!address && (
         <div className="text-[#C2C2D6]">
           Your pending and recent transactions will appear here.

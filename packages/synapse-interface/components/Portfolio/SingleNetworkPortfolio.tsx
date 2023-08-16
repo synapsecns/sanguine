@@ -34,125 +34,127 @@ type SingleNetworkPortfolioProps = {
   fetchState: FetchState
 }
 
-export const SingleNetworkPortfolio = ({
-  portfolioChainId,
-  connectedChainId,
-  selectedFromChainId,
-  portfolioTokens,
-  initializeExpanded = false,
-  fetchState,
-}: SingleNetworkPortfolioProps) => {
-  const dispatch = useDispatch()
+export const SingleNetworkPortfolio = React.memo(
+  ({
+    portfolioChainId,
+    connectedChainId,
+    selectedFromChainId,
+    portfolioTokens,
+    initializeExpanded = false,
+    fetchState,
+  }: SingleNetworkPortfolioProps) => {
+    const dispatch = useDispatch()
 
-  const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
-  const isUnsupportedChain: boolean = currentChain ? false : true
+    const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
+    const isUnsupportedChain: boolean = currentChain ? false : true
 
-  const [tokensWithAllowance, tokensWithoutAllowance] =
-    separateTokensByAllowance(portfolioTokens)
+    const [tokensWithAllowance, tokensWithoutAllowance] =
+      separateTokensByAllowance(portfolioTokens)
 
-  const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(portfolioTokens)
+    const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
+      sortTokensByBalanceDescending(tokensWithAllowance)
+    const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
+      sortTokensByBalanceDescending(tokensWithoutAllowance)
+    const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
+      sortTokensByBalanceDescending(portfolioTokens)
 
-  const hasNoTokenBalance: boolean =
-    !portfolioTokens || portfolioTokens.length === 0
+    const hasNoTokenBalance: boolean =
+      !portfolioTokens || portfolioTokens.length === 0
 
-  const isLoading: boolean = fetchState === FetchState.LOADING
+    const isLoading: boolean = fetchState === FetchState.LOADING
 
-  useEffect(() => {
-    if (isUnsupportedChain) {
-      dispatch(setSupportedFromTokens([]))
-      dispatch(setSupportedToTokens(initialState.supportedToTokens))
-    }
-  }, [isUnsupportedChain])
+    useEffect(() => {
+      if (isUnsupportedChain) {
+        dispatch(setSupportedFromTokens([]))
+        dispatch(setSupportedToTokens(initialState.supportedToTokens))
+      }
+    }, [isUnsupportedChain])
 
-  if (hasNoTokenBalance) {
-    return <EmptyPortfolioContent />
-  } else
-    return (
-      <div data-test-id="single-network-portfolio" className="flex flex-col">
-        <PortfolioAccordion
-          connectedChainId={connectedChainId}
-          portfolioChainId={portfolioChainId}
-          selectedFromChainId={selectedFromChainId}
-          initializeExpanded={initializeExpanded}
-          header={
-            <PortfolioNetwork
-              displayName={currentChain?.name}
-              chainIcon={currentChain?.chainImg}
-              isUnsupportedChain={isUnsupportedChain}
-            />
-          }
-          expandedProps={
-            <PortfolioConnectButton
-              connectedChainId={connectedChainId}
-              portfolioChainId={portfolioChainId}
-            />
-          }
-          collapsedProps={
-            <PortfolioTokenVisualizer
-              portfolioTokens={sortedTokensForVisualizer}
-            />
-          }
-        >
-          {isUnsupportedChain && (
-            <WarningMessage
-              twClassName="!p-2 !mt-0"
-              message={
-                <p className="leading-6">
-                  This chain is not yet supported. New chain or token support
-                  can be discussed on{' '}
-                  <a target="_blank" className="underline" href={TWITTER_URL}>
-                    Twitter
-                  </a>{' '}
-                  or{' '}
-                  <a target="_blank" className="underline" href={DISCORD_URL}>
-                    Discord
-                  </a>
-                  .
-                </p>
-              }
-            />
-          )}
-          <PortfolioHeader />
-          {sortedTokensWithAllowance &&
-            sortedTokensWithAllowance.length > 0 &&
-            sortedTokensWithAllowance.map(
-              ({
-                token,
-                balance,
-                allowances,
-              }: TokenWithBalanceAndAllowances) => (
-                <PortfolioTokenAsset
-                  token={token}
-                  balance={balance}
-                  allowances={allowances}
-                  portfolioChainId={portfolioChainId}
-                  connectedChainId={connectedChainId}
-                  isApproved={true}
-                />
-              )
+    if (hasNoTokenBalance) {
+      return <EmptyPortfolioContent />
+    } else
+      return (
+        <div data-test-id="single-network-portfolio" className="flex flex-col">
+          <PortfolioAccordion
+            connectedChainId={connectedChainId}
+            portfolioChainId={portfolioChainId}
+            selectedFromChainId={selectedFromChainId}
+            initializeExpanded={initializeExpanded}
+            header={
+              <PortfolioNetwork
+                displayName={currentChain?.name}
+                chainIcon={currentChain?.chainImg}
+                isUnsupportedChain={isUnsupportedChain}
+              />
+            }
+            expandedProps={
+              <PortfolioConnectButton
+                connectedChainId={connectedChainId}
+                portfolioChainId={portfolioChainId}
+              />
+            }
+            collapsedProps={
+              <PortfolioTokenVisualizer
+                portfolioTokens={sortedTokensForVisualizer}
+              />
+            }
+          >
+            {isUnsupportedChain && (
+              <WarningMessage
+                twClassName="!p-2 !mt-0"
+                message={
+                  <p className="leading-6">
+                    This chain is not yet supported. New chain or token support
+                    can be discussed on{' '}
+                    <a target="_blank" className="underline" href={TWITTER_URL}>
+                      Twitter
+                    </a>{' '}
+                    or{' '}
+                    <a target="_blank" className="underline" href={DISCORD_URL}>
+                      Discord
+                    </a>
+                    .
+                  </p>
+                }
+              />
             )}
-          {sortedTokensWithoutAllowance &&
-            sortedTokensWithoutAllowance.length > 0 &&
-            sortedTokensWithoutAllowance.map(
-              ({ token, balance }: TokenWithBalanceAndAllowances) => (
-                <PortfolioTokenAsset
-                  token={token}
-                  balance={balance}
-                  portfolioChainId={portfolioChainId}
-                  connectedChainId={connectedChainId}
-                  isApproved={false}
-                />
-              )
-            )}
-        </PortfolioAccordion>
-      </div>
-    )
-}
+            <PortfolioHeader />
+            {sortedTokensWithAllowance &&
+              sortedTokensWithAllowance.length > 0 &&
+              sortedTokensWithAllowance.map(
+                ({
+                  token,
+                  balance,
+                  allowances,
+                }: TokenWithBalanceAndAllowances) => (
+                  <PortfolioTokenAsset
+                    token={token}
+                    balance={balance}
+                    allowances={allowances}
+                    portfolioChainId={portfolioChainId}
+                    connectedChainId={connectedChainId}
+                    isApproved={true}
+                  />
+                )
+              )}
+            {sortedTokensWithoutAllowance &&
+              sortedTokensWithoutAllowance.length > 0 &&
+              sortedTokensWithoutAllowance.map(
+                ({ token, balance }: TokenWithBalanceAndAllowances) => (
+                  <PortfolioTokenAsset
+                    token={token}
+                    balance={balance}
+                    portfolioChainId={portfolioChainId}
+                    connectedChainId={connectedChainId}
+                    isApproved={false}
+                  />
+                )
+              )}
+          </PortfolioAccordion>
+        </div>
+      )
+  }
+)
 
 type PortfolioNetworkProps = {
   displayName: string
