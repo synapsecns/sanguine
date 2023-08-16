@@ -30,9 +30,9 @@ export const Portfolio = () => {
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
-    onConnect() {
-      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-    },
+    // onConnect() {
+    //   dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    // },
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())

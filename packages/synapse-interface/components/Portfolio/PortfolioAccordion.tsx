@@ -21,7 +21,7 @@ export const PortfolioAccordion = ({
   connectedChainId,
   selectedFromChainId,
 }: PortfolioAccordionProps) => {
-  const [isExpanded, setIsExpanded] = useState(initializeExpanded)
+  const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
@@ -46,12 +46,12 @@ export const PortfolioAccordion = ({
         `}
         data-test-id="portfolio-accordion"
       >
-        <button onClick={handleToggle} className="flex-1 mr-3">
+        <div onClick={handleToggle} className="flex-1 mr-3">
           <div className="flex flex-row justify-between">
             {header}
             {!isExpanded && collapsedProps}
           </div>
-        </button>
+        </div>
         {isExpanded && expandedProps}
       </div>
       <div className="flex flex-col">

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Address } from 'wagmi'
 import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
@@ -25,6 +25,9 @@ export const PortfolioContent = ({
   networkPortfolioWithBalances,
   fetchState,
 }: PortfolioContentProps) => {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
     getCurrentNetworkPortfolio(
       selectedFromChainId,
@@ -41,17 +44,20 @@ export const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetworkPortfolio && connectedChainId && selectedFromChainId && (
-        <SingleNetworkPortfolio
-          portfolioChainId={selectedFromChainId}
-          connectedChainId={connectedChainId}
-          selectedFromChainId={selectedFromChainId}
-          portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
-          initializeExpanded={true}
-          fetchState={fetchState}
-        />
-      )}
-      {connectedAddress ? (
+      {mounted &&
+        currentNetworkPortfolio &&
+        connectedChainId &&
+        selectedFromChainId && (
+          <SingleNetworkPortfolio
+            portfolioChainId={selectedFromChainId}
+            connectedChainId={connectedChainId}
+            selectedFromChainId={selectedFromChainId}
+            portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
+            initializeExpanded={true}
+            fetchState={fetchState}
+          />
+        )}
+      {mounted && connectedAddress ? (
         isInitialFetchLoading ? (
           <LoadingPortfolioContent />
         ) : (
