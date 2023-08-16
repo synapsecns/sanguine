@@ -57,27 +57,28 @@ export const PortfolioContent = ({
             fetchState={fetchState}
           />
         )}
-      {mounted && connectedAddress ? (
-        isInitialFetchLoading ? (
-          <LoadingPortfolioContent />
-        ) : (
-          Object.keys(remainingNetworksPortfolios).map(
-            (chainId: string, index: number) => {
-              const tokens = remainingNetworksPortfolios[chainId]
-              return (
-                <SingleNetworkPortfolio
-                  portfolioChainId={Number(chainId)}
-                  connectedChainId={connectedChainId}
-                  selectedFromChainId={selectedFromChainId}
-                  portfolioTokens={tokens}
-                  initializeExpanded={false}
-                  fetchState={fetchState}
-                />
-              )
-            }
-          )
-        )
-      ) : (
+      {mounted && connectedAddress && isInitialFetchLoading && (
+        <LoadingPortfolioContent />
+      )}
+      {mounted &&
+        connectedAddress &&
+        !isInitialFetchLoading &&
+        Object.keys(remainingNetworksPortfolios).map(
+          (chainId: string, index: number) => {
+            const tokens = remainingNetworksPortfolios[chainId]
+            return (
+              <SingleNetworkPortfolio
+                portfolioChainId={Number(chainId)}
+                connectedChainId={connectedChainId}
+                selectedFromChainId={selectedFromChainId}
+                portfolioTokens={tokens}
+                initializeExpanded={false}
+                fetchState={fetchState}
+              />
+            )
+          }
+        )}
+      {mounted && !connectedAddress && (
         <React.Fragment>
           <PortfolioHeader />
           <UnconnectedPortfolioContent />
@@ -117,9 +118,8 @@ const LoadingPortfolioContent = () => {
           border-b border-solid border-[#3D3D5C]
         `}
       >
-        Loading portfolio balances...
+        Loading assets...
       </p>
-      <ConnectWalletButton />
     </>
   )
 }
