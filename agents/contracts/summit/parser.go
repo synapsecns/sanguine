@@ -10,7 +10,7 @@ import (
 
 // Parser parses events from the summit contract.
 type Parser interface {
-	// EventType determines if an event was initiated by the bridge or the user.
+	// EventType determines the event type.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseAttestationSaved parses a AttestationSaved event.
 	ParseAttestationSaved(log ethTypes.Log) (_ types.Attestation, ok bool)

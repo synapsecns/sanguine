@@ -247,12 +247,12 @@ func (e Executor) Run(parentCtx context.Context) error {
 		return err
 	})
 
-	// Listen for snapshotAcceptedEvents on bonding manager.
+	// Listen for snapshotAccepted events on the inbox.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
 
-	// Listen for sentEvents on summit.
+	// Listen for attestationSaved events on the summit.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
 	})
@@ -260,12 +260,12 @@ func (e Executor) Run(parentCtx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for sentEvents on origin.
+		// Listen for sent events on origins.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
-		// Listen for attestationAcceptedEvents on destination.
+		// Listen for attestationAccepted events on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})
