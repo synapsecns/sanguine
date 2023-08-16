@@ -44,10 +44,14 @@ export const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
+      {mounted && connectedAddress && isInitialFetchLoading && (
+        <LoadingPortfolioContent />
+      )}
       {mounted &&
         currentNetworkPortfolio &&
         connectedChainId &&
-        selectedFromChainId && (
+        selectedFromChainId &&
+        !isInitialFetchLoading && (
           <SingleNetworkPortfolio
             portfolioChainId={selectedFromChainId}
             connectedChainId={connectedChainId}
@@ -57,9 +61,6 @@ export const PortfolioContent = ({
             fetchState={fetchState}
           />
         )}
-      {mounted && connectedAddress && isInitialFetchLoading && (
-        <LoadingPortfolioContent />
-      )}
       {mounted &&
         connectedAddress &&
         !isInitialFetchLoading &&
