@@ -14,6 +14,7 @@ import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
 export const Activity = () => {
+  const { address } = useAccount()
   const {
     userHistoricalTransactions,
     userPendingTransactions,
@@ -24,34 +25,55 @@ export const Activity = () => {
     () => userPendingTransactions && userPendingTransactions.length > 0,
     [userPendingTransactions]
   )
+  const hasHistoricalTransactions: boolean = useMemo(
+    () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
+    [userHistoricalTransactions]
+  )
+  const hasNoTransactions: boolean = useMemo(() => {
+    if (!address) return true
+    return !hasPendingTransactions && !hasHistoricalTransactions
+  }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
   return (
     <div data-test-id="activity">
-      {hasPendingTransactions && (
-        <ActivitySection title="Pending">
-          <TransactionHeader transactionType={ActivityType.PENDING} />
-          {userPendingTransactions.map((transaction: BridgeTransaction) => (
-            <Transaction
-              bridgeTransaction={transaction}
-              transactionType={ActivityType.PENDING}
-            />
-          ))}
-        </ActivitySection>
-      )}
-      {isUserHistoricalTransactionsLoading ? (
-        <div className="text-[#A3A3C2]"> Loading activity... </div>
-      ) : (
-        <ActivitySection title="Recent">
-          <TransactionHeader transactionType={ActivityType.RECENT} />
-          {userHistoricalTransactions &&
-            userHistoricalTransactions.map((transaction: BridgeTransaction) => (
-              <Transaction
-                bridgeTransaction={transaction}
-                transactionType={ActivityType.RECENT}
-              />
-            ))}
+      {hasNoTransactions ? (
+        <div className="text-[#A3A3C2]">
+          Your pending and recent transactions will appear here.
           <ExplorerLink />
-        </ActivitySection>
+        </div>
+      ) : (
+        <>
+          {hasPendingTransactions && (
+            <ActivitySection title="Pending">
+              <TransactionHeader transactionType={ActivityType.PENDING} />
+              {userPendingTransactions.map((transaction: BridgeTransaction) => (
+                <Transaction
+                  bridgeTransaction={transaction}
+                  transactionType={ActivityType.PENDING}
+                  key={transaction.kappa}
+                />
+              ))}
+            </ActivitySection>
+          )}
+          {isUserHistoricalTransactionsLoading ? (
+            <div className="text-[#A3A3C2]"> Loading activity... </div>
+          ) : (
+            <ActivitySection title="Recent">
+              <TransactionHeader transactionType={ActivityType.RECENT} />
+              {userHistoricalTransactions &&
+                userHistoricalTransactions.map(
+                  (transaction: BridgeTransaction) => (
+                    <Transaction
+                      bridgeTransaction={transaction}
+                      transactionType={ActivityType.RECENT}
+                      key={transaction.kappa}
+                    />
+                  )
+                )}
+              <ExplorerLink />
+            </ActivitySection>
+          )}
+        </>
       )}
     </div>
   )
