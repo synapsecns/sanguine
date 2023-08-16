@@ -12,10 +12,7 @@ import {
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
-import {
-  EmptyPortfolioContent,
-  UnsupportedAssetContent,
-} from './PortfolioContent'
+import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
@@ -73,7 +70,7 @@ export const SingleNetworkPortfolio = ({
   }, [isUnsupportedChain])
 
   if (hasNoTokenBalance) {
-    return <UnsupportedAssetContent />
+    return <EmptyPortfolioContent />
   } else
     return (
       <div data-test-id="single-network-portfolio" className="flex flex-col">
@@ -121,7 +118,6 @@ export const SingleNetworkPortfolio = ({
             />
           )}
           <PortfolioHeader />
-          {/* {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />} */}
           {sortedTokensWithAllowance &&
             sortedTokensWithAllowance.length > 0 &&
             sortedTokensWithAllowance.map(

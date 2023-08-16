@@ -135,21 +135,6 @@ const UnconnectedPortfolioContent = () => {
 }
 
 export const EmptyPortfolioContent = () => {
-  return (
-    <>
-      <p
-        data-test-id="empty-portfolio-content"
-        className={`
-        text-[#CCCAD3BF] py-4
-        `}
-      >
-        No balances found.
-      </p>
-    </>
-  )
-}
-
-export const UnsupportedAssetContent = () => {
   const { address } = useAccount()
   const shortened = shortenAddress(address, 3)
   return (
