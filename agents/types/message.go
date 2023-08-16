@@ -126,12 +126,6 @@ func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 
 		toHash = leaf[:]
 	} else {
-		// encodedMessage, err := EncodeMessage(m)
-		// if err != nil {
-		// 	return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
-		// }
-		// toHash = crypto.Keccak256(encodedMessage[MessageBodyOffset:])
-		// toHash = encodedMessage
 		toHash = crypto.Keccak256(m.Body())
 	}
 

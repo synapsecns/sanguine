@@ -1004,7 +1004,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 
-	// Build a manager message. For this message we will do a call to `remotSlashAgent`.
+	// Build a manager message. For this message we will do a call to `remoteSlashAgent`.
 	// Note that we remove the first two "security params", as the `execute()` call will
 	// inject these into the calldata.
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
