@@ -1083,11 +1083,9 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(optimisticPeriodSeconds))
 	e.Nil(err)
 
-	for i := 0; i < 5; i++ {
-		tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		e.Nil(err)
-		e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	}
+	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {
