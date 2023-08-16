@@ -4,15 +4,16 @@ The Executor is an agent that verifies messages and executes them on the destina
 
 ## Usage
 
-Navigate to `sanguine/agents/agents/executor/main` and run the following command to start the Executor:
+Navigate to `sanguine/agents/main` and run the following command to start the agents CLI:
 
 ```bash
 $ go run main.go
 ```
-Then the Executor command line will be exposed. The Executor CLI takes in three arguments:
-1. `--config </Path/to/config.yaml>`: This argument is required. It is the path to the config file
-2. `--metrics-port <port>`: Port to expose metrics on
-3. `--debug`: Enable debug tracing on the omniRPC client
+Then the command line will be exposed. The CLI takes in three arguments, in addition to the agent specifier:
+1. Specify the agent to run: `executor-run`
+2. `--config </Path/to/config.yaml>`: This argument is required. It is the path to the config file
+3. `--metrics-port <port>`: Port to expose metrics on
+4. `--debug`: Enable debug tracing on the omniRPC client
 
 ## Configuration
 
