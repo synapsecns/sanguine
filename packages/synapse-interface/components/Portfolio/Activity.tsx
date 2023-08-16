@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useCallback, useState } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, Address } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -57,7 +57,7 @@ export const Activity = () => {
       {address && !isLoading && hasNoTransactions ? (
         <div className="text-[#A3A3C2]">
           Your pending and recent transactions will appear here.
-          <ExplorerLink />
+          <ExplorerLink connectedAddress={address} />
         </div>
       ) : (
         <>
@@ -95,10 +95,17 @@ export const Activity = () => {
   )
 }
 
-export const ExplorerLink = () => {
+export const ExplorerLink = ({
+  connectedAddress,
+}: {
+  connectedAddress?: Address | string
+}) => {
+  const explorerLink: string = connectedAddress
+    ? `${ANALYTICS_PATH}/address/${connectedAddress}`
+    : ANALYTICS_PATH
   return (
     <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
-      <Link href={ANALYTICS_PATH} target="_blank">
+      <Link href={explorerLink} target="_blank">
         Explorer →
       </Link>
     </div>
