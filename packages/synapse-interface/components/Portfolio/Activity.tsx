@@ -43,12 +43,13 @@ export const Activity = () => {
       ) : (
         <ActivitySection title="Recent">
           <TransactionHeader transactionType={ActivityType.RECENT} />
-          {userHistoricalTransactions.map((transaction: BridgeTransaction) => (
-            <Transaction
-              bridgeTransaction={transaction}
-              transactionType={ActivityType.RECENT}
-            />
-          ))}
+          {userHistoricalTransactions &&
+            userHistoricalTransactions.map((transaction: BridgeTransaction) => (
+              <Transaction
+                bridgeTransaction={transaction}
+                transactionType={ActivityType.RECENT}
+              />
+            ))}
           <ExplorerLink />
         </ActivitySection>
       )}

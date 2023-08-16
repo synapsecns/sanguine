@@ -5,6 +5,7 @@ import {
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
   BridgeTransaction,
+  api,
 } from '../api/generated'
 import { useTransactionsState } from './hooks'
 import { TransactionsState } from './reducer'
@@ -56,6 +57,10 @@ export default function Updater(): null {
   })
 
   useEffect(() => {
+    dispatch(api.util.resetApiState())
+  }, [address])
+
+  useEffect(() => {
     const {
       isLoading,
       isUninitialized,
@@ -84,7 +89,7 @@ export default function Updater(): null {
       data: pendingData,
     } = fetchedPendingActivity
 
-    if (address && isUserHistoricalTransactionsLoading) {
+    if (address && isUserPendingTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserPendingTransactionsLoading(false))
