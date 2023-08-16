@@ -110,12 +110,7 @@ function getCurrentNetworkPortfolio(
 const LoadingPortfolioContent = () => {
   return (
     <>
-      <p
-        data-test-id="loading-portfolio-content"
-        className={`
-        text-[#CCCAD3BF] mt-6 mb-4 pb-6
-        `}
-      >
+      <p data-test-id="loading-portfolio-content" className="text-[#CCCAD3BF]">
         Loading assets...
       </p>
     </>

@@ -19,6 +19,7 @@ export const Activity = () => {
     userHistoricalTransactions,
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
   const hasPendingTransactions: boolean = useMemo(
@@ -30,13 +31,30 @@ export const Activity = () => {
     [userHistoricalTransactions]
   )
   const hasNoTransactions: boolean = useMemo(() => {
-    if (!address) return true
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
+  const isLoading: boolean =
+    isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
+
+  console.log('address: ', address)
+  console.log('isLoading: ', isLoading)
+
+  console.log('hasNoTransactions:', hasNoTransactions)
+
   return (
     <div data-test-id="activity">
-      {hasNoTransactions ? (
+      {!address && (
+        <div className="text-[#A3A3C2]">
+          Your pending and recent transactions will appear here.
+        </div>
+      )}
+
+      {address && isLoading && (
+        <div className="text-[#A3A3C2]">Loading activity...</div>
+      )}
+
+      {address && !isLoading && hasNoTransactions ? (
         <div className="text-[#A3A3C2]">
           Your pending and recent transactions will appear here.
           <ExplorerLink />
@@ -55,9 +73,7 @@ export const Activity = () => {
               ))}
             </ActivitySection>
           )}
-          {isUserHistoricalTransactionsLoading ? (
-            <div className="text-[#A3A3C2]"> Loading activity... </div>
-          ) : (
+          {hasHistoricalTransactions && (
             <ActivitySection title="Recent">
               <TransactionHeader transactionType={ActivityType.RECENT} />
               {userHistoricalTransactions &&
@@ -97,8 +113,8 @@ export const ActivitySection = ({
   children?: React.ReactNode
 }) => {
   return (
-    <div data-test-id="activity-section" className="py-6">
-      <h3 className="text-lg text-white">{title}</h3>
+    <div data-test-id="activity-section" className="">
+      <h3 className="text-xl text-white">{title}</h3>
       {children}
     </div>
   )
