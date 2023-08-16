@@ -1038,6 +1038,11 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
 	e.Nil(err)
 
+	// Remove the first two security params from the remoteSlashAgent ABI
+	method, ok := abi.Methods["remoteSlashAgent"]
+	e.True(ok)
+	method.Inputs = abi.Methods["remoteSlashAgent"].Inputs[2:]
+	abi.Methods["remoteSlashAgent"] = method
 	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.NotaryBondedSigner.Address())
 	e.Nil(err)
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
