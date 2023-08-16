@@ -165,8 +165,8 @@ export const HomeContent = () => {
         communications network.
       </p>
       <p className="mb-5">
-        Preview your route in the Bridge panel, and connect your wallet when
-        you're ready to authorize your transaction.
+        Get route quotes in the Bridge panel, and connect your wallet when you
+        are ready to submit a transaction.
       </p>
       <ConnectWalletButton />
     </div>
