@@ -157,7 +157,7 @@ export const TransactionHeader = ({
   )
 }
 
-export const getExplorerLink = ({
+export const getTransactionExplorerLink = ({
   kappa,
   fromChainId,
   toChainId,
@@ -218,7 +218,7 @@ export const Transaction = ({
 
   const handleTransactionClick: () => void = useCallback(() => {
     if (kappa && originChainId) {
-      const explorerLink = getExplorerLink({
+      const explorerLink = getTransactionExplorerLink({
         kappa,
         fromChainId: originChainId,
         toChainId: destinationChainId,
