@@ -83,7 +83,7 @@ export const Activity = () => {
                     />
                   )
                 )}
-              <ExplorerLink />
+              <ExplorerLink connectedAddress={address} />
             </ActivitySection>
           )}
         </>
