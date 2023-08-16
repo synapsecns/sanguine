@@ -160,7 +160,7 @@ export const EmptyPortfolioContent = () => {
 export const HomeContent = () => {
   return (
     <div data-test-id="portfolio-home-content" className="text-white ">
-      <p className="my-3">
+      <p className="mb-3">
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.
       </p>
