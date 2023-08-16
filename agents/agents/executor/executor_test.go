@@ -839,7 +839,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		}
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), initializeTx)
 
-		return address, tx, rawHandle, fmt.Errorf("could not deploy origin override: %w", err)
+		//nolint:wrapcheck
+		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		//nolint:wrapcheck
 		return originharness.NewOriginHarnessRef(address, backend)
