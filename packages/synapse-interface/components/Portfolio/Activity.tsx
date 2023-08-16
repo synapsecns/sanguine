@@ -40,17 +40,17 @@ export const Activity = () => {
   return (
     <div data-test-id="activity">
       {!address && (
-        <div className="text-[#A3A3C2]">
+        <div className="text-[#C2C2D6]">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
       {address && isLoading && (
-        <div className="text-[#A3A3C2]">Loading activity...</div>
+        <div className="text-[#C2C2D6]">Loading activity...</div>
       )}
 
       {address && !isLoading && hasNoTransactions && (
-        <div className="text-[#A3A3C2]">
+        <div className="text-[#C2C2D6]">
           Your pending and recent transactions will appear here.
           <ExplorerLink connectedAddress={address} />
         </div>

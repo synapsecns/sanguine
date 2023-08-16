@@ -123,7 +123,7 @@ const UnconnectedPortfolioContent = () => {
       <p
         data-test-id="unconnected-portfolio-content"
         className={`
-        text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
+        text-[#C2C2D6] mt-6 mb-4 pb-6 pl-2
           border-b border-solid border-[#3D3D5C]
         `}
       >
@@ -142,7 +142,7 @@ export const EmptyPortfolioContent = () => {
       <p
         data-test-id="empty-portfolio-content"
         className={`
-        text-[#CCCAD3BF] pb-4
+        text-[#C2C2D6] pb-4
         `}
       >
         No supported assets found {address && `for ${shortened}`}.
@@ -150,12 +150,12 @@ export const EmptyPortfolioContent = () => {
       <p
         data-test-id="empty-portfolio-content"
         className={`
-        text-[#CCCAD3BF] pb-4
+        text-[#C2C2D6] pb-4
         `}
       >
         Don't see a chain or token you want to bridge?
       </p>
-      <a className="text-[#CCCAD3BF]">
+      <a className="text-[#C2C2D6]">
         Let us know on
         <Link
           className="text-[#99E6FF] underline px-1"
@@ -180,7 +180,7 @@ export const EmptyPortfolioContent = () => {
 
 export const HomeContent = () => {
   return (
-    <div data-test-id="portfolio-home-content" className="text-white ">
+    <div data-test-id="portfolio-home-content" className="text-white">
       <p className="mb-3">
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.
