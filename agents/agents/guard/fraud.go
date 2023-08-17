@@ -333,6 +333,23 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store agent root: %w", err)
 		}
+
+		// Mark the open dispute for this agent as Resolved.
+		var guardAddress, notaryAddress *common.Address
+		if statusUpdated.Domain == 0 {
+			guardAddress = &statusUpdated.Agent
+		} else {
+			notaryAddress = &statusUpdated.Agent
+		}
+		err = g.guardDB.UpdateDisputeProcessedStatus(
+			ctx,
+			guardAddress,
+			notaryAddress,
+			types.Resolved,
+		)
+		if err != nil {
+			return fmt.Errorf("could not update dispute processed status: %w", err)
+		}
 	default:
 		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
 	}
@@ -408,6 +425,17 @@ func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID 
 		return fmt.Errorf("could not parse root updated: %w", err)
 	}
 
+	// err = g.guardDB.StoreAgentTree(
+	// 	ctx,
+	// 	*newRoot,
+	// 	common.Address{},
+	// 	log.BlockNumber,
+	// 	[][32]byte{},
+	// )
+	// if err != nil {
+	// 	return fmt.Errorf("could not store agent tree: %w", err)
+	// }
+
 	err = g.guardDB.StoreAgentRoot(
 		ctx,
 		*newRoot,
@@ -448,8 +476,10 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
+	fmt.Printf("got eligible agent trees: %v\n", eligibleAgentTrees)
 
 	blockNumber, err := g.guardDB.GetLatestConfirmedSummitBlockNumber(ctx, chainID)
+	fmt.Printf("got latest confirmed summit block number: %v\n", blockNumber)
 	if err != nil {
 		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
 	}
@@ -457,6 +487,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
 		if tree.BlockNumber >= blockNumber {
+			fmt.Printf("updating agent status: %v\n", tree)
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)

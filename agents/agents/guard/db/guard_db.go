@@ -21,6 +21,14 @@ type GuardDBWriter interface {
 		notaryAddress common.Address,
 	) error
 
+	// UpdateDisputeProcessedStatus updates the DisputedProcessedStatus for a dispute.
+	UpdateDisputeProcessedStatus(
+		ctx context.Context,
+		guardAddress *common.Address,
+		notaryAddress *common.Address,
+		flag agentTypes.DisputeProcessedStatus,
+	) error
+
 	// StoreAgentTree stores an agent tree.
 	StoreAgentTree(
 		ctx context.Context,

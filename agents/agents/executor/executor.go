@@ -785,6 +785,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 
 			page := 1
 			currentTime := uint64(e.NowFunc().Unix())
+			fmt.Printf("got current time: %v\noverride time: %v\n", time.Now().Unix(), e.NowFunc().Unix())
 
 			messageMask := db.DBMessage{
 				ChainID: &chainID,
@@ -792,11 +793,13 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 
 			for {
 				messages, err := e.executorDB.GetExecutableMessages(parentCtx, messageMask, currentTime, page)
+				fmt.Printf("got executable messages: %v\n", messages)
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
 
 				if len(messages) == 0 {
+					fmt.Println("no messages")
 					break
 				}
 
@@ -819,6 +822,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					))
 
 					if !messageExecuted {
+						fmt.Println("executing")
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)
