@@ -71,7 +71,7 @@ func (s Store) RetrieveFirstBlockStored(ctx context.Context, chainID uint32) (ui
 		Where(&BlockTime{
 			ChainID: chainID,
 		}).
-		Select(fmt.Sprintf("MIN(%s)", BlockNumberFieldName)).Scan(&blockTime)
+		Select(fmt.Sprintf("COALESCE(MIN(%s), 0)", BlockNumberFieldName)).Scan(&blockTime)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("could not retrieve first block time: %w", dbTx.Error)
 	}

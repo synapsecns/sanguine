@@ -1,0 +1,21 @@
+client:
+  package: explorer
+  filename: ./client.gen.go # Where should any generated client go?
+
+model:
+  package: explorer
+  filename: ./models.gen.go # Where should any generated models go?
+
+models:
+  Int:
+    model: github.com/99designs/gqlgen/graphql.Int64
+  Date:
+    model: github.com/99designs/gqlgen/graphql.Time
+
+query:
+  - 'queries/*.graphql' # Where are all the query files located?
+
+# Important! do not include a real endpoint or schemas. Endpoint is overwritten
+endpoint:
+  url: https://test.com/idontexist
+

@@ -7,15 +7,14 @@ import (
 )
 
 func graphqlHandler(server *handler.Server) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		server.ServeHTTP(c.Writer, c.Request)
-	}
+	return gin.WrapH(server)
 }
 
 func graphiqlHandler() gin.HandlerFunc {
-	h, _ := graphiql.NewGraphiqlHandler(GraphqlEndpoint)
-
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
+	h, err := graphiql.NewGraphiqlHandler(GraphqlEndpoint)
+	if err != nil {
+		panic(err)
 	}
+
+	return gin.WrapH(h)
 }

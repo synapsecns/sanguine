@@ -1,0 +1,22 @@
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "promexporter.fullname" . }}
+  labels:
+    {{- include "promexporter.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "promexporter.selectorLabels" . | nindent 6 }}
+  endpoints:
+    {{- range .Values.service.ports }}
+    - port: {{ .name }}
+      path: /metrics
+      scrapeTimeout: 30s
+    {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  jobLabel: promexporter
+{{- end }}

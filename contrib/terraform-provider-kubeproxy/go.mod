@@ -18,8 +18,8 @@ require (
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 	github.com/zclconf/go-cty v1.12.1
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
-	golang.org/x/mod v0.9.0
-	golang.org/x/tools v0.7.0
+	golang.org/x/mod v0.10.0
+	golang.org/x/tools v0.9.3
 	google.golang.org/grpc v1.55.0
 	k8s.io/apiextensions-apiserver v0.25.5
 	k8s.io/apimachinery v0.25.5
@@ -146,7 +146,7 @@ require (
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect

@@ -1,14 +1,16 @@
-import { BigNumber } from 'ethers'
 import { multicall, Address } from '@wagmi/core'
-import { Zero, AddressZero } from '@ethersproject/constants'
+import { zeroAddress } from 'viem'
 
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
+import { formatBigIntToString } from './bigint/format'
 
-interface TokenAndBalance {
+export interface TokenAndBalance {
   token: Token
-  balance: BigNumber
+  tokenAddress: string
+  balance: bigint
+  parsedBalance: string
 }
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
@@ -40,30 +42,24 @@ export const sortByTokenBalance = async (
   tokens: Token[],
   chainId: number,
   address: any
-) => {
+): Promise<TokenAndBalance[]> => {
   const tokensWithBalances: any[] = []
   const multicallInputs = []
-  let multicallData
 
   if (chainId === undefined || !address) {
-    tokens.map((token) => {
+    tokens.forEach((token) => {
       tokensWithBalances.push({
         token,
-        balance: Zero,
+        balance: 0n,
       })
     })
   } else {
-    tokens.map((token) => {
-      const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
-      const tokenAbi = erc20ABI
+    tokens.forEach((token) => {
       // deterministic multicall3 address on all eth chains
       const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11`
+      const tokenAddress = token?.addresses[chainId as keyof Token['addresses']]
 
-      if (tokenAddress === undefined) {
-        return
-      }
-
-      if (tokenAddress === AddressZero || tokenAddress === '') {
+      if (tokenAddress === zeroAddress || tokenAddress === undefined) {
         multicallInputs.push({
           address: multicallAddress,
           abi: multicallABI,
@@ -74,7 +70,7 @@ export const sortByTokenBalance = async (
       } else {
         multicallInputs.push({
           address: tokenAddress,
-          abi: tokenAbi,
+          abi: erc20ABI,
           functionName: 'balanceOf',
           chainId,
           args: [address],
@@ -83,6 +79,7 @@ export const sortByTokenBalance = async (
     })
   }
 
+  let multicallData: any[] | any
   if (multicallInputs.length > 0) {
     multicallData = await multicall({
       contracts: multicallInputs,
@@ -90,10 +87,21 @@ export const sortByTokenBalance = async (
     })
     return sortArrayByBalance(
       sortByVisibilityRank(
-        multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
-          token: tokens[index],
-          balance: tokenBalance,
-        }))
+        multicallData.map(
+          (
+            tokenBalance: { result: bigint; status: string } | undefined,
+            index: number
+          ) => ({
+            token: tokens[index],
+            tokenAddress: tokens[index].addresses[chainId],
+            balance: tokenBalance.result,
+            parsedBalance: formatBigIntToString(
+              tokenBalance.result,
+              tokens[index]?.decimals[chainId],
+              4
+            ),
+          })
+        )
       )
     )
   }
@@ -104,9 +112,9 @@ export const sortByTokenBalance = async (
 // Function to sort the tokens by priorityRank and alphabetically
 export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
   // Create a copy of the array to prevent modifying the original one
-  const sortedArr = [...arr]
+  const sortedArr = arr && [...arr]
 
-  return sortedArr.sort((a, b) => {
+  return sortedArr?.sort((a, b) => {
     // Sort by priorityRank first
     if (a.priorityRank !== b.priorityRank) {
       return a.priorityRank - b.priorityRank
@@ -120,21 +128,19 @@ export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
 export const separateAndSortTokensWithBalances = (
   tokensAndBalances: TokenAndBalance[]
 ): Token[] => {
-  const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
-
+  const hasTokensAndBalances = tokensAndBalances.length > 0
   if (hasTokensAndBalances) {
     const tokensWithBalances = tokensAndBalances
-      .filter((t) => !t.balance.eq(Zero))
+      .filter((t) => !(t.balance === 0n))
       .map((t) => t.token)
 
     const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
 
     const tokensWithNoBalances = tokensAndBalances
-      .filter((t) => t.balance.eq(Zero))
+      .filter((t) => t.balance === 0n)
       .map((t) => t.token)
 
     const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)
-
     return [...a, ...b]
   } else {
     return []

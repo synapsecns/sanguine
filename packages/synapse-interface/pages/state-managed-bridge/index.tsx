@@ -1,6 +1,4 @@
-import Grid from '@tw/Grid'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -8,6 +6,8 @@ import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import {
   setFromToken,
@@ -21,11 +21,10 @@ import {
   setSupportedToTokens,
   setFromChainIds,
   setToChainIds,
-  setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
   addBridgeTxHash,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 
 import {
   setShowDestinationAddress,
@@ -41,16 +40,14 @@ import {
 } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { AddressZero, Zero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
-import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import {
   BRIDGABLE_TOKENS,
@@ -83,9 +80,28 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Address, zeroAddress } from 'viem'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { Warning } from '@/components/Warning'
+import { useAppDispatch } from '@/store/hooks'
+import {
+  NetworkTokenBalancesAndAllowances,
+  sortTokensByBalanceDescending,
+} from '@/utils/actions/fetchPortfolioBalances'
+import {
+  fetchAndStorePortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
+  fetchAndStoreSingleTokenBalance,
+} from '@/slices/portfolio/hooks'
+import {
+  usePortfolioBalances,
+  useFetchPortfolioBalances,
+} from '@/slices/portfolio/hooks'
+import { FetchState } from '@/slices/portfolio/actions'
+import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -112,11 +128,15 @@ const sortToTokens = (tokens: Token[]) => {
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
+  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
-  let pendingPopup
-  let successPopup
+  const router = useRouter()
+  const { query, pathname } = router
+
+  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+    useFetchPortfolioBalances()
 
   const {
     fromChainId,
@@ -127,7 +147,6 @@ const StateManagedBridge = () => {
     fromValue,
     isLoading,
     supportedFromTokens,
-    supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
     bridgeTxHashes,
@@ -142,12 +161,24 @@ const StateManagedBridge = () => {
     showDestinationAddress,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
+  let pendingPopup
+  let successPopup
+
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
+  const fromTokens = BRIDGABLE_TOKENS[fromChainId]
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Bridge page] arrives`, {
+      fromChainId,
+      query,
+      pathname,
+    })
+  }, [query])
 
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
@@ -160,11 +191,11 @@ const StateManagedBridge = () => {
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
-    let fromTokens = BRIDGABLE_TOKENS[fromChainId]
+    let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-    if (!fromTokens.some((token) => token.symbol === fromToken.symbol)) {
+    if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
       const sortedTokens = fromTokens.sort(
         (a, b) => a.priorityRank - b.priorityRank
@@ -179,29 +210,23 @@ const StateManagedBridge = () => {
       findSupportedChainsAndTokens(
         fromToken,
         toChainId,
-        toToken.symbol,
+        toToken?.symbol,
         fromChainId
       )
 
     let bridgeableToChainId = toChainId
-    if (!bridgeableChainIds.includes(toChainId)) {
-      const sortedChainIds = bridgeableChainIds.sort((a, b) => {
+    if (!bridgeableChainIds?.includes(toChainId)) {
+      const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
-      bridgeableToChainId = sortedChainIds[0]
+      bridgeableToChainId = sortedChainIds?.[0]
     }
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
-
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-      dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
-    })
-
+    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
@@ -209,24 +234,39 @@ const StateManagedBridge = () => {
       dispatch(setToChainId(bridgeableToChainId))
     }
 
-    console.log(`[useEffect] fromToken`, fromToken.symbol)
-    console.log(`[useEffect] toToken`, toToken.symbol)
-
-    if (fromValue.gt(0)) {
+    console.log(`[useEffect] fromToken`, fromToken?.symbol)
+    console.log(`[useEffect] toToken`, toToken?.symbol)
+    // TODO: Double serialization happening somewhere??
+    if (
+      fromToken?.decimals[fromChainId] &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+    ) {
+      console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
-      console.log(bridgeQuote)
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    fromValue,
+    address,
+    portfolioBalances,
+  ])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
-    if (fromToken?.addresses[fromChainId] === AddressZero) {
+    if (fromToken?.addresses[fromChainId] === zeroAddress) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && fromValue.lte(bridgeQuote.allowance)) {
+      if (
+        bridgeQuote?.allowance &&
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+          bridgeQuote.allowance
+      ) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -234,6 +274,7 @@ const StateManagedBridge = () => {
     }
   }, [bridgeQuote, fromToken, fromValue, fromChainId, toChainId])
 
+  let quoteToast
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -248,7 +289,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          fromValue
+          stringToBigInt(fromValue, fromToken.decimals[fromChainId])
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -256,7 +297,7 @@ const StateManagedBridge = () => {
       console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
       console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
       console.log(`[getAndSetQuote] fromValue`, fromValue)
-
+      console.log('feeAmount', feeAmount)
       console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -265,33 +306,47 @@ const StateManagedBridge = () => {
         return
       }
 
-      const toValueBigNum = maxAmountOut ?? Zero
+      const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
+
       const originTokenDecimals = fromToken.decimals[fromChainId]
-      const adjustedFeeAmount = feeAmount.lt(fromValue)
-        ? feeAmount
-        : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
+      const adjustedFeeAmount =
+        BigInt(feeAmount) <
+        stringToBigInt(`${fromValue}`, fromToken.decimals[fromChainId])
+          ? BigInt(feeAmount)
+          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
+        fromToken.addresses[fromChainId] === zeroAddress ||
         address === undefined ||
         isUnsupported
-          ? Zero
-          : await getCurrentTokenAllowance(
+          ? 0n
+          : await getErc20TokenAllowance({
               address,
-              fromChainId,
-              fromToken,
-              routerAddress
-            )
+              chainId: fromChainId,
+              tokenAddress: fromToken.addresses[fromChainId] as Address,
+              spender: routerAddress,
+            })
+
+      if (fromToken.addresses[fromChainId] !== zeroAddress && address) {
+        dispatch(
+          updateSingleTokenAllowance({
+            chainId: fromChainId,
+            allowance: allowance,
+            spender: routerAddress,
+            token: fromToken,
+          })
+        )
+      }
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? Zero,
+        originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? Zero,
+        destQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
@@ -304,20 +359,25 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            outputAmount: toValueBigNum,
+            outputAmount: toValueBigInt,
             outputAmountString: commify(
-              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+              formatBigIntToString(
+                toValueBigInt,
+                toToken.decimals[toChainId],
+                8
+              )
             ),
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              fromValue.sub(adjustedFeeAmount),
+              stringToBigInt(fromValue, fromToken.decimals[fromChainId]) -
+                BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
-              toValueBigNum,
+              toValueBigInt,
               toToken.decimals[toChainId]
             ),
             feeAmount,
-            delta: maxAmountOut,
+            delta: BigInt(maxAmountOut.toString()),
             quotes: {
               originQuery: newOriginQuery,
               destQuery: newDestQuery,
@@ -325,26 +385,18 @@ const StateManagedBridge = () => {
           })
         )
 
-        const str = formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          4
-        )
-        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        toast.dismiss(quoteToast)
+        const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message)
+        quoteToast = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        const str = formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          4
-        )
-        const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        toast.dismiss(quoteToast)
+        const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message)
+        quoteToast = toast(message, { duration: 3000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
@@ -362,7 +414,16 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      )
+      ).then(() => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: bridgeQuote?.routerAddress as Address,
+            tokenAddress: fromToken?.addresses[fromChainId] as Address,
+            address: address,
+            chainId: fromChainId,
+          })
+        )
+      })
 
       try {
         await tx
@@ -376,8 +437,16 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
+      address,
+      originChainId: fromChainId,
+      destinationChainId: toChainId,
+      inputAmount: fromValue,
+      expectedReceivedAmount: bridgeQuote.outputAmountString,
+      slippage: bridgeQuote.exchangeRate,
+    })
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: fromChainId,
       })
 
@@ -392,16 +461,22 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        fromValue,
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
+
       const payload =
         fromToken.addresses[fromChainId as keyof Token['addresses']] ===
-          AddressZero ||
+          zeroAddress ||
         fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? { data: data.data, to: data.to, value: fromValue }
+          ? {
+              data: data.data,
+              to: data.to,
+              value: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+            }
           : data
+
       const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
@@ -412,13 +487,19 @@ const StateManagedBridge = () => {
       )
 
       try {
-        await tx.wait()
-        dispatch(addBridgeTxHash(tx.hash))
-
+        segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+          address,
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          inputAmount: fromValue,
+          expectedReceivedAmount: bridgeQuote.outputAmountString,
+          slippage: bridgeQuote.exchangeRate,
+        })
+        dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(Zero))
+        dispatch(updateFromValue(''))
 
         const successToastContent = (
           <div>
@@ -427,7 +508,7 @@ const StateManagedBridge = () => {
               {originChainName} to {toToken.symbol} on {destinationChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx?.hash ?? AddressZero}
+              transactionHash={tx ?? zeroAddress}
               chainId={fromChainId}
             />
           </div>
@@ -440,12 +521,31 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
+        setTimeout(async () => {
+          await dispatch(
+            fetchAndStoreSingleTokenBalance({
+              token: fromToken,
+              routerAddress: bridgeQuote?.routerAddress as Address,
+              address: address,
+              chainId: fromChainId,
+            })
+          )
+        }, 2000)
+
         return tx
       } catch (error) {
+        segmentAnalyticsEvent(`[Bridge] error bridging`, {
+          address,
+          errorCode: error.code,
+        })
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
+      segmentAnalyticsEvent(`[Bridge]  error bridging`, {
+        address,
+        errorCode: error.code,
+      })
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
@@ -455,140 +555,141 @@ const StateManagedBridge = () => {
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
   return (
-    <LandingPageWrapper>
-      <main
-        data-test-id="bridge-page"
-        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
-      >
-        <div className="items-center px-4 py-20 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center space-x-20">
-              <PageHeader
-                title="Bridge"
-                subtitle="Send your assets across chains."
-              />
-              <div>
-                <Button
-                  className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-                  onClick={() => {
-                    if (showSettingsSlideOver === true) {
-                      dispatch(setShowSettingsSlideOver(false))
-                    } else {
-                      dispatch(setShowSettingsSlideOver(true))
-                    }
-                  }}
-                >
-                  {!showSettingsSlideOver ? (
-                    <>
-                      <SettingsIcon className="w-5 h-5 mr-2" />
-                      <span>Settings</span>
-                    </>
-                  ) : (
-                    <span>Close</span>
-                  )}
-                </Button>
-              </div>
-            </div>
-            <Card
-              divider={false}
-              className={`
-            max-w-lg px-1 pb-0 mb-3 overflow-hidden
-            transition-all duration-100 transform rounded-xl
-            bg-bgBase md:px-6 lg:px-6 mt-5
-          `}
+    <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
+          <PageHeader
+            title="Bridge"
+            subtitle="Send your assets across chains."
+          />
+          <div>
+            <Button
+              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+              onClick={() => {
+                if (showSettingsSlideOver === true) {
+                  dispatch(setShowSettingsSlideOver(false))
+                } else {
+                  dispatch(setShowSettingsSlideOver(true))
+                }
+              }}
             >
-              <div ref={bridgeDisplayRef}>
-                <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <TokenSlideOver
-                      key="fromBlock"
-                      isOrigin={true}
-                      tokens={separateAndSortTokensWithBalances(
-                        supportedFromTokenBalances
-                      )}
-                      chainId={fromChainId}
-                      selectedToken={fromToken}
-                    />{' '}
-                  </animated.div>
-                </Transition>
-                <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <TokenSlideOver
-                      key="toBlock"
-                      isOrigin={false}
-                      tokens={supportedToTokens}
-                      chainId={toChainId}
-                      selectedToken={toToken}
-                    />{' '}
-                  </animated.div>
-                </Transition>
-                <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <ChainSlideOver
-                      key="fromChainBlock"
-                      isOrigin={true}
-                      chains={fromChainIds}
-                      chainId={fromChainId}
-                      setChain={setFromChainId}
-                      setShowSlideOver={setShowFromChainSlideOver}
-                    />
-                  </animated.div>
-                </Transition>
-                <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <ChainSlideOver
-                      key="toChainBlock"
-                      isOrigin={false}
-                      chains={toChainIds}
-                      chainId={toChainId}
-                      setChain={setToChainId}
-                      setShowSlideOver={setShowToChainSlideOver}
-                    />
-                  </animated.div>
-                </Transition>
-                <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div>
-                    <SettingsSlideOver key="settings" />
-                  </animated.div>
-                </Transition>
-                <InputContainer />
-                <OutputContainer />
-                <Transition
-                  appear={true}
-                  unmount={false}
-                  show={true}
-                  {...SECTION_TRANSITION_PROPS}
-                >
-                  <BridgeExchangeRateInfo showGasDrop={true} />
-                </Transition>
-                {showDestinationAddress && (
-                  <DestinationAddressInput
-                    toChainId={toChainId}
-                    destinationAddress={destinationAddress}
-                  />
-                )}
-                <div className="mt-3 mb-3">
-                  <BridgeTransactionButton
-                    isApproved={isApproved}
-                    approveTxn={approveTxn}
-                    executeBridge={executeBridge}
-                  />
-                </div>
-              </div>
-            </Card>
-            {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
-          </div>
-          <div className="mt-8">
-            <BridgeWatcher
-              fromChainId={fromChainId}
-              toChainId={toChainId}
-              address={address}
-              destinationAddress={destinationAddress}
-            />
+              {!showSettingsSlideOver ? (
+                <>
+                  <SettingsIcon className="w-5 h-5 mr-2" />
+                  <span>Settings</span>
+                </>
+              ) : (
+                <span>Close</span>
+              )}
+            </Button>
           </div>
         </div>
-      </main>
-    </LandingPageWrapper>
+        <Card
+          divider={false}
+          className={`
+                px-2 pb-2 pt-2 md:px-6 md:pt-5 mt-5 overflow-hidden
+                transition-all duration-100 transform rounded-xl
+                bg-bgBase
+              `}
+        >
+          <div ref={bridgeDisplayRef}>
+            <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <TokenSlideOver
+                  key="fromBlock"
+                  isOrigin={true}
+                  tokens={
+                    portfolioStatus === FetchState.VALID
+                      ? separateAndSortTokensWithBalances(supportedFromTokens)
+                      : sortByVisibilityRank(fromTokens)
+                  }
+                  chainId={fromChainId}
+                  selectedToken={fromToken}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <TokenSlideOver
+                  key="toBlock"
+                  isOrigin={false}
+                  tokens={supportedToTokens}
+                  chainId={toChainId}
+                  selectedToken={toToken}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ChainSlideOver
+                  key="fromChainBlock"
+                  isOrigin={true}
+                  chains={fromChainIds}
+                  chainId={fromChainId}
+                  setChain={setFromChainId}
+                  setShowSlideOver={setShowFromChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ChainSlideOver
+                  key="toChainBlock"
+                  isOrigin={false}
+                  chains={toChainIds}
+                  chainId={toChainId}
+                  setChain={setToChainId}
+                  setShowSlideOver={setShowToChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <SettingsSlideOver key="settings" />
+              </animated.div>
+            </Transition>
+            <InputContainer />
+            <OutputContainer />
+            <Warning
+              originChainId={fromChainId}
+              destinationChainId={toChainId}
+              originToken={fromToken}
+              destinationToken={toToken}
+            />
+            <Transition
+              appear={true}
+              unmount={false}
+              show={true}
+              {...SECTION_TRANSITION_PROPS}
+            >
+              <BridgeExchangeRateInfo showGasDrop={true} />
+            </Transition>
+            {showDestinationAddress && (
+              <DestinationAddressInput
+                toChainId={toChainId}
+                destinationAddress={destinationAddress}
+              />
+            )}
+            <div className="md:my-3">
+              <BridgeTransactionButton
+                isApproved={isApproved}
+                approveTxn={approveTxn}
+                executeBridge={executeBridge}
+              />
+            </div>
+          </div>
+        </Card>
+        {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
+      </div>
+      <div className="mt-8">
+        <BridgeWatcher
+          fromChainId={fromChainId}
+          toChainId={toChainId}
+          address={address}
+          destinationAddress={destinationAddress}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -605,11 +706,11 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
       : DEFAULT_TO_CHAIN
   // If newToChain is not a part of bridgeableChains, select a chain from bridgeableChains
   // that is different from fromChainId.
-  if (!bridgeableChains.includes(String(newToChain))) {
+  if (!bridgeableChains?.includes(String(newToChain))) {
     newToChain =
-      Number(bridgeableChains[0]) === fromChainId
-        ? Number(bridgeableChains[1])
-        : Number(bridgeableChains[0])
+      Number(bridgeableChains?.[0]) === fromChainId
+        ? Number(bridgeableChains?.[1])
+        : Number(bridgeableChains?.[0])
   }
   return newToChain
 }
@@ -618,8 +719,8 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
 const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
   // Filter out chains that are not bridgeable for the given token type.
   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-    String(token.swapableType)
-  ].filter((chainId) => Number(chainId) !== fromChainId)
+    String(token?.swapableType)
+  ]?.filter((chainId) => Number(chainId) !== fromChainId)
   // If there are swap exceptions, replace bridgeableChains with the chains from exceptions.
   if (swapExceptionsArr?.length > 0) {
     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
@@ -631,7 +732,7 @@ const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
 const getBridgeableTokens = (newToChain, token, swapExceptionsArr) => {
   // Get tokens that are bridgeable on the new chain and of the same type as the given token.
   let bridgeableTokens: Token[] = sortToTokens(
-    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
+    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain]?.[String(token?.swapableType)]
   )
   // If there are swap exceptions, filter out tokens that have a different symbol from the given token.
   if (swapExceptionsArr?.length > 0) {
@@ -647,8 +748,8 @@ const getBridgeableToken = (bridgeableTokens, positedToToken) => {
   // If positedToToken is a part of bridgeableTokens, use it.
   // Otherwise, use the first token from bridgeableTokens.
   let bridgeableToken: Token = positedToToken
-  if (!bridgeableTokens.includes(positedToToken)) {
-    bridgeableToken = bridgeableTokens[0]
+  if (!bridgeableTokens?.includes(positedToToken)) {
+    bridgeableToken = bridgeableTokens?.[0]
   }
   return bridgeableToken
 }
@@ -678,7 +779,7 @@ const findSupportedChainsAndTokens = (
   // Determine the token to be used for the swap based on the posited symbol or the symbol of the given token.
   const positedToToken = positedToSymbol
     ? tokenSymbolToToken(newToChain, positedToSymbol)
-    : tokenSymbolToToken(newToChain, token.symbol)
+    : tokenSymbolToToken(newToChain, token?.symbol)
   // Determine which tokens are bridgeable on the new chain.
   const bridgeableTokens = getBridgeableTokens(
     newToChain,
@@ -690,7 +791,7 @@ const findSupportedChainsAndTokens = (
 
   // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
-    bridgeableChainIds: bridgeableChains.map((chainId: string) =>
+    bridgeableChainIds: bridgeableChains?.map((chainId: string) =>
       Number(chainId)
     ),
     bridgeableTokens,

@@ -16,10 +16,10 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard, error) {
@@ -44,19 +44,19 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
+	originClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
-	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
-	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
+	summitClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
-	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	scribe, err := service.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
 	Nil(g.T(), err)
 	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
 
@@ -96,33 +96,24 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{originConfig},
+		ChainID:   uint32(g.TestBackendOrigin.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+		ChainID:   uint32(g.TestBackendDestination.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    g.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{summitConfig},
+		ChainID:   uint32(g.TestBackendSummit.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
@@ -239,22 +230,16 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{originConfig},
+		ChainID:   uint32(g.TestBackendOrigin.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+		ChainID:   uint32(g.TestBackendDestination.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    g.InboxOnSummit.Address().String(),
@@ -265,11 +250,8 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{summitConfig, bondingManagerConfig},
+		ChainID:   uint32(g.TestBackendSummit.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{summitConfig, bondingManagerConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
@@ -394,11 +376,8 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+		ChainID:   uint32(g.TestBackendDestination.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{destinationConfig},
 	}
 	inboxConfig := scribeConfig.ContractConfig{
 		Address:    g.InboxOnSummit.Address().String(),
@@ -409,11 +388,8 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{inboxConfig, bondingManagerConfig},
+		ChainID:   uint32(g.TestBackendSummit.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{inboxConfig, bondingManagerConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{destinationChainConfig, summitChainConfig},
@@ -568,22 +544,16 @@ func (g GuardSuite) TestInvalidReceipt() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{originConfig},
+		ChainID:   uint32(g.TestBackendOrigin.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+		ChainID:   uint32(g.TestBackendDestination.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    g.InboxOnSummit.Address().String(),
@@ -594,11 +564,8 @@ func (g GuardSuite) TestInvalidReceipt() {
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{summitConfig, bondingManagerConfig},
+		ChainID:   uint32(g.TestBackendSummit.GetChainID()),
+		Contracts: []scribeConfig.ContractConfig{summitConfig, bondingManagerConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},

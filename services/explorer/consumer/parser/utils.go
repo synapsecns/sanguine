@@ -15,11 +15,10 @@ const ErrUnknownTopic = "unknown topic"
 
 // Parser parses events and stores them.
 type Parser interface {
-	// ParseAndStore parses the logs and stores them in the database.
-	// Deprecated: use Parse
-	ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
 	// Parse parses the logs and returns the parsed data.
 	Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error)
+	// ParserType returns the type of the parser.
+	ParserType() string
 }
 
 // BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.
@@ -49,6 +48,34 @@ func ToNullString(str *string) sql.NullString {
 	}
 
 	return newNullStr
+}
+
+// ToNullInt64 is a helper function to convert values to null string.
+func ToNullInt64[T int64 | uint64](val *T) sql.NullInt64 {
+	var newNullInt sql.NullInt64
+
+	if val != nil {
+		newNullInt.Valid = true
+		newNullInt.Int64 = int64(*val)
+	} else {
+		newNullInt.Valid = false
+	}
+
+	return newNullInt
+}
+
+// ToNullInt32 is a helper function to convert values to null string.
+func ToNullInt32[T int32 | uint32](val *T) sql.NullInt32 {
+	var newNullInt sql.NullInt32
+
+	if val != nil {
+		newNullInt.Valid = true
+		newNullInt.Int32 = int32(*val)
+	} else {
+		newNullInt.Valid = false
+	}
+
+	return newNullInt
 }
 
 // ParseYaml opens yaml file with coin gecko ID mapping and returns it.

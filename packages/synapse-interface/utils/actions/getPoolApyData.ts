@@ -2,11 +2,16 @@ import { formatUnits } from '@ethersproject/units'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
 import { Token } from '@types'
-import { BigNumber } from 'ethers'
-import { Zero, One } from '@ethersproject/constants'
-import { fetchBalance, readContracts, fetchToken } from '@wagmi/core'
-import MINICHEF_ABI from '@abis/miniChef.json'
+import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
+import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
+
+type PoolInfoResult = readonly [
+  accSynapsePerShare: bigint,
+  lastRewardTime: bigint,
+  allocPoint: bigint
+]
+
 export const getPoolApyData = async (
   chainId: number,
   poolToken: Token,
@@ -20,9 +25,7 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const minichefAddress: `0x${string}` = `0x${MINICHEF_ADDRESSES[chainId].slice(
-    2
-  )}`
+  const minichefAddress: Address = MINICHEF_ADDRESSES[chainId]
 
   const data = await readContracts({
     contracts: [
@@ -47,34 +50,34 @@ export const getPoolApyData = async (
       },
     ],
   })
-  const synapsePerSecondResult: any = data[0]
-  const totalAllocPointsResult: any = data[1]
-  const poolInfoResult: any = data[2] ?? []
+
+  const synapsePerSecondResult: bigint = data[0].result
+  const totalAllocPointsResult: bigint = data[1].result
+  const poolInfoResult: PoolInfoResult = data[2].result
 
   const lpTokenBalanceResult =
     (
       await fetchBalance({
         address: minichefAddress,
         chainId,
-        token: `0x${poolToken.addresses[chainId].slice(2)}`,
+        token: poolToken.addresses[chainId] as Address,
       })
-    )?.value ?? Zero
+    )?.value ?? 0n
 
   const lpTokenSupplyResult =
     (
       await fetchToken({
-        address: `0x${poolToken.addresses[chainId].slice(2)}`,
+        address: poolToken.addresses[chainId] as Address,
         chainId,
       })
-    )?.totalSupply?.value ?? Zero
+    )?.totalSupply?.value ?? 0n
 
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
-
-  const synapsePerSecond: BigNumber = synapsePerSecondResult ?? Zero
-  const totalAllocPoints: BigNumber = totalAllocPointsResult ?? One
-  const allocPoints: BigNumber = poolInfoResult?.allocPoint ?? One
-  const lpTokenBalance: BigNumber = lpTokenBalanceResult ?? Zero
-  const lpTokenSupply: BigNumber = lpTokenSupplyResult ?? Zero
+  const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n
+  const totalAllocPoints: bigint = totalAllocPointsResult ?? 1n
+  const allocPoints: bigint = poolInfoResult?.[2] ?? 1n
+  const lpTokenBalance: bigint = lpTokenBalanceResult ?? 0n
+  const lpTokenSupply: bigint = lpTokenSupplyResult ?? 0n
 
   let rewardsPerWeek
   try {
@@ -82,16 +85,22 @@ export const getPoolApyData = async (
   } catch (e) {
     rewardsPerWeek = 0
   }
+
   const poolRewardsPerWeek =
-    (allocPoints.toNumber() / totalAllocPoints.toNumber()) * rewardsPerWeek
+    (Number(allocPoints) / Number(totalAllocPoints)) * rewardsPerWeek
+
   if (poolRewardsPerWeek === 0) {
     return {}
   }
 
   const synValueInUsd = synPriceData.synBalanceNumber * synPriceData.synPrice
   const ethValueInUsd = synPriceData.ethBalanceNumber * synPriceData.ethPrice
-  const lpTokenSupplyNumber = Number(formatUnits(lpTokenSupply, 'ether'))
-  const lpTokenBalanceNumber = Number(formatUnits(lpTokenBalance, 'ether'))
+  const lpTokenSupplyNumber = Number(
+    formatUnits(BigInt(lpTokenSupply), 'ether')
+  )
+  const lpTokenBalanceNumber = Number(
+    formatUnits(BigInt(lpTokenBalance), 'ether')
+  )
 
   let stakedTvl
   if (SYN_ETH_SUSHI_TOKEN.symbol === poolToken.symbol) {
@@ -115,7 +124,7 @@ export const getPoolApyData = async (
   const fullCompoundedAPY = Math.round(yearlyCompoundedAPR * 100) / 100
   const fullCompoundedAPYStr = isFinite(fullCompoundedAPY)
     ? fullCompoundedAPY.toFixed(2)
-    : '-'
+    : '\u2212'
 
   return {
     fullCompoundedAPY,

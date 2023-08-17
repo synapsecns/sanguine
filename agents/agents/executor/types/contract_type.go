@@ -14,6 +14,8 @@ const (
 	LightInboxContract // LightInboxContract
 	// InboxContract is a TODO.
 	InboxContract // InboxContract
+	// SummitContract is a TODO.
+	SummitContract // SummitContract
 	// Other is any other contract.
 	Other // Other
 )
