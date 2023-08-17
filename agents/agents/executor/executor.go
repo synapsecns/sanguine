@@ -85,6 +85,8 @@ type Executor struct {
 	handler metrics.Handler
 	// txSubmitter is the transaction submitter.
 	txSubmitter submitter.TransactionSubmitter
+	// NowFunc returns the current time.
+	NowFunc func() time.Time
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -229,6 +231,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		chainExecutors: chainExecutors,
 		handler:        handler,
 		txSubmitter:    txSubmitter,
+		NowFunc:        time.Now,
 	}, nil
 }
 
@@ -781,7 +784,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			backoffInterval = time.Duration(e.config.ExecuteInterval) * time.Second
 
 			page := 1
-			currentTime := uint64(time.Now().Unix())
+			currentTime := uint64(e.NowFunc().Unix())
 
 			messageMask := db.DBMessage{
 				ChainID: &chainID,
