@@ -245,7 +245,12 @@ export const Transaction = ({
           tokenSymbol={originTokenSymbol}
           tokenAmount={originFormattedValue}
         />
-        <div className="flex items-end mb-[3px] ml-auto px-4">→</div>
+        <div
+          data-test-id="arrow"
+          className="flex items-end px-4 my-auto ml-auto mr-3"
+        >
+          →
+        </div>
       </div>
       <div className="col-span-4">
         <TransactionPayloadDetail
