@@ -30,25 +30,6 @@ export const formatTimestampToDate = (timestamp) => {
 export const convertUnixTimestampToMonthAndDate = (
   unixTimestamp: number
 ): string => {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-
-  const date = new Date(unixTimestamp * 1000) // Convert seconds to milliseconds
-  const monthIndex = date.getMonth()
-  const day = date.getDate()
-
-  const formattedDate = `${months[monthIndex]} ${day}`
-  return formattedDate
+  const date = new Date(unixTimestamp * 1000)
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric' })
 }
