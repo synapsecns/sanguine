@@ -6,16 +6,16 @@ package types
 type ContractType int
 
 const (
-	// OriginContract is a contract that dispatches messages on any chain.
+	// OriginContract is the Origin contract.
 	OriginContract ContractType = iota + 1 // OriginContract
-	// DestinationContract is a contract that receives messages on a specific chain.
+	// DestinationContract is the Destination contract.
 	DestinationContract // DestinationContract
-	// LightInboxContract is a TODO.
+	// LightInboxContract is the LightInbox contract.
 	LightInboxContract // LightInboxContract
-	// InboxContract is a TODO.
+	// InboxContract is the Inbox contract.
 	InboxContract // InboxContract
-	// SummitContract is a TODO.
+	// SummitContract is the Summit contract.
 	SummitContract // SummitContract
-	// Other is any other contract.
+	// Other is the Other contract.
 	Other // Other
 )
