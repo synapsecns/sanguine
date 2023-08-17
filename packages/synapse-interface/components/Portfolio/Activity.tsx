@@ -62,7 +62,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {address && !isLoading && !hasNoTransactions && (
         <>
           {hasPendingTransactions && (
-            <ActivitySection title="Pending">
+            <ActivitySection title="Pending" twClassName="mb-5">
               <TransactionHeader transactionType={ActivityType.PENDING} />
               {userPendingTransactions.map((transaction: BridgeTransaction) => (
                 <Transaction
@@ -115,12 +115,14 @@ export const ExplorerLink = ({
 export const ActivitySection = ({
   title,
   children,
+  twClassName,
 }: {
   title: string
   children?: React.ReactNode
+  twClassName?: string
 }) => {
   return (
-    <div data-test-id="activity-section" className="">
+    <div data-test-id="activity-section" className={twClassName}>
       <h3 className="text-xl text-white">{title}</h3>
       {children}
     </div>
