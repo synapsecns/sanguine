@@ -178,7 +178,6 @@ export const Transaction = ({
   bridgeTransaction: BridgeTransaction
   transactionType: ActivityType
 }) => {
-  const router = useRouter()
   const {
     fromInfo,
     toInfo,
@@ -195,7 +194,7 @@ export const Transaction = ({
     tokenSymbol: originTokenSymbol,
     blockNumber: bridgeOriginBlockNumber,
     time: bridgeOriginTime,
-  } = fromInfo || {}
+  }: PartialInfo = fromInfo || {}
 
   const originChain: Chain = CHAINS_BY_ID[originChainId]
   const originToken: Token = tokenSymbolToToken(
@@ -210,7 +209,7 @@ export const Transaction = ({
     tokenSymbol: destinationTokenSymbol,
     blockNumber: bridgeDestinationBlockNumber,
     time: bridgeDestinationTime,
-  } = toInfo || {}
+  }: PartialInfo = toInfo || {}
 
   const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
   const destinationToken: Token = tokenSymbolToToken(
@@ -220,7 +219,7 @@ export const Transaction = ({
 
   const handleTransactionClick: () => void = useCallback(() => {
     if (kappa && originChainId) {
-      const explorerLink = getTransactionExplorerLink({
+      const explorerLink: string = getTransactionExplorerLink({
         kappa,
         fromChainId: originChainId,
         toChainId: destinationChainId,
@@ -280,12 +279,12 @@ export const Transaction = ({
 }
 
 export const TimeElapsed = ({ startTime }: { startTime: number }) => {
-  const [elapsedTime, setElapsedTime] = useState(0)
+  const [elapsedTime, setElapsedTime] = useState<number>(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const currentTime = Math.floor(Date.now() / 1000)
-      const elapsedSeconds = currentTime - startTime
+      const currentTime: number = Math.floor(Date.now() / 1000)
+      const elapsedSeconds: number = currentTime - startTime
       setElapsedTime(elapsedSeconds)
     }, 1000)
 
@@ -294,12 +293,12 @@ export const TimeElapsed = ({ startTime }: { startTime: number }) => {
     }
   }, [startTime])
 
-  const hours = Math.floor(elapsedTime / 3600)
-  const minutes = Math.floor((elapsedTime % 3600) / 60)
-  const seconds = elapsedTime % 60
+  const hours: number = Math.floor(elapsedTime / 3600)
+  const minutes: number = Math.floor((elapsedTime % 3600) / 60)
+  const seconds: number = elapsedTime % 60
 
-  const formattedMinutes = String(minutes).padStart(2, '0')
-  const formattedSeconds = String(seconds).padStart(2, '0')
+  const formattedMinutes: string = String(minutes).padStart(2, '0')
+  const formattedSeconds: string = String(seconds).padStart(2, '0')
 
   return (
     <div data-test-id="time-elapsed" className="flex items-center">
