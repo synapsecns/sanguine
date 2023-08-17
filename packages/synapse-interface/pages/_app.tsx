@@ -34,8 +34,8 @@ import {
   getDefaultWallets,
   connectorsForWallets,
 } from '@rainbow-me/rainbowkit'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
+import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
@@ -77,7 +77,8 @@ for (const chain of rawChains) {
   chainsMatured.push({
     ...chain,
     iconUrl: configChain.chainImg.src,
-    configRpc: configChain.rpc,
+    configRpc: configChain.rpcUrls.primary,
+    fallbackRpc: configChain.rpcUrls.fallback,
   })
 }
 
@@ -89,6 +90,12 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
         http: chain['configRpc'],
       }),
     }),
+    jsonRpcProvider({
+      rpc: (chain) => ({
+        http: chain['fallbackRpc'],
+      }),
+    }),
+    publicProvider(),
   ]
 )
 
