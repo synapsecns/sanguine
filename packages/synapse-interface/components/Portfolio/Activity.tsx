@@ -341,7 +341,7 @@ export const Completed = ({
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
   return (
     <span data-test-id="completed">
-      <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '}
+      {/* <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '} */}
       {formattedTime}
     </span>
   )
