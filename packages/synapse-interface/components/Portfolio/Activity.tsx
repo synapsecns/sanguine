@@ -238,7 +238,7 @@ export const Transaction = ({
         `}
       onClick={handleTransactionClick}
     >
-      <div className="flex col-span-4">
+      <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
@@ -252,7 +252,7 @@ export const Transaction = ({
           →
         </div>
       </div>
-      <div className="col-span-4">
+      <div className="col-span-4 my-auto">
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -271,7 +271,7 @@ export const Transaction = ({
           <div>{bridgeOriginBlockNumber}</div>
         )}
       </div> */}
-      <div className="flex justify-end col-span-2">
+      <div className="flex justify-end col-span-2 my-auto">
         {transactionType === ActivityType.RECENT && (
           <Completed transactionCompletedTime={bridgeDestinationTime} />
         )}
