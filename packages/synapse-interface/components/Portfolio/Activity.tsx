@@ -145,12 +145,12 @@ export const TransactionHeader = ({
       data-test-id="transaction-header"
       className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm mt-4 mb-2"
     >
-      <div className="col-span-3">From</div>
-      <div className="col-span-3">To</div>
-      <div className="flex justify-end col-span-2">
+      <div className="col-span-4">From</div>
+      <div className="col-span-4">To</div>
+      {/* <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.PENDING && 'Block'}
         {transactionType === ActivityType.RECENT && 'Rate'}
-      </div>
+      </div> */}
       <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.PENDING && 'Elapsed'}
         {transactionType === ActivityType.RECENT && 'Completed'}
@@ -238,7 +238,7 @@ export const Transaction = ({
         `}
       onClick={handleTransactionClick}
     >
-      <div className="flex col-span-3">
+      <div className="flex col-span-4">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
@@ -247,7 +247,7 @@ export const Transaction = ({
         />
         <div className="flex items-end mb-[3px] ml-auto px-4">→</div>
       </div>
-      <div className="col-span-3">
+      <div className="col-span-4">
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -255,7 +255,7 @@ export const Transaction = ({
           tokenAmount={destinationFormattedValue}
         />
       </div>
-      <div className="flex justify-end col-span-2">
+      {/* <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.RECENT && (
           <ExchangeRate
             originValue={originFormattedValue}
@@ -265,7 +265,7 @@ export const Transaction = ({
         {transactionType === ActivityType.PENDING && (
           <div>{bridgeOriginBlockNumber}</div>
         )}
-      </div>
+      </div> */}
       <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.RECENT && (
           <Completed transactionCompletedTime={bridgeDestinationTime} />
