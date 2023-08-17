@@ -100,13 +100,31 @@ func (s Store) GetLatestConfirmedSummitBlockNumber(ctx context.Context, chainID 
 			"agentRoot":       AgentRootFieldName,
 			"chainID":         ChainIDFieldName,
 		})
+	// query, err := interpol.WithMap(
+	// 	`
+	// 	SELECT MAX(at.{blockNumber}) AS max_block_number
+	// 	FROM {agentRootsTable}
+	// 	JOIN {agentTreesTable} AS at ON ar.{agentRoot} = at.{agentRoot}
+	// 	WHERE ar.{chainID} = ?
+	// 	GROUP BY ar.{chainID}
+	// 	`,
+	// 	map[string]string{
+	// 		"agentTreesTable": agentTreesTableName,
+	// 		"agentRootsTable": agentRootsTableName,
+	// 		"blockNumber":     BlockNumberFieldName,
+	// 		"agentRoot":       AgentRootFieldName,
+	// 		"chainID":         ChainIDFieldName,
+	// 	})
 	if err != nil {
 		return blockNumber, fmt.Errorf("failed to interpolate query: %w", err)
 	}
 
-	err = s.DB().WithContext(ctx).Raw(query, chainID).Scan(&blockNumber).Error
-	if err != nil {
-		return blockNumber, fmt.Errorf("failed to get latest confirmed summit block number: %w", err)
+	dbTx := s.DB().WithContext(ctx).Raw(query, chainID).Scan(&blockNumber)
+	if dbTx.RowsAffected == 0 {
+		return blockNumber, nil
+	}
+	if dbTx.Error != nil {
+		return blockNumber, fmt.Errorf("failed to get latest confirmed summit block number: %w", dbTx.Error)
 	}
 	return blockNumber, nil
 }

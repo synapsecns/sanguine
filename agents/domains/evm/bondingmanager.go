@@ -108,6 +108,8 @@ func (a bondingManagerContract) CompleteSlashing(ctx context.Context, signer sig
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}
 
+	// TODO: why do we do this?
+	a.nonceManager.ClearNonce(signer.Address())
 	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
 	if err != nil {
 		return nil, fmt.Errorf("could not create tx: %w", err)

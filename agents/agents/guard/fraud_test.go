@@ -734,13 +734,17 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Address:    g.OriginContract.Address().String(),
 		StartBlock: 0,
 	}
+	lightManagerConfig := scribeConfig.ContractConfig{
+		Address:    g.LightManagerOnOrigin.Address().String(),
+		StartBlock: 0,
+	}
 	originChainConfig := scribeConfig.ChainConfig{
 		ChainID:            uint32(g.TestBackendOrigin.GetChainID()),
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 		Confirmations:      1,
-		Contracts:          []scribeConfig.ContractConfig{originConfig},
+		Contracts:          []scribeConfig.ContractConfig{originConfig, lightManagerConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
@@ -830,6 +834,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Start a new Executor.
 	exec, err := executor.NewExecutor(g.GetTestContext(), excCfg, g.ExecutorTestDB, scribeClient, omniRPCClient, g.ExecutorMetrics)
 	Nil(g.T(), err)
+	exec.NowFunc = nowFunc
 
 	go func() {
 		execErr := exec.Run(g.GetTestContext())
@@ -945,6 +950,40 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		return err == nil
 	})
 
+	// Get the origin state so we can submit it on the Summit.
+	originStateRaw, err := g.OriginContract.SuggestLatestState(&bind.CallOpts{Context: g.GetTestContext()})
+	g.Nil(err)
+	originState, err := types.DecodeState(originStateRaw)
+	g.Nil(err)
+	snapshot := types.NewSnapshot([]types.State{originState})
+
+	// Submit snapshot with Guard.
+	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
+	g.Nil(err)
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContextSummit.TransactOpts,
+		g.GuardUnbondedSigner,
+		encodedSnapshot,
+		guardSnapshotSignature,
+	)
+	g.Nil(err)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
+
+	// Submit snapshot with Notary.
+	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
+	g.Nil(err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContextSummit.TransactOpts,
+		g.NotaryOnOriginUnbondedSigner,
+		encodedSnapshot,
+		notarySnapshotSignature,
+	)
+	g.Nil(err)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
+
 	// TODO: uncomment the following case once manager messages can be executed.
 	// Increase EVM time to allow agent status to be updated to Slashed on origin.
 	anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendSummit.RPCAddress())
@@ -952,13 +991,12 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	optimisticPeriodSeconds := 86400
 	err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
 	Nil(g.T(), err)
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	tx, err = g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	g.Nil(err)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
 
-	currentTime := time.Now()
-	exec.NowFunc = func() time.Time { return currentTime.Add(time.Duration(optimisticPeriodSeconds) * time.Second) }
+	// currentTime := time.Now()
+	// exec.NowFunc = func() time.Time { return currentTime.Add(time.Duration(optimisticPeriodSeconds) * time.Second) }
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
+	currentTime = &updatedTime
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
@@ -971,4 +1009,13 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
+}
+
+var currentTime *time.Time
+
+func nowFunc() time.Time {
+	if currentTime == nil {
+		return time.Now()
+	}
+	return *currentTime
 }
