@@ -77,7 +77,8 @@ for (const chain of rawChains) {
   chainsMatured.push({
     ...chain,
     iconUrl: configChain.chainImg.src,
-    configRpc: configChain.rpc,
+    configRpc: configChain.rpcUrls.primary,
+    fallbackRpc: configChain.rpcUrls.fallback,
   })
 }
 
@@ -87,6 +88,11 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     jsonRpcProvider({
       rpc: (chain) => ({
         http: chain['configRpc'],
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: (chain) => ({
+        http: chain['fallbackRpc'],
       }),
     }),
     publicProvider(),
