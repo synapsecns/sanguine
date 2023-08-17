@@ -8,9 +8,10 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
 
@@ -38,6 +39,7 @@ type NodeSuite struct {
 	// blockConfigChainID is the chain ID of the block config.
 	blockConfigChainID uint32
 	scribeMetrics      metrics.Handler
+	explorerMetrics    metrics.Handler
 }
 
 // NewConsumerSuite creates an end-to-end test suite.
@@ -86,7 +88,9 @@ func (c *NodeSuite) SetupSuite() {
 
 	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
 	var err error
-	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	c.Require().Nil(err)
+	c.explorerMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)
 }
 

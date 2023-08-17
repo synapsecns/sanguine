@@ -11,6 +11,7 @@ const SINGLE_SIDE_INFO_FRAGMENT = gql`
     tokenAddress
     tokenSymbol
     time
+    eventType
   }
 `
 
@@ -206,6 +207,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       harmony
       canto
       dogechain
+      base
       total
     }
   }

@@ -1,39 +1,34 @@
 import { useState, useMemo, useEffect } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
-import { Zero } from '@ethersproject/constants'
-
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 
-const BridgeExchangeRateInfo = ({
-  showGasDrop,
-}: {
-  showGasDrop: boolean
-}) => {
+const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
 
   const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
   const toToken = useSelector((state: RootState) => state.bridge.toToken)
-  const exchangeRate = useSelector((state: RootState) => state.bridge.bridgeQuote.exchangeRate)
+  const exchangeRate = useSelector(
+    (state: RootState) => state.bridge.bridgeQuote.exchangeRate
+  )
   const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
+  const safeExchangeRate = exchangeRate ?? 0n
+  const safeFromAmount = fromAmount ?? '0'
 
-  const safeExchangeRate = exchangeRate ?? Zero;
-  const safeFromAmount = fromAmount ?? Zero;
-
-  const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
+  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
-  const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
+  const slippage = safeExchangeRate - 1000000000000000000n
+  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
+  const underFee = safeExchangeRate === 0n && safeFromAmount != '0'
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
@@ -84,10 +79,10 @@ const BridgeExchangeRateInfo = ({
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
-          {!safeFromAmount.eq(0) ? (
+          {safeFromAmount != '0' ? (
             <>
               {formattedExchangeRate}{' '}
-              <span className="text-white">{toToken.symbol}</span>
+              <span className="text-white">{toToken?.symbol}</span>
             </>
           ) : (
             '—'
@@ -96,7 +91,7 @@ const BridgeExchangeRateInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {!safeFromAmount.eq(0) && !underFee ? (
+        {safeFromAmount != '0' && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>
@@ -110,7 +105,7 @@ const GasDropLabel = ({
   gasDropAmount,
   toChainId,
 }: {
-  gasDropAmount: BigNumber
+  gasDropAmount: bigint
   toChainId: number
 }) => {
   let decimalsToDisplay
@@ -126,7 +121,7 @@ const GasDropLabel = ({
     decimalsToDisplay = 4
   }
 
-  const formattedGasDropAmount = formatBNToString(
+  const formattedGasDropAmount = formatBigIntToString(
     gasDropAmount,
     18,
     decimalsToDisplay

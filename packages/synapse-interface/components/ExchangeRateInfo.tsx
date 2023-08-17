@@ -1,14 +1,15 @@
 import { useState, useMemo, useEffect } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
-import { Zero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
+import {
+  formatBigIntToPercentString,
+  formatBigIntToString,
+} from '@/utils/bigint/format'
 
 const ExchangeRateInfo = ({
   fromAmount,
@@ -17,22 +18,22 @@ const ExchangeRateInfo = ({
   toChainId,
   showGasDrop,
 }: {
-  fromAmount: BigNumber
+  fromAmount: bigint
   toToken: Token
-  exchangeRate: BigNumber
+  exchangeRate: bigint
   toChainId: number
   showGasDrop: boolean
 }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
-  const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
-  const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
-  const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
+  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
+  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
+  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
   const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
-  const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
+  const slippage = safeExchangeRate - 1000000000000000000n
+  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
+  const underFee = safeExchangeRate === 0n && safeFromAmount != 0n
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
@@ -83,7 +84,7 @@ const ExchangeRateInfo = ({
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
-          {!safeFromAmount.eq(0) ? (
+          {safeFromAmount != 0n ? (
             <>
               {formattedExchangeRate}{' '}
               <span className="text-white">{toToken.symbol}</span>
@@ -95,7 +96,7 @@ const ExchangeRateInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {!safeFromAmount.eq(0) && !underFee ? (
+        {safeFromAmount != 0n && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>
@@ -109,7 +110,7 @@ const GasDropLabel = ({
   gasDropAmount,
   toChainId,
 }: {
-  gasDropAmount: BigNumber
+  gasDropAmount: bigint
   toChainId: number
 }) => {
   let decimalsToDisplay
@@ -125,7 +126,7 @@ const GasDropLabel = ({
     decimalsToDisplay = 4
   }
 
-  const formattedGasDropAmount = formatBNToString(
+  const formattedGasDropAmount = formatBigIntToString(
     gasDropAmount,
     18,
     decimalsToDisplay

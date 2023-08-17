@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { formatBNToString } from '@utils/bignumber/format'
+import { formatBigIntToString } from '@utils/bigint/format'
 import { Token } from '@types'
 
 const ReceivedTokenSection = ({
@@ -39,7 +39,7 @@ const ReceivedTokenSection = ({
                   src={token.icon.src}
                 ></img>
                 <span className="text-sm text-white">
-                  {formatBNToString(
+                  {formatBigIntToString(
                     output.value,  // Adjusted to use output.value directly
                     token.decimals[chainId],
                     6

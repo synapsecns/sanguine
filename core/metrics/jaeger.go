@@ -20,7 +20,7 @@ type jaegerHandler struct {
 // the JAEGER_ENDPOINT environment variable must be set for this to work.
 // Note: currently, this is only suitable for local runs, because of default options we've put in place
 // This can be fixed in a future version through an option builder.
-// TODO: this should extend the baseHandler, but we need to figure out how to do that with the jaeger exporter.
+// TODO: this should be replaced w/ the otlp exporter.
 func NewJaegerHandler(buildInfo config.BuildInfo) Handler {
 	return &jaegerHandler{
 		buildInfo: buildInfo,

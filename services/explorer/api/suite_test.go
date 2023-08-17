@@ -1,30 +1,33 @@
 package api_test
 
 import (
+	"context"
 	gosql "database/sql"
 	"fmt"
-	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/services/explorer/api"
-	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	"github.com/synapsecns/sanguine/services/explorer/db/sql"
-	"github.com/synapsecns/sanguine/services/explorer/testutil"
-	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
-	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
-	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"net/http"
 	"testing"
 
+	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/services/explorer/api"
+	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/client"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
+	"github.com/synapsecns/sanguine/services/explorer/testutil"
+	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
+	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"go.uber.org/atomic"
 )
 
@@ -160,14 +163,15 @@ type APISuite struct {
 	db     db.ConsumerDB
 	client *client.Client
 	// grpcClient *rest.APIClient
-	eventDB       scribedb.EventDB
-	gqlClient     *explorerclient.Client
-	logIndex      atomic.Int64
-	cleanup       func()
-	testBackend   backends.SimulatedTestBackend
-	deployManager *testutil.DeployManager
-	chainIDs      []uint32
-	scribeMetrics metrics.Handler
+	eventDB         scribedb.EventDB
+	gqlClient       *explorerclient.Client
+	logIndex        atomic.Int64
+	cleanup         func()
+	testBackend     backends.SimulatedTestBackend
+	deployManager   *testutil.DeployManager
+	chainIDs        []uint32
+	scribeMetrics   metrics.Handler
+	explorerMetrics metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -185,7 +189,10 @@ func (g *APISuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
 
 	var err error
-	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
+	// TODO: there may be an issue w/ syncer for local test nevs, investigate, but this probably comes from heavy load ending every span of every field synchronously
+	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	g.Require().Nil(err)
 }
 
@@ -194,7 +201,6 @@ func (g *APISuite) SetupTest() {
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
-	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	NotNil(g.T(), cleanup)
 	NotNil(g.T(), port)
@@ -205,25 +211,27 @@ func (g *APISuite) SetupTest() {
 	}
 
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
-	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false)
+	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false, g.explorerMetrics)
 	Nil(g.T(), err)
 	err = g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(finsert_time) ORDER BY (fevent_index, fblock_number, fevent_type, ftx_hash, fchain_id, fcontract_address)").AutoMigrate(&MvBridgeEvent{})
 	Nil(g.T(), err)
 
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
+	httpport := freeport.GetPort()
+
 	go func() {
-		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
+		Nil(g.T(), api.Start(g.GetTestContext(), api.Config{
 			HTTPPort:  uint16(httpport),
 			Address:   address,
 			ScribeURL: g.gqlClient.Client.BaseURL,
-		}))
+		}, g.explorerMetrics))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)
 
 	g.client = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, gqlServer.GraphqlEndpoint))
 
-	g.Eventually(func() bool {
+	err = retry.WithBackoff(g.GetTestContext(), func(ctx context.Context) error {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
 		Nil(g.T(), err)
 		res, err := g.client.Client.Client.Do(request)
@@ -231,10 +239,12 @@ func (g *APISuite) SetupTest() {
 			defer func() {
 				_ = res.Body.Close()
 			}()
-			return true
+			return nil
 		}
-		return false
-	})
+		return fmt.Errorf("failed to connect to graphql server: %w", err)
+	}, retry.WithMaxAttempts(1000))
+
+	g.Require().Nil(err)
 }
 
 func TestAPISuite(t *testing.T) {

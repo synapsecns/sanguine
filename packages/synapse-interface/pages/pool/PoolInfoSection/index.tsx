@@ -1,55 +1,39 @@
-import { Zero } from '@ethersproject/constants'
-
-import {
-  commifyBnToString,
-  commifyBnWithDefault,
-  bnPercentFormat,
-} from '@bignumber/format'
-
 import AugmentWithUnits from '../components/AugmentWithUnits'
-import { Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
-import { useEffect, useState } from 'react'
-import { getPoolFee } from '@utils/actions/getPoolFee'
-import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
-const PoolInfoSection = ({
-  pool,
-  poolData,
-  chainId,
-}: {
-  pool: Token
-  poolData: any
-  chainId: number
-}) => {
-  const [swapFee, setSwapFee] = useState('')
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
-  useEffect(() => {
-    if (pool && chainId) {
-      getPoolFee(poolAddress, chainId).then((res) => {
-        setSwapFee(res?.swapFee)
-      })
-    }
-  }, [pool, chainId])
+import {
+  commify,
+  formatBigIntToPercentString,
+  formatBigIntToString,
+} from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
+
+const PoolInfoSection = ({ chainId }: { chainId: number }) => {
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+
   return (
     <div className="space-y-4">
-      <CurrencyReservesCard
-        title="Currency Reserves"
-        chainId={chainId}
-        poolData={poolData}
-      />
+      <CurrencyReservesCard />
       <InfoSectionCard title="Pool Info">
         <InfoListItem
           labelText="Trading Fee"
-          content={swapFee?.length > 0 ? swapFee : <LoadingSpinner />}
+          content={
+            poolData && poolData.swapFee ? (
+              formatBigIntToPercentString(poolData.swapFee, 8, 2)
+            ) : (
+              <LoadingSpinner />
+            )
+          }
         />
         <InfoListItem
           labelText="Virtual Price"
           content={
-            poolData?.virtualPriceStr ? (
+            poolData && poolData?.virtualPrice ? (
               <AugmentWithUnits
-                content={poolData.virtualPriceStr}
+                content={formatBigIntToString(poolData.virtualPrice, 18, 6)}
                 label={pool.priceUnits}
               />
             ) : (
@@ -60,9 +44,18 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            poolData?.totalLockedUSDStr ? (
+            poolData && poolData?.totalLocked ? (
               <AugmentWithUnits
-                content={poolData.totalLockedUSDStr}
+                content={commify(
+                  formatBigIntToString(
+                    stringToBigInt(
+                      `${poolData.totalLocked}`,
+                      pool.decimals[chainId]
+                    ),
+                    18,
+                    -1
+                  )
+                )}
                 label={pool.priceUnits}
               />
             ) : (
@@ -73,8 +66,17 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity USD"
           content={
-            poolData?.totalLockedUSDStr ? (
-              `$${poolData.totalLockedUSDStr}`
+            poolData && poolData?.totalLockedUSD ? (
+              `$${commify(
+                formatBigIntToString(
+                  stringToBigInt(
+                    `${poolData.totalLockedUSD}`,
+                    pool.decimals[chainId]
+                  ),
+                  18,
+                  -1
+                )
+              )}`
             ) : (
               <LoadingSpinner />
             )
@@ -84,7 +86,6 @@ const PoolInfoSection = ({
     </div>
   )
 }
-export default PoolInfoSection
 
 const InfoListItem = ({
   labelText,
@@ -104,3 +105,5 @@ const InfoListItem = ({
     </li>
   )
 }
+
+export default PoolInfoSection

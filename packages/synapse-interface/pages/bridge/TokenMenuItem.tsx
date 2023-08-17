@@ -1,5 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import { displaySymbol } from '@utils/displaySymbol'
@@ -22,7 +20,7 @@ const TokenMenuItem = ({
   active: boolean
   chainId: number
   selectedToken: Token
-  tokenBalance: BigNumber | undefined
+  tokenBalance: bigint | undefined
   onClick: () => void
 }) => {
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
@@ -59,7 +57,7 @@ const TokenMenuItem = ({
       <ButtonContent
         token={token}
         chainId={chainId}
-        tokenBalance={tokenBalance ? tokenBalance : Zero}
+        tokenBalance={tokenBalance ? tokenBalance : 0n}
       />
     </div>
   )
@@ -73,7 +71,7 @@ const ButtonContent = memo(
   }: {
     token: Token
     chainId: number
-    tokenBalance: BigNumber
+    tokenBalance: bigint
   }) => {
     return (
       <div className="flex items-center w-full">

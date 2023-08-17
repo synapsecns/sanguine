@@ -13,12 +13,26 @@ import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 
 import PoolCards from './PoolCards'
+import { useRouter } from 'next/router'
+
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
+
+  const router = useRouter()
+
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Pools page] arrives`, {
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
+
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])

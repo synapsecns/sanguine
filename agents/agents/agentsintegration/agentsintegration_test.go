@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -20,12 +21,10 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
-
-	"github.com/Flaque/filet"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -41,11 +40,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
+	originClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
+	summitClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig.ContractConfig{
@@ -53,44 +52,48 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{originConfig},
+		ChainID:            uint32(u.TestBackendOrigin.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+		ChainID:            uint32(u.TestBackendDestination.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{summitConfig},
+		ChainID:            uint32(u.TestBackendSummit.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+
+		Contracts: []scribeConfig.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
+	scribe, err := service.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
 	u.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)

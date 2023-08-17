@@ -397,6 +397,7 @@ const dailyVolumeBridgeMvPt1 = `
        results[1666600000]          AS harmony,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
+       results[8453]                AS base,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -437,6 +438,7 @@ const dailyVolumeBridge = `
        results[1666600000]          AS harmony,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
+       results[8453]                AS base,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -529,6 +531,7 @@ SELECT date,
        results[1666600000]          AS harmony,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
+       results[8453]                AS base,
        arraySum(mapValues(results)) AS total
 FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date), toString(m.date)) AS date,
@@ -627,6 +630,7 @@ SELECT date,
        results[1666600000]          AS harmony,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
+       results[8453]                AS base,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -654,6 +658,7 @@ SELECT date,
        results[1666600000]          AS harmony,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
+       results[8453]                AS base,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -661,6 +666,36 @@ FROM (
             FROM (SELECT toString(toDate(FROM_UNIXTIME(ftimestamp, '%Y/%m/%d')))                                                as date,
                          fchain_id AS chain_id,
 `
+
+const dailyStatisticGenericSinglePlatformMvFee = `
+SELECT date,
+       results[1]                   AS ethereum,
+       results[10]                  AS optimism,
+       results[25]                  AS cronos,
+       results[56]                  AS bsc,
+       results[137]                 AS polygon,
+       results[250]                 AS fantom,
+       results[288]                 AS boba,
+       results[1088]                AS metis,
+       results[1284]                AS moonbeam,
+       results[1285]                AS moonriver,
+       results[8217]                AS klaytn,
+       results[42161]               AS arbitrum,
+       results[43114]               AS avalanche,
+       results[53935]               AS dfk,
+       results[1313161554]          AS aurora,
+       results[1666600000]          AS harmony,
+       results[7700]                AS canto,
+       results[2000]                AS dogechain,
+       results[8453]                AS base,
+       arraySum(mapValues(results)) AS total
+FROM (
+         SELECT date,
+                maxMap(map(chain_id, sumTotal)) AS results
+            FROM (SELECT toString(toDate(FROM_UNIXTIME(ttimestamp, '%Y/%m/%d')))                                                as date,
+                         tchain_id AS chain_id,
+`
+
 const dailyStatisticBridge = `
 FROM (
 SELECT IF(

@@ -2,12 +2,9 @@ import Button from '@tw/Button'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
-import ExplorerToastLink from '@components/ExplorerToastLink'
-import toast from 'react-hot-toast'
-import { AddressZero } from '@ethersproject/constants'
 
 const BASE_PROPERTIES = `
-    w-full rounded-lg my-2 px-4 py-3
+    w-full rounded-lg px-4 py-3
     text-white text-opacity-100 transition-all
     hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
@@ -55,7 +52,7 @@ export const TransactionButton = ({
     >
       {isPending ? (
         <div className="inline-flex items-center justify-center">
-          <ButtonLoadingSpinner className="mr-2" />
+          <ButtonLoadingSpinner className="mr-8" />
           <span className="opacity-30">{pendingLabel}</span>{' '}
         </div>
       ) : (

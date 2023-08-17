@@ -48,7 +48,6 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		profiler.WithLogStartup(true),
 		profiler.WithProfileTypes(getProfileTypesFromEnv()...),
 	}
-
 	return &handler
 }
 
@@ -63,7 +62,13 @@ func (d *datadogHandler) Gin() gin.HandlerFunc {
 
 // Start starts the handler and stops it when context is canceled.
 func (d *datadogHandler) Start(ctx context.Context) error {
-	err := profiler.Start(d.profilerOptions...)
+	// start the parent
+	err := d.baseHandler.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start base handler: %w", err)
+	}
+
+	err = profiler.Start(d.profilerOptions...)
 	if err != nil {
 		return fmt.Errorf("could not start profiler: %w", err)
 	}
@@ -74,7 +79,14 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true),
 		tracer.WithPropagator(ddPrpopgator), tracer.WithEnv(core.GetEnv(ddEnvTag, defaultEnv)), tracer.WithService(d.buildInfo.Name()), tracer.WithServiceVersion(d.buildInfo.Version()))
 
-	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
+	// Ensure default SDK resources and the required service name are set.
+	rsr, err := makeResource(d.buildInfo)
+	// TODO: handle error or report
+	if err != nil {
+		return fmt.Errorf("could not create resource: %w", err)
+	}
+
+	d.baseHandler = newBaseHandlerWithTracerProvider(rsr, d.buildInfo, tracerProvider, propagator)
 
 	// stop on context cancellation
 	go func() {

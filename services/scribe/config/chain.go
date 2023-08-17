@@ -7,26 +7,32 @@ import (
 	"github.com/richardwilkes/toolbox/collection"
 )
 
+// TODO add tests for this config type
+
 // ChainConfig defines the config for a specific chain.
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// RequiredConfirmations is the number of confirmations required for a block to be finalized.
-	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
-	// BlockTimeChunkCount is the number of chunks (goroutines) to process at a time while backfilling blocktimes.
-	BlockTimeChunkCount uint64 `yaml:"block_time_chunk_count"`
-	// BlockTimeChunkSize is the number of blocks to process per chunk (goroutine) while backfilling blocktimes.
-	BlockTimeChunkSize uint64 `yaml:"block_time_chunk_size"`
-	// ContractSubChunkSize is the number of blocks to request for in each get logs request in the batch request.
-	ContractSubChunkSize int `yaml:"contract_sub_chunk_size"`
-	// ContractChunkSize is the number of blocks to process per chunk while backfilling contracts.
-	ContractChunkSize int `yaml:"contract_chunk_size"`
+	// GetLogsRange is the max number of blocks to request in a single getLogs request.
+	GetLogsRange uint64 `yaml:"get_logs_range"`
+	// GetLogsBatchAmount is the number of getLogs requests to include in a single batch request.
+	GetLogsBatchAmount uint64 `yaml:"get_logs_batch_amount"`
 	// StoreConcurrency is the number of goroutines to use when storing data.
 	StoreConcurrency int `yaml:"store_concurrency"`
-	// storeConcurrencyThreshold is the max number of block from head in which concurrent store is allowed.
-	StoreConcurrencyThreshold uint64 `yaml:"store_concurrency_threshold"`
+	// ConcurrencyThreshold is the max number of block from head in which concurrent operations (store, getlogs) is allowed.
+	ConcurrencyThreshold uint64 `yaml:"concurrency_threshold"`
+	// GetBlockBatchSize is the amount of blocks to get at a time when doing confirmations.
+	GetBlockBatchAmount int `yaml:"get_block_batch_amount"`
+	// Confirmations is the number of blocks away from the head to livefill to.
+	Confirmations uint64 `yaml:"confirmations"`
+	// LivefillThreshold is the number of blocks away from the head minus confirmations to livefill to.
+	LivefillThreshold uint64 `yaml:"livefill_threshold"`
+	// LivefillRange is the number of blocks that the livefill indexer with request for with get logs at once.
+	LivefillRange uint64 `yaml:"livefill_range"`
+	// LivefillFlushInterval is how long to wait before flushing the livefill indexer db (in seconds)
+	LivefillFlushInterval uint64 `yaml:"livefill_flush_interval"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

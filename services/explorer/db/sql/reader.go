@@ -3,7 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
-
+	"github.com/benbjohnson/immutable"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
@@ -222,4 +222,40 @@ func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Lead
 	}
 
 	return res, nil
+}
+
+// GetPendingByChain gets the bridge leaderboard by chain.
+// returns chainid, count
+// TODO: test this.
+func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error) {
+	const query = `SELECT
+		toInt64(destination_chain_id) as destination_chain_id,
+		toInt64(COUNTDistinct(destination_kappa)) AS distinct_count
+	FROM bridge_events
+	WHERE destination_kappa NOT IN (
+		SELECT kappa
+		FROM bridge_events
+		WHERE kappa != ''
+	)
+	GROUP BY destination_chain_id`
+
+	type PendingByChain struct {
+		DestinationChainID *int64 `gorm:"column:destination_chain_id"`
+		DistinctCount      *int64 `gorm:"column:distinct_count"`
+	}
+
+	var pending []*PendingByChain
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&pending)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get pending by chain: %w", dbTx.Error)
+	}
+
+	builder := immutable.NewMapBuilder[int, int](nil)
+
+	for _, kvPair := range pending {
+		builder.Set(int(*kvPair.DestinationChainID), int(*kvPair.DistinctCount))
+	}
+
+	return builder.Map(), nil
 }

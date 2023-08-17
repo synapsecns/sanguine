@@ -69,6 +69,8 @@ type SimulatedBackendsTestSuite struct {
 	TestContractMetadataOnOrigin        contracts.DeployedContract
 	TestContractOnSummit                *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnSummit        contracts.DeployedContract
+	DestinationContractOnSummit         *destinationharness.DestinationHarnessRef
+	DestinationContractMetadataOnSummit contracts.DeployedContract
 	TestContractOnDestination           *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnDestination   contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
@@ -237,6 +239,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.TestContractMetadataOnSummit, a.TestContractOnSummit = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendSummit)
+	a.DestinationContractMetadataOnSummit, a.DestinationContractOnSummit = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
@@ -245,6 +248,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
+		DestinationAddress:    a.DestinationContractOnSummit.Address().String(),
 	}, a.TestBackendSummit.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
