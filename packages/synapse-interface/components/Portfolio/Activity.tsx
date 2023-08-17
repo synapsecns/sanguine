@@ -106,7 +106,7 @@ export const ExplorerLink = ({
   return (
     <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
       <Link href={explorerLink} target="_blank">
-        Explorer →
+        <span className="hover:underline">Explorer</span> →
       </Link>
     </div>
   )
