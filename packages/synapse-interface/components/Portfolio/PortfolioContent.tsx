@@ -44,6 +44,10 @@ export const PortfolioContent = ({
   const isInitialFetchLoading: boolean =
     !portfolioExists && fetchState === FetchState.LOADING
 
+  const [mounted, setMounted] = useState<boolean>(false)
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) return <HomeContent />
   return (
     <div
       data-test-id="portfolio-content"
@@ -136,7 +140,7 @@ export const EmptyPortfolioContent = () => {
   const { address } = useAccount()
   const shortened = shortenAddress(address, 3)
   return (
-    <>
+    <div>
       <p
         data-test-id="empty-portfolio-content"
         className={`
@@ -172,7 +176,7 @@ export const EmptyPortfolioContent = () => {
         </Link>
         .
       </a>
-    </>
+    </div>
   )
 }
 

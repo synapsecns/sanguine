@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -55,6 +55,9 @@ export const Portfolio = () => {
     })()
   }, [chain, address])
 
+  const [mounted, setMounted] = useState<boolean>(false)
+  useEffect(() => setMounted(true), [])
+
   return (
     <div
       data-test-id="portfolio"
@@ -62,15 +65,19 @@ export const Portfolio = () => {
     >
       <PortfolioTabManager />
       <div className="mt-4">
-        <PortfolioContent
-          connectedAddress={address}
-          connectedChainId={chain?.id}
-          selectedFromChainId={fromChainId}
-          networkPortfolioWithBalances={filteredPortfolioDataForBalances}
-          fetchState={fetchState}
-          visibility={activeTab === PortfolioTabs.PORTFOLIO}
-        />
-        <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
+        {mounted && (
+          <>
+            <PortfolioContent
+              connectedAddress={address}
+              connectedChainId={chain?.id}
+              selectedFromChainId={fromChainId}
+              networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+              fetchState={fetchState}
+              visibility={activeTab === PortfolioTabs.PORTFOLIO}
+            />
+            <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
+          </>
+        )}
 
         {/* Temporarily comment out approach below until resolving SSR hydration issues */}
         {/* {activeTab === PortfolioTabs.HOME && <HomeContent />}
