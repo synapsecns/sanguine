@@ -68,7 +68,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       <PendingTransactionAwaitingIndexing />
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="mb-5">
-          <TransactionHeader transactionType={ActivityType.PENDING} />
+          {/* <TransactionHeader transactionType={ActivityType.PENDING} /> */}
           {userPendingTransactions.map((transaction: BridgeTransaction) => (
             <Transaction
               bridgeTransaction={transaction}
@@ -81,7 +81,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          <TransactionHeader transactionType={ActivityType.RECENT} />
+          {/* <TransactionHeader transactionType={ActivityType.RECENT} /> */}
           {userHistoricalTransactions &&
             userHistoricalTransactions.map((transaction: BridgeTransaction) => (
               <Transaction
@@ -115,7 +115,7 @@ const RecentlyBridgedPendingTransaction = ({
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"
-      className="grid grid-cols-10 bg-[#1B1B29] text-white"
+      className="grid grid-cols-10 bg-[#1B1B29] py-3 px-2 text-sm text-white"
     >
       <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
@@ -132,11 +132,7 @@ const RecentlyBridgedPendingTransaction = ({
         </div>
       </div>
       <div className="col-span-4 my-auto">
-        <TransactionPayloadDetail
-          chain={destinationChain}
-          token={destinationToken}
-          tokenSymbol={destinationToken?.symbol}
-        />
+        <TransactionPayloadDetail chain={destinationChain} />
       </div>
       <div className="flex justify-end col-span-2 my-auto">
         <TimeElapsed startTime={timestamp} />
