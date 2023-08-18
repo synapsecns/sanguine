@@ -115,7 +115,7 @@ const RecentlyBridgedPendingTransaction = ({
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"
-      className="grid grid-cols-10 bg-[#1B1B29] py-3 px-2 text-sm text-white"
+      className="grid grid-cols-10 bg-[#1B1B29] py-3 px-2 text-sm text-white rounded-md mb-2"
     >
       <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
@@ -181,7 +181,7 @@ export const ActivitySection = ({
 }) => {
   return (
     <div data-test-id="activity-section" className={twClassName}>
-      <h3 className="text-xl text-white">{title}</h3>
+      <h3 className="mb-2 text-xl text-white">{title}</h3>
       {children}
     </div>
   )
@@ -201,7 +201,7 @@ export const TransactionHeader = ({
   return (
     <div
       data-test-id="transaction-header"
-      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm mt-4 mb-2 "
+      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm mt-4 mb-2"
     >
       <div className="col-span-4">From</div>
       <div className="col-span-4">To</div>
@@ -290,9 +290,16 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        grid grid-cols-10 mt-auto py-3 px-2
-        text-sm text-white border-b border-[#565058]
+        grid grid-cols-10 mt-auto py-3 mx-1
+        text-sm text-white
         items-end hover:cursor-pointer hover:bg-[#272731]
+        ${
+          transactionType === ActivityType.RECENT && 'border-b border-[#565058]'
+        }
+        ${
+          transactionType === ActivityType.PENDING &&
+          'bg-[#1B1B29] rounded-md mb-2'
+        }
         `}
       onClick={handleTransactionClick}
     >
