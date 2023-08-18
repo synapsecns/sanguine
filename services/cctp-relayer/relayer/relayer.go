@@ -405,7 +405,13 @@ func (c *CCTPRelayer) processAPIRequests(ctx context.Context) error {
 		case <-ctx.Done():
 			return fmt.Errorf("context done: %w", ctx.Err())
 		default:
-			relayRequest := <-c.relayRequestChan
+			var relayRequest *api.RelayRequest
+			select {
+			case relayRequest = <-c.relayRequestChan:
+				// continue below
+			case <-ctx.Done():
+				return fmt.Errorf("context done while attempting to add to channel: %w", ctx.Err())
+			}
 			msg, err := c.fetchAndStoreCircleRequestSent(ctx, relayRequest.TxHash, relayRequest.Origin)
 			if err != nil {
 				return fmt.Errorf("could not fetch and store circle request sent from api: %w", err)
