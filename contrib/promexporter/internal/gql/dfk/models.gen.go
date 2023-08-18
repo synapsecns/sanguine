@@ -127,6 +127,179 @@ type AuctionFilter struct {
 	PurchasePriceNotIn   []*string `json:"purchasePrice_not_in,omitempty"`
 }
 
+type BazaarOrder struct {
+	OrderID           string   `json:"orderId"`
+	Network           string   `json:"network"`
+	Open              bool     `json:"open"`
+	CancelledStamp    *int64   `json:"cancelledStamp,omitempty"`
+	CreatedStamp      int64    `json:"createdStamp"`
+	TokenAddress      string   `json:"tokenAddress"`
+	TokenID           *int64   `json:"tokenId,omitempty"`
+	IsErc20           *bool    `json:"isErc20,omitempty"`
+	Side              int64    `json:"side"`
+	Price             string   `json:"price"`
+	InitialQuantity   string   `json:"initialQuantity"`
+	RemainingQuantity string   `json:"remainingQuantity"`
+	BaseTokenAddress  *string  `json:"baseTokenAddress,omitempty"`
+	Owner             *Profile `json:"owner,omitempty"`
+}
+
+type BazaarOrderFilter struct {
+	OrderID                *string   `json:"orderId,omitempty"`
+	OrderIDNot             *string   `json:"orderId_not,omitempty"`
+	OrderIDGt              *string   `json:"orderId_gt,omitempty"`
+	OrderIDLt              *string   `json:"orderId_lt,omitempty"`
+	OrderIDGte             *string   `json:"orderId_gte,omitempty"`
+	OrderIDLte             *string   `json:"orderId_lte,omitempty"`
+	OrderIDIn              []*string `json:"orderId_in,omitempty"`
+	OrderIDNotIn           []*string `json:"orderId_not_in,omitempty"`
+	Network                *string   `json:"network,omitempty"`
+	NetworkNot             *string   `json:"network_not,omitempty"`
+	NetworkIn              []*string `json:"network_in,omitempty"`
+	NetworkNotIn           []*string `json:"network_not_in,omitempty"`
+	Open                   *bool     `json:"open,omitempty"`
+	CancelledStamp         *int64    `json:"cancelledStamp,omitempty"`
+	CancelledStampNot      *int64    `json:"cancelledStamp_not,omitempty"`
+	CancelledStampGt       *int64    `json:"cancelledStamp_gt,omitempty"`
+	CancelledStampLt       *int64    `json:"cancelledStamp_lt,omitempty"`
+	CancelledStampGte      *int64    `json:"cancelledStamp_gte,omitempty"`
+	CancelledStampLte      *int64    `json:"cancelledStamp_lte,omitempty"`
+	CancelledStampIn       []*int64  `json:"cancelledStamp_in,omitempty"`
+	CancelledStampNotIn    []*int64  `json:"cancelledStamp_not_in,omitempty"`
+	CreatedStamp           *int64    `json:"createdStamp,omitempty"`
+	CreatedStampNot        *int64    `json:"createdStamp_not,omitempty"`
+	CreatedStampGt         *int64    `json:"createdStamp_gt,omitempty"`
+	CreatedStampLt         *int64    `json:"createdStamp_lt,omitempty"`
+	CreatedStampGte        *int64    `json:"createdStamp_gte,omitempty"`
+	CreatedStampLte        *int64    `json:"createdStamp_lte,omitempty"`
+	CreatedStampIn         []*int64  `json:"createdStamp_in,omitempty"`
+	CreatedStampNotIn      []*int64  `json:"createdStamp_not_in,omitempty"`
+	TokenAddress           *string   `json:"tokenAddress,omitempty"`
+	TokenAddressNot        *string   `json:"tokenAddress_not,omitempty"`
+	TokenAddressIn         []*string `json:"tokenAddress_in,omitempty"`
+	TokenAddressNotIn      []*string `json:"tokenAddress_not_in,omitempty"`
+	TokenID                *int64    `json:"tokenId,omitempty"`
+	TokenIDNot             *int64    `json:"tokenId_not,omitempty"`
+	TokenIDGt              *int64    `json:"tokenId_gt,omitempty"`
+	TokenIDLt              *int64    `json:"tokenId_lt,omitempty"`
+	TokenIDGte             *int64    `json:"tokenId_gte,omitempty"`
+	TokenIDLte             *int64    `json:"tokenId_lte,omitempty"`
+	TokenIDIn              []*int64  `json:"tokenId_in,omitempty"`
+	TokenIDNotIn           []*int64  `json:"tokenId_not_in,omitempty"`
+	IsErc20                *bool     `json:"isErc20,omitempty"`
+	Side                   *int64    `json:"side,omitempty"`
+	Price                  *string   `json:"price,omitempty"`
+	PriceNot               *string   `json:"price_not,omitempty"`
+	PriceGt                *string   `json:"price_gt,omitempty"`
+	PriceLt                *string   `json:"price_lt,omitempty"`
+	PriceGte               *string   `json:"price_gte,omitempty"`
+	PriceLte               *string   `json:"price_lte,omitempty"`
+	PriceIn                []*string `json:"price_in,omitempty"`
+	PriceNotIn             []*string `json:"price_not_in,omitempty"`
+	InitialQuantity        *string   `json:"initialQuantity,omitempty"`
+	InitialQuantityNot     *string   `json:"initialQuantity_not,omitempty"`
+	InitialQuantityGt      *string   `json:"initialQuantity_gt,omitempty"`
+	InitialQuantityLt      *string   `json:"initialQuantity_lt,omitempty"`
+	InitialQuantityGte     *string   `json:"initialQuantity_gte,omitempty"`
+	InitialQuantityLte     *string   `json:"initialQuantity_lte,omitempty"`
+	InitialQuantityIn      []*string `json:"initialQuantity_in,omitempty"`
+	InitialQuantityNotIn   []*string `json:"initialQuantity_not_in,omitempty"`
+	RemainingQuantity      *string   `json:"remainingQuantity,omitempty"`
+	RemainingQuantityNot   *string   `json:"remainingQuantity_not,omitempty"`
+	RemainingQuantityGt    *string   `json:"remainingQuantity_gt,omitempty"`
+	RemainingQuantityLt    *string   `json:"remainingQuantity_lt,omitempty"`
+	RemainingQuantityGte   *string   `json:"remainingQuantity_gte,omitempty"`
+	RemainingQuantityLte   *string   `json:"remainingQuantity_lte,omitempty"`
+	RemainingQuantityIn    []*string `json:"remainingQuantity_in,omitempty"`
+	RemainingQuantityNotIn []*string `json:"remainingQuantity_not_in,omitempty"`
+	BaseTokenAddress       *string   `json:"baseTokenAddress,omitempty"`
+	BaseTokenAddressNot    *string   `json:"baseTokenAddress_not,omitempty"`
+	BaseTokenAddressIn     []*string `json:"baseTokenAddress_in,omitempty"`
+	BaseTokenAddressNotIn  []*string `json:"baseTokenAddress_not_in,omitempty"`
+	OwnerAddress           *string   `json:"ownerAddress,omitempty"`
+	OwnerAddressNot        *string   `json:"ownerAddress_not,omitempty"`
+	OwnerAddressIn         []*string `json:"ownerAddress_in,omitempty"`
+	OwnerAddressNotIn      []*string `json:"ownerAddress_not_in,omitempty"`
+}
+
+type BazaarTransaction struct {
+	OrderID       string   `json:"orderId"`
+	Network       string   `json:"network"`
+	TxHash        string   `json:"txHash"`
+	ExecutedStamp int64    `json:"executedStamp"`
+	Quantity      string   `json:"quantity"`
+	Price         string   `json:"price"`
+	Side          int64    `json:"side"`
+	TokenAddress  string   `json:"tokenAddress"`
+	TokenID       int64    `json:"tokenId"`
+	Initiator     *Profile `json:"initiator,omitempty"`
+	Owner         *Profile `json:"owner,omitempty"`
+}
+
+type BazaarTransactionFilter struct {
+	OrderID               *string   `json:"orderId,omitempty"`
+	OrderIDNot            *string   `json:"orderId_not,omitempty"`
+	OrderIDGt             *string   `json:"orderId_gt,omitempty"`
+	OrderIDLt             *string   `json:"orderId_lt,omitempty"`
+	OrderIDGte            *string   `json:"orderId_gte,omitempty"`
+	OrderIDLte            *string   `json:"orderId_lte,omitempty"`
+	OrderIDIn             []*string `json:"orderId_in,omitempty"`
+	OrderIDNotIn          []*string `json:"orderId_not_in,omitempty"`
+	Network               *string   `json:"network,omitempty"`
+	NetworkNot            *string   `json:"network_not,omitempty"`
+	NetworkIn             []*string `json:"network_in,omitempty"`
+	NetworkNotIn          []*string `json:"network_not_in,omitempty"`
+	TxHash                *string   `json:"txHash,omitempty"`
+	TxHashNot             *string   `json:"txHash_not,omitempty"`
+	TxHashIn              []*string `json:"txHash_in,omitempty"`
+	TxHashNotIn           []*string `json:"txHash_not_in,omitempty"`
+	ExecutedStamp         *int64    `json:"executedStamp,omitempty"`
+	ExecutedStampNot      *int64    `json:"executedStamp_not,omitempty"`
+	ExecutedStampGt       *int64    `json:"executedStamp_gt,omitempty"`
+	ExecutedStampLt       *int64    `json:"executedStamp_lt,omitempty"`
+	ExecutedStampGte      *int64    `json:"executedStamp_gte,omitempty"`
+	ExecutedStampLte      *int64    `json:"executedStamp_lte,omitempty"`
+	ExecutedStampIn       []*int64  `json:"executedStamp_in,omitempty"`
+	ExecutedStampNotIn    []*int64  `json:"executedStamp_not_in,omitempty"`
+	Quantity              *string   `json:"quantity,omitempty"`
+	QuantityNot           *string   `json:"quantity_not,omitempty"`
+	QuantityGt            *string   `json:"quantity_gt,omitempty"`
+	QuantityLt            *string   `json:"quantity_lt,omitempty"`
+	QuantityGte           *string   `json:"quantity_gte,omitempty"`
+	QuantityLte           *string   `json:"quantity_lte,omitempty"`
+	QuantityIn            []*string `json:"quantity_in,omitempty"`
+	QuantityNotIn         []*string `json:"quantity_not_in,omitempty"`
+	Price                 *string   `json:"price,omitempty"`
+	PriceNot              *string   `json:"price_not,omitempty"`
+	PriceGt               *string   `json:"price_gt,omitempty"`
+	PriceLt               *string   `json:"price_lt,omitempty"`
+	PriceGte              *string   `json:"price_gte,omitempty"`
+	PriceLte              *string   `json:"price_lte,omitempty"`
+	PriceIn               []*string `json:"price_in,omitempty"`
+	PriceNotIn            []*string `json:"price_not_in,omitempty"`
+	Side                  *int64    `json:"side,omitempty"`
+	TokenAddress          *string   `json:"tokenAddress,omitempty"`
+	TokenAddressNot       *string   `json:"tokenAddress_not,omitempty"`
+	TokenAddressIn        []*string `json:"tokenAddress_in,omitempty"`
+	TokenAddressNotIn     []*string `json:"tokenAddress_not_in,omitempty"`
+	TokenID               *int64    `json:"tokenId,omitempty"`
+	TokenIDNot            *int64    `json:"tokenId_not,omitempty"`
+	TokenIDGt             *int64    `json:"tokenId_gt,omitempty"`
+	TokenIDLt             *int64    `json:"tokenId_lt,omitempty"`
+	TokenIDGte            *int64    `json:"tokenId_gte,omitempty"`
+	TokenIDLte            *int64    `json:"tokenId_lte,omitempty"`
+	TokenIDIn             []*int64  `json:"tokenId_in,omitempty"`
+	TokenIDNotIn          []*int64  `json:"tokenId_not_in,omitempty"`
+	InitiatorAddress      *string   `json:"initiatorAddress,omitempty"`
+	InitiatorAddressNot   *string   `json:"initiatorAddress_not,omitempty"`
+	InitiatorAddressIn    []*string `json:"initiatorAddress_in,omitempty"`
+	InitiatorAddressNotIn []*string `json:"initiatorAddress_not_in,omitempty"`
+	OwnerAddress          *string   `json:"ownerAddress,omitempty"`
+	OwnerAddressNot       *string   `json:"ownerAddress_not,omitempty"`
+	OwnerAddressIn        []*string `json:"ownerAddress_in,omitempty"`
+	OwnerAddressNotIn     []*string `json:"ownerAddress_not_in,omitempty"`
+}
+
 type Hero struct {
 	ID                    *string  `json:"id,omitempty"`
 	NumberID              *string  `json:"numberId,omitempty"`
@@ -1812,6 +1985,130 @@ func (e *AuctionOrderBy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e AuctionOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BazaarOrderOrderBy string
+
+const (
+	BazaarOrderOrderByOrderID           BazaarOrderOrderBy = "orderId"
+	BazaarOrderOrderByNetwork           BazaarOrderOrderBy = "network"
+	BazaarOrderOrderByOpen              BazaarOrderOrderBy = "open"
+	BazaarOrderOrderByCancelledStamp    BazaarOrderOrderBy = "cancelledStamp"
+	BazaarOrderOrderByCreatedStamp      BazaarOrderOrderBy = "createdStamp"
+	BazaarOrderOrderByTokenAddress      BazaarOrderOrderBy = "tokenAddress"
+	BazaarOrderOrderByTokenID           BazaarOrderOrderBy = "tokenId"
+	BazaarOrderOrderByIsErc20           BazaarOrderOrderBy = "isErc20"
+	BazaarOrderOrderBySide              BazaarOrderOrderBy = "side"
+	BazaarOrderOrderByPrice             BazaarOrderOrderBy = "price"
+	BazaarOrderOrderByInitialQuantity   BazaarOrderOrderBy = "initialQuantity"
+	BazaarOrderOrderByRemainingQuantity BazaarOrderOrderBy = "remainingQuantity"
+	BazaarOrderOrderByBaseTokenAddress  BazaarOrderOrderBy = "baseTokenAddress"
+	BazaarOrderOrderByOwner             BazaarOrderOrderBy = "owner"
+)
+
+var AllBazaarOrderOrderBy = []BazaarOrderOrderBy{
+	BazaarOrderOrderByOrderID,
+	BazaarOrderOrderByNetwork,
+	BazaarOrderOrderByOpen,
+	BazaarOrderOrderByCancelledStamp,
+	BazaarOrderOrderByCreatedStamp,
+	BazaarOrderOrderByTokenAddress,
+	BazaarOrderOrderByTokenID,
+	BazaarOrderOrderByIsErc20,
+	BazaarOrderOrderBySide,
+	BazaarOrderOrderByPrice,
+	BazaarOrderOrderByInitialQuantity,
+	BazaarOrderOrderByRemainingQuantity,
+	BazaarOrderOrderByBaseTokenAddress,
+	BazaarOrderOrderByOwner,
+}
+
+func (e BazaarOrderOrderBy) IsValid() bool {
+	switch e {
+	case BazaarOrderOrderByOrderID, BazaarOrderOrderByNetwork, BazaarOrderOrderByOpen, BazaarOrderOrderByCancelledStamp, BazaarOrderOrderByCreatedStamp, BazaarOrderOrderByTokenAddress, BazaarOrderOrderByTokenID, BazaarOrderOrderByIsErc20, BazaarOrderOrderBySide, BazaarOrderOrderByPrice, BazaarOrderOrderByInitialQuantity, BazaarOrderOrderByRemainingQuantity, BazaarOrderOrderByBaseTokenAddress, BazaarOrderOrderByOwner:
+		return true
+	}
+	return false
+}
+
+func (e BazaarOrderOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BazaarOrderOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BazaarOrderOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BazaarOrderOrderBy", str)
+	}
+	return nil
+}
+
+func (e BazaarOrderOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BazaarTransactionOrderBy string
+
+const (
+	BazaarTransactionOrderByOrderID       BazaarTransactionOrderBy = "orderId"
+	BazaarTransactionOrderByNetwork       BazaarTransactionOrderBy = "network"
+	BazaarTransactionOrderByTxHash        BazaarTransactionOrderBy = "txHash"
+	BazaarTransactionOrderByExecutedStamp BazaarTransactionOrderBy = "executedStamp"
+	BazaarTransactionOrderByQuantity      BazaarTransactionOrderBy = "quantity"
+	BazaarTransactionOrderByPrice         BazaarTransactionOrderBy = "price"
+	BazaarTransactionOrderBySide          BazaarTransactionOrderBy = "side"
+	BazaarTransactionOrderByTokenAddress  BazaarTransactionOrderBy = "tokenAddress"
+	BazaarTransactionOrderByTokenID       BazaarTransactionOrderBy = "tokenId"
+	BazaarTransactionOrderByInitiator     BazaarTransactionOrderBy = "initiator"
+	BazaarTransactionOrderByOwner         BazaarTransactionOrderBy = "owner"
+)
+
+var AllBazaarTransactionOrderBy = []BazaarTransactionOrderBy{
+	BazaarTransactionOrderByOrderID,
+	BazaarTransactionOrderByNetwork,
+	BazaarTransactionOrderByTxHash,
+	BazaarTransactionOrderByExecutedStamp,
+	BazaarTransactionOrderByQuantity,
+	BazaarTransactionOrderByPrice,
+	BazaarTransactionOrderBySide,
+	BazaarTransactionOrderByTokenAddress,
+	BazaarTransactionOrderByTokenID,
+	BazaarTransactionOrderByInitiator,
+	BazaarTransactionOrderByOwner,
+}
+
+func (e BazaarTransactionOrderBy) IsValid() bool {
+	switch e {
+	case BazaarTransactionOrderByOrderID, BazaarTransactionOrderByNetwork, BazaarTransactionOrderByTxHash, BazaarTransactionOrderByExecutedStamp, BazaarTransactionOrderByQuantity, BazaarTransactionOrderByPrice, BazaarTransactionOrderBySide, BazaarTransactionOrderByTokenAddress, BazaarTransactionOrderByTokenID, BazaarTransactionOrderByInitiator, BazaarTransactionOrderByOwner:
+		return true
+	}
+	return false
+}
+
+func (e BazaarTransactionOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BazaarTransactionOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BazaarTransactionOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BazaarTransactionOrderBy", str)
+	}
+	return nil
+}
+
+func (e BazaarTransactionOrderBy) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

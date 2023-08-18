@@ -1,23 +1,21 @@
 import React, { useEffect } from 'react'
 import { Address } from 'wagmi'
-import {
-  NetworkTokenBalancesAndAllowances,
-  FetchState,
-} from '@/utils/hooks/usePortfolioBalances'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
   SingleNetworkPortfolio,
   PortfolioHeader,
 } from './SingleNetworkPortfolio'
+import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './ConnectWalletButton'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
   selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
-  fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
-  bridgeTxHashes: string[]
 }
 
 export const PortfolioContent = ({
@@ -25,42 +23,41 @@ export const PortfolioContent = ({
   connectedChainId,
   selectedFromChainId,
   networkPortfolioWithBalances,
-  fetchPortfolioBalancesCallback,
   fetchState,
-  bridgeTxHashes,
 }: PortfolioContentProps) => {
-  const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
-    selectedFromChainId,
-    networkPortfolioWithBalances
-  )
+  const { currentNetworkPortfolio, remainingNetworksPortfolios } =
+    getCurrentNetworkPortfolio(
+      selectedFromChainId,
+      networkPortfolioWithBalances
+    )
 
-  useEffect(() => {
-    const txExists = bridgeTxHashes && bridgeTxHashes.length > 0
-    if (txExists) {
-      fetchPortfolioBalancesCallback()
-    }
-  }, [bridgeTxHashes])
+  const portfolioExists: boolean =
+    Object.keys(networkPortfolioWithBalances).length > 0
+  const currentChain: Chain = CHAINS_BY_ID[selectedFromChainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
+
+  const isInitialFetchLoading: boolean =
+    !portfolioExists && fetchState === FetchState.LOADING
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && connectedChainId && selectedFromChainId && (
+      {currentNetworkPortfolio && connectedChainId && selectedFromChainId && (
         <SingleNetworkPortfolio
           portfolioChainId={selectedFromChainId}
           connectedChainId={connectedChainId}
           selectedFromChainId={selectedFromChainId}
-          portfolioTokens={currentNetwork[selectedFromChainId]}
+          portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
           initializeExpanded={true}
-          fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
           fetchState={fetchState}
         />
       )}
       {connectedAddress ? (
-        fetchState === FetchState.LOADING ? (
+        isInitialFetchLoading ? (
           <LoadingPortfolioContent />
         ) : (
-          Object.keys(remainingNetworks).map(
+          Object.keys(remainingNetworksPortfolios).map(
             (chainId: string, index: number) => {
-              const tokens = remainingNetworks[chainId]
+              const tokens = remainingNetworksPortfolios[chainId]
               return (
                 <SingleNetworkPortfolio
                   portfolioChainId={Number(chainId)}
@@ -68,9 +65,6 @@ export const PortfolioContent = ({
                   selectedFromChainId={selectedFromChainId}
                   portfolioTokens={tokens}
                   initializeExpanded={false}
-                  fetchPortfolioBalancesCallback={
-                    fetchPortfolioBalancesCallback
-                  }
                   fetchState={fetchState}
                 />
               )
@@ -91,19 +85,19 @@ function getCurrentNetworkPortfolio(
   currentChainId: number,
   networks: NetworkTokenBalancesAndAllowances
 ): {
-  currentNetwork: NetworkTokenBalancesAndAllowances
-  remainingNetworks: NetworkTokenBalancesAndAllowances
+  currentNetworkPortfolio: NetworkTokenBalancesAndAllowances
+  remainingNetworksPortfolios: NetworkTokenBalancesAndAllowances
 } {
-  const currentNetwork: NetworkTokenBalancesAndAllowances = {
+  const currentNetworkPortfolio: NetworkTokenBalancesAndAllowances = {
     [currentChainId]: networks[currentChainId],
   }
 
-  const remainingNetworks = { ...networks }
-  delete remainingNetworks[currentChainId]
+  const remainingNetworksPortfolios = { ...networks }
+  delete remainingNetworksPortfolios[currentChainId]
 
   return {
-    currentNetwork,
-    remainingNetworks,
+    currentNetworkPortfolio,
+    remainingNetworksPortfolios,
   }
 }
 

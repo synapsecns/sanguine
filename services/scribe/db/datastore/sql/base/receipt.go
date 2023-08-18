@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
-
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -41,7 +40,7 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 		BlockHash:         receipt.BlockHash.String(),
 		BlockNumber:       receipt.BlockNumber.Uint64(),
 		TransactionIndex:  uint64(receipt.TransactionIndex),
-		Confirmed:         false,
+		Confirmed:         true,
 	})
 
 	if dbTx.Error != nil {
@@ -63,22 +62,6 @@ func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, 
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm receipt: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
-// ConfirmReceiptsInRange confirms receipts in a range.
-func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Receipt{ChainID: chainID}).
-		Order(BlockNumberFieldName+" desc").
-		Where(rangeQuery, startBlock, endBlock).
-		Update(ConfirmedFieldName, true)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
 	}
 
 	return nil
@@ -149,7 +132,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 	if page < 1 {
 		page = 1
 	}
-	dbReceipts := []Receipt{}
+	var dbReceipts []Receipt
 	query := receiptFilterToQuery(receiptFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
@@ -177,14 +160,14 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 }
 
 func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
-	receipts := []types.Receipt{}
+	var receipts []types.Receipt
 	for i := range dbReceipts {
 		dbReceipt := dbReceipts[i]
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
 		logFilter := db.BuildLogFilter(nil, nil, &dbReceipt.TxHash, nil, nil, nil, nil)
 		logFilter.ChainID = chainID
 
-		logs := []*types.Log{}
+		var logs []*types.Log
 		page := 1
 		for {
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)

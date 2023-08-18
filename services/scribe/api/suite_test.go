@@ -66,6 +66,7 @@ func (g *APISuite) TearDownSuite() {
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
+	g.SetTestTimeout(time.Minute * 3)
 
 	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath, g.metrics, false)
 	Nil(g.T(), err)
@@ -78,10 +79,11 @@ func (g *APISuite) SetupTest() {
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			Port:       uint16(port),
-			Database:   "sqlite",
-			Path:       g.dbPath,
-			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
+			Port:           uint16(port),
+			Database:       "sqlite",
+			Path:           g.dbPath,
+			OmniRPCURL:     "https://rpc.omnirpc.io/confirmations/1/rpc",
+			SkipMigrations: true,
 		}, g.metrics))
 	}()
 
