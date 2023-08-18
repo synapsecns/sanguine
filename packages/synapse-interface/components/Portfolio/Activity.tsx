@@ -104,12 +104,10 @@ const RecentlyBridgedPendingTransaction = ({
   recentlyBridgedTransaction: RecentBridgeTransaction
 }) => {
   const {
-    originChainId,
-    originChainName,
+    originChain,
     originToken,
     originValue,
-    destinationChainId,
-    destinationChainName,
+    destinationChain,
     destinationToken,
     transactionHash,
     timestamp,
@@ -122,10 +120,10 @@ const RecentlyBridgedPendingTransaction = ({
     >
       <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
-        // chain={originChain}
-        // token={originToken}
-        // tokenSymbol={originTokenSymbol}
-        // tokenAmount={originFormattedValue}
+          chain={originChain}
+          token={originToken}
+          tokenSymbol={originToken?.symbol}
+          tokenAmount={Number(originValue)}
         />
         <div
           data-test-id="arrow"
@@ -136,11 +134,13 @@ const RecentlyBridgedPendingTransaction = ({
       </div>
       <div className="col-span-4 my-auto">
         <TransactionPayloadDetail
-        // chain={destinationChain}
-        // token={destinationToken}
-        // tokenSymbol={destinationTokenSymbol}
-        // tokenAmount={destinationFormattedValue}
+          chain={destinationChain}
+          token={destinationToken}
+          tokenSymbol={destinationToken?.symbol}
         />
+      </div>
+      <div className="flex justify-end col-span-2 my-auto">
+        <TimeElapsed startTime={timestamp} />
       </div>
     </div>
   )
