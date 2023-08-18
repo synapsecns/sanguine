@@ -345,6 +345,7 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 		NoSend:   true,
 	})
 
+	// TODO: test both legacy and dynamic tx types
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
 	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 
