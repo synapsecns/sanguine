@@ -26,16 +26,12 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }: TransactionsState = useTransactionsState()
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
 
-  const hasPendingTransactions: boolean = useMemo(() => {
-    if (userPendingTransactions && recentBridgeTransactions) {
-      return (
-        userPendingTransactions.length > 0 ||
-        recentBridgeTransactions.length > 0
-      )
-    }
-  }, [userPendingTransactions, recentBridgeTransactions])
+  const hasPendingTransactions: boolean = useMemo(
+    () => userPendingTransactions && userPendingTransactions.length > 0,
+    [userPendingTransactions]
+  )
 
-  console.log('hasPendingTransactions: ', hasPendingTransactions)
+  // console.log('hasPendingTransactions: ', hasPendingTransactions)
   const hasHistoricalTransactions: boolean = useMemo(
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
     [userHistoricalTransactions]
@@ -69,10 +65,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
+      <PendingTransactionAwaitingIndexing />
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="mb-5">
           <TransactionHeader transactionType={ActivityType.PENDING} />
-          <PendingTransactionAwaitingIndexing />
           {userPendingTransactions.map((transaction: BridgeTransaction) => (
             <Transaction
               bridgeTransaction={transaction}
