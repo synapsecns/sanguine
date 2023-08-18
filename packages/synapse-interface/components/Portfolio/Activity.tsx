@@ -24,11 +24,18 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
+  const { recentBridgeTransactions }: BridgeState = useBridgeState()
 
-  const hasPendingTransactions: boolean = useMemo(
-    () => userPendingTransactions && userPendingTransactions.length > 0,
-    [userPendingTransactions]
-  )
+  const hasPendingTransactions: boolean = useMemo(() => {
+    if (userPendingTransactions && recentBridgeTransactions) {
+      return (
+        userPendingTransactions.length > 0 ||
+        recentBridgeTransactions.length > 0
+      )
+    }
+  }, [userPendingTransactions, recentBridgeTransactions])
+
+  console.log('hasPendingTransactions: ', hasPendingTransactions)
   const hasHistoricalTransactions: boolean = useMemo(
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
     [userHistoricalTransactions]
@@ -62,38 +69,33 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      <PendingTransactionAwaitingIndexing />
-      {address && !isLoading && !hasNoTransactions && (
-        <>
-          {hasPendingTransactions && (
-            <ActivitySection title="Pending" twClassName="mb-5">
-              <TransactionHeader transactionType={ActivityType.PENDING} />
-              {userPendingTransactions.map((transaction: BridgeTransaction) => (
-                <Transaction
-                  bridgeTransaction={transaction}
-                  transactionType={ActivityType.PENDING}
-                  key={transaction.kappa}
-                />
-              ))}
-            </ActivitySection>
-          )}
-          {hasHistoricalTransactions && (
-            <ActivitySection title="Recent">
-              <TransactionHeader transactionType={ActivityType.RECENT} />
-              {userHistoricalTransactions &&
-                userHistoricalTransactions.map(
-                  (transaction: BridgeTransaction) => (
-                    <Transaction
-                      bridgeTransaction={transaction}
-                      transactionType={ActivityType.RECENT}
-                      key={transaction.kappa}
-                    />
-                  )
-                )}
-              <ExplorerLink connectedAddress={address} />
-            </ActivitySection>
-          )}
-        </>
+      {address && !isLoading && hasPendingTransactions && (
+        <ActivitySection title="Pending" twClassName="mb-5">
+          <TransactionHeader transactionType={ActivityType.PENDING} />
+          <PendingTransactionAwaitingIndexing />
+          {userPendingTransactions.map((transaction: BridgeTransaction) => (
+            <Transaction
+              bridgeTransaction={transaction}
+              transactionType={ActivityType.PENDING}
+              key={transaction.kappa}
+            />
+          ))}
+        </ActivitySection>
+      )}
+
+      {address && !isLoading && hasHistoricalTransactions && (
+        <ActivitySection title="Recent">
+          <TransactionHeader transactionType={ActivityType.RECENT} />
+          {userHistoricalTransactions &&
+            userHistoricalTransactions.map((transaction: BridgeTransaction) => (
+              <Transaction
+                bridgeTransaction={transaction}
+                transactionType={ActivityType.RECENT}
+                key={transaction.kappa}
+              />
+            ))}
+          <ExplorerLink connectedAddress={address} />
+        </ActivitySection>
       )}
     </div>
   )
@@ -117,7 +119,7 @@ const RecentlyBridgedPendingTransaction = ({
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"
-      className="grid grid-cols-10"
+      className="grid grid-cols-10 bg-[#1B1B29] text-white"
     >
       <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
@@ -148,7 +150,6 @@ const RecentlyBridgedPendingTransaction = ({
 }
 export const PendingTransactionAwaitingIndexing = () => {
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
-
   return (
     <>
       {recentBridgeTransactions.map((transaction: RecentBridgeTransaction) => (
@@ -372,9 +373,9 @@ export const TimeElapsed = ({ startTime }: { startTime: number }) => {
 
   return (
     <div data-test-id="time-elapsed" className="flex items-center">
-      <EtherscanIcon className="mr-1" />
       {hours > 0 ? `${hours}:` : ''}
       {formattedMinutes}:{formattedSeconds}
+      <EtherscanIcon className="ml-1" />
     </div>
   )
 }
