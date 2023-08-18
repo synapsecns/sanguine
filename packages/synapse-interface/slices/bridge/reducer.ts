@@ -6,7 +6,11 @@ import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
-import { RecentBridgeTransaction, addRecentBridgeTransaction } from './actions'
+import {
+  RecentBridgeTransaction,
+  addRecentBridgeTransaction,
+  removeRecentBridgeTransaction,
+} from './actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -100,15 +104,25 @@ export const bridgeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      addRecentBridgeTransaction,
-      (state, action: PayloadAction<RecentBridgeTransaction>) => {
-        state.recentBridgeTransactions = [
-          ...state.recentBridgeTransactions,
-          action.payload,
-        ]
-      }
-    )
+    builder
+      .addCase(
+        addRecentBridgeTransaction,
+        (state, action: PayloadAction<RecentBridgeTransaction>) => {
+          state.recentBridgeTransactions = [
+            ...state.recentBridgeTransactions,
+            action.payload,
+          ]
+        }
+      )
+      .addCase(
+        removeRecentBridgeTransaction,
+        (state, action: PayloadAction<string>) => {
+          state.recentBridgeTransactions =
+            state.recentBridgeTransactions.filter(
+              (transaction) => transaction.transactionHash !== action.payload
+            )
+        }
+      )
   },
 })
 

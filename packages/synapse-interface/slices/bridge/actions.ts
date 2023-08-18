@@ -14,3 +14,6 @@ export interface RecentBridgeTransaction {
 export const addRecentBridgeTransaction = createAction<RecentBridgeTransaction>(
   'bridge/addRecentBridgeTransaction'
 )
+export const removeRecentBridgeTransaction = createAction<string>(
+  'bridge/removeRecentBridgeTransaction'
+)
