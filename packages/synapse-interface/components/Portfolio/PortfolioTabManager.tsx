@@ -13,12 +13,6 @@ export const PortfolioTabManager = () => {
 
   return (
     <div data-test-id="portfolio-tab-manager" className="flex">
-      {/* <Tab
-        display={<HomeSvg />}
-        activeTab={activeTab}
-        tabType={PortfolioTabs.HOME}
-        handleTabChange={handleTabChange}
-      /> */}
       <Tab
         display="Portfolio"
         activeTab={activeTab}

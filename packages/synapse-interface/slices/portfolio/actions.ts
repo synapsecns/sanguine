@@ -4,7 +4,6 @@ import { createAction } from '@reduxjs/toolkit'
 import { Token } from '@/utils/types'
 
 export enum PortfolioTabs {
-  HOME = 'home',
   PORTFOLIO = 'portfolio',
   ACTIVITY = 'activity',
 }
