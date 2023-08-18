@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerconfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -33,7 +33,7 @@ type ChainBackfiller struct {
 	// Fetcher is the Fetcher to use to fetch logs.
 	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
-	chainConfig config.ChainConfig
+	chainConfig indexerconfig.ChainConfig
 }
 
 type contextKey string
@@ -43,7 +43,7 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,
@@ -115,17 +115,17 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 
 // makeEventParser returns a parser for a contract using it's config.
 // in the event one is not present, this function will return an error.
-func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (eventParser parser.Parser, err error) {
+func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig) (eventParser parser.Parser, err error) {
 	switch contract.ContractType {
-	case config.BridgeContractType:
+	case indexerconfig.BridgeContractType:
 		eventParser = c.bridgeParser
-	case config.SwapContractType:
+	case indexerconfig.SwapContractType:
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
-	case config.MessageBusContractType:
+	case indexerconfig.MessageBusContractType:
 		eventParser = c.messageBusParser
-	case config.MetaSwapContractType:
+	case indexerconfig.MetaSwapContractType:
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
-	case config.CCTPContractType:
+	case indexerconfig.CCTPContractType:
 		eventParser = c.cctpParser
 	default:
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
@@ -135,7 +135,7 @@ func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (event
 
 // backfillContractLogs creates a backfiller for a given contract with an independent context
 // nolint:cyclop,gocognit
-func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contract config.ContractConfig) (err error) {
+func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contract indexerconfig.ContractConfig) (err error) {
 	// make the event parser
 	eventParser, err := c.makeEventParser(contract)
 	if err != nil {

@@ -12,8 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/api"
-	"github.com/synapsecns/sanguine/services/explorer/config"
-	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
+	indexerconfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
+	serverconfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/node"
 	"github.com/urfave/cli/v2"
 )
@@ -75,7 +75,7 @@ var serverCommand = &cli.Command{
 	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL, omnirpcURL, configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
-		decodeConfig, err := serverConfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		decodeConfig, err := serverconfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 		}
@@ -95,7 +95,7 @@ var backfillCommand = &cli.Command{
 	Description: "backfills up to a block and then halts",
 	Flags:       []cli.Flag{configFlag, clickhouseAddressFlag},
 	Action: func(c *cli.Context) error {
-		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		decodeConfig, err := indexerconfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 
@@ -130,7 +130,7 @@ var livefillCommand = &cli.Command{
 	Description: "livefills explorer",
 	Flags:       []cli.Flag{configFlag, clickhouseAddressFlag},
 	Action: func(c *cli.Context) error {
-		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		decodeConfig, err := indexerconfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 

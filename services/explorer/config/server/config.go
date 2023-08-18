@@ -1,24 +1,25 @@
-package config
+// Package serverconfig is the config loader for the server
+package serverconfig
 
 import (
-	"context"
 	"fmt"
+	"github.com/richardwilkes/toolbox/collection"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 	"os"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
 )
 
-// Config is used to configure the explorer's data consumption.
+// Config is used to configure the explorer server.
 type Config struct {
 	// HTTPPort is the http port for the api
-	HTTPPort uint16
+	HTTPPort uint16 `yaml:"http_port"`
 	// DBAddress is the address of the database
-	DBAddress string
-	// HydrateCache is whether or not to hydrate the cache
-	HydrateCache bool
+	DBAddress string `yaml:"db_address"`
+	// HydrateCache is a flag for enabling cache hydration.
+	HydrateCache bool `yaml:"hydrate_cache"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
 	// RPCURL is the URL of the RPC server.
@@ -33,6 +34,7 @@ type Config struct {
 	Chains map[uint32]ChainConfig `yaml:"chains"`
 }
 
+// ChainConfig is the config for each chain in the server config.
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
@@ -48,6 +50,7 @@ type ChainConfig struct {
 	Contracts ContractsConfig `yaml:"contracts"`
 }
 
+// ContractsConfig is config for each contract in the server config.
 type ContractsConfig struct {
 	// CCTP is the address of the cctp contract
 	CCTP string `yaml:"cctp"`
@@ -55,47 +58,65 @@ type ContractsConfig struct {
 	Bridge string `yaml:"bridge"`
 }
 
-// IsValid makes sure the config is valid. This is done by calling IsValid() on each
-// submodule. If any method returns an error that is returned here and the entirety
-// of IsValid returns false. Any warnings are logged by the submodules respective loggers.
-func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
-	if c.ScribeURL == "" || c.RPCURL == "" || c.BridgeConfigAddress == "" || c.BridgeConfigChainID == 0 || c.DBAddress == "" {
-		return false, fmt.Errorf("A required global config field is empty")
+// IsValid makes sure the config is valid.
+func (c *Config) IsValid() error {
+	switch {
+	case c.ScribeURL == "":
+		return fmt.Errorf("scribe_url, %w", config.ErrRequiredGlobalField)
+	case c.RPCURL == "":
+		return fmt.Errorf("rpc_url, %w", config.ErrRequiredGlobalField)
+	case c.BridgeConfigAddress == "":
+		return fmt.Errorf("bridge_config_address, %w", config.ErrRequiredGlobalField)
+	case c.BridgeConfigChainID == 0:
+		return fmt.Errorf("bridge_config_chain_id, %w", config.ErrRequiredGlobalField)
+	case c.DBAddress == "":
+		return fmt.Errorf("db_address, suired global config field is empty")
 	}
+	if len(c.Chains) > 0 {
+		return fmt.Errorf("no chains specified for the server")
+	}
+
+	intSet := collection.Set[uint32]{}
+
 	for _, chain := range c.Chains {
-		ok, err = chain.IsValid(ctx)
-		if !ok {
-			return false, err
+		err := chain.IsValid()
+		if err != nil {
+			return err
 		}
-		ok, err = chain.Contracts.IsValid(ctx)
-		if !ok {
-			return false, err
+		if intSet.Contains(chain.ChainID) {
+			return fmt.Errorf("chain id %d appears twice in the server", chain.ChainID)
 		}
+		intSet.Add(chain.ChainID)
 	}
-	return true, nil
+
+	return nil
 }
 
-func (c *ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
-	if c.ChainID == 0 {
-		return false, fmt.Errorf("chain ID cannot be 0")
+// IsValid checks if the entered ChainConfig is valid.
+func (c *ChainConfig) IsValid() error {
+	switch {
+	case c.ChainID == 0:
+		return fmt.Errorf("chain_id cannot be 0")
+	case c.GetLogsRange == 0:
+		return fmt.Errorf("get_logs_range, %w", config.ErrRequiredChainField)
+	case c.GetLogsBatchAmount == 0:
+		return fmt.Errorf("get_logs_range, %w", config.ErrRequiredChainField)
+	case c.BlockTime == 0:
+		return fmt.Errorf("block_time, %w", config.ErrRequiredChainField)
 	}
-	return true, nil
-}
-
-func (c ContractsConfig) IsValid(ctx context.Context) (ok bool, err error) {
-	if c.CCTP == "" && c.Bridge == "" {
-		return false, fmt.Errorf("one contract must be specified on each contract config")
-	}
-	return true, nil
-}
-
-// EncodeServerConfig gets the encoded config.yaml file.
-func (c Config) EncodeServerConfig() ([]byte, error) {
-	output, err := yaml.Marshal(&c)
+	err := c.Contracts.IsValid()
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
+		return err
 	}
-	return output, nil
+	return nil
+}
+
+// IsValid checks if the entered ContractsConfig is valid.
+func (c ContractsConfig) IsValid() error {
+	if c.CCTP == "" && c.Bridge == "" {
+		return fmt.Errorf("one contract must be specified on each contract config")
+	}
+	return nil
 }
 
 // DecodeServerConfig parses in a config from a file.
@@ -108,5 +129,11 @@ func DecodeServerConfig(filePath string) (cfg Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
+
+	err = cfg.IsValid()
+	if err != nil {
+		return cfg, err
+	}
+
 	return cfg, nil
 }

@@ -1614,78 +1614,49 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 	return &query, nil
 }
 
-func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string) (*model.BridgeWatcherTx, error) {
-	var err error
+// GetOriginBridgeTxBW gets an origin bridge tx.
+func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txType := model.BridgeTxTypeOrigin
-	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events WHERE chain_id = %d AND tx_hash = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", chainID, txnHash)
-	bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
+	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", chainID, txnHash)
+	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
-	var bridgeTx model.PartialInfo
-	var kappa string
-	isPending := true
-	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
-		txFromChain, err := r.bwOriginFallback(ctx, uint32(chainID), txnHash)
-		fmt.Println("error while accessing origin bridge event with fallback: %w", err)
-		if err != nil {
-			return &model.BridgeWatcherTx{
-				BridgeTx: &bridgeTx,
-				Pending:  &isPending,
-				Type:     &txType,
-				Kappa:    &kappa,
-			}, nil
+	if bridgeEventMV == nil || bridgeEventMV.FChainID == 0 {
+		switch eventType {
+		case model.BridgeTypeBridge:
+			return r.bwOriginFallback(ctx, uint32(chainID), txnHash)
+		case model.BridgeTypeCctp:
+			return r.bwOriginFallbackCCTP(ctx, uint32(chainID), txnHash)
 		}
-		return txFromChain, nil
 	}
-	return bwBridgeToBWTx(bridgeEvent, txType)
-}
-
-func (r *queryResolver) GetOriginBridgeTxBWCCTP(ctx context.Context, chainID int, txnHash string) (*model.BridgeWatcherTx, error) {
-	var err error
-	txType := model.BridgeTxTypeOrigin
-	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events WHERE chain_id = %d AND tx_hash = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", chainID, txnHash)
-	bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
-	var bridgeTx model.PartialInfo
-	var kappa string
-	isPending := true
-	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
-		txFromChain, err := r.bwOriginFallbackCCTP(ctx, uint32(chainID), txnHash)
-		fmt.Println("error while accessing origin bridge event with fallback: %w", err)
-		if err != nil {
-			return &model.BridgeWatcherTx{
-				BridgeTx: &bridgeTx,
-				Pending:  &isPending,
-				Type:     &txType,
-				Kappa:    &kappa,
-			}, nil
-		}
-		return txFromChain, nil
-	}
-	return bwBridgeToBWTx(bridgeEvent, txType)
+	return bwBridgeMVToBWTxOrigin(bridgeEventMV, txType)
 }
 
 // GetDestinationBridgeTxBW returns the destination bridge transaction for the bridgewatcher.
-func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool) (*model.BridgeWatcherTx, error) {
+func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeDestination
-	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events WHERE chain_id = %d AND kappa = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", chainID, kappa)
-	bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
+	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash)", chainID, kappa)
+	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
+
 	var bridgeTx model.PartialInfo
 	isPending := true
 
-	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
-		txFromChain, err := r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical)
+	if bridgeEventMV == nil || bridgeEventMV.TChainID == 0 {
+		var txFromChain *model.BridgeWatcherTx
+		switch bridgeType {
+		case model.BridgeTypeBridge:
+			txFromChain, err = r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical)
+		case model.BridgeTypeCctp:
+			txFromChain, err = r.bwDestinationFallbackCCTP(ctx, uint32(chainID), address, kappa, timestamp, historical)
+		}
 
-		fmt.Println("error while accessing origin bridge event with fallback: %w", err)
 		if err != nil {
-			if err.Error() == kappaExists {
+			if err.Error() == kappaDoesNotExist {
 				return &model.BridgeWatcherTx{
 					BridgeTx: &bridgeTx,
 					Pending:  &isPending,
@@ -1697,40 +1668,9 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 		}
 		return txFromChain, nil
 	}
-	return bwBridgeToBWTx(bridgeEvent, txType)
+	return bwBridgeMVToBWTxDestination(bridgeEventMV, txType)
 }
 
-// GetDestinationBridgeTxBWCCTP returns the destination bridge (cctp) transaction for the bridgewatcher.
-func (r *queryResolver) GetDestinationBridgeTxBWCCTP(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool) (*model.BridgeWatcherTx, error) {
-	var err error
-	txType := model.BridgeTxTypeDestination
-	query := fmt.Sprintf("SELECT * FROM (SELECT * FROM bridge_events WHERE chain_id = %d AND kappa = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", chainID, kappa)
-	bridgeEvent, err := r.DB.GetBridgeEvent(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
-	var bridgeTx model.PartialInfo
-	isPending := true
-
-	if bridgeEvent == nil || bridgeEvent.ChainID == 0 {
-		txFromChain, err := r.bwDestinationFallbackCCTP(ctx, uint32(chainID), address, kappa, timestamp, historical)
-
-		if err != nil {
-			fmt.Println("error while accessing origin bridge event with fallback: %w", err)
-			if err.Error() == kappaExists {
-				return &model.BridgeWatcherTx{
-					BridgeTx: &bridgeTx,
-					Pending:  &isPending,
-					Type:     &txType,
-					Kappa:    &kappa,
-				}, nil
-			}
-			return nil, fmt.Errorf("failed to get destination bridge event from chain: %w", err)
-		}
-		return txFromChain, nil
-	}
-	return bwBridgeToBWTx(bridgeEvent, txType)
-}
 func bwBridgeToBWTx(bridgeEvent *sql.BridgeEvent, txType model.BridgeTxType) (*model.BridgeWatcherTx, error) {
 	var bridgeTx model.PartialInfo
 	chainID := int(bridgeEvent.ChainID)
@@ -1781,4 +1721,117 @@ func bwBridgeToBWTx(bridgeEvent *sql.BridgeEvent, txType model.BridgeTxType) (*m
 		Kappa:    &kappa,
 	}
 	return result, nil
+}
+
+func bwBridgeMVToBWTxOrigin(bridgeEvent *sql.HybridBridgeEvent, txType model.BridgeTxType) (*model.BridgeWatcherTx, error) {
+	var bridgeTx model.PartialInfo
+	chainID := int(bridgeEvent.FChainID)
+	isPending := false
+	blockNumber := int(bridgeEvent.FBlockNumber)
+	value := bridgeEvent.FAmount.String()
+	var timestamp int
+	var formattedValue *float64
+	var timeStampFormatted string
+	if bridgeEvent.FTokenDecimal != nil {
+		formattedValue = getAdjustedValue(bridgeEvent.FAmount, *bridgeEvent.FTokenDecimal)
+	} else {
+		return nil, fmt.Errorf("token decimal is not valid")
+	}
+	if bridgeEvent.FTimeStamp != nil {
+		timestamp = int(*bridgeEvent.FTimeStamp)
+		timeStampFormatted = time.Unix(int64(*bridgeEvent.FTimeStamp), 0).String()
+	} else {
+		return nil, fmt.Errorf("timestamp is not valid")
+	}
+
+	kappa := bridgeEvent.FDestinationKappa
+	destinationChainID := int(bridgeEvent.FDestinationChainID.Uint64())
+
+	bridgeTx = model.PartialInfo{
+		ChainID:            &chainID,
+		DestinationChainID: &destinationChainID,
+		Address:            &bridgeEvent.FRecipient.String,
+		TxnHash:            &bridgeEvent.FTxHash,
+		Value:              &value,
+		FormattedValue:     formattedValue,
+		USDValue:           bridgeEvent.FAmountUSD,
+		TokenAddress:       &bridgeEvent.FToken,
+		TokenSymbol:        &bridgeEvent.FTokenSymbol.String,
+		BlockNumber:        &blockNumber,
+		Time:               &timestamp,
+		FormattedTime:      &timeStampFormatted,
+	}
+	result := &model.BridgeWatcherTx{
+		BridgeTx: &bridgeTx,
+		Pending:  &isPending,
+		Type:     &txType,
+		Kappa:    &kappa,
+	}
+	return result, nil
+}
+
+func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType model.BridgeTxType) (*model.BridgeWatcherTx, error) {
+	var bridgeTx model.PartialInfo
+	chainID := int(bridgeEvent.TChainID)
+	isPending := false
+	blockNumber := int(bridgeEvent.TBlockNumber)
+	value := bridgeEvent.TAmount.String()
+	var timestamp int
+	var formattedValue *float64
+	var timeStampFormatted string
+	if bridgeEvent.TTokenDecimal != nil {
+		formattedValue = getAdjustedValue(bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
+	} else {
+		return nil, fmt.Errorf("token decimal is not valid")
+	}
+	if bridgeEvent.TTimeStamp != nil {
+		timestamp = int(*bridgeEvent.TTimeStamp)
+		timeStampFormatted = time.Unix(int64(*bridgeEvent.TTimeStamp), 0).String()
+	} else {
+		return nil, fmt.Errorf("timestamp is not valid")
+	}
+
+	destinationChainID := int(bridgeEvent.TChainID)
+	kappa := bridgeEvent.TKappa.String
+
+	bridgeTx = model.PartialInfo{
+		ChainID:            &chainID,
+		DestinationChainID: &destinationChainID,
+		Address:            &bridgeEvent.TRecipient.String,
+		TxnHash:            &bridgeEvent.TTxHash,
+		Value:              &value,
+		FormattedValue:     formattedValue,
+		USDValue:           bridgeEvent.TAmountUSD,
+		TokenAddress:       &bridgeEvent.TToken,
+		TokenSymbol:        &bridgeEvent.TTokenSymbol.String,
+		BlockNumber:        &blockNumber,
+		Time:               &timestamp,
+		FormattedTime:      &timeStampFormatted,
+	}
+	result := &model.BridgeWatcherTx{
+		BridgeTx: &bridgeTx,
+		Pending:  &isPending,
+		Type:     &txType,
+		Kappa:    &kappa,
+	}
+	return result, nil
+}
+
+func (r *queryResolver) checkIfChainIDExists(chainIDNeeded uint32, bridgeType model.BridgeType) bool {
+	exists := false
+	for chainID, chainConfig := range r.Config.Chains {
+		if chainID == chainIDNeeded {
+			switch bridgeType {
+			case model.BridgeTypeBridge:
+				if chainConfig.Contracts.Bridge != "" {
+					exists = true
+				}
+			case model.BridgeTypeCctp:
+				if chainConfig.Contracts.CCTP != "" {
+					exists = true
+				}
+			}
+		}
+	}
+	return exists
 }

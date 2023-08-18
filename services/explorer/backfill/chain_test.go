@@ -18,7 +18,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parser"
@@ -55,61 +55,61 @@ func (b *BackfillSuite) TestBackfill() {
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
 	// Initialize testing config.
-	contractConfigBridge := config.ContractConfig{
+	contractConfigBridge := indexerConfig.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeContract.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigBridgeV1 := config.ContractConfig{
+	contractConfigBridgeV1 := indexerConfig.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeV1Contract.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigSwap1 := config.ContractConfig{
+	contractConfigSwap1 := indexerConfig.ContractConfig{
 		ContractType: "swap",
 		Address:      swapContractA.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigSwap2 := config.ContractConfig{
+	contractConfigSwap2 := indexerConfig.ContractConfig{
 		ContractType: "swap",
 		Address:      swapContractB.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigMetaSwap := config.ContractConfig{
+	contractConfigMetaSwap := indexerConfig.ContractConfig{
 		ContractType: "metaswap",
 		Address:      metaSwapContract.Address().String(),
 		StartBlock:   0,
 	}
-	contractMessageBus := config.ContractConfig{
+	contractMessageBus := indexerConfig.ContractConfig{
 		ContractType: "messagebus",
 		Address:      messageBusContract.Address().String(),
 		StartBlock:   0,
 	}
 
 	// CCTP config
-	contractCCTP := config.ContractConfig{
+	contractCCTP := indexerConfig.ContractConfig{
 		ContractType: "cctp",
 		Address:      cctpContract.Address().String(),
 		StartBlock:   0,
 	}
 
 	// Create the chain configs
-	chainConfigs := []config.ChainConfig{
+	chainConfigs := []indexerConfig.ChainConfig{
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP},
+			Contracts:           []indexerConfig.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP},
 		},
 	}
-	chainConfigsV1 := []config.ChainConfig{
+	chainConfigsV1 := []indexerConfig.ChainConfig{
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []indexerConfig.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
 		},
 	}
 

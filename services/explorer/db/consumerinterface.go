@@ -46,8 +46,8 @@ type ConsumerDBReader interface {
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetBridgeEvents returns a bridge event.
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
-	// GetBridgeEventFromMVTable returns a bridge event from the mv Table.
-	//GetBridgeEventFromMVTable(ctx context.Context, query string) (*sql.BridgeEvent, error)
+	// GetMVBridgeEvent returns a bridge event from the mv Table.
+	GetMVBridgeEvent(ctx context.Context, query string) (*sql.HybridBridgeEvent, error)
 	// GetAllBridgeEvents returns a bridge event.
 	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
 	// GetAllMessageBusEvents returns a bridge event.

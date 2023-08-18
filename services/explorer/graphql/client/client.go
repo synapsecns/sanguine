@@ -638,7 +638,7 @@ func (c *Client) GetLeaderboard(ctx context.Context, duration *model.Duration, c
 	return &res, nil
 }
 
-const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int, $txnHash: String, $bridgeType: BridgeType) {
+const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
 	response: getOriginBridgeTx(chainID: $chainID, txnHash: $txnHash, bridgeType: $bridgeType) {
 		bridgeTx {
 			chainID
@@ -661,7 +661,7 @@ const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int, $txnH
 }
 `
 
-func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, bridgeType *model.BridgeType, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginBridgeTx, error) {
+func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginBridgeTx, error) {
 	vars := map[string]interface{}{
 		"chainID":    chainID,
 		"txnHash":    txnHash,
@@ -676,7 +676,7 @@ func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *s
 	return &res, nil
 }
 
-const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int, $kappa: String, $address: String, $timestamp: Int, $bridgeType: BridgeType, $historical: Boolean) {
+const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
 	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp, bridgeType: $bridgeType, historical: $historical) {
 		bridgeTx {
 			chainID
@@ -699,7 +699,7 @@ const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: 
 }
 `
 
-func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID *int, kappa *string, address *string, timestamp *int, bridgeType *model.BridgeType, historical *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
+func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID int, kappa string, address string, timestamp int, bridgeType model.BridgeType, historical *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
 	vars := map[string]interface{}{
 		"chainID":    chainID,
 		"kappa":      kappa,

@@ -69,6 +69,18 @@ func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent,
 	return &res, nil
 }
 
+// GetMVBridgeEvent gets a bridge event from the materialized view table.
+func (s *Store) GetMVBridgeEvent(ctx context.Context, query string) (*HybridBridgeEvent, error) {
+	var res HybridBridgeEvent
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return &res, nil
+}
+
 // GetBridgeEvents returns bridge events.
 func (s *Store) GetBridgeEvents(ctx context.Context, query string) ([]BridgeEvent, error) {
 	var res []BridgeEvent

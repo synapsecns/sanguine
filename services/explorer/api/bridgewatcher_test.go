@@ -19,16 +19,16 @@ func (g APISuite) TestExistingOriginTx() {
 	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
-	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
-		InsertTime:         1,
-		ChainID:            chainID,
-		Recipient:          gosql.NullString{String: address.String(), Valid: true},
-		DestinationChainID: big.NewInt(int64(2)),
-		BlockNumber:        1,
-		TxHash:             txHash.String(),
-		EventIndex:         gofakeit.Uint64(),
-		Token:              tokenAddr,
-		Sender:             tokenAddr,
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.HybridBridgeEvent{
+		FInsertTime:         1,
+		FChainID:            chainID,
+		FRecipient:          gosql.NullString{String: address.String(), Valid: true},
+		FDestinationChainID: big.NewInt(int64(2)),
+		FBlockNumber:        1,
+		FTxHash:             txHash.String(),
+		FEventIndex:         gofakeit.Uint64(),
+		FToken:              tokenAddr,
+		FSender:             tokenAddr,
 	})
 	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
 		ChainID:         chainID,
@@ -43,13 +43,13 @@ func (g APISuite) TestExistingOriginTx() {
 	chainIDInt := int(chainID)
 	txHashStr := txHash.String()
 	bridgeType := model.BridgeTypeBridge
-	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), &chainIDInt, &txHashStr, &bridgeType)
+	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), chainIDInt, txHashStr, bridgeType)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash.String(), *result.Response.BridgeTx.TxnHash)
-
 }
 
+// nolint:gosec
 func (g APISuite) TestNonExistingOriginTx() {
 	// Testing this tx: https://bscscan.com/tx/0x0478fa7e15d61498ed00bdde6254368df416bbc66a11a2aed88f4ce2983b5470
 	txHash := "0x0478fa7e15d61498ed00bdde6254368df416bbc66a11a2aed88f4ce2983b5470"
@@ -64,7 +64,7 @@ func (g APISuite) TestNonExistingOriginTx() {
 		TokenIndex:      3,
 		ContractAddress: swapContract,
 	})
-	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), &chainID, &txHash, &bridgeType)
+	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), chainID, txHash, bridgeType)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
@@ -72,9 +72,9 @@ func (g APISuite) TestNonExistingOriginTx() {
 	// check if data from swap logs were collected
 	Equal(g.T(), bscusdAddr, *result.Response.BridgeTx.TokenAddress)
 	Equal(g.T(), inputAmount, *result.Response.BridgeTx.Value)
-
 }
 
+// nolint:gosec
 func (g APISuite) TestNonExistingCCTPOriginTx() {
 	// Testing this tx: https://etherscan.io/tx/0x23392252f6afc660169bad0101d4c4b3bb9be8c7cca146dd1a7a9ce08f2281be
 	txHash := "0x23392252f6afc660169bad0101d4c4b3bb9be8c7cca146dd1a7a9ce08f2281be"
@@ -84,7 +84,7 @@ func (g APISuite) TestNonExistingCCTPOriginTx() {
 	chainID := 1
 	bridgeType := model.BridgeTypeCctp
 
-	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), &chainID, &txHash, &bridgeType)
+	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), chainID, txHash, bridgeType)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
@@ -103,21 +103,21 @@ func (g APISuite) TestExistingDestinationTx() {
 	tokenAddr := common.BigToAddress(big.NewInt(gofakeit.Int64())).String()
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	kappa := "kappa"
-	kappaSql := gosql.NullString{String: kappa, Valid: true}
+	kappaSQL := gosql.NullString{String: kappa, Valid: true}
 	timestamp := uint64(1)
-	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.BridgeEvent{
-		InsertTime:         1,
-		ChainID:            chainID,
-		Recipient:          gosql.NullString{String: address.String(), Valid: true},
-		DestinationChainID: big.NewInt(int64(2)),
-		BlockNumber:        1,
-		TxHash:             txHash.String(),
-		EventIndex:         gofakeit.Uint64(),
-		ContractAddress:    contractAddress,
-		Token:              tokenAddr,
-		Sender:             tokenAddr,
-		Kappa:              kappaSql,
-		TimeStamp:          &timestamp,
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.HybridBridgeEvent{
+		TInsertTime:         1,
+		TChainID:            chainID,
+		TRecipient:          gosql.NullString{String: address.String(), Valid: true},
+		TDestinationChainID: big.NewInt(int64(2)),
+		TBlockNumber:        1,
+		TTxHash:             txHash.String(),
+		TEventIndex:         gofakeit.Uint64(),
+		TContractAddress:    contractAddress,
+		TToken:              tokenAddr,
+		TSender:             tokenAddr,
+		TKappa:              kappaSQL,
+		TTimeStamp:          &timestamp,
 	})
 	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
 		ChainID:         chainID,
@@ -129,17 +129,16 @@ func (g APISuite) TestExistingDestinationTx() {
 	err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, 1, 1)
 	Nil(g.T(), err)
 
-	chainIDInt := int(chainID)
 	timestampInt := int(timestamp)
 	historical := false
 
-	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainIDInt, &kappa, &contractAddress, &timestampInt, &bridgeType, &historical)
+	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), int(chainID), kappa, contractAddress, timestampInt, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash.String(), *result.Response.BridgeTx.TxnHash)
-
 }
 
+// nolint:gosec
 func (g APISuite) TestNonExistingDestinationTx() {
 	// Testing this tx: https://bscscan.com/tx/0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67
 	txHash := "0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67"
@@ -150,12 +149,13 @@ func (g APISuite) TestNonExistingDestinationTx() {
 	chainID := 56
 	bridgeType := model.BridgeTypeBridge
 	historical := true // set to false if this tx is within the last hour or so
-	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainID, &kappa, &address, &timestamp, &bridgeType, &historical)
+	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
 }
 
+// nolint:gosec
 func (g APISuite) TestNonExistingDestinationTxHistorical() {
 	// Testing this tx: https://bscscan.com/tx/0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67
 	txHash := "0xa8697dd51ffaa025c5a7449e1f70a8f0776e78bbc92993bae18bf4eb1be99f67"
@@ -166,12 +166,13 @@ func (g APISuite) TestNonExistingDestinationTxHistorical() {
 	chainID := 56
 	bridgeType := model.BridgeTypeBridge
 	historical := true
-	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainID, &kappa, &address, &timestamp, &bridgeType, &historical)
+	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
 }
 
+// nolint:gosec
 func (g APISuite) TestNonExistingDestinationTxCCTP() {
 	// Testing this tx: https://etherscan.io/tx/0xc0fc8fc8b13856ede8862439c2ac9705005a1c7f2610f52446ae7c3f9d52d360
 	txHash := "0xc0fc8fc8b13856ede8862439c2ac9705005a1c7f2610f52446ae7c3f9d52d360"
@@ -182,10 +183,9 @@ func (g APISuite) TestNonExistingDestinationTxCCTP() {
 	chainID := 1
 	bridgeType := model.BridgeTypeCctp
 	historical := false
-	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), &chainID, &kappa, &address, &timestamp, &bridgeType, &historical)
+	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
 	Equal(g.T(), value, *result.Response.BridgeTx.Value)
-
 }

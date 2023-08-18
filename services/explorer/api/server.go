@@ -47,8 +47,12 @@ const cacheRehydrationInterval = 1800
 
 var logger = log.Logger("explorer-api")
 
+// nolint:gocognit,cyclop
 func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.ScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[uint32][]*swap.SwapFlashLoanFilterer, error) {
 	ethClient, err := ethclient.DialContext(ctx, config.RPCURL+fmt.Sprintf("%d", 1))
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not create client: %w", err)
+	}
 
 	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), ethClient)
 	if err != nil || bridgeConfigRef == nil {

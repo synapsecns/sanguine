@@ -12,7 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"github.com/synapsecns/sanguine/services/explorer/types"
+	"github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
@@ -21,8 +22,23 @@ import (
 
 var logger = log.Logger("explorer-server-fetcher")
 
+type ifaceBridgeEvent struct {
+	IFace       bridge.EventLog
+	BridgeEvent *sql.BridgeEvent
+}
+
+type ifaceCCTPEvent struct {
+	IFace     cctp.EventLog
+	CCTPEvent *sql.CCTPEvent
+}
+
+type swapReplacementData struct {
+	Address common.Address
+	Amount  *big.Int
+}
+
 const maxTimeToWaitForTx = 15 * time.Second
-const kappaExists = "kappa does not exist on destination chain"
+const kappaDoesNotExist = "kappa does not exist on destination chain"
 
 func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash string) (*model.BridgeWatcherTx, error) {
 	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
@@ -53,7 +69,7 @@ func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash s
 				continue
 			}
 			var logs []ethTypes.Log
-			var tokenData *types.SwapReplacementData
+			var tokenData *swapReplacementData
 			for _, log := range receipt.Logs {
 				if log.Topics[0].String() == r.Config.SwapTopicHash {
 					tokenData, err = r.parseSwapLog(ctx, *log, chainID)
@@ -121,12 +137,9 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 	timeout := time.Duration(0)
 	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
-	if r.Refs.BridgeRefs[chainID] == nil {
-		return nil, fmt.Errorf("bridge contract not set for chain %d", chainID)
-	}
 	contractAddress := r.Refs.BridgeRefs[chainID].Address()
 	if !r.checkKappaExists(txFetchContext, kappa, chainID) {
-		return nil, fmt.Errorf(kappaExists)
+		return nil, fmt.Errorf(kappaDoesNotExist)
 	}
 	for {
 		select {
@@ -166,12 +179,20 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 			logFetcher := indexer.NewLogFetcher(backendClient, big.NewInt(int64(*startBlock)), big.NewInt(int64(*endBlock)), indexerConfig, ascending)
 			maturedBridgeEvent, err := r.getAndParseLogs(txFetchContext, logFetcher, chainID, kappa)
 			if err != nil {
-				return nil, fmt.Errorf("could not get and parse logs: %v", err)
+				logger.Errorf("could not get and parse logs: %v", err)
+				continue
 			}
 			go func() {
-				r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
+				storeErr := r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
+				if storeErr != nil {
+					logger.Errorf("could not store log while storing origin bridge watcher tx %v", err)
+				}
 			}()
-			bridgeEvent := maturedBridgeEvent.(*sql.BridgeEvent)
+			bridgeEvent, ok := maturedBridgeEvent.(*sql.BridgeEvent)
+			if !ok {
+				logger.Errorf("type assertion failed when converting bridge event")
+				continue
+			}
 			return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeDestination)
 		}
 	}
@@ -189,13 +210,9 @@ func (r Resolver) bwDestinationFallbackCCTP(ctx context.Context, chainID uint32,
 	timeout := time.Duration(0)
 	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
-	if r.Refs.CCTPRefs[chainID] == nil {
-		return nil, fmt.Errorf("cctp contract not set for chain %d", chainID)
-	}
 	contractAddress := r.Refs.CCTPRefs[chainID].Address()
 	if !r.checkRequestIDExists(txFetchContext, requestID, chainID) {
-		fmt.Println("request id doesnt exist")
-		return nil, fmt.Errorf(kappaExists)
+		return nil, fmt.Errorf(kappaDoesNotExist)
 	}
 	for {
 		select {
@@ -234,12 +251,20 @@ func (r Resolver) bwDestinationFallbackCCTP(ctx context.Context, chainID uint32,
 			logFetcher := indexer.NewLogFetcher(backendClient, big.NewInt(int64(*startBlock)), big.NewInt(int64(*endBlock)), indexerConfig, ascending)
 			maturedBridgeEvent, err := r.getAndParseLogsCCTP(txFetchContext, logFetcher, chainID, requestID)
 			if err != nil {
-				return nil, fmt.Errorf("could not get and parse logs: %v", err)
+				logger.Errorf("could not get and parse logs: %v", err)
+				continue
 			}
 			go func() {
-				r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
+				storeErr := r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
+				if storeErr != nil {
+					logger.Errorf("could not store log while storing origin bridge watcher tx %w", err)
+				}
 			}()
-			bridgeEvent := maturedBridgeEvent.(sql.BridgeEvent)
+			bridgeEvent, ok := maturedBridgeEvent.(sql.BridgeEvent)
+			if !ok {
+				logger.Errorf("type assertion failed when converting bridge event")
+				continue
+			}
 			return bwBridgeToBWTx(&bridgeEvent, model.BridgeTxTypeDestination)
 		}
 	}
@@ -248,7 +273,7 @@ func (r Resolver) bwDestinationFallbackCCTP(ctx context.Context, chainID uint32,
 func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32, backendClient client.EVM) (*uint64, *uint64, error) {
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %v", r.Config.RPCURL, chainID, err)
+		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
 	zero := uint64(0)
 	return &zero, &currentBlock, nil
@@ -257,33 +282,36 @@ func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32
 func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %v", r.Config.RPCURL, chainID, err)
+		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
 	currentTime := uint64(time.Now().Unix())
 	blockTime := r.Config.Chains[chainID].BlockTime
-	postulatedBlock := currentBlock - (currentTime-timestamp)/blockTime
+	postulatedBlock := (currentBlock - (currentTime-timestamp)/blockTime) - (r.Config.Chains[chainID].GetLogsRange * r.Config.Chains[chainID].GetLogsBatchAmount)
 	blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(postulatedBlock)))
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %v", postulatedBlock, chainID, err)
+		return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", postulatedBlock, chainID, err)
 	}
 
 	difference := int64(blockHeader.Time()) - int64(timestamp)
 	fmt.Println(currentTime, timestamp, blockHeader.Time(), difference, postulatedBlock, currentBlock, blockTime)
 
 	if difference > 0 {
-		postulatedBlock = postulatedBlock - (uint64(difference) / 1)
+		postulatedBlock -= uint64(difference)
 	}
 	fmt.Println(currentTime, timestamp, difference, blockHeader.Time(), postulatedBlock, currentBlock, blockTime)
 	return &postulatedBlock, &currentBlock, nil
 }
 
-func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *types.SwapReplacementData) (*model.BridgeWatcherTx, error) {
+func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *swapReplacementData) (*model.BridgeWatcherTx, error) {
 	parsedLogs, err := backfill.ProcessLogs(ctx, logs, chainID, r.Parsers.BridgeParsers[chainID])
 	if err != nil {
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 	go func() {
-		r.DB.StoreEvents(ctx, parsedLogs)
+		storeErr := r.DB.StoreEvents(ctx, parsedLogs)
+		if storeErr != nil {
+			logger.Errorf("could not store log while storing origin bridge watcher tx %v", err)
+		}
 	}()
 	parsedLog := interface{}(nil)
 	for _, log := range parsedLogs {
@@ -296,7 +324,11 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 
-	bridgeEvent := parsedLog.(*sql.BridgeEvent)
+	bridgeEvent, ok := parsedLog.(*sql.BridgeEvent)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed when converting bridge event")
+	}
+
 	if tokenData != nil {
 		bridgeEvent.Amount = tokenData.Amount
 		bridgeEvent.Token = tokenData.Address.String()
@@ -310,7 +342,10 @@ func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 	go func() {
-		r.DB.StoreEvents(ctx, parsedLogs)
+		storeErr := r.DB.StoreEvents(ctx, parsedLogs)
+		if storeErr != nil {
+			logger.Errorf("could not store cctp log while storing origin bridge watcher tx %v", err)
+		}
 	}()
 	parsedLog := interface{}(nil)
 	for i, log := range parsedLogs {
@@ -325,17 +360,20 @@ func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 
-	bridgeEvent := parsedLog.(sql.BridgeEvent)
-
+	bridgeEvent, ok := parsedLog.(sql.BridgeEvent)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed when converting bridge event")
+	}
 	return bwBridgeToBWTx(&bridgeEvent, model.BridgeTxTypeOrigin)
 }
 
+// nolint:cyclop
 func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFetcher, chainID uint32, kappa string) (interface{}, error) {
 	streamLogsCtx, cancelStreamLogs := context.WithCancel(ctx)
 	defer cancelStreamLogs()
 
 	logsChan := *logFetcher.GetFetchedLogsChan()
-	destinationData := make(chan *types.IFaceBridgeEvent, 1)
+	destinationData := make(chan *ifaceBridgeEvent, 1)
 	errorChan := make(chan error)
 
 	// Start fetcher
@@ -367,11 +405,11 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 				}
 
 				if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
-					ifaceBridgeEvent := &types.IFaceBridgeEvent{
+					bridgeEventIFace := &ifaceBridgeEvent{
 						IFace:       iFace,
 						BridgeEvent: bridgeEvent,
 					}
-					destinationData <- ifaceBridgeEvent
+					destinationData <- bridgeEventIFace
 				}
 
 			case streamErr, ok := <-errorChan:
@@ -385,7 +423,7 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 		}
 	}()
 
-	ifaceBridgeEvent, ok := <-destinationData
+	bridgeEventIFace, ok := <-destinationData
 	if !ok {
 		// Handle the case where destinationData was closed without sending data.
 		return nil, fmt.Errorf("no log found with kappa %s", kappa)
@@ -393,7 +431,7 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 	var maturedBridgeEvent interface{}
 	var err error
 
-	maturedBridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, ifaceBridgeEvent.BridgeEvent, ifaceBridgeEvent.IFace, chainID)
+	maturedBridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, bridgeEventIFace.BridgeEvent, bridgeEventIFace.IFace, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not mature logs: %w", err)
 	}
@@ -403,12 +441,13 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 	return maturedBridgeEvent, nil
 }
 
+// nolint:cyclop
 func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.LogFetcher, chainID uint32, requestID string) (interface{}, error) {
 	streamLogsCtx, cancelStreamLogs := context.WithCancel(ctx)
 	defer cancelStreamLogs()
 
 	logsChan := *logFetcher.GetFetchedLogsChan()
-	destinationData := make(chan *types.IFaceCCTPEvent, 1)
+	destinationData := make(chan *ifaceCCTPEvent, 1)
 	errorChan := make(chan error)
 
 	// Start fetcher
@@ -442,7 +481,7 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 				fmt.Println("from scribe log cctpEvent", cctpEvent.RequestID, requestID)
 
 				if cctpEvent.RequestID == requestID {
-					ifaceCctpEvent := &types.IFaceCCTPEvent{
+					ifaceCctpEvent := &ifaceCCTPEvent{
 						IFace:     iFace,
 						CCTPEvent: cctpEvent,
 					}
@@ -479,9 +518,9 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 }
 
 // parseSwapLog this is a swap event, we need to get the address from it.
-func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainID uint32) (*types.SwapReplacementData, error) {
+func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainID uint32) (*swapReplacementData, error) {
 	// parse swap with swap filter
-	var swapReplacementData types.SwapReplacementData
+	var swapReplacement swapReplacementData
 	for _, filter := range r.SwapFilters[chainID] {
 		swapEvent, err := filter.ParseTokenSwap(swapLog)
 		if err != nil {
@@ -490,21 +529,21 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 		if swapEvent != nil {
 			iFace, err := filter.ParseTokenSwap(swapLog)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse swap event: %v", err)
+				return nil, fmt.Errorf("could not parse swap event: %w", err)
 			}
-			soldId := iFace.SoldId
-			address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldId.Uint64()))
+			soldID := iFace.SoldId
+			address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
 			if err != nil {
-				return nil, fmt.Errorf("could not parse swap event: %v", err)
+				return nil, fmt.Errorf("could not parse swap event: %w", err)
 			}
-			swapReplacementData = types.SwapReplacementData{
+			swapReplacement = swapReplacementData{
 				Amount:  iFace.TokensSold,
 				Address: common.HexToAddress(address),
 			}
 			break
 		}
 	}
-	return &swapReplacementData, nil
+	return &swapReplacement, nil
 }
 
 func (r Resolver) checkKappaExists(ctx context.Context, kappa string, chainID uint32) bool {

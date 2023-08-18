@@ -56,6 +56,7 @@ func (c *CCTPParser) ParserType() string {
 	return "cctp"
 }
 
+// ParseLog log converts an eth log to a cctp event type.
 func (c *CCTPParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.CCTPEvent, cctpTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (cctpTypes.EventLog, error) {
@@ -95,6 +96,7 @@ func (c *CCTPParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.CCTPEven
 	return &cctpEvent, iFace, nil
 }
 
+// MatureLogs takes a cctp event and adds data to them.
 func (c *CCTPParser) MatureLogs(ctx context.Context, cctpEvent *model.CCTPEvent, iFace cctpTypes.EventLog, chainID uint32) (interface{}, error) {
 	// Get timestamp from consumer
 	timeStamp, err := c.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))

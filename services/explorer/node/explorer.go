@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
@@ -31,13 +31,13 @@ type ExplorerBackfiller struct {
 	// ChainBackfillers is a mapping of chain IDs -> chain backfillers.
 	ChainBackfillers map[uint32]*backfill.ChainBackfiller
 	// config is the config for the backfiller.
-	config config.Config
+	config indexerConfig.Config
 }
 
 // NewExplorerBackfiller creates a new backfiller for the explorer.
 //
 // nolint:gocognit
-func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend, handler metrics.Handler) (*ExplorerBackfiller, error) {
+func NewExplorerBackfiller(consumerDB db.ConsumerDB, config indexerConfig.Config, clients map[uint32]bind.ContractBackend, handler metrics.Handler) (*ExplorerBackfiller, error) {
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
 	httpClient := http.Client{
 		Timeout: 10 * time.Second,
@@ -89,7 +89,7 @@ func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clien
 //
 // nolint:cyclop
 func (e ExplorerBackfiller) Backfill(ctx context.Context, livefill bool) error {
-	refreshRate := e.config.RefreshRate
+	refreshRate := e.config.DefaultRefreshRate
 
 	if refreshRate == 0 {
 		refreshRate = 1
@@ -119,7 +119,7 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context, livefill bool) error {
 }
 
 // nolint gocognit,cyclop
-func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher fetcherpkg.ScribeFetcher, client bind.ContractBackend, tokenDataService tokendata.Service, priceDataService tokenprice.Service) (*backfill.ChainBackfiller, error) {
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.ChainConfig, fetcher fetcherpkg.ScribeFetcher, client bind.ContractBackend, tokenDataService tokendata.Service, priceDataService tokenprice.Service) (*backfill.ChainBackfiller, error) {
 	var err error
 	var bridgeParser *parser.BridgeParser
 	var messageBusParser *parser.MessageBusParser

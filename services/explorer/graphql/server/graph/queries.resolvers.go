@@ -397,40 +397,33 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 }
 
 // GetOriginBridgeTx is the resolver for the getOriginBridgeTx field.
-func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, bridgeType *model.BridgeType) (*model.BridgeWatcherTx, error) {
-	if chainID == nil || txnHash == nil {
-		return nil, fmt.Errorf("chainID and txnHash must be provided")
-	}
-
+func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var results *model.BridgeWatcherTx
 	var err error
-	switch *bridgeType {
-	case model.BridgeTypeBridge:
-		results, err = r.GetOriginBridgeTxBW(ctx, *chainID, *txnHash)
-	case model.BridgeTypeCctp:
-		results, err = r.GetOriginBridgeTxBWCCTP(ctx, *chainID, *txnHash)
+	if r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+		return nil, fmt.Errorf("chainID not supported by server")
 	}
+	results, err = r.GetOriginBridgeTxBW(ctx, chainID, txnHash, bridgeType)
 	if err != nil {
-		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+		return nil, fmt.Errorf("could not get origin tx %w", err)
 	}
 	return results, nil
 }
 
 // GetDestinationBridgeTx is the resolver for the getDestinationBridgeTx field.
-func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int, bridgeType *model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error) {
-	if chainID == nil || address == nil || kappa == nil || timestamp == nil || bridgeType == nil || historical == nil {
-		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
+func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error) {
+	if historical == nil {
+		return nil, fmt.Errorf("historical flag must be set")
+	}
+	if r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+		return nil, fmt.Errorf("chainID not supported by server")
 	}
 	var results *model.BridgeWatcherTx
 	var err error
-	switch *bridgeType {
-	case model.BridgeTypeBridge:
-		results, err = r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp, *historical)
-	case model.BridgeTypeCctp:
-		results, err = r.GetDestinationBridgeTxBWCCTP(ctx, *chainID, *address, *kappa, *timestamp, *historical)
-	}
+	results, err = r.GetDestinationBridgeTxBW(ctx, chainID, address, kappa, timestamp, *historical, bridgeType)
+
 	if err != nil {
-		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+		return nil, fmt.Errorf("could not get destination tx %w", err)
 	}
 	return results, nil
 }

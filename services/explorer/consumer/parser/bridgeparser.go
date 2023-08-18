@@ -197,24 +197,7 @@ func (p *BridgeParser) ParserType() string {
 	return "bridge"
 }
 
-// ParseAndStore parses the bridge logs and returns a model that can be stored
-// Deprecated: use Parse and store separately.
-func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	bridgeEvent, err := p.Parse(ctx, log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not parse event: %w", err)
-	}
-	err = p.consumerDB.StoreEvent(ctx, &bridgeEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
-	}
-	return nil
-}
-
-// Parse parses the bridge logs and returns a model that can be stored
-//
-// nolint:gocognit,cyclop,dupl,maintidx
+// Parse parses the bridge logs and returns a model that can be stored.
 func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	bridgeEvent, iFace, err := p.ParseLog(log, chainID)
 	if err != nil {
@@ -228,6 +211,8 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 }
 
 // ParseLog parses the bridge logs and returns a model that can be stored.
+//
+// nolint:gocognit,cyclop
 func (p *BridgeParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.BridgeEvent, bridgeTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 
@@ -383,6 +368,8 @@ func (p *BridgeParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.Bridge
 }
 
 // MatureLogs takes a bridge event and matures it by fetching the sender and timestamp from the API and more.
+//
+// nolint:gocognit,cyclop
 func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.BridgeEvent, iFace bridgeTypes.EventLog, chainID uint32) (interface{}, error) {
 	g, groupCtx := errgroup.WithContext(ctx)
 	var err error
@@ -449,15 +436,11 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
+	// takes into account an empty bridge token id and for tokens that were bridged before price trackers (coin gecko) had price data.
 	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 		tokenPrice = p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
 		if tokenPrice == nil && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-			if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
-				logger.Warnf("BRIDGE - TOKEN PRICE NULL OR ZERO coinGeckoID: %s, TimeStamp: %d, TokenDecimal: %d, chainID: %d, TxHash: %s", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.TokenDecimal, chainID, bridgeEvent.TxHash)
-				return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
-			}
-			one := 1.0
-			tokenPrice = &one
+			return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
 		}
 	}
 
