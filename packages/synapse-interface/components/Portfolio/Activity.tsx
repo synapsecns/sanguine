@@ -12,6 +12,9 @@ import { tokenSymbolToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
+import { RecentBridgeTransaction } from '@/slices/bridge/actions'
+import { BridgeState } from '@/slices/bridge/reducer'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -92,6 +95,53 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </>
       )}
     </div>
+  )
+}
+
+const RecentlyBridgedPendingTransaction = ({
+  recentlyBridgedTransaction,
+}: {
+  recentlyBridgedTransaction: RecentBridgeTransaction
+}) => {
+  return (
+    <div
+      data-test-id="recently-bridged-pending-transaction"
+      className="grid grid-cols-10"
+    >
+      <div className="flex col-span-4 my-auto">
+        <TransactionPayloadDetail
+        // chain={originChain}
+        // token={originToken}
+        // tokenSymbol={originTokenSymbol}
+        // tokenAmount={originFormattedValue}
+        />
+        <div
+          data-test-id="arrow"
+          className="flex items-end px-4 my-auto ml-auto mr-3"
+        >
+          →
+        </div>
+      </div>
+      <div className="col-span-4 my-auto">
+        <TransactionPayloadDetail
+        // chain={destinationChain}
+        // token={destinationToken}
+        // tokenSymbol={destinationTokenSymbol}
+        // tokenAmount={destinationFormattedValue}
+        />
+      </div>
+    </div>
+  )
+}
+export const PendingTransactionAwaitingIndexing = () => {
+  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+
+  return (
+    <>
+      {/* {recentBridgeTransactions.map((transaction: RecentBridgeTransaction) => (
+
+    ))} */}
+    </>
   )
 }
 
