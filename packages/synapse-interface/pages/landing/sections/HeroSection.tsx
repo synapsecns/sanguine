@@ -3,6 +3,15 @@ import Button from '@/components/ui/tailwind/Button'
 import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
 import { SectionContainer } from '../../../components/landing/shared'
 import { useTranslation } from 'react-i18next'
+import { loadTranslations } from '@/ni18n.config'
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await loadTranslations(locale, 'default')),
+    },
+  }
+}
 
 export default function HeroSection() {
   const { t } = useTranslation()

@@ -1,3 +1,4 @@
+import { loadTranslations } from '@/ni18n.config'
 import { useTranslation } from 'react-i18next'
 
 type Language = {
@@ -13,6 +14,14 @@ const languages: Language[] = [
 const changeLanguage = (i18n, language) => {
   window.localStorage.setItem('MY_LANGUAGE', language)
   i18n.changeLanguage(language)
+}
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await loadTranslations(locale, 'default')),
+    },
+  }
 }
 
 export default function LanguageSwitcher() {

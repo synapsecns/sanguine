@@ -11,6 +11,15 @@ import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
 import { ExtensibleIcon } from '@/components/icons/LandingIcons/ExtensibleIcon'
 import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon'
 import { useTranslation } from 'react-i18next'
+import { loadTranslations } from '@/ni18n.config'
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await loadTranslations(locale, 'default')),
+    },
+  }
+}
 
 export default function SecuritySection() {
   const { t } = useTranslation()

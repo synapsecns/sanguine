@@ -105,8 +105,6 @@ import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 import { useTranslation } from 'react-i18next'
 
-import { clientNamespaces } from 'ni18n'
-
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
 // We want to keep them separate as to not overload Component and UI logic
@@ -589,7 +587,6 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <div className="text-white">trying {t('myKey')}</div>
         <Card
           divider={false}
           className={`
