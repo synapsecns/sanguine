@@ -1,5 +1,5 @@
 import { useAccount, useNetwork } from 'wagmi'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
 import { useSpring, animated } from 'react-spring'
@@ -69,7 +69,6 @@ import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import {
-  sortByTokenBalance,
   sortByVisibilityRank,
   separateAndSortTokensWithBalances,
   sortTokensByPriorityRankAndAlpha,
@@ -87,21 +86,16 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
 import {
-  NetworkTokenBalancesAndAllowances,
-  sortTokensByBalanceDescending,
-} from '@/utils/actions/fetchPortfolioBalances'
-import {
-  fetchAndStorePortfolioBalances,
-  fetchAndStoreSingleNetworkPortfolioBalances,
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
-} from '@/slices/portfolio/hooks'
-import {
-  usePortfolioBalances,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
-import { FetchState } from '@/slices/portfolio/actions'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import {
+  FetchState,
+  updateSingleTokenAllowance,
+} from '@/slices/portfolio/actions'
+
+import { addRecentBridgeTransaction } from '@/slices/bridge/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -495,6 +489,16 @@ const StateManagedBridge = () => {
           expectedReceivedAmount: bridgeQuote.outputAmountString,
           slippage: bridgeQuote.exchangeRate,
         })
+        dispatch(
+          addRecentBridgeTransaction({
+            fromChainId: fromChainId,
+            fromToken: fromToken,
+            fromValue: fromValue,
+            toChainId: toChainId,
+            toToken: toToken,
+            transactionHash: tx,
+          })
+        )
         dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
