@@ -10,7 +10,7 @@ export type Chain = {
   codeName: string
   chainImg: any
   layer: number
-  rpc: string
+  rpcUrls: { primary: string; fallback: string }
   explorerUrl: string
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
