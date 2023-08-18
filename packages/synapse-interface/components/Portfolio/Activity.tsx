@@ -72,7 +72,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       )}
 
       {address && !isLoading && hasPendingTransactions && (
-        <ActivitySection title="Pending" twClassName="mb-5">
+        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
           {/* <TransactionHeader transactionType={ActivityType.PENDING} /> */}
           <PendingTransactionAwaitingIndexing />
           {userPendingTransactions &&
