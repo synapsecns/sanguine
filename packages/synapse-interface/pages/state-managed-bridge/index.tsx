@@ -491,11 +491,13 @@ const StateManagedBridge = () => {
         })
         dispatch(
           addRecentBridgeTransaction({
-            fromChainId: fromChainId,
-            fromToken: fromToken,
-            fromValue: fromValue,
-            toChainId: toChainId,
-            toToken: toToken,
+            originChainId: fromChainId,
+            originChainName: originChainName,
+            originToken: fromToken,
+            originValue: fromValue,
+            destinationChainId: toChainId,
+            destinationChainName: destinationChainName,
+            destinationToken: toToken,
             transactionHash: tx,
             timestamp: getTimeMinutesFromNow(0),
           })
