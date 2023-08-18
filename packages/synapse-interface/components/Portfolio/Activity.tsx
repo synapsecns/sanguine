@@ -107,13 +107,15 @@ export const MostRecentPendingTransaction = () => {
 
   let mostRecentPendingTransaction = null
 
-  if (recentBridgeTransactions.length > 0) {
+  if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
     mostRecentPendingTransaction = recentBridgeTransactions[0]
-  } else if (userPendingTransactions.length > 0) {
+    return (
+      <RecentlyBridgedPendingTransaction
+        recentlyBridgedTransaction={mostRecentPendingTransaction}
+      />
+    )
+  } else if (userPendingTransactions && userPendingTransactions.length > 0) {
     mostRecentPendingTransaction = userPendingTransactions[0]
-  }
-
-  if (mostRecentPendingTransaction) {
     return (
       <Transaction
         bridgeTransaction={mostRecentPendingTransaction}
@@ -121,7 +123,8 @@ export const MostRecentPendingTransaction = () => {
         key={mostRecentPendingTransaction.kappa}
       />
     )
-  } else return null
+  }
+  return null
 }
 
 const RecentlyBridgedPendingTransaction = ({

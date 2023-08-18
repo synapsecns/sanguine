@@ -1,7 +1,7 @@
 import { useAppDispatch } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
-import HomeSvg from '@icons/HomeIcon'
+import { MostRecentPendingTransaction } from './Activity'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
@@ -12,19 +12,22 @@ export const PortfolioTabManager = () => {
   }
 
   return (
-    <div data-test-id="portfolio-tab-manager" className="flex">
-      <Tab
-        display="Portfolio"
-        activeTab={activeTab}
-        tabType={PortfolioTabs.PORTFOLIO}
-        handleTabChange={handleTabChange}
-      />
-      <Tab
-        display="Activity"
-        activeTab={activeTab}
-        tabType={PortfolioTabs.ACTIVITY}
-        handleTabChange={handleTabChange}
-      />
+    <div data-test-id="portfolio-tab-manager" className="flex flex-col">
+      <div className="flex">
+        <Tab
+          display="Portfolio"
+          activeTab={activeTab}
+          tabType={PortfolioTabs.PORTFOLIO}
+          handleTabChange={handleTabChange}
+        />
+        <Tab
+          display="Activity"
+          activeTab={activeTab}
+          tabType={PortfolioTabs.ACTIVITY}
+          handleTabChange={handleTabChange}
+        />
+      </div>
+      <MostRecentPendingTransaction />
     </div>
   )
 }
