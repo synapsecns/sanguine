@@ -9,7 +9,7 @@ import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBal
 import {
   RecentBridgeTransaction,
   addRecentBridgeTransaction,
-  removeRecentBridgeTransaction,
+  updateRecentBridgeTransactions,
 } from './actions'
 
 export interface BridgeState {
@@ -115,12 +115,9 @@ export const bridgeSlice = createSlice({
         }
       )
       .addCase(
-        removeRecentBridgeTransaction,
-        (state, action: PayloadAction<string>) => {
-          state.recentBridgeTransactions =
-            state.recentBridgeTransactions.filter(
-              (transaction) => transaction.transactionHash !== action.payload
-            )
+        updateRecentBridgeTransactions,
+        (state, action: PayloadAction<RecentBridgeTransaction[]>) => {
+          state.recentBridgeTransactions = action.payload
         }
       )
   },

@@ -23,6 +23,9 @@ import {
   updateUserHistoricalTransactions,
   updateUserPendingTransactions,
 } from './actions'
+import { useBridgeState } from '../bridge/hooks'
+import { BridgeState } from '../bridge/reducer'
+import { updateRecentBridgeTransactions } from '../bridge/actions'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -32,7 +35,10 @@ export default function Updater(): null {
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
+    userHistoricalTransactions,
+    userPendingTransactions,
   }: TransactionsState = useTransactionsState()
+  const { recentBridgeTransactions }: BridgeState = useBridgeState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 3000 })
@@ -96,6 +102,35 @@ export default function Updater(): null {
       dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
     }
   }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
+
+  // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
+  useEffect(() => {
+    const matchingTransactionHashes = recentBridgeTransactions
+      .filter(
+        (recentTx) =>
+          userPendingTransactions.some(
+            (pendingTx) =>
+              pendingTx.fromInfo.txnHash === recentTx.transactionHash
+          ) ||
+          userHistoricalTransactions.some(
+            (historicalTx) =>
+              historicalTx.fromInfo.txnHash === recentTx.transactionHash
+          )
+      )
+      .map((matchingTx) => matchingTx.transactionHash)
+
+    if (matchingTransactionHashes.length > 0) {
+      const updatedRecentBridgeTransactions = recentBridgeTransactions.filter(
+        (recentTx) =>
+          !matchingTransactionHashes.includes(recentTx.transactionHash)
+      )
+      dispatch(updateRecentBridgeTransactions(updatedRecentBridgeTransactions))
+    }
+  }, [
+    recentBridgeTransactions,
+    userHistoricalTransactions,
+    userPendingTransactions,
+  ])
 
   return null
 }
