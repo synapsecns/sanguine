@@ -40,6 +40,9 @@ func (a *AnvilSuite) SetupSuite() {
 	err := options.SetForkURL(a.forkAddress)
 	Nil(a.T(), err)
 
+	// enable otterscan
+	options.OtterscanEnabled(true)
+
 	a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
 	a.options = options
 	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
