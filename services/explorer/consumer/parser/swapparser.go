@@ -376,7 +376,6 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 					tokenPrice := p.tokenPriceService.GetPriceData(groupCtx, int(*swapEvent.TimeStamp), coinGeckoID)
 					if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
 						return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
-		
 					}
 					tokenPricesArr[tokenIndex] = *tokenPrice
 				}
