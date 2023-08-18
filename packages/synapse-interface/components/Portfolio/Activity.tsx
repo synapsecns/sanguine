@@ -103,6 +103,18 @@ const RecentlyBridgedPendingTransaction = ({
 }: {
   recentlyBridgedTransaction: RecentBridgeTransaction
 }) => {
+  const {
+    originChainId,
+    originChainName,
+    originToken,
+    originValue,
+    destinationChainId,
+    destinationChainName,
+    destinationToken,
+    transactionHash,
+    timestamp,
+  }: RecentBridgeTransaction = recentlyBridgedTransaction
+
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"

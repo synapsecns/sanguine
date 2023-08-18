@@ -1,14 +1,12 @@
 import { createAction } from '@reduxjs/toolkit'
 
-import { Token } from '@/utils/types'
+import { Chain, Token } from '@/utils/types'
 
 export interface RecentBridgeTransaction {
-  originChainId: number
-  originChainName: string
+  originChain: Chain
   originToken: Token
   originValue: string
-  destinationChainId: number
-  destinationChainName: string
+  destinationChain: Chain
   destinationToken: Token
   transactionHash: string
   timestamp: number
