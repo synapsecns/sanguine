@@ -15,6 +15,7 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import { RecentBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { getExplorerTxUrl } from '@/constants/urls'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -117,10 +118,21 @@ const RecentlyBridgedPendingTransaction = ({
     timestamp,
   }: RecentBridgeTransaction = recentlyBridgedTransaction
 
+  const handlePendingTransactionClick: () => void = useCallback(() => {
+    if (transactionHash) {
+      const explorerLink: string = getExplorerTxUrl({
+        chainId: originChain.id,
+        hash: transactionHash,
+      })
+      window.open(explorerLink, '_blank')
+    }
+  }, [transactionHash])
+
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"
       className="grid grid-cols-10 bg-[#1B1B29] py-3 px-2 text-sm text-white rounded-md mb-2"
+      onClick={handlePendingTransactionClick}
     >
       <div className="flex col-span-4 my-auto">
         <TransactionPayloadDetail
@@ -257,6 +269,7 @@ export const Transaction = ({
     tokenSymbol: originTokenSymbol,
     blockNumber: bridgeOriginBlockNumber,
     time: bridgeOriginTime,
+    txnHash: originTxnHash,
   }: PartialInfo = fromInfo || {}
 
   const originChain: Chain = CHAINS_BY_ID[originChainId]
@@ -286,6 +299,12 @@ export const Transaction = ({
         kappa,
         fromChainId: originChainId,
         toChainId: destinationChainId,
+      })
+      window.open(explorerLink, '_blank')
+    } else {
+      const explorerLink: string = getExplorerTxUrl({
+        chainId: originChainId,
+        hash: originTxnHash,
       })
       window.open(explorerLink, '_blank')
     }
