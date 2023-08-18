@@ -161,6 +161,7 @@ const RecentlyBridgedPendingTransaction = ({
     </div>
   )
 }
+
 export const PendingTransactionAwaitingIndexing = () => {
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
   return (
