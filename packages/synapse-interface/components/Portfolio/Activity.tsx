@@ -110,18 +110,22 @@ export const MostRecentPendingTransaction = () => {
   if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
     mostRecentPendingTransaction = recentBridgeTransactions[0]
     return (
-      <RecentlyBridgedPendingTransaction
-        recentlyBridgedTransaction={mostRecentPendingTransaction}
-      />
+      <div className="mt-4 border border-[#3D3D5C] rounded-md">
+        <RecentlyBridgedPendingTransaction
+          recentlyBridgedTransaction={mostRecentPendingTransaction}
+        />
+      </div>
     )
   } else if (userPendingTransactions && userPendingTransactions.length > 0) {
     mostRecentPendingTransaction = userPendingTransactions[0]
     return (
-      <Transaction
-        bridgeTransaction={mostRecentPendingTransaction}
-        transactionType={ActivityType.PENDING}
-        key={mostRecentPendingTransaction.kappa}
-      />
+      <div className="mt-4 border border-[#3D3D5C] rounded-md">
+        <Transaction
+          bridgeTransaction={mostRecentPendingTransaction}
+          transactionType={ActivityType.PENDING}
+          key={mostRecentPendingTransaction.kappa}
+        />
+      </div>
     )
   }
   return null
@@ -158,7 +162,7 @@ const RecentlyBridgedPendingTransaction = ({
       className={`
       grid grid-cols-10 bg-[#1B1B29]
       py-3 px-2 text-sm text-white
-      rounded-md mb-2 hover:cursor-pointer
+      rounded-md hover:cursor-pointer
       `}
       onClick={handlePendingTransactionClick}
     >
@@ -349,10 +353,7 @@ export const Transaction = ({
         ${
           transactionType === ActivityType.RECENT && 'border-b border-[#565058]'
         }
-        ${
-          transactionType === ActivityType.PENDING &&
-          'bg-[#1B1B29] rounded-md mb-2'
-        }
+        ${transactionType === ActivityType.PENDING && 'bg-[#1B1B29] rounded-md'}
         `}
       onClick={handleTransactionClick}
     >
