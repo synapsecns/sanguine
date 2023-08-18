@@ -6,6 +6,7 @@ import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import { RecentBridgeTransaction } from './actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -22,6 +23,7 @@ export interface BridgeState {
   deadlineMinutes: number | null
   destinationAddress: Address | null
   bridgeTxHashes: string[] | null
+  recentBridgeTransactions: RecentBridgeTransaction[]
 }
 
 // How do we update query params based on initial state?
@@ -41,6 +43,7 @@ export const initialState: BridgeState = {
   deadlineMinutes: null,
   destinationAddress: null,
   bridgeTxHashes: [],
+  recentBridgeTransactions: [],
 }
 
 export const bridgeSlice = createSlice({
