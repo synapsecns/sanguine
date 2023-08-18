@@ -24,6 +24,7 @@ import {
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
@@ -81,6 +82,7 @@ export function LandingNav() {
           </Popover.Group>
           <div className="justify-end hidden ml-auto lg:flex">
             <div className="flex items-center space-x-2">
+              <LanguageSwitcher />
               <Wallet />
               <Popover className="relative inline-block">
                 {({ open }) => (

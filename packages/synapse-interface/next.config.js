@@ -12,6 +12,10 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'es'],
+  },
 }
 
 module.exports = {

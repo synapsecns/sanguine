@@ -10,8 +10,10 @@ import {
 import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
 import { ExtensibleIcon } from '@/components/icons/LandingIcons/ExtensibleIcon'
 import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon'
+import { useTranslation } from 'react-i18next'
 
 export default function SecuritySection() {
+  const { t } = useTranslation()
   return (
     <SectionContainer
       styles={`
@@ -34,20 +36,11 @@ export default function SecuritySection() {
             text-left text-white
           `}
         >
-          Securely connect every blockchain
+          {t('Securely connect every blockchain')}
         </div>
         <div className="font-normal text-left text-secondaryTextColor">
-          Synapse is comprised of a{' '}
-          <span className="font-medium text-white">
-            cross-chain messaging framework
-          </span>{' '}
-          and an{' '}
-          <span className="font-medium text-white">
-            economically secure method
-          </span>{' '}
-          to reach consensus on the validity of cross-chain transactions,
-          enabling developers to build truly native cross-chain apps.
-        </div>{' '}
+          {t('Synapse is comprised')}
+        </div>
       </div>
 
       <Grid

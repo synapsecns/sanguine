@@ -47,6 +47,9 @@ import { Provider } from 'react-redux'
 import { store } from '@/store/store'
 import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
 
+import { appWithI18Next, useSyncLanguage } from 'ni18n'
+import { ni18nConfig } from '../ni18n.config'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -125,6 +128,11 @@ export const wagmiConfig = createConfig({
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
+  const locale =
+    typeof window !== 'undefined' && window.localStorage.getItem('MY_LANGUAGE')
+
+  useSyncLanguage(locale)
+
   return (
     <>
       <Head>
@@ -148,4 +156,4 @@ const App = ({ Component, pageProps }: AppProps) => {
   )
 }
 
-export default App
+export default appWithI18Next(App, ni18nConfig)

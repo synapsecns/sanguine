@@ -2,8 +2,10 @@ import Link from 'next/link'
 import Button from '@/components/ui/tailwind/Button'
 import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
 import { SectionContainer } from '../../../components/landing/shared'
+import { useTranslation } from 'react-i18next'
 
 export default function HeroSection() {
+  const { t } = useTranslation()
   return (
     <SectionContainer dataTestId="landing-hero-section">
       <div
@@ -11,32 +13,21 @@ export default function HeroSection() {
           mt-6 pb-4 text-left text-4xl
           font-medium text-white
           md:text-[46px] md:text-center
+        max-w-[450px]
+        mx-auto
         `}
       >
-        <p>Secure cross-chain</p>
-        <p>communication</p>
+        <p>{t('secure-cross-chain-communication')}</p>
       </div>
+
       <div
         className={`
-          hidden text-left text-secondaryTextColor
-          md:text-center lg:text-center md:block lg:block
+         text-secondaryTextColor
+          max-w-[350px] flex items-center justify-center
+          mx-auto
         `}
       >
-        <p>Synapse is the most widely used, extensible, secure cross-</p>
-        <p>chain communications network. Build truly cross-chain</p>
-        <p>applications using the Synapse Protocol.</p>
-      </div>
-      <div
-        className={`
-          text-left text-secondaryTextColor md:text-center
-          lg:text-center xs:block sm:block md:hidden lg:hidden
-        `}
-      >
-        <p>
-          Synapse is the most widely used, extensible, secure cross-chain
-          communications network. Build truly cross-chain applications using the
-          Synapse Protocol.
-        </p>
+        <p>{t('synapse-is-the-most')}</p>
       </div>
 
       <div className="flex justify-center py-4 space-x-2 ">
@@ -54,7 +45,7 @@ export default function HeroSection() {
             className="flex items-center justify-center font-medium"
             onClick={() => null}
           >
-            Build on Synapse
+            {t('build-on-synapse')}
           </Button>
         </Link>
         <Link
@@ -71,7 +62,7 @@ export default function HeroSection() {
           }}
         >
           <Button className="font-medium" onClick={() => null}>
-            Enter Bridge
+            {t('Enter Bridge')}
           </Button>
         </Link>
       </div>
