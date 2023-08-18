@@ -295,16 +295,21 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	for _, chain := range c.cfg.Chains {
 		chain := chain
 		g.Go(func() error {
-			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.SynapseCCTPAddress, nil)
+			streamErr := c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.SynapseCCTPAddress, nil)
+			logger.Errorf("exported txSubmitter loop for chain %d w/ %v", chain.ChainID, streamErr)
+			return streamErr
 		})
 	}
 
 	g.Go(func() error {
-		return c.runQueueSelector(ctx)
+		runErr := c.runQueueSelector(ctx)
+		logger.Errorf("exported txSubmitter loop w/ %v", runErr)
+		return runErr
 	})
 
 	g.Go(func() error {
 		err := c.txSubmitter.Start(ctx)
+		logger.Errorf("exported txSubmitter loop w/ %v", err)
 		if err != nil {
 			err = fmt.Errorf("could not start tx submitter: %w", err)
 		}
@@ -313,6 +318,7 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 
 	g.Go(func() error {
 		err := c.processAPIRequests(ctx)
+		logger.Errorf("exported processAPIRequests loop w/ %v", err)
 		if err != nil {
 			err = fmt.Errorf("could not process api requests: %w", err)
 		}
@@ -321,6 +327,7 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 
 	g.Go(func() error {
 		err := c.relayerAPI.Start(ctx)
+		logger.Errorf("exported relayerAPI.Start loop w/ %v", err)
 		if err != nil {
 			err = fmt.Errorf("could not start relayer api: %w", err)
 		}
@@ -329,6 +336,8 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 
 	g.Go(func() error {
 		<-ctx.Done()
+		// make sure other loops have time to finish and log wether or not they exited.
+		time.Sleep(time.Second * 20)
 		panic(fmt.Sprintf("context canceled with error: %v", ctx.Err()))
 	})
 
