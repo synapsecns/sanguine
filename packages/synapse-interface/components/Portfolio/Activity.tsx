@@ -35,8 +35,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return false
   }, [userPendingTransactions, recentBridgeTransactions])
 
-  console.log('hasPendingTransactions: ', hasPendingTransactions)
-
   const hasHistoricalTransactions: boolean = useMemo(
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
     [userHistoricalTransactions]
@@ -101,6 +99,29 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       )}
     </div>
   )
+}
+
+export const MostRecentPendingTransaction = () => {
+  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { userPendingTransactions }: TransactionsState = useTransactionsState()
+
+  let mostRecentPendingTransaction = null
+
+  if (recentBridgeTransactions.length > 0) {
+    mostRecentPendingTransaction = recentBridgeTransactions[0]
+  } else if (userPendingTransactions.length > 0) {
+    mostRecentPendingTransaction = userPendingTransactions[0]
+  }
+
+  if (mostRecentPendingTransaction) {
+    return (
+      <Transaction
+        bridgeTransaction={mostRecentPendingTransaction}
+        transactionType={ActivityType.PENDING}
+        key={mostRecentPendingTransaction.kappa}
+      />
+    )
+  } else return null
 }
 
 const RecentlyBridgedPendingTransaction = ({
