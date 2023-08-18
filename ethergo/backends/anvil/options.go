@@ -138,6 +138,7 @@ type OptionBuilder struct {
 // ========= General Options =========
 
 // OtterscanEnabled sets whether or not to enable otterscan.
+// Note: for this to work correctly, the underlying node we fork from must also support the ots namespace.
 func (o *OptionBuilder) OtterscanEnabled(enabled bool) {
 	o.enableOtterscan = enabled
 }
