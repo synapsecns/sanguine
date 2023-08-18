@@ -41,10 +41,10 @@ export default function Updater(): null {
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 3000 })
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
 
   const { address } = useAccount({
     onDisconnect() {
@@ -105,24 +105,29 @@ export default function Updater(): null {
 
   // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
   useEffect(() => {
-    const matchingTransactionHashes = recentBridgeTransactions
-      .filter(
-        (recentTx) =>
-          userPendingTransactions.some(
-            (pendingTx) =>
-              pendingTx.fromInfo.txnHash === recentTx.transactionHash
-          ) ||
-          userHistoricalTransactions.some(
-            (historicalTx) =>
-              historicalTx.fromInfo.txnHash === recentTx.transactionHash
-          )
-      )
-      .map((matchingTx) => matchingTx.transactionHash)
+    const matchingTransactionHashes = new Set(
+      recentBridgeTransactions
+        .filter(
+          (recentTx) =>
+            (userPendingTransactions &&
+              userPendingTransactions.some(
+                (pendingTx) =>
+                  pendingTx.fromInfo.txnHash === recentTx.transactionHash
+              )) ||
+            (userHistoricalTransactions &&
+              userHistoricalTransactions.some(
+                (historicalTx) =>
+                  historicalTx.fromInfo.txnHash === recentTx.transactionHash
+              ))
+        )
+        .map((matchingTx) => matchingTx.transactionHash)
+    )
 
-    if (matchingTransactionHashes.length > 0) {
+    if (matchingTransactionHashes.size === 0) {
+      return
+    } else {
       const updatedRecentBridgeTransactions = recentBridgeTransactions.filter(
-        (recentTx) =>
-          !matchingTransactionHashes.includes(recentTx.transactionHash)
+        (recentTx) => !matchingTransactionHashes.has(recentTx.transactionHash)
       )
       dispatch(updateRecentBridgeTransactions(updatedRecentBridgeTransactions))
     }
