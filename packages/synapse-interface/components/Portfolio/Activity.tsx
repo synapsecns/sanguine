@@ -131,7 +131,11 @@ const RecentlyBridgedPendingTransaction = ({
   return (
     <div
       data-test-id="recently-bridged-pending-transaction"
-      className="grid grid-cols-10 bg-[#1B1B29] py-3 px-2 text-sm text-white rounded-md mb-2"
+      className={`
+      grid grid-cols-10 bg-[#1B1B29]
+      py-3 px-2 text-sm text-white
+      rounded-md mb-2 hover:cursor-pointer
+      `}
       onClick={handlePendingTransactionClick}
     >
       <div className="flex col-span-4 my-auto">
