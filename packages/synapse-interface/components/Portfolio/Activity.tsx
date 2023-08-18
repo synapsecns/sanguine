@@ -16,6 +16,9 @@ import { RecentBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { getExplorerTxUrl } from '@/constants/urls'
+import { PortfolioState } from '@/slices/portfolio/reducer'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { PortfolioTabs } from '@/slices/portfolio/actions'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -104,13 +107,19 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 export const MostRecentPendingTransaction = () => {
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
   const { userPendingTransactions }: TransactionsState = useTransactionsState()
+  const { activeTab }: PortfolioState = usePortfolioState()
 
   let mostRecentPendingTransaction = null
 
   if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
     mostRecentPendingTransaction = recentBridgeTransactions[0]
     return (
-      <div className="mt-4 border border-[#3D3D5C] rounded-md">
+      <div
+        className={`
+        mt-4 border border-[#3D3D5C] rounded-md
+        ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
+        `}
+      >
         <RecentlyBridgedPendingTransaction
           recentlyBridgedTransaction={mostRecentPendingTransaction}
         />
@@ -119,7 +128,12 @@ export const MostRecentPendingTransaction = () => {
   } else if (userPendingTransactions && userPendingTransactions.length > 0) {
     mostRecentPendingTransaction = userPendingTransactions[0]
     return (
-      <div className="mt-4 border border-[#3D3D5C] rounded-md">
+      <div
+        className={`
+        mt-4 border border-[#3D3D5C] rounded-md
+        ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
+        `}
+      >
         <Transaction
           bridgeTransaction={mostRecentPendingTransaction}
           transactionType={ActivityType.PENDING}
