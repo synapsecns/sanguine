@@ -2,6 +2,7 @@ package anvil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -108,6 +109,12 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		}
 	}()
 
+	otterscanMessage := ""
+	if args.enableOtterscan {
+		otterAddress := setupOtterscan(ctx, pool, resource, args, t)
+		otterscanMessage = fmt.Sprintf("otterscan is running at %s", otterAddress)
+	}
+
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
@@ -144,7 +151,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	case <-ctx.Done():
 		t.Errorf("context canceled before anvil node started")
 	case logInfo := <-logInfoChan:
-		logger.Warnf("started anvil node for chain %s as container %s. Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		logger.Warnf("started anvil node for chain %s as container %s. %s Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), otterscanMessage, logInfo.LogDir())
 	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
@@ -166,6 +173,65 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}()
 
 	return &backend
+}
+
+func setupOtterscan(tb testing.TB, ctx context.Context, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
+	tb.Helper()
+
+	runOptions := &dockertest.RunOptions{
+		Repository: "otterscan/otterscan",
+		Tag:        "latest",
+		Env: []string{
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+		},
+		Labels: map[string]string{
+			"test-id": uuid.New().String(),
+		},
+		ExposedPorts: []string{"5100"},
+		Platform:     "linux/amd64", // otterscan *oficially* only supports linux/amd64, but this works fine.
+	}
+
+	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+		config.AutoRemove = args.autoremove
+		if args.restartPolicy != nil {
+			config.RestartPolicy = *args.restartPolicy
+		}
+	})
+	// since this is ran in a gofunc, context cancelation errors expected during pull, etc
+	if !errors.Is(err, context.Canceled) {
+		assert.Nil(tb, err)
+	}
+
+	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
+	// containers should be removed on their own, but this is a safety net.
+	// to prevent old containers from piling up, we set a timeout to remove the container.
+	assert.Nil(tb, resource.Expire(args.expirySeconds))
+
+	logInfoChan := make(chan processlog.LogMetadata)
+	go func() {
+		defer close(logInfoChan)
+		err = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithResource(resource), dockerutil.WithPool(pool), dockerutil.WithProcessLogOptions(args.processOptions...), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
+			select {
+			case <-ctx.Done():
+				return
+			case logInfoChan <- metadata:
+			}
+		}))
+
+		if ctx.Err() != nil {
+			logger.Warn(err)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		tb.Errorf("context canceled before anvil node started")
+	case logInfo := <-logInfoChan:
+		// debug level stuff
+		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+	}
+	return ""
 }
 
 var logger = log.Logger("anvil-docker")
