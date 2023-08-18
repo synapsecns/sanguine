@@ -90,13 +90,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <ActivitySection title="Recent">
           {/* <TransactionHeader transactionType={ActivityType.RECENT} /> */}
           {userHistoricalTransactions &&
-            userHistoricalTransactions.map((transaction: BridgeTransaction) => (
-              <Transaction
-                bridgeTransaction={transaction}
-                transactionType={ActivityType.RECENT}
-                key={transaction.kappa}
-              />
-            ))}
+            userHistoricalTransactions
+              .slice(0, 5) //temporarily only show recent 5
+              .map((transaction: BridgeTransaction) => (
+                <Transaction
+                  bridgeTransaction={transaction}
+                  transactionType={ActivityType.RECENT}
+                  key={transaction.kappa}
+                />
+              ))}
           <ExplorerLink connectedAddress={address} />
         </ActivitySection>
       )}
