@@ -26,12 +26,16 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }: TransactionsState = useTransactionsState()
   const { recentBridgeTransactions }: BridgeState = useBridgeState()
 
-  const hasPendingTransactions: boolean = useMemo(
-    () => userPendingTransactions && userPendingTransactions.length > 0,
-    [userPendingTransactions]
-  )
+  const hasPendingTransactions: boolean = useMemo(() => {
+    if (userPendingTransactions && userPendingTransactions.length > 0)
+      return true
+    if (recentBridgeTransactions && recentBridgeTransactions.length > 0)
+      return true
+    return false
+  }, [userPendingTransactions, recentBridgeTransactions])
 
-  // console.log('hasPendingTransactions: ', hasPendingTransactions)
+  console.log('hasPendingTransactions: ', hasPendingTransactions)
+
   const hasHistoricalTransactions: boolean = useMemo(
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
     [userHistoricalTransactions]
@@ -65,17 +69,18 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      <PendingTransactionAwaitingIndexing />
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="mb-5">
           {/* <TransactionHeader transactionType={ActivityType.PENDING} /> */}
-          {userPendingTransactions.map((transaction: BridgeTransaction) => (
-            <Transaction
-              bridgeTransaction={transaction}
-              transactionType={ActivityType.PENDING}
-              key={transaction.kappa}
-            />
-          ))}
+          <PendingTransactionAwaitingIndexing />
+          {userPendingTransactions &&
+            userPendingTransactions.map((transaction: BridgeTransaction) => (
+              <Transaction
+                bridgeTransaction={transaction}
+                transactionType={ActivityType.PENDING}
+                key={transaction.kappa}
+              />
+            ))}
         </ActivitySection>
       )}
 
@@ -290,7 +295,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        grid grid-cols-10 mt-auto py-3 mx-1
+        grid grid-cols-10 mt-auto py-3 px-2
         text-sm text-white
         items-end hover:cursor-pointer hover:bg-[#272731]
         ${
