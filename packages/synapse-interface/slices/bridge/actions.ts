@@ -9,6 +9,7 @@ export interface RecentBridgeTransaction {
   toChainId: number
   toToken: Token
   transactionHash: string
+  timestamp: number
 }
 
 export const addRecentBridgeTransaction = createAction<RecentBridgeTransaction>(

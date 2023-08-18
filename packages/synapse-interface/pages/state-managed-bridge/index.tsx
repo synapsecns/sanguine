@@ -94,8 +94,8 @@ import {
   FetchState,
   updateSingleTokenAllowance,
 } from '@/slices/portfolio/actions'
-
 import { addRecentBridgeTransaction } from '@/slices/bridge/actions'
+import { getTimeMinutesFromNow } from '@/utils/time'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -497,6 +497,7 @@ const StateManagedBridge = () => {
             toChainId: toChainId,
             toToken: toToken,
             transactionHash: tx,
+            timestamp: getTimeMinutesFromNow(0),
           })
         )
         dispatch(addBridgeTxHash(tx))
