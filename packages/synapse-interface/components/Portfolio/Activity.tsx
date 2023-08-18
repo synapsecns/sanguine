@@ -62,6 +62,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
+      <PendingTransactionAwaitingIndexing />
       {address && !isLoading && !hasNoTransactions && (
         <>
           {hasPendingTransactions && (
@@ -150,9 +151,11 @@ export const PendingTransactionAwaitingIndexing = () => {
 
   return (
     <>
-      {/* {recentBridgeTransactions.map((transaction: RecentBridgeTransaction) => (
-
-    ))} */}
+      {recentBridgeTransactions.map((transaction: RecentBridgeTransaction) => (
+        <RecentlyBridgedPendingTransaction
+          recentlyBridgedTransaction={transaction}
+        />
+      ))}
     </>
   )
 }
