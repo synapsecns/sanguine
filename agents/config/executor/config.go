@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/agents/config"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -14,7 +16,7 @@ import (
 // Config is used to configure an Executor agent.
 type Config struct {
 	// DBConfig is the database configuration.
-	DBConfig DBConfig `yaml:"db_config"`
+	DBConfig config.DBConfig `yaml:"db_config"`
 	// ScribeConfig is the scribe configuration.
 	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information
@@ -40,6 +42,8 @@ type Config struct {
 	SetMinimumTimeInterval uint32 `yaml:"set_minimum_time_interval"`
 	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
 	DBPrefix string `yaml:"db_prefix"`
+	// SubmitterConfig is the config for the submitter.
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
