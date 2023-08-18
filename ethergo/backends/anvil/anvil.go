@@ -111,7 +111,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	otterscanMessage := ""
 	if args.enableOtterscan {
-		otterAddress := setupOtterscan(t, ctx, pool, resource, args)
+		otterAddress := setupOtterscan(ctx, t, pool, resource, args)
 		otterscanMessage = fmt.Sprintf("otterscan is running at %s", otterAddress)
 	}
 
@@ -175,7 +175,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	return &backend
 }
 
-func setupOtterscan(tb testing.TB, ctx context.Context, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
+func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
 	tb.Helper()
 
 	runOptions := &dockertest.RunOptions{
