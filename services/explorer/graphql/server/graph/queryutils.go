@@ -1616,12 +1616,10 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 
 // GetOriginBridgeTxBW gets an origin bridge tx.
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
-	fmt.Println("GetOriginBridgeTxBW", chainID, txnHash, eventType)
 	txType := model.BridgeTxTypeOrigin
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
 
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
-	fmt.Println("bridgeEventMV origin", bridgeEventMV, err, query)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
@@ -1643,7 +1641,6 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 	txType := model.BridgeTxTypeDestination
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
-	fmt.Println("bridgeEventMV", bridgeEventMV, err, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
@@ -1819,7 +1816,6 @@ func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType mode
 func (r *queryResolver) checkIfChainIDExists(chainIDNeeded uint32, bridgeType model.BridgeType) bool {
 	exists := false
 	for chainID, chainConfig := range r.Config.Chains {
-		fmt.Println(chainID, chainConfig, chainIDNeeded)
 		if chainID == chainIDNeeded {
 			switch bridgeType {
 			case model.BridgeTypeBridge:

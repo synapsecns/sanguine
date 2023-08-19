@@ -207,7 +207,6 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 				logger.Errorf("could not get and parse logs: %v", err)
 				continue
 			}
-			fmt.Println("Ss", maturedBridgeEvent, err)
 			go r.storeBridgeEvent(maturedBridgeEvent) // store events
 			switch bridgeType {
 			case model.BridgeTypeBridge:
@@ -253,7 +252,6 @@ func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chai
 	blockRange := r.Config.Chains[chainID].GetLogsRange * r.Config.Chains[chainID].GetLogsBatchAmount
 	avgBlockTime := r.Config.Chains[chainID].BlockTime
 	estimatedBlockNumber := currentBlock - uint64(math.Floor(float64(currentTime-timestamp)/float64(avgBlockTime)))
-	fmt.Println("estimated block number", estimatedBlockNumber, currentBlock, currentTime, timestamp, blockRange, avgBlockTime)
 
 	upper := estimatedBlockNumber + blockRange*10/avgBlockTime
 	if upper > currentBlock {
@@ -297,10 +295,8 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 	go func() {
 		r.storeBridgeEvent(parsedLogs[0])
 	}()
-	fmt.Println("parsed logs", parsedLogs, logs)
 	parsedLog := interface{}(nil)
-	for i, log := range parsedLogs {
-		fmt.Println("log", i, log)
+	for _, log := range parsedLogs {
 		if log == nil {
 			continue
 		}
@@ -389,14 +385,11 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 						logger.Errorf("could not parse log: %v", err)
 						continue
 					}
-					fmt.Println("bridgeEvent.Kappa.Valid", bridgeEvent.Kappa.Valid, bridgeEvent.Kappa.String, kappa)
 					if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
 						destinationData <- &ifaceBridgeEvent{
 							IFace:       iFace,
 							BridgeEvent: bridgeEvent,
 						}
-						fmt.Println("destinationData exiting", destinationData)
-
 						return
 					}
 
@@ -406,13 +399,11 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 						logger.Errorf("could not parse log: %v", err)
 						continue
 					}
-					fmt.Println("cctpEvent.RequestID", cctpEvent.RequestID, kappa)
 					if cctpEvent.RequestID == kappa {
 						destinationDataCCTP <- &ifaceCCTPEvent{
 							IFace:     iFace,
 							CCTPEvent: cctpEvent,
 						}
-						fmt.Println("destinationDataCCTP exiting", destinationDataCCTP)
 						return
 					}
 				}
@@ -427,7 +418,6 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 	}()
 
 	<-streamLogsCtx.Done()
-	fmt.Println("streamLogsCtx done", streamLogsCtx.Err())
 	var bridgeEvent interface{}
 	var err error
 	switch bridgeType {
@@ -436,7 +426,6 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 		if !ok {
 			return nil, fmt.Errorf("no log found with kappa %s", kappa)
 		}
-		fmt.Println("bridgeEventIFace", bridgeEventIFace)
 		bridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, bridgeEventIFace.BridgeEvent, bridgeEventIFace.IFace, chainID)
 
 	case model.BridgeTypeCctp:
@@ -467,7 +456,6 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 		return nil, fmt.Errorf("error parsing log, chainid: %d, server: %s", chainID, swapLog.Address.String())
 	}
 
-	fmt.Println("sssss", swapEvent.BoughtId, swapEvent.SoldId, swapEvent.Raw.TxHash)
 	iFace, err := filter.ParseTokenSwap(swapLog)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse swap event: %w", err)
@@ -477,12 +465,10 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 	if err != nil {
 		return nil, fmt.Errorf("could not parse swap event: %w", err)
 	}
-	fmt.Println("from scribe address", iFace.TokensSold, iFace.BoughtId, soldID, address, filterKey)
 	swapReplacement = swapReplacementData{
 		Amount:  iFace.TokensSold,
 		Address: common.HexToAddress(address),
 	}
-	fmt.Println("from scribe swapReplacement", iFace.TokensSold, address, swapReplacement, err)
 	return &swapReplacement, nil
 }
 
@@ -506,7 +492,6 @@ func (r Resolver) checkRequestIDExists(ctx context.Context, requestID string, ch
 	var kappaBytes32 [32]byte
 	kappaBytes := common.Hex2Bytes(requestID)
 	copy(kappaBytes32[:], kappaBytes)
-	fmt.Println("kappaBytes32", kappaBytes32, "kappaBytes", kappaBytes, "requestID", requestID)
 	exists, err := r.Refs.CCTPRefs[chainID].IsRequestFulfilled(&bind.CallOpts{
 		Context: ctx,
 	}, kappaBytes32)

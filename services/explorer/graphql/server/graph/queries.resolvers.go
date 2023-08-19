@@ -400,11 +400,9 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var results *model.BridgeWatcherTx
 	var err error
-	fmt.Println("chainID origin", chainID)
 	if !r.checkIfChainIDExists(uint32(chainID), bridgeType) {
 		return nil, fmt.Errorf("chainID not supported by server")
 	}
-	fmt.Println("checkIfChainIDExists", uint32(chainID), bridgeType)
 
 	results, err = r.GetOriginBridgeTxBW(ctx, chainID, txnHash, bridgeType)
 

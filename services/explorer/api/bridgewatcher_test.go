@@ -2,7 +2,6 @@ package api_test
 
 import (
 	gosql "database/sql"
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -186,9 +185,6 @@ func (g APISuite) TestExistingDestinationTx() {
 		FToken:              tokenAddr,
 		FSender:             tokenAddr,
 	})
-	var t []sql.HybridBridgeEvent
-	test := g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Raw("SELECT * FROM mv_bridge_events").Scan(&t)
-	fmt.Println("HOO", len(t), t[0].TKappa, t[0].TTxHash, test)
 	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
 		ChainID:         chainID,
 		TokenAddress:    tokenAddr,
