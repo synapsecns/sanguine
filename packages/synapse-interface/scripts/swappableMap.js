@@ -5,11 +5,14 @@ const { ethers } = require('ethers')
 
 // Provider URLs
 const providers = require('./providers.json')
+// Symbol overrides (for tokens with incorrect on-chain symbols)
+const symbolOverrides = require('./symbolOverrides.json')
 // Contract ABIs
 const SynapseRouterABI = require('./abi/SynapseRouter.json')
 const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
 const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
 const SwapQuoterABI = require('./abi/SwapQuoter.json')
+const ERC20ABI = require('./abi/IERC20Metadata.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -177,27 +180,56 @@ const addSetToMap = (map, key, set) => {
   })
 }
 
+const sortMapByKeys = (map) => {
+  const sortedMap = {}
+  Object.keys(map)
+    .sort()
+    .forEach((key) => {
+      sortedMap[key] = map[key]
+    })
+  return sortedMap
+}
+
 const printSwappableTokens = async () => {
   const swappableMap = {}
   await Promise.all(
-    Object.keys(providers)
-      .sort()
-      .map(async (chainId) => {
-        const swappableOrigin = await getSwappableOrigin(chainId)
-        swappableMap[chainId] = {}
-        await Promise.all(
-          Object.keys(swappableOrigin)
-            .sort()
-            .map(async (token) => {
-              swappableMap[chainId][token] = {
-                origin: Array.from(swappableOrigin[token]).sort(),
-                destination: await getSwappableDestination(chainId, token),
-              }
-            })
-        )
-      })
+    Object.keys(providers).map(async (chainId) => {
+      const swappableOrigin = await getSwappableOrigin(chainId)
+      const tokens = {}
+      await Promise.all(
+        Object.keys(swappableOrigin).map(async (token) => {
+          tokens[token] = {
+            symbol: await getTokenSymbol(chainId, token),
+            origin: Array.from(swappableOrigin[token]).sort(),
+            destination: await getSwappableDestination(chainId, token),
+          }
+        })
+      )
+      swappableMap[chainId] = sortMapByKeys(tokens)
+    })
   )
-  prettyPrint(swappableMap, './data/swappableMap.json')
+  prettyPrint(sortMapByKeys(swappableMap), './data/swappableMap.json')
+}
+
+const getTokenSymbol = async (chainId, token) => {
+  // Check if token is ETH
+  if (token === ETH) {
+    // Get WETH address from SwapQuoter
+    const weth = await SwapQuoters[chainId].weth()
+    // Return "WETH" symbol without first character
+    return getTokenSymbol(chainId, weth).then((symbol) => symbol.slice(1))
+  }
+  // Check if {chainId: {token: {symbol}}} is in symbolOverrides
+  if (chainId in symbolOverrides && token in symbolOverrides[chainId]) {
+    return symbolOverrides[chainId][token]
+  }
+  // Otherwise return symbol from ERC20 contract
+  const symbol = await new ethers.Contract(
+    token,
+    ERC20ABI,
+    providers[chainId]
+  ).symbol()
+  return symbol
 }
 
 // Writes obj to fn as a pretty printed JSON file
