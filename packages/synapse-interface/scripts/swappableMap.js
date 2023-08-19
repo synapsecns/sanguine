@@ -110,6 +110,29 @@ const getSwappableOrigin = async (chainId) => {
   return swappableToSymbols
 }
 
+// Function to get a list of bridge token symbols that could be swapped
+// into a token on a destination chain.
+const getSwappableDestination = async (chainId, token) => {
+  // Get list of connected bridge tokens: (symbol, token) pairs
+  const connectedBridgeTokens = await SynapseRouters[
+    chainId
+  ].getConnectedBridgeTokens(token)
+  const symbolSet = new Set()
+  connectedBridgeTokens.forEach((bridgeToken) => {
+    symbolSet.add(bridgeToken.symbol)
+  })
+  // Get a list of bridge token symbols from CCTP if CCTP is supported on the chain
+  if (SynapseCCTPRouters[chainId]) {
+    const connectedCctpTokens = await SynapseCCTPRouters[
+      chainId
+    ].getConnectedBridgeTokens(token)
+    connectedCctpTokens.forEach((bridgeToken) => {
+      symbolSet.add(bridgeToken.symbol)
+    })
+  }
+  return Array.from(symbolSet).sort()
+}
+
 const getCCTPBridgeSymbols = async (chainId) => {
   // Return empty map if CCTP is not supported on the chain
   if (!SynapseCCTPs[chainId]) {
@@ -154,30 +177,27 @@ const addSetToMap = (map, key, set) => {
   })
 }
 
-// Transforms and sorts map {token: set} into {token: array}
-const transformMap = (map) => {
-  const result = {}
-  Object.keys(map)
-    .sort()
-    .forEach((token) => {
-      result[token] = Array.from(map[token]).sort()
-    })
-  return result
-}
-
-const printOriginTokens = async () => {
-  // Collect swappableOrigin for each chain
-  const swappableOrigin = {}
+const printSwappableTokens = async () => {
+  const swappableMap = {}
   await Promise.all(
     Object.keys(providers)
       .sort()
       .map(async (chainId) => {
-        swappableOrigin[chainId] = transformMap(
-          await getSwappableOrigin(chainId)
+        const swappableOrigin = await getSwappableOrigin(chainId)
+        swappableMap[chainId] = {}
+        await Promise.all(
+          Object.keys(swappableOrigin)
+            .sort()
+            .map(async (token) => {
+              swappableMap[chainId][token] = {
+                origin: Array.from(swappableOrigin[token]).sort(),
+                destination: await getSwappableDestination(chainId, token),
+              }
+            })
         )
       })
   )
-  prettyPrint(swappableOrigin, './data/swappableOrigin.json')
+  prettyPrint(swappableMap, './data/swappableMap.json')
 }
 
 // Writes obj to fn as a pretty printed JSON file
@@ -187,4 +207,4 @@ const prettyPrint = (obj, fn) => {
   execSync(`npx prettier --write ${fn}`)
 }
 
-printOriginTokens()
+printSwappableTokens()
