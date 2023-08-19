@@ -24,6 +24,6 @@ type Resolver struct {
 	Clients     map[uint32]etherClient.EVM
 	Parsers     *types.ServerParsers
 	Refs        *types.ServerRefs
-	SwapFilters map[uint32][]*swap.SwapFlashLoanFilterer
+	SwapFilters map[string]*swap.SwapFlashLoanFilterer
 	Config      serverConfig.Config
 }

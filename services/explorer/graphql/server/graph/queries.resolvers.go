@@ -400,10 +400,14 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var results *model.BridgeWatcherTx
 	var err error
-	if r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+	fmt.Println("chainID origin", chainID)
+	if !r.checkIfChainIDExists(uint32(chainID), bridgeType) {
 		return nil, fmt.Errorf("chainID not supported by server")
 	}
+	fmt.Println("checkIfChainIDExists", uint32(chainID), bridgeType)
+
 	results, err = r.GetOriginBridgeTxBW(ctx, chainID, txnHash, bridgeType)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin tx %w", err)
 	}
@@ -415,7 +419,7 @@ func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID int,
 	if historical == nil {
 		return nil, fmt.Errorf("historical flag must be set")
 	}
-	if r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+	if !r.checkIfChainIDExists(uint32(chainID), bridgeType) {
 		return nil, fmt.Errorf("chainID not supported by server")
 	}
 	var results *model.BridgeWatcherTx

@@ -29,7 +29,7 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, clients map[uint32]etherClient.EVM, parsers *types.ServerParsers, refs *types.ServerRefs, swapFilters map[uint32][]*swap.SwapFlashLoanFilterer, config serverConfig.Config, handler metrics.Handler) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, clients map[uint32]etherClient.EVM, parsers *types.ServerParsers, refs *types.ServerRefs, swapFilters map[string]*swap.SwapFlashLoanFilterer, config serverConfig.Config, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{

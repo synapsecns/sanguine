@@ -70,8 +70,11 @@ func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash s
 			}
 			var logs []ethTypes.Log
 			var tokenData *swapReplacementData
-			for _, log := range receipt.Logs {
-				if log.Topics[0].String() == r.Config.SwapTopicHash {
+
+			for i := range receipt.Logs {
+				// iterating in reverse order to get the latest swap log
+				log := receipt.Logs[len(receipt.Logs)-i-1]
+				if tokenData == nil && log.Topics[0].String() == r.Config.SwapTopicHash {
 					tokenData, err = r.parseSwapLog(ctx, *log, chainID)
 					if err != nil {
 						logger.Errorf("Could not parse swap log on chain %d Error: %v", chainID, err)
@@ -137,6 +140,7 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 	timeout := time.Duration(0)
 	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
+	fmt.Println("bridge contract", chainID, r.Refs.BridgeRefs[chainID])
 	contractAddress := r.Refs.BridgeRefs[chainID].Address()
 	if !r.checkKappaExists(txFetchContext, kappa, chainID) {
 		return nil, fmt.Errorf(kappaDoesNotExist)
@@ -159,7 +163,7 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 			}
 			if err != nil {
 				b.Duration()
-				logger.Errorf("Could not get iterator for historical logs on chain %d Error: %v", chainID, err)
+				logger.Errorf("Could not get iterator for logs on chain %d Error: %v", chainID, err)
 				continue
 			}
 			toAddressTopic := common.HexToHash(address)
@@ -193,6 +197,8 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 				logger.Errorf("type assertion failed when converting bridge event")
 				continue
 			}
+			fmt.Println("bridgeEvent", bridgeEvent.TxHash, bridgeEvent.Kappa.String, bridgeEvent.BlockNumber)
+
 			return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeDestination)
 		}
 	}
@@ -280,32 +286,67 @@ func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32
 }
 
 func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
+	// Get the current block number
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
+
+	// Compute the initial guess based on block time
 	currentTime := uint64(time.Now().Unix())
 	blockTime := r.Config.Chains[chainID].BlockTime
-	postulatedBlock := (currentBlock - (currentTime-timestamp)/blockTime) - (r.Config.Chains[chainID].GetLogsRange * r.Config.Chains[chainID].GetLogsBatchAmount)
-	blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(postulatedBlock)))
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", postulatedBlock, chainID, err)
+	timeDifference := currentTime - timestamp
+	blocksDifference := timeDifference / blockTime
+	postulatedBlock := currentBlock - blocksDifference
+
+	lowBlock := uint64(0)
+	highBlock := postulatedBlock // the highBlock is our postulatedBlock as the start
+	var midBlock uint64
+
+	const maxIterations = 10 // max tries
+	iteration := 0
+
+	// binary search for nearest block to timestamp
+	for lowBlock <= highBlock && iteration < maxIterations {
+		midBlock = (lowBlock + highBlock) / 2
+		fmt.Println("searching for block iteration", iteration, "block", midBlock, postulatedBlock)
+
+		blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(midBlock)))
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", midBlock, chainID, err)
+		}
+
+		// Compare the timestamp of the block with the target timestamp
+		blockTimestamp := blockHeader.Time()
+		if blockTimestamp < timestamp {
+			lowBlock = midBlock + 1
+		} else {
+			highBlock = midBlock - 1
+		}
+
+		iteration++
 	}
 
-	difference := int64(blockHeader.Time()) - int64(timestamp)
-	fmt.Println(currentTime, timestamp, blockHeader.Time(), difference, postulatedBlock, currentBlock, blockTime)
+	// Make sure the block is before the timestamp
+	for {
+		blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(midBlock)))
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", midBlock, chainID, err)
+		}
 
-	if difference > 0 {
-		postulatedBlock -= uint64(difference)
+		if blockHeader.Time() < timestamp {
+			break
+		}
+		midBlock--
 	}
-	fmt.Println(currentTime, timestamp, difference, blockHeader.Time(), postulatedBlock, currentBlock, blockTime)
-	return &postulatedBlock, &currentBlock, nil
+
+	return &midBlock, &currentBlock, nil
 }
 
 func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *swapReplacementData) (*model.BridgeWatcherTx, error) {
 	parsedLogs, err := backfill.ProcessLogs(ctx, logs, chainID, r.Parsers.BridgeParsers[chainID])
 	if err != nil {
-		return nil, fmt.Errorf("could not parse logs: %w", err)
+		return nil, fmt.Errorf("could not parse logs with explorer parser: %w", err)
 	}
 	go func() {
 		storeErr := r.DB.StoreEvents(ctx, parsedLogs)
@@ -313,15 +354,17 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 			logger.Errorf("could not store log while storing origin bridge watcher tx %v", err)
 		}
 	}()
+	fmt.Println("parsed logs", parsedLogs, logs)
 	parsedLog := interface{}(nil)
-	for _, log := range parsedLogs {
+	for i, log := range parsedLogs {
+		fmt.Println("log", i, log)
 		if log == nil {
 			continue
 		}
 		parsedLog = log
 	}
 	if parsedLog == nil {
-		return nil, fmt.Errorf("could not parse logs: %w", err)
+		return nil, fmt.Errorf("parsed log is nil %w", err)
 	}
 
 	bridgeEvent, ok := parsedLog.(*sql.BridgeEvent)
@@ -398,11 +441,13 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 				if !ok {
 					return
 				}
+				fmt.Println("SSSSLOG", log.TxHash.String())
 				bridgeEvent, iFace, err := r.Parsers.BridgeParsers[chainID].ParseLog(log, chainID)
 				if err != nil {
 					logger.Errorf("could not parse log: %v", err)
 					continue
 				}
+				fmt.Println("bridgeEvent.Kappa.Valid", bridgeEvent.Kappa.String, kappa)
 
 				if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
 					bridgeEventIFace := &ifaceBridgeEvent{
@@ -521,28 +566,32 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainID uint32) (*swapReplacementData, error) {
 	// parse swap with swap filter
 	var swapReplacement swapReplacementData
-	for _, filter := range r.SwapFilters[chainID] {
-		swapEvent, err := filter.ParseTokenSwap(swapLog)
-		if err != nil {
-			continue
-		}
-		if swapEvent != nil {
-			iFace, err := filter.ParseTokenSwap(swapLog)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse swap event: %w", err)
-			}
-			soldID := iFace.SoldId
-			address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
-			if err != nil {
-				return nil, fmt.Errorf("could not parse swap event: %w", err)
-			}
-			swapReplacement = swapReplacementData{
-				Amount:  iFace.TokensSold,
-				Address: common.HexToAddress(address),
-			}
-			break
-		}
+	filterKey := fmt.Sprintf("%d_%s", chainID, swapLog.Address.String())
+	filter := r.SwapFilters[filterKey]
+	if filter == nil {
+		return nil, fmt.Errorf("this swap address is not in the server config, chainid: %d, server: %s", chainID, swapLog.Address.String())
 	}
+	swapEvent, err := filter.ParseTokenSwap(swapLog)
+	if err != nil || swapEvent == nil {
+		return nil, fmt.Errorf("error parsing log, chainid: %d, server: %s", chainID, swapLog.Address.String())
+	}
+
+	fmt.Println("sssss", swapEvent.BoughtId, swapEvent.SoldId, swapEvent.Raw.TxHash)
+	iFace, err := filter.ParseTokenSwap(swapLog)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse swap event: %w", err)
+	}
+	soldID := iFace.SoldId
+	address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
+	if err != nil {
+		return nil, fmt.Errorf("could not parse swap event: %w", err)
+	}
+	fmt.Println("from scribe address", iFace.TokensSold, iFace.BoughtId, soldID, address, filterKey)
+	swapReplacement = swapReplacementData{
+		Amount:  iFace.TokensSold,
+		Address: common.HexToAddress(address),
+	}
+	fmt.Println("from scribe swapReplacement", iFace.TokensSold, address, swapReplacement, err)
 	return &swapReplacement, nil
 }
 

@@ -237,7 +237,8 @@ func (g *APISuite) SetupTest() {
 				BlockTime:          13,
 				Swaps:              []string{"0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8"},
 				Contracts: serverConfig.ContractsConfig{
-					CCTP: "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",
+					CCTP:   "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",
+					Bridge: "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
 				},
 			},
 			56: {
@@ -248,6 +249,26 @@ func (g *APISuite) SetupTest() {
 				Swaps:              []string{"0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13"},
 				Contracts: serverConfig.ContractsConfig{
 					Bridge: "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+				},
+			},
+			42161: {
+				ChainID:            42161,
+				GetLogsRange:       1000,
+				GetLogsBatchAmount: 1,
+				BlockTime:          3,
+				Swaps:              []string{"0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40", "0xa067668661C84476aFcDc6fA5D758C4c01C34352"},
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+				},
+			},
+			10: {
+				ChainID:            10,
+				GetLogsRange:       500,
+				GetLogsBatchAmount: 1,
+				BlockTime:          2,
+				Swaps:              []string{"0xF44938b0125A6662f9536281aD2CD6c499F22004", "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"},
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b",
 				},
 			},
 		},

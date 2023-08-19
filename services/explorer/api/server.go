@@ -48,7 +48,7 @@ const cacheRehydrationInterval = 1800
 var logger = log.Logger("explorer-api")
 
 // nolint:gocognit,cyclop
-func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.ScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[uint32][]*swap.SwapFlashLoanFilterer, error) {
+func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.ScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[string]*swap.SwapFlashLoanFilterer, error) {
 	ethClient, err := ethclient.DialContext(ctx, config.RPCURL+fmt.Sprintf("%d", 1))
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not create client: %w", err)
@@ -79,7 +79,7 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 	bridgeParsers := make(map[uint32]*parser.BridgeParser)
 	bridgeRefs := make(map[uint32]*bridge.BridgeRef)
 	cctpRefs := make(map[uint32]*cctp.CCTPRef)
-	swapFilterers := make(map[uint32][]*swap.SwapFlashLoanFilterer)
+	swapFilterers := make(map[string]*swap.SwapFlashLoanFilterer)
 
 	for _, chain := range config.Chains {
 		if chain.Contracts.CCTP != "" {
@@ -117,10 +117,9 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 				if err != nil {
 					return nil, nil, nil, fmt.Errorf("could not create swap filterer: %w", err)
 				}
-				if len(swapFilterers[chain.ChainID]) == 0 {
-					swapFilterers[chain.ChainID] = make([]*swap.SwapFlashLoanFilterer, 0)
-				}
-				swapFilterers[chain.ChainID] = append(swapFilterers[chain.ChainID], swapFilterer)
+				key := fmt.Sprintf("%d_%s", chain.ChainID, swapAddr)
+
+				swapFilterers[key] = swapFilterer
 			}
 		}
 	}
