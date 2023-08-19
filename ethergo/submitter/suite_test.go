@@ -346,7 +346,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not create sqlite store")
 	}
 
-	logger.Warnf("database is at %s/synapse.db", dbPath)
+	logger.Warnf("submitter database is at %s/synapse.db", dbPath)
 
 	namingStrategy := schema.NamingStrategy{
 		TablePrefix: fmt.Sprintf("test%d_%d_", gofakeit.Int64(), time.Now().Unix()),

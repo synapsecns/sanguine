@@ -3,6 +3,8 @@ package domains
 import (
 	"context"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -66,7 +68,7 @@ type SummitContract interface {
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -82,7 +84,7 @@ type BondingManagerContract interface {
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
+	Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) (tx *ethTypes.Transaction, err error) // AttestationsAmount retrieves the number of attestations submitted to the destination.
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// GetAttestationNonce gets the nonce of the attestation by snap root
@@ -95,13 +97,12 @@ type DestinationContract interface {
 type LightInboxContract interface {
 	// SubmitAttestation submits an attestation to the destination chain (via the light inbox contract)
 	SubmitAttestation(
-		ctx context.Context,
-		signer signer.Signer,
+		transactor *bind.TransactOpts,
 		attPayload []byte,
 		signature signer.Signature,
 		agentRoot [32]byte,
 		snapGas []*big.Int,
-	) error
+	) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.
