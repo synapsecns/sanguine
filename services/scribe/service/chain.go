@@ -219,8 +219,11 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart u
 			var err error
 			startHeight, endHeight, err := c.getIndexingRange(parentContext, configStart, configEnd, indexer)
 			if err != nil {
-				return err
+				timeout = b.Duration()
+				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.BackfillIndexerError)
+				continue
 			}
+
 			err = indexer.Index(parentContext, startHeight, endHeight)
 			if err != nil {
 				timeout = b.Duration()
@@ -317,6 +320,11 @@ func (c *ChainIndexer) getIndexingRange(parentContext context.Context, configSta
 	}
 	endHeight = *latestBlock
 
+	// Check RPC flake
+	if startHeight > endHeight {
+		return startHeight, endHeight, fmt.Errorf("start height is greater than head block")
+	}
+
 	return startHeight, endHeight, nil
 }
 
@@ -367,6 +375,13 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 			startHeight := tipLivefillLastIndexed
 			if startHeight == 0 {
 				startHeight = *endHeight - c.chainConfig.Confirmations
+			}
+
+			// Check for RPC flake
+			if startHeight > *endHeight {
+				logger.ReportIndexerError(fmt.Errorf("start height is greater than head block"), tipLivefillIndexer.GetIndexerConfig(), logger.ErroneousHeadBlock)
+				timeout = b.Duration()
+				continue
 			}
 
 			err = tipLivefillIndexer.Index(parentContext, startHeight, *endHeight)
@@ -422,6 +437,13 @@ func (c *ChainIndexer) livefill(parentContext context.Context) error {
 			endHeight, err = c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
 			if err != nil {
 				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
+				timeout = b.Duration()
+				continue
+			}
+
+			// Check for RPC flake
+			if startHeight > *endHeight {
+				logger.ReportIndexerError(fmt.Errorf("start height is greater than head block"), livefillIndexer.GetIndexerConfig(), logger.ErroneousHeadBlock)
 				timeout = b.Duration()
 				continue
 			}

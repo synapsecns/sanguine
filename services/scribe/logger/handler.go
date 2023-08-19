@@ -37,6 +37,8 @@ const (
 	EmptyGetLogsChunk
 	// FatalScribeError is for when something goes wrong with scribe.
 	FatalScribeError
+	// ErroneousHeadBlock is returned when the head block is below the last indexed.
+	ErroneousHeadBlock
 )
 
 const (
@@ -93,6 +95,8 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 		logger.Errorf("Could not read data from database. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case EmptyGetLogsChunk:
 		logger.Warnf("Encountered empty getlogs chunk%s", unpackIndexerConfig(indexerData))
+	case ErroneousHeadBlock:
+		logger.Warnf("Head block is below last indexed block%s", unpackIndexerConfig(indexerData))
 	default:
 		logger.Errorf("Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	}
