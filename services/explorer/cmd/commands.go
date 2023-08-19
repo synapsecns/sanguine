@@ -37,25 +37,6 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var addressFlag = &cli.StringFlag{
-	Name:     "address",
-	Usage:    "--address <address>",
-	Value:    "",
-	Required: true,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:     "scribe-url",
-	Usage:    "--scribe-url <scribe-url>",
-	Required: true,
-}
-
-var omnirpcURL = &cli.StringFlag{
-	Name:     "omnirpc-url",
-	Usage:    "--omnirpc-url <omnirpc-url>",
-	Required: true,
-}
-
 var clickhouseAddressFlag = &cli.StringFlag{
 	Name:     "address",
 	Usage:    "--address pass 'default' to use the default clickhouse address",
@@ -72,7 +53,7 @@ var configFlag = &cli.StringFlag{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL, omnirpcURL, configFlag},
+	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
 		decodeConfig, err := serverconfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))

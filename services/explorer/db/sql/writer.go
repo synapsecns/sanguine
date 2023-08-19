@@ -36,25 +36,20 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 //
 //nolint:cyclop
 func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
-	var bridgeEvents []BridgeEvent
+	var bridgeEvents []*BridgeEvent
 	var swapEvents []SwapEvent
 	var messageBusEvents []MessageBusEvent
-	var cctpEvents []CCTPEvent
-	fmt.Println("bridge event", len(events))
-
+	var cctpEvents []*CCTPEvent
 	for _, event := range events {
 		switch conv := event.(type) {
-		case BridgeEvent:
-			fmt.Println("bridge events")
+		case *BridgeEvent:
 			bridgeEvents = append(bridgeEvents, conv)
 		case SwapEvent:
 			swapEvents = append(swapEvents, conv)
 		case MessageBusEvent:
 			messageBusEvents = append(messageBusEvents, conv)
-		case CCTPEvent:
+		case *CCTPEvent:
 			cctpEvents = append(cctpEvents, conv)
-		default:
-			fmt.Println("default", conv)
 		}
 	}
 
@@ -62,14 +57,14 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 	if len(bridgeEvents) > 0 {
 		dbTx := s.db.WithContext(ctx).Create(&bridgeEvents)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+			return fmt.Errorf("failed to store bridge events: %w", dbTx.Error)
 		}
 	}
 
 	if len(swapEvents) > 0 {
 		dbTx := s.db.WithContext(ctx).Create(&swapEvents)
 		if dbTx.Error != nil {
-			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
+			return fmt.Errorf("failed to store swap events: %w", dbTx.Error)
 		}
 	}
 
