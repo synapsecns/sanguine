@@ -276,7 +276,7 @@ func (g APISuite) TestNonExistingDestinationTxCCTP() {
 	value := "3699210873"
 	chainID := 1
 	bridgeType := model.BridgeTypeCctp
-	historical := true // set to false if this tx is within the last hour or so
+	historical := true // set to false if this tx is within the last hour or so.
 	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
