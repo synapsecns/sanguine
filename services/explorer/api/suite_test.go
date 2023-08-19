@@ -234,7 +234,7 @@ func (g *APISuite) SetupTest() {
 				ChainID:            1,
 				GetLogsRange:       256,
 				GetLogsBatchAmount: 1,
-				BlockTime:          13,
+				BlockTime:          12,
 				Swaps:              []string{"0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8"},
 				Contracts: serverConfig.ContractsConfig{
 					CCTP:   "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",

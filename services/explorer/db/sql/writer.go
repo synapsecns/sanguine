@@ -23,6 +23,11 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store message event: %w", dbTx.Error)
 		}
+	case *CCTPEvent:
+		dbTx := s.db.WithContext(ctx).Create(conv)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store cctp event: %w", dbTx.Error)
+		}
 	}
 	return nil
 }
@@ -35,10 +40,12 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 	var swapEvents []SwapEvent
 	var messageBusEvents []MessageBusEvent
 	var cctpEvents []CCTPEvent
+	fmt.Println("bridge event", len(events))
 
 	for _, event := range events {
 		switch conv := event.(type) {
 		case BridgeEvent:
+			fmt.Println("bridge events")
 			bridgeEvents = append(bridgeEvents, conv)
 		case SwapEvent:
 			swapEvents = append(swapEvents, conv)
@@ -46,6 +53,8 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 			messageBusEvents = append(messageBusEvents, conv)
 		case CCTPEvent:
 			cctpEvents = append(cctpEvents, conv)
+		default:
+			fmt.Println("default", conv)
 		}
 	}
 

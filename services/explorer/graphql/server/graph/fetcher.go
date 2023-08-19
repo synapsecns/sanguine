@@ -41,6 +41,7 @@ type swapReplacementData struct {
 const maxTimeToWaitForTx = 15 * time.Second
 const kappaDoesNotExist = "kappa does not exist on destination chain"
 
+// nolint:cyclop
 func (r Resolver) bwOriginFallback(ctx context.Context, chainID uint32, txHash string) (*model.BridgeWatcherTx, error) {
 	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
 	defer cancelTxFetch()
@@ -109,7 +110,7 @@ func (r Resolver) bwOriginFallbackCCTP(ctx context.Context, chainID uint32, txHa
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-txFetchContext.Done():
 			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			receipt, err := backendClient.TransactionReceipt(txFetchContext, common.HexToHash(txHash))
@@ -129,32 +130,46 @@ func (r Resolver) bwOriginFallbackCCTP(ctx context.Context, chainID uint32, txHa
 	}
 }
 
-func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, address string, kappa string, timestamp int, historical bool) (*model.BridgeWatcherTx, error) {
+// nolint:gocognit,cyclop
+func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, address string, identifier string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
 	defer cancelTxFetch()
+
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
 		Min:    30 * time.Millisecond,
 		Max:    5 * time.Second,
 	}
+
 	timeout := time.Duration(0)
-	// var backendClient backend.ScribeBackend
 	backendClient := r.Clients[chainID]
-	fmt.Println("bridge contract", chainID, r.Refs.BridgeRefs[chainID])
-	contractAddress := r.Refs.BridgeRefs[chainID].Address()
-	if !r.checkKappaExists(txFetchContext, kappa, chainID) {
-		return nil, fmt.Errorf(kappaDoesNotExist)
+	var contractAddress common.Address
+
+	// Check if the kappa/request id exists on the destination chain
+	switch bridgeType {
+	case model.BridgeTypeBridge:
+		contractAddress = r.Refs.BridgeRefs[chainID].Address()
+		if !r.checkKappaExists(txFetchContext, identifier, chainID) {
+			return nil, fmt.Errorf(kappaDoesNotExist)
+		}
+	case model.BridgeTypeCctp:
+		contractAddress = r.Refs.CCTPRefs[chainID].Address()
+		if !r.checkRequestIDExists(txFetchContext, identifier, chainID) {
+			return nil, fmt.Errorf(kappaDoesNotExist)
+		}
 	}
+
+	// Start trying to fetch logs
 	for {
 		select {
 		case <-txFetchContext.Done():
-
 			return nil, fmt.Errorf("context canceled: %w", txFetchContext.Err())
 		case <-time.After(timeout):
 			var err error
-			var startBlock *uint64
-			var endBlock *uint64
+
+			// Get the range of blocks to fetch logs from
+			var startBlock, endBlock *uint64
 			ascending := true
 			if historical {
 				startBlock, endBlock, err = r.getRangeForHistoricalDestinationLogs(txFetchContext, chainID, uint64(timestamp), backendClient)
@@ -168,7 +183,12 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 				continue
 			}
 			toAddressTopic := common.HexToHash(address)
-			toKappaTopic := common.HexToHash(fmt.Sprintf("0x%s", kappa))
+			topics := [][]common.Hash{nil, {toAddressTopic}}
+			if bridgeType == model.BridgeTypeBridge { // can filter by kappa as well if bridge
+				toKappaTopic := common.HexToHash(fmt.Sprintf("0x%s", identifier))
+				topics = append(topics, []common.Hash{toKappaTopic})
+			}
+
 			indexerConfig := &scribeTypes.IndexerConfig{
 				Addresses:            []common.Address{contractAddress},
 				GetLogsRange:         r.Config.Chains[chainID].GetLogsRange,
@@ -178,95 +198,35 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 				StartHeight:          *startBlock,
 				EndHeight:            *endBlock,
 				ConcurrencyThreshold: 0,
-				Topics:               [][]common.Hash{nil, {toAddressTopic}, {toKappaTopic}},
+				Topics:               topics,
 			}
 
 			logFetcher := indexer.NewLogFetcher(backendClient, big.NewInt(int64(*startBlock)), big.NewInt(int64(*endBlock)), indexerConfig, ascending)
-			maturedBridgeEvent, err := r.getAndParseLogs(txFetchContext, logFetcher, chainID, kappa)
+			maturedBridgeEvent, err := r.getAndParseLogs(txFetchContext, logFetcher, chainID, identifier, bridgeType)
 			if err != nil {
 				logger.Errorf("could not get and parse logs: %v", err)
 				continue
 			}
-			go func() {
-				r.storeBridgeEvent(maturedBridgeEvent)
-			}()
-			bridgeEvent, ok := maturedBridgeEvent.(*sql.BridgeEvent)
-			if !ok {
-				logger.Errorf("type assertion failed when converting bridge event")
-				continue
-			}
-			fmt.Println("bridgeEvent", bridgeEvent.TxHash, bridgeEvent.Kappa.String, bridgeEvent.BlockNumber)
+			fmt.Println("Ss", maturedBridgeEvent, err)
+			go r.storeBridgeEvent(maturedBridgeEvent) // store events
+			switch bridgeType {
+			case model.BridgeTypeBridge:
+				bridgeEvent, ok := maturedBridgeEvent.(*sql.BridgeEvent)
+				if !ok {
+					logger.Errorf("type assertion failed when converting bridge event")
+					continue
+				}
+				return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeDestination)
 
-			return bwBridgeToBWTx(bridgeEvent, model.BridgeTxTypeDestination)
-		}
-	}
-}
-
-func (r Resolver) bwDestinationFallbackCCTP(ctx context.Context, chainID uint32, address string, requestID string, timestamp int, historical bool) (*model.BridgeWatcherTx, error) {
-	txFetchContext, cancelTxFetch := context.WithTimeout(ctx, maxTimeToWaitForTx)
-	defer cancelTxFetch()
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    5 * time.Second,
-	}
-	timeout := time.Duration(0)
-	// var backendClient backend.ScribeBackend
-	backendClient := r.Clients[chainID]
-	contractAddress := r.Refs.CCTPRefs[chainID].Address()
-	if !r.checkRequestIDExists(txFetchContext, requestID, chainID) {
-		return nil, fmt.Errorf(kappaDoesNotExist)
-	}
-	for {
-		select {
-		case <-txFetchContext.Done():
-
-			return nil, fmt.Errorf("context canceled: %w", txFetchContext.Err())
-		case <-time.After(timeout):
-			var err error
-			var startBlock *uint64
-			var endBlock *uint64
-			ascending := true
-			if historical {
-				startBlock, endBlock, err = r.getRangeForHistoricalDestinationLogs(txFetchContext, chainID, uint64(timestamp), backendClient)
-			} else {
-				startBlock, endBlock, err = r.getRangeForDestinationLogs(txFetchContext, chainID, backendClient)
-				ascending = false
+			case model.BridgeTypeCctp:
+				bridgeEvent, ok := maturedBridgeEvent.(sql.BridgeEvent)
+				if !ok {
+					logger.Errorf("type assertion failed when converting bridge event")
+					continue
+				}
+				return bwBridgeToBWTx(&bridgeEvent, model.BridgeTxTypeDestination)
 			}
-			if err != nil {
-				b.Duration()
-				logger.Errorf("Could not get iterator for historical logs on chain %d Error: %v", chainID, err)
-				continue
-			}
-			toAddressTopic := common.HexToHash(address)
-			indexerConfig := &scribeTypes.IndexerConfig{
-				Addresses:            []common.Address{contractAddress},
-				GetLogsRange:         r.Config.Chains[chainID].GetLogsRange,
-				GetLogsBatchAmount:   r.Config.Chains[chainID].GetLogsBatchAmount,
-				StoreConcurrency:     1,
-				ChainID:              chainID,
-				StartHeight:          *startBlock,
-				EndHeight:            *endBlock,
-				ConcurrencyThreshold: 0,
-				Topics:               [][]common.Hash{nil, {toAddressTopic}},
-			}
-
-			logFetcher := indexer.NewLogFetcher(backendClient, big.NewInt(int64(*startBlock)), big.NewInt(int64(*endBlock)), indexerConfig, ascending)
-			maturedBridgeEvent, err := r.getAndParseLogsCCTP(txFetchContext, logFetcher, chainID, requestID)
-			if err != nil {
-				logger.Errorf("could not get and parse logs: %v", err)
-				continue
-			}
-			go func() {
-				r.storeBridgeEvent(maturedBridgeEvent)
-			}()
-			bridgeEvent, ok := maturedBridgeEvent.(sql.BridgeEvent)
-			if !ok {
-				logger.Errorf("type assertion failed when converting bridge event")
-				continue
-			}
-			return bwBridgeToBWTx(&bridgeEvent, model.BridgeTxTypeDestination)
+			return nil, fmt.Errorf("could not convert bridge event to bridge watcher tx")
 		}
 	}
 }
@@ -304,25 +264,19 @@ func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chai
 	if lowerInt64 > 0 {
 		lower = uint64(lowerInt64)
 	}
-	fmt.Println("upp", upper)
-	fmt.Println("downn", lower)
 
 	for lower <= upper && iteration < maxIterations {
 		mid = (lower + upper) / 2
-		fmt.Println("at block", lower, mid, int64(mid), upper)
-
 		blockHeader, err := backendClient.HeaderByNumber(ctx, big.NewInt(int64(mid)))
 		if err != nil {
 			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", mid, chainID, err)
 		}
 		timeDifference := int64(blockHeader.Time) - int64(timestamp)
-		fmt.Println("found block within range", timeDifference, blockHeader.Time, timestamp, mid, blockRange)
 
 		// check if block is before the timestamp from the origin tx
 		if timeDifference <= 0 {
-			fmt.Println("timeDifference", timeDifference, 0-int64(blockRange/avgBlockTime))
 			// if the block is within the range of a single getlogs request, return the range
-			if timeDifference > 0-int64(blockRange/avgBlockTime) {
+			if timeDifference > 0-int64(blockRange*avgBlockTime) {
 				return &mid, &currentBlock, nil
 			}
 			lower = mid
@@ -341,7 +295,7 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 		return nil, fmt.Errorf("could not parse logs with explorer parser: %w", err)
 	}
 	go func() {
-		r.storeBridgeEvents(parsedLogs)
+		r.storeBridgeEvent(parsedLogs[0])
 	}()
 	fmt.Println("parsed logs", parsedLogs, logs)
 	parsedLog := interface{}(nil)
@@ -370,11 +324,11 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 
 func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs []ethTypes.Log) (*model.BridgeWatcherTx, error) {
 	parsedLogs, err := backfill.ProcessLogs(ctx, logs, chainID, r.Parsers.CCTParsers[chainID])
-	if err != nil {
+	if err != nil || len(parsedLogs) == 0 {
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 	go func() {
-		r.storeBridgeEvents(parsedLogs)
+		r.storeBridgeEvent(parsedLogs[0])
 	}()
 	parsedLog := interface{}(nil)
 	for _, log := range parsedLogs {
@@ -395,163 +349,108 @@ func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs
 	return bwBridgeToBWTx(&bridgeEvent, model.BridgeTxTypeOrigin)
 }
 
-// nolint:cyclop
-func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFetcher, chainID uint32, kappa string) (interface{}, error) {
+// nolint:cyclop,gocognit
+func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFetcher, chainID uint32, kappa string, bridgeType model.BridgeType) (interface{}, error) {
 	streamLogsCtx, cancelStreamLogs := context.WithCancel(ctx)
-	defer cancelStreamLogs()
-
 	logsChan := *logFetcher.GetFetchedLogsChan()
 	destinationData := make(chan *ifaceBridgeEvent, 1)
+	destinationDataCCTP := make(chan *ifaceCCTPEvent, 1)
 
+	closeDestinationChannels := func() {
+		close(destinationData)
+		close(destinationDataCCTP)
+	}
 	errorChan := make(chan error)
-	defer close(errorChan)
 
-	// Start fetcher
+	// Start log fetching
 	go func() {
-		err := logFetcher.Start(streamLogsCtx)
-		if err != nil {
+		if err := logFetcher.Start(streamLogsCtx); err != nil {
 			errorChan <- err
 		}
 	}()
 
-	// Consume all the logs and check if there is one that is the same as the kappa
+	// Process logs and identify the relevant one matching the provided kappa. Will cancel if there's an error on the fetcher.
 	go func() {
+		defer cancelStreamLogs() // cancel stream logs if we exit this goroutine
+		defer closeDestinationChannels()
 		for {
 			select {
-			case <-streamLogsCtx.Done():
+			case <-ctx.Done():
 				return
-
 			case log, ok := <-logsChan:
 				if !ok {
 					return
 				}
-				fmt.Println("SSSSLOG", log.TxHash.String())
-				bridgeEvent, iFace, err := r.Parsers.BridgeParsers[chainID].ParseLog(log, chainID)
-				if err != nil {
-					logger.Errorf("could not parse log: %v", err)
-					continue
-				}
-				fmt.Println("bridgeEvent.Kappa.Valid", bridgeEvent.Kappa.String, kappa)
 
-				if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
-					bridgeEventIFace := &ifaceBridgeEvent{
-						IFace:       iFace,
-						BridgeEvent: bridgeEvent,
+				switch bridgeType {
+				case model.BridgeTypeBridge:
+					bridgeEvent, iFace, err := r.Parsers.BridgeParsers[chainID].ParseLog(log, chainID)
+					if err != nil {
+						logger.Errorf("could not parse log: %v", err)
+						continue
 					}
-					destinationData <- bridgeEventIFace
-					fmt.Println("sending destinationData", destinationData)
-					close(destinationData) // close consume channel
-					cancelStreamLogs()
-					return
+					fmt.Println("bridgeEvent.Kappa.Valid", bridgeEvent.Kappa.Valid, bridgeEvent.Kappa.String, kappa)
+					if bridgeEvent.Kappa.Valid && bridgeEvent.Kappa.String == kappa {
+						destinationData <- &ifaceBridgeEvent{
+							IFace:       iFace,
+							BridgeEvent: bridgeEvent,
+						}
+						fmt.Println("destinationData exiting", destinationData)
+
+						return
+					}
+
+				case model.BridgeTypeCctp:
+					cctpEvent, iFace, err := r.Parsers.CCTParsers[chainID].ParseLog(log, chainID)
+					if err != nil {
+						logger.Errorf("could not parse log: %v", err)
+						continue
+					}
+					fmt.Println("cctpEvent.RequestID", cctpEvent.RequestID, kappa)
+					if cctpEvent.RequestID == kappa {
+						destinationDataCCTP <- &ifaceCCTPEvent{
+							IFace:     iFace,
+							CCTPEvent: cctpEvent,
+						}
+						fmt.Println("destinationDataCCTP exiting", destinationDataCCTP)
+						return
+					}
 				}
 
 			case streamErr, ok := <-errorChan:
 				if ok {
 					logger.Errorf("error while streaming logs: %v", streamErr)
-					close(destinationData) // close consume channel
-					cancelStreamLogs()
 				}
 				return
 			}
 		}
 	}()
 
-	bridgeEventIFace, ok := <-destinationData
-	fmt.Println("received bridgeEventIFace")
-	cancelStreamLogs()
-	if !ok {
-		// Handle the case where destinationData was closed without sending data.
-		return nil, fmt.Errorf("no log found with kappa %s", kappa)
-	}
-	var maturedBridgeEvent interface{}
+	<-streamLogsCtx.Done()
+	fmt.Println("streamLogsCtx done", streamLogsCtx.Err())
+	var bridgeEvent interface{}
 	var err error
+	switch bridgeType {
+	case model.BridgeTypeBridge:
+		bridgeEventIFace, ok := <-destinationData
+		if !ok {
+			return nil, fmt.Errorf("no log found with kappa %s", kappa)
+		}
+		fmt.Println("bridgeEventIFace", bridgeEventIFace)
+		bridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, bridgeEventIFace.BridgeEvent, bridgeEventIFace.IFace, chainID)
 
-	fmt.Println("bridgeEventIFace", bridgeEventIFace)
-	maturedBridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, bridgeEventIFace.BridgeEvent, bridgeEventIFace.IFace, chainID)
+	case model.BridgeTypeCctp:
+		ifaceCctpEvent, ok := <-destinationDataCCTP
+		if !ok {
+			// Handle the case where destinationData was closed without sending data.
+			return nil, fmt.Errorf("no cctp log found with request id %s", kappa)
+		}
+		bridgeEvent, err = r.Parsers.CCTParsers[chainID].MatureLogs(ctx, ifaceCctpEvent.CCTPEvent, ifaceCctpEvent.IFace, chainID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not mature logs: %w", err)
 	}
-	fmt.Println("maturedBridgeEvent", maturedBridgeEvent)
-	return maturedBridgeEvent, nil
-}
-
-// nolint:cyclop
-func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.LogFetcher, chainID uint32, requestID string) (interface{}, error) {
-	streamLogsCtx, cancelStreamLogs := context.WithCancel(ctx)
-	defer cancelStreamLogs()
-
-	logsChan := *logFetcher.GetFetchedLogsChan()
-	destinationData := make(chan *ifaceCCTPEvent, 1)
-	errorChan := make(chan error)
-
-	// Start fetcher
-	go func() {
-		err := logFetcher.Start(streamLogsCtx)
-		if err != nil {
-			errorChan <- err
-		}
-	}()
-
-	// Consume all the logs and check if there is one that is the same as the kappa
-	go func() {
-		defer close(destinationData) // Always close channel to signal receiver.
-
-		for {
-			select {
-			case <-streamLogsCtx.Done():
-				return
-
-			case log, ok := <-logsChan:
-				if !ok {
-					return
-				}
-				fmt.Println("from scribe log", log)
-				cctpEvent, iFace, err := r.Parsers.CCTParsers[chainID].ParseLog(log, chainID)
-				if err != nil {
-					logger.Errorf("could not parse log: %v", err)
-					continue
-				}
-				fmt.Println("from scribe log cctpEvent", cctpEvent.RequestID, requestID)
-
-				if cctpEvent.RequestID == requestID {
-					ifaceCctpEvent := &ifaceCCTPEvent{
-						IFace:     iFace,
-						CCTPEvent: cctpEvent,
-					}
-					destinationData <- ifaceCctpEvent
-					close(destinationData) // close consume channel
-					cancelStreamLogs()
-					return
-				}
-
-			case streamErr, ok := <-errorChan:
-				if ok {
-					logger.Errorf("error while streaming logs: %v", streamErr)
-					close(destinationData) // close consume channel
-					cancelStreamLogs()
-				}
-				return
-			}
-		}
-	}()
-
-	ifaceCctpEvent, ok := <-destinationData
-	cancelStreamLogs()
-	if !ok {
-		// Handle the case where destinationData was closed without sending data.
-		return nil, fmt.Errorf("no log found with kappa %s", requestID)
-	}
-	var maturedBridgeEvent interface{}
-	var err error
-
-	maturedBridgeEvent, err = r.Parsers.CCTParsers[chainID].MatureLogs(ctx, ifaceCctpEvent.CCTPEvent, ifaceCctpEvent.IFace, chainID)
-	if err != nil {
-		return nil, fmt.Errorf("could not mature logs: %w", err)
-	}
-	if len(errorChan) > 0 {
-		return nil, <-errorChan
-	}
-	return maturedBridgeEvent, nil
+	return bridgeEvent, nil
 }
 
 // parseSwapLog this is a swap event, we need to get the address from it.
@@ -622,15 +521,6 @@ func (r Resolver) storeBridgeEvent(bridgeEvent interface{}) {
 	storeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	storeErr := r.DB.StoreEvent(storeCtx, bridgeEvent)
-	if storeErr != nil {
-		logger.Errorf("could not store log while storing origin bridge watcher tx %v", storeErr)
-	}
-}
-
-func (r Resolver) storeBridgeEvents(bridgeEvents []interface{}) {
-	storeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	storeErr := r.DB.StoreEvents(storeCtx, bridgeEvents)
 	if storeErr != nil {
 		logger.Errorf("could not store log while storing origin bridge watcher tx %v", storeErr)
 	}

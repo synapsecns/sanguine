@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math/big"
+
 	"time"
 )
 
@@ -68,7 +69,6 @@ func (g APISuite) TestExistingOriginTx() {
 }
 
 // nolint:gosec
-
 func (g APISuite) TestNonExistingOriginTx() {
 	// Testing this tx: https://arbiscan.io/tx/0xa890211029aed050d94b9c1fb9c9864d68067d59a26194bdd04c1410d3e925ec
 	txHash := "0xa890211029aed050d94b9c1fb9c9864d68067d59a26194bdd04c1410d3e925ec"
@@ -102,7 +102,31 @@ func (g APISuite) TestNonExistingOriginTx() {
 }
 
 // nolint:gosec
+func (g APISuite) TestNonExistingOriginTxOP() {
+	// Testing this tx: https://optimistic.etherscan.io/tx/0x76263eb49042e6e5ff161b55d777eab6ba4f94fba8be8fafc3c950b0848ddebe
+	txHash := "0x76263eb49042e6e5ff161b55d777eab6ba4f94fba8be8fafc3c950b0848ddebe"
+	chainID := 10
+	bridgeType := model.BridgeTypeBridge
+	tokenAddr := "0x7F5c764cBc14f9669B88837ca1490cCa17c31607"
+	inputAmount := "2000000"
+	swapContract := "0xF44938b0125A6662f9536281aD2CD6c499F22004"
+	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
+		ChainID:         uint32(chainID),
+		TokenAddress:    tokenAddr,
+		TokenIndex:      1,
+		ContractAddress: swapContract,
+	})
+	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), chainID, txHash, bridgeType)
+	Nil(g.T(), err)
+	NotNil(g.T(), result)
+	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
 
+	// check if data from swap logs were collected
+	Equal(g.T(), tokenAddr, *result.Response.BridgeTx.TokenAddress)
+	Equal(g.T(), inputAmount, *result.Response.BridgeTx.Value)
+}
+
+// nolint:gosec
 func (g APISuite) TestNonExistingCCTPOriginTx() {
 	// Testing this tx: https://etherscan.io/tx/0x23392252f6afc660169bad0101d4c4b3bb9be8c7cca146dd1a7a9ce08f2281be
 	txHash := "0x23392252f6afc660169bad0101d4c4b3bb9be8c7cca146dd1a7a9ce08f2281be"
@@ -121,6 +145,7 @@ func (g APISuite) TestNonExistingCCTPOriginTx() {
 	Equal(g.T(), kappa, *result.Response.Kappa)
 }
 
+// nolint:gosec
 func (g APISuite) TestExistingDestinationTx() {
 	chainID := uint32(1)
 
@@ -183,12 +208,13 @@ func (g APISuite) TestExistingDestinationTx() {
 	Equal(g.T(), txHash.String(), *result.Response.BridgeTx.TxnHash)
 }
 
-// nolint:gosec
+// TESTING DESTINATION ////
 
+// nolint:gosec
 func (g APISuite) TestNonExistingDestinationTx() {
 	// Testing this tx: https://optimistic.etherscan.io/tx/0x7021a6046a39b3f5bd8956b83e0f6aa2b59c316e180e7fc41425d463cda35ae6
 	txHash := "0x7021a6046a39b3f5bd8956b83e0f6aa2b59c316e180e7fc41425d463cda35ae6"
-	kappa := "23C54D703DEA0451B74B40FFD22E1C1CA5A9F90CEF48BC322182491A386501AF"
+	kappa := "23c54d703dea0451b74b40ffd22e1c1ca5a9f90cef48bc322182491a386501af"
 	address := "0x2d5a17539943a8c1a753578af3b4f91c9eb85eb9"
 	timestamp := 1692378548
 
@@ -211,7 +237,7 @@ func (g APISuite) TestNonExistingDestinationTxHistorical() {
 
 	chainID := 10
 	bridgeType := model.BridgeTypeBridge
-	historical := true
+	historical := true // set to false if this tx is within the last hour or so
 	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
@@ -231,39 +257,14 @@ func (g APISuite) TestNonExistingDestinationTxCCTP() {
 	txHash := "0xc0fc8fc8b13856ede8862439c2ac9705005a1c7f2610f52446ae7c3f9d52d360"
 	kappa := "1d41f047267fdaf805234d76c998bd0fa63558329c455f2419d81fa26167214d"
 	address := "0xfE332ab9f3a0F4424c8Cb03b621120319E7b5f53"
-	timestamp := 1692110880
+	timestamp := 1692105057
 	value := "3699210873"
 	chainID := 1
 	bridgeType := model.BridgeTypeCctp
-	historical := false
+	historical := true // set to false if this tx is within the last hour or so
 	result, err := g.client.GetDestinationBridgeTx(g.GetTestContext(), chainID, kappa, address, timestamp, bridgeType, &historical)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
 	Equal(g.T(), value, *result.Response.BridgeTx.Value)
-}
-
-// nolint:gosec
-func (g APISuite) TestNonExistingOriginTxOP() {
-	// Testing this tx: https://optimistic.etherscan.io/tx/0x76263eb49042e6e5ff161b55d777eab6ba4f94fba8be8fafc3c950b0848ddebe
-	txHash := "0x76263eb49042e6e5ff161b55d777eab6ba4f94fba8be8fafc3c950b0848ddebe"
-	chainID := 10
-	bridgeType := model.BridgeTypeBridge
-	tokenAddr := "0x7F5c764cBc14f9669B88837ca1490cCa17c31607"
-	inputAmount := "2000000"
-	swapContract := "0xF44938b0125A6662f9536281aD2CD6c499F22004"
-	g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Create(&sql.TokenIndex{
-		ChainID:         uint32(chainID),
-		TokenAddress:    tokenAddr,
-		TokenIndex:      1,
-		ContractAddress: swapContract,
-	})
-	result, err := g.client.GetOriginBridgeTx(g.GetTestContext(), chainID, txHash, bridgeType)
-	Nil(g.T(), err)
-	NotNil(g.T(), result)
-	Equal(g.T(), txHash, *result.Response.BridgeTx.TxnHash)
-
-	// check if data from swap logs were collected
-	Equal(g.T(), tokenAddr, *result.Response.BridgeTx.TokenAddress)
-	Equal(g.T(), inputAmount, *result.Response.BridgeTx.Value)
 }

@@ -1653,13 +1653,7 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 
 	if bridgeEventMV == nil || bridgeEventMV.TChainID == 0 {
 		var txFromChain *model.BridgeWatcherTx
-		switch bridgeType {
-		case model.BridgeTypeBridge:
-			txFromChain, err = r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical)
-		case model.BridgeTypeCctp:
-			txFromChain, err = r.bwDestinationFallbackCCTP(ctx, uint32(chainID), address, kappa, timestamp, historical)
-		}
-
+		txFromChain, err = r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical, bridgeType)
 		if err != nil {
 			if err.Error() == kappaDoesNotExist {
 				return &model.BridgeWatcherTx{
