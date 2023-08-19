@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
+	"math"
 	"math/big"
 	"time"
 )
@@ -187,10 +188,7 @@ func (r Resolver) bwDestinationFallback(ctx context.Context, chainID uint32, add
 				continue
 			}
 			go func() {
-				storeErr := r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
-				if storeErr != nil {
-					logger.Errorf("could not store log while storing origin bridge watcher tx %v", err)
-				}
+				r.storeBridgeEvent(maturedBridgeEvent)
 			}()
 			bridgeEvent, ok := maturedBridgeEvent.(*sql.BridgeEvent)
 			if !ok {
@@ -261,10 +259,7 @@ func (r Resolver) bwDestinationFallbackCCTP(ctx context.Context, chainID uint32,
 				continue
 			}
 			go func() {
-				storeErr := r.DB.StoreEvent(txFetchContext, maturedBridgeEvent)
-				if storeErr != nil {
-					logger.Errorf("could not store log while storing origin bridge watcher tx %w", err)
-				}
+				r.storeBridgeEvent(maturedBridgeEvent)
 			}()
 			bridgeEvent, ok := maturedBridgeEvent.(sql.BridgeEvent)
 			if !ok {
@@ -284,63 +279,60 @@ func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32
 	zero := uint64(0)
 	return &zero, &currentBlock, nil
 }
-
 func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
+	currentTime := uint64(time.Now().Unix())
 	// Get the current block number
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
 
-	// Compute the initial guess based on block time
-	currentTime := uint64(time.Now().Unix())
-	blockTime := r.Config.Chains[chainID].BlockTime
-	timeDifference := currentTime - timestamp
-	blocksDifference := timeDifference / blockTime
-	postulatedBlock := currentBlock - blocksDifference
-
-	lowBlock := uint64(0)
-	highBlock := postulatedBlock // the highBlock is our postulatedBlock as the start
-	var midBlock uint64
-
 	const maxIterations = 10 // max tries
 	iteration := 0
+	var mid uint64
+	blockRange := r.Config.Chains[chainID].GetLogsRange * r.Config.Chains[chainID].GetLogsBatchAmount
+	avgBlockTime := r.Config.Chains[chainID].BlockTime
+	estimatedBlockNumber := currentBlock - uint64(math.Floor(float64(currentTime-timestamp)/float64(avgBlockTime)))
+	fmt.Println("estimated block number", estimatedBlockNumber, currentBlock, currentTime, timestamp, blockRange, avgBlockTime)
 
-	// binary search for nearest block to timestamp
-	for lowBlock <= highBlock && iteration < maxIterations {
-		midBlock = (lowBlock + highBlock) / 2
-		fmt.Println("searching for block iteration", iteration, "block", midBlock, postulatedBlock)
+	upper := estimatedBlockNumber + blockRange*10/avgBlockTime
+	if upper > currentBlock {
+		upper = currentBlock
+	}
+	lowerInt64 := int64(estimatedBlockNumber) - int64(blockRange*10)/int64(avgBlockTime)
+	lower := uint64(0)
+	if lowerInt64 > 0 {
+		lower = uint64(lowerInt64)
+	}
+	fmt.Println("upp", upper)
+	fmt.Println("downn", lower)
 
-		blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(midBlock)))
+	for lower <= upper && iteration < maxIterations {
+		mid = (lower + upper) / 2
+		fmt.Println("at block", lower, mid, int64(mid), upper)
+
+		blockHeader, err := backendClient.HeaderByNumber(ctx, big.NewInt(int64(mid)))
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", midBlock, chainID, err)
+			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", mid, chainID, err)
 		}
+		timeDifference := int64(blockHeader.Time) - int64(timestamp)
+		fmt.Println("found block within range", timeDifference, blockHeader.Time, timestamp, mid, blockRange)
 
-		// Compare the timestamp of the block with the target timestamp
-		blockTimestamp := blockHeader.Time()
-		if blockTimestamp < timestamp {
-			lowBlock = midBlock + 1
+		// check if block is before the timestamp from the origin tx
+		if timeDifference <= 0 {
+			fmt.Println("timeDifference", timeDifference, 0-int64(blockRange/avgBlockTime))
+			// if the block is within the range of a single getlogs request, return the range
+			if timeDifference > 0-int64(blockRange/avgBlockTime) {
+				return &mid, &currentBlock, nil
+			}
+			lower = mid
 		} else {
-			highBlock = midBlock - 1
+			upper = mid
 		}
-
 		iteration++
 	}
 
-	// Make sure the block is before the timestamp
-	for {
-		blockHeader, err := backendClient.BlockByNumber(ctx, big.NewInt(int64(midBlock)))
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not get block %d on chain %d. Error: %w", midBlock, chainID, err)
-		}
-
-		if blockHeader.Time() < timestamp {
-			break
-		}
-		midBlock--
-	}
-
-	return &midBlock, &currentBlock, nil
+	return &mid, &currentBlock, nil
 }
 
 func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []ethTypes.Log, tokenData *swapReplacementData) (*model.BridgeWatcherTx, error) {
@@ -349,10 +341,7 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 		return nil, fmt.Errorf("could not parse logs with explorer parser: %w", err)
 	}
 	go func() {
-		storeErr := r.DB.StoreEvents(ctx, parsedLogs)
-		if storeErr != nil {
-			logger.Errorf("could not store log while storing origin bridge watcher tx %v", err)
-		}
+		r.storeBridgeEvents(parsedLogs)
 	}()
 	fmt.Println("parsed logs", parsedLogs, logs)
 	parsedLog := interface{}(nil)
@@ -385,17 +374,13 @@ func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 	go func() {
-		storeErr := r.DB.StoreEvents(ctx, parsedLogs)
-		if storeErr != nil {
-			logger.Errorf("could not store cctp log while storing origin bridge watcher tx %v", err)
-		}
+		r.storeBridgeEvents(parsedLogs)
 	}()
 	parsedLog := interface{}(nil)
-	for i, log := range parsedLogs {
+	for _, log := range parsedLogs {
 		if log == nil {
 			continue
 		}
-		fmt.Println("j", i, log)
 
 		parsedLog = log
 	}
@@ -417,7 +402,9 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 
 	logsChan := *logFetcher.GetFetchedLogsChan()
 	destinationData := make(chan *ifaceBridgeEvent, 1)
+
 	errorChan := make(chan error)
+	defer close(errorChan)
 
 	// Start fetcher
 	go func() {
@@ -425,13 +412,10 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 		if err != nil {
 			errorChan <- err
 		}
-		close(errorChan) // Close error channel after using to signal other routines.
 	}()
 
 	// Consume all the logs and check if there is one that is the same as the kappa
 	go func() {
-		defer close(destinationData) // Always close channel to signal receiver.
-
 		for {
 			select {
 			case <-streamLogsCtx.Done():
@@ -455,13 +439,17 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 						BridgeEvent: bridgeEvent,
 					}
 					destinationData <- bridgeEventIFace
+					fmt.Println("sending destinationData", destinationData)
+					close(destinationData) // close consume channel
+					cancelStreamLogs()
+					return
 				}
 
 			case streamErr, ok := <-errorChan:
 				if ok {
 					logger.Errorf("error while streaming logs: %v", streamErr)
+					close(destinationData) // close consume channel
 					cancelStreamLogs()
-					close(errorChan)
 				}
 				return
 			}
@@ -469,6 +457,8 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 	}()
 
 	bridgeEventIFace, ok := <-destinationData
+	fmt.Println("received bridgeEventIFace")
+	cancelStreamLogs()
 	if !ok {
 		// Handle the case where destinationData was closed without sending data.
 		return nil, fmt.Errorf("no log found with kappa %s", kappa)
@@ -476,13 +466,12 @@ func (r Resolver) getAndParseLogs(ctx context.Context, logFetcher *indexer.LogFe
 	var maturedBridgeEvent interface{}
 	var err error
 
+	fmt.Println("bridgeEventIFace", bridgeEventIFace)
 	maturedBridgeEvent, err = r.Parsers.BridgeParsers[chainID].MatureLogs(ctx, bridgeEventIFace.BridgeEvent, bridgeEventIFace.IFace, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not mature logs: %w", err)
 	}
-	if len(errorChan) > 0 {
-		return nil, <-errorChan
-	}
+	fmt.Println("maturedBridgeEvent", maturedBridgeEvent)
 	return maturedBridgeEvent, nil
 }
 
@@ -501,7 +490,6 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 		if err != nil {
 			errorChan <- err
 		}
-		close(errorChan) // Close error channel after using to signal other routines.
 	}()
 
 	// Consume all the logs and check if there is one that is the same as the kappa
@@ -531,13 +519,16 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 						CCTPEvent: cctpEvent,
 					}
 					destinationData <- ifaceCctpEvent
+					close(destinationData) // close consume channel
+					cancelStreamLogs()
+					return
 				}
 
 			case streamErr, ok := <-errorChan:
 				if ok {
 					logger.Errorf("error while streaming logs: %v", streamErr)
+					close(destinationData) // close consume channel
 					cancelStreamLogs()
-					close(errorChan)
 				}
 				return
 			}
@@ -545,6 +536,7 @@ func (r Resolver) getAndParseLogsCCTP(ctx context.Context, logFetcher *indexer.L
 	}()
 
 	ifaceCctpEvent, ok := <-destinationData
+	cancelStreamLogs()
 	if !ok {
 		// Handle the case where destinationData was closed without sending data.
 		return nil, fmt.Errorf("no log found with kappa %s", requestID)
@@ -624,4 +616,22 @@ func (r Resolver) checkRequestIDExists(ctx context.Context, requestID string, ch
 		return false
 	}
 	return exists
+}
+
+func (r Resolver) storeBridgeEvent(bridgeEvent interface{}) {
+	storeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	storeErr := r.DB.StoreEvent(storeCtx, bridgeEvent)
+	if storeErr != nil {
+		logger.Errorf("could not store log while storing origin bridge watcher tx %v", storeErr)
+	}
+}
+
+func (r Resolver) storeBridgeEvents(bridgeEvents []interface{}) {
+	storeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	storeErr := r.DB.StoreEvents(storeCtx, bridgeEvents)
+	if storeErr != nil {
+		logger.Errorf("could not store log while storing origin bridge watcher tx %v", storeErr)
+	}
 }

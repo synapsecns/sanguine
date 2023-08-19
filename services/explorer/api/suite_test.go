@@ -263,7 +263,7 @@ func (g *APISuite) SetupTest() {
 			},
 			10: {
 				ChainID:            10,
-				GetLogsRange:       500,
+				GetLogsRange:       1000,
 				GetLogsBatchAmount: 1,
 				BlockTime:          2,
 				Swaps:              []string{"0xF44938b0125A6662f9536281aD2CD6c499F22004", "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"},
