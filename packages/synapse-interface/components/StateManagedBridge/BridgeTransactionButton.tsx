@@ -14,6 +14,7 @@ import {
   useChainModal,
 } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -51,12 +52,26 @@ export const BridgeTransactionButton = ({
     (state: RootState) => state.bridgeDisplay
   )
 
+  const balances = usePortfolioBalances()
+  const balancesForChain = balances[fromChainId]
+  const balanceForToken = balancesForChain?.find(
+    (t) => t.tokenAddress === fromToken.addresses[fromChainId]
+  )?.balance
+
+  const sufficientBalance = useMemo(() => {
+    return (
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+      balanceForToken
+    )
+  }, [balanceForToken, fromValue])
+
   const isButtonDisabled =
     isLoading ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
-    (showDestinationAddress && !destinationAddress)
+    (showDestinationAddress && !destinationAddress) ||
+    (isConnected && !sufficientBalance)
 
   let buttonProperties
 
@@ -85,6 +100,11 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
+    }
+  } else if (isConnected && !sufficientBalance) {
+    buttonProperties = {
+      label: 'Insufficient balance',
+      onClick: null,
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
