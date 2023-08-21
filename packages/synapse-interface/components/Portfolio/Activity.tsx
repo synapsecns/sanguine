@@ -308,6 +308,7 @@ export const Transaction = ({
   bridgeTransaction: BridgeTransaction
   transactionType: ActivityType
 }) => {
+  const [delayed, setDelayed] = useState<boolean>(false)
   const {
     fromInfo,
     toInfo,
@@ -425,6 +426,8 @@ export const Transaction = ({
           <TimeElapsed
             startTime={bridgeOriginTime}
             bridgeOriginChain={originChain}
+            delayed={delayed}
+            setDelayed={setDelayed}
           />
         )}
       </div>
@@ -435,9 +438,13 @@ export const Transaction = ({
 export const TimeElapsed = ({
   startTime,
   bridgeOriginChain,
+  delayed,
+  setDelayed,
 }: {
   startTime: number
   bridgeOriginChain: Chain
+  delayed: boolean
+  setDelayed: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
@@ -486,6 +493,12 @@ export const TimeElapsed = ({
       return `25:00`
     } else return `${formattedEstimatedMinutes}:${formattedEstimatedSeconds}`
   }, [estimatedCompletionInSeconds, elapsedTime])
+
+  useEffect(() => {
+    if (!delayed && elapsedTime > estimatedCompletionInSeconds) {
+      setDelayed(true)
+    }
+  }, [delayed, estimatedCompletionInSeconds, elapsedTime])
 
   return (
     <div
