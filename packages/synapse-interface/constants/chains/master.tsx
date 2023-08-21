@@ -33,7 +33,7 @@ export const ETH: Chain = {
     fallback: 'https://eth.llamarpc.com',
   },
   explorerUrl: 'https://etherscan.com',
-  blockTime: 10000,
+  blockTime: 12000,
   nativeCurrency: {
     name: 'Ethereum',
     symbol: 'ETH',
@@ -50,7 +50,7 @@ export const ARBITRUM: Chain = {
   chainImg: arbitrumImg,
   layer: 2,
   codeName: 'arbitrum',
-  blockTime: 5000,
+  blockTime: 300,
   rpcUrls: {
     primary: 'https://arb1.arbitrum.io/rpc',
     fallback: 'https://arbitrum-one.publicnode.com',
@@ -69,7 +69,7 @@ export const BNB: Chain = {
   altName: 'BNB',
   layer: 1,
   codeName: 'bsc',
-  blockTime: 10000,
+  blockTime: 3000,
   rpcUrls: {
     primary: 'https://bsc-dataseed1.ninicoin.io/',
     fallback: 'https://bsc-dataseed2.ninicoin.io',
@@ -87,7 +87,7 @@ export const AVALANCHE: Chain = {
   chainImg: avalancheImg,
   layer: 1,
   codeName: 'avalanche',
-  blockTime: 5000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://api.avax.network/ext/bc/C/rpc',
     fallback: 'https://rpc.ankr.com/avalanche',
@@ -105,7 +105,7 @@ export const CANTO: Chain = {
   chainImg: cantoImg,
   layer: 1,
   codeName: 'canto',
-  blockTime: 50000,
+  blockTime: 6000,
   rpcUrls: {
     primary: 'https://mainnode.plexnode.org:8545',
     fallback: 'https://canto.slingshot.finance',
@@ -123,7 +123,7 @@ export const OPTIMISM: Chain = {
   chainImg: optimismImg,
   layer: 2,
   codeName: 'optimism',
-  blockTime: 10000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://mainnet.optimism.io',
     fallback: 'https://rpc.ankr.com/optimism',
@@ -141,7 +141,7 @@ export const POLYGON: Chain = {
   chainImg: polygonImg,
   layer: 2,
   codeName: 'polygon',
-  blockTime: 10000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://polygon-bor.publicnode.com',
     fallback: 'https://polygon.llamarpc.com',
@@ -159,7 +159,7 @@ export const DFK: Chain = {
   chainImg: dfkImg,
   layer: 1,
   codeName: 'dfk',
-  blockTime: 10000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
     fallback: 'https://dfkchain.api.onfinality.io/public',
@@ -177,7 +177,7 @@ export const KLAYTN: Chain = {
   chainImg: klaytnImg,
   layer: 1,
   codeName: 'klaytn',
-  blockTime: 10000,
+  blockTime: 1000,
   rpcUrls: {
     primary: 'https://klaytn.blockpi.network/v1/rpc/public',
     fallback: 'https://klaytn.api.onfinality.io/public',
@@ -195,7 +195,7 @@ export const FANTOM: Chain = {
   chainImg: fantomImg,
   layer: 1,
   codeName: 'fantom',
-  blockTime: 5000,
+  blockTime: 700,
   rpcUrls: {
     primary: 'https://rpc.ftm.tools',
     fallback: 'https://fantom-rpc.gateway.pokt.network/',
@@ -213,7 +213,7 @@ export const CRONOS: Chain = {
   chainImg: cronosImg,
   layer: 1,
   codeName: 'cronos',
-  blockTime: 10000,
+  blockTime: 6000,
   rpcUrls: {
     primary: 'https://evm-cronos.crypto.org',
     fallback: 'https://cronos.blockpi.network/v1/rpc/public',
@@ -231,7 +231,7 @@ export const BOBA: Chain = {
   chainImg: bobaImg,
   layer: 2,
   codeName: 'boba',
-  blockTime: 20000,
+  blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.boba.network',
     fallback: 'https://replica.boba.network',
@@ -249,7 +249,7 @@ export const METIS: Chain = {
   chainImg: metisImg,
   layer: 2,
   codeName: 'metis',
-  blockTime: 10000,
+  blockTime: 4000,
   rpcUrls: {
     primary: 'https://andromeda.metis.io/?owner=1088',
     fallback: 'https://metis-mainnet.public.blastapi.io',
@@ -267,7 +267,7 @@ export const AURORA: Chain = {
   chainImg: auroraImg,
   layer: 1,
   codeName: 'aurora',
-  blockTime: 10000,
+  blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.aurora.dev',
     fallback: 'https://1rpc.io/aurora',
@@ -285,7 +285,7 @@ export const HARMONY: Chain = {
   chainImg: harmonyImg,
   layer: 1,
   codeName: 'harmony',
-  blockTime: 10000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://api.harmony.one',
     fallback: 'https://api.s0.t.hmny.io',
@@ -303,7 +303,7 @@ export const MOONBEAM: Chain = {
   chainImg: moonbeamImg,
   layer: 1,
   codeName: 'moonbeam',
-  blockTime: 10000,
+  blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonbeam.network',
     fallback: 'https://moonbeam.public.blastapi.io',
@@ -321,7 +321,7 @@ export const MOONRIVER: Chain = {
   chainImg: moonriverImg,
   layer: 1,
   codeName: 'moonriver',
-  blockTime: 5000,
+  blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonriver.moonbeam.network',
     fallback: 'https://moonriver.public.blastapi.io',
@@ -339,7 +339,7 @@ export const DOGE: Chain = {
   chainImg: dogechainImg,
   layer: 1,
   codeName: 'dogechain',
-  blockTime: 10000,
+  blockTime: 2000,
   rpcUrls: {
     primary: 'https://rpc.ankr.com/dogechain',
     fallback: 'https://rpc.dogechain.dog',
@@ -362,7 +362,7 @@ export const BASE: Chain = {
     fallback: 'https://developer-access-mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',
-  blockTime: 5000,
+  blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
     symbol: 'ETH',

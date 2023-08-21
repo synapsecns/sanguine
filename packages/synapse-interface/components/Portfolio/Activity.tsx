@@ -497,7 +497,6 @@ export const Completed = ({
       data-test-id="completed"
       className="flex flex-col text-right text-[#C2C2D6] gap-1"
     >
-      {/* <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '} */}
       {!destinationIsSender && (
         <div>to {shortenAddress(destinationAddress, 3)} </div>
       )}
