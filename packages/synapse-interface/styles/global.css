@@ -195,3 +195,14 @@ body {
 .no-mt {
   margin-top: 0 !important;
 }
+
+.box-arrow:after {
+  content: " ";
+  position: absolute;
+  left: 130px;
+  top: -10px;
+  border-top: none;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  border-bottom: 10px solid #3D3D5C;
+}

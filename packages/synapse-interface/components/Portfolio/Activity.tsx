@@ -123,31 +123,35 @@ export const MostRecentPendingTransaction = () => {
   if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
     mostRecentPendingTransaction = recentBridgeTransactions[0]
     return (
-      <div
-        className={`
-        mt-4 border border-[#3D3D5C] rounded-md
-        ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
-        `}
-      >
-        <RecentlyBridgedPendingTransaction
-          recentlyBridgedTransaction={mostRecentPendingTransaction}
-        />
+      <div className="relative mt-3">
+        <div
+          className={`
+          border border-[#3D3D5C] rounded-md box-arrow relative
+          ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
+          `}
+        >
+          <RecentlyBridgedPendingTransaction
+            recentlyBridgedTransaction={mostRecentPendingTransaction}
+          />
+        </div>
       </div>
     )
   } else if (userPendingTransactions && userPendingTransactions.length > 0) {
     mostRecentPendingTransaction = userPendingTransactions[0]
     return (
-      <div
-        className={`
-        mt-4 border border-[#3D3D5C] rounded-md
-        ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
-        `}
-      >
-        <Transaction
-          bridgeTransaction={mostRecentPendingTransaction}
-          transactionType={ActivityType.PENDING}
-          key={mostRecentPendingTransaction.kappa}
-        />
+      <div className="relative mt-3">
+        <div
+          className={`
+          border border-[#3D3D5C] rounded-md box-arrow
+          ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
+          `}
+        >
+          <Transaction
+            bridgeTransaction={mostRecentPendingTransaction}
+            transactionType={ActivityType.PENDING}
+            key={mostRecentPendingTransaction.kappa}
+          />
+        </div>
       </div>
     )
   }
