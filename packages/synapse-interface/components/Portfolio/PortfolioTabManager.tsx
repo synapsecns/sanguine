@@ -47,6 +47,7 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
       font-medium text-2xl text-gray-500
       border-b-2 border-transparent
       mr-2 pb-2
+      hover:text-white transform-gpu transition-all duration-75
       ${isCurrentlyActive && 'text-white'}
       `}
       onClick={() => handleTabChange(tabType)}
