@@ -99,3 +99,11 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
 	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
 }
+
+func (a destinationContract) PassAgentRoot(transactor *bind.TransactOpts) (*ethTypes.Transaction, error) {
+	tx, err := a.contract.PassAgentRoot(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not pass agent root: %w", err)
+	}
+	return tx, nil
+}
