@@ -460,10 +460,26 @@ export const TimeElapsed = ({
   const formattedMinutes: string = String(minutes).padStart(2, '0')
   const formattedSeconds: string = String(seconds).padStart(2, '0')
 
+  const estimatedCompletionInSeconds: number =
+    (BRIDGE_REQUIRED_CONFIRMATIONS[bridgeOriginChain.id] *
+      bridgeOriginChain.blockTime) /
+    1000
+
+  const estimatedMinutes = Math.floor(estimatedCompletionInSeconds / 60)
+  const estimatedSeconds = estimatedCompletionInSeconds % 60
+
+  const formattedEstimatedMinutes = String(estimatedMinutes).padStart(2, '0')
+  const formattedEstimatedSeconds = String(estimatedSeconds).padStart(2, '0')
+
+  const estimatedCompletionTime = `${formattedEstimatedMinutes}:${formattedEstimatedSeconds}`
+
   return (
-    <div data-test-id="time-elapsed" className="flex items-center">
+    <div
+      data-test-id="time-elapsed"
+      className="flex items-center whitespace-nowrap"
+    >
       {hours > 0 ? `${hours}:` : ''}
-      {formattedMinutes}:{formattedSeconds}
+      {formattedMinutes}:{formattedSeconds} / {estimatedCompletionTime}
       <EtherscanIcon className="ml-1" />
     </div>
   )
