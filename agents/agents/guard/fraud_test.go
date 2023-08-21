@@ -1,6 +1,7 @@
 package guard_test
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -761,10 +762,14 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
+	lightManagerDestinationConfig := scribeConfig.ContractConfig{
+		Address:    g.LightManagerOnDestination.Address().String(),
+		StartBlock: 0,
+	}
 	destinationChainConfig := scribeConfig.ChainConfig{
 		ChainID:       uint32(g.TestBackendDestination.GetChainID()),
 		Confirmations: 1,
-		Contracts:     []scribeConfig.ContractConfig{destinationConfig},
+		Contracts:     []scribeConfig.ContractConfig{destinationConfig, lightManagerDestinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    g.SummitContract.Address().String(),
@@ -807,6 +812,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Println("OMNIIIII", omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1))
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())

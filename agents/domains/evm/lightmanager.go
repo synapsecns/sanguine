@@ -96,6 +96,10 @@ func (a lightManagerContract) UpdateAgentStatus(
 		return nil, fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
+	transactOpts.Context = ctx
+
+	transactOpts.GasLimit = 5000000
+
 	lightManagerAgentStatus := lightmanager.AgentStatus{
 		Flag:   uint8(agentStatus.Flag()),
 		Domain: agentStatus.Domain(),

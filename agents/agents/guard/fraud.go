@@ -283,13 +283,33 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
-
+	agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get agent root: %w", err)
+	}
+	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID)
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
+		agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get agent root: %w", err)
+		}
+
 		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
+		}
+
+		err = g.guardDB.StoreAgentTree(
+			ctx,
+			agentRoot,
+			statusUpdated.Agent,
+			log.BlockNumber,
+			agentProof,
+		)
+		if err != nil {
+			return fmt.Errorf("could not store agent tree: %w", err)
 		}
 
 		_, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
@@ -492,13 +512,20 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
-			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
+			agentRoot, err := g.domains[chainID].LightManager().GetAgentRoot(ctx)
+			if err != nil {
+				return fmt.Errorf("could not get agent root: %w", err)
+			}
+			fmt.Println("AGENT ROOT:", common.BytesToHash(agentRoot[:]).String())
+			fmt.Println("TREE AGENT ROOT:", tree.AgentRoot)
+			tx, err := g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
 				tree.AgentAddress,
 				agentStatus,
 				tree.Proof,
 			)
+			fmt.Println("&&&&&&&TXHASH", tx.Hash().String())
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)
 			}
@@ -507,3 +534,28 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 
 	return nil
 }
+
+// func (g Guard) storeForStatusUpdated(ctx context.Context, statusUpdated *bondingmanager.BondingManagerStatusUpdated, blockNumber uint64) error {
+// 	agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("could not get agent root: %w", err)
+// 	}
+// 	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID)
+// 	agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+// 	if err != nil {
+// 		return fmt.Errorf("could not get proof: %w", err)
+// 	}
+
+// 	err = g.guardDB.StoreAgentTree(
+// 		ctx,
+// 		agentRoot,
+// 		statusUpdated.Agent,
+// 		blockNumber,
+// 		agentProof,
+// 	)
+// 	if err != nil {
+// 		return fmt.Errorf("could not store agent tree: %w", err)
+// 	}
+
+// 	return nil
+// }

@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -158,6 +159,25 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
+	for _, state := range snapshot.States() {
+		statePayload, err := state.Encode()
+		if err != nil {
+			return fmt.Errorf("could not encode state: %w", err)
+		}
+		// Verify that the state is valid w.r.t. Origin.
+		valid, err := e.chainExecutors[state.Origin()].boundOrigin.IsValidState(
+			ctx,
+			statePayload,
+		)
+		if err != nil {
+			return fmt.Errorf("could not check validity of state: %w", err)
+		}
+		if !valid {
+			stateRoot := state.Root()
+			logger.Infof("snapshot has invalid state. Origin: %d. SnapshotRoot: %s", state.Origin(), common.BytesToHash(stateRoot[:]).String())
+			return nil
+		}
+	}
 	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
 	if err != nil {
 		return fmt.Errorf("could not get snapshot root and proofs: %w", err)

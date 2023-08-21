@@ -46,7 +46,7 @@ func (s Store) GetUpdateAgentStatusParameters(ctx context.Context) ([]agentTypes
 	}
 
 	var dbAgentTrees []AgentTree
-	err = s.DB().WithContext(ctx).Raw(query, agentTypes.Resolved).Scan(&dbAgentTrees).Error
+	err = s.DB().WithContext(ctx).Debug().Raw(query, agentTypes.Resolved).Scan(&dbAgentTrees).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
 	}
@@ -119,7 +119,7 @@ func (s Store) GetLatestConfirmedSummitBlockNumber(ctx context.Context, chainID 
 		return blockNumber, fmt.Errorf("failed to interpolate query: %w", err)
 	}
 
-	dbTx := s.DB().WithContext(ctx).Raw(query, chainID).Scan(&blockNumber)
+	dbTx := s.DB().WithContext(ctx).Raw(query, chainID).Debug().Scan(&blockNumber)
 	if dbTx.RowsAffected == 0 {
 		return blockNumber, nil
 	}

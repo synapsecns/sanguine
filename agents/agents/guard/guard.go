@@ -406,13 +406,13 @@ func (g Guard) Start(parentCtx context.Context) error {
 
 	group, ctx := errgroup.WithContext(parentCtx)
 
-	group.Go(func() error {
-		err := g.txSubmitter.Start(ctx)
-		if err != nil {
-			err = fmt.Errorf("could not start tx submitter: %w", err)
-		}
-		return err
-	})
+	// group.Go(func() error {
+	// 	err := g.txSubmitter.Start(ctx)
+	// 	if err != nil {
+	// 		err = fmt.Errorf("could not start tx submitter: %w", err)
+	// 	}
+	// 	return err
+	// })
 
 	group.Go(func() error {
 		return g.streamLogs(ctx, g.summitDomainID, g.domains[g.summitDomainID].Config().InboxAddress)
