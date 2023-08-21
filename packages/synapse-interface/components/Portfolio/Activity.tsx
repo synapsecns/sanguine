@@ -78,6 +78,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           {userPendingTransactions &&
             userPendingTransactions.map((transaction: BridgeTransaction) => (
               <Transaction
+                connectedAddress={address}
                 bridgeTransaction={transaction}
                 transactionType={ActivityType.PENDING}
                 key={transaction.kappa}
@@ -94,6 +95,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
               .slice(0, 5) //temporarily only show recent 5
               .map((transaction: BridgeTransaction) => (
                 <Transaction
+                  connectedAddress={address}
                   bridgeTransaction={transaction}
                   transactionType={ActivityType.RECENT}
                   key={transaction.kappa}
@@ -296,9 +298,11 @@ export const getTransactionExplorerLink = ({
 }
 
 export const Transaction = ({
+  connectedAddress,
   bridgeTransaction,
   transactionType,
 }: {
+  connectedAddress?: Address | string
   bridgeTransaction: BridgeTransaction
   transactionType: ActivityType
 }) => {
@@ -310,6 +314,7 @@ export const Transaction = ({
     bridgeTransaction || {}
 
   const {
+    address: destinationAddress,
     chainID: originChainId,
     destinationChainID: destinationChainId,
     value: originRawValue,
@@ -408,7 +413,11 @@ export const Transaction = ({
       </div> */}
       <div className="flex justify-end col-span-2 my-auto">
         {transactionType === ActivityType.RECENT && (
-          <Completed transactionCompletedTime={bridgeDestinationTime} />
+          <Completed
+            transactionCompletedTime={bridgeDestinationTime}
+            connectedAddress={connectedAddress}
+            destinationAddress={destinationAddress}
+          />
         )}
         {transactionType === ActivityType.PENDING && (
           <TimeElapsed startTime={bridgeOriginTime} />
@@ -468,12 +477,22 @@ export const ExchangeRate = ({
 
 export const Completed = ({
   transactionCompletedTime,
+  connectedAddress,
+  destinationAddress,
 }: {
   transactionCompletedTime: number
+  connectedAddress?: Address | string
+  destinationAddress: string
 }) => {
   const formattedTime: string =
     transactionCompletedTime &&
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
+
+  const destinationIsSender: boolean =
+    String(connectedAddress) === String(destinationAddress)
+
+  console.log('destinationIsSender:', destinationIsSender)
+
   return (
     <span data-test-id="completed">
       {/* <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '} */}
