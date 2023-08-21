@@ -471,7 +471,21 @@ export const TimeElapsed = ({
   const formattedEstimatedMinutes = String(estimatedMinutes).padStart(2, '0')
   const formattedEstimatedSeconds = String(estimatedSeconds).padStart(2, '0')
 
-  const estimatedCompletionTime = `${formattedEstimatedMinutes}:${formattedEstimatedSeconds}`
+  const estimatedCompletionTime: string = useMemo(() => {
+    const firstDelayTimeInSeconds: number = 60 * 15 // 15 minutes
+    const secondDelayTimeInSeconds: number = 60 * 25 // 25 minutes
+    if (
+      elapsedTime > estimatedCompletionInSeconds &&
+      elapsedTime < firstDelayTimeInSeconds
+    ) {
+      return `15:00`
+    } else if (
+      elapsedTime > estimatedCompletionInSeconds &&
+      elapsedTime > secondDelayTimeInSeconds
+    ) {
+      return `25:00`
+    } else return `${formattedEstimatedMinutes}:${formattedEstimatedSeconds}`
+  }, [estimatedCompletionInSeconds, elapsedTime])
 
   return (
     <div
