@@ -1,3 +1,5 @@
+const linguiConfig = require('./lingui.config.ts')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -12,8 +14,13 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  experimental: {
+    swcPlugins: [['@lingui/swc-plugin', {}]],
+  },
+  i18n: {
+    locales: linguiConfig.locales,
+    defaultLocale: linguiConfig.sourceLocale,
+  },
 }
 
-module.exports = {
-  ...nextConfig,
-}
+module.exports = nextConfig

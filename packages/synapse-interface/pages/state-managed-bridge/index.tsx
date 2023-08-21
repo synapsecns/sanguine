@@ -102,6 +102,7 @@ import {
 } from '@/slices/portfolio/hooks'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import { Trans } from '@lingui/macro'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -560,7 +561,7 @@ const StateManagedBridge = () => {
         <div className="flex items-center justify-between">
           <PageHeader
             title="Bridge"
-            subtitle="Send your assets across chains."
+            subtitle={<Trans>Send your assets across chains.</Trans>}
           />
           <div>
             <Button
@@ -576,7 +577,9 @@ const StateManagedBridge = () => {
               {!showSettingsSlideOver ? (
                 <>
                   <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
+                  <span>
+                    <Trans>Settings</Trans>
+                  </span>
                 </>
               ) : (
                 <span>Close</span>

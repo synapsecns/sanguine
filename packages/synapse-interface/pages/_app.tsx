@@ -47,6 +47,9 @@ import { Provider } from 'react-redux'
 import { store } from '@/store/store'
 import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
 
+import { I18nProvider } from '@lingui/react'
+import { useLinguiInit } from '../translations/utils'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -125,25 +128,29 @@ export const wagmiConfig = createConfig({
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
+  const initializedI18n = useLinguiInit(pageProps.i18n)
+
   return (
     <>
-      <Head>
-        <title>Synapse Protocol</title>
-      </Head>
-      <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={chains} theme={darkTheme()}>
-          <SynapseProvider chains={chains}>
-            <SegmentAnalyticsProvider>
-              <WalletAnalyticsProvider>
-                <Provider store={store}>
-                  <Component {...pageProps} />
-                  <CustomToaster />
-                </Provider>
-              </WalletAnalyticsProvider>
-            </SegmentAnalyticsProvider>
-          </SynapseProvider>
-        </RainbowKitProvider>
-      </WagmiConfig>
+      <I18nProvider i18n={initializedI18n}>
+        <Head>
+          <title>Synapse Protocol</title>
+        </Head>
+        <WagmiConfig config={wagmiConfig}>
+          <RainbowKitProvider chains={chains} theme={darkTheme()}>
+            <SynapseProvider chains={chains}>
+              <SegmentAnalyticsProvider>
+                <WalletAnalyticsProvider>
+                  <Provider store={store}>
+                    <Component {...pageProps} />
+                    <CustomToaster />
+                  </Provider>
+                </WalletAnalyticsProvider>
+              </SegmentAnalyticsProvider>
+            </SynapseProvider>
+          </RainbowKitProvider>
+        </WagmiConfig>
+      </I18nProvider>
     </>
   )
 }

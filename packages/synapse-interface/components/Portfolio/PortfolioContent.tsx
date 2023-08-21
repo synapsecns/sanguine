@@ -10,6 +10,9 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
 
+import { t, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+
 type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
@@ -150,19 +153,26 @@ export const EmptyPortfolioContent = () => {
   )
 }
 
-export const HomeContent = () => {
+export const HomeContent = (props) => {
+  const { i18n } = useLingui()
+
   return (
     <div
       data-test-id="portfolio-home-content"
       className="border-t border-solid border-[#3D3D5C] text-white pl-2"
     >
       <p className="my-3">
-        Synapse is the most widely used, extensible, and secure cross-chain
-        communications network.
+        <Trans>
+          {t(
+            i18n
+          )`Synapse is the most widely used, extensible, and secure cross-chain communications network.  `}
+        </Trans>
       </p>
       <p className="mb-5">
-        Preview your route in the Bridge panel, and connect your wallet when
-        you're ready to authorize your transaction.
+        <Trans>
+          Preview your route in the Bridge panel, and connect your wallet when
+          you're ready to authorize your transaction.
+        </Trans>
       </p>
       <ConnectWalletButton />
     </div>

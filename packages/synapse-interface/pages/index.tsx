@@ -2,6 +2,8 @@ import StateManagedBridge from './state-managed-bridge'
 import BridgePage from './bridge'
 import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import { GetStaticPropsContext, GetStaticPropsResult } from 'next'
+import { loadCatalog } from '@/translations/utils'
 
 const Home = () => {
   return (
@@ -20,3 +22,13 @@ const Home = () => {
 }
 
 export default Home
+
+export async function getStaticProps(
+  ctx: GetStaticPropsContext
+): Promise<GetStaticPropsResult<any>> {
+  return {
+    props: {
+      i18n: await loadCatalog(ctx.locale as string),
+    },
+  }
+}

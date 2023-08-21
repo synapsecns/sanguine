@@ -4,7 +4,7 @@ export function PageHeader({
   className,
 }: {
   title: string
-  subtitle: string
+  subtitle: string | any
   className?: string
 }) {
   return (

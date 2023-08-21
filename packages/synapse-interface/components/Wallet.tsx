@@ -6,6 +6,7 @@ import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import { IconProps, WalletId } from '@utils/types'
 import Spinner from './icons/Spinner'
+import { Trans } from '@lingui/macro'
 
 const WALLETS = [
   {
@@ -81,7 +82,7 @@ export const Wallet = () => {
                         flex-shrink  whitespace-nowrap
                         `}
                     >
-                      Connect Wallet
+                      <Trans>Connect Wallet</Trans>
                     </button>
                   )
                 }

@@ -9,6 +9,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
+import { Trans } from '@lingui/macro'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
@@ -75,7 +76,9 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
       )}
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
-          <p>Expected Price on</p>
+          <p>
+            <Trans>Expected Price on</Trans>
+          </p>
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
@@ -90,7 +93,9 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
         </span>
       </div>
       <div className="flex justify-between">
-        <p className="text-[#88818C] ">Slippage</p>
+        <p className="text-[#88818C] ">
+          <Trans>Slippage</Trans>
+        </p>
         {safeFromAmount != '0' && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
@@ -132,7 +137,7 @@ const GasDropLabel = ({
   return (
     <div className="flex justify-between text-[#88818C]">
       <span className="text-[#88818C]">
-        Will also receive {formattedGasDropAmount}{' '}
+        <Trans>Will also receive</Trans> {formattedGasDropAmount}{' '}
       </span>
       <span className="ml-1 font-medium text-white">
         {' '}

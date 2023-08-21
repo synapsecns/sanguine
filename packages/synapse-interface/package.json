@@ -17,7 +17,8 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "translations:extract": "lingui extract --clean"
   },
   "dependencies": {
     "@depay/web3-mock": "^14.0.0",
@@ -32,6 +33,8 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
+    "@lingui/core": "^4.4.0",
+    "@lingui/react": "^4.4.0",
     "@rainbow-me/rainbowkit": "^1.0.4",
     "@reduxjs/toolkit": "^1.9.5",
     "@segment/analytics-next": "^1.53.0",
@@ -54,16 +57,18 @@
     "cypress": "^12.9.0",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
+    "eslint-config-next": "^13.4.19",
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
     "keccak": "^3.0.3",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
-    "next": "13.3.0",
+    "next": "^13.4.19",
     "numeral": "^2.0.6",
     "postcss": "^8.4.21",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^18.2.0",
+    "react-country-flag": "^3.1.0",
+    "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
     "react-input-slider": "^6.0.1",
     "react-redux": "^8.1.0",
@@ -98,5 +103,11 @@
   "main": ".eslintrc.js",
   "author": "",
   "license": "ISC",
-  "keywords": []
+  "keywords": [],
+  "devDependencies": {
+    "@lingui/cli": "^4.4.0",
+    "@lingui/loader": "^4.4.0",
+    "@lingui/macro": "^4.4.0",
+    "@lingui/swc-plugin": "^4.0.4"
+  }
 }

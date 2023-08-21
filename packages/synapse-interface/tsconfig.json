@@ -53,6 +53,8 @@
       "@slices/*": ["./slices/*"],
       "@store": ["./store"],
       "@store/*": ["./store/*"],
+      "@translations": ["./translations"],
+      "@translations/*": ["./translations/*"],
       "@types": ["./utils/types"],
       "@types/*": ["./utils/types/*"]
     },

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
+import { Trans } from '@lingui/macro'
 
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
@@ -70,7 +71,7 @@ export function ConnectWalletButton() {
                         style={buttonStyle}
                         onClick={openConnectModal}
                       >
-                        Connect Wallet
+                        <Trans>Connect Wallet</Trans>
                       </button>
                     )
                   }

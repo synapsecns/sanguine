@@ -2,6 +2,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import HomeSvg from '@icons/HomeIcon'
+import { Trans } from '@lingui/macro'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
@@ -20,7 +21,7 @@ export const PortfolioTabManager = () => {
         handleTabChange={handleTabChange}
       />
       <Tab
-        display="Portfolio"
+        display={<Trans>Portfolio</Trans>}
         activeTab={activeTab}
         tabType={PortfolioTabs.PORTFOLIO}
         handleTabChange={handleTabChange}
