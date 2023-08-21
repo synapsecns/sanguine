@@ -363,7 +363,7 @@ export const Transaction = ({
   )
 
   const handleTransactionClick: () => void = useCallback(() => {
-    if (kappa && originChainId) {
+    if (kappa && originChainId && transactionType === ActivityType.RECENT) {
       const explorerLink: string = getTransactionExplorerLink({
         kappa,
         fromChainId: originChainId,
@@ -377,7 +377,7 @@ export const Transaction = ({
       })
       window.open(explorerLink, '_blank')
     }
-  }, [kappa, originChainId, destinationChainId])
+  }, [kappa, originChainId, destinationChainId, transactionType])
 
   return (
     <div data-test-id="transaction" className="flex flex-col">
