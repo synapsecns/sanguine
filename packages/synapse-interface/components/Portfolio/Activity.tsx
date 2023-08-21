@@ -20,6 +20,7 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
+import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -203,7 +204,7 @@ const RecentlyBridgedPendingTransaction = ({
         <TransactionPayloadDetail chain={destinationChain} />
       </div>
       <div className="flex justify-end col-span-2 my-auto">
-        <TimeElapsed startTime={timestamp} />
+        <TimeElapsed startTime={timestamp} bridgeOriginChain={originChain} />
       </div>
     </div>
   )
@@ -421,14 +422,23 @@ export const Transaction = ({
           />
         )}
         {transactionType === ActivityType.PENDING && (
-          <TimeElapsed startTime={bridgeOriginTime} />
+          <TimeElapsed
+            startTime={bridgeOriginTime}
+            bridgeOriginChain={originChain}
+          />
         )}
       </div>
     </div>
   )
 }
 
-export const TimeElapsed = ({ startTime }: { startTime: number }) => {
+export const TimeElapsed = ({
+  startTime,
+  bridgeOriginChain,
+}: {
+  startTime: number
+  bridgeOriginChain: Chain
+}) => {
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
   useEffect(() => {
