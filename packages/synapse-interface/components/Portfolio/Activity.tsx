@@ -214,7 +214,7 @@ const RecentlyBridgedPendingTransaction = ({
       </div>
 
       {delayed && (
-        <div className="text-[#FFD966] text-sm mt-1 whitespace-nowrap">
+        <div className="text-[#FFD966] text-sm mt-2 whitespace-nowrap">
           Confirmation taking longer than expected
         </div>
       )}
@@ -444,7 +444,7 @@ export const Transaction = ({
           )}
         </div>
         {delayed && (
-          <div className="text-[#FFD966] text-sm mt-1 whitespace-nowrap">
+          <div className="text-[#FFD966] text-sm mt-2 whitespace-nowrap">
             Confirmation taking longer than expected
           </div>
         )}
