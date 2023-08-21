@@ -195,7 +195,7 @@ export const FANTOM: Chain = {
   chainImg: fantomImg,
   layer: 1,
   codeName: 'fantom',
-  blockTime: 700,
+  blockTime: 1000,
   rpcUrls: {
     primary: 'https://rpc.ftm.tools',
     fallback: 'https://fantom-rpc.gateway.pokt.network/',
