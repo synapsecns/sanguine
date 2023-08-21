@@ -488,7 +488,8 @@ export const TimeElapsed = ({
   const estimatedCompletionInSeconds: number =
     (BRIDGE_REQUIRED_CONFIRMATIONS[bridgeOriginChain.id] *
       bridgeOriginChain.blockTime) /
-    1000
+      1000 +
+    30 // Add 30 seconds to account for indexing
 
   const estimatedMinutes = Math.floor(estimatedCompletionInSeconds / 60)
   const estimatedSeconds = estimatedCompletionInSeconds % 60
