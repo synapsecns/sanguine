@@ -127,6 +127,8 @@ type DestinationContract interface {
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
 	// IsValidReceipt checks if the given receipt is valid on the destination
 	IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error)
+	// PassAgentRoot passes the agent root to the destination.
+	PassAgentRoot(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
 }
 
 // LightInboxContract contains the interface for the light inbox.
