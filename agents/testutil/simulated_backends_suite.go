@@ -1,6 +1,10 @@
 package testutil
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -32,7 +36,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -41,9 +46,6 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -67,6 +69,8 @@ type SimulatedBackendsTestSuite struct {
 	TestContractMetadataOnOrigin        contracts.DeployedContract
 	TestContractOnSummit                *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnSummit        contracts.DeployedContract
+	DestinationContractOnSummit         *destinationharness.DestinationHarnessRef
+	DestinationContractMetadataOnSummit contracts.DeployedContract
 	TestContractOnDestination           *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnDestination   contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
@@ -235,6 +239,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.TestContractMetadataOnSummit, a.TestContractOnSummit = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendSummit)
+	a.DestinationContractMetadataOnSummit, a.DestinationContractOnSummit = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
@@ -243,6 +248,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
+		DestinationAddress:    a.DestinationContractOnSummit.Address().String(),
 	}, a.TestBackendSummit.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
@@ -328,15 +334,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(10))
+		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	wg.Wait()
 
