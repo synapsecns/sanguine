@@ -5,7 +5,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { PartialInfo, BridgeTransaction } from '@/slices/api/generated'
-import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
+import {
+  convertUnixTimestampToMonthAndDate,
+  isTimestampToday,
+} from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenSymbolToToken } from '@/constants/tokens'
@@ -561,6 +564,8 @@ export const Completed = ({
     transactionCompletedTime &&
     convertUnixTimestampToMonthAndDate(transactionCompletedTime)
 
+  const isToday: boolean = isTimestampToday(transactionCompletedTime)
+
   const destinationIsSender: boolean =
     String(connectedAddress) === String(destinationAddress)
 
@@ -572,7 +577,11 @@ export const Completed = ({
       {!destinationIsSender && (
         <div>to {shortenAddress(destinationAddress, 3)} </div>
       )}
-      <div>{formattedTime}</div>
+      {isToday ? (
+        <div className="text-[#3BDD77]">Today</div>
+      ) : (
+        <div>{formattedTime}</div>
+      )}
     </div>
   )
 }

@@ -33,3 +33,14 @@ export const convertUnixTimestampToMonthAndDate = (
   const date = new Date(unixTimestamp * 1000)
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric' })
 }
+
+export const isTimestampToday = (unixTimestamp: number): boolean => {
+  const currentDate = new Date()
+  const dateFromTimestamp = new Date(unixTimestamp * 1000)
+
+  return (
+    dateFromTimestamp.getDate() === currentDate.getDate() &&
+    dateFromTimestamp.getMonth() === currentDate.getMonth() &&
+    dateFromTimestamp.getFullYear() === currentDate.getFullYear()
+  )
+}
