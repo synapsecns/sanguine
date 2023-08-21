@@ -382,16 +382,16 @@ export const Transaction = ({
   return (
     <div data-test-id="transaction" className="flex flex-col">
       <div
+        onClick={handleTransactionClick}
         className={`
         grid grid-cols-10 mt-auto py-3 px-2
         text-sm text-white
-        items-end hover:cursor-pointer hover:bg-[#272731]
+        items-end hover:cursor-pointer
         ${
           transactionType === ActivityType.RECENT && 'border-b border-[#565058]'
         }
         ${transactionType === ActivityType.PENDING && 'bg-[#1B1B29] rounded-md'}
         `}
-        onClick={handleTransactionClick}
       >
         <div className="flex col-span-4 my-auto">
           <TransactionPayloadDetail
