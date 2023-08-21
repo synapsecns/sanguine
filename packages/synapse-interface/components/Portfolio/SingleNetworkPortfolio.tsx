@@ -168,7 +168,7 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1 py-4 pl-2"
+      className="flex flex-row justify-between flex-1 py-4 pl-2 cursor-pointer"
     >
       <div className="flex flex-row items-center">
         {isUnsupportedChain ? (
@@ -204,7 +204,7 @@ const PortfolioTokenVisualizer = ({
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center hover-trigger"
+      className="flex flex-row items-center cursor-pointer hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
