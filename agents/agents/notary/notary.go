@@ -520,13 +520,13 @@ func (n *Notary) Start(parentCtx context.Context) error {
 	logger.Infof("Notary loadSummitMyLatestStates")
 	n.loadSummitMyLatestStates(ctx)
 
-	g.Go(func() error {
-		err := n.txSubmitter.Start(ctx)
-		if err != nil {
-			err = fmt.Errorf("could not start tx submitter: %w", err)
-		}
-		return err
-	})
+	// g.Go(func() error {
+	// 	err := n.txSubmitter.Start(ctx)
+	// 	if err != nil {
+	// 		err = fmt.Errorf("could not start tx submitter: %w", err)
+	// 	}
+	// 	return err
+	// })
 
 	g.Go(func() error {
 		for {
