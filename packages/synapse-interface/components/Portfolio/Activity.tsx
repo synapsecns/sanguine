@@ -19,6 +19,7 @@ import { getExplorerTxUrl } from '@/constants/urls'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -491,13 +492,17 @@ export const Completed = ({
   const destinationIsSender: boolean =
     String(connectedAddress) === String(destinationAddress)
 
-  console.log('destinationIsSender:', destinationIsSender)
-
   return (
-    <span data-test-id="completed">
+    <div
+      data-test-id="completed"
+      className="flex flex-col text-right text-[#C2C2D6] gap-1"
+    >
       {/* <span className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </span>{' '} */}
-      {formattedTime}
-    </span>
+      {!destinationIsSender && (
+        <div>to {shortenAddress(destinationAddress, 3)} </div>
+      )}
+      <div>{formattedTime}</div>
+    </div>
   )
 }
 
