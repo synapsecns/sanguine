@@ -156,6 +156,7 @@ const RecentlyBridgedPendingTransaction = ({
 }: {
   recentlyBridgedTransaction: RecentBridgeTransaction
 }) => {
+  const [delayed, setDelayed] = useState<boolean>(false)
   const {
     originChain,
     originToken,
@@ -204,8 +205,19 @@ const RecentlyBridgedPendingTransaction = ({
         <TransactionPayloadDetail chain={destinationChain} />
       </div>
       <div className="flex justify-end col-span-2 my-auto">
-        <TimeElapsed startTime={timestamp} bridgeOriginChain={originChain} />
+        <TimeElapsed
+          startTime={timestamp}
+          bridgeOriginChain={originChain}
+          delayed={delayed}
+          setDelayed={setDelayed}
+        />
       </div>
+
+      {delayed && (
+        <div className="text-[#FFD966] text-sm mt-1 whitespace-nowrap">
+          Confirmation taking longer than expected
+        </div>
+      )}
     </div>
   )
 }
@@ -368,9 +380,9 @@ export const Transaction = ({
   }, [kappa, originChainId, destinationChainId])
 
   return (
-    <div
-      data-test-id="transaction"
-      className={`
+    <div data-test-id="transaction" className="flex flex-col">
+      <div
+        className={`
         grid grid-cols-10 mt-auto py-3 px-2
         text-sm text-white
         items-end hover:cursor-pointer hover:bg-[#272731]
@@ -379,31 +391,31 @@ export const Transaction = ({
         }
         ${transactionType === ActivityType.PENDING && 'bg-[#1B1B29] rounded-md'}
         `}
-      onClick={handleTransactionClick}
-    >
-      <div className="flex col-span-4 my-auto">
-        <TransactionPayloadDetail
-          chain={originChain}
-          token={originToken}
-          tokenSymbol={originTokenSymbol}
-          tokenAmount={originFormattedValue}
-        />
-        <div
-          data-test-id="arrow"
-          className="flex items-end px-4 my-auto ml-auto mr-3"
-        >
-          →
+        onClick={handleTransactionClick}
+      >
+        <div className="flex col-span-4 my-auto">
+          <TransactionPayloadDetail
+            chain={originChain}
+            token={originToken}
+            tokenSymbol={originTokenSymbol}
+            tokenAmount={originFormattedValue}
+          />
+          <div
+            data-test-id="arrow"
+            className="flex items-end px-4 my-auto ml-auto mr-3"
+          >
+            →
+          </div>
         </div>
-      </div>
-      <div className="col-span-4 my-auto">
-        <TransactionPayloadDetail
-          chain={destinationChain}
-          token={destinationToken}
-          tokenSymbol={destinationTokenSymbol}
-          tokenAmount={destinationFormattedValue}
-        />
-      </div>
-      {/* <div className="flex justify-end col-span-2">
+        <div className="col-span-4 my-auto">
+          <TransactionPayloadDetail
+            chain={destinationChain}
+            token={destinationToken}
+            tokenSymbol={destinationTokenSymbol}
+            tokenAmount={destinationFormattedValue}
+          />
+        </div>
+        {/* <div className="flex justify-end col-span-2">
         {transactionType === ActivityType.RECENT && (
           <ExchangeRate
             originValue={originFormattedValue}
@@ -414,21 +426,27 @@ export const Transaction = ({
           <div>{bridgeOriginBlockNumber}</div>
         )}
       </div> */}
-      <div className="flex justify-end col-span-2 my-auto">
-        {transactionType === ActivityType.RECENT && (
-          <Completed
-            transactionCompletedTime={bridgeDestinationTime}
-            connectedAddress={connectedAddress}
-            destinationAddress={destinationAddress}
-          />
-        )}
-        {transactionType === ActivityType.PENDING && (
-          <TimeElapsed
-            startTime={bridgeOriginTime}
-            bridgeOriginChain={originChain}
-            delayed={delayed}
-            setDelayed={setDelayed}
-          />
+        <div className="flex justify-end col-span-2 my-auto">
+          {transactionType === ActivityType.RECENT && (
+            <Completed
+              transactionCompletedTime={bridgeDestinationTime}
+              connectedAddress={connectedAddress}
+              destinationAddress={destinationAddress}
+            />
+          )}
+          {transactionType === ActivityType.PENDING && (
+            <TimeElapsed
+              startTime={bridgeOriginTime}
+              bridgeOriginChain={originChain}
+              delayed={delayed}
+              setDelayed={setDelayed}
+            />
+          )}
+        </div>
+        {delayed && (
+          <div className="text-[#FFD966] text-sm mt-1 whitespace-nowrap">
+            Confirmation taking longer than expected
+          </div>
         )}
       </div>
     </div>
@@ -498,7 +516,7 @@ export const TimeElapsed = ({
     if (!delayed && elapsedTime > estimatedCompletionInSeconds) {
       setDelayed(true)
     }
-  }, [delayed, estimatedCompletionInSeconds, elapsedTime])
+  }, [delayed, estimatedCompletionInSeconds, elapsedTime, setDelayed])
 
   return (
     <div
