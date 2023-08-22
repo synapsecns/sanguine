@@ -1165,7 +1165,7 @@ export const USDCe = new Token({
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
   },
   decimals: 6,
-  symbol: 'USDCe',
+  symbol: 'USDC.e',
   name: 'Bridged USDC',
   logo: usdcLogo,
   description: `
@@ -1184,8 +1184,8 @@ export const USDTe = new Token({
     [CHAINS.AVALANCHE.id]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
   },
   decimals: 6,
-  symbol: 'USDTe',
-  name: 'Tether',
+  symbol: 'USDT.e',
+  name: 'Bridged USDT',
   logo: usdtLogo,
   description: `
     USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
