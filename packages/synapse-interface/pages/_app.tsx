@@ -47,6 +47,7 @@ import { Provider } from 'react-redux'
 import { store } from '@/store/store'
 import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
 
+import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
 
 const rawChains = [
@@ -129,6 +130,7 @@ export const wagmiConfig = createConfig({
 function Updaters() {
   return (
     <>
+      <PortfolioUpdater />
       <TransactionsUpdater />
     </>
   )
