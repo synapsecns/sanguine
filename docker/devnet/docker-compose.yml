@@ -4,11 +4,15 @@ version: '3.4'
 
 volumes:
   chain_a_data:
+  chain_b_data:
+  chain_c_data:
 
 services:
   omnirpc:
     depends_on:
       - chain_a
+      - chain_b
+      - chain_c
     build:
       context: ../../
       dockerfile: docker/devnet/omnirpc.Dockerfile
@@ -20,21 +24,22 @@ services:
       --config=/config/omnirpc.yaml
     volumes:
       - "${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
-      interval: 1s
-      timeout: 20s
-      retries: 10
-      start_period: 5s
+# TODO, consider re-enabling.
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
+#      interval: 1s
+#      timeout: 20s
+#      retries: 10
+#      start_period: 5s
 
   chain_a:
     image: "ghcr.io/foundry-rs/foundry:latest"
+    entrypoint: anvil
     command: >
-      anvil
+      --host=0.0.0.0
       --chain-id=42
       --allow-origin="*"
       --steps-tracing
-      --host=0.0.0.0
       --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
       --base-fee=1
       --gas-limit=100000000
@@ -43,4 +48,38 @@ services:
       - "8042:8545"
     volumes:
       - chain_a_data:/data
+
+  chain_b:
+    image: "ghcr.io/foundry-rs/foundry:latest"
+    entrypoint: anvil
+    command: >
+      --host=0.0.0.0
+      --chain-id=43
+      --allow-origin="*"
+      --steps-tracing
+      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - "8043:8545"
+    volumes:
+      - chain_b_data:/data
+
+  chain_c:
+    image: "ghcr.io/foundry-rs/foundry:latest"
+    entrypoint: anvil
+    command: >
+      --host=0.0.0.0
+      --chain-id=44
+      --allow-origin="*"
+      --steps-tracing
+      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - "8044:8545"
+    volumes:
+      - chain_b_data:/data
 

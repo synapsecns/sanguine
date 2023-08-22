@@ -1,7 +1,15 @@
 chains:
   42:
     rpcs:
-      - http://loaclhost:8042
+      - http://chain_a:8545/
+    confirmations: 1
+  43:
+    rpcs:
+      - http://chain_b:8545/
+    confirmations: 1
+  44:
+    rpcs:
+      - http://chain_c:8545/
     confirmations: 1
 # port to run on
 port: 9001

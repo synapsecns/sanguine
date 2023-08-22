@@ -534,3 +534,10 @@ jobs:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+#  devnet:
+#    name: "Devnet docker-compose build"
+#    runs-on: ubuntu-latest
+#    needs: [ changes ]
+# TODO first we're going to add a check for changes to Dockerfiles in devnet to the changes step
+# then we're going to rerun this one if more than one package changed OR if the Dockerfile changed
