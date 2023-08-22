@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
+	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 )
 
 // ExecutorDBWriter is the interface for writing to the executor database.
@@ -79,4 +80,5 @@ type ExecutorDBReader interface {
 type ExecutorDB interface {
 	ExecutorDBWriter
 	ExecutorDBReader
+	SubmitterDB() submitterDB.Service
 }

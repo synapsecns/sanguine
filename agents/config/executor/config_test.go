@@ -4,6 +4,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/config/executor"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -16,13 +17,13 @@ func configFixture(c ConfigSuite) executor.Config {
 	testWallet, err := wallet.FromRandom()
 	Nil(c.T(), err)
 	return executor.Config{
-		DBConfig: executor.DBConfig{
+		DBConfig: config.DBConfig{
 			Type:   "sqlite",
 			Source: gofakeit.Word(),
 		},
 		ScribeConfig: executor.ScribeConfig{
 			Type: "embedded",
-			EmbeddedDBConfig: executor.DBConfig{
+			EmbeddedDBConfig: config.DBConfig{
 				Type:   "mysql",
 				Source: gofakeit.Word(),
 			},

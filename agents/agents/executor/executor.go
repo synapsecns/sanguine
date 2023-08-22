@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -13,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -21,6 +27,8 @@ import (
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -29,9 +37,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"math/big"
-	"strconv"
-	"time"
 )
 
 // chainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -50,6 +55,8 @@ type chainExecutor struct {
 	lightInboxParser lightinbox.Parser
 	// inboxParser is the inbox parser.
 	inboxParser inbox.Parser
+	// summitParser is the summit parser.
+	summitParser summit.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTree is a merkle tree for a specific origin chain.
@@ -78,6 +85,8 @@ type Executor struct {
 	chainExecutors map[uint32]*chainExecutor
 	// handler is the metrics handler.
 	handler metrics.Handler
+	// txSubmitter is the transaction submitter.
+	txSubmitter submitter.TransactionSubmitter
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -122,7 +131,7 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 // NewExecutor creates a new executor agent.
 //
 //nolint:cyclop
-func NewExecutor(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
+func NewExecutor(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, omniRPCClient omnirpcClient.RPCClient, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
 
 	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
@@ -134,6 +143,8 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
+
+	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
 	if config.ExecuteInterval == 0 {
 		config.ExecuteInterval = 2
@@ -155,24 +166,34 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		}
 
 		var inboxParser inbox.Parser
+		var summitParser summit.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
+
+			summitParser, err = summit.NewParser(common.HexToAddress(config.SummitAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create summit parser: %w", err)
+			}
 		} else {
 			inboxParser = nil
+			summitParser = nil
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
-
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
+		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
-			return nil, fmt.Errorf("could not get evm: %w", err)
+			return nil, fmt.Errorf("could not get evm client: %w", err)
 		}
 
-		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
+		chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
+		if err != nil {
+			return nil, fmt.Errorf("could not create chain client: %w", err)
+		}
+
+		boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
@@ -193,9 +214,10 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			originParser:     originParser,
 			lightInboxParser: lightInboxParser,
 			inboxParser:      inboxParser,
+			summitParser:     summitParser,
 			logChan:          make(chan *ethTypes.Log, logChanSize),
 			merkleTree:       tree,
-			rpcClient:        clients[chain.ChainID],
+			rpcClient:        evmClient,
 			boundDestination: boundDestination,
 		}
 	}
@@ -209,6 +231,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 		handler:        handler,
+		txSubmitter:    txSubmitter,
 	}, nil
 }
 
@@ -216,20 +239,33 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
-	// Listen for snapshotAcceptedEvents on bonding manager.
+	g.Go(func() error {
+		err := e.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
+		}
+		return err
+	})
+
+	// Listen for snapshotAccepted events on the inbox.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
+	})
+
+	// Listen for attestationSaved events on the summit.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
 	})
 
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for sentEvents on origin.
+		// Listen for sent events on origins.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
-		// Listen for attestationAcceptedEvents on destination.
+		// Listen for attestationAccepted events on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})
@@ -357,39 +393,26 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return false, fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(timeout):
-			if b.Attempt() >= rpcRetry {
-				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
-			}
-
-			// TODO (joe and lex): Set gas limit for now to be equal to what was set in the message
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(10000000))
-			if err != nil {
-				timeout = b.Duration()
-				span.AddEvent("error when executing", trace.WithAttributes(
-					attribute.Int(metrics.ChainID, int(message.DestinationDomain())),
-					attribute.String("error", err.Error()),
-					attribute.Float64("timeout", timeout.Seconds()),
-				))
-				continue
-			}
-
-			return true, nil
+	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
+			transactor,
+			message,
+			originProof,
+			snapshotProofB32,
+			big.NewInt(int64(*stateIndex)),
+			uint64(1000000),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
+
+		return
+	})
+	if err != nil {
+		return false, fmt.Errorf("could not submit transaction: %w", err)
 	}
+
+	return true, nil
 }
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.

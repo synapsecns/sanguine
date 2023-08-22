@@ -2,6 +2,7 @@ package anvil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -76,10 +77,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
-		// Note: https://github.com/foundry-rs/foundry/commit/6e041f9751efa6b75420689b862df05b0934022b introduces a breaking change with regards to
-		// eth_BsendTransaction. The commit changes the way tx fields are detected. This will be fixed (on the anvil or ethergo sides) in a future version.
-		Tag: "nightly-7398b65e831f2339d1d0a0bb05ade799e4f9d01e",
-		Cmd: []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
+		Tag:        "latest",
+		Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
 		},
@@ -109,6 +108,12 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 			logger.Warn(err)
 		}
 	}()
+
+	otterscanMessage := ""
+	if args.enableOtterscan {
+		otterAddress := setupOtterscan(ctx, t, pool, resource, args)
+		otterscanMessage = fmt.Sprintf("otterscan is running at %s", otterAddress)
+	}
 
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
@@ -146,7 +151,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	case <-ctx.Done():
 		t.Errorf("context canceled before anvil node started")
 	case logInfo := <-logInfoChan:
-		logger.Warnf("started anvil node for chain %s as container %s. Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		logger.Warnf("started anvil node for chain %s as container %s. %s Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), otterscanMessage, logInfo.LogDir())
 	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
@@ -168,6 +173,65 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}()
 
 	return &backend
+}
+
+func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
+	tb.Helper()
+
+	runOptions := &dockertest.RunOptions{
+		Repository: "otterscan/otterscan",
+		Tag:        "latest",
+		Env: []string{
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+		},
+		Labels: map[string]string{
+			"test-id": uuid.New().String(),
+		},
+		ExposedPorts: []string{"5100"},
+		Platform:     "linux/amd64", // otterscan *oficially* only supports linux/amd64, but this works fine.
+	}
+
+	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+		config.AutoRemove = args.autoremove
+		if args.restartPolicy != nil {
+			config.RestartPolicy = *args.restartPolicy
+		}
+	})
+	// since this is ran in a gofunc, context cancelation errors expected during pull, etc
+	if !errors.Is(err, context.Canceled) {
+		assert.Nil(tb, err)
+	}
+
+	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
+	// containers should be removed on their own, but this is a safety net.
+	// to prevent old containers from piling up, we set a timeout to remove the container.
+	assert.Nil(tb, resource.Expire(args.expirySeconds))
+
+	logInfoChan := make(chan processlog.LogMetadata)
+	go func() {
+		defer close(logInfoChan)
+		err = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithResource(resource), dockerutil.WithPool(pool), dockerutil.WithProcessLogOptions(args.processOptions...), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
+			select {
+			case <-ctx.Done():
+				return
+			case logInfoChan <- metadata:
+			}
+		}))
+
+		if ctx.Err() != nil {
+			logger.Warn(err)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		tb.Errorf("context canceled before anvil node started")
+	case logInfo := <-logInfoChan:
+		// debug level stuff
+		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+	}
+	return ""
 }
 
 var logger = log.Logger("anvil-docker")
@@ -347,6 +411,7 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 		NoSend:   true,
 	})
 
+	// TODO: test both legacy and dynamic tx types
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
 	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 

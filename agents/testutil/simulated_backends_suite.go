@@ -1,13 +1,21 @@
 package testutil
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	guarddb "github.com/synapsecns/sanguine/agents/agents/guard/db"
+	guardSqlite "github.com/synapsecns/sanguine/agents/agents/guard/db/sql/sqlite"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	notarydb "github.com/synapsecns/sanguine/agents/agents/notary/db"
+	notarySqlite "github.com/synapsecns/sanguine/agents/agents/notary/db/sql/sqlite"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -28,17 +36,16 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -62,6 +69,8 @@ type SimulatedBackendsTestSuite struct {
 	TestContractMetadataOnOrigin        contracts.DeployedContract
 	TestContractOnSummit                *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnSummit        contracts.DeployedContract
+	DestinationContractOnSummit         *destinationharness.DestinationHarnessRef
+	DestinationContractMetadataOnSummit contracts.DeployedContract
 	TestContractOnDestination           *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnDestination   contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
@@ -110,11 +119,14 @@ type SimulatedBackendsTestSuite struct {
 	ScribeTestDB                        scribedb.EventDB
 	DBPath                              string
 	ExecutorTestDB                      db.ExecutorDB
+	NotaryTestDB                        notarydb.NotaryDB
+	GuardTestDB                         guarddb.GuardDB
 	ScribeMetrics                       metrics.Handler
 	ExecutorMetrics                     metrics.Handler
 	NotaryMetrics                       metrics.Handler
 	GuardMetrics                        metrics.Handler
 	ContractMetrics                     metrics.Handler
+	TestOmniRPC                         string
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -227,6 +239,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.TestContractMetadataOnSummit, a.TestContractOnSummit = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendSummit)
+	a.DestinationContractMetadataOnSummit, a.DestinationContractOnSummit = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
@@ -235,6 +248,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
+		DestinationAddress:    a.DestinationContractOnSummit.Address().String(),
 	}, a.TestBackendSummit.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
@@ -320,21 +334,61 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(10))
+		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	wg.Wait()
 
-	a.SetupSummit(a.TestDeployManager)
-	a.SetupDestination(a.TestDeployManager)
-	a.SetupOrigin(a.TestDeployManager)
+	testBackends := []backends.SimulatedTestBackend{
+		a.TestBackendOrigin,
+		a.TestBackendDestination,
+		a.TestBackendSummit,
+	}
+
+	/*
+		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
+			InboxType,
+			BondingManagerHarnessType,
+			SummitHarnessType,
+			AgentsTestContractType,
+			DestinationHarnessType,
+			OriginHarnessType,
+			TestClientType,
+			PingPongClientType,
+			LightInboxType,
+			LightManagerHarnessType,
+		)
+	*/
+
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		a.SetupSummit(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupDestination(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupOrigin(a.TestDeployManager)
+	}()
+	wg.Wait()
+
+	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 
 	err := a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
@@ -357,6 +411,16 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.ExecutorTestDB = sqliteStore
+	notarySqliteStore, err := notarySqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.NotaryMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryTestDB = notarySqliteStore
+	guardSqliteStore, err := guardSqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.GuardMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.GuardTestDB = guardSqliteStore
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

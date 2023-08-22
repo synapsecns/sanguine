@@ -81,19 +81,9 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 	}
 }
 
-// ParseAndStore parses the message logs and returns a model that can be stored
-// Deprecated: use Parse and store separately.
-func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	messageEvent, err := m.Parse(ctx, log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not parse event: %w", err)
-	}
-	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
-	}
-	return nil
+// ParserType returns the type of parser.
+func (m *MessageBusParser) ParserType() string {
+	return "messagebus"
 }
 
 // Parse parses the message logs.
