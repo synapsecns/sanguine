@@ -6,6 +6,7 @@ import { useBridgeState } from '../bridge/hooks'
 import { BridgeState } from '../bridge/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
 import { useAccount } from 'wagmi'
+import { RecentBridgeTransaction } from '../bridge/actions'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
@@ -23,7 +24,9 @@ export default function Updater(): null {
     }
 
     ;(async () => {
-      const updateChainId = recentBridgeTransactions[0]?.originChain?.id
+      const newestTransaction: RecentBridgeTransaction =
+        recentBridgeTransactions[0]
+      const updateChainId: number = newestTransaction.originChain?.id
       const transactionHash = recentBridgeTransactions[0]
         .transactionHash as Address
 
@@ -33,7 +36,7 @@ export default function Updater(): null {
 
       await dispatch(
         fetchAndStoreSingleNetworkPortfolioBalances({
-          address: address,
+          address: address as Address,
           chainId: updateChainId,
         })
       )
