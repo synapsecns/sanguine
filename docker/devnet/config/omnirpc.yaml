@@ -1,0 +1,9 @@
+chains:
+  42:
+    rpcs:
+      - http://loaclhost:8042
+    confirmations: 1
+# port to run on
+port: 9001
+# expressed in seconds
+refreshInterval: 60

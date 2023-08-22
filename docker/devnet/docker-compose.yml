@@ -1,0 +1,46 @@
+version: '3.4'
+
+# This compose file is expected to be used from make and not independently.
+
+volumes:
+  chain_a_data:
+
+services:
+  omnirpc:
+    depends_on:
+      - chain_a
+    build:
+      context: ../../
+      dockerfile: docker/devnet/omnirpc.Dockerfile
+    ports:
+      - "9001:9001"
+    command: >
+      omnirpc
+      server
+      --config=/config/omnirpc.yaml
+    volumes:
+      - "${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
+      interval: 1s
+      timeout: 20s
+      retries: 10
+      start_period: 5s
+
+  chain_a:
+    image: "ghcr.io/foundry-rs/foundry:latest"
+    command: >
+      anvil
+      --chain-id=42
+      --allow-origin="*"
+      --steps-tracing
+      --host=0.0.0.0
+      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - "8042:8545"
+    volumes:
+      - chain_a_data:/data
+
