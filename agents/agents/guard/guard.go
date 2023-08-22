@@ -254,7 +254,7 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleDisputeOpened(ctx, log)
 	case isStatusUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleStatusUpdated(ctx, log, chainID)
-	case isRootUpdatedEvent(g.bondingManagerParser, log):
+	case isRootUpdatedEvent(g.lightManagerParser, g.bondingManagerParser, log):
 		return g.handleRootUpdated(ctx, log, chainID)
 	}
 	return nil

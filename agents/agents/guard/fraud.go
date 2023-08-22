@@ -287,7 +287,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
-	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID)
+	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID, "AT BLOCK", log.BlockNumber)
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
@@ -438,9 +438,21 @@ func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
 	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
+func (g Guard) parseRootUpdated(log ethTypes.Log) (*[32]byte, error) {
+	rootUpdated, err := g.lightManagerParser.ParseRootUpdated(log)
+	if err == nil {
+		return rootUpdated, nil
+	}
+	rootUpdated, err = g.bondingManagerParser.ParseRootUpdated(log)
+	if err == nil {
+		return rootUpdated, nil
+	}
+	return nil, fmt.Errorf("could not parse root updated: %w", err)
+}
+
 // handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
+	newRoot, err := g.parseRootUpdated(log)
 	if err != nil || newRoot == nil {
 		return fmt.Errorf("could not parse root updated: %w", err)
 	}
