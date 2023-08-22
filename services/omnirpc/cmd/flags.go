@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/phayes/freeport"
 	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
@@ -16,8 +15,6 @@ var chainIDFlag = &cli.IntFlag{
 var portFlag = &cli.IntFlag{
 	Name:  "port",
 	Usage: "port to run the omniproxy on",
-	// default to an open port
-	Value: freeport.GetPort(),
 }
 
 // set the default dir to the users home path/omnirpc.yaml.
