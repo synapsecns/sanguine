@@ -13,6 +13,7 @@ const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
 const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
 const SwapQuoterABI = require('./abi/SwapQuoter.json')
 const ERC20ABI = require('./abi/IERC20Metadata.json')
+const DefaultPoolABI = require('./abi/IDefaultPool.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -64,8 +65,8 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
 })
 
 // Function to get list of tokens that could be swapped
-// into SynapseBridge or SynapseCCTP tokens for a given chain.
-const getSwappableOrigin = async (chainId) => {
+// into SynapseBridge tokens for a given chain.
+const getBridgeSwappableOrigin = async (chainId) => {
   // Get WETH address
   const weth = await SwapQuoters[chainId].weth()
   // Get list of supported tokens
@@ -80,11 +81,6 @@ const getSwappableOrigin = async (chainId) => {
       allTokenSymbols[bridgeToken] = new Set([symbol])
     })
   )
-  // Add entries from CCTP bridge tokens
-  const cctpTokenSymbols = await getCCTPBridgeSymbols(chainId)
-  Object.keys(cctpTokenSymbols).forEach((token) => {
-    addSetToMap(allTokenSymbols, token, cctpTokenSymbols[token])
-  })
   // Collect map from supported tokens into set of bridge token symbols
   const swappableToSymbols = {}
   // Add all bridge tokens to swappableToSymbols
@@ -113,6 +109,37 @@ const getSwappableOrigin = async (chainId) => {
   return swappableToSymbols
 }
 
+// Function to get list of tokens that could be swapped
+// into SynapseCCTP tokens for a given chain.
+const getCCTPSwappableOrigin = async (chainId) => {
+  // Return empty map if CCTP is not supported on the chain
+  if (!SynapseCCTPs[chainId]) {
+    return {}
+  }
+  // Get map from token to set of bridge token symbols
+  const cctpTokenSymbols = await getCCTPBridgeSymbols(chainId)
+  const swappableToSymbols = {}
+  // Add all bridge tokens to swappableToSymbols
+  Object.keys(cctpTokenSymbols).forEach((token) => {
+    swappableToSymbols[token] = new Set([cctpTokenSymbols[token]])
+  })
+  // Add tokens from whitelisted pools
+  await Promise.all(
+    Object.keys(cctpTokenSymbols).map(async (cctpToken) => {
+      const pool = await SynapseCCTPs[chainId].circleTokenPool(cctpToken)
+      const tokens = await getPoolTokens(chainId, pool)
+      tokens.forEach((token) => {
+        addSetToMap(
+          swappableToSymbols,
+          token,
+          new Set([cctpTokenSymbols[cctpToken]])
+        )
+      })
+    })
+  )
+  return swappableToSymbols
+}
+
 // Function to get a list of bridge token symbols that could be swapped
 // into a token on a destination chain.
 const getSwappableDestination = async (chainId, token) => {
@@ -136,6 +163,7 @@ const getSwappableDestination = async (chainId, token) => {
   return Array.from(symbolSet).sort()
 }
 
+// Function to get a map from CCTP tokens to bridge token symbols
 const getCCTPBridgeSymbols = async (chainId) => {
   // Return empty map if CCTP is not supported on the chain
   if (!SynapseCCTPs[chainId]) {
@@ -144,16 +172,31 @@ const getCCTPBridgeSymbols = async (chainId) => {
   // Get a list of bridge tokens
   // List entries are (symbol, token) pairs
   const cctpTokens = await SynapseCCTPs[chainId].getBridgeTokens()
-  // Return map from token to set of bridge token symbols
-  const cctpTokenSymbols = {}
+  // Return map from token to bridge symbol
+  const cctpTokenToSymbol = {}
   cctpTokens.forEach((bridgeToken) => {
-    addSetToMap(
-      cctpTokenSymbols,
-      bridgeToken.token,
-      new Set([bridgeToken.symbol])
-    )
+    cctpTokenToSymbol[bridgeToken.token] = bridgeToken.symbol
   })
-  return cctpTokenSymbols
+  return cctpTokenToSymbol
+}
+
+// Function to get a list of tokens in a pool
+const getPoolTokens = async (chainId, poolAddress) => {
+  const pool = new ethers.Contract(
+    poolAddress,
+    DefaultPoolABI,
+    providers[chainId]
+  )
+  // To get a list of tokens we do getToken(i) calls until we get a revert
+  const tokens = []
+  for (let i = 0; ; i++) {
+    try {
+      tokens.push(await pool.getToken(i))
+    } catch (e) {
+      break
+    }
+  }
+  return tokens
 }
 
 // Gets a set of bridge token symbols from a list of tokens
@@ -195,7 +238,12 @@ const printSwappableTokens = async () => {
   const symbolsMap = {}
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
-      const swappableOrigin = await getSwappableOrigin(chainId)
+      const swappableOrigin = await getBridgeSwappableOrigin(chainId)
+      // Add CCTP swappable origin tokens to swappableOrigin
+      const cctpSwappableOrigin = await getCCTPSwappableOrigin(chainId)
+      Object.keys(cctpSwappableOrigin).forEach((token) => {
+        addSetToMap(swappableOrigin, token, cctpSwappableOrigin[token])
+      })
       const tokens = {}
       await Promise.all(
         Object.keys(swappableOrigin).map(async (token) => {
