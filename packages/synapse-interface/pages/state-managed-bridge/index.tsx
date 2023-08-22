@@ -526,16 +526,16 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
-        setTimeout(async () => {
-          await dispatch(
-            fetchAndStoreSingleTokenBalance({
-              token: fromToken,
-              routerAddress: bridgeQuote?.routerAddress as Address,
-              address: address,
-              chainId: fromChainId,
-            })
-          )
-        }, 3000)
+        // setTimeout(async () => {
+        //   await dispatch(
+        //     fetchAndStoreSingleTokenBalance({
+        //       token: fromToken,
+        //       routerAddress: bridgeQuote?.routerAddress as Address,
+        //       address: address,
+        //       chainId: fromChainId,
+        //     })
+        //   )
+        // }, 3000)
 
         return tx
       } catch (error) {
