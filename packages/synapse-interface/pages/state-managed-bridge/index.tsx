@@ -537,8 +537,6 @@ const StateManagedBridge = () => {
           )
         }, 3000)
 
-        console.log('tx:', tx)
-
         return tx
       } catch (error) {
         segmentAnalyticsEvent(`[Bridge] error bridging`, {

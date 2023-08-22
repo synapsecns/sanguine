@@ -97,7 +97,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           {/* <TransactionHeader transactionType={ActivityType.RECENT} /> */}
           {userHistoricalTransactions &&
             userHistoricalTransactions
-              .slice(0, 5) //temporarily only show recent 5
+              // .slice(0, 5) //temporarily only show recent 5
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   connectedAddress={address}
