@@ -248,6 +248,7 @@ const printSwappableTokens = async () => {
       await Promise.all(
         Object.keys(swappableOrigin).map(async (token) => {
           tokens[token] = {
+            decimals: await getTokenDecimals(chainId, token),
             symbol: await getTokenSymbol(chainId, token),
             origin: Array.from(swappableOrigin[token]).sort(),
             destination: await getSwappableDestination(chainId, token),
@@ -308,6 +309,20 @@ const getTokenSymbol = async (chainId, token) => {
     providers[chainId]
   ).symbol()
   return symbol
+}
+
+const getTokenDecimals = async (chainId, token) => {
+  // Check if token is ETH
+  if (token === ETH) {
+    return 18
+  }
+  // Otherwise return decimals from ERC20 contract
+  const decimals = await new ethers.Contract(
+    token,
+    ERC20ABI,
+    providers[chainId]
+  ).decimals()
+  return decimals
 }
 
 // Writes obj to fn as a pretty printed JSON file
