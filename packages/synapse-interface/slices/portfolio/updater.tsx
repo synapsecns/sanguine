@@ -20,39 +20,35 @@ export default function Updater(): null {
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
-  // Update balances when transaction resolves
+  // Update Origin balances when transaction resolves
   useEffect(() => {
-    if (
-      !address ||
-      !recentBridgeTransactions ||
-      recentBridgeTransactions.length === 0
-    ) {
-      return
-    }
+    if (!address || !recentBridgeTransactions) return
+    if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
+      const updateOriginBalancesForNewestTransaction = async () => {
+        const newestTransaction: RecentBridgeTransaction =
+          recentBridgeTransactions[0]
 
-    ;(async () => {
-      const newestTransaction: RecentBridgeTransaction =
-        recentBridgeTransactions[0]
-      const updateChainId: number = newestTransaction.originChain?.id
-      const transactionHash = recentBridgeTransactions[0]
-        .transactionHash as Address
-
-      const resolvedTransaction = await waitForTransaction({
-        hash: transactionHash,
-      })
-
-      await dispatch(
-        fetchAndStoreSingleNetworkPortfolioBalances({
-          address: address as Address,
-          chainId: updateChainId,
+        const updateChainId: number = newestTransaction.originChain?.id
+        const hash: Address = newestTransaction.transactionHash as Address
+        const resolvedTransaction = await waitForTransaction({
+          hash: hash as Address,
         })
-      )
-    })()
+
+        await dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address: address as Address,
+            chainId: updateChainId,
+          })
+        )
+      }
+      updateOriginBalancesForNewestTransaction()
+    }
   }, [recentBridgeTransactions, address, dispatch])
 
+  // Update Destination balances for new historical transaction
   useEffect(() => {
     if (!address || isUserHistoricalTransactionsLoading) return
-    if (userHistoricalTransactions && userHistoricalTransactions.length === 0) {
+    if (userHistoricalTransactions && userHistoricalTransactions.length > 0) {
       const updateDestinationBalancesForLastTransaction = async () => {
         const lastTransaction: BridgeTransaction = userHistoricalTransactions[0]
         const destinationChainId: number = lastTransaction.toInfo?.chainID
