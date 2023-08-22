@@ -452,6 +452,7 @@ func (g Guard) parseRootUpdated(log ethTypes.Log) (*[32]byte, error) {
 
 // handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	fmt.Printf("handleRootUppdated on %d\n", chainID)
 	newRoot, err := g.parseRootUpdated(log)
 	if err != nil || newRoot == nil {
 		return fmt.Errorf("could not parse root updated: %w", err)
