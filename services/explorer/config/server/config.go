@@ -43,7 +43,7 @@ type ChainConfig struct {
 	// GetLogsBatchAmount is the number of getLogs requests to include in a single batch request.
 	GetLogsBatchAmount uint64 `yaml:"get_logs_batch_amount"`
 	// BlockTime is the block time of the chain.
-	BlockTime uint64 `yaml:"block_time"`
+	BlockTime uint64 `yaml:"avg_block_time"`
 	// Swaps are the addresses of the swaps on the chain for parsing token address logs.
 	Swaps []string `yaml:"swaps"`
 	// Chains stores the chain configurations.
