@@ -759,6 +759,10 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Contracts:          []scribeConfig.ContractConfig{originConfig, lightManagerConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
+		Address:    g.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	lightInboxDestinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
@@ -769,7 +773,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	destinationChainConfig := scribeConfig.ChainConfig{
 		ChainID:       uint32(g.TestBackendDestination.GetChainID()),
 		Confirmations: 1,
-		Contracts:     []scribeConfig.ContractConfig{destinationConfig, lightManagerDestinationConfig},
+		Contracts:     []scribeConfig.ContractConfig{destinationConfig, lightInboxDestinationConfig, lightManagerDestinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    g.SummitContract.Address().String(),
@@ -859,6 +863,14 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			Nil(g.T(), execErr)
 		}
 	}()
+
+	// // Continuously bump backends in the background to make sure events are emitted.
+	// go func() {
+	// 	for {
+	// 		g.bumpBackends()
+	// 		time.Sleep(1 * time.Second)
+	// 	}
+	// }()
 
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
@@ -1003,7 +1015,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// TODO: uncomment the following case once manager messages can be executed.
 	// Increase EVM time to allow agent status to be updated to Slashed on origin.
-	optimisticPeriodSeconds := 86400
+	optimisticPeriodSeconds := 86401
 	bumpOptimisticPeriod := func(backend backends.SimulatedTestBackend) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
@@ -1067,15 +1079,54 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.bumpBackends()
 
 	// Submit the attestation
+	latestAgentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
+	Nil(g.T(), err)
+	fmt.Printf("latest agent root: %v\n", common.BytesToHash(latestAgentRoot[:]))
+
+	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
+	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
+	chainGas := types.NewChainGas(originState.GasData(), uint32(g.TestBackendOrigin.GetChainID()))
+	chainGasBytes, err := types.EncodeChainGas(chainGas)
+	Nil(g.T(), err)
+
+	// TODO: Change from using a harness to using the Go code.
+	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
+	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
+	Nil(g.T(), err)
+	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, latestAgentRoot, snapGasHash)
+	Nil(g.T(), err)
+
 	notaryAttestation, err = g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 2)
 	Nil(g.T(), err)
-	attSignature, attEncoded, _, err = notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	// gasDataBytes, err := types.EncodeGasData(snapshot.States()[0].GasData())
+	// Nil(g.T(), err)
+	// gasDataHash := crypto.Keccak256Hash(gasDataBytes)
+	attestation := types.NewAttestation(
+		notaryAttestation.Attestation().SnapshotRoot(),
+		dataHash,
+		2,
+		notaryAttestation.Attestation().BlockNumber(),
+		notaryAttestation.Attestation().Timestamp(),
+	)
+	attEncoded, err = attestation.Encode()
+	Nil(g.T(), err)
+	notaryAttestation, err = types.NewNotaryAttestation(attEncoded, latestAgentRoot, snapGas)
+	Nil(g.T(), err)
+
+	// notaryAttestation, err = types.NewNotaryAttestation(
+	// 	notaryAttestation.AttPayload(),
+	// 	latestAgentRoot,
+	// 	notaryAttestation.SnapGas(),
+	// )
+	// Nil(g.T(), err)
+	// attSignature, attEncoded, _, err = notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
 		attEncoded,
 		attSignature,
-		notaryAttestation.AgentRoot(),
+		latestAgentRoot,
 		notaryAttestation.SnapGas(),
 	)
 	Nil(g.T(), err)
@@ -1083,13 +1134,28 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	fmt.Printf("attestation tx: %v\n", tx.Hash())
 
+	logAgentRoots := func() {
+		oldRoot, err := g.DestinationDomainClient.LightManager().GetAgentRoot(g.GetTestContext())
+		g.Nil(err)
+		fmt.Printf("old agent root: %v\n", common.BytesToHash(oldRoot[:]))
+		newRoot, err := g.DestinationContract.NextAgentRoot(&bind.CallOpts{Context: g.GetTestContext()})
+		g.Nil(err)
+		fmt.Printf("next agent root: %v\n", common.BytesToHash(newRoot[:]))
+	}
+
 	// Advance time on destination so that the latest agent root is accepted.
 	bumpOptimisticPeriod(g.TestBackendDestination)
 	g.bumpBackends()
+	logAgentRoots()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+	fmt.Printf("passAgentRoot tx: %v\n", tx.Hash())
+	logAgentRoots()
+	attestationsAmount, err := g.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: g.GetTestContext()})
+	g.Nil(err)
+	fmt.Printf("attestations amount: %v\n", attestationsAmount)
 	g.bumpBackends()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.

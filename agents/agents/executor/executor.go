@@ -410,6 +410,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			big.NewInt(int64(*stateIndex)),
 			uint64(1000000),
 		)
+		fmt.Printf("Execute tx: %v\n", tx.Hash())
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
