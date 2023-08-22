@@ -992,17 +992,94 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// TODO: uncomment the following case once manager messages can be executed.
 	// Increase EVM time to allow agent status to be updated to Slashed on origin.
-	anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendSummit.RPCAddress())
-	Nil(g.T(), err)
 	optimisticPeriodSeconds := 86400
-	err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
-	Nil(g.T(), err)
+	bumpOptimisticPeriod := func(backend backends.SimulatedTestBackend) {
+		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
+		Nil(g.T(), err)
+		err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
+		Nil(g.T(), err)
+	}
+	bumpOptimisticPeriod(g.TestBackendSummit)
+	bumpOptimisticPeriod(g.TestBackendOrigin)
 	g.bumpBackends()
 
 	// currentTime := time.Now()
 	// exec.NowFunc = func() time.Time { return currentTime.Add(time.Duration(optimisticPeriodSeconds) * time.Second) }
 	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
 	currentTime = &updatedTime
+
+	// Verify that the accused agent is eventually Slashed on Summit.
+	g.Eventually(func() bool {
+		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		Nil(g.T(), err)
+		if status.Flag() == types.AgentFlagSlashed {
+			return true
+		}
+
+		g.bumpBackends()
+		return false
+	})
+
+	fmt.Println("SLASHED ON SUMMIT")
+
+	// Get the origin state so we can submit it on the Summit.
+	originStateRaw, err = g.OriginContract.SuggestLatestState(&bind.CallOpts{Context: g.GetTestContext()})
+	g.Nil(err)
+	originState, err = types.DecodeState(originStateRaw)
+	g.Nil(err)
+	snapshot = types.NewSnapshot([]types.State{originState})
+
+	// Submit snapshot with Guard.
+	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
+	g.Nil(err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContextSummit.TransactOpts,
+		g.GuardUnbondedSigner,
+		encodedSnapshot,
+		guardSnapshotSignature,
+	)
+	g.Nil(err)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
+
+	// Submit snapshot with Notary.
+	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
+	g.Nil(err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContextSummit.TransactOpts,
+		g.NotaryOnOriginUnbondedSigner,
+		encodedSnapshot,
+		notarySnapshotSignature,
+	)
+	g.Nil(err)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
+
+	// Submit the attestation
+	notaryAttestation, err = g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 2)
+	Nil(g.T(), err)
+	attSignature, attEncoded, _, err = notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	Nil(g.T(), err)
+	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
+		txContextDest.TransactOpts,
+		attEncoded,
+		attSignature,
+		notaryAttestation.AgentRoot(),
+		notaryAttestation.SnapGas(),
+	)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+	fmt.Printf("attestation tx: %v\n", tx.Hash())
+
+	// Advance time on destination so that the latest agent root is accepted.
+	bumpOptimisticPeriod(g.TestBackendDestination)
+	g.bumpBackends()
+	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
+	g.Nil(err)
+	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+	g.bumpBackends()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
