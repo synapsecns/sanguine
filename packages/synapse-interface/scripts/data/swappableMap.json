@@ -801,12 +801,12 @@
     "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F": {
       "symbol": "FRAX",
       "origin": ["CCTP.USDC", "nUSD"],
-      "destination": []
+      "destination": ["CCTP.USDC"]
     },
     "0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688": {
       "symbol": "nUSD",
       "origin": ["CCTP.USDC", "nUSD"],
-      "destination": ["nUSD"]
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0x2CaB3abfC1670D1a452dF502e216a66883cDf079": {
       "symbol": "L2DAO",
@@ -856,7 +856,7 @@
     "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1": {
       "symbol": "DAI",
       "origin": ["CCTP.USDC", "nUSD"],
-      "destination": []
+      "destination": ["CCTP.USDC"]
     },
     "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": {
       "symbol": "ETH",
@@ -866,12 +866,12 @@
     "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8": {
       "symbol": "USDC.e",
       "origin": ["CCTP.USDC", "nUSD"],
-      "destination": ["nUSD"]
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9": {
       "symbol": "USDT",
       "origin": ["CCTP.USDC", "nUSD"],
-      "destination": ["nUSD"]
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0xa684cd057951541187f288294a1e1C2646aA2d24": {
       "symbol": "VSTA",
