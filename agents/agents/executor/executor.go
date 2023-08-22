@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -14,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -32,9 +37,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"math/big"
-	"strconv"
-	"time"
 )
 
 // chainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -53,6 +55,8 @@ type chainExecutor struct {
 	lightInboxParser lightinbox.Parser
 	// inboxParser is the inbox parser.
 	inboxParser inbox.Parser
+	// summitParser is the summit parser.
+	summitParser summit.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTree is a merkle tree for a specific origin chain.
@@ -162,14 +166,21 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		}
 
 		var inboxParser inbox.Parser
+		var summitParser summit.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
+
+			summitParser, err = summit.NewParser(common.HexToAddress(config.SummitAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create summit parser: %w", err)
+			}
 		} else {
 			inboxParser = nil
+			summitParser = nil
 		}
 
 		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
@@ -203,6 +214,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			originParser:     originParser,
 			lightInboxParser: lightInboxParser,
 			inboxParser:      inboxParser,
+			summitParser:     summitParser,
 			logChan:          make(chan *ethTypes.Log, logChanSize),
 			merkleTree:       tree,
 			rpcClient:        evmClient,
@@ -227,11 +239,6 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
-	// Listen for snapshotAcceptedEvents on bonding manager.
-	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
-	})
-
 	g.Go(func() error {
 		err := e.txSubmitter.Start(ctx)
 		if err != nil {
@@ -240,15 +247,25 @@ func (e Executor) Run(parentCtx context.Context) error {
 		return err
 	})
 
+	// Listen for snapshotAccepted events on the inbox.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
+	})
+
+	// Listen for attestationSaved events on the summit.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
+	})
+
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for sentEvents on origin.
+		// Listen for sent events on origins.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
-		// Listen for attestationAcceptedEvents on destination.
+		// Listen for attestationAccepted events on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})

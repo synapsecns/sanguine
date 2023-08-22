@@ -3,14 +3,16 @@ package executor
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/types"
-	"math/big"
-	"time"
 )
 
 // logToMessage converts the log to a leaf data.
@@ -29,10 +31,20 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 }
 
 // logToAttestation converts the log to an attestation.
-func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (types.Attestation, error) {
-	attestation, ok := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse attestation")
+func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttestation bool) (types.Attestation, error) {
+	var attestation types.Attestation
+	var ok bool
+
+	if summitAttestation {
+		attestation, ok = e.chainExecutors[chainID].summitParser.ParseAttestationSaved(log)
+		if !ok {
+			return nil, fmt.Errorf("could not parse attestation")
+		}
+	} else {
+		attestation, ok = e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
+		if !ok {
+			return nil, fmt.Errorf("could not parse attestation")
+		}
 	}
 
 	if attestation == nil {
@@ -65,7 +77,9 @@ func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) 
 	case e.isSentEvent(log, chainID):
 		return e.logToMessage(log, chainID)
 	case e.isAttestationAcceptedEvent(log, chainID):
-		return e.logToAttestation(log, chainID)
+		return e.logToAttestation(log, chainID, false)
+	case e.isAttestationSavedEvent(log, chainID):
+		return e.logToAttestation(log, chainID, true)
 	default:
 		//nolint:nilnil
 		return nil, nil
@@ -97,6 +111,15 @@ func (e Executor) isAttestationAcceptedEvent(log ethTypes.Log, chainID uint32) b
 
 	lightManagerEvent, ok := e.chainExecutors[chainID].lightInboxParser.EventType(log)
 	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
+}
+
+func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool {
+	if e.chainExecutors[chainID].summitParser == nil {
+		return false
+	}
+
+	summitEvent, ok := e.chainExecutors[chainID].summitParser.EventType(log)
+	return ok && summitEvent == summit.AttestationSavedEvent
 }
 
 // processMessage processes and stores a message.
@@ -143,6 +166,17 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) error {
+	// If the attestation is on the SynChain, we can directly use its block number and timestamp.
+	if chainID == e.config.SummitChainID {
+		err := e.executorDB.StoreAttestation(ctx, attestation, chainID, attestation.BlockNumber().Uint64(), attestation.Timestamp().Uint64())
+		if err != nil {
+			return fmt.Errorf("could not store attestation: %w", err)
+		}
+
+		return nil
+	}
+
+	// If the attestation is on a remote chain, we need to fetch the timestamp via an RPC call.
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,

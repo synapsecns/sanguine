@@ -3,14 +3,15 @@ package base
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/imkira/go-interpol"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
 )
 
-// GetTimestampForMessage gets the timestamp for a message. This is done in multiple logical steps:
+// GetTimestampForMessage gets the timestamp for a message. This is done in multiple steps:
 // 1. Get all potential snapshot roots for the message (all snapshot roots that are associated to states with
 // the same chain ID and a nonce greater than or equal to the message nonce).
 // 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
