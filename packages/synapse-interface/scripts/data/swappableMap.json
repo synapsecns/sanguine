@@ -942,8 +942,8 @@
     },
     "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664": {
       "symbol": "USDC.e",
-      "origin": ["nUSD"],
-      "destination": ["nUSD"]
+      "origin": ["CCTP.USDC", "nUSD"],
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7": {
       "symbol": "WAVAX",
@@ -987,13 +987,13 @@
     },
     "0xc7198437980c041c805A1EDcbA50c1Ce5db95118": {
       "symbol": "USDT.e",
-      "origin": ["nUSD"],
-      "destination": ["nUSD"]
+      "origin": ["CCTP.USDC", "nUSD"],
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70": {
       "symbol": "DAI.e",
-      "origin": ["nUSD"],
-      "destination": ["nUSD"]
+      "origin": ["CCTP.USDC", "nUSD"],
+      "destination": ["CCTP.USDC", "nUSD"]
     },
     "0xf1293574EE43950E7a8c9F1005Ff097A9A713959": {
       "symbol": "NFD",
