@@ -72,10 +72,6 @@ func (c *Config) IsValid() error {
 	case c.DBAddress == "":
 		return fmt.Errorf("db_address, suired global config field is empty")
 	}
-	if len(c.Chains) > 0 {
-		return fmt.Errorf("no chains specified for the server")
-	}
-
 	intSet := collection.Set[uint32]{}
 
 	for _, chain := range c.Chains {
