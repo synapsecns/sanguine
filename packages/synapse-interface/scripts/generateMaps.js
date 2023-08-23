@@ -87,26 +87,41 @@ const getBridgeOriginMap = async (chainId) => {
   Object.keys(allTokenSymbols).forEach((bridgeToken) => {
     tokensToSymbols[bridgeToken] = new Set(allTokenSymbols[bridgeToken])
   })
+  // List of sets of tokens in each pool
+  const poolSets = []
   pools.forEach((pool) => {
     // Collect set of bridge token symbols that are present in the pool
     const bridgeSymbols = getBridgeSymbolsSet(
       allTokenSymbols,
       pool.tokens.map((token) => token.token).concat(pool.lpToken)
     )
+    const poolSet = new Set()
     // Add collected set to tokensToSymbols for each token in the pool
     pool.tokens.forEach((token) => {
       addSetToMap(tokensToSymbols, token.token, bridgeSymbols)
+      poolSet.add(token.token)
     })
     // Add collected set to tokensToSymbols for the pool lpToken (if it is a bridge token)
     if (bridgeTokens.includes(pool.lpToken)) {
       addSetToMap(tokensToSymbols, pool.lpToken, bridgeSymbols)
+      poolSet.add(pool.lpToken)
     }
+    // Save set of tokens in the pool
+    poolSets.push(poolSet)
   })
   // If WETH is present in the map, add ETH with the same set of bridge token symbols
   if (weth in tokensToSymbols) {
     addSetToMap(tokensToSymbols, ETH, tokensToSymbols[weth])
+    poolSets.forEach((poolSet) => {
+      if (poolSet.has(weth)) {
+        poolSet.add(ETH)
+      }
+    })
   }
-  return tokensToSymbols
+  return {
+    originMap: tokensToSymbols,
+    poolSets,
+  }
 }
 
 // Function to get list of tokens that could be swapped
@@ -238,7 +253,8 @@ const printMaps = async () => {
   const bridgeSymbolsMap = {}
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
-      const originMap = await getBridgeOriginMap(chainId)
+      // Get map from token to set of bridge token symbols
+      const { originMap, poolSets } = await getBridgeOriginMap(chainId)
       // Add tokens from CCTP originMap to global originMap
       const cctpOriginMap = await getCCTPOriginMap(chainId)
       Object.keys(cctpOriginMap).forEach((token) => {
@@ -252,6 +268,7 @@ const printMaps = async () => {
             symbol: await getTokenSymbol(chainId, token),
             origin: Array.from(originMap[token]).sort(),
             destination: await getDestinationBridgeSymbols(chainId, token),
+            swappable: extractSwappable(poolSets, token),
           }
         })
       )
@@ -261,6 +278,22 @@ const printMaps = async () => {
   )
   prettyPrint(sortMapByKeys(bridgeMap), './data/bridgeMap.json')
   prettyPrint(sortMapByKeys(bridgeSymbolsMap), './data/bridgeSymbolsMap.json')
+}
+
+// Extracts the list of tokens that can be swapped into a token via single on-chain swap
+const extractSwappable = (poolSets, token) => {
+  const tokenSet = new Set()
+  poolSets.forEach((poolSet) => {
+    // If token is in the pool, add all tokens except token to tokenSet
+    if (poolSet.has(token)) {
+      poolSet.forEach((poolToken) => {
+        if (poolToken !== token) {
+          tokenSet.add(poolToken)
+        }
+      })
+    }
+  })
+  return Array.from(tokenSet).sort()
 }
 
 const extractBridgeSymbolsMap = (tokens) => {
