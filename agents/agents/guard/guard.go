@@ -254,7 +254,7 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleDisputeOpened(ctx, log)
 	case isStatusUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleStatusUpdated(ctx, log, chainID)
-	case isRootUpdatedEvent(g.lightManagerParser, g.bondingManagerParser, log):
+	case isRootUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleRootUpdated(ctx, log, chainID)
 	}
 	return nil
@@ -406,13 +406,13 @@ func (g Guard) Start(parentCtx context.Context) error {
 
 	group, ctx := errgroup.WithContext(parentCtx)
 
-	// group.Go(func() error {
-	// 	err := g.txSubmitter.Start(ctx)
-	// 	if err != nil {
-	// 		err = fmt.Errorf("could not start tx submitter: %w", err)
-	// 	}
-	// 	return err
-	// })
+	group.Go(func() error {
+		err := g.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
+		}
+		return err
+	})
 
 	group.Go(func() error {
 		return g.streamLogs(ctx, g.summitDomainID, g.domains[g.summitDomainID].Config().InboxAddress)

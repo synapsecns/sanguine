@@ -419,22 +419,10 @@ func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
 	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
-func (g Guard) parseRootUpdated(log ethTypes.Log) (*[32]byte, error) {
-	rootUpdated, err := g.lightManagerParser.ParseRootUpdated(log)
-	if err == nil {
-		return rootUpdated, nil
-	}
-	rootUpdated, err = g.bondingManagerParser.ParseRootUpdated(log)
-	if err == nil {
-		return rootUpdated, nil
-	}
-	return nil, fmt.Errorf("could not parse root updated: %w", err)
-}
-
 // handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	if chainID == g.summitDomainID {
-		newRoot, err := g.parseRootUpdated(log)
+		newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
 		if err != nil || newRoot == nil {
 			return fmt.Errorf("could not parse root updated: %w", err)
 		}

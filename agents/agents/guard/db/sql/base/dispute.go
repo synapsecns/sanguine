@@ -59,7 +59,6 @@ func (s Store) UpdateDisputeProcessedStatus(
 		return fmt.Errorf("guardAddress or notaryAddress must be set")
 	}
 
-	fmt.Printf("Update dispute processed status: %v\n", disputeMask)
 	dbTx := s.DB().WithContext(ctx).Debug().
 		Model(&Dispute{}).
 		Where(disputeMask).
