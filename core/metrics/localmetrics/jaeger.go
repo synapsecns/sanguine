@@ -31,7 +31,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 	runOptions := &dockertest.RunOptions{
 		Repository:   "jaegertracing/all-in-one",
-		Tag:          "latest",
+		Tag:          "1.43.0",
 		Hostname:     "jaeger",
 		ExposedPorts: []string{"14268", "16686"},
 		Networks:     j.getNetworks(),
