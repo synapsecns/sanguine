@@ -97,9 +97,8 @@ func (a lightManagerContract) UpdateAgentStatus(
 	}
 
 	transactOpts.Context = ctx
-
 	transactOpts.GasLimit = 5000000
-
+	a.nonceManager.ClearNonce(unbondedSigner.Address())
 	lightManagerAgentStatus := lightmanager.AgentStatus{
 		Flag:   uint8(agentStatus.Flag()),
 		Domain: agentStatus.Domain(),

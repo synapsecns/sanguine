@@ -19,7 +19,7 @@ func (s Store) StoreAgentRoot(
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: AgentRootFieldName}, {Name: ChainIDFieldName},
+				{Name: AgentRootFieldName},
 			},
 			DoNothing: true,
 		}).
@@ -41,9 +41,10 @@ func (s Store) GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]by
 
 	var blockNumber uint64
 	dbTx := s.DB().WithContext(ctx).
-		Select(BlockNumberFieldName).
 		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), dbAgentRoot).
-		Scan(&blockNumber)
+		Limit(1).
+		Model(&AgentRoot{}).
+		Pluck(BlockNumberFieldName, &blockNumber)
 
 	if dbTx.Error != nil {
 		return blockNumber, fmt.Errorf("failed to get summit block number for root: %w", dbTx.Error)

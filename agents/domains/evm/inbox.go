@@ -141,6 +141,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 	}
 
 	transactOpts.Context = ctx
+	transactOpts.GasLimit = 5000000
 	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 

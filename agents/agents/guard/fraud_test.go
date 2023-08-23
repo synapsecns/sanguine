@@ -950,6 +950,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
+	fmt.Println("Checking if fraudulent")
+
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
@@ -961,6 +963,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
+
+	fmt.Println("Confirmed fraudulent")
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
@@ -1149,7 +1153,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
-		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
