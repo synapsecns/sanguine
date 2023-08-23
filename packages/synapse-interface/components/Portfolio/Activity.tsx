@@ -358,7 +358,7 @@ export const Transaction = ({
     originTokenAddress
   )
 
-  console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
+  // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
   const {
     value: destinationRawValue,
     formattedValue: destinationFormattedValue,
@@ -369,7 +369,7 @@ export const Transaction = ({
   }: PartialInfo = toInfo || {}
 
   const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-  const destinationToken: Token = tokenSymbolToToken(
+  const destinationToken: Token = tokenAddressToToken(
     destinationChainId,
     destinationTokenAddress
   )
