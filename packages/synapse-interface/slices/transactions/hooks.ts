@@ -30,18 +30,18 @@ export const useUserHistoricalTransactions = ({
     })
   }
 
-  const recentlyCompleted = filterRecentlyCompleted(
-    userHistoricalTransactions,
-    recentTimeframe
-  )
+  const recentlyCompletedTransactions: BridgeTransaction[] =
+    filterRecentlyCompleted(userHistoricalTransactions, recentTimeframe)
 
-  const historicalCompleted = userHistoricalTransactions.filter(
-    (transaction) => !recentlyCompleted.includes(transaction)
-  )
+  const historicalCompletedTransactions: BridgeTransaction[] =
+    userHistoricalTransactions.filter(
+      (transaction) => !recentlyCompletedTransactions.includes(transaction)
+    )
 
   return {
-    recentlyCompleted,
-    historicalCompleted,
+    recentlyCompletedTransactions,
+    historicalCompletedTransactions,
+    allCompletedTransactions: userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
   }
 }
