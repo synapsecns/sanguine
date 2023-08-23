@@ -14,7 +14,6 @@ func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	AgentRootFieldName = namer.GetConsistentName("AgentRoot")
 	DisputeIndexFieldName = namer.GetConsistentName("DisputeIndex")
-	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	AgentAddressFieldName = namer.GetConsistentName("AgentAddress")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	DisputeProcessedStatusFieldName = namer.GetConsistentName("DisputeProcessedStatus")
@@ -26,8 +25,6 @@ var (
 	AgentRootFieldName string
 	// DisputeIndexFieldName is the field name of the agent root.
 	DisputeIndexFieldName string
-	// ChainIDFieldName gets the chain id field name.
-	ChainIDFieldName string
 	// AgentAddressFieldName gets the agent address field name.
 	AgentAddressFieldName string
 	// BlockNumberFieldName gets the agent block number field name.
@@ -65,12 +62,10 @@ type AgentTree struct {
 	Proof json.RawMessage `gorm:"column:proof"`
 }
 
-// AgentRoot is the state of the agent roots on each chain.
+// AgentRoot is the state of the agent roots on summit.
 type AgentRoot struct {
 	// AgentRoot is the root of the agent tree.
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`
-	// ChainID is the chain id of the chain where we see the `RootUpdated` event.
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockNumber is the block number that the agent tree was updated.
 	BlockNumber uint64 `gorm:"column:block_number"`
 }

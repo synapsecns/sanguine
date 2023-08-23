@@ -41,9 +41,12 @@ func isStatusUpdatedEvent(parser bondingmanager.Parser, log ethTypes.Log) bool {
 	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
 }
 
-func isRootUpdatedEvent(parser bondingmanager.Parser, log ethTypes.Log) bool {
-	bondingManagerEvent, ok := parser.EventType(log)
-	return ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent
+func isRootUpdatedEvent(bondingParser bondingmanager.Parser, log ethTypes.Log) bool {
+	bondingManagerEvent, ok := bondingParser.EventType(log)
+	if ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent {
+		return true
+	}
+	return false
 }
 
 func isAgentSlashable(agentFlag types.AgentFlagType) bool {

@@ -65,6 +65,8 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
+	// boundOrigin is a bound origin contract.
+	boundOrigin domains.OriginContract
 }
 
 // Executor is the executor agent.
@@ -85,6 +87,8 @@ type Executor struct {
 	handler metrics.Handler
 	// txSubmitter is the transaction submitter.
 	txSubmitter submitter.TransactionSubmitter
+	// NowFunc returns the current time.
+	NowFunc func() time.Time
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -196,6 +200,11 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
+		boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind origin contract: %w", err)
+		}
+
 		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
 		if err != nil {
 			return nil, fmt.Errorf("could not get tree from db: %w", err)
@@ -217,6 +226,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			merkleTree:       tree,
 			rpcClient:        evmClient,
 			boundDestination: boundDestination,
+			boundOrigin:      boundOrigin,
 		}
 	}
 
@@ -229,6 +239,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		chainExecutors: chainExecutors,
 		handler:        handler,
 		txSubmitter:    txSubmitter,
+		NowFunc:        time.Now,
 	}, nil
 }
 
@@ -781,7 +792,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			backoffInterval = time.Duration(e.config.ExecuteInterval) * time.Second
 
 			page := 1
-			currentTime := uint64(time.Now().Unix())
+			currentTime := uint64(e.NowFunc().Unix())
 
 			messageMask := db.DBMessage{
 				ChainID: &chainID,

@@ -40,3 +40,32 @@ func (s Store) StoreDispute(
 
 	return nil
 }
+
+// UpdateDisputeProcessedStatus updates the disputed processed status for a dispute.
+func (s Store) UpdateDisputeProcessedStatus(
+	ctx context.Context,
+	guardAddress *common.Address,
+	notaryAddress *common.Address,
+	flag agentTypes.DisputeProcessedStatus,
+) error {
+	disputeMask := Dispute{
+		DisputeProcessedStatus: agentTypes.Opened,
+	}
+	switch {
+	case guardAddress != nil:
+		disputeMask.GuardAddress = guardAddress.String()
+	case notaryAddress != nil:
+		disputeMask.NotaryAddress = notaryAddress.String()
+	default:
+		return fmt.Errorf("guardAddress or notaryAddress must be set")
+	}
+
+	dbTx := s.DB().WithContext(ctx).Debug().
+		Model(&Dispute{}).
+		Where(disputeMask).
+		Update(DisputeProcessedStatusFieldName, flag)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to update dispute processed status %w", dbTx.Error)
+	}
+	return nil
+}

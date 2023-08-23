@@ -85,6 +85,7 @@ func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, signer sign
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
+	a.nonceManager.ClearNonce(signer.Address())
 	tx, err = a.contract.SubmitSnapshot(transactor, encodedSnapshot, rawSig)
 	if err != nil {
 		if strings.Contains(err.Error(), "nonce too low") {
@@ -140,6 +141,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 	}
 
 	transactOpts.Context = ctx
+	transactOpts.GasLimit = 5000000
 	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 

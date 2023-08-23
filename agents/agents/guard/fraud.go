@@ -313,25 +313,43 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not get proof: %w", err)
 		}
 
-		err = g.guardDB.StoreAgentTree(
-			ctx,
-			agentRoot,
-			statusUpdated.Agent,
-			log.BlockNumber,
-			agentProof,
-		)
-		if err != nil {
-			return fmt.Errorf("could not store agent tree: %w", err)
+		if chainID == g.summitDomainID {
+			err = g.guardDB.StoreAgentTree(
+				ctx,
+				agentRoot,
+				statusUpdated.Agent,
+				log.BlockNumber,
+				agentProof,
+			)
+			if err != nil {
+				return fmt.Errorf("could not store agent tree: %w", err)
+			}
+
+			err = g.guardDB.StoreAgentRoot(
+				ctx,
+				agentRoot,
+				log.BlockNumber,
+			)
+			if err != nil {
+				return fmt.Errorf("could not store agent root: %w", err)
+			}
 		}
 
-		err = g.guardDB.StoreAgentRoot(
+		// Mark the open dispute for this agent as Resolved.
+		var guardAddress, notaryAddress *common.Address
+		if statusUpdated.Domain == 0 {
+			guardAddress = &statusUpdated.Agent
+		} else {
+			notaryAddress = &statusUpdated.Agent
+		}
+		err = g.guardDB.UpdateDisputeProcessedStatus(
 			ctx,
-			agentRoot,
-			chainID,
-			log.BlockNumber,
+			guardAddress,
+			notaryAddress,
+			types.Resolved,
 		)
 		if err != nil {
-			return fmt.Errorf("could not store agent root: %w", err)
+			return fmt.Errorf("could not update dispute processed status: %w", err)
 		}
 	default:
 		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
@@ -403,19 +421,19 @@ func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
 
 // handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
-	if err != nil || newRoot == nil {
-		return fmt.Errorf("could not parse root updated: %w", err)
-	}
-
-	err = g.guardDB.StoreAgentRoot(
-		ctx,
-		*newRoot,
-		chainID,
-		log.BlockNumber,
-	)
-	if err != nil {
-		return fmt.Errorf("could not store agent root: %w", err)
+	if chainID == g.summitDomainID {
+		newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
+		if err != nil || newRoot == nil {
+			return fmt.Errorf("could not parse root updated: %w", err)
+		}
+		err = g.guardDB.StoreAgentRoot(
+			ctx,
+			*newRoot,
+			log.BlockNumber,
+		)
+		if err != nil {
+			return fmt.Errorf("could not store agent root: %w", err)
+		}
 	}
 
 	return nil
@@ -449,7 +467,12 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return nil
 	}
 
-	blockNumber, err := g.guardDB.GetLatestConfirmedSummitBlockNumber(ctx, chainID)
+	localRoot, err := g.domains[chainID].LightManager().GetAgentRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get agent root: %w", err)
+	}
+
+	blockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, localRoot)
 	if err != nil {
 		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
 	}
@@ -460,6 +483,9 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
+			}
+			if agentStatus.Domain() != chainID {
+				continue
 			}
 			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
