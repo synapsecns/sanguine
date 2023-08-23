@@ -528,8 +528,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
-		if true {
-			// if tree.BlockNumber <= blockNumber {
+		if tree.BlockNumber >= blockNumber {
 			fmt.Printf("updating agent status: %v\n", tree)
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
