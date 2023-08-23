@@ -7,9 +7,10 @@ import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
-  RecentBridgeTransaction,
-  addRecentBridgeTransaction,
-  updateRecentBridgeTransactions,
+  PendingBridgeTransaction,
+  addPendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+  updatePendingBridgeTransactions,
 } from './actions'
 
 export interface BridgeState {
@@ -27,7 +28,7 @@ export interface BridgeState {
   deadlineMinutes: number | null
   destinationAddress: Address | null
   bridgeTxHashes: string[] | null
-  recentBridgeTransactions: RecentBridgeTransaction[]
+  pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
 // How do we update query params based on initial state?
@@ -47,7 +48,7 @@ export const initialState: BridgeState = {
   deadlineMinutes: null,
   destinationAddress: null,
   bridgeTxHashes: [],
-  recentBridgeTransactions: [],
+  pendingBridgeTransactions: [],
 }
 
 export const bridgeSlice = createSlice({
@@ -106,18 +107,39 @@ export const bridgeSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(
-        addRecentBridgeTransaction,
-        (state, action: PayloadAction<RecentBridgeTransaction>) => {
-          state.recentBridgeTransactions = [
-            ...state.recentBridgeTransactions,
+        addPendingBridgeTransaction,
+        (state, action: PayloadAction<PendingBridgeTransaction>) => {
+          state.pendingBridgeTransactions = [
+            ...state.pendingBridgeTransactions,
             action.payload,
           ]
         }
       )
       .addCase(
-        updateRecentBridgeTransactions,
-        (state, action: PayloadAction<RecentBridgeTransaction[]>) => {
-          state.recentBridgeTransactions = action.payload
+        updatePendingBridgeTransaction, // Use the imported action
+        (
+          state,
+          action: PayloadAction<{ timestamp: number; transactionHash: string }>
+        ) => {
+          const { timestamp, transactionHash } = action.payload
+          const transactionIndex = state.pendingBridgeTransactions.findIndex(
+            (transaction) => transaction.timestamp === timestamp
+          )
+
+          if (transactionIndex !== -1) {
+            state.pendingBridgeTransactions =
+              state.pendingBridgeTransactions.map((transaction, index) =>
+                index === transactionIndex
+                  ? { ...transaction, transactionHash } // Update the transactionHash field
+                  : transaction
+              )
+          }
+        }
+      )
+      .addCase(
+        updatePendingBridgeTransactions,
+        (state, action: PayloadAction<PendingBridgeTransaction[]>) => {
+          state.pendingBridgeTransactions = action.payload
         }
       )
   },
