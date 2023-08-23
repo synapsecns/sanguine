@@ -283,35 +283,14 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
-	fmt.Printf("handleStatusUpdated on %d with flag %v\n", chainID, types.AgentFlagType(statusUpdated.Flag).String())
-	agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
-	if err != nil {
-		return fmt.Errorf("could not get agent root: %w", err)
-	}
-	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID, "AT BLOCK", log.BlockNumber)
+
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
-		// agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
-		// if err != nil {
-		// 	return fmt.Errorf("could not get agent root: %w", err)
-		// }
-
 		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
 		}
-
-		// err = g.guardDB.StoreAgentTree(
-		// 	ctx,
-		// 	agentRoot,
-		// 	statusUpdated.Agent,
-		// 	log.BlockNumber,
-		// 	agentProof,
-		// )
-		// if err != nil {
-		// 	return fmt.Errorf("could not store agent tree: %w", err)
-		// }
 
 		_, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
 			ctx,
@@ -454,24 +433,11 @@ func (g Guard) parseRootUpdated(log ethTypes.Log) (*[32]byte, error) {
 
 // handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	fmt.Printf("handleRootUppdated on %d\n", chainID)
-	newRoot, err := g.parseRootUpdated(log)
-	if err != nil || newRoot == nil {
-		return fmt.Errorf("could not parse root updated: %w", err)
-	}
-
-	// err = g.guardDB.StoreAgentTree(
-	// 	ctx,
-	// 	*newRoot,
-	// 	common.Address{},
-	// 	log.BlockNumber,
-	// 	[][32]byte{},
-	// )
-	// if err != nil {
-	// 	return fmt.Errorf("could not store agent tree: %w", err)
-	// }
-
 	if chainID == g.summitDomainID {
+		newRoot, err := g.parseRootUpdated(log)
+		if err != nil || newRoot == nil {
+			return fmt.Errorf("could not parse root updated: %w", err)
+		}
 		err = g.guardDB.StoreAgentRoot(
 			ctx,
 			*newRoot,
@@ -512,7 +478,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
-	fmt.Printf("got eligible agent trees: %v\n", eligibleAgentTrees)
 
 	localRoot, err := g.domains[chainID].LightManager().GetAgentRoot(ctx)
 	if err != nil {
@@ -520,16 +485,13 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	}
 
 	blockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, localRoot)
-	fmt.Printf("got local root at block number %d: %v\n", blockNumber, common.BytesToHash(localRoot[:]))
 	if err != nil {
-		fmt.Printf("block number fetch err: %v\n", err)
 		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
 	}
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
 		if tree.BlockNumber >= blockNumber {
-			fmt.Printf("updating agent status: %v\n", tree)
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
@@ -537,54 +499,18 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			if agentStatus.Domain() != chainID {
 				continue
 			}
-			fmt.Println("AGENT ROOT:", common.BytesToHash(localRoot[:]).String())
-			fmt.Println("TREE AGENT ROOT:", tree.AgentRoot)
-			fmt.Printf("Updating agent status for %v to %v on %v\n", tree.AgentAddress, agentStatus.Flag().String(), chainID)
-			tx, err := g.domains[chainID].LightManager().UpdateAgentStatus(
+			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
 				tree.AgentAddress,
 				agentStatus,
 				tree.Proof,
 			)
-			if tx != nil {
-				fmt.Println("&&&&&&&TXHASH", tx.Hash().String())
-			}
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)
 			}
-			status, err := g.domains[chainID].LightManager().GetAgentStatus(ctx, tree.AgentAddress)
-			if err != nil {
-				return fmt.Errorf("could not get agent status: %w", err)
-			}
-			fmt.Printf("Got agent status for %v: %v on %v\n", tree.AgentAddress, status.Flag().String(), chainID)
 		}
 	}
 
 	return nil
 }
-
-// func (g Guard) storeForStatusUpdated(ctx context.Context, statusUpdated *bondingmanager.BondingManagerStatusUpdated, blockNumber uint64) error {
-// 	agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
-// 	if err != nil {
-// 		return fmt.Errorf("could not get agent root: %w", err)
-// 	}
-// 	fmt.Println("AGENT ROOT FOR FLAG", types.AgentFlagType(statusUpdated.Flag).String(), "IS", common.BytesToHash(agentRoot[:]).String(), "ON", chainID)
-// 	agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
-// 	if err != nil {
-// 		return fmt.Errorf("could not get proof: %w", err)
-// 	}
-
-// 	err = g.guardDB.StoreAgentTree(
-// 		ctx,
-// 		agentRoot,
-// 		statusUpdated.Agent,
-// 		blockNumber,
-// 		agentProof,
-// 	)
-// 	if err != nil {
-// 		return fmt.Errorf("could not store agent tree: %w", err)
-// 	}
-
-// 	return nil
-// }
