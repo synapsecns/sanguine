@@ -1,11 +1,12 @@
 import * as CHAINS from '@constants/chains/master'
 import * as all from './master'
 import * as allPool from './poolMaster'
-import * as allSwap from './swapMaster'
-import { GMX, ETH, WETH } from './master'
+import { GMX, ETH, WETH, USDC, USDT } from './master'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
+
+const allSwap = [WETH, USDC, USDT]
 
 // TODO change this to token by key
 interface TokensByChain {
