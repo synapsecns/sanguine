@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 	"time"
 
@@ -805,7 +804,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	fmt.Println("OMNIIIII", omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1))
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())
@@ -950,8 +948,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
-	fmt.Println("Checking if fraudulent")
-
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
@@ -963,8 +959,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
-
-	fmt.Println("Confirmed fraudulent")
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
@@ -1006,9 +1000,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// TODO: uncomment the following case once manager messages can be executed.
 	// Increase EVM time to allow agent status to be updated to Slashed on origin.
-	optimisticPeriodSeconds := 86401
+	optimisticPeriodSeconds := 86400
 	bumpOptimisticPeriod := func(backend backends.SimulatedTestBackend) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
@@ -1019,8 +1012,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	bumpOptimisticPeriod(g.TestBackendOrigin)
 	g.bumpBackends()
 
-	// currentTime := time.Now()
-	// exec.NowFunc = func() time.Time { return currentTime.Add(time.Duration(optimisticPeriodSeconds) * time.Second) }
 	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
 	currentTime = &updatedTime
 
@@ -1035,8 +1026,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
-
-	fmt.Println("SLASHED ON SUMMIT")
 
 	// Get the origin state so we can submit it on the Summit.
 	originStateRaw, err = g.OriginContract.SuggestLatestState(&bind.CallOpts{Context: g.GetTestContext()})
@@ -1074,7 +1063,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Submit the attestation
 	latestAgentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
 	Nil(g.T(), err)
-	fmt.Printf("latest agent root: %v\n", common.BytesToHash(latestAgentRoot[:]))
 
 	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
 	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
@@ -1091,9 +1079,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	notaryAttestation, err = g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 2)
 	Nil(g.T(), err)
-	// gasDataBytes, err := types.EncodeGasData(snapshot.States()[0].GasData())
-	// Nil(g.T(), err)
-	// gasDataHash := crypto.Keccak256Hash(gasDataBytes)
 	attestation := types.NewAttestation(
 		notaryAttestation.Attestation().SnapshotRoot(),
 		dataHash,
@@ -1106,13 +1091,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	notaryAttestation, err = types.NewNotaryAttestation(attEncoded, latestAgentRoot, snapGas)
 	Nil(g.T(), err)
 
-	// notaryAttestation, err = types.NewNotaryAttestation(
-	// 	notaryAttestation.AttPayload(),
-	// 	latestAgentRoot,
-	// 	notaryAttestation.SnapGas(),
-	// )
-	// Nil(g.T(), err)
-	// attSignature, attEncoded, _, err = notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
@@ -1125,30 +1103,14 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
-	fmt.Printf("attestation tx: %v\n", tx.Hash())
-
-	logAgentRoots := func() {
-		oldRoot, err := g.DestinationDomainClient.LightManager().GetAgentRoot(g.GetTestContext())
-		g.Nil(err)
-		fmt.Printf("old agent root: %v\n", common.BytesToHash(oldRoot[:]))
-		newRoot, err := g.DestinationContract.NextAgentRoot(&bind.CallOpts{Context: g.GetTestContext()})
-		g.Nil(err)
-		fmt.Printf("next agent root: %v\n", common.BytesToHash(newRoot[:]))
-	}
 
 	// Advance time on destination so that the latest agent root is accepted.
 	bumpOptimisticPeriod(g.TestBackendDestination)
 	g.bumpBackends()
-	logAgentRoots()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
-	fmt.Printf("passAgentRoot tx: %v\n", tx.Hash())
-	logAgentRoots()
-	attestationsAmount, err := g.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: g.GetTestContext()})
-	g.Nil(err)
-	fmt.Printf("attestations amount: %v\n", attestationsAmount)
 	g.bumpBackends()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
