@@ -358,6 +358,11 @@ export const Transaction = ({
     }
   }, [kappa, originChainId, destinationChainId, transactionType])
 
+  const estimatedCompletionInSeconds: number =
+    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
+      1000 +
+    30 // Add 30 seconds to account for indexing
+
   return (
     <div data-test-id="transaction" className="flex flex-col">
       <div
