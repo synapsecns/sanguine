@@ -203,12 +203,6 @@ const RecentlyBridgedPendingTransaction = ({
           tokenSymbol={originToken?.symbol}
           tokenAmount={Number(originValue)}
         />
-        <div
-          data-test-id="arrow"
-          className="flex items-end px-4 my-auto ml-auto mr-3"
-        >
-          →
-        </div>
       </div>
       <div className="col-span-4 my-auto">
         <TransactionPayloadDetail chain={destinationChain} />
@@ -385,12 +379,6 @@ export const Transaction = ({
             tokenSymbol={originToken?.symbol}
             tokenAmount={originFormattedValue}
           />
-          <div
-            data-test-id="arrow"
-            className="flex items-end px-4 my-auto ml-auto mr-3"
-          >
-            →
-          </div>
         </div>
         <div className="col-span-4 my-auto">
           <TransactionPayloadDetail
