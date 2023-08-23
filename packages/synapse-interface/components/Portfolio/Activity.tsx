@@ -82,7 +82,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
-          {/* <TransactionHeader transactionType={ActivityType.PENDING} /> */}
           <PendingTransactionAwaitingIndexing />
           {userPendingTransactions &&
             userPendingTransactions.map((transaction: BridgeTransaction) => (
@@ -98,7 +97,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          {/* <TransactionHeader transactionType={ActivityType.RECENT} /> */}
           {userHistoricalTransactions &&
             userHistoricalTransactions
               // .slice(0, 7) //temporarily only show recent 5ß
@@ -286,30 +284,6 @@ export enum ActivityType {
   RECENT,
 }
 
-export const TransactionHeader = ({
-  transactionType,
-}: {
-  transactionType: ActivityType
-}) => {
-  return (
-    <div
-      data-test-id="transaction-header"
-      className="grid grid-cols-10 gap-2 text-[#C0BCC2] text-sm mt-4 mb-2"
-    >
-      <div className="col-span-4">From</div>
-      <div className="col-span-4">To</div>
-      {/* <div className="flex justify-end col-span-2">
-        {transactionType === ActivityType.PENDING && 'Block'}
-        {transactionType === ActivityType.RECENT && 'Rate'}
-      </div> */}
-      <div className="flex justify-end col-span-2">
-        {transactionType === ActivityType.PENDING && 'Elapsed'}
-        {transactionType === ActivityType.RECENT && 'Completed'}
-      </div>
-    </div>
-  )
-}
-
 export const getTransactionExplorerLink = ({
   kappa,
   fromChainId,
@@ -358,7 +332,6 @@ export const Transaction = ({
     originTokenAddress
   )
 
-  // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
   const {
     value: destinationRawValue,
     formattedValue: destinationFormattedValue,
@@ -427,17 +400,6 @@ export const Transaction = ({
             tokenAmount={destinationFormattedValue}
           />
         </div>
-        {/* <div className="flex justify-end col-span-2">
-        {transactionType === ActivityType.RECENT && (
-          <ExchangeRate
-            originValue={originFormattedValue}
-            destinationValue={destinationFormattedValue}
-          />
-        )}
-        {transactionType === ActivityType.PENDING && (
-          <div>{bridgeOriginBlockNumber}</div>
-        )}
-      </div> */}
         <div className="flex justify-end col-span-2 my-auto">
           {transactionType === ActivityType.RECENT && (
             <Completed
