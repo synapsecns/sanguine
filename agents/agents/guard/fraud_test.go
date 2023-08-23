@@ -850,6 +850,15 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		},
 	}
 
+	// This function will allow us to override the current time perceived by Executor.
+	var currentTime *time.Time
+	nowFunc := func() time.Time {
+		if currentTime == nil {
+			return time.Now()
+		}
+		return *currentTime
+	}
+
 	// Start a new Executor.
 	exec, err := executor.NewExecutor(g.GetTestContext(), excCfg, g.ExecutorTestDB, scribeClient, omniRPCClient, g.ExecutorMetrics)
 	Nil(g.T(), err)
@@ -861,14 +870,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			Nil(g.T(), execErr)
 		}
 	}()
-
-	// // Continuously bump backends in the background to make sure events are emitted.
-	// go func() {
-	// 	for {
-	// 		g.bumpBackends()
-	// 		time.Sleep(1 * time.Second)
-	// 	}
-	// }()
 
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
@@ -1011,18 +1012,18 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// Increase EVM time to allow agent status to be updated to Slashed on origin.
-	optimisticPeriodSeconds := 86400
-	bumpOptimisticPeriod := func(backend backends.SimulatedTestBackend) {
+	// Increase EVM time to allow agent status to be updated to Slashed on summit.
+	optimisticPeriodSeconds := int64(86400)
+	increaseEvmTime := func(backend backends.SimulatedTestBackend, seconds int64) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
-		err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
+		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 	}
-	bumpOptimisticPeriod(g.TestBackendSummit)
-	bumpOptimisticPeriod(g.TestBackendOrigin)
+	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds)
 	g.bumpBackends()
 
+	// Increase executor time so that the manager message may be executed.
 	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
 	currentTime = &updatedTime
 
@@ -1115,8 +1116,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Advance time on destination so that the latest agent root is accepted.
-	bumpOptimisticPeriod(g.TestBackendDestination)
+	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
+	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds)
 	g.bumpBackends()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
@@ -1135,13 +1136,4 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
-}
-
-var currentTime *time.Time
-
-func nowFunc() time.Time {
-	if currentTime == nil {
-		return time.Now()
-	}
-	return *currentTime
 }
