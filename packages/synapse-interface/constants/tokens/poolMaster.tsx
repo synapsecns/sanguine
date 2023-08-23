@@ -22,8 +22,9 @@ import {
   SYNJEWEL,
   MULTIAVAX,
   SYNAVAX,
+  MIM,
+  WETH,
 } from '@constants/tokens/master'
-import { WETH, MIM, SwapUSDC, SwapUSDT } from '@constants/tokens/swapMaster'
 
 import { Token } from '@/utils/types'
 
@@ -168,7 +169,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AVALANCHE.id]: '0xA196a03653f6cc5cA0282A8BD7Ec60e93f620afc',
   },
-  poolTokens: [NUSD, SwapUSDC, SwapUSDT],
+  poolTokens: [NUSD, USDC, USDT],
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,

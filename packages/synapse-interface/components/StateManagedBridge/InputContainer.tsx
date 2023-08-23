@@ -19,7 +19,14 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue, bridgeTxHashes } = useBridgeState()
+  const {
+    fromChainId,
+    fromToken,
+    fromValue,
+    bridgeTxHashes,
+    toChainId,
+    toToken,
+  } = useBridgeState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -103,6 +110,10 @@ export const InputContainer = () => {
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
+  const isDisabled = useMemo(() => {
+    return !fromToken || !fromChainId || !toToken || !toChainId
+  }, [fromToken, fromChainId, toToken, toChainId])
+
   return (
     <div
       data-test-id="input-container"
@@ -129,7 +140,7 @@ export const InputContainer = () => {
                 <input
                   ref={inputRef}
                   pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
+                  disabled={isDisabled}
                   className={`
                     focus:outline-none
                     focus:ring-0

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { EXISTING_BRIDGE_ROUTES } from '@/constants/existing-bridge-routes'
+import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
 import { RouteQueryFields } from './generateRoutePossibilities'
 
 export const getToTokens = ({

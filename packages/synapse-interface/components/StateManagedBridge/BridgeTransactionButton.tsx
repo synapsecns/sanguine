@@ -57,12 +57,12 @@ export const BridgeTransactionButton = ({
   const balances = usePortfolioBalances()
   const balancesForChain = balances[fromChainId]
   const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken.addresses[fromChainId]
+    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
   const sufficientBalance = useMemo(() => {
     return (
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
     )
   }, [balanceForToken, fromValue])

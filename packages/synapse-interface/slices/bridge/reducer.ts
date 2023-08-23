@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
-import * as ALL_TOKENS from '@constants/tokens/master'
 
 import { ETH } from '@/constants/tokens/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
@@ -14,6 +13,7 @@ import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
+import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 
 export interface BridgeState {
   fromChainId: number
@@ -84,7 +84,7 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       const validToChainIds = getToChainIds({
         fromChainId: incomingFromChainId ?? null,
@@ -100,7 +100,7 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       let validFromToken
       let validToChainId
@@ -108,7 +108,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validFromTokens?.some(
-          (token) => token.routeSymbol === state.fromToken?.routeSymbol
+          (token) => token?.routeSymbol === state.fromToken?.routeSymbol
         )
       ) {
         validFromToken = state.fromToken
@@ -127,7 +127,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validToTokens?.some(
-          (token) => token.routeSymbol === state.toToken?.routeSymbol
+          (token) => token?.routeSymbol === state.toToken?.routeSymbol
         )
       ) {
         validToToken = state.toToken
@@ -165,7 +165,7 @@ export const bridgeSlice = createSlice({
 
       const validFromChainIds = getFromChainIds({
         fromChainId: state.fromChainId ?? null,
-        fromTokenRouteSymbol: incomingFromToken.routeSymbol ?? null,
+        fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
         toChainId: null,
         toTokenRouteSymbol: null,
       })
@@ -184,7 +184,7 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       let validFromChainId
       let validToChainId
@@ -204,7 +204,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validToTokens?.some(
-          (token) => token.routeSymbol === state.toToken?.routeSymbol
+          (token) => token?.routeSymbol === state.toToken?.routeSymbol
         )
       ) {
         validToToken = state.toToken
@@ -254,7 +254,7 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: state.toToken?.routeSymbol ?? null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       const validToTokens = getToTokens({
         fromChainId: state.fromChainId ?? null,
@@ -263,7 +263,7 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: state.toToken?.routeSymbol ?? null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       let validFromChainId
       let validFromToken
@@ -280,7 +280,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validFromTokens?.some(
-          (token) => token.routeSymbol === state.fromToken?.routeSymbol
+          (token) => token?.routeSymbol === state.fromToken?.routeSymbol
         )
       ) {
         validFromToken = state.fromToken
@@ -290,7 +290,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validToTokens?.some(
-          (token) => token.routeSymbol === state.toToken?.routeSymbol
+          (token) => token?.routeSymbol === state.toToken?.routeSymbol
         )
       ) {
         validToToken = state.toToken
@@ -340,11 +340,11 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })
         ?.map(getSymbol)
-        .map((s) => ALL_TOKENS[s])
+        .map((s) => findTokenByRouteSymbol(s))
 
       const validToChainIds = getToChainIds({
-        fromChainId: state.fromChainId ?? null,
-        fromTokenRouteSymbol: state.fromToken?.routeSymbol ?? null,
+        fromChainId: null,
+        fromTokenRouteSymbol: null,
         toChainId: state.toChainId ?? null,
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })
@@ -361,7 +361,7 @@ export const bridgeSlice = createSlice({
 
       if (
         validFromTokens?.some(
-          (token) => token.routeSymbol === state.fromToken?.routeSymbol
+          (token) => token?.routeSymbol === state.fromToken?.routeSymbol
         )
       ) {
         validFromToken = state.fromToken

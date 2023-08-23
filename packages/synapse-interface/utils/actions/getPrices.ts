@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { readContract, fetchBalance, Address } from '@wagmi/core'
-import { SYN } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { SYN, WETH } from '@constants/tokens/master'
 import * as ALL_CHAINS from '@constants/chains/master'
 import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 import {

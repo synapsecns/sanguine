@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import * as ALL_TOKENS from '@constants/tokens/master'
 
 import { flattenPausedTokens } from '../flattenPausedTokens'
 import { Token } from '../types'
@@ -8,6 +7,7 @@ import { getFromChainIds } from './getFromChainIds'
 import { getFromTokens } from './getFromTokens'
 import { getToTokens } from './getToTokens'
 import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { findTokenByRouteSymbol } from '../findTokenByRouteSymbol'
 
 export interface RouteQueryFields {
   fromChainId?: number
@@ -48,7 +48,7 @@ export const getRoutePossibilities = ({
     .difference(flattenPausedTokens())
     .map(getSymbol)
     .uniq()
-    .map((symbol) => ALL_TOKENS[symbol])
+    .map((symbol) => findTokenByRouteSymbol(symbol))
     .compact()
     .value()
 
@@ -75,7 +75,7 @@ export const getRoutePossibilities = ({
     })
     .map(getSymbol)
     .uniq()
-    .map((symbol) => ALL_TOKENS[symbol])
+    .map((symbol) => findTokenByRouteSymbol(symbol))
     .compact()
     .value()
 

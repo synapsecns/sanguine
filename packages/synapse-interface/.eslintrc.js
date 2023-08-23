@@ -103,7 +103,7 @@ module.exports = {
     'dot-notation': 'off',
     'eol-last': 'off',
     eqeqeq: ['error', 'smart'],
-    'guard-for-in': 'error',
+    'guard-for-in': 'off',
     'id-blacklist': 'off',
     'id-match': 'off',
     'import/no-extraneous-dependencies': 'off',

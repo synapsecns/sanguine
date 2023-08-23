@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { WETH } from '@constants/tokens/swapMaster'
+import { WETH } from '@constants/tokens/master'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { DepositTokenInput } from '@components/TokenInput'
@@ -194,7 +194,7 @@ const Deposit = ({
 
   return (
     <div className="flex-col">
-      <div className="px-2 pt-1 pb-4 bg-bgLight rounded-md">
+      <div className="px-2 pt-1 pb-4 rounded-md bg-bgLight">
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (

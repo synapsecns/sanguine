@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { EXISTING_BRIDGE_ROUTES } from '@/constants/existing-bridge-routes'
+import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
 import { RouteQueryFields } from './generateRoutePossibilities'
 import { getTokenAndChainId } from './getTokenAndChainId'
 
@@ -207,11 +207,13 @@ export const getToChainIds = ({
     toTokenRouteSymbol
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
+      .mapValues((values) =>
+        values.filter((token) => token.startsWith(`${toTokenRouteSymbol}`))
+      )
       .values()
       .flatten()
-      .filter((token) => token.startsWith(`${toTokenRouteSymbol}`))
-      .map((token) => getTokenAndChainId(token).chainId)
       .uniq()
+      .map((token) => getTokenAndChainId(token).chainId)
       .value()
   }
 

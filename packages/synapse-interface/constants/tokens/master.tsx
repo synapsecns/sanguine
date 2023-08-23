@@ -1,3 +1,5 @@
+import { zeroAddress } from 'viem'
+
 import synapseLogo from '@assets/icons/synapse.svg'
 import busdLogo from '@assets/icons/busd.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
@@ -33,7 +35,13 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import pepeLogo from '@assets/icons/pepe-token.webp'
-import { zeroAddress } from 'viem'
+import mimLogo from '@assets/icons/mim.svg'
+import susdLogo from '@assets/icons/sUSD.svg'
+import btcLogo from '@assets/icons/btc.svg'
+import klayLogo from '@assets/icons/klay.svg'
+import maticLogo from '@assets/icons/matic.svg'
+import ftmLogo from '@assets/icons/fantom.svg'
+import fusdtLogo from '@assets/icons/fusdt.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -59,12 +67,11 @@ export const GOHM = new Token({
   symbol: 'gOHM',
   name: 'Olympus DAO',
   logo: ohmLogo,
-  description: 'OHM',
   swapableType: 'OHM',
   color: 'gray',
   visibilityRank: 40,
   priorityRank: 6,
-  routeSymbol: 'GOHM',
+  routeSymbol: 'gOHM',
 })
 
 export const LINK = new Token({
@@ -76,7 +83,6 @@ export const LINK = new Token({
   symbol: 'LINK',
   name: 'ChainLink Token',
   logo: chainlinkLogo,
-  description: 'LINK',
   swapableType: 'LINK',
   color: 'blue',
   priorityRank: 6,
@@ -92,7 +98,6 @@ export const HIGHSTREET = new Token({
   symbol: 'HIGH',
   name: 'Highstreet',
   logo: highstreetLogo,
-  description: 'HIGH is the token behind Highstreet',
   swapableType: 'HIGHSTREET',
   color: 'cyan',
   priorityRank: 6,
@@ -109,7 +114,6 @@ export const JUMP = new Token({
   symbol: 'JUMP',
   name: 'HyperJump',
   logo: hyperjumpLogo,
-  description: 'JUMP is the token behind Hyperjump',
   docUrl: '',
   swapableType: 'JUMP',
   color: 'cyan',
@@ -126,7 +130,6 @@ export const SFI = new Token({
   symbol: 'SFI',
   name: 'Saffron Finance',
   logo: sfiLogo,
-  description: '',
   docUrl: '',
   swapableType: 'SFI',
   color: 'red',
@@ -145,7 +148,6 @@ export const DOG = new Token({
   symbol: 'DOG',
   name: 'The Doge NFT',
   logo: dogLogo,
-  description: 'DOG is the token behind the Doge NFT',
   docUrl: '',
   swapableType: 'DOG',
   color: 'yellow',
@@ -164,7 +166,6 @@ export const NFD = new Token({
   symbol: 'NFD',
   name: 'Feisty Doge',
   logo: nfdLogo,
-  description: 'Feisty Doge NFT',
   docUrl: '',
   swapableType: 'NFD',
   color: 'yellow',
@@ -181,12 +182,11 @@ export const SOLAR = new Token({
   symbol: 'veSOLAR',
   name: 'Vested SolarBeam',
   logo: solarbeamLogo,
-  description: 'Vested SolarBeam',
   docUrl: '',
   swapableType: 'SOLAR',
   color: 'orange',
   priorityRank: 6,
-  routeSymbol: 'SOLAR',
+  routeSymbol: 'veSOLAR',
 })
 
 export const GMX = new Token({
@@ -201,7 +201,6 @@ export const GMX = new Token({
   symbol: 'GMX',
   name: 'GMX',
   logo: gmxLogo,
-  description: 'GMX Financial',
   docUrl: '',
   swapableType: 'GMX',
   priorityRank: 6,
@@ -221,7 +220,6 @@ export const SDT = new Token({
   symbol: 'SDT',
   name: 'Stake DAO',
   logo: sdtLogo,
-  description: 'Stake DAO',
   docUrl: '',
   swapableType: 'SDT',
   color: 'gray',
@@ -239,7 +237,6 @@ export const NEWO = new Token({
   symbol: 'NEWO',
   name: 'New Order',
   logo: newoLogo,
-  description: 'New Order',
   docUrl: '',
   swapableType: 'NEWO',
   color: 'yellow',
@@ -260,7 +257,6 @@ export const USDB = new Token({
   symbol: 'USDB',
   name: 'USDB',
   logo: usdbLogo,
-  description: 'USDB',
   docUrl: '',
   swapableType: 'USDB',
   priorityRank: 6,
@@ -276,7 +272,6 @@ export const PEPE = new Token({
   symbol: 'PEPE',
   name: 'Pepe',
   logo: pepeLogo,
-  description: 'PEPE',
   swapableType: 'PEPE',
   priorityRank: 6,
   routeSymbol: 'PEPE',
@@ -292,7 +287,6 @@ export const VSTA = new Token({
   symbol: 'VSTA',
   name: 'Vesta',
   logo: vstaLogo,
-  description: 'Vesta Finance',
   docUrl: '',
   swapableType: 'VSTA',
   color: 'gray',
@@ -315,7 +309,6 @@ export const H2O = new Token({
   symbol: 'H2O',
   name: 'H2O',
   logo: h2oLogo,
-  description: 'H2O',
   docUrl: '',
   swapableType: 'H2O',
   color: 'cyan',
@@ -332,7 +325,6 @@ export const L2DAO = new Token({
   symbol: 'L2DAO',
   name: 'Layer2DAO',
   logo: l2daoLogo,
-  description: 'Layer2DAO',
   docUrl: '',
   swapableType: 'L2DAO',
   color: 'cyan',
@@ -349,7 +341,6 @@ export const PLS = new Token({
   symbol: 'PLS',
   name: 'Plutus',
   logo: plsLogo,
-  description: 'PlutusDao',
   docUrl: '',
   swapableType: 'PLS',
   color: 'green',
@@ -367,12 +358,11 @@ export const AGEUR = new Token({
   symbol: 'agEUR',
   name: 'Angle Euro',
   logo: ageurLogo,
-  description: 'Angle Euro',
   docUrl: '',
   swapableType: 'AGEUR',
   color: 'yellow',
   priorityRank: 6,
-  routeSymbol: 'AGEUR',
+  routeSymbol: 'agEUR',
 })
 
 export const UNIDX = new Token({
@@ -387,7 +377,6 @@ export const UNIDX = new Token({
   symbol: 'UNIDX',
   name: 'Unidex',
   logo: unidexLogo,
-  description: 'Unidex',
   docUrl: '',
   swapableType: 'UNIDX',
   color: 'gray',
@@ -405,10 +394,6 @@ export const BUSD = new Token({
   symbol: 'BUSD',
   name: 'Binance USD',
   logo: busdLogo,
-  description: `
-    BUSD is a stablecoin that is pegged to the US dollar and
-    backed/issued by Binance
-  `,
   swapableType: 'BUSD',
   swapableOn: [CHAINS.BNB.id],
   color: 'yellow',
@@ -458,11 +443,6 @@ export const USDC = new Token({
   symbol: 'USDC',
   name: 'USD Coin',
   logo: usdcLogo,
-  description: `
-    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
-    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
-    is backed up by $1 that is held in reserve
-    `,
   swapableType: 'USD',
   swapableOn: [
     CHAINS.BNB.id,
@@ -484,6 +464,24 @@ export const USDC = new Token({
   routeSymbol: 'USDC',
 })
 
+export const METISUSDC = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.METIS.id]: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
+  },
+  decimals: {
+    [CHAINS.METIS.id]: 6,
+  },
+  symbol: 'm.USDC',
+  name: 'Metis USD Coin',
+  logo: usdcLogo,
+  swapableType: 'USD',
+  swapableOn: [CHAINS.METIS.id],
+  color: 'blue',
+  priorityRank: 3,
+  routeSymbol: 'm.USDC',
+})
+
 export const KLAYTN_USDC = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -498,11 +496,6 @@ export const KLAYTN_USDC = new Token({
   symbol: 'USDC  ', // TWO SPACES IS EXTREMELY IMPORTANT
   name: 'USD Circle',
   logo: usdcLogo,
-  description: `
-    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
-    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
-    is backed up by $1 that is held in reserve
-    `,
   swapableType: 'KLAYTN_USDC',
   color: 'blue',
   priorityRank: 10,
@@ -589,10 +582,9 @@ export const USDT = new Token({
     [CHAINS.ETH.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     [CHAINS.CRONOS.id]: '0x66e428c3f67a68878562e79a0234c1f83c208770',
     [CHAINS.POLYGON.id]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
-    // [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     // [CHAINS.HARDHAT.id]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
     [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
@@ -612,7 +604,6 @@ export const USDT = new Token({
     // Commenting out as currently unsupported above
     // [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
-    [CHAINS.FANTOM.id]: 6,
     [CHAINS.HARMONY.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.AURORA.id]: 6,
@@ -624,17 +615,11 @@ export const USDT = new Token({
   name: 'USD Tether',
   logo: usdtLogo,
   color: 'lime',
-  description: `
-    USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
-    The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal
-    to the number of USDT in circulation.
-    `,
   swapableType: 'USD',
   swapableOn: [
     CHAINS.BNB.id,
     CHAINS.ETH.id,
     CHAINS.POLYGON.id,
-    CHAINS.FANTOM.id,
     CHAINS.ARBITRUM.id,
     // CHAINS.AVALANCHE.id,
     CHAINS.HARMONY.id,
@@ -707,20 +692,18 @@ export const WETHE = new Token({
     [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
   },
   decimals: 18,
-  symbol: 'WETH.e', // SHOULD BE WETH
+  symbol: 'WETH.e',
   name: 'Wrapped ETH',
   logo: wethLogo,
-  description: 'ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.AVALANCHE.id],
   color: 'sky',
   priorityRank: 2,
-  routeSymbol: 'WETHE',
+  routeSymbol: 'WETH.e',
 })
 
 /**
  * WETH on Moonbeam is nETH on moonbeam.
- * is this stupid & annoying - yes
  */
 export const WETHBEAM = new Token({
   addresses: {
@@ -730,7 +713,6 @@ export const WETHBEAM = new Token({
   symbol: 'WETH ',
   name: 'Wrapped ETH',
   logo: wethLogo,
-  description: 'ERC-20 Wrapped form of ETH on Moonbeam',
   swapableType: 'ETH',
   color: 'sky',
   priorityRank: 2,
@@ -745,7 +727,6 @@ export const AVWETH = new Token({
   symbol: 'AVWETH', // AVALANCHE AAVE WETH
   name: 'Aave Wrapped ETH',
   logo: avwethLogo,
-  description: 'Aave Wrapped form of ETH',
   swapableType: 'ETH',
   color: 'cyan',
   priorityRank: 2,
@@ -757,15 +738,14 @@ export const ONEETH = new Token({
     [CHAINS.HARMONY.id]: '0x6983d1e6def3690c4d616b13597a09e6193ea013',
   },
   decimals: 18,
-  symbol: '1ETH', // SHOULD BE WETH
+  symbol: '1ETH',
   name: 'Harmony ETH',
   logo: wethLogo,
-  description: 'Harmony ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'sky',
   priorityRank: 2,
-  routeSymbol: 'ONEETH',
+  routeSymbol: '1ETH',
 })
 
 export const FTMETH = new Token({
@@ -776,7 +756,6 @@ export const FTMETH = new Token({
   symbol: 'ETH ',
   name: 'Wrapped ETH',
   logo: wethLogo,
-  description: 'Fantom Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.FANTOM.id],
   color: 'sky',
@@ -792,7 +771,6 @@ export const CANTOETH = new Token({
   symbol: 'ETH ',
   logo: wethLogo,
   name: 'Wrapped ETH',
-  description: 'Canto Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.CANTO.id],
   color: 'sky',
@@ -809,7 +787,6 @@ export const METISETH = new Token({
   symbol: 'ETH ',
   name: 'Wrapped ETH',
   logo: wethLogo,
-  description: 'Metis Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.METIS.id],
   color: 'sky',
@@ -841,7 +818,6 @@ export const SYN = new Token({
   symbol: 'SYN',
   name: 'Synapse',
   logo: synapseLogo,
-  description: 'SYN is the base token behind synapse',
   swapableType: 'SYN',
   color: 'purple',
   visibilityRank: 90,
@@ -863,7 +839,6 @@ export const FRAX = new Token({
   symbol: 'FRAX',
   name: 'Frax',
   logo: fraxLogo,
-  description: 'Frax',
   swapableType: 'FRAX',
   // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
@@ -882,11 +857,10 @@ export const SYN_FRAX = new Token({
   symbol: 'synFRAX',
   name: 'Synapse Frax',
   logo: synapseLogo,
-  description: 'Frax',
   swapableType: 'FRAX',
   color: 'gray',
   priorityRank: 4,
-  routeSymbol: 'SYN_FRAX',
+  routeSymbol: 'synFRAX',
 })
 
 /**
@@ -913,7 +887,6 @@ export const NUSD = new Token({
   symbol: 'nUSD',
   name: 'Synapse nUSD',
   logo: nusdLogo,
-  description: 'nUSD',
   swapableType: 'USD',
   swapableOn: [
     CHAINS.BNB.id,
@@ -932,7 +905,7 @@ export const NUSD = new Token({
   color: 'purple',
   visibilityRank: 50,
   priorityRank: 5,
-  routeSymbol: 'NUSD',
+  routeSymbol: 'nUSD',
 })
 
 export const NOTE = new Token({
@@ -943,7 +916,6 @@ export const NOTE = new Token({
   symbol: 'NOTE',
   name: 'Canto Note',
   logo: noteLogo,
-  description: 'NOTE',
   swapableType: 'USD',
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
@@ -995,7 +967,6 @@ export const NETH = new Token({
   symbol: 'nETH',
   name: 'Synapse nETH',
   logo: nethLogo,
-  description: 'nETH',
   swapableType: 'ETH',
   swapableOn: [
     CHAINS.ARBITRUM.id,
@@ -1010,7 +981,7 @@ export const NETH = new Token({
   color: 'purple',
   visibilityRank: 50,
   priorityRank: 5,
-  routeSymbol: 'NETH',
+  routeSymbol: 'nETH',
 })
 
 export const KLAYTN_WETH = new Token({
@@ -1025,7 +996,6 @@ export const KLAYTN_WETH = new Token({
   symbol: 'WETH ', // SPACE VERY IMPORTANT
   name: 'Wrapped ETH',
   logo: ethLogo,
-  description: '',
   color: 'gray',
   swapableType: 'ETH',
   priorityRank: 3,
@@ -1044,7 +1014,6 @@ export const ETH = new Token({
   symbol: 'ETH',
   name: 'Ethereum',
   logo: ethLogo,
-  description: 'ETH',
   isNative: true,
   swapableType: 'ETH',
   color: 'sky',
@@ -1062,7 +1031,6 @@ export const MOVR = new Token({
   symbol: 'MOVR',
   name: 'MOVR',
   logo: movrLogo,
-  description: 'Moonriver',
   isNative: true,
   swapableType: 'MOVR',
   color: 'purple',
@@ -1073,15 +1041,19 @@ export const MOVR = new Token({
 export const AVAX = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: zeroAddress,
+    [CHAINS.DFK.id]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
+    [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
+    [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
+    [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
   },
   decimals: 18,
   symbol: 'AVAX',
   name: 'AVAX',
   logo: avaxLogo,
-  description: 'AVAX',
   isNative: true,
   swapableType: 'AVAX',
   color: 'red',
+  visibilityRank: 90,
   priorityRank: 3,
   routeSymbol: 'AVAX',
 })
@@ -1092,28 +1064,23 @@ export const WMOVR = new Token({
     [CHAINS.MOONRIVER.id]: '0x98878b06940ae243284ca214f92bb71a2b032b8a',
   },
   decimals: 18,
-  symbol: 'MOVR', // SHOULD BE WETH
+  symbol: 'MOVR',
   name: 'Wrapped MOVR',
   logo: movrLogo,
-  description: 'ERC-20 Wrapped form of MOVR',
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 3,
-  routeSymbol: 'WMOVR',
+  routeSymbol: 'wMOVR',
 })
 
 export const WAVAX = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
-    [CHAINS.DFK.id]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
-    [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
-    [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
   },
   decimals: 18,
   symbol: 'AVAX',
   name: 'Wrapped AVAX',
   logo: avaxLogo,
-  description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   color: 'red',
   visibilityRank: 90,
@@ -1129,7 +1096,6 @@ export const SYNAVAX = new Token({
   symbol: 'synAVAX',
   name: 'Wrapped AVAX',
   logo: avaxLogo,
-  description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
@@ -1142,10 +1108,9 @@ export const MULTIAVAX = new Token({
     [CHAINS.HARMONY.id]: '0xb12c13e66ade1f72f71834f2fc5082db8c091358',
   },
   decimals: 18,
-  symbol: 'multiAVAX', // SHOULD BE WETH
+  symbol: 'multiAVAX',
   name: 'AnySwap Wrapped AVAX',
   logo: avaxLogo,
-  description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
@@ -1164,7 +1129,6 @@ export const JEWEL = new Token({
   name: 'JEWEL',
   logo: jewelLogo,
   color: 'lime',
-  description: 'JEWEL',
   isNative: true,
   swapableType: 'JEWEL',
   priorityRank: 3,
@@ -1179,7 +1143,6 @@ export const WJEWEL = new Token({
   symbol: 'WJEWEL',
   name: 'Wrapped JEWEL',
   logo: jewelLogo,
-  description: 'JEWEL',
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
@@ -1196,12 +1159,11 @@ export const SYNJEWEL = new Token({
   symbol: 'JEWEL  ', // THE SPACES ARE VERY IMPORTANT
   name: 'JEWEL  ', // THE SPACES ARE VERY IMPORTANT
   logo: jewelLogo,
-  description: 'ERC-20 Wrapped form of JEWEL',
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
   priorityRank: 4,
-  routeSymbol: 'SYNJEWEL',
+  routeSymbol: 'synJEWEL',
 })
 
 export const XJEWEL = new Token({
@@ -1213,11 +1175,10 @@ export const XJEWEL = new Token({
   symbol: 'xJEWEL',
   name: 'xJEWEL',
   logo: jewelLogo,
-  description: 'ERC-20 Wrapped form of xJEWEL',
   swapableType: 'XJEWEL',
   color: 'lime',
   priorityRank: 3,
-  routeSymbol: 'XJEWEL',
+  routeSymbol: 'xJEWEL',
 })
 
 export const USDCe = new Token({
@@ -1226,20 +1187,15 @@ export const USDCe = new Token({
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
   },
   decimals: 6,
-  symbol: 'USDCe',
+  symbol: 'USDC.e',
   name: 'Bridged USDC',
   logo: usdcLogo,
-  description: `
-    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
-    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
-    is backed up by $1 that is held in reserve
-  `,
   swapableType: 'USD',
   color: 'blue',
   swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id],
   visibilityRank: 100,
   priorityRank: 1,
-  routeSymbol: 'USDCe',
+  routeSymbol: 'USDC.e',
 })
 
 export const USDTe = new Token({
@@ -1250,15 +1206,288 @@ export const USDTe = new Token({
   symbol: 'USDTe',
   name: 'Tether',
   logo: usdtLogo,
-  description: `
-    USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
-    The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal
-    to the number of USDT in circulation.
-  `,
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
   color: 'green',
   priorityRank: 1,
-  routeSymbol: 'USDTe',
+  routeSymbol: 'USDT.e',
+})
+
+export const MIM = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
+    [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
+  },
+  decimals: 18,
+  symbol: 'MIM',
+  name: 'Magic Internet Money',
+  logo: mimLogo,
+  swapableType: 'USD',
+  color: 'indigo',
+  priorityRank: 6,
+  routeSymbol: 'MIM',
+})
+
+export const WETH = new Token({
+  addresses: {
+    [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+    [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
+    [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
+    [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
+    [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
+  },
+  decimals: 18,
+  symbol: 'WETH',
+  name: 'Wrapped ETH',
+  logo: wethLogo,
+  swapableType: 'ETH',
+  swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
+  color: 'sky',
+  priorityRank: 3,
+  routeSymbol: 'WETH',
+})
+
+export const SUSD = new Token({
+  addresses: {
+    [CHAINS.OPTIMISM.id]: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
+  },
+  decimals: {
+    [CHAINS.OPTIMISM.id]: 18,
+  },
+  symbol: 'sUSD',
+  name: 'Synth sUSD',
+  logo: susdLogo,
+  color: 'purple',
+  swapableType: 'USD',
+  swapableOn: [CHAINS.OPTIMISM.id],
+  visibilityRank: 100,
+  priorityRank: 1,
+  routeSymbol: 'sUSD',
+})
+
+export const WSOHM = new Token({
+  addresses: {
+    [CHAINS.ETH.id]: '0xCa76543Cf381ebBB277bE79574059e32108e3E65',
+    [CHAINS.ARBITRUM.id]: '0x30bD4e574a15994B35EF9C7a5bc29002F1224821',
+    [CHAINS.AVALANCHE.id]: '0x240E332Cd26AaE10622B24160D23425A17256F5d',
+  },
+  decimals: {
+    [CHAINS.ETH.id]: 18,
+    [CHAINS.ARBITRUM.id]: 18,
+    [CHAINS.AVALANCHE.id]: 18,
+  },
+  symbol: 'wsOHM',
+  name: 'Wrapped sOHM',
+  logo: ohmLogo,
+  color: 'gray',
+  swapableType: 'OHM',
+  visibilityRank: 40,
+  priorityRank: 6,
+  routeSymbol: 'wsOHM',
+})
+
+export const ONEDAI = new Token({
+  addresses: {
+    [CHAINS.HARMONY.id]: '0xef977d2f931c1978db5f6747666fa1eacb0d0339',
+  },
+  decimals: 18,
+  symbol: '1DAI',
+  name: 'Harmony Dai Stablecoin',
+  logo: daiLogo,
+  swapableType: 'USD',
+  swapableOn: [CHAINS.HARMONY.id],
+  color: 'yellow',
+  visibilityRank: 100,
+  priorityRank: 6,
+  routeSymbol: '1DAI',
+})
+
+export const ONEUSDC = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
+  },
+  decimals: {
+    [CHAINS.HARMONY.id]: 6,
+  },
+  symbol: '1USDC',
+  name: 'Harmony USD Coin',
+  logo: usdcLogo,
+  swapableType: 'USD',
+  swapableOn: [CHAINS.HARMONY.id],
+  color: 'blue',
+  priorityRank: 6,
+  routeSymbol: '1USDC',
+})
+
+export const ONEUSDT = new Token({
+  addresses: {
+    [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
+  },
+  decimals: {
+    [CHAINS.HARMONY.id]: 6,
+  },
+  symbol: '1USDT',
+  name: 'Harmony USD Tether',
+  logo: usdtLogo,
+  color: 'lime',
+  swapableType: 'USD',
+  swapableOn: [CHAINS.HARMONY.id],
+  visibilityRank: 100,
+  priorityRank: 6,
+  routeSymbol: '1USDT',
+})
+
+export const BTCB = new Token({
+  addresses: {
+    [CHAINS.KLAYTN.id]: '0xe82f87ba4E97b2796aA0Fa4eFB06e8f0d2EB4FE1',
+    [CHAINS.AVALANCHE.id]: '0x152b9d0FdC40C096757F570A51E494bd4b943E50',
+    [CHAINS.DFK.id]: '0x7516EB8B8Edfa420f540a162335eACF3ea05a247',
+  },
+  decimals: {
+    [CHAINS.KLAYTN.id]: 8,
+    [CHAINS.AVALANCHE.id]: 8,
+    [CHAINS.DFK.id]: 8,
+  },
+  symbol: 'BTC.b',
+  name: 'Bitcoin',
+  logo: btcLogo,
+  swapableType: 'BTC.b',
+  color: 'orange',
+  priorityRank: 3,
+  routeSymbol: 'BTC.b',
+})
+
+export const DAIE = new Token({
+  addresses: {
+    [CHAINS.AVALANCHE.id]: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+  },
+  decimals: 18,
+  symbol: 'DAI.e',
+  name: 'Dai.e Token',
+  logo: daiLogo,
+  swapableType: 'USD',
+  swapableOn: [CHAINS.AVALANCHE.id],
+  color: 'yellow',
+  visibilityRank: 100,
+  priorityRank: 2,
+  routeSymbol: 'DAI.e',
+})
+
+export const KLAY = new Token({
+  addresses: {
+    [CHAINS.KLAYTN.id]: zeroAddress,
+    [CHAINS.DFK.id]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
+  },
+  decimals: {
+    [CHAINS.KLAYTN.id]: 8,
+    [CHAINS.DFK.id]: 8,
+  },
+  symbol: 'KLAY',
+  name: 'Klaytn',
+  logo: klayLogo,
+  isNative: true,
+  swapableType: 'KLAY',
+  color: 'red',
+  priorityRank: 3,
+  routeSymbol: 'KLAY',
+})
+
+export const WKLAY = new Token({
+  addresses: {
+    [CHAINS.KLAYTN.id]: '0x5819b6af194A78511c79C85Ea68D2377a7e9335f',
+  },
+  decimals: {
+    [CHAINS.KLAYTN.id]: 8,
+  },
+  symbol: 'WKLAY',
+  name: 'Wrapped Klaytn',
+  logo: klayLogo,
+  swapableType: 'WKLAY',
+  color: 'red',
+  priorityRank: 3,
+  routeSymbol: 'WKLAY',
+})
+
+export const MATIC = new Token({
+  addresses: {
+    [CHAINS.POLYGON.id]: zeroAddress,
+    [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
+  },
+  decimals: 18,
+  symbol: 'MATIC',
+  name: 'MATIC',
+  logo: maticLogo,
+  isNative: true,
+  swapableType: 'MATIC',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 3,
+  routeSymbol: 'MATIC',
+})
+
+export const WMATIC = new Token({
+  addresses: {
+    [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+  },
+  decimals: 18,
+  symbol: 'WMATIC',
+  name: 'WMATIC',
+  logo: maticLogo,
+  swapableType: 'MATIC',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 3,
+  routeSymbol: 'WMATIC',
+})
+
+export const FTM = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: zeroAddress,
+    [CHAINS.DFK.id]: '0x2Df041186C844F8a2e2b63F16145Bc6Ff7d23E25',
+  },
+  decimals: 18,
+  symbol: 'FTM',
+  name: 'Fantom',
+  logo: ftmLogo,
+  swapableType: 'FTM',
+  swapableOn: [CHAINS.FANTOM.id],
+  color: 'blue',
+  priorityRank: 5,
+  routeSymbol: 'FTM',
+})
+
+export const WFTM = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
+  },
+  decimals: 18,
+  symbol: 'WFTM',
+  name: 'Wrapped Fantom',
+  logo: ftmLogo,
+  swapableType: 'FTM',
+  swapableOn: [CHAINS.FANTOM.id],
+  color: 'blue',
+  priorityRank: 5,
+  routeSymbol: 'WFTM',
+})
+
+export const FUSDT = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
+  },
+  decimals: {
+    [CHAINS.FANTOM.id]: 6,
+  },
+  symbol: 'fUSDT',
+  name: 'Frapped USDT',
+  logo: fusdtLogo,
+  color: 'lime',
+  swapableType: 'USD',
+  swapableOn: [CHAINS.FANTOM.id],
+  visibilityRank: 100,
+  priorityRank: 3,
+  routeSymbol: 'fUSDT',
 })

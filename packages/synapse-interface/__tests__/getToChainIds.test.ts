@@ -2,7 +2,7 @@ import { expect } from '@jest/globals'
 
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 
-jest.mock('../constants/existing-bridge-routes', () => ({
+jest.mock('../constants/existingBridgeRoutes', () => ({
   __esModule: true,
   EXISTING_BRIDGE_ROUTES: {
     'GOHM-1': ['GOHM-10', 'GOHM-25', 'GOHM-56'],
