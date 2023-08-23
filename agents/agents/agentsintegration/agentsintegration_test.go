@@ -99,7 +99,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(u.GetTestContext())
-		u.Nil(scribeErr)
+		if !testDone {
+			u.Nil(scribeErr)
+		}
 	}()
 
 	// Start the Scribe.
@@ -296,7 +298,10 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = notary.Start(u.GetTestContext())
+		notaryErr := notary.Start(u.GetTestContext())
+		if !testDone {
+			Nil(u.T(), notaryErr)
+		}
 	}()
 
 	u.Eventually(func() bool {
