@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 	"os"
 	"testing"
@@ -99,8 +98,6 @@ func (g GuardSuite) TestGuardE2E() {
 
 	g.Nil(err)
 	g.TestBackendOrigin.WaitForConfirmation(g.GetTestContext(), testClientOnOriginTx)
-	fmt.Printf("omniii: %v\n", omniRPCClient.GetEndpoint(int(g.TestBackendOrigin.GetChainID()), 1))
-	fmt.Printf("origin tx: %v\n", testClientOnOriginTx.Hash())
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
