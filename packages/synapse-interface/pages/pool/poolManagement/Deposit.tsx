@@ -1,7 +1,6 @@
 import _ from 'lodash'
 
-import { WETH } from '@constants/tokens/swapMaster'
-import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
+import { AVWETH, ETH, WETHE, WETH } from '@constants/tokens/master'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'

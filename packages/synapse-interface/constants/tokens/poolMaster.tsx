@@ -22,8 +22,9 @@ import {
   SYNJEWEL,
   MULTIAVAX,
   SYNAVAX,
+  WETH,
 } from '@constants/tokens/master'
-import { WETH, MIM, SwapUSDC, SwapUSDT } from '@constants/tokens/swapMaster'
+import { MIM, SwapUSDC, SwapUSDT } from '@constants/tokens/swapMaster'
 
 import { Token } from '@/utils/types'
 

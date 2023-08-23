@@ -8,7 +8,6 @@ import { id } from '@ethersproject/hash'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
 import { getAddress, isAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
-import { WETH } from '@constants/tokens/swapMaster'
 import {
   SYN,
   NUSD,
@@ -36,6 +35,7 @@ import {
   AGEUR,
   NOTE,
   USDC,
+  WETH,
 } from '@constants/tokens/master'
 
 export const getTransactionReceipt = async (
