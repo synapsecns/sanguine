@@ -12,7 +12,6 @@ import (
 func (s Store) StoreAgentRoot(
 	ctx context.Context,
 	agentRoot [32]byte,
-	chainID uint32,
 	blockNumber uint64,
 ) error {
 	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
@@ -26,7 +25,6 @@ func (s Store) StoreAgentRoot(
 		}).
 		Create(&AgentRoot{
 			AgentRoot:   dbAgentRoot,
-			ChainID:     chainID,
 			BlockNumber: blockNumber,
 		})
 
@@ -35,4 +33,21 @@ func (s Store) StoreAgentRoot(
 	}
 
 	return nil
+}
+
+// GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
+func (s Store) GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]byte) (uint64, error) {
+	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
+
+	var blockNumber uint64
+	dbTx := s.DB().WithContext(ctx).
+		Select(BlockNumberFieldName).
+		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), dbAgentRoot).
+		Scan(&blockNumber)
+
+	if dbTx.Error != nil {
+		return blockNumber, fmt.Errorf("failed to get summit block number for root: %w", dbTx.Error)
+	}
+
+	return blockNumber, nil
 }

@@ -65,12 +65,10 @@ type AgentTree struct {
 	Proof json.RawMessage `gorm:"column:proof"`
 }
 
-// AgentRoot is the state of the agent roots on each chain.
+// AgentRoot is the state of the agent roots on summit.
 type AgentRoot struct {
 	// AgentRoot is the root of the agent tree.
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`
-	// ChainID is the chain id of the chain where we see the `RootUpdated` event.
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockNumber is the block number that the agent tree was updated.
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
