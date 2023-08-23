@@ -11,7 +11,7 @@ import {
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
-import { tokenSymbolToToken } from '@/constants/tokens'
+import { BRIDGABLE_TOKENS, tokenSymbolToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
@@ -354,6 +354,7 @@ export const Transaction = ({
     originTokenSymbol
   )
 
+  console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
   const {
     value: destinationRawValue,
     formattedValue: destinationFormattedValue,

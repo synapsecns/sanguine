@@ -169,10 +169,21 @@ export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
 export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeableTokensByType()
-export const tokenSymbolToToken = (chainId: number, symbol: string) => {
+export const tokenSymbolToToken = (chainId: number, symbol: string): Token => {
   if (chainId) {
     const token = BRIDGABLE_TOKENS[chainId].find((token) => {
       return token.symbol === symbol
+    })
+    return token
+  }
+}
+export const tokenAddressToToken = (
+  chainId: number,
+  tokenAddress: string
+): Token => {
+  if (chainId) {
+    const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
+      return token.addresses[chainId] === tokenAddress
     })
     return token
   }
