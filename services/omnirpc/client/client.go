@@ -97,7 +97,7 @@ func (c *rpcClient) GetChainIDs(ctx context.Context) (chainIDs []int, err error)
 	}
 
 	defer func() {
-		_ = resp.Close
+		_ = resp.Body.Close()
 	}()
 
 	readResp, err := io.ReadAll(resp.Body)
