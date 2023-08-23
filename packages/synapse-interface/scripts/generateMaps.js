@@ -66,7 +66,7 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
 
 // Function to get list of tokens that could be swapped
 // into SynapseBridge tokens for a given chain.
-const getBridgeSwappableOrigin = async (chainId) => {
+const getBridgeOriginMap = async (chainId) => {
   // Get WETH address
   const weth = await SwapQuoters[chainId].weth()
   // Get list of supported tokens
@@ -82,10 +82,10 @@ const getBridgeSwappableOrigin = async (chainId) => {
     })
   )
   // Collect map from supported tokens into set of bridge token symbols
-  const swappableToSymbols = {}
-  // Add all bridge tokens to swappableToSymbols
+  const tokensToSymbols = {}
+  // Add all bridge tokens to tokensToSymbols
   Object.keys(allTokenSymbols).forEach((bridgeToken) => {
-    swappableToSymbols[bridgeToken] = new Set(allTokenSymbols[bridgeToken])
+    tokensToSymbols[bridgeToken] = new Set(allTokenSymbols[bridgeToken])
   })
   pools.forEach((pool) => {
     // Collect set of bridge token symbols that are present in the pool
@@ -93,35 +93,35 @@ const getBridgeSwappableOrigin = async (chainId) => {
       allTokenSymbols,
       pool.tokens.map((token) => token.token).concat(pool.lpToken)
     )
-    // Add collected set to swappableToSymbols for each token in the pool
+    // Add collected set to tokensToSymbols for each token in the pool
     pool.tokens.forEach((token) => {
-      addSetToMap(swappableToSymbols, token.token, bridgeSymbols)
+      addSetToMap(tokensToSymbols, token.token, bridgeSymbols)
     })
-    // Add collected set to swappableToSymbols for the pool lpToken (if it is a bridge token)
+    // Add collected set to tokensToSymbols for the pool lpToken (if it is a bridge token)
     if (bridgeTokens.includes(pool.lpToken)) {
-      addSetToMap(swappableToSymbols, pool.lpToken, bridgeSymbols)
+      addSetToMap(tokensToSymbols, pool.lpToken, bridgeSymbols)
     }
   })
   // If WETH is present in the map, add ETH with the same set of bridge token symbols
-  if (weth in swappableToSymbols) {
-    addSetToMap(swappableToSymbols, ETH, swappableToSymbols[weth])
+  if (weth in tokensToSymbols) {
+    addSetToMap(tokensToSymbols, ETH, tokensToSymbols[weth])
   }
-  return swappableToSymbols
+  return tokensToSymbols
 }
 
 // Function to get list of tokens that could be swapped
 // into SynapseCCTP tokens for a given chain.
-const getCCTPSwappableOrigin = async (chainId) => {
+const getCCTPOriginMap = async (chainId) => {
   // Return empty map if CCTP is not supported on the chain
   if (!SynapseCCTPs[chainId]) {
     return {}
   }
   // Get map from token to set of bridge token symbols
   const cctpTokenSymbols = await getCCTPBridgeSymbols(chainId)
-  const swappableToSymbols = {}
-  // Add all bridge tokens to swappableToSymbols
+  const tokensToSymbols = {}
+  // Add all bridge tokens to tokensToSymbols
   Object.keys(cctpTokenSymbols).forEach((token) => {
-    swappableToSymbols[token] = new Set([cctpTokenSymbols[token]])
+    tokensToSymbols[token] = new Set([cctpTokenSymbols[token]])
   })
   // Add tokens from whitelisted pools
   await Promise.all(
@@ -130,19 +130,19 @@ const getCCTPSwappableOrigin = async (chainId) => {
       const tokens = await getPoolTokens(chainId, pool)
       tokens.forEach((token) => {
         addSetToMap(
-          swappableToSymbols,
+          tokensToSymbols,
           token,
           new Set([cctpTokenSymbols[cctpToken]])
         )
       })
     })
   )
-  return swappableToSymbols
+  return tokensToSymbols
 }
 
 // Function to get a list of bridge token symbols that could be swapped
 // into a token on a destination chain.
-const getSwappableDestination = async (chainId, token) => {
+const getDestinationBridgeSymbols = async (chainId, token) => {
   // Get list of connected bridge tokens: (symbol, token) pairs
   const connectedBridgeTokens = await SynapseRouters[
     chainId
@@ -233,34 +233,34 @@ const sortMapByKeys = (map) => {
   return sortedMap
 }
 
-const printSwappableTokens = async () => {
-  const swappableMap = {}
-  const symbolsMap = {}
+const printMaps = async () => {
+  const bridgeMap = {}
+  const bridgeSymbolsMap = {}
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
-      const swappableOrigin = await getBridgeSwappableOrigin(chainId)
-      // Add CCTP swappable origin tokens to swappableOrigin
-      const cctpSwappableOrigin = await getCCTPSwappableOrigin(chainId)
-      Object.keys(cctpSwappableOrigin).forEach((token) => {
-        addSetToMap(swappableOrigin, token, cctpSwappableOrigin[token])
+      const originMap = await getBridgeOriginMap(chainId)
+      // Add tokens from CCTP originMap to global originMap
+      const cctpOriginMap = await getCCTPOriginMap(chainId)
+      Object.keys(cctpOriginMap).forEach((token) => {
+        addSetToMap(originMap, token, cctpOriginMap[token])
       })
       const tokens = {}
       await Promise.all(
-        Object.keys(swappableOrigin).map(async (token) => {
+        Object.keys(originMap).map(async (token) => {
           tokens[token] = {
             decimals: await getTokenDecimals(chainId, token),
             symbol: await getTokenSymbol(chainId, token),
-            origin: Array.from(swappableOrigin[token]).sort(),
-            destination: await getSwappableDestination(chainId, token),
+            origin: Array.from(originMap[token]).sort(),
+            destination: await getDestinationBridgeSymbols(chainId, token),
           }
         })
       )
-      swappableMap[chainId] = sortMapByKeys(tokens)
-      symbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
+      bridgeMap[chainId] = sortMapByKeys(tokens)
+      bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
     })
   )
-  prettyPrint(sortMapByKeys(swappableMap), './data/swappableMap.json')
-  prettyPrint(sortMapByKeys(symbolsMap), './data/symbolsMap.json')
+  prettyPrint(sortMapByKeys(bridgeMap), './data/bridgeMap.json')
+  prettyPrint(sortMapByKeys(bridgeSymbolsMap), './data/bridgeSymbolsMap.json')
 }
 
 const extractBridgeSymbolsMap = (tokens) => {
@@ -332,4 +332,4 @@ const prettyPrint = (obj, fn) => {
   execSync(`npx prettier --write ${fn}`)
 }
 
-printSwappableTokens()
+printMaps()
