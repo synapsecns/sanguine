@@ -11,7 +11,11 @@ import {
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
-import { BRIDGABLE_TOKENS, tokenSymbolToToken } from '@/constants/tokens'
+import {
+  BRIDGABLE_TOKENS,
+  tokenAddressToToken,
+  tokenSymbolToToken,
+} from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
@@ -349,9 +353,9 @@ export const Transaction = ({
   }: PartialInfo = fromInfo || {}
 
   const originChain: Chain = CHAINS_BY_ID[originChainId]
-  const originToken: Token = tokenSymbolToToken(
+  const originToken: Token = tokenAddressToToken(
     originChainId,
-    originTokenSymbol
+    originTokenAddress
   )
 
   console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
@@ -367,7 +371,7 @@ export const Transaction = ({
   const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
   const destinationToken: Token = tokenSymbolToToken(
     destinationChainId,
-    destinationTokenSymbol
+    destinationTokenAddress
   )
 
   const handleTransactionClick: () => void = useCallback(() => {
@@ -405,7 +409,7 @@ export const Transaction = ({
           <TransactionPayloadDetail
             chain={originChain}
             token={originToken}
-            tokenSymbol={originTokenSymbol}
+            tokenSymbol={originToken?.symbol}
             tokenAmount={originFormattedValue}
           />
           <div
@@ -419,7 +423,7 @@ export const Transaction = ({
           <TransactionPayloadDetail
             chain={destinationChain}
             token={destinationToken}
-            tokenSymbol={destinationTokenSymbol}
+            tokenSymbol={destinationToken?.symbol}
             tokenAmount={destinationFormattedValue}
           />
         </div>
