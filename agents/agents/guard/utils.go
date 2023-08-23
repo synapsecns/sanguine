@@ -41,11 +41,7 @@ func isStatusUpdatedEvent(parser bondingmanager.Parser, log ethTypes.Log) bool {
 	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
 }
 
-func isRootUpdatedEvent(lightParser lightmanager.Parser, bondingParser bondingmanager.Parser, log ethTypes.Log) bool {
-	lightManagerEvent, ok := lightParser.EventType(log)
-	if ok && lightManagerEvent == lightmanager.RootUpdatedEvent {
-		return true
-	}
+func isRootUpdatedEvent(bondingParser bondingmanager.Parser, log ethTypes.Log) bool {
 	bondingManagerEvent, ok := bondingParser.EventType(log)
 	if ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent {
 		return true
