@@ -1,5 +1,5 @@
-import _ from 'lodash'
 import { SWAPABLE_MAP } from '@/constants/swapableMap'
+
 export type BridgeRoutes = Record<string, string[]>
 
 const constructJSON = (swappableMap) => {
