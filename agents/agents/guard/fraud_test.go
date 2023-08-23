@@ -1061,23 +1061,20 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// Submit the attestation
+	// Create a new attestation with the agent root corresponding to newly Slashed status.
 	latestAgentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
 	Nil(g.T(), err)
-
 	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
 	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
 	chainGas := types.NewChainGas(originState.GasData(), uint32(g.TestBackendOrigin.GetChainID()))
 	chainGasBytes, err := types.EncodeChainGas(chainGas)
 	Nil(g.T(), err)
-
 	// TODO: Change from using a harness to using the Go code.
 	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
 	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
 	Nil(g.T(), err)
 	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, latestAgentRoot, snapGasHash)
 	Nil(g.T(), err)
-
 	notaryAttestation, err = g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 2)
 	Nil(g.T(), err)
 	attestation := types.NewAttestation(
@@ -1092,6 +1089,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	notaryAttestation, err = types.NewNotaryAttestation(attEncoded, latestAgentRoot, snapGas)
 	Nil(g.T(), err)
 
+	// Submit the attestation.
 	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
