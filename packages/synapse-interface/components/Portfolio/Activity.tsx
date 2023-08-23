@@ -19,7 +19,7 @@ import {
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
-import { RecentBridgeTransaction } from '@/slices/bridge/actions'
+import { PendingBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { getExplorerTxUrl } from '@/constants/urls'
@@ -37,15 +37,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
-  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
 
   const hasPendingTransactions: boolean = useMemo(() => {
     if (userPendingTransactions && userPendingTransactions.length > 0)
       return true
-    if (recentBridgeTransactions && recentBridgeTransactions.length > 0)
+    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0)
       return true
     return false
-  }, [userPendingTransactions, recentBridgeTransactions])
+  }, [userPendingTransactions, pendingBridgeTransactions])
 
   const hasHistoricalTransactions: boolean = useMemo(
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
@@ -116,14 +116,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 }
 
 export const MostRecentPendingTransaction = () => {
-  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { userPendingTransactions }: TransactionsState = useTransactionsState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
   let mostRecentPendingTransaction = null
 
-  if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
-    mostRecentPendingTransaction = recentBridgeTransactions[0]
+  if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
+    mostRecentPendingTransaction = pendingBridgeTransactions[0]
     return (
       <div className="relative mt-3">
         <div
@@ -163,7 +163,7 @@ export const MostRecentPendingTransaction = () => {
 const RecentlyBridgedPendingTransaction = ({
   recentlyBridgedTransaction,
 }: {
-  recentlyBridgedTransaction: RecentBridgeTransaction
+  recentlyBridgedTransaction: PendingBridgeTransaction
 }) => {
   const [delayed, setDelayed] = useState<boolean>(false)
   const {
@@ -174,7 +174,7 @@ const RecentlyBridgedPendingTransaction = ({
     destinationToken,
     transactionHash,
     timestamp,
-  }: RecentBridgeTransaction = recentlyBridgedTransaction
+  }: PendingBridgeTransaction = recentlyBridgedTransaction
 
   const handlePendingTransactionClick: () => void = useCallback(() => {
     if (transactionHash) {
@@ -226,14 +226,16 @@ const RecentlyBridgedPendingTransaction = ({
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
-  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   return (
     <>
-      {recentBridgeTransactions.map((transaction: RecentBridgeTransaction) => (
-        <RecentlyBridgedPendingTransaction
-          recentlyBridgedTransaction={transaction}
-        />
-      ))}
+      {pendingBridgeTransactions.map(
+        (transaction: PendingBridgeTransaction) => (
+          <RecentlyBridgedPendingTransaction
+            recentlyBridgedTransaction={transaction}
+          />
+        )
+      )}
     </>
   )
 }

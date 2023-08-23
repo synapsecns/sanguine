@@ -95,7 +95,7 @@ import {
   FetchState,
   updateSingleTokenAllowance,
 } from '@/slices/portfolio/actions'
-import { addRecentBridgeTransaction } from '@/slices/bridge/actions'
+import { addPendingBridgeTransaction } from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -491,7 +491,7 @@ const StateManagedBridge = () => {
           slippage: bridgeQuote.exchangeRate,
         })
         dispatch(
-          addRecentBridgeTransaction({
+          addPendingBridgeTransaction({
             originChain: CHAINS_BY_ID[fromChainId],
             originToken: fromToken,
             originValue: fromValue,
