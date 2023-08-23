@@ -103,7 +103,7 @@ describe('getToChainIds', () => {
       toTokenRouteSymbol: 'USDC',
     })
 
-    expect(chainIds).toEqual([10, 25, 56])
+    expect(chainIds).toEqual([1, 10, 25, 56])
   })
 
   it('has fromChainId, fromToken', () => {

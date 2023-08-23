@@ -92,7 +92,7 @@ const ButtonContent = memo(
     const portfolioBalances = usePortfolioBalances()
 
     const parsedBalance = portfolioBalances[chainId]?.find(
-      (tb) => tb.token === token
+      (tb) => tb.token.addresses[chainId] === token.addresses[chainId]
     )?.parsedBalance
 
     return (
