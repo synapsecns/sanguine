@@ -76,7 +76,7 @@ func (n *TunnelSuite) startServer(ctx context.Context) {
 		}
 
 		return nil
-	}, retry.WithMin(time.Millisecond), retry.WithMax(time.Second), retry.WithMaxAttemptsTime(time.Second*30))
+	}, retry.WithMin(time.Millisecond), retry.WithMax(time.Second), retry.WithMaxAttemptTime(time.Second*30))
 
 	n.Require().NoError(err)
 }

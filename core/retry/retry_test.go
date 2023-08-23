@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// nolint: cyclop
 func TestRetryWithBackoff(t *testing.T) {
 	// Test a function that succeeds on the first attempt.
 	t.Run("Success", func(t *testing.T) {
@@ -88,7 +89,7 @@ func TestRetryWithBackoff(t *testing.T) {
 		Equal(t, withMax, newCfg.GetMax())
 	})
 
-	t.Run("WithMaxAttemptsTime", func(t *testing.T) {
+	t.Run("WithMaxAttemptTime", func(t *testing.T) {
 		err := retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
@@ -96,7 +97,26 @@ func TestRetryWithBackoff(t *testing.T) {
 			case <-time.After(time.Millisecond):
 				return nil
 			}
-		}, retry.WithMaxAttemptsTime(1))
+		}, retry.WithMaxAttemptTime(1), retry.WithMaxAttempts(3))
 		NotNil(t, err)
+	})
+
+	t.Run("WithMaxTotalTime", func(t *testing.T) {
+		startTime := time.Now()
+		const testDuration = time.Second
+
+		err := retry.WithBackoff(context.Background(), func(ctx context.Context) error {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context canceled: %w", ctx.Err())
+			case <-time.After(time.Millisecond):
+				return fmt.Errorf("ima fail")
+			}
+		}, retry.WithMaxTotalTime(testDuration))
+		NotNil(t, err)
+
+		if time.Since(startTime) < time.Second {
+			t.Errorf("Expected to run for at least %s second, but ran for %s", testDuration.String(), time.Since(startTime))
+		}
 	})
 }
