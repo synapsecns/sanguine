@@ -42,7 +42,6 @@ type GuardDBWriter interface {
 	StoreAgentRoot(
 		ctx context.Context,
 		agentRoot [32]byte,
-		chainID uint32,
 		blockNumber uint64,
 	) error
 }
@@ -51,8 +50,8 @@ type GuardDBWriter interface {
 type GuardDBReader interface {
 	// GetUpdateAgentStatusParameters gets eligible parameters for the updateAgentStatus() contract call.
 	GetUpdateAgentStatusParameters(ctx context.Context) ([]agentTypes.AgentTree, error)
-	// GetLatestConfirmedSummitBlockNumber gets the latest confirmed summit block number.
-	GetLatestConfirmedSummitBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	// GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
+	GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]byte) (uint64, error)
 }
 
 // GuardDB is the interface for the guard's database.
