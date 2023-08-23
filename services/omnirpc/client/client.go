@@ -96,6 +96,10 @@ func (c *rpcClient) GetChainIDs(ctx context.Context) (chainIDs []int, err error)
 		return nil, fmt.Errorf("could not get chain ids: %w", err)
 	}
 
+	defer func() {
+		_ = resp.Close
+	}()
+
 	readResp, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain ids: %w", err)
