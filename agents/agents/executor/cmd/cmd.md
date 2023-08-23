@@ -121,7 +121,8 @@ embedded_scribe_config:
           start_block: 24307127
         - address: 0x22EaC155C605Ffaf1002A2733206BCC0A52EB8C8
           start_block: 24307126
-
+  # The `rpc_url` is an omnirpc endpoint, similar to the `base_omnirpc_url` in the Executor config.
+  # However, notice the inclusion of `/confirmations`. This could be the same base url as above with an added `/confirmations` path.
   rpc_url: http://scribe-omnirpc/confirmations
   refresh_rate: 0
 ```
