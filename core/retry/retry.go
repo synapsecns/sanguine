@@ -27,12 +27,12 @@ type retryWithBackoffConfig struct {
 	maxAllAttemptsTime time.Duration
 }
 
-// returns true if the number of attempts exceeds the maximum number of attempts
+// returns true if the number of attempts exceeds the maximum number of attempts.
 func (r *retryWithBackoffConfig) exceedsMaxAttempts(attempts int) bool {
 	return r.maxAttempts > 0 && attempts > r.maxAttempts
 }
 
-// returns true if the time for all attempts exceeds the maximum time for all attempts
+// returns true if the time for all attempts exceeds the maximum time for all attempts.
 func (r *retryWithBackoffConfig) exceedsMaxTime(startTime time.Time) bool {
 	return r.maxAllAttemptsTime > 0 && time.Since(startTime) > r.maxAllAttemptsTime
 }
@@ -82,6 +82,7 @@ func WithMaxAttemptTime(maxAttemptTime time.Duration) WithBackoffConfigurator {
 	}
 }
 
+// WithMaxTotalTime sets the maximum time of all retry attempts combined.
 func WithMaxTotalTime(maxTotalTime time.Duration) WithBackoffConfigurator {
 	return func(c *retryWithBackoffConfig) {
 		c.maxAllAttemptsTime = maxTotalTime
@@ -156,5 +157,9 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 
 // ErrMaxAttempts is returned when the maximum number of retry attempts is reached.
 var ErrMaxAttempts = errors.New("max attempts reached")
+
+// ErrMaxTime is returned when the maximum time for all retry attempts is reached.
 var ErrMaxTime = errors.New("max time reached")
+
+// ErrUnknown is returned when an unknown error occurs.
 var ErrUnknown = errors.New("unknown error")

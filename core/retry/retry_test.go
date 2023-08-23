@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// nolint: cyclop
 func TestRetryWithBackoff(t *testing.T) {
 	// Test a function that succeeds on the first attempt.
 	t.Run("Success", func(t *testing.T) {
