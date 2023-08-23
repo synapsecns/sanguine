@@ -19,7 +19,6 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/pkg/errors v0.9.1
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/spatialcurrent/go-math v0.0.0-20211120210754-b3872f7000fe
 	github.com/stretchr/testify v1.8.4
@@ -233,6 +232,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
