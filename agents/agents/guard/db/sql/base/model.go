@@ -14,7 +14,6 @@ func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	AgentRootFieldName = namer.GetConsistentName("AgentRoot")
 	DisputeIndexFieldName = namer.GetConsistentName("DisputeIndex")
-	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	AgentAddressFieldName = namer.GetConsistentName("AgentAddress")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	DisputeProcessedStatusFieldName = namer.GetConsistentName("DisputeProcessedStatus")
@@ -26,8 +25,6 @@ var (
 	AgentRootFieldName string
 	// DisputeIndexFieldName is the field name of the agent root.
 	DisputeIndexFieldName string
-	// ChainIDFieldName gets the chain id field name.
-	ChainIDFieldName string
 	// AgentAddressFieldName gets the agent address field name.
 	AgentAddressFieldName string
 	// BlockNumberFieldName gets the agent block number field name.
