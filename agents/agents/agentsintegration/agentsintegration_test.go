@@ -255,7 +255,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}()
 
 	u.Eventually(func() bool {
-		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*1)
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestAgentState(
 			&bind.CallOpts{Context: u.GetTestContext()},
@@ -273,7 +273,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	})
 
 	u.Eventually(func() bool {
-		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*1)
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestState(
 			&bind.CallOpts{Context: u.GetTestContext()},
