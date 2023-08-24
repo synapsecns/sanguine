@@ -27,7 +27,11 @@ export const PortfolioTabManager = () => {
           handleTabChange={handleTabChange}
         />
       </div>
-      <MostRecentTransaction />
+      <div
+        className={activeTab === PortfolioTabs.ACTIVITY ? 'hidden' : 'block'}
+      >
+        <MostRecentTransaction />
+      </div>
     </div>
   )
 }
