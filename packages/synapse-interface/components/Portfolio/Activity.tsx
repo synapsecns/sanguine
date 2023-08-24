@@ -198,6 +198,35 @@ export const MostRecentTransaction = () => {
       />
     )
   }
+
+  if (lastPendingTransaction) {
+    return (
+      <PendingTransaction
+        connectedAddress={address as Address}
+        startedTimestamp={lastPendingTransaction?.fromInfo?.time}
+        transactionHash={lastPendingTransaction?.fromInfo?.txnHash}
+        isSubmitted={lastPendingTransaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={lastPendingTransaction?.toInfo?.time ? true : false}
+        transactionType={TransactionType.PENDING}
+        originValue={lastPendingTransaction?.fromInfo?.formattedValue}
+        originChain={CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.chainID]}
+        destinationChain={
+          CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.destinationChainID]
+        }
+        originToken={tokenAddressToToken(
+          lastPendingTransaction?.fromInfo?.chainID,
+          lastPendingTransaction?.fromInfo?.tokenAddress
+        )}
+        destinationToken={tokenAddressToToken(
+          lastPendingTransaction?.toInfo?.chainID,
+          lastPendingTransaction?.toInfo?.tokenAddress
+        )}
+        destinationAddress={
+          lastPendingTransaction?.fromInfo?.address as Address
+        }
+      />
+    )
+  }
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
