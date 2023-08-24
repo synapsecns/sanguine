@@ -7,6 +7,7 @@ import { useTransactionsState } from '@/slices/transactions/hooks'
 import { PartialInfo, BridgeTransaction } from '@/slices/api/generated'
 import {
   convertUnixTimestampToMonthAndDate,
+  getTimeMinutesBeforeNow,
   isTimestampToday,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -154,6 +155,28 @@ export const MostRecentTransaction = () => {
     userPendingTransactions,
     userHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
+
+  const recentTime: number = getTimeMinutesBeforeNow(10)
+
+  const lastHistoricalTransaction: BridgeTransaction =
+    userHistoricalTransactions[0]
+  const isLastHistoricalTransactionRecent: boolean =
+    lastHistoricalTransaction?.toInfo?.time < recentTime
+
+  const hasPendingBridgeTransactions: boolean = useMemo(() => {
+    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0)
+      return true
+  }, [pendingBridgeTransactions])
+
+  const userHasPendingTransactions: boolean = useMemo(() => {
+    if (userPendingTransactions && userPendingTransactions.length > 0)
+      return true
+  }, [userPendingTransactions])
+
+  const userHasHistoricalTransactions: boolean = useMemo(() => {
+    if (userHistoricalTransactions && userHistoricalTransactions.length > 0)
+      return true
+  }, [userHistoricalTransactions])
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
