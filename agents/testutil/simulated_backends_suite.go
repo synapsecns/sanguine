@@ -1,10 +1,12 @@
 package testutil
 
 import (
-	"github.com/synapsecns/sanguine/core"
+	"fmt"
 	"math/big"
 	"sync"
 	"testing"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -332,6 +334,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
 	a.TestSuite.DeferAfterSuite(a.cleanAfterTestSuite)
 
+	fmt.Println("SetupTest")
 	a.SetupGuard()
 	a.SetupNotary()
 	a.SetupNotaryOnOrigin()
@@ -346,18 +349,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		anvilOpts := anvil.NewAnvilOptionBuilder()
 		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
 		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		fmt.Println("Done setting up A")
 	}()
 	go func() {
 		defer wg.Done()
 		anvilOpts := anvil.NewAnvilOptionBuilder()
 		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
 		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		fmt.Println("Done setting up B")
 	}()
 	go func() {
 		defer wg.Done()
 		anvilOpts := anvil.NewAnvilOptionBuilder()
 		anvilOpts.SetChainID(uint64(10))
 		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		fmt.Println("Done setting up C")
 	}()
 	wg.Wait()
 
@@ -386,19 +392,23 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	go func() {
 		defer wg.Done()
 		a.SetupSummit(a.TestDeployManager)
+		fmt.Println("Done setup summit")
 	}()
 	go func() {
 		defer wg.Done()
 		a.SetupDestination(a.TestDeployManager)
+		fmt.Println("Done setup destination")
 	}()
 	go func() {
 		defer wg.Done()
 		a.SetupOrigin(a.TestDeployManager)
+		fmt.Println("Done setup origin")
 	}()
 	wg.Wait()
 
 	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 
+	fmt.Println("loading harness contracts")
 	err := a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
 		a.TestBackendSummit,
@@ -408,6 +418,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	if err != nil {
 		a.T().Fatal(err)
 	}
+	fmt.Println("done loading harness contracts")
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
@@ -430,6 +441,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.GuardTestDB = guardSqliteStore
+	fmt.Println("Done with setup of everything")
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

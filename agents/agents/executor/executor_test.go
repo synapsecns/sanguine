@@ -813,6 +813,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
+	fmt.Println("Right before registry")
 	registry := deployer.NewContractRegistry(e.T(), e.TestBackendOrigin)
 	//nolint:forcetypeassert
 	deployer := testutil.NewOriginHarnessDeployer(registry, e.TestBackendOrigin).(testutil.OriginHarnessDeployer)
@@ -820,7 +821,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	inboxAddr, err := e.OriginContract.Inbox(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
-
+	fmt.Println("Right before contract override")
 	// Manually deploy an "override" origin contract, so that we can call SendManagerMessage as
 	// onlyAgentManager from our tx context.
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
@@ -902,7 +903,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 		destination: {destinationClient, destinationClient},
 		summit:      {summitClient, summitClient},
 	}
-
+	fmt.Println("Right before scribe")
 	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
@@ -975,6 +976,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
 	e.Nil(err)
 
+	fmt.Println("Right before sending base message")
 	// Send the manager message.
 	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
 	e.Nil(err)
@@ -997,6 +999,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	snapshot := types.NewSnapshot([]types.State{originState})
 
+	fmt.Println("Right before submitting snapshot")
 	// Submit snapshot with Guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
 	e.Nil(err)
@@ -1028,6 +1031,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
 
+	fmt.Println("Right before increase EVM time")
 	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
 	// the manager message can be executed.
 	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
@@ -1041,6 +1045,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {
+		time.Sleep(15 * time.Second)
+		fmt.Println("Checking if executed")
 		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
 		e.Nil(err)
 		return executed
