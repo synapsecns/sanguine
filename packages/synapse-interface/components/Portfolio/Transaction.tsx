@@ -32,6 +32,7 @@ export interface TransactionProps {
   estimatedDuration?: number
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
+  transactionHash?: string
 }
 
 export const Transaction = ({
@@ -48,6 +49,7 @@ export const Transaction = ({
   estimatedDuration,
   transactionStatus,
   transactionType,
+  transactionHash,
 }: TransactionProps) => {
   return (
     <div
@@ -93,6 +95,7 @@ export const PendingTransaction = ({
   destinationChain,
   destinationToken,
   startedTimestamp,
+  transactionHash,
 }: TransactionProps) => {
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
