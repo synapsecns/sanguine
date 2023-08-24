@@ -20,7 +20,7 @@ export enum TransactionStatus {
 
 export interface TransactionProps {
   connectedAddress: Address
-  destinationAddress: Address
+  destinationAddress?: Address
   originChain: Chain
   originToken: Token
   originValue: number
@@ -81,6 +81,31 @@ export const Transaction = ({
           />
         )}
       </div>
+    </div>
+  )
+}
+
+export const PendingTransaction = ({
+  connectedAddress,
+  originChain,
+  originToken,
+  originValue,
+  destinationChain,
+  destinationToken,
+  startedTimestamp,
+}: TransactionProps) => {
+  return (
+    <div data-test-id="pending-transaction" className="flex flex-col">
+      <Transaction
+        connectedAddress={connectedAddress}
+        originChain={originChain}
+        originToken={originToken}
+        originValue={originValue}
+        destinationChain={destinationChain}
+        destinationToken={destinationToken}
+        startedTimestamp={startedTimestamp}
+        transactionType={TransactionType.PENDING}
+      />
     </div>
   )
 }
