@@ -108,7 +108,7 @@ export const PendingTransaction = ({
     transactionHash ? TransactionStatus.PENDING : TransactionStatus.INITIALIZING
   )
 
-  const isPendingWalletAction: boolean = transactionHash ? true : false
+  const isPendingWalletAction: boolean = transactionHash ? false : true
   const isInitializing: boolean = isSubmitted ? false : true
 
   useEffect(() => {
