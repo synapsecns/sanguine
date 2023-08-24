@@ -41,16 +41,11 @@ export const PAUSED_TOKENS_BY_CHAIN = {
   [CHAINS.ETH.id]: ['USDB', 'KLAYTN_USDC', 'KLAYTN_USDT', 'KLAYTN_DAI'],
   [CHAINS.BNB.id]: ['USDB', 'DOGECHAIN_BUSD'],
   [CHAINS.POLYGON.id]: ['USDB'],
-  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH', 'USDB'],
+  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'ETH', 'USDB'],
   [CHAINS.AVALANCHE.id]: ['AVWETH', 'USDB'],
   [CHAINS.MOONRIVER.id]: ['USDB'],
-  [CHAINS.DOGE.id]: [
-    'KLAYTN_USDC',
-    'KLAYTN_USDT',
-    'KLAYTN_DAI',
-    'DOGECHAIN_BUSD',
-  ],
-  [CHAINS.KLAYTN.id]: ['KLAYTN_USDC', 'KLAYTN_USDT', 'KLAYTN_DAI'],
+  [CHAINS.DOGE.id]: ['KLAYTN_USDC', 'KLAYTN_USDT', 'KLAYTN_DAI', 'BUSD'],
+  [CHAINS.KLAYTN.id]: ['USDC', 'KLAYTN_USDT', 'DAI'],
 }
 
 const getBridgeableTokens = (): TokensByChain => {

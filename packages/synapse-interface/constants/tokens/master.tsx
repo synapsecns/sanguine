@@ -5,7 +5,6 @@ import busdLogo from '@assets/icons/busd.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
 import ethLogo from '@assets/icons/eth.svg'
 import nethLogo from '@assets/icons/neth.svg'
-import avwethLogo from '@assets/icons/avweth.svg'
 import fraxLogo from '@assets/icons/frax.svg'
 import daiLogo from '@assets/icons/dai.png'
 import nusdLogo from '@assets/icons/nusd.svg'
@@ -15,7 +14,7 @@ import jewelLogo from '@assets/icons/jewel.png'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import noteLogo from '@assets/icons/note.svg'
 import ohmLogo from '@assets/icons/ohm.svg'
-import highstreetLogo from '@assets/icons/highstreet.svg'
+import highLogo from '@assets/icons/highstreet.svg'
 import hyperjumpLogo from '@assets/icons/hyperjump.png'
 import dogLogo from '@assets/icons/dog.png'
 import nfdLogo from '@assets/icons/nfd.svg'
@@ -35,7 +34,6 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import pepeLogo from '@assets/icons/pepe-token.webp'
-import mimLogo from '@assets/icons/mim.svg'
 import susdLogo from '@assets/icons/sUSD.svg'
 import btcLogo from '@assets/icons/btc.svg'
 import klayLogo from '@assets/icons/klay.svg'
@@ -46,7 +44,6 @@ import fusdtLogo from '@assets/icons/fusdt.svg'
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
-// MINTABLE TOKENS
 export const GOHM = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
@@ -89,7 +86,7 @@ export const LINK = new Token({
   routeSymbol: 'LINK',
 })
 
-export const HIGHSTREET = new Token({
+export const HIGH = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
     [CHAINS.BNB.id]: '0x5f4bde007dc06b867f86ebfe4802e34a1ffeed63',
@@ -97,11 +94,11 @@ export const HIGHSTREET = new Token({
   decimals: 18,
   symbol: 'HIGH',
   name: 'Highstreet',
-  logo: highstreetLogo,
-  swapableType: 'HIGHSTREET',
+  logo: highLogo,
+  swapableType: 'HIGH',
   color: 'cyan',
   priorityRank: 6,
-  routeSymbol: 'HIGHSTREET',
+  routeSymbol: 'HIGH',
 })
 
 export const JUMP = new Token({
@@ -142,7 +139,6 @@ export const DOG = new Token({
     [CHAINS.ETH.id]: '0xBAac2B4491727D78D2b78815144570b9f2Fe8899',
     [CHAINS.BNB.id]: '0xaa88c603d142c371ea0eac8756123c5805edee03',
     [CHAINS.POLYGON.id]: '0xeEe3371B89FC43Ea970E908536Fcddd975135D8a',
-    // [CHAINS.ARBITRUM.id]: '0x4425742F1EC8D98779690b5A3A6276Db85Ddc01A'
   },
   decimals: 18,
   symbol: 'DOG',
@@ -246,12 +242,7 @@ export const NEWO = new Token({
 
 export const USDB = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x02b5453d92b730f29a86a0d5ef6e930c4cf8860b',
     [CHAINS.BNB.id]: '0xc8699abbba90c7479dedccef19ef78969a2fc608',
-    [CHAINS.POLYGON.id]: '0xfa1fbb8ef55a4855e5688c0ee13ac3f202486286',
-    [CHAINS.FANTOM.id]: '0x6fc9383486c163fa48becdec79d6058f984f62ca',
-    [CHAINS.AVALANCHE.id]: '0x5ab7084cb9d270c2cb052dd30dbecbca42f8620c',
-    [CHAINS.MOONRIVER.id]: '0x3e193c39626bafb41ebe8bdd11ec7cca9b3ec0b2',
   },
   decimals: 18,
   symbol: 'USDB',
@@ -384,7 +375,6 @@ export const UNIDX = new Token({
   routeSymbol: 'UNIDX',
 })
 
-// BASIC TOKENS
 export const BUSD = new Token({
   addresses: {
     [CHAINS.BNB.id]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
@@ -404,37 +394,34 @@ export const BUSD = new Token({
 export const USDC = new Token({
   visibilityRank: 101,
   addresses: {
-    [CHAINS.BNB.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
     [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+    [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
+    [CHAINS.BNB.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
-    [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-    [CHAINS.ARBITRUM.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
     [CHAINS.BOBA.id]: '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc',
-    [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
-    [CHAINS.METIS.id]: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
+    [CHAINS.DOGE.id]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
     [CHAINS.CANTO.id]: '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
     [CHAINS.KLAYTN.id]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
-    [CHAINS.DOGE.id]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
+    [CHAINS.ARBITRUM.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
   },
   decimals: {
-    [CHAINS.BNB.id]: 18,
     [CHAINS.ETH.id]: 6,
     [CHAINS.OPTIMISM.id]: 6,
+    [CHAINS.CRONOS.id]: 6,
+    [CHAINS.BNB.id]: 18,
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.FANTOM.id]: 6,
-    [CHAINS.AVALANCHE.id]: 6,
-    [CHAINS.ARBITRUM.id]: 6,
-    [CHAINS.HARMONY.id]: 6,
     [CHAINS.BOBA.id]: 6,
-    [CHAINS.AURORA.id]: 6,
-    [CHAINS.METIS.id]: 6,
-    [CHAINS.CRONOS.id]: 6,
-    [CHAINS.KLAYTN.id]: 6,
+    [CHAINS.DOGE.id]: 6,
     [CHAINS.CANTO.id]: 6,
+    [CHAINS.KLAYTN.id]: 6,
+    [CHAINS.ARBITRUM.id]: 6,
+    [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.DFK.id]: 18,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -482,115 +469,18 @@ export const METISUSDC = new Token({
   routeSymbol: 'm.USDC',
 })
 
-export const KLAYTN_USDC = new Token({
-  addresses: {
-    [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    [CHAINS.KLAYTN.id]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
-    [CHAINS.DOGE.id]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
-  },
-  decimals: {
-    [CHAINS.ETH.id]: 6,
-    [CHAINS.KLAYTN.id]: 6,
-    [CHAINS.DOGE.id]: 6,
-  },
-  symbol: 'USDC  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'USD Circle',
-  logo: usdcLogo,
-  swapableType: 'KLAYTN_USDC',
-  color: 'blue',
-  priorityRank: 10,
-  routeSymbol: 'KLAYTN_USDC',
-})
-
-export const KLAYTN_USDT = new Token({
-  addresses: {
-    [CHAINS.ETH.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [CHAINS.DOGE.id]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
-  },
-  decimals: {
-    [CHAINS.ETH.id]: 6,
-    [CHAINS.KLAYTN.id]: 6,
-    [CHAINS.DOGE.id]: 6,
-  },
-  symbol: 'USDT  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'Synapse Tether USDT',
-  logo: usdtLogo,
-  swapableType: 'KLAYTN_USDT',
-  priorityRank: 10,
-  color: 'lime',
-  routeSymbol: 'KLAYTN_USDT',
-})
-
-export const KLAYTN_oUSDT = new Token({
-  addresses: {
-    [CHAINS.KLAYTN.id]: '0xceE8FAF64bB97a73bb51E115Aa89C17FfA8dD167',
-  },
-  decimals: {
-    [CHAINS.KLAYTN.id]: 6,
-  },
-  symbol: 'orbitUSDT', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'Orbit Bridged USDT',
-  logo: usdtLogo,
-  swapableType: 'KLAYTN_USDT',
-  swapableOn: [CHAINS.KLAYTN.id],
-  priorityRank: 6,
-  routeSymbol: 'KLAYTN_oUSDT',
-})
-
-export const KLAYTN_DAI = new Token({
-  addresses: {
-    [CHAINS.ETH.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    [CHAINS.KLAYTN.id]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
-    [CHAINS.DOGE.id]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
-  },
-  decimals: {
-    [CHAINS.ETH.id]: 18,
-    [CHAINS.KLAYTN.id]: 18,
-    [CHAINS.DOGE.id]: 18,
-  },
-  symbol: 'DAI  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'DAI',
-  logo: daiLogo,
-  swapableType: 'KLAYTN_DAI',
-  priorityRank: 10,
-  color: 'yellow',
-  routeSymbol: 'KLAYTN_DAI',
-})
-
-export const DOGECHAIN_BUSD = new Token({
-  addresses: {
-    [CHAINS.BNB.id]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
-    [CHAINS.DOGE.id]: '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d',
-  },
-  decimals: {
-    [CHAINS.BNB.id]: 18,
-    [CHAINS.DOGE.id]: 18,
-  },
-  symbol: 'BUSD ', // ONE SPACE IS EXTREMELY IMPORTANT
-  name: 'Binance USD',
-  logo: busdLogo,
-  swapableType: 'DOGECHAIN_BUSD',
-  priorityRank: 10,
-  color: 'yellow',
-  routeSymbol: 'DOGECHAIN_BUSD',
-})
-
 export const USDT = new Token({
   addresses: {
-    [CHAINS.BNB.id]: '0x55d398326f99059ff775485246999027b3197955',
     [CHAINS.ETH.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    [CHAINS.CRONOS.id]: '0x66e428c3f67a68878562e79a0234c1f83c208770',
+    [CHAINS.OPTIMISM.id]: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+    [CHAINS.BNB.id]: '0x55d398326f99059ff775485246999027b3197955',
     [CHAINS.POLYGON.id]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
-    [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
-    // [CHAINS.HARDHAT.id]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
-    [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
-    [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
+    [CHAINS.DOGE.id]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
     [CHAINS.CANTO.id]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [CHAINS.DOGE.id]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
+    [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+    [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -603,9 +493,7 @@ export const USDT = new Token({
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
-    [CHAINS.HARMONY.id]: 6,
     [CHAINS.BOBA.id]: 6,
-    [CHAINS.AURORA.id]: 6,
     [CHAINS.CANTO.id]: 6,
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.DOGE.id]: 6,
@@ -633,16 +521,13 @@ export const USDT = new Token({
 
 export const DAI = new Token({
   addresses: {
-    //[CHAINS.BNB.id]: '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3',
     [CHAINS.ETH.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    [CHAINS.CRONOS.id]: '0xf2001b145b43032aaf5ee2884e456ccd805f677d',
+    [CHAINS.OPTIMISM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
     [CHAINS.POLYGON.id]: '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',
-    [CHAINS.AVALANCHE.id]: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
-    // [CHAINS.ARBITRUM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-    [CHAINS.HARMONY.id]: '0xef977d2f931c1978db5f6747666fa1eacb0d0339',
     [CHAINS.BOBA.id]: '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
-    [CHAINS.KLAYTN.id]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
     [CHAINS.DOGE.id]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
+    [CHAINS.KLAYTN.id]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
+    [CHAINS.ARBITRUM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -701,37 +586,6 @@ export const WETHE = new Token({
   routeSymbol: 'WETH.e',
 })
 
-/**
- * WETH on Moonbeam is nETH on moonbeam.
- */
-export const WETHBEAM = new Token({
-  addresses: {
-    [CHAINS.MOONBEAM.id]: '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A',
-  },
-  decimals: 18,
-  symbol: 'WETH ',
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  swapableType: 'ETH',
-  color: 'sky',
-  priorityRank: 2,
-  routeSymbol: 'WETHBEAM',
-})
-
-export const AVWETH = new Token({
-  addresses: {
-    [CHAINS.AVALANCHE.id]: '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',
-  },
-  decimals: 18,
-  symbol: 'AVWETH', // AVALANCHE AAVE WETH
-  name: 'Aave Wrapped ETH',
-  logo: avwethLogo,
-  swapableType: 'ETH',
-  color: 'cyan',
-  priorityRank: 2,
-  routeSymbol: 'AVWETH',
-})
-
 export const ONEETH = new Token({
   addresses: {
     [CHAINS.HARMONY.id]: '0x6983d1e6def3690c4d616b13597a09e6193ea013',
@@ -745,52 +599,6 @@ export const ONEETH = new Token({
   color: 'sky',
   priorityRank: 2,
   routeSymbol: '1ETH',
-})
-
-export const FTMETH = new Token({
-  addresses: {
-    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
-  },
-  decimals: 18,
-  symbol: 'ETH ',
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  swapableType: 'ETH',
-  swapableOn: [CHAINS.FANTOM.id],
-  color: 'sky',
-  priorityRank: 2,
-  routeSymbol: 'FTMETH',
-})
-
-export const CANTOETH = new Token({
-  addresses: {
-    [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
-  },
-  decimals: 18,
-  symbol: 'ETH ',
-  logo: wethLogo,
-  name: 'Wrapped ETH',
-  swapableType: 'ETH',
-  swapableOn: [CHAINS.CANTO.id],
-  color: 'sky',
-  visibilityRank: 100,
-  priorityRank: 2,
-  routeSymbol: 'CANTOETH',
-})
-
-export const METISETH = new Token({
-  addresses: {
-    [CHAINS.METIS.id]: '0x420000000000000000000000000000000000000A',
-  },
-  decimals: 18,
-  symbol: 'ETH ',
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  swapableType: 'ETH',
-  swapableOn: [CHAINS.METIS.id],
-  color: 'sky',
-  priorityRank: 2,
-  routeSymbol: 'METISETH',
 })
 
 export const SYN = new Token({
@@ -827,11 +635,7 @@ export const SYN = new Token({
 export const FRAX = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
-    // [CHAINS.MOONRIVER.id]: '0x1a93b23281cc1cde4c4741353f3064709a16197d',
-    // [CHAINS.MOONRIVER.id]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
-
-    // [CHAINS.MOONBEAM.id]: '',
-    // [CHAINS.HARMONY.id]: '0xFa7191D292d5633f702B0bd7E3E3BcCC0e633200',
+    [CHAINS.ARBITRUM.id]: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
     [CHAINS.DOGE.id]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
   },
   decimals: 18,
@@ -839,17 +643,16 @@ export const FRAX = new Token({
   name: 'Frax',
   logo: fraxLogo,
   swapableType: 'FRAX',
-  // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
   priorityRank: 6,
   routeSymbol: 'FRAX',
 })
 
-export const SYN_FRAX = new Token({
+export const SYNFRAX = new Token({
   addresses: {
-    // [CHAINS.FANTOM.id]:    '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
+    [CHAINS.FANTOM.id]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [CHAINS.MOONRIVER.id]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
-    // [CHAINS.MOONBEAM.id]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
+    [CHAINS.MOONBEAM.id]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
     [CHAINS.HARMONY.id]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
   },
   decimals: 18,
@@ -862,25 +665,21 @@ export const SYN_FRAX = new Token({
   routeSymbol: 'synFRAX',
 })
 
-/**
- * nUSD is the token involved in the bridge.
- */
 export const NUSD = new Token({
   addresses: {
-    [CHAINS.BNB.id]: '0x23b891e5c62e0955ae2bd185990103928ab817b3',
     [CHAINS.ETH.id]: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
-    [CHAINS.CRONOS.id]: '0x396c9c192dd323995346632581BEF92a31AC623b',
     [CHAINS.OPTIMISM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
+    [CHAINS.CRONOS.id]: '0x396c9c192dd323995346632581BEF92a31AC623b',
+    [CHAINS.BNB.id]: '0x23b891e5c62e0955ae2bd185990103928ab817b3',
     [CHAINS.POLYGON.id]: '0xb6c473756050de474286bed418b77aeac39b02af',
     [CHAINS.FANTOM.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-    [CHAINS.AVALANCHE.id]: '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46',
-    [CHAINS.ARBITRUM.id]: '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
-    [CHAINS.HARMONY.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
     [CHAINS.BOBA.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
-    [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [CHAINS.METIS.id]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
     [CHAINS.CANTO.id]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
-    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
+    [CHAINS.ARBITRUM.id]: '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
+    [CHAINS.AVALANCHE.id]: '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46',
+    [CHAINS.HARMONY.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
+    [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
   },
   decimals: 18,
   symbol: 'nUSD',
@@ -923,44 +722,17 @@ export const NOTE = new Token({
   routeSymbol: 'NOTE',
 })
 
-// NOTE: USERS on DFK expect USDC (when it's really nUSD under the hood)
-// Consider adding displayExpections field to Token NUSD with USDC symbol/logo
-// And then remove DFK_USDC
-// export const DFK_USDC = new Token({
-//   addresses: {
-//     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
-//   },
-//   decimals: {
-//     [CHAINS.DFK.id]: 18,
-//   },
-//   symbol: 'USDC ', // SPACE VERY IMPORTANT
-//   name: 'USD Circle',
-//   logo: usdcLogo,
-//   description: '',
-//   swapableType: 'USD',
-//   color: 'blue',
-//   visibilityRank: 100,
-//   priorityRank: 1,
-//   routeSymbol: 'DFK_USDC',
-// })
-
-/**
- * nETH is the token involved in the bridge. it is backed by internet monies...
- */
 export const NETH = new Token({
   addresses: {
-    [CHAINS.FANTOM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
-    [CHAINS.ARBITRUM.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
-    [CHAINS.BOBA.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
     [CHAINS.OPTIMISM.id]: '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
-    [CHAINS.AVALANCHE.id]: '0x19E1ae0eE35c0404f835521146206595d37981ae',
-    [CHAINS.HARMONY.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
-    [CHAINS.MOONBEAM.id]: '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A', // THIS OVERLAPS WITH WETHBEAM
+    [CHAINS.FANTOM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
+    [CHAINS.BOBA.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
     [CHAINS.METIS.id]: '0x931B8f17764362A3325D30681009f0eDd6211231',
-    [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
-    [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     [CHAINS.CANTO.id]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
     [CHAINS.BASE.id]: '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c',
+    [CHAINS.ARBITRUM.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
+    [CHAINS.AVALANCHE.id]: '0x19E1ae0eE35c0404f835521146206595d37981ae',
+    [CHAINS.HARMONY.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
   },
   decimals: 18,
   symbol: 'nETH',
@@ -968,14 +740,14 @@ export const NETH = new Token({
   logo: nethLogo,
   swapableType: 'ETH',
   swapableOn: [
-    CHAINS.ARBITRUM.id,
-    CHAINS.AVALANCHE.id,
-    CHAINS.HARMONY.id,
-    CHAINS.BOBA.id,
     CHAINS.OPTIMISM.id,
+    CHAINS.BOBA.id,
     CHAINS.METIS.id,
     CHAINS.CANTO.id,
     CHAINS.BASE.id,
+    CHAINS.ARBITRUM.id,
+    CHAINS.AVALANCHE.id,
+    CHAINS.HARMONY.id,
   ],
   color: 'purple',
   visibilityRank: 50,
@@ -983,31 +755,16 @@ export const NETH = new Token({
   routeSymbol: 'nETH',
 })
 
-export const KLAYTN_WETH = new Token({
-  addresses: {
-    [CHAINS.KLAYTN.id]: NETH.addresses[CHAINS.KLAYTN.id],
-    [CHAINS.DOGE.id]: NETH.addresses[CHAINS.DOGE.id],
-  },
-  decimals: {
-    [CHAINS.KLAYTN.id]: 18,
-    [CHAINS.DOGE.id]: 18,
-  },
-  symbol: 'WETH ', // SPACE VERY IMPORTANT
-  name: 'Wrapped ETH',
-  logo: ethLogo,
-  color: 'gray',
-  swapableType: 'ETH',
-  priorityRank: 3,
-  routeSymbol: 'KLAYTN_WETH',
-})
-
 export const ETH = new Token({
   addresses: {
     [CHAINS.ETH.id]: zeroAddress,
-    [CHAINS.BOBA.id]: zeroAddress,
-    [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
+    [CHAINS.BOBA.id]: zeroAddress,
+    [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
     [CHAINS.BASE.id]: zeroAddress,
+    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1018,12 +775,13 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
-  swapableOn: [CHAINS.BASE.id],
+  swapableOn: [CHAINS.BASE.id, CHAINS.CANTO.id, CHAINS.FANTOM.id],
   routeSymbol: 'ETH',
 })
 
 export const MOVR = new Token({
   addresses: {
+    [CHAINS.MOONBEAM.id]: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
     [CHAINS.MOONRIVER.id]: zeroAddress,
   },
   decimals: 18,
@@ -1059,7 +817,6 @@ export const AVAX = new Token({
 
 export const WMOVR = new Token({
   addresses: {
-    [CHAINS.MOONBEAM.id]: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
     [CHAINS.MOONRIVER.id]: '0x98878b06940ae243284ca214f92bb71a2b032b8a',
   },
   decimals: 18,
@@ -1069,7 +826,7 @@ export const WMOVR = new Token({
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 3,
-  routeSymbol: 'wMOVR',
+  routeSymbol: 'WMOVR',
 })
 
 export const WAVAX = new Token({
@@ -1087,41 +844,12 @@ export const WAVAX = new Token({
   routeSymbol: 'WAVAX',
 })
 
-export const SYNAVAX = new Token({
-  addresses: {
-    [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
-  },
-  decimals: 18,
-  symbol: 'synAVAX',
-  name: 'Wrapped AVAX',
-  logo: avaxLogo,
-  swapableType: 'AVAX',
-  swapableOn: [CHAINS.HARMONY.id],
-  color: 'red',
-  priorityRank: 4,
-  routeSymbol: 'SYNAVAX',
-})
-
-export const MULTIAVAX = new Token({
-  addresses: {
-    [CHAINS.HARMONY.id]: '0xb12c13e66ade1f72f71834f2fc5082db8c091358',
-  },
-  decimals: 18,
-  symbol: 'multiAVAX',
-  name: 'AnySwap Wrapped AVAX',
-  logo: avaxLogo,
-  swapableType: 'AVAX',
-  swapableOn: [CHAINS.HARMONY.id],
-  color: 'red',
-  priorityRank: 3,
-  routeSymbol: 'MULTIAVAX',
-})
-
 export const JEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: zeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
+    [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
   },
   decimals: 18,
   symbol: 'JEWEL',
@@ -1151,7 +879,6 @@ export const WJEWEL = new Token({
 
 export const SYNJEWEL = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
     [CHAINS.HARMONY.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
   decimals: 18,
@@ -1184,6 +911,7 @@ export const USDCe = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+    [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
   },
   decimals: 6,
   symbol: 'USDC.e',
@@ -1200,6 +928,7 @@ export const USDCe = new Token({
 export const USDTe = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
+    [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
   },
   decimals: 6,
   symbol: 'USDT.e',
@@ -1213,36 +942,29 @@ export const USDTe = new Token({
   routeSymbol: 'USDT.e',
 })
 
-export const MIM = new Token({
-  addresses: {
-    [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
-    [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
-  },
-  decimals: 18,
-  symbol: 'MIM',
-  name: 'Magic Internet Money',
-  logo: mimLogo,
-  swapableType: 'USD',
-  color: 'indigo',
-  priorityRank: 6,
-  routeSymbol: 'MIM',
-})
-
 export const WETH = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-    [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
-    [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
+    [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
+    [CHAINS.METIS.id]: '0x420000000000000000000000000000000000000A',
+    [CHAINS.MOONBEAM.id]: '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A',
+    [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
+    [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
+    [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
   },
   decimals: 18,
   symbol: 'WETH',
   name: 'Wrapped ETH',
   logo: wethLogo,
   swapableType: 'ETH',
-  swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
+  swapableOn: [
+    CHAINS.ARBITRUM.id,
+    CHAINS.BOBA.id,
+    CHAINS.OPTIMISM.id,
+    CHAINS.METIS.id,
+  ],
   color: 'sky',
   priorityRank: 3,
   routeSymbol: 'WETH',

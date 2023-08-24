@@ -9,8 +9,8 @@ jest.mock('../constants/existingBridgeRoutes', () => ({
     'GOHM-10': ['GOHM-1', 'GOHM-25', 'GOHM-56'],
     'GOHM-25': ['GOHM-1', 'GOHM-10', 'GOHM-56'],
     'GOHM-56': ['GOHM-1', 'GOHM-10', 'GOHM-25'],
-    'HIGHSTREET-1': ['HIGHSTREET-56'],
-    'HIGHSTREET-56': ['HIGHSTREET-1'],
+    'HIGH-1': ['HIGH-56'],
+    'HIGH-56': ['HIGH-1'],
     'USDC-1': ['USDC-10', 'USDC-25', 'USDC-56', 'NUSD-10'],
     'NUSD-10': ['USDC-1'],
     'USDC-10': ['USDC-1', 'USDC-25', 'USDC-56'],
@@ -54,8 +54,8 @@ describe('getFromTokens', () => {
         'GOHM-10',
         'GOHM-25',
         'GOHM-56',
-        'HIGHSTREET-1',
-        'HIGHSTREET-56',
+        'HIGH-1',
+        'HIGH-56',
         'USDC-1',
         'USDC-10',
         'NUSD-10',
@@ -79,13 +79,7 @@ describe('getFromTokens', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(fromTokens).toEqual([
-      'GOHM-1',
-      'HIGHSTREET-1',
-      'USDC-1',
-      'SYN-1',
-      'XYZ-1',
-    ])
+    expect(fromTokens).toEqual(['GOHM-1', 'HIGH-1', 'USDC-1', 'SYN-1', 'XYZ-1'])
   })
 
   it('has fromChainId, toChainId', () => {
@@ -129,13 +123,7 @@ describe('getFromTokens', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(fromTokens).toEqual([
-      'GOHM-1',
-      'HIGHSTREET-1',
-      'USDC-1',
-      'SYN-1',
-      'XYZ-1',
-    ])
+    expect(fromTokens).toEqual(['GOHM-1', 'HIGH-1', 'USDC-1', 'SYN-1', 'XYZ-1'])
   })
 
   it('has fromChainId, fromToken, NUSD', () => {
@@ -209,8 +197,8 @@ describe('getFromTokens', () => {
         'GOHM-10',
         'GOHM-25',
         'GOHM-56',
-        'HIGHSTREET-1',
-        'HIGHSTREET-56',
+        'HIGH-1',
+        'HIGH-56',
         'USDC-1',
         'NUSD-10',
         'USDC-10',

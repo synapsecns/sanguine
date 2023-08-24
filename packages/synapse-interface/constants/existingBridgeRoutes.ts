@@ -1,4 +1,4 @@
-import { SWAPABLE_MAP } from '@/constants/swapableMap'
+import { BRIDGE_MAP } from '@/constants/bridgeMap'
 
 export type BridgeRoutes = Record<string, string[]>
 
@@ -42,4 +42,4 @@ const constructJSON = (swappableMap) => {
   return result
 }
 
-export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = constructJSON(SWAPABLE_MAP)
+export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = constructJSON(BRIDGE_MAP)

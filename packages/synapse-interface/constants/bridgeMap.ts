@@ -1,4 +1,4 @@
-export const SWAPABLE_MAP = {
+export const BRIDGE_MAP = {
   '1': {
     '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb': {
       decimals: 6,

@@ -13,13 +13,12 @@ import {
   NUSD,
   NETH,
   FRAX,
-  SYN_FRAX,
+  SYNFRAX,
   WBTC,
-  KLAYTN_WETH,
   DOG,
   LINK,
   GOHM,
-  HIGHSTREET,
+  HIGH,
   JUMP,
   NFD,
   NEWO,
@@ -101,7 +100,7 @@ export const generateBridgeTx = (
       [
         SYN,
         LINK,
-        HIGHSTREET,
+        HIGH,
         DOG,
         JUMP,
         FRAX,
@@ -119,7 +118,6 @@ export const generateBridgeTx = (
         USDB,
         GMX,
         WBTC,
-        KLAYTN_WETH,
         NOTE,
         SUSD,
       ]
@@ -127,7 +125,7 @@ export const generateBridgeTx = (
         .includes(swapTokenAddr)
     ) {
       tokenAddr = TOKEN_HASH_MAP[chainId][swapTokenAddr].addresses[chainId]
-    } else if (swapTokenAddr === SYN_FRAX.addresses[chainId]) {
+    } else if (swapTokenAddr === SYNFRAX.addresses[chainId]) {
       tokenAddr = FRAX.addresses[chainId]
     } else if (swapTokenAddr === GMX.wrapperAddresses[chainId]) {
       tokenAddr = GMX.addresses[chainId]
