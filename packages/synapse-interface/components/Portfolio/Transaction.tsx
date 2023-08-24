@@ -87,6 +87,10 @@ export const Transaction = ({
   )
 }
 
+interface PendingTransactionProps extends TransactionProps {
+  isSubmitted: boolean
+}
+
 export const PendingTransaction = ({
   connectedAddress,
   originChain,
@@ -96,7 +100,11 @@ export const PendingTransaction = ({
   destinationToken,
   startedTimestamp,
   transactionHash,
-}: TransactionProps) => {
+  isSubmitted,
+}: PendingTransactionProps) => {
+  const isPendingWalletAction: boolean = transactionHash ? true : false
+  const isInitializing: boolean = isSubmitted ? false : true
+
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
       <Transaction
@@ -111,4 +119,40 @@ export const PendingTransaction = ({
       />
     </div>
   )
+}
+
+const TransactionStatusDetails = ({
+  transactionStatus,
+}: {
+  transactionStatus: TransactionStatus
+}) => {
+  if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
+    return (
+      <div
+        data-test-id="pending-wallet-action-status"
+        className="flex justify-between"
+      >
+        <div>Wallet signature required</div>
+        <button>Open wallet</button>
+      </div>
+    )
+  } else if (transactionStatus === TransactionStatus.INITIALIZING) {
+    return (
+      <div data-test-id="initializing-status">
+        <div>Initializing...</div>
+      </div>
+    )
+  } else if (transactionStatus === TransactionStatus.PENDING) {
+    return (
+      <div data-test-id="pending-status">
+        <div>Sent</div>
+      </div>
+    )
+  } else if (transactionStatus === TransactionStatus.COMPLETED) {
+    return (
+      <div data-test-id="completed-status">
+        <div>Confirmed on Synapse Explorer</div>
+      </div>
+    )
+  }
 }
