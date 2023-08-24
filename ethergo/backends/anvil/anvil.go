@@ -174,10 +174,14 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	err = backend.storeWallets(args)
 	require.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
 
-	go func() {
-		<-ctx.Done()
-		_ = pool.Purge(resource)
-	}()
+	t.Cleanup(func() {
+		select {
+		case <-ctx.Done():
+			_ = pool.Purge(resource)
+		default:
+			// do nothing, we don't want to purge the container if this is just a subtest
+		}
+	})
 
 	return &backend
 }

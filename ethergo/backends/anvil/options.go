@@ -58,9 +58,6 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 		panic(err)
 	}
 
-	// TODO: we'll enable this after the sourcify integration is complete for verifying contracts locally.
-	optionsBuilder.OtterscanEnabled(true)
-
 	return optionsBuilder
 }
 
