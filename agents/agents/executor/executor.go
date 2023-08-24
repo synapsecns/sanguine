@@ -65,6 +65,7 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
+	dummy            bool
 }
 
 // Executor is the executor agent.
