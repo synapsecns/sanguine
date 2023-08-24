@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"sync"
 	"testing"
@@ -142,23 +143,31 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
-	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
+
+	// don't use metrics on ci for integration tests
+	useMetrics := core.GetEnvBool("CI", true)
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metrics.Jaeger)
+	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metrics.Jaeger)
+	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metrics.Jaeger)
+	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
 	a.ContractMetrics, err = metrics.NewByType(a.GetSuiteContext(), coreConfig.NewBuildInfo(
 		coreConfig.DefaultVersion,
 		coreConfig.DefaultCommit,
 		"contract",
 		coreConfig.DefaultDate,
-	), metrics.Jaeger)
+	), metricsHandler)
 	a.Require().Nil(err)
 }
 

@@ -3,6 +3,7 @@ package manager
 
 import (
 	"context"
+	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
 
@@ -135,7 +136,7 @@ func GetContract[T any](ctx context.Context, tb testing.TB, deployManager IDeplo
 	tb.Helper()
 	deployedContract := deployManager.Get(ctx, backend, contractType)
 	contractHandle, ok := deployedContract.ContractHandle().(T)
-	assert.True(tb, ok)
+	require.True(tb, ok)
 
 	return deployedContract, contractHandle
 }
