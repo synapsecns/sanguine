@@ -206,15 +206,20 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, indexingUnconfirmed b
 	}
 }
 
-// IndexToBlock takes a contract indexer and indexs a contract up until it reaches the livefill threshold. This function should be generally used for calling a indexer with a single contract.
+// IndexToBlock takes a contract indexer and indexes a contract up until it reaches the livefill threshold. This function should be generally used for calling a indexer with a single contract.
 func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart uint64, configEnd *uint64, indexer *indexer.Indexer) error {
 	timeout := time.Duration(0)
 	b := createBackoff()
 	for {
 		select {
 		case <-parentContext.Done():
+			logger.ReportIndexerError(fmt.Errorf("context canceled in index to block"), indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 			return fmt.Errorf("%s chain context canceled: %w", parentContext.Value(chainContextKey), parentContext.Err())
 		case <-time.After(timeout):
+			indexerConfig := indexer.GetIndexerConfig()
+
+			logger.ReportScribeState(indexerConfig.ChainID, 0, indexerConfig.Addresses, logger.BeginBackfillIndexing)
+
 			var endHeight uint64
 			var err error
 			startHeight, endHeight, err := c.getIndexingRange(parentContext, configStart, configEnd, indexer)
@@ -231,18 +236,18 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart u
 				if indexer.RefreshRate() > maxBackoff {
 					timeout = time.Duration(indexer.RefreshRate()) * time.Second
 				}
-				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.BackfillIndexerError)
+				logger.ReportIndexerError(fmt.Errorf("error indexing, timeout %v", timeout.Seconds()), indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 				continue
 			}
 			if configEnd != nil {
-				indexerConfig := indexer.GetIndexerConfig()
 				logger.ReportScribeState(indexerConfig.ChainID, endHeight, indexerConfig.Addresses, logger.BackfillCompleted)
 				return nil
 			}
 
 			livefillReady, err := c.isReadyForLivefill(parentContext, indexer)
 			if err != nil {
-				return fmt.Errorf("could not get last indexed: %w", err)
+				logger.ReportIndexerError(fmt.Errorf("could not get last indexed: %w", err), indexer.GetIndexerConfig(), logger.BackfillIndexerError)
+				continue
 			}
 			if livefillReady {
 				return nil

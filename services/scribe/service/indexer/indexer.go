@@ -173,7 +173,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 
 	// Start fetching logs
 	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig, true)
-	logsChan := logFetcher.GetFetchedLogsChan()
+	logsChan := *logFetcher.GetFetchedLogsChan()
 	g.Go(func() error {
 		return logFetcher.Start(groupCtx)
 	})
@@ -187,7 +187,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 			case <-groupCtx.Done():
 				logger.ReportIndexerError(groupCtx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
-			case log, ok := <-*logsChan: // empty log passed when ok is false.
+			case log, ok := <-logsChan: // empty log passed when ok is false.
 				if !ok {
 					return nil
 				}

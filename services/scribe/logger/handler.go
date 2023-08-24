@@ -52,6 +52,8 @@ const (
 	CreatingSQLStore
 	// BackfillCompleted is returned when a backfill is completed.
 	BackfillCompleted
+	// BeginBackfillIndexing is returned when a backfill is beginning.
+	BeginBackfillIndexing
 )
 
 // ErrorType is a type of error.
@@ -129,7 +131,9 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 	case InitiatingLivefill:
 		logger.Warnf("Initiating livefill on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case BackfillCompleted:
-		logger.Warnf("Backfill compelted on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
+		logger.Warnf("Backfill completed on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
+	case BeginBackfillIndexing:
+		logger.Warnf("Backfill beginning on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case ConcurrencyThresholdReached:
 		logger.Warnf("Concurrency threshold reached on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case FlushingLivefillAtHead:
