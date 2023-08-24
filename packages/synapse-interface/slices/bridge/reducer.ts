@@ -9,6 +9,7 @@ import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBal
 import {
   PendingBridgeTransaction,
   addPendingBridgeTransaction,
+  removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
 } from './actions'
@@ -116,7 +117,7 @@ export const bridgeSlice = createSlice({
         }
       )
       .addCase(
-        updatePendingBridgeTransaction, // Use the imported action
+        updatePendingBridgeTransaction,
         (
           state,
           action: PayloadAction<{ timestamp: number; transactionHash: string }>
@@ -130,10 +131,20 @@ export const bridgeSlice = createSlice({
             state.pendingBridgeTransactions =
               state.pendingBridgeTransactions.map((transaction, index) =>
                 index === transactionIndex
-                  ? { ...transaction, transactionHash } // Update the transactionHash field
+                  ? { ...transaction, transactionHash }
                   : transaction
               )
           }
+        }
+      )
+      .addCase(
+        removePendingBridgeTransaction,
+        (state, action: PayloadAction<number>) => {
+          const timestampToRemove = action.payload
+          state.pendingBridgeTransactions =
+            state.pendingBridgeTransactions.filter(
+              (transaction) => transaction.timestamp !== timestampToRemove
+            )
         }
       )
       .addCase(
