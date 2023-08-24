@@ -28,11 +28,7 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
-import {
-  Transaction as UpdatedTransaction,
-  PendingTransaction,
-  TransactionType,
-} from './Transaction'
+import { Transaction, PendingTransaction, TransactionType } from './Transaction'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -89,138 +85,62 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
           <PendingTransactionAwaitingIndexing />
           {userPendingTransactions &&
-            userPendingTransactions.map((transaction: BridgeTransaction) => {
-              const {
-                address: destinationAddress,
-                chainID: originChainId,
-                destinationChainID: destinationChainId,
-                value: originRawValue,
-                formattedValue: originFormattedValue,
-                tokenAddress: originTokenAddress,
-                tokenSymbol: originTokenSymbol,
-                blockNumber: bridgeOriginBlockNumber,
-                time: bridgeOriginTime,
-                txnHash: originTxnHash,
-              }: PartialInfo = transaction?.fromInfo || {}
-
-              const originChain: Chain = CHAINS_BY_ID[originChainId]
-              const originToken: Token = tokenAddressToToken(
-                originChainId,
-                originTokenAddress
-              )
-              const {
-                value: destinationRawValue,
-                formattedValue: destinationFormattedValue,
-                tokenAddress: destinationTokenAddress,
-                tokenSymbol: destinationTokenSymbol,
-                blockNumber: bridgeDestinationBlockNumber,
-                time: bridgeDestinationTime,
-              }: PartialInfo = transaction?.toInfo || {}
-
-              const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-              const destinationToken: Token = tokenAddressToToken(
-                destinationChainId,
-                destinationTokenAddress
-              )
-              return (
-                <PendingTransaction
-                  connectedAddress={address as Address}
-                  originChain={originChain}
-                  originToken={originToken}
-                  originValue={originFormattedValue}
-                  destinationChain={destinationChain}
-                  destinationToken={destinationToken}
-                  startedTimestamp={bridgeOriginTime}
-                  transactionHash={originTxnHash}
-                  isSubmitted={originTxnHash ? true : false}
-                  isCompleted={false}
-                  transactionType={TransactionType.PENDING}
-                />
-              )
-            })}
-        </ActivitySection>
-      )}
-
-      {/* {address && !isLoading && hasPendingTransactions && (
-        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
-          <PendingTransactionAwaitingIndexing />
-          {userPendingTransactions &&
             userPendingTransactions.map((transaction: BridgeTransaction) => (
-              <Transaction
-                connectedAddress={address}
-                bridgeTransaction={transaction}
-                transactionType={ActivityType.PENDING}
-                key={transaction.kappa}
+              <PendingTransaction
+                connectedAddress={address as Address}
+                destinationAddress={transaction?.fromInfo?.address as Address}
+                startedTimestamp={transaction?.fromInfo?.time}
+                transactionHash={transaction?.fromInfo?.txnHash}
+                isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+                isCompleted={transaction?.toInfo?.time ? true : false}
+                transactionType={TransactionType.PENDING}
+                originValue={transaction?.fromInfo?.formattedValue}
+                originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
+                originToken={tokenAddressToToken(
+                  transaction?.fromInfo?.chainID,
+                  transaction?.fromInfo?.tokenAddress
+                )}
+                destinationChain={
+                  CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+                }
+                destinationToken={tokenAddressToToken(
+                  transaction?.toInfo?.chainID,
+                  transaction?.toInfo?.tokenAddress
+                )}
               />
             ))}
         </ActivitySection>
-      )} */}
-
-      {/* {address && !isLoading && hasHistoricalTransactions && (
-        <ActivitySection title="Recent">
-          {userHistoricalTransactions &&
-            userHistoricalTransactions
-              // .slice(0, 7) //temporarily only show recent 5ß
-              .map((transaction: BridgeTransaction) => (
-                <Transaction
-                  connectedAddress={address}
-                  bridgeTransaction={transaction}
-                  transactionType={ActivityType.RECENT}
-                  key={transaction.kappa}
-                />
-              ))}
-          <ExplorerLink connectedAddress={address} />
-        </ActivitySection>
-      )} */}
+      )}
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
             userHistoricalTransactions
               // .slice(0, 7) //temporarily only show recent 5ß
-              .map((transaction: BridgeTransaction) => {
-                const {
-                  address: destinationAddress,
-                  chainID: originChainId,
-                  destinationChainID: destinationChainId,
-                  formattedValue: originFormattedValue,
-                  tokenAddress: originTokenAddress,
-                  time: bridgeOriginTime,
-                }: PartialInfo = transaction?.fromInfo || {}
-
-                const originChain: Chain = CHAINS_BY_ID[originChainId]
-                const originToken: Token = tokenAddressToToken(
-                  originChainId,
-                  originTokenAddress
-                )
-                const {
-                  formattedValue: destinationFormattedValue,
-                  tokenAddress: destinationTokenAddress,
-                  time: bridgeDestinationTime,
-                }: PartialInfo = transaction?.toInfo || {}
-
-                const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-                const destinationToken: Token = tokenAddressToToken(
-                  destinationChainId,
-                  destinationTokenAddress
-                )
-                return (
-                  <UpdatedTransaction
-                    connectedAddress={address}
-                    destinationAddress={destinationAddress as Address}
-                    originChain={originChain}
-                    originToken={originToken}
-                    originValue={originFormattedValue}
-                    destinationChain={destinationChain}
-                    destinationToken={destinationToken}
-                    destinationValue={destinationFormattedValue}
-                    startedTimestamp={bridgeOriginTime}
-                    completedTimestamp={bridgeDestinationTime}
-                    transactionType={TransactionType.HISTORICAL}
-                    key={transaction.kappa}
-                  />
-                )
-              })}
+              .map((transaction: BridgeTransaction) => (
+                <Transaction
+                  key={transaction.kappa}
+                  connectedAddress={address}
+                  destinationAddress={transaction?.fromInfo?.address as Address}
+                  originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
+                  destinationValue={transaction?.toInfo?.formattedValue}
+                  startedTimestamp={transaction?.fromInfo?.time}
+                  completedTimestamp={transaction?.toInfo?.time}
+                  transactionType={TransactionType.HISTORICAL}
+                  originValue={transaction?.fromInfo?.formattedValue}
+                  originToken={tokenAddressToToken(
+                    transaction?.fromInfo?.chainID,
+                    transaction?.fromInfo?.tokenAddress
+                  )}
+                  destinationChain={
+                    CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+                  }
+                  destinationToken={tokenAddressToToken(
+                    transaction?.toInfo?.chainID,
+                    transaction?.toInfo?.tokenAddress
+                  )}
+                />
+              ))}
           <ExplorerLink connectedAddress={address} />
         </ActivitySection>
       )}
@@ -246,9 +166,6 @@ export const MostRecentPendingTransaction = () => {
           ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
           `}
         >
-          {/* <RecentlyBridgedPendingTransaction
-            recentlyBridgedTransaction={mostRecentPendingTransaction}
-          /> */}
           <PendingTransaction
             connectedAddress={address as Address}
             originChain={transaction.originChain}
@@ -286,11 +203,6 @@ export const MostRecentPendingTransaction = () => {
           ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
           `}
         >
-          {/* <Transaction
-            bridgeTransaction={transaction}
-            transactionType={ActivityType.PENDING}
-            key={transaction.kappa}
-          /> */}
           <PendingTransaction
             connectedAddress={address as Address}
             originChain={originChain}
@@ -310,70 +222,6 @@ export const MostRecentPendingTransaction = () => {
   return null
 }
 
-const RecentlyBridgedPendingTransaction = ({
-  recentlyBridgedTransaction,
-}: {
-  recentlyBridgedTransaction: PendingBridgeTransaction
-}) => {
-  const [delayed, setDelayed] = useState<boolean>(false)
-  const {
-    originChain,
-    originToken,
-    originValue,
-    destinationChain,
-    destinationToken,
-    transactionHash,
-    timestamp,
-  }: PendingBridgeTransaction = recentlyBridgedTransaction
-
-  const handlePendingTransactionClick: () => void = useCallback(() => {
-    if (transactionHash) {
-      const explorerLink: string = getExplorerTxUrl({
-        chainId: originChain.id,
-        hash: transactionHash,
-      })
-      window.open(explorerLink, '_blank')
-    }
-  }, [transactionHash])
-
-  return (
-    <div
-      data-test-id="recently-bridged-pending-transaction"
-      className={`
-      grid grid-cols-10 bg-[#1B1B29]
-      py-3 px-2 text-sm text-white
-      rounded-md hover:cursor-pointer
-      `}
-      onClick={handlePendingTransactionClick}
-    >
-      <div className="flex col-span-4 my-auto">
-        <TransactionPayloadDetail
-          chain={originChain}
-          token={originToken}
-          tokenAmount={Number(originValue)}
-        />
-      </div>
-      <div className="col-span-4 my-auto">
-        <TransactionPayloadDetail chain={destinationChain} />
-      </div>
-      <div className="flex justify-end col-span-2 my-auto">
-        <TimeElapsed
-          startTime={timestamp}
-          bridgeOriginChain={originChain}
-          delayed={delayed}
-          setDelayed={setDelayed}
-        />
-      </div>
-
-      {delayed && (
-        <div className="text-[#FFD966] text-sm mt-2 whitespace-nowrap">
-          Confirmation taking longer than expected
-        </div>
-      )}
-    </div>
-  )
-}
-
 export const PendingTransactionAwaitingIndexing = () => {
   const { address } = useAccount()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
@@ -381,9 +229,6 @@ export const PendingTransactionAwaitingIndexing = () => {
     <>
       {pendingBridgeTransactions.map(
         (transaction: PendingBridgeTransaction) => (
-          // <RecentlyBridgedPendingTransaction
-          //   recentlyBridgedTransaction={transaction}
-          // />
           <PendingTransaction
             connectedAddress={address as Address}
             originChain={transaction.originChain}
@@ -435,12 +280,6 @@ export const ActivitySection = ({
   )
 }
 
-export enum ActivityType {
-  PENDING,
-  STUCK,
-  RECENT,
-}
-
 export const getTransactionExplorerLink = ({
   kappa,
   fromChainId,
@@ -451,134 +290,6 @@ export const getTransactionExplorerLink = ({
   toChainId: number
 }): string => {
   return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
-}
-
-export const Transaction = ({
-  connectedAddress,
-  bridgeTransaction,
-  transactionType,
-}: {
-  connectedAddress?: Address | string
-  bridgeTransaction: BridgeTransaction
-  transactionType: ActivityType
-}) => {
-  const [delayed, setDelayed] = useState<boolean>(false)
-  const {
-    fromInfo,
-    toInfo,
-    kappa,
-  }: { fromInfo?: PartialInfo; toInfo?: PartialInfo; kappa?: string } =
-    bridgeTransaction || {}
-
-  const {
-    address: destinationAddress,
-    chainID: originChainId,
-    destinationChainID: destinationChainId,
-    value: originRawValue,
-    formattedValue: originFormattedValue,
-    tokenAddress: originTokenAddress,
-    tokenSymbol: originTokenSymbol,
-    blockNumber: bridgeOriginBlockNumber,
-    time: bridgeOriginTime,
-    txnHash: originTxnHash,
-  }: PartialInfo = fromInfo || {}
-
-  const originChain: Chain = CHAINS_BY_ID[originChainId]
-  const originToken: Token = tokenAddressToToken(
-    originChainId,
-    originTokenAddress
-  )
-
-  const {
-    value: destinationRawValue,
-    formattedValue: destinationFormattedValue,
-    tokenAddress: destinationTokenAddress,
-    tokenSymbol: destinationTokenSymbol,
-    blockNumber: bridgeDestinationBlockNumber,
-    time: bridgeDestinationTime,
-  }: PartialInfo = toInfo || {}
-
-  const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-  const destinationToken: Token = tokenAddressToToken(
-    destinationChainId,
-    destinationTokenAddress
-  )
-
-  const handleTransactionClick: () => void = useCallback(() => {
-    if (kappa && originChainId && transactionType === ActivityType.RECENT) {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChainId,
-        toChainId: destinationChainId,
-      })
-      window.open(explorerLink, '_blank')
-    } else {
-      const explorerLink: string = getExplorerTxUrl({
-        chainId: originChainId,
-        hash: originTxnHash,
-      })
-      window.open(explorerLink, '_blank')
-    }
-  }, [kappa, originChainId, destinationChainId, transactionType])
-
-  const estimatedCompletionInSeconds: number =
-    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
-      1000 +
-    30 // Add 30 seconds to account for indexing
-
-  return (
-    <div data-test-id="transaction" className="flex flex-col">
-      <div
-        onClick={handleTransactionClick}
-        className={`
-        grid grid-cols-10 mt-auto py-3 px-2
-        text-sm text-white
-        items-end hover:cursor-pointer
-        ${
-          transactionType === ActivityType.RECENT && 'border-b border-[#565058]'
-        }
-        ${transactionType === ActivityType.PENDING && 'bg-[#1B1B29] rounded-md'}
-        `}
-      >
-        <div className="flex col-span-4 my-auto">
-          <TransactionPayloadDetail
-            chain={originChain}
-            token={originToken}
-            tokenAmount={originFormattedValue}
-          />
-        </div>
-        <div className="col-span-4 my-auto">
-          <TransactionPayloadDetail
-            chain={destinationChain}
-            token={destinationToken}
-            tokenAmount={destinationFormattedValue}
-          />
-        </div>
-        <div className="flex justify-end col-span-2 my-auto">
-          {transactionType === ActivityType.RECENT && (
-            <Completed
-              transactionCompletedTime={bridgeDestinationTime}
-              connectedAddress={connectedAddress}
-              destinationAddress={destinationAddress}
-            />
-          )}
-          {transactionType === ActivityType.PENDING && (
-            <TimeElapsed
-              startTime={bridgeOriginTime}
-              bridgeOriginChain={originChain}
-              delayed={delayed}
-              setDelayed={setDelayed}
-            />
-          )}
-        </div>
-        {delayed && (
-          <div className="text-[#FFD966] text-sm mt-2 whitespace-nowrap">
-            Confirmation taking longer than expected
-          </div>
-        )}
-      </div>
-    </div>
-  )
 }
 
 export const TimeElapsed = ({
@@ -656,23 +367,6 @@ export const TimeElapsed = ({
       {formattedMinutes}:{formattedSeconds} / {estimatedCompletionTime}
       <EtherscanIcon className="ml-1" />
     </div>
-  )
-}
-
-export const ExchangeRate = ({
-  originValue,
-  destinationValue,
-}: {
-  originValue: number
-  destinationValue: number
-}) => {
-  const exchangeRate: number = destinationValue / originValue
-  const formattedExchangeRate: string = exchangeRate.toFixed(4)
-  return (
-    <span data-test-id="exchange-rate">
-      <span className="text-[#C0BCC2]">{`1 : `}</span>
-      <span className="text-white">{formattedExchangeRate}</span>
-    </span>
   )
 }
 

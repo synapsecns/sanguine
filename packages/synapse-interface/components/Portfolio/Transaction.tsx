@@ -183,3 +183,35 @@ const TransactionStatusDetails = ({
     )
   }
 }
+
+// const handlePendingTransactionClick: () => void = useCallback(() => {
+//   if (transactionHash) {
+//     const explorerLink: string = getExplorerTxUrl({
+//       chainId: originChain.id,
+//       hash: transactionHash,
+//     })
+//     window.open(explorerLink, '_blank')
+//   }
+// }, [transactionHash])
+
+// const handleTransactionClick: () => void = useCallback(() => {
+//   if (kappa && originChainId && transactionType === ActivityType.RECENT) {
+//     const explorerLink: string = getTransactionExplorerLink({
+//       kappa,
+//       fromChainId: originChainId,
+//       toChainId: destinationChainId,
+//     })
+//     window.open(explorerLink, '_blank')
+//   } else {
+//     const explorerLink: string = getExplorerTxUrl({
+//       chainId: originChainId,
+//       hash: originTxnHash,
+//     })
+//     window.open(explorerLink, '_blank')
+//   }
+// }, [kappa, originChainId, destinationChainId, transactionType])
+
+// const estimatedCompletionInSeconds: number =
+//   (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
+//     1000 +
+//   30 // Add 30 seconds to account for indexing
