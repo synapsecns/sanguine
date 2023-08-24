@@ -171,8 +171,8 @@ func (j *testJaeger) purgeResources() {
 	wg.Add(len(resources))
 	for _, resource := range resources {
 		go func(resource *dockertest.Resource) {
-			defer wg.Done()
 			_ = j.pool.Purge(resource)
+			wg.Done()
 		}(resource)
 	}
 	wg.Wait()
