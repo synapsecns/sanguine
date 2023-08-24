@@ -95,7 +95,11 @@ import {
   FetchState,
   updateSingleTokenAllowance,
 } from '@/slices/portfolio/actions'
-import { addPendingBridgeTransaction } from '@/slices/bridge/actions'
+import {
+  addPendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+  removePendingBridgeTransaction,
+} from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -440,6 +444,18 @@ const StateManagedBridge = () => {
       expectedReceivedAmount: bridgeQuote.outputAmountString,
       slippage: bridgeQuote.exchangeRate,
     })
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    dispatch(
+      addPendingBridgeTransaction({
+        originChain: CHAINS_BY_ID[fromChainId],
+        originToken: fromToken,
+        originValue: fromValue,
+        destinationChain: CHAINS_BY_ID[toChainId],
+        destinationToken: toToken,
+        transactionHash: undefined,
+        timestamp: currentTimestamp,
+      })
+    )
     try {
       const wallet = await getWalletClient({
         chainId: fromChainId,
@@ -491,14 +507,9 @@ const StateManagedBridge = () => {
           slippage: bridgeQuote.exchangeRate,
         })
         dispatch(
-          addPendingBridgeTransaction({
-            originChain: CHAINS_BY_ID[fromChainId],
-            originToken: fromToken,
-            originValue: fromValue,
-            destinationChain: CHAINS_BY_ID[toChainId],
-            destinationToken: toToken,
+          updatePendingBridgeTransaction({
+            timestamp: currentTimestamp,
             transactionHash: tx,
-            timestamp: getTimeMinutesFromNow(0),
           })
         )
         dispatch(addBridgeTxHash(tx))
@@ -533,6 +544,7 @@ const StateManagedBridge = () => {
           address,
           errorCode: error.code,
         })
+        dispatch(removePendingBridgeTransaction(currentTimestamp))
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
@@ -541,6 +553,7 @@ const StateManagedBridge = () => {
         address,
         errorCode: error.code,
       })
+      dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
