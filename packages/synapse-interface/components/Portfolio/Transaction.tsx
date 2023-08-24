@@ -6,6 +6,7 @@ import {
   EstimatedDuration,
 } from './Activity'
 import { Address } from 'viem'
+import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 
 export enum TransactionType {
   PENDING,
@@ -30,7 +31,6 @@ export interface TransactionProps {
   destinationValue?: number
   startedTimestamp: number
   completedTimestamp?: number
-  estimatedDuration?: number
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
   transactionHash?: string
@@ -47,11 +47,14 @@ export const Transaction = ({
   destinationValue,
   startedTimestamp,
   completedTimestamp,
-  estimatedDuration,
   transactionStatus,
   transactionType,
   transactionHash,
 }: TransactionProps) => {
+  const estimatedCompletionInSeconds: number =
+    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
+    1000
+
   return (
     <div
       data-test-id="transaction"
@@ -73,7 +76,9 @@ export const Transaction = ({
       </div>
       <div className="ml-auto">
         {transactionType === TransactionType.PENDING ? (
-          <EstimatedDuration estimatedCompletionInSeconds={estimatedDuration} />
+          <EstimatedDuration
+            estimatedCompletionInSeconds={estimatedCompletionInSeconds}
+          />
         ) : (
           <Completed
             transactionCompletedTime={completedTimestamp}
@@ -111,6 +116,10 @@ export const PendingTransaction = ({
   const isPendingWalletAction: boolean = transactionHash ? false : true
   const isInitializing: boolean = isSubmitted ? false : true
 
+  const estimatedCompletionInSeconds: number =
+    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
+    1000
+
   useEffect(() => {
     if (isPendingWalletAction)
       setStatus(TransactionStatus.PENDING_WALLET_ACTION)
@@ -130,6 +139,7 @@ export const PendingTransaction = ({
         destinationToken={destinationToken}
         startedTimestamp={startedTimestamp}
         transactionType={TransactionType.PENDING}
+        estimatedDuration={estimatedCompletionInSeconds}
       />
       <TransactionStatusDetails transactionStatus={status} />
     </div>

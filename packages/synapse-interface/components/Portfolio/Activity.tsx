@@ -116,7 +116,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 blockNumber: bridgeOriginBlockNumber,
                 time: bridgeOriginTime,
                 txnHash: originTxnHash,
-              }: PartialInfo = transaction?.fromInfo
+              }: PartialInfo = transaction?.fromInfo || {}
 
               const originChain: Chain = CHAINS_BY_ID[originChainId]
               const originToken: Token = tokenAddressToToken(
@@ -130,7 +130,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 tokenSymbol: destinationTokenSymbol,
                 blockNumber: bridgeDestinationBlockNumber,
                 time: bridgeDestinationTime,
-              }: PartialInfo = transaction?.toInfo
+              }: PartialInfo = transaction?.toInfo || {}
 
               const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
               const destinationToken: Token = tokenAddressToToken(
@@ -185,7 +185,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   formattedValue: originFormattedValue,
                   tokenAddress: originTokenAddress,
                   time: bridgeOriginTime,
-                }: PartialInfo = transaction?.fromInfo
+                }: PartialInfo = transaction?.fromInfo || {}
 
                 const originChain: Chain = CHAINS_BY_ID[originChainId]
                 const originToken: Token = tokenAddressToToken(
@@ -196,7 +196,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   formattedValue: destinationFormattedValue,
                   tokenAddress: destinationTokenAddress,
                   time: bridgeDestinationTime,
-                }: PartialInfo = transaction?.toInfo
+                }: PartialInfo = transaction?.toInfo || {}
 
                 const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
                 const destinationToken: Token = tokenAddressToToken(
