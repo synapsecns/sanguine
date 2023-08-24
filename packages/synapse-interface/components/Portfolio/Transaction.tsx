@@ -118,6 +118,9 @@ export const PendingTransaction = ({
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
   const currentStatus: TransactionStatus = useMemo(() => {
+    console.log('transactionHash: ', transactionHash)
+    console.log('isSubmitted:', isSubmitted)
+
     if (!transactionHash && !isSubmitted)
       return TransactionStatus.PENDING_WALLET_ACTION
     if (transactionHash && !isSubmitted) return TransactionStatus.INITIALIZING

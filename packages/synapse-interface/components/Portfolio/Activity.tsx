@@ -155,6 +155,8 @@ export const MostRecentTransaction = () => {
   const {
     userPendingTransactions,
     userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
   const lastPendingBridgeTransaction: PendingBridgeTransaction =
@@ -167,6 +169,10 @@ export const MostRecentTransaction = () => {
     userHistoricalTransactions[0]
   const isLastHistoricalTransactionRecent: boolean =
     lastHistoricalTransaction?.toInfo?.time < recentTime
+
+  if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
+    return null
+  }
 
   if (lastPendingBridgeTransaction) {
     return (
