@@ -28,6 +28,10 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
+import {
+  Transaction as UpdatedTransaction,
+  TransactionType,
+} from './Transaction'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -95,7 +99,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
 
-      {address && !isLoading && hasHistoricalTransactions && (
+      {/* {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
             userHistoricalTransactions
@@ -108,6 +112,64 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   key={transaction.kappa}
                 />
               ))}
+          <ExplorerLink connectedAddress={address} />
+        </ActivitySection>
+      )} */}
+
+      {address && !isLoading && hasHistoricalTransactions && (
+        <ActivitySection title="Recent">
+          {userHistoricalTransactions &&
+            userHistoricalTransactions
+              // .slice(0, 7) //temporarily only show recent 5ß
+              .map((transaction: BridgeTransaction) => {
+                const {
+                  address: destinationAddress,
+                  chainID: originChainId,
+                  destinationChainID: destinationChainId,
+                  value: originRawValue,
+                  formattedValue: originFormattedValue,
+                  tokenAddress: originTokenAddress,
+                  tokenSymbol: originTokenSymbol,
+                  blockNumber: bridgeOriginBlockNumber,
+                  time: bridgeOriginTime,
+                  txnHash: originTxnHash,
+                }: PartialInfo = transaction?.fromInfo
+
+                const originChain: Chain = CHAINS_BY_ID[originChainId]
+                const originToken: Token = tokenAddressToToken(
+                  originChainId,
+                  originTokenAddress
+                )
+                const {
+                  value: destinationRawValue,
+                  formattedValue: destinationFormattedValue,
+                  tokenAddress: destinationTokenAddress,
+                  tokenSymbol: destinationTokenSymbol,
+                  blockNumber: bridgeDestinationBlockNumber,
+                  time: bridgeDestinationTime,
+                }: PartialInfo = transaction?.toInfo
+
+                const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
+                const destinationToken: Token = tokenAddressToToken(
+                  destinationChainId,
+                  destinationTokenAddress
+                )
+                return (
+                  <UpdatedTransaction
+                    connectedAddress={address}
+                    destinationAddress={destinationAddress as Address}
+                    originChain={originChain}
+                    originToken={originToken}
+                    originValue={originFormattedValue}
+                    destinationChain={destinationChain}
+                    destinationToken={destinationToken}
+                    startedTimestamp={bridgeOriginTime}
+                    completedTimestamp={bridgeDestinationTime}
+                    transactionType={TransactionType.HISTORICAL}
+                    key={transaction.kappa}
+                  />
+                )
+              })}
           <ExplorerLink connectedAddress={address} />
         </ActivitySection>
       )}

@@ -30,7 +30,7 @@ export interface TransactionProps {
   startedTimestamp: number
   completedTimestamp?: number
   estimatedDuration?: number
-  transactionStatus: TransactionStatus
+  transactionStatus?: TransactionStatus
   transactionType: TransactionType
 }
 

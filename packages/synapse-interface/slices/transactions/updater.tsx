@@ -25,7 +25,7 @@ import {
 } from './actions'
 import { useBridgeState } from '../bridge/hooks'
 import { BridgeState } from '../bridge/reducer'
-import { updateRecentBridgeTransactions } from '../bridge/actions'
+import { updatePendingBridgeTransactions } from '../bridge/actions'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -38,7 +38,7 @@ export default function Updater(): null {
     userHistoricalTransactions,
     userPendingTransactions,
   }: TransactionsState = useTransactionsState()
-  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
@@ -106,7 +106,7 @@ export default function Updater(): null {
   // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
   useEffect(() => {
     const matchingTransactionHashes = new Set(
-      recentBridgeTransactions
+      pendingBridgeTransactions
         .filter(
           (recentTx) =>
             (userPendingTransactions &&
@@ -126,13 +126,13 @@ export default function Updater(): null {
     if (matchingTransactionHashes.size === 0) {
       return
     } else {
-      const updatedRecentBridgeTransactions = recentBridgeTransactions.filter(
+      const updatedRecentBridgeTransactions = pendingBridgeTransactions.filter(
         (recentTx) => !matchingTransactionHashes.has(recentTx.transactionHash)
       )
-      dispatch(updateRecentBridgeTransactions(updatedRecentBridgeTransactions))
+      dispatch(updatePendingBridgeTransactions(updatedRecentBridgeTransactions))
     }
   }, [
-    recentBridgeTransactions,
+    pendingBridgeTransactions,
     userHistoricalTransactions,
     userPendingTransactions,
   ])
