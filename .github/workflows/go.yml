@@ -163,9 +163,9 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
-          max_attempts: 6
-          timeout_minutes: 15
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
+          max_attempts: 2
+          timeout_minutes: 20
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
