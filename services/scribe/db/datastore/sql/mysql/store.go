@@ -21,7 +21,7 @@ type Store struct {
 }
 
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
-var MaxIdleConns = 10
+var MaxIdleConns = 2048
 
 // MaxOpenConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxOpenConns = 2048
