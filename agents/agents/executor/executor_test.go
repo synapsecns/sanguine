@@ -188,6 +188,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
+	fmt.Println("OMNIIII", omniRPCClient.GetEndpoint(int(e.TestBackendOrigin.GetChainID()), 1))
+
 	_, err = exec.GetMerkleTree(chainID).Root(1)
 	e.NotNil(err)
 
@@ -211,6 +213,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		paddedRequest,
 		messageBytes,
 	)
+	fmt.Println("BASE MESSAGE TX HASH: ", tx.Hash())
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
