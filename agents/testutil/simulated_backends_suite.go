@@ -145,7 +145,8 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
 
 	// don't use metrics on ci for integration tests
-	useMetrics := core.GetEnvBool("CI", true)
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
 	metricsHandler := metrics.Null
 
 	if useMetrics {
