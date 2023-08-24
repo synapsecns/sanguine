@@ -125,7 +125,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			return nil, fmt.Errorf("error with omniRPCClient, could not create guard: %w", err)
 		}
 
-		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
+		chainRPCURL := omniRPCClient.GetDefaultEndpoint(int(domain.DomainID))
 		domainClient, err := evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return nil, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
@@ -165,6 +165,11 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 				return nil, fmt.Errorf("could not create light manager parser: %w", err)
 			}
 		}
+	}
+
+	_, ok := guard.domains[guard.summitDomainID]
+	if !ok {
+		return nil, fmt.Errorf("summit domain not set: %d", guard.summitDomainID)
 	}
 
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))

@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core"
 )
 
 // DisputeStatus is the dispute status interface.
@@ -48,7 +49,7 @@ func (s disputeStatus) FraudProver() common.Address {
 }
 
 func (s disputeStatus) DisputePtr() *big.Int {
-	return s.disputePtr
+	return core.CopyBigInt(s.disputePtr)
 }
 
 var _ DisputeStatus = disputeStatus{}

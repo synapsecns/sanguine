@@ -57,7 +57,6 @@ type AgentTree struct {
 	AgentAddress string `gorm:"column:agent_address;primaryKey"`
 	// BlockNumber is the block number that the agent tree was updated (on summit).
 	BlockNumber uint64 `gorm:"column:block_number"`
-	// TODO: Check compatibility with [][32]byte.
 	// Proof is the agent tree proof.
 	Proof json.RawMessage `gorm:"column:proof"`
 }

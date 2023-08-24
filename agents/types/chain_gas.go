@@ -40,8 +40,8 @@ func (g chainGas) Domain() uint32 {
 // ChainGassesToSnapGas converts a slice of ChainGas to a slice of big.Int.
 func ChainGassesToSnapGas(chainGasses []ChainGas) (snapGasses []*big.Int, err error) {
 	snapGasses = make([]*big.Int, len(chainGasses))
-	for i, chainGas := range chainGasses {
-		snapGas, err := EncodeChainGas(chainGas)
+	for i, cg := range chainGasses {
+		snapGas, err := EncodeChainGas(cg)
 		if err != nil {
 			return nil, err
 		}
