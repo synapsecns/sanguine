@@ -175,7 +175,7 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMEMLIMIT: 6GiB
+          GOMEMLIMIT: 3GiB
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
           GOPROXY: https://proxy.golang.org
