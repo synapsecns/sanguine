@@ -1,8 +1,8 @@
 package testutil
 
 import (
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
-	"os"
 	"sync"
 	"testing"
 
@@ -145,7 +145,7 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
 
 	// don't use metrics on ci for integration tests
-	useMetrics := os.Getenv("CI") != ""
+	useMetrics := core.GetEnvBool("CI", true)
 	metricsHandler := metrics.Null
 
 	if useMetrics {
@@ -167,7 +167,7 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 		coreConfig.DefaultCommit,
 		"contract",
 		coreConfig.DefaultDate,
-	), metrics.Jaeger)
+	), metricsHandler)
 	a.Require().Nil(err)
 }
 
