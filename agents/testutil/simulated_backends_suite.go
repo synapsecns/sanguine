@@ -147,7 +147,6 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	// don't use metrics on ci for integration tests
 	useMetrics := os.Getenv("CI") != ""
 	metricsHandler := metrics.Null
-	useMetrics = false
 
 	if useMetrics {
 		localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
