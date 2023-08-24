@@ -235,6 +235,8 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart u
 				continue
 			}
 			if configEnd != nil {
+				indexerConfig := indexer.GetIndexerConfig()
+				logger.ReportScribeState(indexerConfig.ChainID, endHeight, indexerConfig.Addresses, logger.BackfillCompleted)
 				return nil
 			}
 

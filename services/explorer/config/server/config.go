@@ -70,10 +70,10 @@ func (c *Config) IsValid() error {
 	case c.BridgeConfigChainID == 0:
 		return fmt.Errorf("bridge_config_chain_id, %w", config.ErrRequiredGlobalField)
 	case c.DBAddress == "":
-		return fmt.Errorf("db_address, suired global config field is empty")
+		return fmt.Errorf("db_address, %w", config.ErrRequiredGlobalField)
 	}
 	intSet := collection.Set[uint32]{}
-
+	fmt.Println("chains", c.Chains)
 	for _, chain := range c.Chains {
 		err := chain.IsValid()
 		if err != nil {
