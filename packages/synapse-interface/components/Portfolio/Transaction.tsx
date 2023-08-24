@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Chain, Token } from '@/utils/types'
 import {
   TransactionPayloadDetail,
@@ -88,6 +88,7 @@ export const Transaction = ({
 
 interface PendingTransactionProps extends TransactionProps {
   isSubmitted: boolean
+  isCompleted: boolean
 }
 
 export const PendingTransaction = ({
@@ -100,12 +101,22 @@ export const PendingTransaction = ({
   startedTimestamp,
   transactionHash,
   isSubmitted,
+  isCompleted = false,
 }: PendingTransactionProps) => {
   const [status, setStatus] = useState<TransactionStatus>(
-    TransactionStatus.PENDING_WALLET_ACTION
+    transactionHash ? TransactionStatus.PENDING : TransactionStatus.INITIALIZING
   )
+
   const isPendingWalletAction: boolean = transactionHash ? true : false
   const isInitializing: boolean = isSubmitted ? false : true
+
+  useEffect(() => {
+    if (isPendingWalletAction)
+      setStatus(TransactionStatus.PENDING_WALLET_ACTION)
+    else if (isInitializing) setStatus(TransactionStatus.INITIALIZING)
+    else if (transactionHash) setStatus(TransactionStatus.PENDING)
+    else if (isCompleted) setStatus(TransactionStatus.COMPLETED)
+  }, [isPendingWalletAction, isInitializing, transactionHash, isCompleted])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
@@ -119,7 +130,7 @@ export const PendingTransaction = ({
         startedTimestamp={startedTimestamp}
         transactionType={TransactionType.PENDING}
       />
-      {/* <TransactionStatusDetails /> */}
+      <TransactionStatusDetails transactionStatus={status} />
     </div>
   )
 }
