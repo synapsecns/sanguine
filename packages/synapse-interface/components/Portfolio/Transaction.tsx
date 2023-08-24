@@ -136,19 +136,25 @@ const TransactionStatusDetails = ({
         <button>Open wallet</button>
       </div>
     )
-  } else if (transactionStatus === TransactionStatus.INITIALIZING) {
+  }
+
+  if (transactionStatus === TransactionStatus.INITIALIZING) {
     return (
       <div data-test-id="initializing-status">
         <div>Initializing...</div>
       </div>
     )
-  } else if (transactionStatus === TransactionStatus.PENDING) {
+  }
+
+  if (transactionStatus === TransactionStatus.PENDING) {
     return (
       <div data-test-id="pending-status">
         <div>Sent</div>
       </div>
     )
-  } else if (transactionStatus === TransactionStatus.COMPLETED) {
+  }
+
+  if (transactionStatus === TransactionStatus.COMPLETED) {
     return (
       <div data-test-id="completed-status">
         <div>Confirmed on Synapse Explorer</div>
