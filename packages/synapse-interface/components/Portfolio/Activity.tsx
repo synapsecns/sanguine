@@ -85,21 +85,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {/* {address && !isLoading && hasPendingTransactions && (
-        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
-          <PendingTransactionAwaitingIndexing />
-          {userPendingTransactions &&
-            userPendingTransactions.map((transaction: BridgeTransaction) => (
-              <Transaction
-                connectedAddress={address}
-                bridgeTransaction={transaction}
-                transactionType={ActivityType.PENDING}
-                key={transaction.kappa}
-              />
-            ))}
-        </ActivitySection>
-      )} */}
-
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
           <PendingTransactionAwaitingIndexing />
@@ -146,6 +131,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   destinationChain={destinationChain}
                   destinationToken={destinationToken}
                   startedTimestamp={bridgeOriginTime}
+                  transactionHash={originTxnHash}
                   isSubmitted={originTxnHash ? true : false}
                   isCompleted={false}
                   transactionType={TransactionType.PENDING}
@@ -154,6 +140,21 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             })}
         </ActivitySection>
       )}
+
+      {/* {address && !isLoading && hasPendingTransactions && (
+        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
+          <PendingTransactionAwaitingIndexing />
+          {userPendingTransactions &&
+            userPendingTransactions.map((transaction: BridgeTransaction) => (
+              <Transaction
+                connectedAddress={address}
+                bridgeTransaction={transaction}
+                transactionType={ActivityType.PENDING}
+                key={transaction.kappa}
+              />
+            ))}
+        </ActivitySection>
+      )} */}
 
       {/* {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
@@ -256,13 +257,27 @@ export const MostRecentPendingTransaction = () => {
             destinationChain={transaction.destinationChain}
             destinationToken={transaction.destinationToken}
             startedTimestamp={transaction.timestamp}
+            transactionHash={transaction.transactionHash}
             transactionType={TransactionType.PENDING}
+            isSubmitted={transaction.isSubmitted}
           />
         </div>
       </div>
     )
   } else if (userPendingTransactions && userPendingTransactions.length > 0) {
     transaction = userPendingTransactions[0]
+    const { fromInfo, toInfo } = transaction || {}
+    const originChain: Chain = CHAINS_BY_ID[fromInfo?.chainID]
+    const originToken: Token = tokenAddressToToken(
+      fromInfo?.chainID,
+      fromInfo?.tokenAddress
+    )
+
+    const destinationChain: Chain = CHAINS_BY_ID[toInfo?.chainID]
+    const destinationToken: Token = tokenAddressToToken(
+      toInfo?.chainID,
+      toInfo?.tokenAddress
+    )
     return (
       <div className="relative mt-3">
         <div
@@ -271,10 +286,22 @@ export const MostRecentPendingTransaction = () => {
           ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
           `}
         >
-          <Transaction
+          {/* <Transaction
             bridgeTransaction={transaction}
             transactionType={ActivityType.PENDING}
             key={transaction.kappa}
+          /> */}
+          <PendingTransaction
+            connectedAddress={address as Address}
+            originChain={originChain}
+            originToken={originToken}
+            originValue={fromInfo?.originFormattedValue}
+            destinationChain={destinationChain}
+            destinationToken={destinationToken}
+            startedTimestamp={fromInfo?.timestamp}
+            transactionHash={fromInfo.txnHash}
+            transactionType={TransactionType.PENDING}
+            isSubmitted={fromInfo?.txnHash ? true : false}
           />
         </div>
       </div>
@@ -364,6 +391,7 @@ export const PendingTransactionAwaitingIndexing = () => {
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain}
             destinationToken={transaction.destinationToken}
+            isSubmitted={transaction.isSubmitted}
             startedTimestamp={transaction.timestamp}
             transactionType={TransactionType.PENDING}
           />

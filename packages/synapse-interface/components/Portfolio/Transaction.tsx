@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Chain, Token } from '@/utils/types'
 import {
   TransactionPayloadDetail,
@@ -113,24 +113,16 @@ export const PendingTransaction = ({
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
-  const [status, setStatus] = useState<TransactionStatus>(
-    transactionHash ? TransactionStatus.PENDING : TransactionStatus.INITIALIZING
-  )
-
-  const isPendingWalletAction: boolean = transactionHash ? false : true
-  const isInitializing: boolean = isSubmitted ? false : true
+  const currentStatus: TransactionStatus = useMemo(() => {
+    if (!transactionHash && !isSubmitted)
+      return TransactionStatus.PENDING_WALLET_ACTION
+    if (transactionHash && !isSubmitted) return TransactionStatus.INITIALIZING
+    if (transactionHash && isSubmitted) return TransactionStatus.PENDING
+  }, [transactionHash, isSubmitted])
 
   const estimatedCompletionInSeconds: number =
     (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
     1000
-
-  useEffect(() => {
-    if (isPendingWalletAction)
-      setStatus(TransactionStatus.PENDING_WALLET_ACTION)
-    else if (isInitializing) setStatus(TransactionStatus.INITIALIZING)
-    else if (transactionHash) setStatus(TransactionStatus.PENDING)
-    else if (isCompleted) setStatus(TransactionStatus.COMPLETED)
-  }, [isPendingWalletAction, isInitializing, transactionHash, isCompleted])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
@@ -145,7 +137,7 @@ export const PendingTransaction = ({
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
       />
-      <TransactionStatusDetails transactionStatus={status} />
+      <TransactionStatusDetails transactionStatus={currentStatus} />
     </div>
   )
 }

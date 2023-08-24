@@ -37,13 +37,14 @@ export default function Updater(): null {
           hash: hash as Address,
         })
 
-        await dispatch(
-          updatePendingBridgeTransaction({
-            timestamp: newestTransaction.timestamp,
-            transactionHash: hash,
-            isSubmitted: true,
-          })
-        )
+        resolvedTransaction &&
+          (await dispatch(
+            updatePendingBridgeTransaction({
+              timestamp: newestTransaction.timestamp,
+              transactionHash: hash,
+              isSubmitted: true,
+            })
+          ))
 
         await dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
