@@ -175,7 +175,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	require.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
 
 	t.Cleanup(func() {
-		fmt.Println("")
 		select {
 		case <-ctx.Done():
 			_ = pool.Purge(resource)
