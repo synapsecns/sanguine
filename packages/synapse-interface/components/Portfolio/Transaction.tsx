@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Chain, Token } from '@/utils/types'
 import {
   TransactionPayloadDetail,
@@ -102,6 +103,9 @@ export const PendingTransaction = ({
   transactionHash,
   isSubmitted,
 }: PendingTransactionProps) => {
+  const [status, setStatus] = useState<TransactionStatus>(
+    TransactionStatus.PENDING_WALLET_ACTION
+  )
   const isPendingWalletAction: boolean = transactionHash ? true : false
   const isInitializing: boolean = isSubmitted ? false : true
 
@@ -117,6 +121,7 @@ export const PendingTransaction = ({
         startedTimestamp={startedTimestamp}
         transactionType={TransactionType.PENDING}
       />
+      {/* <TransactionStatusDetails /> */}
     </div>
   )
 }
