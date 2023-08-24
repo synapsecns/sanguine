@@ -1,6 +1,7 @@
 import { useAppDispatch } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
+import { MostRecentTransaction } from './Activity'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ export const PortfolioTabManager = () => {
           handleTabChange={handleTabChange}
         />
       </div>
+      <MostRecentTransaction />
     </div>
   )
 }

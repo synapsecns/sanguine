@@ -53,9 +53,13 @@ export const Transaction = ({
   transactionType,
   transactionHash,
 }: TransactionProps) => {
-  const estimatedCompletionInSeconds: number =
-    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
-    1000
+  const estimatedCompletionInSeconds: number = useMemo(() => {
+    return originChain
+      ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+          originChain.blockTime) /
+          1000
+      : null
+  }, [originChain])
 
   return (
     <div
@@ -120,9 +124,13 @@ export const PendingTransaction = ({
     if (transactionHash && isSubmitted) return TransactionStatus.PENDING
   }, [transactionHash, isSubmitted])
 
-  const estimatedCompletionInSeconds: number =
-    (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
-    1000
+  const estimatedCompletionInSeconds: number = useMemo(() => {
+    return originChain
+      ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+          originChain.blockTime) /
+          1000
+      : null
+  }, [originChain])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
