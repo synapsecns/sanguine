@@ -163,6 +163,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                     originValue={originFormattedValue}
                     destinationChain={destinationChain}
                     destinationToken={destinationToken}
+                    destinationValue={destinationFormattedValue}
                     startedTimestamp={bridgeOriginTime}
                     completedTimestamp={bridgeDestinationTime}
                     transactionType={TransactionType.HISTORICAL}

@@ -50,8 +50,11 @@ export const Transaction = ({
   transactionType,
 }: TransactionProps) => {
   return (
-    <div data-test-id="transaction" className="flex flex-row">
-      <div className="flex">
+    <div
+      data-test-id="transaction"
+      className="flex flex-row p-3 text-[#C2C2D6]"
+    >
+      <div className="flex border-r border-r-[#252537] px-2">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
@@ -59,7 +62,7 @@ export const Transaction = ({
           tokenAmount={originValue}
         />
       </div>
-      <div>
+      <div className="px-2">
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -67,7 +70,7 @@ export const Transaction = ({
           tokenAmount={destinationValue}
         />
       </div>
-      <div>
+      <div className="ml-auto">
         {transactionType === TransactionType.PENDING ? (
           <EstimatedDuration estimatedCompletionInSeconds={estimatedDuration} />
         ) : (
