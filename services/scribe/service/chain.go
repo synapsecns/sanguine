@@ -236,7 +236,7 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart u
 				if indexer.RefreshRate() > maxBackoff {
 					timeout = time.Duration(indexer.RefreshRate()) * time.Second
 				}
-				logger.ReportIndexerError(fmt.Errorf("error indexing, timeout %v", timeout.Seconds()), indexer.GetIndexerConfig(), logger.BackfillIndexerError)
+				logger.ReportIndexerError(fmt.Errorf("error indexing, timeout %v, %w", timeout.Seconds(), err), indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 				continue
 			}
 			if configEnd != nil {
