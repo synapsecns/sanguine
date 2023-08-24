@@ -157,30 +157,16 @@ export const MostRecentTransaction = () => {
     userHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
 
-  const recentTime: number = getTimeMinutesBeforeNow(10)
-
   const lastPendingBridgeTransaction: PendingBridgeTransaction =
     pendingBridgeTransactions[0]
+
   const lastPendingTransaction: BridgeTransaction = userPendingTransactions[0]
+
+  const recentTime: number = getTimeMinutesBeforeNow(10)
   const lastHistoricalTransaction: BridgeTransaction =
     userHistoricalTransactions[0]
   const isLastHistoricalTransactionRecent: boolean =
     lastHistoricalTransaction?.toInfo?.time < recentTime
-
-  const hasPendingBridgeTransactions: boolean = useMemo(() => {
-    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0)
-      return true
-  }, [pendingBridgeTransactions])
-
-  const userHasPendingTransactions: boolean = useMemo(() => {
-    if (userPendingTransactions && userPendingTransactions.length > 0)
-      return true
-  }, [userPendingTransactions])
-
-  const userHasHistoricalTransactions: boolean = useMemo(() => {
-    if (userHistoricalTransactions && userHistoricalTransactions.length > 0)
-      return true
-  }, [userHistoricalTransactions])
 
   if (lastPendingBridgeTransaction) {
     return (
@@ -200,6 +186,35 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastPendingTransaction) {
+    return (
+      <PendingTransaction
+        connectedAddress={address as Address}
+        startedTimestamp={lastPendingTransaction?.fromInfo?.time}
+        transactionHash={lastPendingTransaction?.fromInfo?.txnHash}
+        isSubmitted={lastPendingTransaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={lastPendingTransaction?.toInfo?.time ? true : false}
+        transactionType={TransactionType.PENDING}
+        originValue={lastPendingTransaction?.fromInfo?.formattedValue}
+        originChain={CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.chainID]}
+        destinationChain={
+          CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.destinationChainID]
+        }
+        originToken={tokenAddressToToken(
+          lastPendingTransaction?.fromInfo?.chainID,
+          lastPendingTransaction?.fromInfo?.tokenAddress
+        )}
+        destinationToken={tokenAddressToToken(
+          lastPendingTransaction?.toInfo?.chainID,
+          lastPendingTransaction?.toInfo?.tokenAddress
+        )}
+        destinationAddress={
+          lastPendingTransaction?.fromInfo?.address as Address
+        }
+      />
+    )
+  }
+
+  if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
     return (
       <PendingTransaction
         connectedAddress={address as Address}
