@@ -51,11 +51,12 @@ func (s Store) UpdateDisputeProcessedStatus(
 	disputeMask := Dispute{
 		DisputeProcessedStatus: agentTypes.Opened,
 	}
-	if guardAddress != nil {
+	switch {
+	case guardAddress != nil:
 		disputeMask.GuardAddress = guardAddress.String()
-	} else if notaryAddress != nil {
+	case notaryAddress != nil:
 		disputeMask.NotaryAddress = notaryAddress.String()
-	} else {
+	default:
 		return fmt.Errorf("guardAddress or notaryAddress must be set")
 	}
 

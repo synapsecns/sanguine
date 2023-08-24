@@ -76,12 +76,7 @@ func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (types.Snapsho
 func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) {
 	switch {
 	case e.isSnapshotAcceptedEvent(log, chainID):
-		wrappedSnapshot, err := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse snapshot: %w", err)
-		}
-
-		return wrappedSnapshot.Snapshot, nil
+		return e.logToSnapshot(log, chainID)
 	case e.isSentEvent(log, chainID):
 		return e.logToMessage(log, chainID)
 	case e.isAttestationAcceptedEvent(log, chainID):

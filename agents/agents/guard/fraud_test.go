@@ -1,6 +1,7 @@
 package guard_test
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -71,7 +72,11 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 	go scribe.Start(g.GetTestContext())
 	//nolint:wrapcheck
 	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
-	return guard, scribeClient.ScribeClient, err
+	if err != nil {
+		return nil, scribeClient.ScribeClient, fmt.Errorf("could not create guard: %w", err)
+	}
+
+	return guard, scribeClient.ScribeClient, nil
 }
 
 func (g GuardSuite) bumpBackends() {
@@ -732,6 +737,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	})
 }
 
+//nolint:maintidx
 func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	testDone := false
 	defer func() {
