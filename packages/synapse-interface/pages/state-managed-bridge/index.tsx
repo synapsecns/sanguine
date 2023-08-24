@@ -455,6 +455,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken,
         transactionHash: undefined,
         timestamp: currentTimestamp,
+        isSubmitted: false,
       })
     )
     try {
@@ -513,6 +514,7 @@ const StateManagedBridge = () => {
           updatePendingBridgeTransaction({
             timestamp: currentTimestamp,
             transactionHash: tx,
+            isSubmitted: false,
           })
         )
         dispatch(addBridgeTxHash(tx))

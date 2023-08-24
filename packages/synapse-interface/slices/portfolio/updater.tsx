@@ -8,7 +8,10 @@ import { TransactionsState } from '../transactions/reducer'
 import { BridgeState } from '../bridge/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
 import { useAccount } from 'wagmi'
-import { PendingBridgeTransaction } from '../bridge/actions'
+import {
+  PendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+} from '../bridge/actions'
 import { BridgeTransaction } from '../api/generated'
 
 export default function Updater(): null {
@@ -33,6 +36,14 @@ export default function Updater(): null {
         const resolvedTransaction = await waitForTransaction({
           hash: hash as Address,
         })
+
+        await dispatch(
+          updatePendingBridgeTransaction({
+            timestamp: newestTransaction.timestamp,
+            transactionHash: hash,
+            isSubmitted: true,
+          })
+        )
 
         await dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
