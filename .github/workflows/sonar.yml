@@ -1,4 +1,4 @@
-name: Build
+name: SonarCloud
 on:
   push:
     branches:
@@ -19,7 +19,7 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    needs: cancel-others # not strictly true, but this can prevent others from building up too quickly/cancel-outdated is fast
+    needs: cancel-outdated # not strictly true, but this can prevent others from building up too quickly/cancel-outdated is fast
     steps:
       - uses: actions/checkout@v3
         with:
