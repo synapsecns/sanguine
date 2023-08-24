@@ -1,5 +1,10 @@
 import { Chain, Token } from '@/utils/types'
-import { TransactionPayloadDetail, Completed } from './Activity'
+import {
+  TransactionPayloadDetail,
+  Completed,
+  EstimatedDuration,
+} from './Activity'
+import { Address } from 'viem'
 
 export enum TransactionType {
   PENDING,
@@ -14,6 +19,8 @@ export enum TransactionStatus {
 }
 
 export interface TransactionProps {
+  connectedAddress: Address
+  destinationAddress: Address
   originChain: Chain
   originToken: Token
   originValue: number
@@ -28,6 +35,8 @@ export interface TransactionProps {
 }
 
 export const Transaction = ({
+  connectedAddress,
+  destinationAddress,
   originChain,
   originToken,
   originValue,
@@ -60,9 +69,13 @@ export const Transaction = ({
       </div>
       <div>
         {transactionType === TransactionType.PENDING ? (
-
-        ): (
-          // <Completed />
+          <EstimatedDuration estimatedCompletionInSeconds={estimatedDuration} />
+        ) : (
+          <Completed
+            transactionCompletedTime={completedTimestamp}
+            connectedAddress={connectedAddress}
+            destinationAddress={destinationAddress}
+          />
         )}
       </div>
     </div>
