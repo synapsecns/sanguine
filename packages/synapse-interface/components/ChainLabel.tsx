@@ -6,7 +6,7 @@ import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 
 export const ChainLabel = ({
   isOrigin,
@@ -121,7 +121,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
       <Image
         alt="chain image"
         src={chain.chainImg}
-        className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
+        className="w-5 h-5 my-1 mr-1 rounded-full opacity-80"
       />
       <div className="hidden md:inline-block lg:inline-block">
         <div className="mr-2 text-sm text-white">

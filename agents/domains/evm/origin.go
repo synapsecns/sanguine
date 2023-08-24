@@ -3,14 +3,13 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/chain"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 )
 
@@ -55,40 +54,6 @@ func (o originContract) IsValidState(ctx context.Context, statePayload []byte) (
 	}
 
 	return isValid, nil
-}
-
-func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error) {
-	rangeFilter := NewRangeFilter(o.contract.Address(), o.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
-
-	// blocks until done `
-	err = rangeFilter.Start(ctx)
-	if err != nil {
-		return []types.Message{}, fmt.Errorf("could not filter: %w", err)
-	}
-
-	filteredLogs, err := rangeFilter.Drain(ctx)
-	if err != nil {
-		return []types.Message{}, fmt.Errorf("could not drain queue: %w", err)
-	}
-
-	for _, log := range filteredLogs {
-		logType, ok := o.contract.Parser().EventType(log)
-		if !ok {
-			continue
-		}
-
-		if logType == origin.SentEvent {
-			sentEvents, ok := o.contract.Parser().ParseSent(log)
-			// TODO: this should never happen. Maybe we should return an error here?
-			if !ok {
-				continue
-			}
-
-			messages = append(messages, sentEvents)
-		}
-	}
-
-	return messages, nil
 }
 
 func (o originContract) SuggestLatestState(ctx context.Context) (types.State, error) {

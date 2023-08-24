@@ -3,7 +3,6 @@
 ## TODO:
  - add readme describing explorer ui
  - add integration tests
- - convert to typescript
 
 # Getting Started with Create React App
 

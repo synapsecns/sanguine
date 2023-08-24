@@ -2,6 +2,7 @@ package anvil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -16,7 +17,8 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/processlog"
@@ -64,22 +66,20 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	pool.MaxWait = args.maxWait
 	if err != nil {
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 
 	commandArgs, err := args.Build()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
-		// Note: https://github.com/foundry-rs/foundry/commit/6e041f9751efa6b75420689b862df05b0934022b introduces a breaking change with regards to
-		// eth_BsendTransaction. The commit changes the way tx fields are detected. This will be fixed (on the anvil or ethergo sides) in a future version.
-		Tag: "nightly-7398b65e831f2339d1d0a0bb05ade799e4f9d01e",
-		Cmd: []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
+		Tag:        "latest",
+		Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
 		},
@@ -92,7 +92,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 			config.RestartPolicy = *args.restartPolicy
 		}
 	})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
@@ -110,10 +110,16 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		}
 	}()
 
+	otterscanMessage := ""
+	if args.enableOtterscan {
+		otterAddress := setupOtterscan(ctx, t, pool, resource, args)
+		otterscanMessage = fmt.Sprintf("otterscan is running at %s", otterAddress)
+	}
+
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	assert.Nil(t, resource.Expire(args.expirySeconds))
+	require.Nil(t, resource.Expire(args.expirySeconds))
 
 	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
 
@@ -123,14 +129,20 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		if err != nil {
 			return fmt.Errorf("failed to connect")
 		}
-		chainID, err = rpcClient.ChainID(ctx)
+
+		res, err := rpcClient.ChainID(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get chain id: %w", err)
 		}
+
+		chainID = core.CopyBigInt(res)
+
 		return nil
 	}); err != nil {
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
+
+	require.NotNil(t, chainID)
 
 	chainConfig := args.GetHardfork().ToChainConfig(chainID)
 
@@ -138,7 +150,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		RPCUrl:  []string{address},
 		ChainID: int(chainConfig.ChainID.Int64()),
 	})
-	assert.Nilf(t, err, "failed to create chain for chain id %s: %v", chainID, err)
+	require.Nilf(t, err, "failed to create chain for chain id %s: %v", chainID, err)
 
 	chn.SetChainConfig(chainConfig)
 
@@ -146,11 +158,11 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	case <-ctx.Done():
 		t.Errorf("context canceled before anvil node started")
 	case logInfo := <-logInfoChan:
-		logger.Warnf("started anvil node for chain %s as container %s. Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		logger.Warnf("started anvil node for chain %s as container %s. %s Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), otterscanMessage, logInfo.LogDir())
 	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	backend := Backend{
 		Backend:     baseBackend,
@@ -160,7 +172,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}
 
 	err = backend.storeWallets(args)
-	assert.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
+	require.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
 
 	go func() {
 		<-ctx.Done()
@@ -168,6 +180,65 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}()
 
 	return &backend
+}
+
+func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
+	tb.Helper()
+
+	runOptions := &dockertest.RunOptions{
+		Repository: "otterscan/otterscan",
+		Tag:        "latest",
+		Env: []string{
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+		},
+		Labels: map[string]string{
+			"test-id": uuid.New().String(),
+		},
+		ExposedPorts: []string{"5100"},
+		Platform:     "linux/amd64", // otterscan *oficially* only supports linux/amd64, but this works fine.
+	}
+
+	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+		config.AutoRemove = args.autoremove
+		if args.restartPolicy != nil {
+			config.RestartPolicy = *args.restartPolicy
+		}
+	})
+	// since this is ran in a gofunc, context cancelation errors expected during pull, etc
+	if !errors.Is(err, context.Canceled) {
+		require.Nil(tb, err)
+	}
+
+	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
+	// containers should be removed on their own, but this is a safety net.
+	// to prevent old containers from piling up, we set a timeout to remove the container.
+	require.Nil(tb, resource.Expire(args.expirySeconds))
+
+	logInfoChan := make(chan processlog.LogMetadata)
+	go func() {
+		defer close(logInfoChan)
+		err = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithResource(resource), dockerutil.WithPool(pool), dockerutil.WithProcessLogOptions(args.processOptions...), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
+			select {
+			case <-ctx.Done():
+				return
+			case logInfoChan <- metadata:
+			}
+		}))
+
+		if ctx.Err() != nil {
+			logger.Warn(err)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		tb.Errorf("context canceled before anvil node started")
+	case logInfo := <-logInfoChan:
+		// debug level stuff
+		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+	}
+	return ""
 }
 
 var logger = log.Logger("anvil-docker")
@@ -198,13 +269,13 @@ func walletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
 	password := gofakeit.Password(true, true, true, false, false, 10)
 
 	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
-	assert.Nil(tb, err)
+	require.Nil(tb, err)
 
 	data, err := os.ReadFile(acct.URL.Path)
-	assert.Nil(tb, err)
+	require.Nil(tb, err)
 
 	key, err := keystore.DecryptKey(data, password)
-	assert.Nil(tb, err)
+	require.Nil(tb, err)
 	return key
 }
 
@@ -216,7 +287,7 @@ func (f *Backend) ChainConfig() *params.ChainConfig {
 // Signer gets the signer for the chain.
 func (f *Backend) Signer() types.Signer {
 	latestBlock, err := f.BlockNumber(f.Context())
-	assert.Nil(f.T(), err)
+	require.Nil(f.T(), err)
 
 	return types.MakeSigner(f.ChainConfig(), new(big.Int).SetUint64(latestBlock))
 }
@@ -227,13 +298,13 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	defer cancel()
 
 	anvilClient, err := Dial(ctx, f.RPCAddress())
-	assert.Nilf(f.T(), err, "failed to dial anvil client on chain %d: %v", f.GetChainID(), err)
+	require.Nilf(f.T(), err, "failed to dial anvil client on chain %d: %v", f.GetChainID(), err)
 
 	unlocker := f.fundingMux.Lock(address)
 	defer unlocker.Unlock()
 
 	prevBalance, err := f.Backend.BalanceAt(ctx, address, nil)
-	assert.Nil(f.T(), err)
+	require.Nil(f.T(), err)
 
 	newBal := new(big.Int).Add(prevBalance, &amount)
 
@@ -248,13 +319,13 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 
 	// TODO: this may cause issues when newBal overflows uint64
 	err = anvilClient.SetBalance(ctx, address, newBal.Uint64())
-	assert.Nil(f.T(), err)
+	require.Nil(f.T(), err)
 }
 
 // WaitForConfirmation checks confirmation if the transaction is signed.
 // nolint: cyclop
 func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
-	assert.NotNil(f.T(), tx, "tx is nil")
+	require.NotNil(f.T(), tx, "tx is nil")
 	v, r, s := tx.RawSignatureValues()
 	isUnsigned := isZero(v) && isZero(r) && isZero(s)
 	if isUnsigned {
@@ -302,10 +373,10 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	}
 
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
-	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
+	require.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasPrice, err = f.SuggestGasPrice(ctx)
-	assert.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
+	require.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasLimit = gasLimit
 
@@ -329,14 +400,14 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	f.warnImpersonation()
 
 	anvilClient, err := Dial(ctx, f.RPCAddress())
-	assert.Nilf(f.T(), err, "could not dial anvil client rpc at %s for chain %d: %v", f.RPCAddress(), f.GetChainID(), err)
+	require.Nilf(f.T(), err, "could not dial anvil client rpc at %s for chain %d: %v", f.RPCAddress(), f.GetChainID(), err)
 
 	err = anvilClient.ImpersonateAccount(ctx, address)
-	assert.Nilf(f.T(), err, "could not impersonate account %s for chain %d: %v", address.String(), f.GetChainID(), err)
+	require.Nilf(f.T(), err, "could not impersonate account %s for chain %d: %v", address.String(), f.GetChainID(), err)
 
 	defer func() {
 		err = anvilClient.StopImpersonatingAccount(ctx, address)
-		assert.Nilf(f.T(), err, "could not stop impersonating account %s for chain %d: %v", address.String(), f.GetChainID(), err)
+		require.Nilf(f.T(), err, "could not stop impersonating account %s for chain %d: %v", address.String(), f.GetChainID(), err)
 	}()
 
 	tx := transact(&bind.TransactOpts{
@@ -347,8 +418,9 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 		NoSend:   true,
 	})
 
+	// TODO: test both legacy and dynamic tx types
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
-	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
+	require.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 
 	return nil
 }

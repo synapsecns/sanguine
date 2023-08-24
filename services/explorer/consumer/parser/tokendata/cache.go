@@ -22,6 +22,8 @@ type Service interface {
 	GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error)
 	// GetPoolTokenData attempts to get pool token data from the cache otherwise its fetched from the erc20 interface
 	GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error)
+	// GetCCTPTokenData attempts to get the token symbol from the cctp contract
+	GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error)
 }
 
 const cacheSize = 3000
@@ -53,6 +55,7 @@ func NewTokenDataService(service fetcher.Service, tokenSymbolToIDs map[string]st
 	}, nil
 }
 
+// GetTokenData attempts to get token data from the cache otherwise it is fetched from the bridge config.
 func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
 	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 	if data, ok := t.tokenCache.Get(key); ok {
@@ -69,6 +72,7 @@ func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32,
 	return tokenData, nil
 }
 
+// GetPoolTokenData attempts to get pool token data from the cache otherwise it is fetched from the erc20 interface for that token.
 func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
 	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 	if data, ok := t.tokenCache.Get(key); ok {
@@ -76,6 +80,23 @@ func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uin
 	}
 
 	tokenData, err := t.retrievePoolTokenData(ctx, token, swapService)
+	if err != nil {
+		return nil, fmt.Errorf("could not get token data: %w", err)
+	}
+
+	t.tokenCache.Add(key, tokenData)
+
+	return tokenData, nil
+}
+
+// GetCCTPTokenData attempts to get cctp token data from the cache otherwise it is fetched using the cctp ref.
+func (t *tokenDataServiceImpl) GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error) {
+	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
+	if data, ok := t.tokenCache.Get(key); ok {
+		return data, nil
+	}
+
+	tokenData, err := t.retrieveCCTPTokenData(ctx, token, cctpService)
 	if err != nil {
 		return nil, fmt.Errorf("could not get token data: %w", err)
 	}
@@ -105,7 +126,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.decimals = tokenData.TokenDecimals
 
 			return nil
-		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	g.Go(func() error {
@@ -119,7 +140,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.tokenID = *nullableTokenID
 
 			return nil
-		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	err := g.Wait()
@@ -184,6 +205,32 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 	if err != nil {
 		return nil, fmt.Errorf("could not get pool token data: %w", err)
 	}
+
+	return res, nil
+}
+
+func (t *tokenDataServiceImpl) retrieveCCTPTokenData(parentCtx context.Context, tokenAddress common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error) {
+	res := immutableTokenImpl{}
+
+	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
+	defer cancel()
+	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
+		symbol, err := cctpService.GetTokenSymbol(ctx, tokenAddress)
+		if err != nil {
+			return fmt.Errorf("could not get cctp token: %w", err)
+		}
+		if strings.Contains(strings.ToLower(*symbol), "usdc") {
+			*symbol = "usdc"
+		}
+		res.tokenID = t.tokenSymbolToIDs[strings.ToLower(*symbol)]
+		res.decimals = 6 // TODO, as cctp bridging matures, retrieve this data from on chain somehow.
+
+		return nil
+	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+	if err != nil {
+		return nil, fmt.Errorf("could not get token data: %w", err)
+	}
+	res.tokenAddress = tokenAddress.String()
 
 	return res, nil
 }

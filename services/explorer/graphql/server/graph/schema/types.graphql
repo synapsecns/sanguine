@@ -27,6 +27,20 @@ type PartialInfo {
   time:           Int
   formattedTime: String
 }
+
+enum BridgeTxType {
+  ORIGIN
+  DESTINATION
+}
+"""
+BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
+"""
+type BridgeWatcherTx {
+  bridgeTx: PartialInfo
+  pending:      Boolean
+  type:  BridgeTxType
+  kappa:        String
+}
 """
 DateResult is a given statistic for a given date.
 """

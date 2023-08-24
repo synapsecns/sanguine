@@ -8,6 +8,7 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
 import { sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const ChainSlideOver = ({
   isOrigin,
@@ -107,7 +108,10 @@ export const ChainSlideOver = ({
   useEffect(enterPressedFunc, [enterPressed])
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div
+      data-test-id="chain-slide-over"
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+    >
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
@@ -125,9 +129,22 @@ export const ChainSlideOver = ({
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (chainId === mapChainId) {
-            onClickSpecificNetwork = () => console.log('INCEPTION') // I think this case is obsolete
+            onClickSpecificNetwork = () => {}
           } else {
             onClickSpecificNetwork = () => {
+              const eventTitle = isOrigin
+                ? `[Bridge User Action] Sets new fromChainId`
+                : `[Bridge User Action] Sets new toChainId`
+              const eventData = isOrigin
+                ? {
+                    previousFromChainId: chainId,
+                    newFromChainId: mapChainId,
+                  }
+                : {
+                    previousToChainId: chainId,
+                    newToChainId: mapChainId,
+                  }
+              segmentAnalyticsEvent(eventTitle, eventData)
               dispatch(setChain(mapChainId))
               onClose()
             }

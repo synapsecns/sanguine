@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { useEffect, useState, memo, useMemo } from 'react'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import { fetchBlockNumber } from '@wagmi/core'
 import { Contract, Signer } from 'ethers'
 import { Interface } from '@ethersproject/abi'
@@ -26,6 +26,7 @@ import { remove0xPrefix } from '@/utils/remove0xPrefix'
 import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
 import { CreditedTransactionItem } from '@components/TransactionItems'
+import { Address } from 'viem'
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import { SYNAPSE_CCTP_CONTRACTS } from '@constants/bridge'
 
@@ -34,8 +35,10 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toSynapseContract, setToSynapseContract] =
     useState<Contract>(undefined)
   const [toCCTPContract, setToCCTPContract] = useState<Contract>(undefined)
-  const [toSigner, setToSigner] = useState<Signer>()
-  const { data: toSignerRaw } = useSigner({ chainId: fromEvent.toChainId })
+  const [toSigner, setToSigner] = useState<Address>()
+  const { data: toSignerRaw } = useWalletClient({
+    chainId: fromEvent.toChainId,
+  })
   const [completedConf, setCompletedConf] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const { providerMap } = useSynapseContext()
@@ -51,7 +54,13 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     })
     const provider = providerMap[fromEvent.toChainId]
 
-    const isCCTP = fromEvent.contractEmittedFrom.toLowerCase() === SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase() ? true : false
+    const isCCTP =
+      typeof fromEvent.contractEmittedFrom === 'string' &&
+      typeof SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId] === 'string' &&
+      fromEvent.contractEmittedFrom.toLowerCase() ===
+        SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase()
+        ? true
+        : false
 
     const iface = new Interface(isCCTP ? SYNAPSE_CCTP_ABI : SYNAPSE_BRIDGE_ABI)
 
@@ -59,7 +68,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     let i = 0
     let afterOrginTx = true
     while (afterOrginTx) {
-      const startBlock = headOnDestination - GETLOGS_SIZE * i
+      const startBlock = Number(headOnDestination) - GETLOGS_SIZE * i
 
       // get timestamp from from block
       const blockRaw = await getBlock(startBlock - (GETLOGS_SIZE + 1), provider)
@@ -96,31 +105,30 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     let parsedLogs
     if (!isCCTP) {
       parsedLogs = flattendEvents
-      .map((log) => {
-        return {
-          ...iface.parseLog(log).args,
-          transactionHash: log.transactionHash,
-          blockNumber: Number(log.blockNumber),
-        }
-      })
-      .filter((log: any) => {
-        const convertedKappa = remove0xPrefix(log.kappa)
-        return !checkTxIn(log) && convertedKappa === fromEvent.kappa
-      })}
-      else {
-        parsedLogs = flattendEvents
         .map((log) => {
           return {
             ...iface.parseLog(log).args,
             transactionHash: log.transactionHash,
             blockNumber: Number(log.blockNumber),
           }
-        }).filter((log: any) => {
+        })
+        .filter((log: any) => {
+          const convertedKappa = remove0xPrefix(log.kappa)
+          return !checkTxIn(log) && convertedKappa === fromEvent.kappa
+        })
+    } else {
+      parsedLogs = flattendEvents
+        .map((log) => {
+          return {
+            ...iface.parseLog(log).args,
+            transactionHash: log.transactionHash,
+            blockNumber: Number(log.blockNumber),
+          }
+        })
+        .filter((log: any) => {
           return log.requestID === fromEvent.kappa
         })
-
-
-      }
+    }
 
     const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
@@ -151,7 +159,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       const toSynapseContract = new Contract(
         BRIDGE_CONTRACTS[fromEvent.toChainId],
         SYNAPSE_BRIDGE_ABI,
-        toSigner
+        providerMap[fromEvent.toChainId]
       )
       setToSynapseContract(toSynapseContract)
 
@@ -160,7 +168,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         const toCCTPContract = new Contract(
           SYNAPSE_CCTP_CONTRACTS[fromEvent.toChainId],
           SYNAPSE_CCTP_ABI,
-          toSigner
+          providerMap[fromEvent.toChainId]
         )
         setToCCTPContract(toCCTPContract)
       }
@@ -188,7 +196,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   }, [toSynapseContract, toCCTPContract])
 
   useEffect(() => {
-    setToSigner(toSignerRaw)
+    if (toSignerRaw != undefined) {
+      setToSigner(toSignerRaw.account.address)
+    }
   }, [toSignerRaw])
 
   return (

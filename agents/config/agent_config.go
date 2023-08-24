@@ -3,10 +3,11 @@ package config
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/signer/config"
-	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
+
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"

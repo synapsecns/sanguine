@@ -7,7 +7,7 @@ import { setShowToTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { DestinationChainLabel } from './DestinationChainLabel'
 import SwitchButton from '../buttons/SwitchButton'
-import { setFromChainId, setToChainId } from '@/slices/bridgeSlice'
+import { setFromChainId, setToChainId } from '@/slices/bridge/reducer'
 
 export const OutputContainer = ({}) => {
   const dispatch = useDispatch()
@@ -63,31 +63,35 @@ export const OutputContainer = ({}) => {
             isOrigin={false}
             onClick={() => dispatch(setShowToTokenSlideOver(true))}
           />
-          {isLoading ? (
-            <LoadingSpinner className="w-2/3 pr-4 ml-4 opacity-50" />
-          ) : (
-            <input
-              pattern="[0-9.]+"
-              disabled={true}
-              className={`
-                ml-4
+          <div className="flex ml-4 min-w-[190px]">
+            {isLoading ? (
+              <LoadingSpinner className="opacity-50" />
+            ) : (
+              <input
+                pattern="[0-9.]+"
+                disabled={true}
+                className={`
                 focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                p-0
                 bg-transparent
-                pr-4
-                w-2/3
+                max-w-[190px]
                placeholder:text-[#88818C]
                text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
               `}
-              placeholder="0.0000"
-              value={
-                bridgeQuote.outputAmountString === '0'
-                ? ''
-                : bridgeQuote.outputAmountString
-              }
-              name="inputRow"
-              autoComplete="off"
-            />
-          )}
+                placeholder="0.0000"
+                value={
+                  bridgeQuote.outputAmountString === '0'
+                    ? ''
+                    : bridgeQuote.outputAmountString
+                }
+                name="inputRow"
+                autoComplete="off"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

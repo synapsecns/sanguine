@@ -93,7 +93,7 @@ func (c NodeSuite) TestLive() {
 		// go through each contract and save the end height in scribe
 		for i := range contracts {
 			//  the last block store per contract
-			err := c.eventDB.StoreLastIndexed(c.GetTestContext(), common.HexToAddress(contracts[i].Address), k, 12)
+			err := c.eventDB.StoreLastIndexed(c.GetTestContext(), common.HexToAddress(contracts[i].Address), k, 12, false)
 			Nil(c.T(), err)
 		}
 		c.fillBlocks(bridgeRef, swapRefA, swapRefB, transactOpts, k)
@@ -108,7 +108,7 @@ func (c NodeSuite) TestLive() {
 		Chains:              chainConfigs,
 	}
 
-	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends)
+	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends, c.explorerMetrics)
 	c.Nil(err)
 	c.NotNil(explorerBackfiller)
 	err = explorerBackfiller.Backfill(c.GetTestContext(), false)

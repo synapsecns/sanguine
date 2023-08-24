@@ -48,8 +48,6 @@ type DomainClient interface {
 type OriginContract interface {
 	// IsValidState checks if the given state is valid on its origin.
 	IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error)
-	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
-	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error)
 	// SuggestLatestState gets the latest state on the origin
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists

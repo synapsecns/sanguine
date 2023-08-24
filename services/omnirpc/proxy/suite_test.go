@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
+	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"testing"
 )
 
@@ -29,7 +29,7 @@ func (p *ProxySuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(p.GetSuiteContext(), p.T())
 
 	var err error
-	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)
+	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(p.T(), err)
 }
 

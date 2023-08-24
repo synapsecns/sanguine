@@ -23,9 +23,8 @@ func configFixture(c ConfigSuite) executor.Config {
 		},
 		ScribeConfig: config.ScribeConfig{
 			Type: "embedded",
-			EmbeddedDBConfig: config.DBConfig{
-				Type:   "mysql",
-				Source: gofakeit.Word(),
+			EmbeddedDBConfig: scribeConfig.DBConfig{
+				Type: "mysql",
 			},
 			EmbeddedScribeConfig: scribeConfig.Config{
 				RPCURL: gofakeit.URL(),

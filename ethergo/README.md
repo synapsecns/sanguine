@@ -1,5 +1,9 @@
 # Ethergo
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/ethergo.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/ethergo)](https://goreportcard.com/report/github.com/synapsecns/sanguine/ethergo)
+
+
 ## Overview
 
 Ethergo is a comprehensive embedded test suite for Synapse, built using the Go programming language. It provides the functionality to deploy contracts to various backends, streamlining the testing process for different types of blockchain networks. The module is organized into several subdirectories, each dedicated to specific aspects of the testing process, such as backends, chain interaction, contract management, and signing utilities.

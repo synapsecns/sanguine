@@ -7,7 +7,7 @@ require (
 	github.com/google/go-github/v41 v41.0.0
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/sethvargo/go-githubactions v1.1.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	golang.org/x/oauth2 v0.7.0
 )
@@ -23,9 +23,10 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/goleak v1.2.1 // indirect

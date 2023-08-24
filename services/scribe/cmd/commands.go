@@ -1,19 +1,21 @@
 package cmd
 
+// TODO update this to match new commands + migrate flags to config.
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/hashicorp/consul/sdk/freeport"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/node"
 	"github.com/urfave/cli/v2"
 )
 
@@ -60,7 +62,7 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
+func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backend.ScribeBackend, scribeConfig config.Config, err error) {
 	scribeConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
@@ -71,10 +73,10 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	clients = make(map[uint32][]backfill.ScribeBackend)
+	clients = make(map[uint32][]backend.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
 		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
-			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
+			backendClient, err := backend.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 			}
@@ -94,7 +96,7 @@ var scribeCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribe, err := node.NewScribe(db, clients, decodeConfig, metrics.Get())
+		scribe, err := service.NewScribe(db, clients, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create scribe: %w", err)
 		}

@@ -43,10 +43,8 @@ export const TRANSITION_PROPS: TransitionClassesProps = {
     origin-top absolute
     transition-all
     w-full h-full
-    md:w-[95%] md:h-[95%]
-    -ml-0 md:-ml-3
-    md:mt-3
     bg-bgBase
     z-20 rounded-3xl
+    left-0
   `,
 }

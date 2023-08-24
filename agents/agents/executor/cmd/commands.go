@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
@@ -15,21 +16,23 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
-	"github.com/synapsecns/sanguine/services/scribe/node"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
+
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"os"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 //go:embed cmd.md
@@ -116,8 +119,8 @@ var ExecutorRunCommand = &cli.Command{
 		case "embedded":
 			eventDB, err := scribeAPI.InitDB(
 				ctx,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Type,
+				executorConfig.DBConfig.Source,
 				handler,
 				false,
 			)
@@ -125,11 +128,11 @@ var ExecutorRunCommand = &cli.Command{
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
-			scribeClients := make(map[uint32][]backfill.ScribeBackend)
+			scribeClients := make(map[uint32][]backend.ScribeBackend)
 
 			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
@@ -138,7 +141,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
+			scribe, err := service.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -154,7 +157,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			embedded := client.NewEmbeddedScribe(
 				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Source,
 				handler,
 			)
 

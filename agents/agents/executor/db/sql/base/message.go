@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
@@ -152,7 +153,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractT
 			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
-	case types.LightInboxContract:
+	case types.LightInboxContract, types.SummitContract:
 		dbTx = preDBTx.Model(&Attestation{}).
 			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).

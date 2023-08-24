@@ -125,8 +125,8 @@ var GuardRunCommand = &cli.Command{
 			g, _ := errgroup.WithContext(c.Context)
 
 			embedded := client.NewEmbeddedScribe(
-				guardConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				guardConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				guardConfig.DBConfig.Type,
+				guardConfig.DBConfig.Source,
 				handler,
 			)
 

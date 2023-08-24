@@ -42,7 +42,7 @@ type Receipt struct {
 	BlockNumber       int          `json:"block_number"`
 	TransactionIndex  int          `json:"transaction_index"`
 	Page              int          `json:"page"`
-	Logs              []*Log       `json:"logs"`
+	Logs              []*Log       `json:"logs,omitempty"`
 	Transaction       *Transaction `json:"transaction"`
 	JSON              types.JSON   `json:"json"`
 }
@@ -63,7 +63,7 @@ type Transaction struct {
 	Page      int        `json:"page"`
 	Sender    string     `json:"sender"`
 	Timestamp int        `json:"timestamp"`
-	Logs      []*Log     `json:"logs"`
+	Logs      []*Log     `json:"logs,omitempty"`
 	Receipt   *Receipt   `json:"receipt"`
 	JSON      types.JSON `json:"json"`
 }

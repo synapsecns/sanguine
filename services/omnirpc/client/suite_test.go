@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
+	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"golang.org/x/sync/errgroup"
 	"math/big"
@@ -69,7 +69,7 @@ func (s *TestClientSuite) SetupJaeger() {
 	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 
 	var err error
-	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)
+	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	s.Require().Nil(err)
 }
 

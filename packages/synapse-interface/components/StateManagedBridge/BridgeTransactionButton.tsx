@@ -1,16 +1,20 @@
 import { useSelector } from 'react-redux'
+import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '../../store/store'
+import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from '@ethersproject/address'
+import {} from 'wagmi'
 
 import {
   useConnectModal,
   useAccountModal,
   useChainModal,
 } from '@rainbow-me/rainbowkit'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -26,13 +30,13 @@ export const BridgeTransactionButton = ({
 
   const { address, isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
-      setIsConnected(false);
+      setIsConnected(false)
     },
-  });
+  })
 
   useEffect(() => {
     setIsConnected(isConnectedInit)
-  }, [isConnectedInit]);
+  }, [isConnectedInit])
 
   // Get state from Redux store
   const {
@@ -48,24 +52,59 @@ export const BridgeTransactionButton = ({
     (state: RootState) => state.bridgeDisplay
   )
 
+  const balances = usePortfolioBalances()
+  const balancesForChain = balances[fromChainId]
+  const balanceForToken = balancesForChain?.find(
+    (t) => t.tokenAddress === fromToken.addresses[fromChainId]
+  )?.balance
+
+  const sufficientBalance = useMemo(() => {
+    return (
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+      balanceForToken
+    )
+  }, [balanceForToken, fromValue])
+
   const isButtonDisabled =
     isLoading ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
-    (showDestinationAddress && !destinationAddress)
+    (showDestinationAddress && !destinationAddress) ||
+    (isConnected && !sufficientBalance)
 
   let buttonProperties
 
-  if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && fromValue.gt(0)) {
+  const fromTokenDecimals: number | undefined =
+    fromToken && fromToken.decimals[fromChainId]
+
+  const fromValueBigInt = useMemo(() => {
+    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
+  }, [fromValue, fromTokenDecimals])
+
+  if (!fromToken) {
+    buttonProperties = {
+      label: `Unsupported Network`,
+      onClick: null,
+    }
+  } else if (
+    !isLoading &&
+    bridgeQuote?.feeAmount === 0n &&
+    fromValueBigInt > 0
+  ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && fromValue.gt(0)) {
+  } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
+    }
+  } else if (isConnected && !sufficientBalance) {
+    buttonProperties = {
+      label: 'Insufficient balance',
+      onClick: null,
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
@@ -75,7 +114,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && fromValue.gt(0)) {
+  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),
@@ -84,13 +123,13 @@ export const BridgeTransactionButton = ({
   } else if (!isApproved) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken.symbol}`,
+      label: `Approve ${fromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
       onClick: executeBridge,
-      label: `Bridge ${fromToken.symbol}`,
+      label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
     }
   }

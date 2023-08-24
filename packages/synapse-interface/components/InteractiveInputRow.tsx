@@ -99,7 +99,11 @@ const InteractiveInputRow = ({
                 autoComplete="off"
                 className={`
                     ${isConnected ? '-mt-2' : '-mt-0'}
-                    focus:outline-none bg-transparent
+                    focus:outline-none
+                    focus:ring-0
+                    focus:border-none
+                    border-none bg-transparent
+                    p-0
                     w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
                   placeholder:text-[#88818C] text-white
                     text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
@@ -150,10 +154,10 @@ const InteractiveInputRow = ({
             {isPending ? (
               <>
                 {loadingLabel ? (
-                  <span className="animate-pulse">
+                  <div className="flex items-center justify-center space-x-5 animate-pulse">
                     <ButtonLoadingSpinner className="mr-2" />
-                    {loadingLabel}
-                  </span>
+                    <span>{loadingLabel}</span>
+                  </div>
                 ) : (
                   <ButtonLoadingSpinner />
                 )}

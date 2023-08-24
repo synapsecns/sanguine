@@ -1,14 +1,13 @@
-import { formatBNToString } from '@bignumber/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import React, { useMemo } from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import Spinner from '@/components/icons/Spinner'
-import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 import { Token } from '@/utils/types'
 import { ChainLabel } from '@components/ChainLabel'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
 const BridgeInputContainer = ({
@@ -37,12 +36,12 @@ const BridgeInputContainer = ({
   setDisplayType: (v: DisplayType) => void
   onChangeAmount?: (v: string) => void
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
-  fromTokenBalance?: BigNumber
+  fromTokenBalance?: bigint
   isQuoteLoading?: boolean
 }) => {
   const formattedBalance = useMemo(() => {
     if (!fromTokenBalance) return '0.0'
-    return formatBNToString(
+    return formatBigIntToString(
       fromTokenBalance,
       selectedToken?.decimals[chainId as keyof Token['decimals']],
       3
@@ -54,7 +53,7 @@ const BridgeInputContainer = ({
 
   const onClickBalance = () => {
     onChangeAmount(
-      formatBNToString(
+      formatBigIntToString(
         fromTokenBalance,
         selectedToken?.decimals[chainId as keyof Token['decimals']]
       )
@@ -120,12 +119,17 @@ const BridgeInputContainer = ({
               pattern="[0-9.]+"
               disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
               className={`
+                focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                p-0
                 ml-4 pr-4 w-5/6
                 ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
-                focus:outline-none bg-transparent
+                bg-transparent
                placeholder:text-[#88818C]
-               text-white text-opacity-80 text-lg font-medium
-                md:w-2/3 md:text-2xl lg:text-2xl
+               text-white text-opacity-80 text-xl font-medium
+                md:text-2xl
               `}
               placeholder="0.0000"
               onChange={
@@ -152,7 +156,7 @@ const BridgeInputContainer = ({
             )}
           </div>
           {isOrigin && isConnected && (
-            <div className="sm:mr-2 sm:inline-block md:hidden">
+            <div className="sm:inline-block md:hidden">
               <MiniMaxButton
                 disabled={isMaxDisabled}
                 onClickBalance={onClickBalance}

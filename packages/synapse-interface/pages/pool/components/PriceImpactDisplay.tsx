@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
-import { formatBNToString } from '@bignumber/format'
-import { BigNumber } from '@ethersproject/bignumber'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 function removeLeadingZeros(inputValue: number): number {
   const numberString = inputValue.toString()
@@ -12,7 +11,7 @@ function removeLeadingZeros(inputValue: number): number {
   return integerPart + decimalPart
 }
 
-const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
+const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
   let colorClassName: string
   let labelText: string
   let content: any
@@ -21,12 +20,12 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
     if (!priceImpact) return 0
 
     let formattedPriceImpact = Number(
-      formatBNToString(priceImpact.mul(100), 18, 2)
+      formatBigIntToString(priceImpact * 100n, 18, 18)
     )
 
-    if (priceImpact.gt(0) && formattedPriceImpact === 0) {
+    if (priceImpact > 0n && formattedPriceImpact === 0) {
       formattedPriceImpact = removeLeadingZeros(
-        Number(formatBNToString(priceImpact.mul(100), 18, 10))
+        Number(formatBigIntToString(priceImpact * 100n, 18, 10))
       )
     }
 
@@ -34,8 +33,11 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   }, [priceImpact])
 
   const priceImpactDisplayValue: string = useMemo(() => {
-    if (Math.abs(priceImpactValue) < 0.01) return '<0.01'
-    else return priceImpactValue.toString()
+    if (Math.abs(priceImpactValue) < 0.01) {
+      return '<0.01'
+    } else {
+      return priceImpactValue.toFixed(2)
+    }
   }, [priceImpactValue])
 
   if (priceImpactValue > 0) {

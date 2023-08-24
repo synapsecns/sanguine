@@ -90,8 +90,6 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 		return 0, fmt.Errorf("could not get message status: %w", err)
 	}
 
-	fmt.Println("status: ", status)
-
 	return status, nil
 }
 

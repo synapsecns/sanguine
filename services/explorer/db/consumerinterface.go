@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/benbjohnson/immutable"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -14,7 +15,7 @@ type ConsumerDBWriter interface {
 	StoreEvent(ctx context.Context, event interface{}) error
 	// StoreEvents stores a list of events.
 	StoreEvents(ctx context.Context, events []interface{}) error
-	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
+	// StoreLastBlock stores the last block number that has been indexed for a given chain.
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// StoreTokenIndex stores the token index data.
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
@@ -65,6 +66,8 @@ type ConsumerDBReader interface {
 	GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error)
 	// GetLeaderboard gets the bridge leaderboard.
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
+	// GetPendingByChain gets the pending txs by chain.
+	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
