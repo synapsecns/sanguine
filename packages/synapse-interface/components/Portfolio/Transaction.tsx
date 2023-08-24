@@ -1,5 +1,5 @@
 import { Chain, Token } from '@/utils/types'
-import { TransactionPayloadDetail } from './Activity'
+import { TransactionPayloadDetail, Completed } from './Activity'
 
 export enum TransactionType {
   PENDING,
@@ -42,7 +42,7 @@ export const Transaction = ({
 }: TransactionProps) => {
   return (
     <div data-test-id="transaction" className="flex flex-row">
-      <div className="flex bg-[#27273A] border-r-[#3D3D5C]">
+      <div className="flex">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
@@ -57,6 +57,13 @@ export const Transaction = ({
           tokenSymbol={destinationToken?.symbol}
           tokenAmount={destinationValue}
         />
+      </div>
+      <div>
+        {transactionType === TransactionType.PENDING ? (
+
+        ): (
+          // <Completed />
+        )}
       </div>
     </div>
   )

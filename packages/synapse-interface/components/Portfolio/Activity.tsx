@@ -517,6 +517,19 @@ export const ExchangeRate = ({
   )
 }
 
+export const EstimatedDuration = ({
+  estimatedCompletionInSeconds,
+}: {
+  estimatedCompletionInSeconds: number
+}) => {
+  const estimatedMinutes = Math.floor(estimatedCompletionInSeconds / 60)
+  return (
+    <div className="text-[#C2C2D6] text-sm">
+      {estimatedMinutes}-{estimatedMinutes + 1} min
+    </div>
+  )
+}
+
 export const Completed = ({
   transactionCompletedTime,
   connectedAddress,
