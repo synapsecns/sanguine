@@ -809,6 +809,10 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	defer func() {
 		testDone = true
 	}()
+
+	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
+	e.Nil(err)
+
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	summit := uint32(e.TestBackendSummit.GetChainID())
@@ -990,9 +994,8 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Println("OMNIIII", omniRPCClient.GetEndpoint(int(e.TestBackendOrigin.GetChainID()), 1))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	err = anvilClient.EvmMine(e.GetTestContext())
 	e.Nil(err)
-	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
 	// Get the origin state so we can submit it on the Summit.
 	originStateRaw, err := originHarnessOverrideRef.SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
@@ -1036,8 +1039,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	fmt.Println("Right before increase EVM time")
 	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
 	// the manager message can be executed.
-	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
-	e.Nil(err)
 	bondingManagerOptimisticSecs := 86400
 	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(bondingManagerOptimisticSecs))
 	e.Nil(err)
