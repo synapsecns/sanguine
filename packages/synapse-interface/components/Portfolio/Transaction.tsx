@@ -87,8 +87,8 @@ export const Transaction = ({
 }
 
 interface PendingTransactionProps extends TransactionProps {
-  isSubmitted: boolean
-  isCompleted: boolean
+  isSubmitted?: boolean
+  isCompleted?: boolean
 }
 
 export const PendingTransaction = ({
@@ -102,6 +102,7 @@ export const PendingTransaction = ({
   transactionHash,
   isSubmitted,
   isCompleted = false,
+  transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
   const [status, setStatus] = useState<TransactionStatus>(
     transactionHash ? TransactionStatus.PENDING : TransactionStatus.INITIALIZING

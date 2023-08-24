@@ -30,6 +30,7 @@ import { shortenAddress } from '@/utils/shortenAddress'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import {
   Transaction as UpdatedTransaction,
+  PendingTransaction,
   TransactionType,
 } from './Transaction'
 
@@ -84,7 +85,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {address && !isLoading && hasPendingTransactions && (
+      {/* {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
           <PendingTransactionAwaitingIndexing />
           {userPendingTransactions &&
@@ -96,6 +97,61 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 key={transaction.kappa}
               />
             ))}
+        </ActivitySection>
+      )} */}
+
+      {address && !isLoading && hasPendingTransactions && (
+        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
+          <PendingTransactionAwaitingIndexing />
+          {userPendingTransactions &&
+            userPendingTransactions.map((transaction: BridgeTransaction) => {
+              const {
+                address: destinationAddress,
+                chainID: originChainId,
+                destinationChainID: destinationChainId,
+                value: originRawValue,
+                formattedValue: originFormattedValue,
+                tokenAddress: originTokenAddress,
+                tokenSymbol: originTokenSymbol,
+                blockNumber: bridgeOriginBlockNumber,
+                time: bridgeOriginTime,
+                txnHash: originTxnHash,
+              }: PartialInfo = transaction?.fromInfo
+
+              const originChain: Chain = CHAINS_BY_ID[originChainId]
+              const originToken: Token = tokenAddressToToken(
+                originChainId,
+                originTokenAddress
+              )
+              const {
+                value: destinationRawValue,
+                formattedValue: destinationFormattedValue,
+                tokenAddress: destinationTokenAddress,
+                tokenSymbol: destinationTokenSymbol,
+                blockNumber: bridgeDestinationBlockNumber,
+                time: bridgeDestinationTime,
+              }: PartialInfo = transaction?.toInfo
+
+              const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
+              const destinationToken: Token = tokenAddressToToken(
+                destinationChainId,
+                destinationTokenAddress
+              )
+              return (
+                <PendingTransaction
+                  connectedAddress={address as Address}
+                  originChain={originChain}
+                  originToken={originToken}
+                  originValue={originFormattedValue}
+                  destinationChain={destinationChain}
+                  destinationToken={destinationToken}
+                  startedTimestamp={bridgeOriginTime}
+                  isSubmitted={originTxnHash ? true : false}
+                  isCompleted={false}
+                  transactionType={TransactionType.PENDING}
+                />
+              )
+            })}
         </ActivitySection>
       )}
 
@@ -126,13 +182,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   address: destinationAddress,
                   chainID: originChainId,
                   destinationChainID: destinationChainId,
-                  value: originRawValue,
                   formattedValue: originFormattedValue,
                   tokenAddress: originTokenAddress,
-                  tokenSymbol: originTokenSymbol,
-                  blockNumber: bridgeOriginBlockNumber,
                   time: bridgeOriginTime,
-                  txnHash: originTxnHash,
                 }: PartialInfo = transaction?.fromInfo
 
                 const originChain: Chain = CHAINS_BY_ID[originChainId]
@@ -141,11 +193,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   originTokenAddress
                 )
                 const {
-                  value: destinationRawValue,
                   formattedValue: destinationFormattedValue,
                   tokenAddress: destinationTokenAddress,
-                  tokenSymbol: destinationTokenSymbol,
-                  blockNumber: bridgeDestinationBlockNumber,
                   time: bridgeDestinationTime,
                 }: PartialInfo = transaction?.toInfo
 
@@ -179,14 +228,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 }
 
 export const MostRecentPendingTransaction = () => {
+  const { address } = useAccount()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { userPendingTransactions }: TransactionsState = useTransactionsState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
-  let mostRecentPendingTransaction = null
+  let transaction = null
 
   if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
-    mostRecentPendingTransaction = pendingBridgeTransactions[0]
+    transaction = pendingBridgeTransactions[0]
     return (
       <div className="relative mt-3">
         <div
@@ -195,14 +245,24 @@ export const MostRecentPendingTransaction = () => {
           ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
           `}
         >
-          <RecentlyBridgedPendingTransaction
+          {/* <RecentlyBridgedPendingTransaction
             recentlyBridgedTransaction={mostRecentPendingTransaction}
+          /> */}
+          <PendingTransaction
+            connectedAddress={address as Address}
+            originChain={transaction.originChain}
+            originToken={transaction.originToken}
+            originValue={Number(transaction.originValue)}
+            destinationChain={transaction.destinationChain}
+            destinationToken={transaction.destinationToken}
+            startedTimestamp={transaction.timestamp}
+            transactionType={TransactionType.PENDING}
           />
         </div>
       </div>
     )
   } else if (userPendingTransactions && userPendingTransactions.length > 0) {
-    mostRecentPendingTransaction = userPendingTransactions[0]
+    transaction = userPendingTransactions[0]
     return (
       <div className="relative mt-3">
         <div
@@ -212,9 +272,9 @@ export const MostRecentPendingTransaction = () => {
           `}
         >
           <Transaction
-            bridgeTransaction={mostRecentPendingTransaction}
+            bridgeTransaction={transaction}
             transactionType={ActivityType.PENDING}
-            key={mostRecentPendingTransaction.kappa}
+            key={transaction.kappa}
           />
         </div>
       </div>
@@ -288,13 +348,24 @@ const RecentlyBridgedPendingTransaction = ({
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
+  const { address } = useAccount()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   return (
     <>
       {pendingBridgeTransactions.map(
         (transaction: PendingBridgeTransaction) => (
-          <RecentlyBridgedPendingTransaction
-            recentlyBridgedTransaction={transaction}
+          // <RecentlyBridgedPendingTransaction
+          //   recentlyBridgedTransaction={transaction}
+          // />
+          <PendingTransaction
+            connectedAddress={address as Address}
+            originChain={transaction.originChain}
+            originToken={transaction.originToken}
+            originValue={Number(transaction.originValue)}
+            destinationChain={transaction.destinationChain}
+            destinationToken={transaction.destinationToken}
+            startedTimestamp={transaction.timestamp}
+            transactionType={TransactionType.PENDING}
           />
         )
       )}
