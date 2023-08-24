@@ -148,78 +148,12 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   )
 }
 
-export const MostRecentPendingTransaction = () => {
-  const { address } = useAccount()
+export const MostRecentTransaction = () => {
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
-  const { userPendingTransactions }: TransactionsState = useTransactionsState()
-  const { activeTab }: PortfolioState = usePortfolioState()
-
-  let transaction = null
-
-  if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
-    transaction = pendingBridgeTransactions[0]
-    return (
-      <div className="relative mt-3">
-        <div
-          className={`
-          border border-[#3D3D5C] rounded-md box-arrow relative
-          ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
-          `}
-        >
-          <PendingTransaction
-            connectedAddress={address as Address}
-            originChain={transaction.originChain}
-            originToken={transaction.originToken}
-            originValue={Number(transaction.originValue)}
-            destinationChain={transaction.destinationChain}
-            destinationToken={transaction.destinationToken}
-            startedTimestamp={transaction.timestamp}
-            transactionHash={transaction.transactionHash}
-            transactionType={TransactionType.PENDING}
-            isSubmitted={transaction.isSubmitted}
-          />
-        </div>
-      </div>
-    )
-  } else if (userPendingTransactions && userPendingTransactions.length > 0) {
-    transaction = userPendingTransactions[0]
-    const { fromInfo, toInfo } = transaction || {}
-    const originChain: Chain = CHAINS_BY_ID[fromInfo?.chainID]
-    const originToken: Token = tokenAddressToToken(
-      fromInfo?.chainID,
-      fromInfo?.tokenAddress
-    )
-
-    const destinationChain: Chain = CHAINS_BY_ID[toInfo?.chainID]
-    const destinationToken: Token = tokenAddressToToken(
-      toInfo?.chainID,
-      toInfo?.tokenAddress
-    )
-    return (
-      <div className="relative mt-3">
-        <div
-          className={`
-          border border-[#3D3D5C] rounded-md box-arrow
-          ${activeTab !== PortfolioTabs.ACTIVITY ? 'block' : 'hidden'}
-          `}
-        >
-          <PendingTransaction
-            connectedAddress={address as Address}
-            originChain={originChain}
-            originToken={originToken}
-            originValue={fromInfo?.originFormattedValue}
-            destinationChain={destinationChain}
-            destinationToken={destinationToken}
-            startedTimestamp={fromInfo?.timestamp}
-            transactionHash={fromInfo.txnHash}
-            transactionType={TransactionType.PENDING}
-            isSubmitted={fromInfo?.txnHash ? true : false}
-          />
-        </div>
-      </div>
-    )
-  }
-  return null
+  const {
+    userPendingTransactions,
+    userHistoricalTransactions,
+  }: TransactionsState = useTransactionsState()
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
@@ -231,13 +165,13 @@ export const PendingTransactionAwaitingIndexing = () => {
         (transaction: PendingBridgeTransaction) => (
           <PendingTransaction
             connectedAddress={address as Address}
-            originChain={transaction.originChain}
-            originToken={transaction.originToken}
+            originChain={transaction.originChain as Chain}
+            originToken={transaction.originToken as Token}
             originValue={Number(transaction.originValue)}
-            destinationChain={transaction.destinationChain}
-            destinationToken={transaction.destinationToken}
-            isSubmitted={transaction.isSubmitted}
-            startedTimestamp={transaction.timestamp}
+            destinationChain={transaction.destinationChain as Chain}
+            destinationToken={transaction.destinationToken as Token}
+            isSubmitted={transaction.isSubmitted as boolean}
+            startedTimestamp={transaction.timestamp as number}
             transactionType={TransactionType.PENDING}
           />
         )
