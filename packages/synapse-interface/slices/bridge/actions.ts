@@ -10,6 +10,7 @@ export interface PendingBridgeTransaction {
   destinationToken: Token
   transactionHash?: string
   timestamp: number
+  isSubmitted: boolean
 }
 
 export const addPendingBridgeTransaction =
@@ -17,6 +18,7 @@ export const addPendingBridgeTransaction =
 export const updatePendingBridgeTransaction = createAction<{
   timestamp: number
   transactionHash: string
+  isSubmitted: boolean
 }>('bridge/updatePendingBridgeTransaction')
 export const removePendingBridgeTransaction = createAction<number>(
   'bridge/removePendingBridgeTransaction'

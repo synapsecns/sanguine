@@ -120,9 +120,13 @@ export const bridgeSlice = createSlice({
         updatePendingBridgeTransaction,
         (
           state,
-          action: PayloadAction<{ timestamp: number; transactionHash: string }>
+          action: PayloadAction<{
+            timestamp: number
+            transactionHash: string
+            isSubmitted: boolean
+          }>
         ) => {
-          const { timestamp, transactionHash } = action.payload
+          const { timestamp, transactionHash, isSubmitted } = action.payload
           const transactionIndex = state.pendingBridgeTransactions.findIndex(
             (transaction) => transaction.timestamp === timestamp
           )
@@ -131,7 +135,7 @@ export const bridgeSlice = createSlice({
             state.pendingBridgeTransactions =
               state.pendingBridgeTransactions.map((transaction, index) =>
                 index === transactionIndex
-                  ? { ...transaction, transactionHash }
+                  ? { ...transaction, transactionHash, isSubmitted }
                   : transaction
               )
           }

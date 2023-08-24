@@ -8,13 +8,13 @@ import { TransactionsState } from '../transactions/reducer'
 import { BridgeState } from '../bridge/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
 import { useAccount } from 'wagmi'
-import { RecentBridgeTransaction } from '../bridge/actions'
+import { PendingBridgeTransaction } from '../bridge/actions'
 import { BridgeTransaction } from '../api/generated'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
-  const { recentBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
@@ -22,11 +22,11 @@ export default function Updater(): null {
 
   // Update Origin balances when transaction resolves
   useEffect(() => {
-    if (!address || !recentBridgeTransactions) return
-    if (recentBridgeTransactions && recentBridgeTransactions.length > 0) {
+    if (!address || !pendingBridgeTransactions) return
+    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
       const updateOriginBalancesForNewestTransaction = async () => {
-        const newestTransaction: RecentBridgeTransaction =
-          recentBridgeTransactions[0]
+        const newestTransaction: PendingBridgeTransaction =
+          pendingBridgeTransactions[0]
 
         const updateChainId: number = newestTransaction.originChain?.id
         const hash: Address = newestTransaction.transactionHash as Address
@@ -43,7 +43,7 @@ export default function Updater(): null {
       }
       updateOriginBalancesForNewestTransaction()
     }
-  }, [recentBridgeTransactions, address, dispatch])
+  }, [pendingBridgeTransactions, address, dispatch])
 
   // Update Destination balances for new historical transaction
   useEffect(() => {
