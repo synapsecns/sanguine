@@ -395,6 +395,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		fmt.Printf("executing message: %v\n", message)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -403,6 +404,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			big.NewInt(int64(*stateIndex)),
 			uint64(1000000),
 		)
+		fmt.Printf("execute tx: %v\n", tx.Hash())
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
@@ -722,6 +724,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
+	fmt.Printf("processLog on %d: %v\n", chainID, log)
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
@@ -729,6 +732,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	if datatypeInterface == nil {
 		return nil
 	}
+	fmt.Printf("datatypeInterface: %v\n", datatypeInterface)
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
