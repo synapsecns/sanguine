@@ -58,7 +58,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
   const isLoading: boolean =
-    isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
+    isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
 
   return (
     <div
@@ -484,7 +484,7 @@ export const TransactionPayloadDetail = ({
             className="items-center w-4 h-4 mr-3 rounded-full"
             alt={`${token?.name} icon`}
           />
-          {typeof tokenAmount === 'string' ? (
+          {typeof tokenAmount === 'number' ? (
             <div className="mr-1">{tokenAmount}</div>
           ) : (
             <div className="mr-1">...</div>
