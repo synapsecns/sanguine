@@ -61,7 +61,6 @@ export const Transaction = ({
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
-          tokenSymbol={originToken?.symbol}
           tokenAmount={originValue}
         />
       </div>
@@ -69,7 +68,6 @@ export const Transaction = ({
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
-          tokenSymbol={destinationToken?.symbol}
           tokenAmount={destinationValue}
         />
       </div>

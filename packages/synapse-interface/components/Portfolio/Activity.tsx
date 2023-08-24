@@ -263,7 +263,6 @@ const RecentlyBridgedPendingTransaction = ({
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
-          tokenSymbol={originToken?.symbol}
           tokenAmount={Number(originValue)}
         />
       </div>
@@ -446,7 +445,6 @@ export const Transaction = ({
           <TransactionPayloadDetail
             chain={originChain}
             token={originToken}
-            tokenSymbol={originToken?.symbol}
             tokenAmount={originFormattedValue}
           />
         </div>
@@ -454,7 +452,6 @@ export const Transaction = ({
           <TransactionPayloadDetail
             chain={destinationChain}
             token={destinationToken}
-            tokenSymbol={destinationToken?.symbol}
             tokenAmount={destinationFormattedValue}
           />
         </div>
@@ -631,12 +628,10 @@ export const Completed = ({
 export const TransactionPayloadDetail = ({
   chain,
   token,
-  tokenSymbol,
   tokenAmount,
 }: {
   chain?: Chain
   token?: Token
-  tokenSymbol?: string
   tokenAmount?: number
 }) => {
   return (
@@ -658,7 +653,7 @@ export const TransactionPayloadDetail = ({
         </div>
       )}
 
-      {tokenSymbol && (
+      {token && (
         <div
           data-test-id="transaction-payload-token"
           className="flex flex-row items-center"
@@ -668,10 +663,12 @@ export const TransactionPayloadDetail = ({
             className="items-center w-4 h-4 mr-3 rounded-full"
             alt={`${token?.name} icon`}
           />
-          {typeof tokenAmount === 'number' && (
+          {typeof tokenAmount === 'number' ? (
             <div className="mr-1">{tokenAmount}</div>
+          ) : (
+            <div className="mr-1">...</div>
           )}
-          <div>{tokenSymbol}</div>
+          <div>{token?.symbol}</div>
         </div>
       )}
     </div>
