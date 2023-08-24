@@ -166,14 +166,7 @@ jobs:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
           limit-access-to-actor: true
           ## limits ssh access and adds the ssh public keys of the listed GitHub users
-          limit-access-to-users: CryptoMaxPlanck
-
-      - name: Test
-        uses: nick-fields/retry@v2
-        with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
-          max_attempts: 2
-          timeout_minutes: 20
+          limit-access-to-users: CryptoMaxPlanck,dwasse
         env:
           PYROSCOPE_PATH: "${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}"
           ENABLE_MYSQL_TEST: true
