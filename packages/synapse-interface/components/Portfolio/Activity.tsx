@@ -150,6 +150,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 }
 
 export const MostRecentTransaction = () => {
+  const { address } = useAccount()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     userPendingTransactions,
@@ -158,6 +159,9 @@ export const MostRecentTransaction = () => {
 
   const recentTime: number = getTimeMinutesBeforeNow(10)
 
+  const lastPendingBridgeTransaction: PendingBridgeTransaction =
+    pendingBridgeTransactions[0]
+  const lastPendingTransaction: BridgeTransaction = userPendingTransactions[0]
   const lastHistoricalTransaction: BridgeTransaction =
     userHistoricalTransactions[0]
   const isLastHistoricalTransactionRecent: boolean =
@@ -177,6 +181,23 @@ export const MostRecentTransaction = () => {
     if (userHistoricalTransactions && userHistoricalTransactions.length > 0)
       return true
   }, [userHistoricalTransactions])
+
+  if (lastPendingBridgeTransaction) {
+    return (
+      <PendingTransaction
+        connectedAddress={address as Address}
+        originChain={lastPendingBridgeTransaction.originChain}
+        originToken={lastPendingBridgeTransaction.originToken}
+        originValue={Number(lastPendingBridgeTransaction.originValue)}
+        destinationChain={lastPendingBridgeTransaction.destinationChain}
+        destinationToken={lastPendingBridgeTransaction.destinationToken}
+        startedTimestamp={lastPendingBridgeTransaction.timestamp}
+        transactionHash={lastPendingBridgeTransaction.transactionHash}
+        isSubmitted={lastPendingBridgeTransaction.isSubmitted}
+        transactionType={TransactionType.PENDING}
+      />
+    )
+  }
 }
 
 export const PendingTransactionAwaitingIndexing = () => {
@@ -413,7 +434,7 @@ export const TransactionPayloadDetail = ({
             className="items-center w-4 h-4 mr-3 rounded-full"
             alt={`${token?.name} icon`}
           />
-          {typeof tokenAmount === 'number' ? (
+          {typeof tokenAmount === 'string' ? (
             <div className="mr-1">{tokenAmount}</div>
           ) : (
             <div className="mr-1">...</div>
