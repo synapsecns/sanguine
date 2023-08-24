@@ -31,6 +31,7 @@ export interface TransactionProps {
   destinationValue?: number
   startedTimestamp: number
   completedTimestamp?: number
+  estimatedDuration?: number
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
   transactionHash?: string
@@ -47,6 +48,7 @@ export const Transaction = ({
   destinationValue,
   startedTimestamp,
   completedTimestamp,
+  estimatedDuration,
   transactionStatus,
   transactionType,
   transactionHash,
@@ -77,7 +79,9 @@ export const Transaction = ({
       <div className="ml-auto">
         {transactionType === TransactionType.PENDING ? (
           <EstimatedDuration
-            estimatedCompletionInSeconds={estimatedCompletionInSeconds}
+            estimatedCompletionInSeconds={
+              estimatedDuration ?? estimatedCompletionInSeconds
+            }
           />
         ) : (
           <Completed
