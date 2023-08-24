@@ -16,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
-	"math"
 	"math/big"
 	"time"
 )
@@ -38,7 +37,7 @@ type swapReplacementData struct {
 	Amount  *big.Int
 }
 
-const maxTimeToWaitForTx = 15 * time.Second
+const maxTimeToWaitForTx = 25 * time.Second
 const kappaDoesNotExist = "kappa does not exist on destination chain"
 
 // nolint:cyclop
@@ -239,30 +238,18 @@ func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32
 	return &zero, &currentBlock, nil
 }
 func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
-	currentTime := uint64(time.Now().Unix())
 	// Get the current block number
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
 
-	const maxIterations = 10 // max tries
+	const maxIterations = 30 // max tries
 	iteration := 0
 	var mid uint64
-	blockRange := r.Config.Chains[chainID].GetLogsRange * r.Config.Chains[chainID].GetLogsBatchAmount
-	avgBlockTime := r.Config.Chains[chainID].BlockTime
-	estimatedBlockNumber := currentBlock - uint64(math.Floor(float64(currentTime-timestamp)/float64(avgBlockTime)))
 
-	upper := estimatedBlockNumber + blockRange*10/avgBlockTime
-	if upper > currentBlock {
-		upper = currentBlock
-	}
-	lowerInt64 := int64(estimatedBlockNumber) - int64(blockRange*10)/int64(avgBlockTime)
+	upper := currentBlock
 	lower := uint64(0)
-	if lowerInt64 > 0 {
-		lower = uint64(lowerInt64)
-	}
-
 	for lower <= upper && iteration < maxIterations {
 		mid = (lower + upper) / 2
 		blockHeader, err := backendClient.HeaderByNumber(ctx, big.NewInt(int64(mid)))
@@ -271,15 +258,12 @@ func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chai
 		}
 		timeDifference := int64(blockHeader.Time) - int64(timestamp)
 
-		// check if block is before the timestamp from the origin tx
-		if timeDifference <= 0 {
-			// if the block is within the range of a single getlogs request, return the range
-			if timeDifference > 0-int64(blockRange*avgBlockTime) {
-				return &mid, &currentBlock, nil
-			}
-			lower = mid
-		} else {
+		if -6000 < timeDifference && timeDifference <= 0 {
+			return &mid, &currentBlock, nil
+		} else if timeDifference >= 0 {
 			upper = mid
+		} else {
+			lower = mid
 		}
 		iteration++
 	}
