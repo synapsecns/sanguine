@@ -80,7 +80,7 @@ export const Transaction = ({
       <div className="flex flex-row">
         <div
           className={`
-          flex border-r border-r-[#252537] p-3 min-w-[125px]
+          flex border-r border-r-[#252537] p-2
           ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
           `}
         >
@@ -96,14 +96,14 @@ export const Transaction = ({
           ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
           `}
         >
-          <div className="p-3">
+          <div className="p-2">
             <TransactionPayloadDetail
               chain={destinationChain}
               token={destinationToken}
               tokenAmount={destinationValue}
             />
           </div>
-          <div className="p-4">
+          <div className="p-3">
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
                 estimatedCompletionInSeconds={
@@ -213,7 +213,7 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-[#1B1B29] border-t border-[#252537] px-3 py-2 text-sm items-center'
+    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-2 text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
