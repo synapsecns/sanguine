@@ -5,6 +5,8 @@ const { ethers } = require('ethers')
 
 // Provider URLs
 const providers = require('./providers.json')
+// List of ignored bridge symbols
+const ignoredBridgeSymbols = require('./ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
 const symbolOverrides = require('./symbolOverrides.json')
 // Contract ABIs
@@ -70,7 +72,7 @@ const getBridgeOriginMap = async (chainId) => {
   // Get WETH address
   const weth = await SwapQuoters[chainId].weth()
   // Get list of supported tokens
-  const bridgeTokens = await SynapseRouters[chainId].bridgeTokens()
+  let bridgeTokens = await SynapseRouters[chainId].bridgeTokens()
   const pools = await SynapseRouters[chainId].allPools()
 
   // Collect map from bridge token to symbols by doing tokenToSymbol for each bridge token
@@ -78,9 +80,14 @@ const getBridgeOriginMap = async (chainId) => {
   await Promise.all(
     bridgeTokens.map(async (bridgeToken) => {
       const symbol = await SynapseRouters[chainId].tokenToSymbol(bridgeToken)
-      allTokenSymbols[bridgeToken] = new Set([symbol])
+      // Skip if symbol is in ignoredBridgeSymbols
+      if (!ignoredBridgeSymbols.includes(symbol)) {
+        allTokenSymbols[bridgeToken] = new Set([symbol])
+      }
     })
   )
+  // List of bridge tokens without ignored symbols
+  bridgeTokens = Object.keys(allTokenSymbols)
   // Collect map from supported tokens into set of bridge token symbols
   const tokensToSymbols = {}
   // Add all bridge tokens to tokensToSymbols
