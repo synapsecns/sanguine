@@ -237,6 +237,7 @@ export const MostRecentTransaction = () => {
         startedTimestamp={transaction?.fromInfo?.time}
         completedTimestamp={transaction?.toInfo?.time}
         transactionHash={transaction?.fromInfo?.txnHash}
+        kappa={transaction?.kappa}
         transactionType={TransactionType.PENDING}
         originValue={transaction?.fromInfo?.formattedValue}
         destinationValue={transaction?.toInfo?.formattedValue}
@@ -441,7 +442,7 @@ export const Completed = ({
   return (
     <div
       data-test-id="completed"
-      className="flex flex-col text-right text-[#C2C2D6] gap-1"
+      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm"
     >
       {!destinationIsSender && (
         <div>to {shortenAddress(destinationAddress, 3)} </div>

@@ -36,6 +36,7 @@ export interface TransactionProps {
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
   transactionHash?: string
+  kappa?: string
   children?: React.ReactNode
   isCompleted?: boolean
 }
@@ -55,6 +56,7 @@ export const Transaction = ({
   transactionStatus,
   transactionType,
   transactionHash,
+  kappa,
   children,
   isCompleted,
 }: TransactionProps) => {
@@ -137,6 +139,7 @@ export const PendingTransaction = ({
   startedTimestamp,
   completedTimestamp,
   transactionHash,
+  kappa,
   isSubmitted,
   isCompleted = false,
   transactionType = TransactionType.PENDING,
@@ -183,6 +186,8 @@ export const PendingTransaction = ({
       >
         <TransactionStatusDetails
           originChain={originChain}
+          destinationChain={destinationChain}
+          kappa={kappa}
           transactionStatus={currentStatus}
         />
       </Transaction>
@@ -192,9 +197,13 @@ export const PendingTransaction = ({
 
 const TransactionStatusDetails = ({
   originChain,
+  destinationChain,
+  kappa,
   transactionStatus,
 }: {
   originChain: Chain
+  destinationChain: Chain
+  kappa?: string
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =

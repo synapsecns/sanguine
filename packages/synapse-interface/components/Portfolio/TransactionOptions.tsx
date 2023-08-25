@@ -1,13 +1,13 @@
-import { Fragment } from 'react'
+import { Fragment. useCallback } from 'react'
 import { Popover, Transition } from '@headlessui/react'
-import Image from 'next/image'
-import { MoreButton } from '../layouts/LandingPageWrapper/MoreButton'
-import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import DiscordIcon from '../icons/DiscordIcon'
+import Image from 'next/image'
 import { Chain } from '@/utils/types'
-import Button from '../ui/tailwind/Button'
+import { MoreButton } from '../layouts/LandingPageWrapper/MoreButton'
 import { TransactionStatus } from './Transaction'
+import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
+import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/tailwind/Button'
 
 export const TransactionOptions = ({
   originChain,
@@ -16,6 +16,23 @@ export const TransactionOptions = ({
   originChain: Chain
   transactionStatus: TransactionStatus
 }) => {
+  // const handleTransactionClick: () => void = useCallback(() => {
+  //   if (kappa && originChainId && transactionType === ActivityType.RECENT) {
+  //     const explorerLink: string = getTransactionExplorerLink({
+  //       kappa,
+  //       fromChainId: originChainId,
+  //       toChainId: destinationChainId,
+  //     })
+  //     window.open(explorerLink, '_blank')
+  //   } else {
+  //     const explorerLink: string = getExplorerTxUrl({
+  //       chainId: originChainId,
+  //       hash: originTxnHash,
+  //     })
+  //     window.open(explorerLink, '_blank')
+  //   }
+  // }, [kappa, originChainId, destinationChainId, transactionType])
+
   return (
     <Popover className="relative inline-block">
       {({ open }) => (
