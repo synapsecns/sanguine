@@ -170,7 +170,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
     return (
-      <div data-test-id="initializing-status">
+      <div data-test-id="initializing-status" className="flex justify-between">
         <div>Initializing...</div>
       </div>
     )
@@ -178,7 +178,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.PENDING) {
     return (
-      <div data-test-id="pending-status">
+      <div data-test-id="pending-status" className="flex justify-between">
         <div>Sent</div>
         <TransactionOptions />
       </div>
@@ -187,7 +187,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.COMPLETED) {
     return (
-      <div data-test-id="completed-status">
+      <div data-test-id="completed-status" className="flex justify-between">
         <div>Confirmed on Synapse Explorer</div>
       </div>
     )
