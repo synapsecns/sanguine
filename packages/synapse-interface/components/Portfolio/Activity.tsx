@@ -79,12 +79,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
   const isLoading: boolean =
-    isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
+    isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
 
-  console.log(
-    'historicalTransactionsByTime?.transactionsWithinLast10Mins:',
-    historicalTransactionsByTime?.transactionsWithinLast10Mins
-  )
   return (
     <div
       data-test-id="activity"
