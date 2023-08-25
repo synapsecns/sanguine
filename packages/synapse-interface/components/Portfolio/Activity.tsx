@@ -169,7 +169,7 @@ export const MostRecentTransaction = () => {
   const tenMinutesInUnix: number = 10 * 60
 
   const lastHistoricalTransaction: BridgeTransaction =
-    userHistoricalTransactions[0]
+    userHistoricalTransactions && userHistoricalTransactions[0]
   const isLastHistoricalTransactionRecent: boolean =
     currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
