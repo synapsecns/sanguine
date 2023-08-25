@@ -198,7 +198,7 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="pending-wallet-action-status" className={sharedClass}>
         <div>Wallet signature required</div>
-        <button>Open wallet</button>
+        <div>Check wallet</div>
       </div>
     )
   }
