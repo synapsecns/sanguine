@@ -115,7 +115,7 @@ export const CANTO: Chain = {
     fallback: 'https://canto.slingshot.finance',
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
-  explorerUrl: 'https://evm.explorer.canto.io',
+  explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
   color: 'teal',
 }
@@ -248,7 +248,7 @@ export const BOBA: Chain = {
     fallback: 'https://replica.boba.network',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
-  explorerUrl: 'https://blockexplorer.boba.network',
+  explorerUrl: 'https://bobascan.com',
   explorerName: 'Boba Explorer',
   color: 'lime',
 }

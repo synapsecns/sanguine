@@ -194,7 +194,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <ActivitySection title="Recent">
           {historicalTransactionsByTime?.remainingTransactions &&
             historicalTransactionsByTime.remainingTransactions
-              .slice(0, 7) //temporarily only show recent 5ß
+              .slice(0, 6) //temporarily only show recent 6
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
