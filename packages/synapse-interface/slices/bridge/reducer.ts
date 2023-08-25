@@ -145,10 +145,10 @@ export const bridgeSlice = createSlice({
       .addCase(
         removePendingBridgeTransaction,
         (state, action: PayloadAction<number>) => {
-          const timestampToRemove = action.payload
+          const idTimestampToRemove = action.payload
           state.pendingBridgeTransactions =
             state.pendingBridgeTransactions.filter(
-              (transaction) => transaction.timestamp !== timestampToRemove
+              (transaction) => transaction.id !== idTimestampToRemove
             )
         }
       )
