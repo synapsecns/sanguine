@@ -103,7 +103,7 @@ export const Transaction = ({
               tokenAmount={destinationValue}
             />
           </div>
-          <div className="p-3">
+          <div className="p-4">
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
                 estimatedCompletionInSeconds={

@@ -485,7 +485,7 @@ export const TransactionPayloadDetail = ({
   return (
     <div
       data-test-id="transaction-payload-detail"
-      className="flex flex-col space-y-1"
+      className="flex flex-col p-1 space-y-1"
     >
       {chain && (
         <div
