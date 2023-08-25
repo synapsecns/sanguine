@@ -58,7 +58,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     if (!hasHistoricalTransactions) return
 
     const currentUnixTimestamp = Math.floor(Date.now() / 1000)
-    const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 6000
+    const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 600
 
     const transactionsWithinLast10Mins = userHistoricalTransactions.filter(
       (transaction) =>
