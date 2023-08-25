@@ -188,6 +188,7 @@ export const PendingTransaction = ({
           originChain={originChain}
           destinationChain={destinationChain}
           kappa={kappa}
+          transactionHash={transactionHash}
           transactionStatus={currentStatus}
         />
       </Transaction>
@@ -199,11 +200,13 @@ const TransactionStatusDetails = ({
   originChain,
   destinationChain,
   kappa,
+  transactionHash,
   transactionStatus,
 }: {
   originChain: Chain
   destinationChain: Chain
   kappa?: string
+  transactionHash?: string
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
@@ -231,6 +234,9 @@ const TransactionStatusDetails = ({
         <div>Sent: {originChain.explorerName} </div>
         <TransactionOptions
           originChain={originChain}
+          destinationChain={destinationChain}
+          kappa={kappa}
+          transactionHash={transactionHash}
           transactionStatus={transactionStatus}
         />
       </div>
@@ -243,6 +249,9 @@ const TransactionStatusDetails = ({
         <div>Confirmed on Synapse Explorer</div>
         <TransactionOptions
           originChain={originChain}
+          destinationChain={destinationChain}
+          kappa={kappa}
+          transactionHash={transactionHash}
           transactionStatus={transactionStatus}
         />
       </div>

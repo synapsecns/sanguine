@@ -8,30 +8,42 @@ import { TransactionStatus } from './Transaction'
 import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
 import DiscordIcon from '../icons/DiscordIcon'
 import Button from '../ui/tailwind/Button'
+import { getTransactionExplorerLink } from './Activity'
+import { getExplorerTxUrl } from '@/constants/urls'
 
 export const TransactionOptions = ({
   originChain,
+  destinationChain,
+  kappa,
+  transactionHash,
   transactionStatus,
 }: {
   originChain: Chain
+  destinationChain: Chain
+  kappa?: string
+  transactionHash?: string
   transactionStatus: TransactionStatus
 }) => {
-  // const handleTransactionClick: () => void = useCallback(() => {
-  //   if (kappa && originChainId && transactionType === ActivityType.RECENT) {
-  //     const explorerLink: string = getTransactionExplorerLink({
-  //       kappa,
-  //       fromChainId: originChainId,
-  //       toChainId: destinationChainId,
-  //     })
-  //     window.open(explorerLink, '_blank')
-  //   } else {
-  //     const explorerLink: string = getExplorerTxUrl({
-  //       chainId: originChainId,
-  //       hash: originTxnHash,
-  //     })
-  //     window.open(explorerLink, '_blank')
-  //   }
-  // }, [kappa, originChainId, destinationChainId, transactionType])
+  const handleExplorerClick: () => void = useCallback(() => {
+    if (
+      kappa &&
+      originChain &&
+      transactionStatus === TransactionStatus.COMPLETED
+    ) {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+        toChainId: destinationChain.id,
+      })
+      window.open(explorerLink, '_blank')
+    } else {
+      const explorerLink: string = getExplorerTxUrl({
+        chainId: originChain.id,
+        hash: transactionHash,
+      })
+      window.open(explorerLink, '_blank')
+    }
+  }, [kappa, originChain, destinationChain, transactionStatus, transactionHash])
 
   return (
     <Popover className="relative inline-block">
