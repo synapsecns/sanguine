@@ -166,7 +166,7 @@ export const MostRecentTransaction = () => {
     userPendingTransactions && userPendingTransactions[0]
 
   const currentTime: number = getTimeMinutesBeforeNow(0)
-  const tenMinutesInUnix: number = 10 * 60
+  const tenMinutesInUnix: number = 60 * 60
 
   const lastHistoricalTransaction: BridgeTransaction =
     userHistoricalTransactions && userHistoricalTransactions[0]
