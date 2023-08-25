@@ -193,7 +193,7 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-3 text-sm'
+    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-2 text-sm items-center'
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
       <div data-test-id="pending-wallet-action-status" className={sharedClass}>
@@ -224,6 +224,7 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="completed-status" className={sharedClass}>
         <div>Confirmed on Synapse Explorer</div>
+        <TransactionOptions originChain={originChain} />
       </div>
     )
   }

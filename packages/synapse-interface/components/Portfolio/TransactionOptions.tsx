@@ -66,7 +66,7 @@ export function TransactionPopoverContainer({
     >
       <Popover.Panel
         className={`
-          absolute z-10 top-[-74px] left-[42px] transform-gpu
+          absolute z-10 top-[-74px] left-[30px] transform-gpu
           -translate-x-full border border-[#3D3D5C] bg-[#252537]
           w-screen max-w-xs rounded-md overflow-hidden
         `}
@@ -98,7 +98,7 @@ export function DropdownButton({
         group rounded-lg p-1
         border border-[#2F2F2F] hover:border-[#101018]
         bg-transparent hover:bg-[#101018]
-        focus:bg-transparent active:bg-transparent
+        focus:bg-transparent
         ${className}
       `}
       {...props}
