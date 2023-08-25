@@ -283,3 +283,8 @@ query GetReceiptCount ($chain_id: Int!) {
 query GetBlockTimeCount ($chain_id: Int!) {
   response: blockTimeCount (chain_id: $chain_id)
 }
+
+
+query DeleteRangeTemp ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
+  response: delRangeTemp (chain_id: $chain_id, start_block: $start_block, end_block: $end_block)
+}

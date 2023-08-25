@@ -73,6 +73,7 @@ type ComplexityRoot struct {
 	Query struct {
 		BlockTime                func(childComplexity int, chainID int, blockNumber int) int
 		BlockTimeCount           func(childComplexity int, chainID int) int
+		DelRangeTemp             func(childComplexity int, chainID int, startBlock int, endBlock int) int
 		FirstStoredBlockNumber   func(childComplexity int, chainID int) int
 		LastConfirmedBlockNumber func(childComplexity int, chainID int) int
 		LastIndexed              func(childComplexity int, contractAddress string, chainID int) int
@@ -155,6 +156,7 @@ type QueryResolver interface {
 	LogsAtHeadRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error)
 	ReceiptsAtHeadRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error)
 	TransactionsAtHeadRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, lastIndexed int, page int) ([]*model.Transaction, error)
+	DelRangeTemp(ctx context.Context, chainID int, startBlock int, endBlock int) (*bool, error)
 }
 type ReceiptResolver interface {
 	Logs(ctx context.Context, obj *model.Receipt) ([]*model.Log, error)
@@ -324,6 +326,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.BlockTimeCount(childComplexity, args["chain_id"].(int)), true
+
+	case "Query.delRangeTemp":
+		if e.complexity.Query.DelRangeTemp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_delRangeTemp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.DelRangeTemp(childComplexity, args["chain_id"].(int), args["start_block"].(int), args["end_block"].(int)), true
 
 	case "Query.firstStoredBlockNumber":
 		if e.complexity.Query.FirstStoredBlockNumber == nil {
@@ -997,6 +1011,13 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     last_indexed: Int!
     page: Int!
   ): [Transaction]
+
+  delRangeTemp(
+    chain_id: Int!
+    start_block: Int!
+    end_block: Int!
+  ): Boolean
+
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON
@@ -1122,6 +1143,39 @@ func (ec *executionContext) field_Query_blockTime_args(ctx context.Context, rawA
 		}
 	}
 	args["block_number"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_delRangeTemp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["chain_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chain_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chain_id"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["start_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_block"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["start_block"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["end_block"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_block"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["end_block"] = arg2
 	return args, nil
 }
 
@@ -4135,6 +4189,58 @@ func (ec *executionContext) fieldContext_Query_transactionsAtHeadRange(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_transactionsAtHeadRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_delRangeTemp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_delRangeTemp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DelRangeTemp(rctx, fc.Args["chain_id"].(int), fc.Args["start_block"].(int), fc.Args["end_block"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_delRangeTemp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_delRangeTemp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8225,6 +8331,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_transactionsAtHeadRange(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "delRangeTemp":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_delRangeTemp(ctx, field)
 				return res
 			}
 

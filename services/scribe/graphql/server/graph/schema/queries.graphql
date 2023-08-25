@@ -148,4 +148,11 @@ type Query {
     last_indexed: Int!
     page: Int!
   ): [Transaction]
+
+  delRangeTemp(
+    chain_id: Int!
+    start_block: Int!
+    end_block: Int!
+  ): Boolean
+
 }
