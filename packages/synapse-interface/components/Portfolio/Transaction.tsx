@@ -8,7 +8,6 @@ import {
 import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
-import TransactionArrow from '../icons/TransactionArrow'
 
 export enum TransactionType {
   PENDING,
@@ -37,6 +36,7 @@ export interface TransactionProps {
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
   transactionHash?: string
+  children?: React.ReactNode
 }
 
 export const Transaction = ({
@@ -54,6 +54,7 @@ export const Transaction = ({
   transactionStatus,
   transactionType,
   transactionHash,
+  children,
 }: TransactionProps) => {
   const estimatedCompletionInSeconds: number = useMemo(() => {
     return originChain
@@ -66,51 +67,53 @@ export const Transaction = ({
   return (
     <div
       data-test-id="transaction"
-      className={`
-      flex flex-row my-2 text-[#C2C2D6]
-      border border-[#222235] rounded-lg overflow-hidden`}
+      className="flex flex-col my-2 text-[#C2C2D6]
+      border border-[#222235] rounded-lg overflow-hidden"
     >
-      <div
-        className={`
-        flex border-r border-r-[#252537] px-2 py-3
-        ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
-        `}
-      >
-        <TransactionPayloadDetail
-          chain={originChain}
-          token={originToken}
-          tokenAmount={originValue}
-        />
-      </div>
-      <div
-        className={`
-        flex flex-row justify-between flex-1
-        ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
-        `}
-      >
-        <div className="px-2 py-3">
+      <div className="flex flex-row">
+        <div
+          className={`
+          flex border-r border-r-[#252537] px-2 py-3
+          ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
+          `}
+        >
           <TransactionPayloadDetail
-            chain={destinationChain}
-            token={destinationToken}
-            tokenAmount={destinationValue}
+            chain={originChain}
+            token={originToken}
+            tokenAmount={originValue}
           />
         </div>
-        <div className="px-2 py-3 ml-auto">
-          {transactionType === TransactionType.PENDING ? (
-            <EstimatedDuration
-              estimatedCompletionInSeconds={
-                estimatedDuration ?? estimatedCompletionInSeconds
-              }
+        <div
+          className={`
+          flex flex-row justify-between flex-1
+          ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
+          `}
+        >
+          <div className="px-2 py-3">
+            <TransactionPayloadDetail
+              chain={destinationChain}
+              token={destinationToken}
+              tokenAmount={destinationValue}
             />
-          ) : (
-            <Completed
-              transactionCompletedTime={completedTimestamp}
-              connectedAddress={connectedAddress}
-              destinationAddress={destinationAddress}
-            />
-          )}
+          </div>
+          <div className="px-2 py-3 ml-auto">
+            {transactionType === TransactionType.PENDING ? (
+              <EstimatedDuration
+                estimatedCompletionInSeconds={
+                  estimatedDuration ?? estimatedCompletionInSeconds
+                }
+              />
+            ) : (
+              <Completed
+                transactionCompletedTime={completedTimestamp}
+                connectedAddress={connectedAddress}
+                destinationAddress={destinationAddress}
+              />
+            )}
+          </div>
         </div>
       </div>
+      {children}
     </div>
   )
 }
@@ -172,11 +175,12 @@ export const PendingTransaction = ({
         startedTimestamp={startedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
-      />
-      <TransactionStatusDetails
-        originChain={originChain}
-        transactionStatus={currentStatus}
-      />
+      >
+        <TransactionStatusDetails
+          originChain={originChain}
+          transactionStatus={currentStatus}
+        />
+      </Transaction>
     </div>
   )
 }
@@ -192,7 +196,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="pending-wallet-action-status"
-        className="flex justify-between"
+        className="flex justify-between bg-[#1B1B29] border border-[#252537]"
       >
         <div>Wallet signature required</div>
         <button>Open wallet</button>
