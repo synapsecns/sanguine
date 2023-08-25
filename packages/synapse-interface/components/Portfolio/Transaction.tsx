@@ -100,7 +100,7 @@ export const Transaction = ({
       >
         <div
           className={`
-          flex border-r border-r-[#252537] p-2
+          flex items-center border-r border-r-[#252537] p-2
           ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
           `}
         >
@@ -116,7 +116,7 @@ export const Transaction = ({
           ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
           `}
         >
-          <div className="p-2">
+          <div className="flex items-center p-2">
             <TransactionPayloadDetail
               chain={destinationChain}
               token={destinationToken}

@@ -533,7 +533,7 @@ export const TransactionPayloadDetail = ({
         </div>
       )}
 
-      {token && (
+      {token && tokenAmount && (
         <div
           data-test-id="transaction-payload-token"
           className="flex flex-row items-center"
