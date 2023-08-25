@@ -161,7 +161,7 @@ export function LandingNav() {
   )
 }
 
-function PopoverPanelContainer({
+export function PopoverPanelContainer({
   children,
   className,
 }: {

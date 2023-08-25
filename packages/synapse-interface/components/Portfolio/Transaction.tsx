@@ -7,7 +7,7 @@ import {
 } from './Activity'
 import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
-// import { TransactionOptions } from './TransactionOptions'
+import { TransactionOptions } from './TransactionOptions'
 
 export enum TransactionType {
   PENDING,
@@ -180,7 +180,7 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="pending-status">
         <div>Sent</div>
-        {/* <TransactionOptions /> */}
+        <TransactionOptions />
       </div>
     )
   }

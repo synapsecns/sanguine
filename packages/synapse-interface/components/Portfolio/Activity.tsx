@@ -165,11 +165,13 @@ export const MostRecentTransaction = () => {
   const lastPendingTransaction: BridgeTransaction =
     userPendingTransactions && userPendingTransactions[0]
 
-  const recentTime: number = getTimeMinutesBeforeNow(10)
+  const currentTime: number = getTimeMinutesBeforeNow(0)
+  const tenMinutesInUnix: number = 10 * 60
+
   const lastHistoricalTransaction: BridgeTransaction =
     userHistoricalTransactions[0]
   const isLastHistoricalTransactionRecent: boolean =
-    lastHistoricalTransaction?.toInfo?.time < recentTime
+    currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
   if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
     return null
