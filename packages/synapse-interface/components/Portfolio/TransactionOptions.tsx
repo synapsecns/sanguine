@@ -10,6 +10,7 @@ import DiscordIcon from '../icons/DiscordIcon'
 import Button from '../ui/tailwind/Button'
 import { getTransactionExplorerLink } from './Activity'
 import { getExplorerTxUrl } from '@/constants/urls'
+import SynapseLogo from '@assets/icons/synapse.svg'
 
 export const TransactionOptions = ({
   originChain,
@@ -60,18 +61,33 @@ export const TransactionOptions = ({
             <DropdownButton open={open} />
           </Popover.Button>
           <TransactionPopoverContainer>
-            <OptionButton
-              icon={
-                <Image
-                  className="rounded-full"
-                  height={20}
-                  src={originChain.chainImg}
-                  alt={`${originChain.explorerName} logo`}
-                />
-              }
-              text={`Check on ${originChain.explorerName}`}
-              onClick={null}
-            />
+            {transactionStatus === TransactionStatus.COMPLETED ? (
+              <OptionButton
+                icon={
+                  <Image
+                    className="rounded-full"
+                    height={20}
+                    src={SynapseLogo}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                }
+                text={`Check on Synapse Explorer`}
+                onClick={handleExplorerClick}
+              />
+            ) : (
+              <OptionButton
+                icon={
+                  <Image
+                    className="rounded-full"
+                    height={20}
+                    src={originChain.chainImg}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                }
+                text={`Check on ${originChain.explorerName}`}
+                onClick={handleExplorerClick}
+              />
+            )}
             <OptionButton
               icon={<DiscordIcon height={20} />}
               text={'Contact Support'}
