@@ -90,24 +90,32 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
               <PendingTransaction
                 connectedAddress={address as Address}
                 destinationAddress={transaction?.fromInfo?.address as Address}
-                startedTimestamp={transaction?.fromInfo?.time}
-                transactionHash={transaction?.fromInfo?.txnHash}
+                startedTimestamp={transaction?.fromInfo?.time as number}
+                transactionHash={transaction?.fromInfo?.txnHash as string}
                 isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                 isCompleted={transaction?.toInfo?.time ? true : false}
                 transactionType={TransactionType.PENDING}
-                originValue={transaction?.fromInfo?.formattedValue}
-                originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
-                originToken={tokenAddressToToken(
-                  transaction?.fromInfo?.chainID,
-                  transaction?.fromInfo?.tokenAddress
-                )}
-                destinationChain={
-                  CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+                originValue={transaction?.fromInfo?.formattedValue as number}
+                originChain={
+                  CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                 }
-                destinationToken={tokenAddressToToken(
-                  transaction?.toInfo?.chainID,
-                  transaction?.toInfo?.tokenAddress
-                )}
+                destinationChain={
+                  CHAINS_BY_ID[
+                    transaction?.fromInfo?.destinationChainID
+                  ] as Chain
+                }
+                originToken={
+                  tokenAddressToToken(
+                    transaction?.fromInfo?.chainID,
+                    transaction?.fromInfo?.tokenAddress
+                  ) as Token
+                }
+                destinationToken={
+                  tokenAddressToToken(
+                    transaction?.toInfo?.chainID,
+                    transaction?.toInfo?.tokenAddress
+                  ) as Token
+                }
               />
             ))}
         </ActivitySection>
@@ -185,14 +193,14 @@ export const MostRecentTransaction = () => {
     return (
       <PendingTransaction
         connectedAddress={address as Address}
-        originChain={transaction.originChain}
-        originToken={transaction.originToken}
+        originChain={transaction.originChain as Chain}
+        originToken={transaction.originToken as Token}
         originValue={Number(transaction.originValue)}
-        destinationChain={transaction.destinationChain}
-        destinationToken={transaction.destinationToken}
-        startedTimestamp={transaction.timestamp}
-        transactionHash={transaction.transactionHash}
-        isSubmitted={transaction.isSubmitted}
+        destinationChain={transaction.destinationChain as Chain}
+        destinationToken={transaction.destinationToken as Token}
+        startedTimestamp={transaction.timestamp as number}
+        transactionHash={transaction.transactionHash as string}
+        isSubmitted={transaction.isSubmitted as boolean}
         transactionType={TransactionType.PENDING}
       />
     )
@@ -204,22 +212,26 @@ export const MostRecentTransaction = () => {
     return (
       <PendingTransaction
         connectedAddress={address as Address}
-        startedTimestamp={transaction?.fromInfo?.time}
-        transactionHash={transaction?.fromInfo?.txnHash}
+        startedTimestamp={transaction?.fromInfo?.time as number}
+        transactionHash={transaction?.fromInfo?.txnHash as string}
         transactionType={TransactionType.PENDING}
-        originValue={transaction?.fromInfo?.formattedValue}
-        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
+        originValue={transaction?.fromInfo?.formattedValue as number}
+        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
         destinationChain={
-          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
         }
-        originToken={tokenAddressToToken(
-          transaction?.fromInfo?.chainID,
-          transaction?.fromInfo?.tokenAddress
-        )}
-        destinationToken={tokenAddressToToken(
-          transaction?.toInfo?.chainID,
-          transaction?.toInfo?.tokenAddress
-        )}
+        originToken={
+          tokenAddressToToken(
+            transaction?.fromInfo?.chainID,
+            transaction?.fromInfo?.tokenAddress
+          ) as Token
+        }
+        destinationToken={
+          tokenAddressToToken(
+            transaction?.toInfo?.chainID,
+            transaction?.toInfo?.tokenAddress
+          ) as Token
+        }
         destinationAddress={transaction?.fromInfo?.address as Address}
         isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
         isCompleted={transaction?.toInfo?.time ? true : false}
@@ -234,25 +246,29 @@ export const MostRecentTransaction = () => {
       <PendingTransaction
         connectedAddress={address as Address}
         destinationAddress={transaction?.fromInfo?.address as Address}
-        startedTimestamp={transaction?.fromInfo?.time}
-        completedTimestamp={transaction?.toInfo?.time}
-        transactionHash={transaction?.fromInfo?.txnHash}
-        kappa={transaction?.kappa}
+        startedTimestamp={transaction?.fromInfo?.time as number}
+        completedTimestamp={transaction?.toInfo?.time as number}
+        transactionHash={transaction?.fromInfo?.txnHash as string}
+        kappa={transaction?.kappa as string}
         transactionType={TransactionType.PENDING}
-        originValue={transaction?.fromInfo?.formattedValue}
-        destinationValue={transaction?.toInfo?.formattedValue}
-        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
+        originValue={transaction?.fromInfo?.formattedValue as number}
+        destinationValue={transaction?.toInfo?.formattedValue as number}
+        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
         destinationChain={
-          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
         }
-        originToken={tokenAddressToToken(
-          transaction?.fromInfo?.chainID,
-          transaction?.fromInfo?.tokenAddress
-        )}
-        destinationToken={tokenAddressToToken(
-          transaction?.toInfo?.chainID,
-          transaction?.toInfo?.tokenAddress
-        )}
+        originToken={
+          tokenAddressToToken(
+            transaction?.fromInfo?.chainID,
+            transaction?.fromInfo?.tokenAddress
+          ) as Token
+        }
+        destinationToken={
+          tokenAddressToToken(
+            transaction?.toInfo?.chainID,
+            transaction?.toInfo?.tokenAddress
+          ) as Token
+        }
         isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
         isCompleted={true}
       />
@@ -274,6 +290,7 @@ export const PendingTransactionAwaitingIndexing = () => {
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain as Chain}
             destinationToken={transaction.destinationToken as Token}
+            transactionHash={transaction.transactionHash}
             isSubmitted={transaction.isSubmitted as boolean}
             startedTimestamp={transaction.timestamp as number}
             transactionType={TransactionType.PENDING}
