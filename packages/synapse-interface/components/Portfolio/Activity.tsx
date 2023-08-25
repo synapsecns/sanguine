@@ -503,7 +503,7 @@ export const TransactionPayloadDetail = ({
           ) : (
             <div className="mr-1">...</div>
           )}
-          <div>{token?.symbol}</div>
+          <div className="mt-0.5 text-sm">{token?.symbol}</div>
         </div>
       )}
     </div>
