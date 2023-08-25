@@ -441,6 +441,7 @@ func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 }
 
 // BumpBackend is a helper to get the test backend to emit expected events.
+// TODO: Look into using anvil EvmMine() instead of this.
 func (a *SimulatedBackendsTestSuite) BumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
 	// Call EmitAgentsEventA 3 times on the backend.
 	for i := 0; i < 3; i++ {
