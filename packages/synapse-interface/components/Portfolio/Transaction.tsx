@@ -112,6 +112,7 @@ export const PendingTransaction = ({
   originValue,
   destinationChain,
   destinationToken,
+  destinationValue,
   startedTimestamp,
   transactionHash,
   isSubmitted,
@@ -142,6 +143,7 @@ export const PendingTransaction = ({
         originValue={originValue}
         destinationChain={destinationChain}
         destinationToken={destinationToken}
+        destinationValue={destinationValue}
         startedTimestamp={startedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
@@ -184,7 +186,7 @@ const TransactionStatusDetails = ({
   if (transactionStatus === TransactionStatus.PENDING) {
     return (
       <div data-test-id="pending-status" className="flex justify-between">
-        <div>Sent</div>
+        <div>Sent: {originChain.explorerName} </div>
         <TransactionOptions originChain={originChain} />
       </div>
     )

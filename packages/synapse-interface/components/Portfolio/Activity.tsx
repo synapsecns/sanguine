@@ -173,81 +173,92 @@ export const MostRecentTransaction = () => {
   const isLastHistoricalTransactionRecent: boolean =
     currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
+  console.log('lastHistoricalTransaction:', lastHistoricalTransaction)
+  console.log(
+    'isLastHistoricalTransactionRecent:',
+    isLastHistoricalTransactionRecent
+  )
+
+  let transaction
+
   if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
     return null
   }
 
   if (lastPendingBridgeTransaction) {
+    console.log('here 1')
+    transaction = lastPendingBridgeTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
-        originChain={lastPendingBridgeTransaction.originChain}
-        originToken={lastPendingBridgeTransaction.originToken}
-        originValue={Number(lastPendingBridgeTransaction.originValue)}
-        destinationChain={lastPendingBridgeTransaction.destinationChain}
-        destinationToken={lastPendingBridgeTransaction.destinationToken}
-        startedTimestamp={lastPendingBridgeTransaction.timestamp}
-        transactionHash={lastPendingBridgeTransaction.transactionHash}
-        isSubmitted={lastPendingBridgeTransaction.isSubmitted}
+        originChain={transaction.originChain}
+        originToken={transaction.originToken}
+        originValue={Number(transaction.originValue)}
+        destinationChain={transaction.destinationChain}
+        destinationToken={transaction.destinationToken}
+        startedTimestamp={transaction.timestamp}
+        transactionHash={transaction.transactionHash}
+        isSubmitted={transaction.isSubmitted}
         transactionType={TransactionType.PENDING}
       />
     )
   }
 
   if (lastPendingTransaction) {
+    console.log('here 2')
+    transaction = lastPendingTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
-        startedTimestamp={lastPendingTransaction?.fromInfo?.time}
-        transactionHash={lastPendingTransaction?.fromInfo?.txnHash}
-        isSubmitted={lastPendingTransaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={lastPendingTransaction?.toInfo?.time ? true : false}
+        startedTimestamp={transaction?.fromInfo?.time}
+        transactionHash={transaction?.fromInfo?.txnHash}
+        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={transaction?.toInfo?.time ? true : false}
         transactionType={TransactionType.PENDING}
-        originValue={lastPendingTransaction?.fromInfo?.formattedValue}
-        originChain={CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.chainID]}
+        originValue={transaction?.fromInfo?.formattedValue}
+        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
         destinationChain={
-          CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.destinationChainID]
+          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
         }
         originToken={tokenAddressToToken(
-          lastPendingTransaction?.fromInfo?.chainID,
-          lastPendingTransaction?.fromInfo?.tokenAddress
+          transaction?.fromInfo?.chainID,
+          transaction?.fromInfo?.tokenAddress
         )}
         destinationToken={tokenAddressToToken(
-          lastPendingTransaction?.toInfo?.chainID,
-          lastPendingTransaction?.toInfo?.tokenAddress
+          transaction?.toInfo?.chainID,
+          transaction?.toInfo?.tokenAddress
         )}
-        destinationAddress={
-          lastPendingTransaction?.fromInfo?.address as Address
-        }
+        destinationAddress={transaction?.fromInfo?.address as Address}
       />
     )
   }
 
   if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
+    console.log('here 3')
+    transaction = lastHistoricalTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
-        startedTimestamp={lastPendingTransaction?.fromInfo?.time}
-        transactionHash={lastPendingTransaction?.fromInfo?.txnHash}
-        isSubmitted={lastPendingTransaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={lastPendingTransaction?.toInfo?.time ? true : false}
+        startedTimestamp={transaction?.fromInfo?.time}
+        transactionHash={transaction?.fromInfo?.txnHash}
+        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={true}
         transactionType={TransactionType.PENDING}
-        originValue={lastPendingTransaction?.fromInfo?.formattedValue}
-        originChain={CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.chainID]}
+        originValue={transaction?.fromInfo?.formattedValue}
+        destinationValue={transaction?.toInfo?.formattedValue}
+        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
         destinationChain={
-          CHAINS_BY_ID[lastPendingTransaction?.fromInfo?.destinationChainID]
+          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
         }
         originToken={tokenAddressToToken(
-          lastPendingTransaction?.fromInfo?.chainID,
-          lastPendingTransaction?.fromInfo?.tokenAddress
+          transaction?.fromInfo?.chainID,
+          transaction?.fromInfo?.tokenAddress
         )}
         destinationToken={tokenAddressToToken(
-          lastPendingTransaction?.toInfo?.chainID,
-          lastPendingTransaction?.toInfo?.tokenAddress
+          transaction?.toInfo?.chainID,
+          transaction?.toInfo?.tokenAddress
         )}
-        destinationAddress={
-          lastPendingTransaction?.fromInfo?.address as Address
-        }
+        destinationAddress={transaction?.fromInfo?.address as Address}
       />
     )
   }
