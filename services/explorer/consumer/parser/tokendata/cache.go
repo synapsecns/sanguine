@@ -126,7 +126,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.decimals = tokenData.TokenDecimals
 
 			return nil
-		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	g.Go(func() error {
@@ -140,7 +140,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.tokenID = *nullableTokenID
 
 			return nil
-		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	err := g.Wait()
@@ -226,7 +226,7 @@ func (t *tokenDataServiceImpl) retrieveCCTPTokenData(parentCtx context.Context, 
 		res.decimals = 6 // TODO, as cctp bridging matures, retrieve this data from on chain somehow.
 
 		return nil
-	}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	if err != nil {
 		return nil, fmt.Errorf("could not get token data: %w", err)
 	}
