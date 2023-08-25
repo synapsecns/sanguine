@@ -53,6 +53,24 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
     [userHistoricalTransactions]
   )
+
+  const historicalTransactionsByTime = useMemo(() => {
+    if (!hasHistoricalTransactions) return
+    const currentUnixTimestamp = Math.floor(Date.now() / 1000)
+    const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 600
+    const transactionsWithinLast10Mins = userHistoricalTransactions.filter(
+      (transaction) =>
+        transaction.fromInfo?.time &&
+        transaction.fromInfo.time >= tenMinutesAgoUnixTimestamp
+    )
+    const remainingTransactions = userHistoricalTransactions.filter(
+      (transaction) =>
+        transaction.fromInfo?.time &&
+        transaction.fromInfo.time < tenMinutesAgoUnixTimestamp
+    )
+    return { transactionsWithinLast10Mins, remainingTransactions }
+  }, [hasHistoricalTransactions])
+
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
