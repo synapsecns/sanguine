@@ -74,9 +74,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return { transactionsWithinLast10Mins, remainingTransactions }
   }, [hasHistoricalTransactions])
 
-  const { transactionsWithinLast10Mins, remainingTransactions } =
-    historicalTransactionsByTime
-
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
@@ -84,6 +81,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const isLoading: boolean =
     isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
 
+  console.log(
+    'historicalTransactionsByTime?.transactionsWithinLast10Mins:',
+    historicalTransactionsByTime?.transactionsWithinLast10Mins
+  )
   return (
     <div
       data-test-id="activity"
@@ -108,7 +109,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address &&
         !isLoading &&
-        (hasPendingTransactions || transactionsWithinLast10Mins) && (
+        (hasPendingTransactions ||
+          (historicalTransactionsByTime?.transactionsWithinLast10Mins &&
+            historicalTransactionsByTime?.transactionsWithinLast10Mins.length >
+              0)) && (
           <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
             <PendingTransactionAwaitingIndexing />
             {userPendingTransactions &&
@@ -144,8 +148,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-            {transactionsWithinLast10Mins &&
-              transactionsWithinLast10Mins.map(
+            {historicalTransactionsByTime?.transactionsWithinLast10Mins &&
+              historicalTransactionsByTime?.transactionsWithinLast10Mins
+                .length > 0 &&
+              historicalTransactionsByTime.transactionsWithinLast10Mins.map(
                 (transaction: BridgeTransaction) => (
                   <PendingTransaction
                     connectedAddress={address as Address}
@@ -190,8 +196,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          {remainingTransactions &&
-            remainingTransactions
+          {historicalTransactionsByTime?.remainingTransactions &&
+            historicalTransactionsByTime.remainingTransactions
               .slice(0, 7) //temporarily only show recent 5ß
               .map((transaction: BridgeTransaction) => (
                 <Transaction
