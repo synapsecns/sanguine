@@ -56,8 +56,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
   const historicalTransactionsByTime = useMemo(() => {
     if (!hasHistoricalTransactions) return
+
     const currentUnixTimestamp = Math.floor(Date.now() / 1000)
     const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 600
+
     const transactionsWithinLast10Mins = userHistoricalTransactions.filter(
       (transaction) =>
         transaction.fromInfo?.time &&
@@ -68,8 +70,12 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         transaction.fromInfo?.time &&
         transaction.fromInfo.time < tenMinutesAgoUnixTimestamp
     )
+
     return { transactionsWithinLast10Mins, remainingTransactions }
   }, [hasHistoricalTransactions])
+
+  const { transactionsWithinLast10Mins, remainingTransactions } =
+    historicalTransactionsByTime
 
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
@@ -100,49 +106,92 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {address && !isLoading && hasPendingTransactions && (
-        <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
-          <PendingTransactionAwaitingIndexing />
-          {userPendingTransactions &&
-            userPendingTransactions.map((transaction: BridgeTransaction) => (
-              <PendingTransaction
-                connectedAddress={address as Address}
-                destinationAddress={transaction?.fromInfo?.address as Address}
-                startedTimestamp={transaction?.fromInfo?.time as number}
-                transactionHash={transaction?.fromInfo?.txnHash as string}
-                isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-                isCompleted={transaction?.toInfo?.time ? true : false}
-                transactionType={TransactionType.PENDING}
-                originValue={transaction?.fromInfo?.formattedValue as number}
-                originChain={
-                  CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
-                }
-                destinationChain={
-                  CHAINS_BY_ID[
-                    transaction?.fromInfo?.destinationChainID
-                  ] as Chain
-                }
-                originToken={
-                  tokenAddressToToken(
-                    transaction?.fromInfo?.chainID,
-                    transaction?.fromInfo?.tokenAddress
-                  ) as Token
-                }
-                destinationToken={
-                  tokenAddressToToken(
-                    transaction?.toInfo?.chainID,
-                    transaction?.toInfo?.tokenAddress
-                  ) as Token
-                }
-              />
-            ))}
-        </ActivitySection>
-      )}
+      {address &&
+        !isLoading &&
+        (hasPendingTransactions || transactionsWithinLast10Mins) && (
+          <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
+            <PendingTransactionAwaitingIndexing />
+            {userPendingTransactions &&
+              userPendingTransactions.map((transaction: BridgeTransaction) => (
+                <PendingTransaction
+                  connectedAddress={address as Address}
+                  destinationAddress={transaction?.fromInfo?.address as Address}
+                  startedTimestamp={transaction?.fromInfo?.time as number}
+                  transactionHash={transaction?.fromInfo?.txnHash as string}
+                  isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+                  isCompleted={transaction?.toInfo?.time ? true : false}
+                  transactionType={TransactionType.PENDING}
+                  originValue={transaction?.fromInfo?.formattedValue as number}
+                  originChain={
+                    CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
+                  }
+                  destinationChain={
+                    CHAINS_BY_ID[
+                      transaction?.fromInfo?.destinationChainID
+                    ] as Chain
+                  }
+                  originToken={
+                    tokenAddressToToken(
+                      transaction?.fromInfo?.chainID,
+                      transaction?.fromInfo?.tokenAddress
+                    ) as Token
+                  }
+                  destinationToken={
+                    tokenAddressToToken(
+                      transaction?.toInfo?.chainID,
+                      transaction?.toInfo?.tokenAddress
+                    ) as Token
+                  }
+                />
+              ))}
+            {transactionsWithinLast10Mins &&
+              transactionsWithinLast10Mins.map(
+                (transaction: BridgeTransaction) => (
+                  <PendingTransaction
+                    connectedAddress={address as Address}
+                    destinationAddress={
+                      transaction?.fromInfo?.address as Address
+                    }
+                    startedTimestamp={transaction?.fromInfo?.time as number}
+                    completedTimestamp={transaction?.toInfo?.time as number}
+                    transactionHash={transaction?.fromInfo?.txnHash as string}
+                    kappa={transaction?.kappa}
+                    isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+                    isCompleted={true}
+                    transactionType={TransactionType.PENDING}
+                    originValue={
+                      transaction?.fromInfo?.formattedValue as number
+                    }
+                    originChain={
+                      CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
+                    }
+                    destinationChain={
+                      CHAINS_BY_ID[
+                        transaction?.fromInfo?.destinationChainID
+                      ] as Chain
+                    }
+                    originToken={
+                      tokenAddressToToken(
+                        transaction?.fromInfo?.chainID,
+                        transaction?.fromInfo?.tokenAddress
+                      ) as Token
+                    }
+                    destinationToken={
+                      tokenAddressToToken(
+                        transaction?.toInfo?.chainID,
+                        transaction?.toInfo?.tokenAddress
+                      ) as Token
+                    }
+                  />
+                )
+              )}
+          </ActivitySection>
+        )}
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          {userHistoricalTransactions &&
-            userHistoricalTransactions
+          {remainingTransactions &&
+            remainingTransactions
               .slice(0, 7) //temporarily only show recent 5ß
               .map((transaction: BridgeTransaction) => (
                 <Transaction
@@ -153,6 +202,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   completedTimestamp={transaction?.toInfo?.time as number}
                   transactionHash={transaction?.fromInfo?.txnHash as string}
                   kappa={transaction?.kappa}
+                  isCompleted={true}
                   transactionType={TransactionType.HISTORICAL}
                   originValue={transaction?.fromInfo?.formattedValue as number}
                   destinationValue={
