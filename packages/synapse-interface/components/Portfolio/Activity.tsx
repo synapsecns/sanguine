@@ -212,8 +212,6 @@ export const MostRecentTransaction = () => {
         connectedAddress={address as Address}
         startedTimestamp={transaction?.fromInfo?.time}
         transactionHash={transaction?.fromInfo?.txnHash}
-        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={transaction?.toInfo?.time ? true : false}
         transactionType={TransactionType.PENDING}
         originValue={transaction?.fromInfo?.formattedValue}
         originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
@@ -229,6 +227,8 @@ export const MostRecentTransaction = () => {
           transaction?.toInfo?.tokenAddress
         )}
         destinationAddress={transaction?.fromInfo?.address as Address}
+        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={transaction?.toInfo?.time ? true : false}
       />
     )
   }
@@ -241,8 +241,6 @@ export const MostRecentTransaction = () => {
         connectedAddress={address as Address}
         startedTimestamp={transaction?.fromInfo?.time}
         transactionHash={transaction?.fromInfo?.txnHash}
-        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={true}
         transactionType={TransactionType.PENDING}
         originValue={transaction?.fromInfo?.formattedValue}
         destinationValue={transaction?.toInfo?.formattedValue}
@@ -259,6 +257,8 @@ export const MostRecentTransaction = () => {
           transaction?.toInfo?.tokenAddress
         )}
         destinationAddress={transaction?.fromInfo?.address as Address}
+        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={true}
       />
     )
   }
