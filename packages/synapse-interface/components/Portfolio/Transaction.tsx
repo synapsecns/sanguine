@@ -211,6 +211,7 @@ const TransactionStatusDetails = ({
 }) => {
   const sharedClass: string =
     'flex justify-between bg-[#1B1B29] border-t border-[#252537] px-3 py-2 text-sm items-center'
+
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
       <div data-test-id="pending-wallet-action-status" className={sharedClass}>
@@ -258,18 +259,3 @@ const TransactionStatusDetails = ({
     )
   }
 }
-
-// const handlePendingTransactionClick: () => void = useCallback(() => {
-//   if (transactionHash) {
-//     const explorerLink: string = getExplorerTxUrl({
-//       chainId: originChain.id,
-//       hash: transactionHash,
-//     })
-//     window.open(explorerLink, '_blank')
-//   }
-// }, [transactionHash])
-
-// const estimatedCompletionInSeconds: number =
-//   (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
-//     1000 +
-//   30 // Add 30 seconds to account for indexing
