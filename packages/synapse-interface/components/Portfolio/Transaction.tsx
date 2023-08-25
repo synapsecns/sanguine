@@ -63,6 +63,21 @@ export const Transaction = ({
   children,
   isCompleted,
 }: TransactionProps) => {
+  const handleExplorerClick: () => void = useCallback(() => {
+    if (
+      kappa &&
+      originChain &&
+      transactionType === TransactionType.HISTORICAL
+    ) {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+        toChainId: destinationChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [kappa, originChain, destinationChain, transactionStatus, transactionHash])
+
   const estimatedCompletionInSeconds: number = useMemo(() => {
     return originChain
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
@@ -77,7 +92,12 @@ export const Transaction = ({
       className="flex flex-col my-2 text-[#C2C2D6]
       border border-[#222235] rounded-lg overflow-hidden"
     >
-      <div className="flex flex-row">
+      <div
+        onClick={handleExplorerClick}
+        className={`flex flex-row ${
+          transactionType === TransactionType.HISTORICAL && 'cursor-pointer'
+        }`}
+      >
         <div
           className={`
           flex border-r border-r-[#252537] p-2

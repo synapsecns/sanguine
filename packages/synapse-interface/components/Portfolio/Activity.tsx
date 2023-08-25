@@ -129,25 +129,37 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
-                  connectedAddress={address}
+                  connectedAddress={address as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
-                  originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
-                  destinationValue={transaction?.toInfo?.formattedValue}
-                  startedTimestamp={transaction?.fromInfo?.time}
-                  completedTimestamp={transaction?.toInfo?.time}
+                  startedTimestamp={transaction?.fromInfo?.time as number}
+                  completedTimestamp={transaction?.toInfo?.time as number}
+                  transactionHash={transaction?.fromInfo?.txnHash as string}
+                  kappa={transaction?.kappa}
                   transactionType={TransactionType.HISTORICAL}
-                  originValue={transaction?.fromInfo?.formattedValue}
-                  originToken={tokenAddressToToken(
-                    transaction?.fromInfo?.chainID,
-                    transaction?.fromInfo?.tokenAddress
-                  )}
-                  destinationChain={
-                    CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID]
+                  originValue={transaction?.fromInfo?.formattedValue as number}
+                  destinationValue={
+                    transaction?.toInfo?.formattedValue as number
                   }
-                  destinationToken={tokenAddressToToken(
-                    transaction?.toInfo?.chainID,
-                    transaction?.toInfo?.tokenAddress
-                  )}
+                  originChain={
+                    CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
+                  }
+                  originToken={
+                    tokenAddressToToken(
+                      transaction?.fromInfo?.chainID,
+                      transaction?.fromInfo?.tokenAddress
+                    ) as Token
+                  }
+                  destinationChain={
+                    CHAINS_BY_ID[
+                      transaction?.fromInfo?.destinationChainID
+                    ] as Chain
+                  }
+                  destinationToken={
+                    tokenAddressToToken(
+                      transaction?.toInfo?.chainID,
+                      transaction?.toInfo?.tokenAddress
+                    ) as Token
+                  }
                 />
               ))}
           <ExplorerLink connectedAddress={address} />
