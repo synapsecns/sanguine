@@ -1,9 +1,11 @@
 package testutil
 
 import (
+	"context"
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/synapsecns/sanguine/core"
@@ -38,6 +40,7 @@ import (
 	coreConfig "github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
@@ -402,12 +405,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 
-	err := a.TestDeployManager.LoadHarnessContractsOnChains(
-		a.GetTestContext(),
-		a.TestBackendSummit,
-		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+	err := retry.WithBackoff(a.GetTestContext(), func(context.Context) (err error) {
+		err = a.TestDeployManager.LoadHarnessContractsOnChains(
+			a.GetTestContext(),
+			a.TestBackendSummit,
+			[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
+			[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
+			[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+		return
+	}, retry.WithMax(120*time.Second))
 	if err != nil {
 		a.T().Fatal(err)
 	}
