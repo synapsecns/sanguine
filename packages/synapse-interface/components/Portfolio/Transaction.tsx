@@ -192,12 +192,11 @@ const TransactionStatusDetails = ({
   originChain: Chain
   transactionStatus: TransactionStatus
 }) => {
+  const sharedClass: string =
+    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-3 text-sm'
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
-      <div
-        data-test-id="pending-wallet-action-status"
-        className="flex justify-between bg-[#1B1B29] border border-[#252537]"
-      >
+      <div data-test-id="pending-wallet-action-status" className={sharedClass}>
         <div>Wallet signature required</div>
         <button>Open wallet</button>
       </div>
@@ -206,7 +205,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
     return (
-      <div data-test-id="initializing-status" className="flex justify-between">
+      <div data-test-id="initializing-status" className={sharedClass}>
         <div>Initializing...</div>
       </div>
     )
@@ -214,7 +213,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.PENDING) {
     return (
-      <div data-test-id="pending-status" className="flex justify-between">
+      <div data-test-id="pending-status" className={sharedClass}>
         <div>Sent: {originChain.explorerName} </div>
         <TransactionOptions originChain={originChain} />
       </div>
@@ -223,7 +222,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.COMPLETED) {
     return (
-      <div data-test-id="completed-status" className="flex justify-between">
+      <div data-test-id="completed-status" className={sharedClass}>
         <div>Confirmed on Synapse Explorer</div>
       </div>
     )
