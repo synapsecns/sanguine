@@ -281,11 +281,14 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-2 text-sm items-center'
+    'flex justify-between bg-[#1B1B29] border-t border-[#252537] text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
-      <div data-test-id="pending-wallet-action-status" className={sharedClass}>
+      <div
+        data-test-id="pending-wallet-action-status"
+        className={`${sharedClass} p-3`}
+      >
         <div>Wallet signature required</div>
         <div>Check wallet</div>
       </div>
@@ -294,7 +297,7 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
     return (
-      <div data-test-id="initializing-status" className={sharedClass}>
+      <div data-test-id="initializing-status" className={`${sharedClass} p-3`}>
         <div>Initializing...</div>
       </div>
     )
@@ -309,9 +312,9 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
     return (
-      <div data-test-id="pending-status" className={sharedClass}>
+      <div data-test-id="pending-status" className={`${sharedClass} p-2`}>
         <div
-          className="flex cursor-pointer hover:bg-[#101018] p-1 rounded-md"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-md"
           onClick={handleExplorerClick}
         >
           <Image
@@ -342,9 +345,9 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
     return (
-      <div data-test-id="completed-status" className={sharedClass}>
+      <div data-test-id="completed-status" className={`${sharedClass} p-2`}>
         <div
-          className="flex cursor-pointer hover:bg-[#101018] p-1 rounded-md"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-md"
           onClick={handleExplorerClick}
         >
           <div>Confirmed on Synapse Explorer</div>
