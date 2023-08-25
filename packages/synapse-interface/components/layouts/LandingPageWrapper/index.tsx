@@ -164,9 +164,11 @@ export function LandingNav() {
 export function PopoverPanelContainer({
   children,
   className,
+  panelClassName,
 }: {
   children: any
   className?: string
+  panelClassName?: string
 }) {
   return (
     <Transition

@@ -2,6 +2,7 @@ import { Popover } from '@headlessui/react'
 import Image from 'next/image'
 import { MoreButton } from '../layouts/LandingPageWrapper/MoreButton'
 import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
+import DiscordIcon from '../icons/DiscordIcon'
 
 export const TransactionOptions = () => {
   return (
@@ -12,15 +13,19 @@ export const TransactionOptions = () => {
             as="div"
             onMouseEnter={() => {}}
             className={`
-        ${open ? 'text-gray-900' : 'text-purple-800'}
-         group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
-        `}
+            ${open ? 'text-gray-900' : 'text-purple-800'}
+            group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
+            `}
           >
             <MoreButton open={open} />
           </Popover.Button>
-          <PopoverPanelContainer className="-translate-x-full">
+          <PopoverPanelContainer className="-translate-x-full border border-[#3D3D5C] bg-[#252537] ">
             <button> Check on Block Scanner</button>
-            <button> Contact Support </button>
+            <OptionButton
+              icon={<DiscordIcon height={20} />}
+              text={'Contact Support'}
+              onClick={null}
+            />
           </PopoverPanelContainer>
         </>
       )}
@@ -29,17 +34,17 @@ export const TransactionOptions = () => {
 }
 
 export const OptionButton = ({
-  logoSrc,
+  icon,
   text,
   onClick,
 }: {
-  logoSrc: any
+  icon: any
   text: string
   onClick: () => void
 }) => {
   return (
     <div data-test-id="option-button" className="flex" onClick={onClick}>
-      <Image width={16} height={16} src={logoSrc} alt="option-button-logo" />
+      <div className="my-auto">{icon}</div>
       <div>{text}</div>
     </div>
   )
