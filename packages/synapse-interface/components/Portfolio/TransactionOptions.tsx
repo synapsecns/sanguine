@@ -3,8 +3,9 @@ import Image from 'next/image'
 import { MoreButton } from '../layouts/LandingPageWrapper/MoreButton'
 import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
 import DiscordIcon from '../icons/DiscordIcon'
+import { Chain } from '@/utils/types'
 
-export const TransactionOptions = () => {
+export const TransactionOptions = ({ originChain }: { originChain: Chain }) => {
   return (
     <Popover className="relative inline-block">
       {({ open }) => (
@@ -20,7 +21,17 @@ export const TransactionOptions = () => {
             <MoreButton open={open} />
           </Popover.Button>
           <PopoverPanelContainer className="-translate-x-full border border-[#3D3D5C] bg-[#252537] ">
-            <button> Check on Block Scanner</button>
+            <OptionButton
+              icon={
+                <Image
+                  height={20}
+                  src={originChain.chainImg}
+                  alt={`${originChain.explorerName} logo`}
+                />
+              }
+              text={`Check on ${originChain.explorerName}`}
+              onClick={null}
+            />
             <OptionButton
               icon={<DiscordIcon height={20} />}
               text={'Contact Support'}

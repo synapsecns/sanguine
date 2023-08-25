@@ -185,7 +185,7 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="pending-status" className="flex justify-between">
         <div>Sent</div>
-        <TransactionOptions />
+        <TransactionOptions originChain={originChain} />
       </div>
     )
   }
