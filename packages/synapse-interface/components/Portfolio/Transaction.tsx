@@ -123,9 +123,12 @@ export const PendingTransaction = ({
     if (!transactionHash && !isSubmitted)
       return TransactionStatus.PENDING_WALLET_ACTION
     if (transactionHash && !isSubmitted) return TransactionStatus.INITIALIZING
-    if (transactionHash && isSubmitted) return TransactionStatus.PENDING
+    if (transactionHash && isSubmitted && !isCompleted)
+      return TransactionStatus.PENDING
     if (isCompleted) return TransactionStatus.COMPLETED
   }, [transactionHash, isSubmitted, isCompleted])
+
+  console.log('currentStatus: ', currentStatus)
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
     return originChain
