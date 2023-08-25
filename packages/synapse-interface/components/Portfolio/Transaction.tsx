@@ -106,6 +106,7 @@ export const Transaction = ({
           <div className="p-3">
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
+                startTime={startedTimestamp}
                 estimatedCompletionInSeconds={
                   estimatedDuration ?? estimatedCompletionInSeconds
                 }

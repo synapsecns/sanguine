@@ -83,7 +83,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       )}
 
       {address && !isLoading && hasPendingTransactions && (
-        <ActivitySection title="Pending" twClassName="flex flex-col gap-2 mb-5">
+        <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           <PendingTransactionAwaitingIndexing />
           {userPendingTransactions &&
             userPendingTransactions.map((transaction: BridgeTransaction) => (
@@ -426,14 +426,48 @@ export const TimeElapsed = ({
 }
 
 export const EstimatedDuration = ({
+  startTime,
   estimatedCompletionInSeconds,
 }: {
+  startTime: number
   estimatedCompletionInSeconds: number
 }) => {
-  const estimatedMinutes = Math.floor(estimatedCompletionInSeconds / 60)
+  const [elapsedTime, setElapsedTime] = useState<number>(0)
+
+  useEffect(() => {
+    const currentTime: number = Math.floor(Date.now() / 1000)
+    const elapsedMinutes: number = Math.floor((currentTime - startTime) / 60)
+    setElapsedTime(elapsedMinutes)
+  }, [startTime])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime: number = Math.floor(Date.now() / 1000)
+      const elapsedMinutes: number = Math.floor((currentTime - startTime) / 60)
+      setElapsedTime(elapsedMinutes)
+    }, 60000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [startTime])
+
+  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const timeRemaining: number = estimatedMinutes - elapsedTime
+
+  console.log('startTime:', startTime)
+  console.log('ElapsedTime:', elapsedTime)
+  console.log('estimatedMinutes: ', estimatedMinutes)
+
   return (
     <div className="text-[#C2C2D6] text-sm">
-      {estimatedMinutes}-{estimatedMinutes + 1} min
+      {timeRemaining >= 0 ? (
+        <div>
+          {timeRemaining} - {timeRemaining + 1} min
+        </div>
+      ) : (
+        <div>Waiting... </div>
+      )}
     </div>
   )
 }
