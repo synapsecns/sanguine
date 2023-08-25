@@ -233,9 +233,10 @@ type GetOriginBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending *bool               "json:\"pending\" graphql:\"pending\""
-		Type    *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa   *string             "json:\"kappa\" graphql:\"kappa\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDestinationBridgeTx struct {
@@ -254,9 +255,10 @@ type GetDestinationBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending *bool               "json:\"pending\" graphql:\"pending\""
-		Type    *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa   *string             "json:\"kappa\" graphql:\"kappa\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -657,6 +659,7 @@ const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int!, $txn
 		pending
 		type
 		kappa
+		kappaStatus
 	}
 }
 `
@@ -695,6 +698,7 @@ const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: 
 		pending
 		type
 		kappa
+		kappaStatus
 	}
 }
 `

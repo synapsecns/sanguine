@@ -81,10 +81,11 @@ type ComplexityRoot struct {
 	}
 
 	BridgeWatcherTx struct {
-		BridgeTx func(childComplexity int) int
-		Kappa    func(childComplexity int) int
-		Pending  func(childComplexity int) int
-		Type     func(childComplexity int) int
+		BridgeTx    func(childComplexity int) int
+		Kappa       func(childComplexity int) int
+		KappaStatus func(childComplexity int) int
+		Pending     func(childComplexity int) int
+		Type        func(childComplexity int) int
 	}
 
 	DateResult struct {
@@ -423,6 +424,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BridgeWatcherTx.Kappa(childComplexity), true
+
+	case "BridgeWatcherTx.kappaStatus":
+		if e.complexity.BridgeWatcherTx.KappaStatus == nil {
+			break
+		}
+
+		return e.complexity.BridgeWatcherTx.KappaStatus(childComplexity), true
 
 	case "BridgeWatcherTx.pending":
 		if e.complexity.BridgeWatcherTx.Pending == nil {
@@ -1444,6 +1452,7 @@ type BridgeWatcherTx {
   pending:      Boolean
   type:  BridgeTxType
   kappa:        String
+  kappaStatus: KappaStatus
 }
 """
 DateResult is a given statistic for a given date.
@@ -1619,6 +1628,12 @@ type Leaderboard {
 enum BridgeType{
   BRIDGE
   CCTP
+}
+
+enum KappaStatus{
+  EXISTS
+  PENDING
+  UNKNOWN
 }
 `, BuiltIn: false},
 }
@@ -3512,6 +3527,47 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_kappa(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BridgeWatcherTx_kappaStatus(ctx context.Context, field graphql.CollectedField, obj *model.BridgeWatcherTx) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KappaStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.KappaStatus)
+	fc.Result = res
+	return ec.marshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeWatcherTx_kappaStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeWatcherTx",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type KappaStatus does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7033,6 +7089,8 @@ func (ec *executionContext) fieldContext_Query_getOriginBridgeTx(ctx context.Con
 				return ec.fieldContext_BridgeWatcherTx_type(ctx, field)
 			case "kappa":
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
+			case "kappaStatus":
+				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -7095,6 +7153,8 @@ func (ec *executionContext) fieldContext_Query_getDestinationBridgeTx(ctx contex
 				return ec.fieldContext_BridgeWatcherTx_type(ctx, field)
 			case "kappa":
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
+			case "kappaStatus":
+				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -9753,6 +9813,8 @@ func (ec *executionContext) _BridgeWatcherTx(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._BridgeWatcherTx_type(ctx, field, obj)
 		case "kappa":
 			out.Values[i] = ec._BridgeWatcherTx_kappa(ctx, field, obj)
+		case "kappaStatus":
+			out.Values[i] = ec._BridgeWatcherTx_kappaStatus(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11858,6 +11920,22 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx context.Context, v interface{}) (*model.KappaStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.KappaStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx context.Context, sel ast.SelectionSet, v *model.KappaStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOLeaderboard2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx context.Context, sel ast.SelectionSet, v []*model.Leaderboard) graphql.Marshaler {

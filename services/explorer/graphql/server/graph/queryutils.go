@@ -1617,7 +1617,7 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 // GetOriginBridgeTxBW gets an origin bridge tx.
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txType := model.BridgeTxTypeOrigin
-	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
+	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' ORDER BY insert_time desc LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
 
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 
@@ -1639,7 +1639,7 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeDestination
-	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
+	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' ORDER BY insert_time desc LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
@@ -1653,11 +1653,13 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 		txFromChain, err = r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical, bridgeType)
 		if err != nil {
 			if err.Error() == kappaDoesNotExist {
+				pendingKappa := model.KappaStatusPending
 				return &model.BridgeWatcherTx{
-					BridgeTx: &bridgeTx,
-					Pending:  &isPending,
-					Type:     &txType,
-					Kappa:    &kappa,
+					BridgeTx:    &bridgeTx,
+					Pending:     &isPending,
+					Type:        &txType,
+					Kappa:       &kappa,
+					KappaStatus: &pendingKappa,
 				}, nil
 			}
 			return nil, fmt.Errorf("failed to get destination bridge event from chain: %w", err)
@@ -1742,7 +1744,7 @@ func bwBridgeMVToBWTxOrigin(bridgeEvent *sql.HybridBridgeEvent, txType model.Bri
 
 	kappa := bridgeEvent.FDestinationKappa
 	destinationChainID := int(bridgeEvent.FDestinationChainID.Uint64())
-
+	kappaStatus := model.KappaStatusUnknown
 	bridgeTx = model.PartialInfo{
 		ChainID:            &chainID,
 		DestinationChainID: &destinationChainID,
@@ -1758,10 +1760,11 @@ func bwBridgeMVToBWTxOrigin(bridgeEvent *sql.HybridBridgeEvent, txType model.Bri
 		FormattedTime:      &timeStampFormatted,
 	}
 	result := &model.BridgeWatcherTx{
-		BridgeTx: &bridgeTx,
-		Pending:  &isPending,
-		Type:     &txType,
-		Kappa:    &kappa,
+		BridgeTx:    &bridgeTx,
+		Pending:     &isPending,
+		Type:        &txType,
+		Kappa:       &kappa,
+		KappaStatus: &kappaStatus,
 	}
 	return result, nil
 }
@@ -1789,7 +1792,7 @@ func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType mode
 
 	destinationChainID := int(bridgeEvent.TChainID)
 	kappa := bridgeEvent.TKappa.String
-
+	kappaStatus := model.KappaStatusExists
 	bridgeTx = model.PartialInfo{
 		ChainID:            &chainID,
 		DestinationChainID: &destinationChainID,
@@ -1805,10 +1808,11 @@ func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType mode
 		FormattedTime:      &timeStampFormatted,
 	}
 	result := &model.BridgeWatcherTx{
-		BridgeTx: &bridgeTx,
-		Pending:  &isPending,
-		Type:     &txType,
-		Kappa:    &kappa,
+		BridgeTx:    &bridgeTx,
+		Pending:     &isPending,
+		Type:        &txType,
+		Kappa:       &kappa,
+		KappaStatus: &kappaStatus,
 	}
 	return result, nil
 }
