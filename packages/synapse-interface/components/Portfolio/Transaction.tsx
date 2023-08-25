@@ -8,6 +8,7 @@ import {
 import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
+import TransactionArrow from '../icons/TransactionArrow'
 
 export enum TransactionType {
   PENDING,
@@ -66,25 +67,25 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-      flex flex-row p-3 my-2
+      flex flex-row my-2
       text-[#C2C2D6]
       border border-[#222235] rounded-lg`}
     >
-      <div className="flex border-r border-r-[#252537] px-2">
+      <div className="flex border-r border-r-[#252537] px-2 py-3">
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
           tokenAmount={originValue}
         />
       </div>
-      <div className="px-2">
+      <div className="px-2 py-3">
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
           tokenAmount={destinationValue}
         />
       </div>
-      <div className="ml-auto">
+      <div className="px-2 py-3 ml-auto">
         {transactionType === TransactionType.PENDING ? (
           <EstimatedDuration
             estimatedCompletionInSeconds={
