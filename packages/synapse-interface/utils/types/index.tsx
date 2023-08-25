@@ -12,6 +12,7 @@ export type Chain = {
   layer: number
   rpcUrls: { primary: string; fallback: string }
   explorerUrl: string
+  explorerName: string
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
   priorityRank?: number

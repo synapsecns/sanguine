@@ -146,14 +146,19 @@ export const PendingTransaction = ({
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
       />
-      <TransactionStatusDetails transactionStatus={currentStatus} />
+      <TransactionStatusDetails
+        originChain={originChain}
+        transactionStatus={currentStatus}
+      />
     </div>
   )
 }
 
 const TransactionStatusDetails = ({
+  originChain,
   transactionStatus,
 }: {
+  originChain: Chain
   transactionStatus: TransactionStatus
 }) => {
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {

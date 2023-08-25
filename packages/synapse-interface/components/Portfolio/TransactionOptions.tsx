@@ -43,7 +43,11 @@ export const OptionButton = ({
   onClick: () => void
 }) => {
   return (
-    <div data-test-id="option-button" className="flex" onClick={onClick}>
+    <div
+      data-test-id="option-button"
+      onClick={onClick}
+      className="flex hover:cursor-pointer hover:bg-[#0A415C]"
+    >
       <div className="my-auto">{icon}</div>
       <div>{text}</div>
     </div>
