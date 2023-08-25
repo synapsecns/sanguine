@@ -160,9 +160,10 @@ export const MostRecentTransaction = () => {
   }: TransactionsState = useTransactionsState()
 
   const lastPendingBridgeTransaction: PendingBridgeTransaction =
-    pendingBridgeTransactions[0]
+    pendingBridgeTransactions && pendingBridgeTransactions[0]
 
-  const lastPendingTransaction: BridgeTransaction = userPendingTransactions[0]
+  const lastPendingTransaction: BridgeTransaction =
+    userPendingTransactions && userPendingTransactions[0]
 
   const recentTime: number = getTimeMinutesBeforeNow(10)
   const lastHistoricalTransaction: BridgeTransaction =
