@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import Image from 'next/image'
 import { Chain, Token } from '@/utils/types'
 import {
   TransactionPayloadDetail,
@@ -8,6 +9,8 @@ import {
 import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
+import { getTransactionExplorerLink } from './Activity'
+import { getExplorerTxUrl } from '@/constants/urls'
 
 export enum TransactionType {
   PENDING,
@@ -230,9 +233,26 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.PENDING) {
+    const handleExplorerClick = () => {
+      const explorerLink: string = getExplorerTxUrl({
+        chainId: originChain.id,
+        hash: transactionHash,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
     return (
       <div data-test-id="pending-status" className={sharedClass}>
-        <div>Sent: {originChain.explorerName} </div>
+        <div
+          className="flex cursor-pointer hover:bg-[#101018] p-1 rounded-md"
+          onClick={handleExplorerClick}
+        >
+          <Image
+            className="w-4 h-4 my-auto mr-1.5 rounded-full"
+            src={originChain.chainImg}
+            alt={`${originChain.explorerName} logo`}
+          />
+          <div>Sent: {originChain.explorerName}</div>
+        </div>
         <TransactionOptions
           originChain={originChain}
           destinationChain={destinationChain}
