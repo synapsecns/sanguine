@@ -33,6 +33,7 @@ export const ETH: Chain = {
     fallback: 'https://eth.llamarpc.com',
   },
   explorerUrl: 'https://etherscan.com',
+  explorerName: 'Etherscan',
   blockTime: 12000,
   nativeCurrency: {
     name: 'Ethereum',
@@ -57,6 +58,7 @@ export const ARBITRUM: Chain = {
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
+  explorerName: 'Arbiscan',
   color: 'gray',
 }
 
@@ -76,6 +78,7 @@ export const BNB: Chain = {
   },
   nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   explorerUrl: 'https://bscscan.com',
+  explorerName: 'BscScan',
   color: 'yellow',
 }
 
@@ -94,6 +97,7 @@ export const AVALANCHE: Chain = {
   },
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
+  explorerName: 'Snowtrace',
   color: 'red',
 }
 
@@ -112,6 +116,7 @@ export const CANTO: Chain = {
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://evm.explorer.canto.io',
+  explorerName: 'Canto Explorer',
   color: 'teal',
 }
 
@@ -130,6 +135,7 @@ export const OPTIMISM: Chain = {
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
+  explorerName: 'Optimism Explorer',
   color: 'red',
 }
 
@@ -148,6 +154,7 @@ export const POLYGON: Chain = {
   },
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
+  explorerName: 'PolygonScan',
   color: 'purple',
 }
 
@@ -166,6 +173,7 @@ export const DFK: Chain = {
   },
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
+  explorerName: 'DFK Subnet Explorer',
   color: 'lime',
 }
 
@@ -184,6 +192,7 @@ export const KLAYTN: Chain = {
   },
   nativeCurrency: { name: 'Klaytn', symbol: 'KLAY', decimals: 18 },
   explorerUrl: 'https://scope.klaytn.com',
+  explorerName: 'Klaytn Explorer',
   color: 'orange',
 }
 
@@ -202,6 +211,7 @@ export const FANTOM: Chain = {
   },
   nativeCurrency: { name: 'Fantom', symbol: 'FTM', decimals: 18 },
   explorerUrl: 'https://ftmscan.com',
+  explorerName: 'FTMScan',
   color: 'blue',
 }
 
@@ -220,6 +230,7 @@ export const CRONOS: Chain = {
   },
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
+  explorerName: 'CronoScan',
   color: 'blue',
 }
 
@@ -238,6 +249,7 @@ export const BOBA: Chain = {
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://blockexplorer.boba.network',
+  explorerName: 'Boba Explorer',
   color: 'lime',
 }
 
@@ -256,6 +268,7 @@ export const METIS: Chain = {
   },
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
   explorerUrl: 'https://andromeda-explorer.metis.io',
+  explorerName: 'Metis Explorer',
   color: 'teal',
 }
 
@@ -274,6 +287,7 @@ export const AURORA: Chain = {
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
+  explorerName: 'Aurora Explorer',
   color: 'lime',
 }
 
@@ -292,6 +306,7 @@ export const HARMONY: Chain = {
   },
   nativeCurrency: { name: 'Harmony One', symbol: 'ONE', decimals: 18 },
   explorerUrl: 'https://explorer.harmony.one',
+  explorerName: 'Harmony Explorer',
   color: 'cyan',
 }
 
@@ -310,6 +325,7 @@ export const MOONBEAM: Chain = {
   },
   nativeCurrency: { name: 'Glimmer', symbol: 'GLMR', decimals: 18 },
   explorerUrl: 'https://moonbeam.moonscan.io',
+  explorerName: 'Moonbeam Explorer',
   color: 'teal',
 }
 
@@ -328,6 +344,7 @@ export const MOONRIVER: Chain = {
   },
   nativeCurrency: { name: 'Moonriver', symbol: 'MOVR', decimals: 18 },
   explorerUrl: 'https://moonriver.moonscan.io',
+  explorerName: 'Moonriver Explorer',
   color: 'purple',
 }
 
@@ -346,6 +363,7 @@ export const DOGE: Chain = {
   },
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
+  explorerName: 'Dogechain Explorer',
   color: 'purple',
 }
 
@@ -362,6 +380,7 @@ export const BASE: Chain = {
     fallback: 'https://developer-access-mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',
+  explorerName: 'BaseScan',
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
