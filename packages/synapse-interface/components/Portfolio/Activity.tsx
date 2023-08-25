@@ -456,7 +456,10 @@ export const EstimatedDuration = ({
   }, [startTime])
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
-  const timeRemaining: number = estimatedMinutes - elapsedTime
+  const timeRemaining: number = useMemo(() => {
+    if (!startTime || !elapsedTime) return estimatedMinutes
+    return estimatedMinutes - elapsedTime
+  }, [estimatedMinutes, elapsedTime, startTime])
 
   return (
     <div className="text-[#C2C2D6] text-sm">

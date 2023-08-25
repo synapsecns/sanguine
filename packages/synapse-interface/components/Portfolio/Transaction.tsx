@@ -16,6 +16,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/master'
+import { getTimeMinutesFromNow } from '@/utils/time'
 
 export enum TransactionType {
   PENDING,
@@ -176,6 +177,7 @@ export const PendingTransaction = ({
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
+
   const currentStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
@@ -216,15 +218,15 @@ export const PendingTransaction = ({
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
-      console.log('this gets hit')
       const updateResolvedTransaction = async () => {
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
         })
         if (resolvedTransaction) {
-          // Perform the update action here directly, instead of dispatching
+          const currentTimestamp: number = getTimeMinutesFromNow(0)
           const updatedTransaction = {
-            timestamp: startedTimestamp,
+            id: startedTimestamp,
+            timestamp: currentTimestamp,
             transactionHash: transactionHash,
             isSubmitted: true,
           }

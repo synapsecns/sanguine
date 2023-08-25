@@ -445,25 +445,23 @@ const StateManagedBridge = () => {
       slippage: bridgeQuote.exchangeRate,
     })
     const currentTimestamp: number = getTimeMinutesFromNow(0)
-    console.log('0')
     dispatch(
       addPendingBridgeTransaction({
+        id: currentTimestamp,
         originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
         originValue: fromValue,
         destinationChain: CHAINS_BY_ID[toChainId],
         destinationToken: toToken,
         transactionHash: undefined,
-        timestamp: currentTimestamp,
+        timestamp: undefined,
         isSubmitted: false,
       })
     )
     try {
-      console.log('1')
       const wallet = await getWalletClient({
         chainId: fromChainId,
       })
-      console.log('2')
       const toAddress =
         destinationAddress && isAddress(destinationAddress)
           ? destinationAddress
@@ -491,9 +489,8 @@ const StateManagedBridge = () => {
             }
           : data
 
-      console.log('3')
       const tx = await wallet.sendTransaction(payload)
-      console.log('4')
+
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
       pendingPopup = toast(
@@ -512,7 +509,8 @@ const StateManagedBridge = () => {
         })
         dispatch(
           updatePendingBridgeTransaction({
-            timestamp: currentTimestamp,
+            id: currentTimestamp,
+            timestamp: undefined,
             transactionHash: tx,
             isSubmitted: false,
           })

@@ -3,6 +3,7 @@ import { createAction } from '@reduxjs/toolkit'
 import { Chain, Token } from '@/utils/types'
 
 export interface PendingBridgeTransaction {
+  id: number
   originChain: Chain
   originToken: Token
   originValue: string
@@ -16,6 +17,7 @@ export interface PendingBridgeTransaction {
 export const addPendingBridgeTransaction =
   createAction<PendingBridgeTransaction>('bridge/addPendingBridgeTransaction')
 export const updatePendingBridgeTransaction = createAction<{
+  id: number
   timestamp: number
   transactionHash: string
   isSubmitted: boolean
