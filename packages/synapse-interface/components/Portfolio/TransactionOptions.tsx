@@ -3,8 +3,10 @@ import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import { MoreButton } from '../layouts/LandingPageWrapper/MoreButton'
 import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 import DiscordIcon from '../icons/DiscordIcon'
 import { Chain } from '@/utils/types'
+import Button from '../ui/tailwind/Button'
 
 export const TransactionOptions = ({ originChain }: { originChain: Chain }) => {
   return (
@@ -19,9 +21,9 @@ export const TransactionOptions = ({ originChain }: { originChain: Chain }) => {
             group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
             `}
           >
-            <MoreButton open={open} />
+            <DropdownButton open={open} />
           </Popover.Button>
-          <TransactionPopoverContainer className="-translate-x-full border border-[#3D3D5C] bg-[#252537] top- ">
+          <TransactionPopoverContainer>
             <OptionButton
               icon={
                 <Image
@@ -65,7 +67,7 @@ export function TransactionPopoverContainer({
       <Popover.Panel
         className={`
           absolute z-10 top-[-74px] left-[42px] transform-gpu
-          ${className ?? '-translate-x-1/2'}
+          -translate-x-full border border-[#3D3D5C] bg-[#252537]
           w-screen max-w-xs rounded-md overflow-hidden
         `}
       >
@@ -74,6 +76,39 @@ export function TransactionPopoverContainer({
         </div>
       </Popover.Panel>
     </Transition>
+  )
+}
+
+export function DropdownButton({
+  open,
+  onClick,
+  className,
+  ...props
+}: {
+  open: boolean
+  onClick?: () => void
+  className?: string
+  props?: any
+}) {
+  return (
+    <Button
+      onClick={onClick ? onClick : () => {}}
+      className={`
+        w-full
+        group rounded-lg p-1
+        border border-[#2F2F2F] hover:border-[#101018]
+        bg-transparent hover:bg-[#101018]
+        focus:bg-transparent active:bg-transparent
+        ${className}
+      `}
+      {...props}
+    >
+      <div className="space-x-2">
+        <div className="rounded-md">
+          <ChevronDownIcon className="w-5 h-5 text-white" />
+        </div>
+      </div>
+    </Button>
   )
 }
 
