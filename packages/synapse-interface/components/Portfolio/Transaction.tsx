@@ -73,7 +73,7 @@ export const Transaction = ({
       <div className="flex flex-row">
         <div
           className={`
-          flex border-r border-r-[#252537] px-2 py-3
+          flex border-r border-r-[#252537] px-2 py-3 min-w-[125px]
           ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
           `}
         >
