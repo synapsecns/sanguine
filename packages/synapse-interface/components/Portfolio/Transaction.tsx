@@ -269,23 +269,6 @@ const TransactionStatusDetails = ({
 //   }
 // }, [transactionHash])
 
-// const handleTransactionClick: () => void = useCallback(() => {
-//   if (kappa && originChainId && transactionType === ActivityType.RECENT) {
-//     const explorerLink: string = getTransactionExplorerLink({
-//       kappa,
-//       fromChainId: originChainId,
-//       toChainId: destinationChainId,
-//     })
-//     window.open(explorerLink, '_blank')
-//   } else {
-//     const explorerLink: string = getExplorerTxUrl({
-//       chainId: originChainId,
-//       hash: originTxnHash,
-//     })
-//     window.open(explorerLink, '_blank')
-//   }
-// }, [kappa, originChainId, destinationChainId, transactionType])
-
 // const estimatedCompletionInSeconds: number =
 //   (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] * originChain.blockTime) /
 //     1000 +

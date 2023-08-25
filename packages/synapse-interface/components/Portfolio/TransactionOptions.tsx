@@ -11,6 +11,7 @@ import Button from '../ui/tailwind/Button'
 import { getTransactionExplorerLink } from './Activity'
 import { getExplorerTxUrl } from '@/constants/urls'
 import SynapseLogo from '@assets/icons/synapse.svg'
+import { DISCORD_URL } from '@/constants/urls'
 
 export const TransactionOptions = ({
   originChain,
@@ -36,15 +37,19 @@ export const TransactionOptions = ({
         fromChainId: originChain.id,
         toChainId: destinationChain.id,
       })
-      window.open(explorerLink, '_blank')
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
         hash: transactionHash,
       })
-      window.open(explorerLink, '_blank')
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
   }, [kappa, originChain, destinationChain, transactionStatus, transactionHash])
+
+  const handleSupportClick = () => {
+    window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <Popover className="relative inline-block">
@@ -91,7 +96,7 @@ export const TransactionOptions = ({
             <OptionButton
               icon={<DiscordIcon height={20} />}
               text={'Contact Support'}
-              onClick={null}
+              onClick={handleSupportClick}
             />
           </TransactionPopoverContainer>
         </>
