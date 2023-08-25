@@ -1,4 +1,4 @@
-import { Fragment. useCallback } from 'react'
+import { Fragment, useCallback } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
