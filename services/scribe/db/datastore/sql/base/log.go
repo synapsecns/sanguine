@@ -255,7 +255,7 @@ func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFil
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
-func (s *Store) DeleteRangeTemp(ctx context.Context, chainID uint64, startBlock uint64, endBlock uint64) error {
+func (s Store) DeleteRangeTemp(ctx context.Context, chainID uint64, startBlock uint64, endBlock uint64) error {
 	dbTx := s.DB().WithContext(ctx).
 		Where("chain_id = ?", chainID).
 		Where("block_number BETWEEN ? AND ?", startBlock, endBlock).
