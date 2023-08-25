@@ -15,6 +15,7 @@ import { getExplorerTxUrl } from '@/constants/urls'
 import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
+import { USDC } from '@/constants/tokens/master'
 
 export enum TransactionType {
   PENDING,
@@ -192,8 +193,10 @@ export const PendingTransaction = ({
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
     // CCTP Classification
-    if (eventType === 10 || eventType === 11) {
-      if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
+    if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
+      const isCCTP: boolean =
+        originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
+      if (eventType === 10 || eventType === 11 || isCCTP) {
         const attestationTime: number = 13 * 60
         return (
           (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
@@ -209,7 +212,7 @@ export const PendingTransaction = ({
           originChain.blockTime) /
           1000
       : null
-  }, [originChain, eventType, originChain])
+  }, [originChain, eventType, originToken])
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
