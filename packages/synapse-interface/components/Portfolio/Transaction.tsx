@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
+import { waitForTransaction } from '@wagmi/core'
 import { Chain, Token } from '@/utils/types'
 import {
   TransactionPayloadDetail,
@@ -11,6 +12,8 @@ import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getTransactionExplorerLink } from './Activity'
 import { getExplorerTxUrl } from '@/constants/urls'
+import { useAppDispatch } from '@/store/hooks'
+import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 
 export enum TransactionType {
   PENDING,
@@ -168,6 +171,7 @@ export const PendingTransaction = ({
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
+  const dispatch = useAppDispatch()
   const currentStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
@@ -190,6 +194,28 @@ export const PendingTransaction = ({
           1000
       : null
   }, [originChain])
+
+  useEffect(() => {
+    if (!isSubmitted && transactionHash) {
+      console.log('this gets hit')
+      const updateResolvedTransaction = async () => {
+        const resolvedTransaction = await waitForTransaction({
+          hash: transactionHash as Address,
+        })
+        if (resolvedTransaction) {
+          // Perform the update action here directly, instead of dispatching
+          const updatedTransaction = {
+            timestamp: startedTimestamp,
+            transactionHash: transactionHash,
+            isSubmitted: true,
+          }
+
+          await dispatch(updatePendingBridgeTransaction(updatedTransaction))
+        }
+      }
+      updateResolvedTransaction()
+    }
+  }, [startedTimestamp, isSubmitted, transactionHash])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">

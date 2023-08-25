@@ -30,21 +30,7 @@ export default function Updater(): null {
       const updateOriginBalancesForNewestTransaction = async () => {
         const newestTransaction: PendingBridgeTransaction =
           pendingBridgeTransactions[0]
-
         const updateChainId: number = newestTransaction.originChain?.id
-        const hash: Address = newestTransaction.transactionHash as Address
-        const resolvedTransaction = await waitForTransaction({
-          hash: hash as Address,
-        })
-
-        resolvedTransaction &&
-          (await dispatch(
-            updatePendingBridgeTransaction({
-              timestamp: newestTransaction.timestamp,
-              transactionHash: hash,
-              isSubmitted: true,
-            })
-          ))
 
         await dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({

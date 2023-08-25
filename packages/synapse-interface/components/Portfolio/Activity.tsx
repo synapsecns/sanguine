@@ -274,7 +274,6 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastPendingBridgeTransaction) {
-    console.log('here 1')
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
       <PendingTransaction
@@ -293,7 +292,6 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastPendingTransaction) {
-    console.log('here 2')
     transaction = lastPendingTransaction as BridgeTransaction
     return (
       <PendingTransaction
@@ -326,7 +324,6 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
-    console.log('here 3')
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (
       <PendingTransaction
