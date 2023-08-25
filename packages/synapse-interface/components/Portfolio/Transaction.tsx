@@ -266,9 +266,22 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.COMPLETED) {
+    const handleExplorerClick = () => {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+        toChainId: destinationChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
     return (
       <div data-test-id="completed-status" className={sharedClass}>
-        <div>Confirmed on Synapse Explorer</div>
+        <div
+          className="flex cursor-pointer hover:bg-[#101018] p-1 rounded-md"
+          onClick={handleExplorerClick}
+        >
+          <div>Confirmed on Synapse Explorer</div>
+        </div>
         <TransactionOptions
           originChain={originChain}
           destinationChain={destinationChain}
