@@ -347,84 +347,6 @@ export const getTransactionExplorerLink = ({
   return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
 }
 
-export const TimeElapsed = ({
-  startTime,
-  bridgeOriginChain,
-  delayed,
-  setDelayed,
-}: {
-  startTime: number
-  bridgeOriginChain: Chain
-  delayed: boolean
-  setDelayed: React.Dispatch<React.SetStateAction<boolean>>
-}) => {
-  const [elapsedTime, setElapsedTime] = useState<number>(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime: number = Math.floor(Date.now() / 1000)
-      const elapsedSeconds: number = currentTime - startTime
-      setElapsedTime(elapsedSeconds)
-    }, 1000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [startTime])
-
-  const hours: number = Math.floor(elapsedTime / 3600)
-  const minutes: number = Math.floor((elapsedTime % 3600) / 60)
-  const seconds: number = elapsedTime % 60
-
-  const formattedMinutes: string = String(minutes).padStart(2, '0')
-  const formattedSeconds: string = String(seconds).padStart(2, '0')
-
-  const estimatedCompletionInSeconds: number =
-    (BRIDGE_REQUIRED_CONFIRMATIONS[bridgeOriginChain.id] *
-      bridgeOriginChain.blockTime) /
-      1000 +
-    30 // Add 30 seconds to account for indexing
-
-  const estimatedMinutes = Math.floor(estimatedCompletionInSeconds / 60)
-  const estimatedSeconds = estimatedCompletionInSeconds % 60
-
-  const formattedEstimatedMinutes = String(estimatedMinutes).padStart(2, '0')
-  const formattedEstimatedSeconds = String(estimatedSeconds).padStart(2, '0')
-
-  const estimatedCompletionTime: string = useMemo(() => {
-    const firstDelayTimeInSeconds: number = 60 * 15 // 15 minutes
-    const secondDelayTimeInSeconds: number = 60 * 25 // 25 minutes
-    if (
-      elapsedTime > estimatedCompletionInSeconds &&
-      elapsedTime < firstDelayTimeInSeconds
-    ) {
-      return `15:00`
-    } else if (
-      elapsedTime > estimatedCompletionInSeconds &&
-      elapsedTime > secondDelayTimeInSeconds
-    ) {
-      return `25:00`
-    } else return `${formattedEstimatedMinutes}:${formattedEstimatedSeconds}`
-  }, [estimatedCompletionInSeconds, elapsedTime])
-
-  useEffect(() => {
-    if (!delayed && elapsedTime > estimatedCompletionInSeconds) {
-      setDelayed(true)
-    }
-  }, [delayed, estimatedCompletionInSeconds, elapsedTime, setDelayed])
-
-  return (
-    <div
-      data-test-id="time-elapsed"
-      className="flex items-center whitespace-nowrap"
-    >
-      {hours > 0 ? `${hours}:` : ''}
-      {formattedMinutes}:{formattedSeconds} / {estimatedCompletionTime}
-      <EtherscanIcon className="ml-1" />
-    </div>
-  )
-}
-
 export const EstimatedDuration = ({
   startTime,
   estimatedCompletionInSeconds,
@@ -454,10 +376,6 @@ export const EstimatedDuration = ({
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
   const timeRemaining: number = estimatedMinutes - elapsedTime
-
-  console.log('startTime:', startTime)
-  console.log('ElapsedTime:', elapsedTime)
-  console.log('estimatedMinutes: ', estimatedMinutes)
 
   return (
     <div className="text-[#C2C2D6] text-sm">
