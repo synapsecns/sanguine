@@ -118,6 +118,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time as number}
                   transactionHash={transaction?.fromInfo?.txnHash as string}
+                  eventType={transaction?.fromInfo?.eventType as number}
                   isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                   isCompleted={transaction?.toInfo?.time ? true : false}
                   transactionType={TransactionType.PENDING}
@@ -157,6 +158,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                     startedTimestamp={transaction?.fromInfo?.time as number}
                     completedTimestamp={transaction?.toInfo?.time as number}
                     transactionHash={transaction?.fromInfo?.txnHash as string}
+                    eventType={transaction?.fromInfo?.eventType as number}
                     kappa={transaction?.kappa}
                     isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                     isCompleted={true}

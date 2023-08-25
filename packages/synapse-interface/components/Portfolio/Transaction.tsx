@@ -14,6 +14,7 @@ import { getTransactionExplorerLink } from './Activity'
 import { getExplorerTxUrl } from '@/constants/urls'
 import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
+import { ARBITRUM, ETH } from '@/constants/chains/master'
 
 export enum TransactionType {
   PENDING,
@@ -150,6 +151,7 @@ export const Transaction = ({
 }
 
 interface PendingTransactionProps extends TransactionProps {
+  eventType?: number
   isSubmitted?: boolean
   isCompleted?: boolean
 }
@@ -166,6 +168,7 @@ export const PendingTransaction = ({
   startedTimestamp,
   completedTimestamp,
   transactionHash,
+  eventType,
   kappa,
   isSubmitted,
   isCompleted = false,
@@ -188,12 +191,25 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
+    // CCTP Classification
+    if (eventType === 10 || eventType === 11) {
+      if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
+        const attestationTime: number = 13 * 60
+        return (
+          (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+            originChain.blockTime) /
+            1000 +
+          attestationTime
+        )
+      }
+    }
+    // All other transactions
     return originChain
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
           originChain.blockTime) /
           1000
       : null
-  }, [originChain])
+  }, [originChain, eventType, originChain])
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
