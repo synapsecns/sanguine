@@ -568,32 +568,12 @@ export const BRIDGE_MAP = {
     },
   },
   '250': {
-    '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75': {
-      decimals: 6,
-      symbol: 'USDC',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: [
-        '0x049d68029688eAbF473097a2fC38ef61633A3C7A',
-        '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-      ],
-    },
     '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471': {
       decimals: 18,
       symbol: 'UNIDX',
       origin: ['UNIDX'],
       destination: ['UNIDX'],
       swappable: [],
-    },
-    '0x049d68029688eAbF473097a2fC38ef61633A3C7A': {
-      decimals: 6,
-      symbol: 'fUSDT',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: [
-        '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75',
-        '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-      ],
     },
     '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
       decimals: 18,
@@ -614,14 +594,7 @@ export const BRIDGE_MAP = {
       symbol: 'nETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: ['0x74b23882a30290451A17c44f4F05243b6b58C76d'],
-    },
-    '0x74b23882a30290451A17c44f4F05243b6b58C76d': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['nETH'],
-      destination: ['nETH'],
-      swappable: ['0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00'],
+      swappable: [],
     },
     '0x78DE9326792ce1d6eCA0c978753c6953Cdeedd73': {
       decimals: 18,
@@ -656,10 +629,7 @@ export const BRIDGE_MAP = {
       symbol: 'nUSD',
       origin: ['nUSD'],
       destination: ['nUSD'],
-      swappable: [
-        '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75',
-        '0x049d68029688eAbF473097a2fC38ef61633A3C7A',
-      ],
+      swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
@@ -1742,7 +1712,7 @@ export const BRIDGE_MAP = {
       symbol: 'nETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: ['0x6983D1E6DEf3690C4d616b13597A09e6193EA013'],
+      swappable: [],
     },
     '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
       decimals: 18,
@@ -1758,17 +1728,6 @@ export const BRIDGE_MAP = {
       destination: ['JEWEL'],
       swappable: ['0x72Cb10C6bfA5624dD07Ef608027E366bd690048F'],
     },
-    '0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f': {
-      decimals: 6,
-      symbol: '1USDT',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: [
-        '0x985458E523dB3d53125813eD68c274899e9DfAb4',
-        '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-        '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339',
-      ],
-    },
     '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
       decimals: 18,
       symbol: 'gOHM',
@@ -1776,30 +1735,12 @@ export const BRIDGE_MAP = {
       destination: ['gOHM'],
       swappable: [],
     },
-    '0x6983D1E6DEf3690C4d616b13597A09e6193EA013': {
-      decimals: 18,
-      symbol: '1ETH',
-      origin: ['nETH'],
-      destination: ['nETH'],
-      swappable: ['0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'],
-    },
     '0x72Cb10C6bfA5624dD07Ef608027E366bd690048F': {
       decimals: 18,
       symbol: 'JEWEL',
       origin: ['JEWEL'],
       destination: ['JEWEL'],
       swappable: ['0x28b42698Caf46B4B012CF38b6C75867E0762186D'],
-    },
-    '0x985458E523dB3d53125813eD68c274899e9DfAb4': {
-      decimals: 6,
-      symbol: '1USDC',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: [
-        '0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f',
-        '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-        '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339',
-      ],
     },
     '0xA9cE83507D872C5e1273E745aBcfDa849DAA654F': {
       decimals: 18,
@@ -1834,22 +1775,7 @@ export const BRIDGE_MAP = {
       symbol: 'nUSD',
       origin: ['nUSD'],
       destination: ['nUSD'],
-      swappable: [
-        '0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f',
-        '0x985458E523dB3d53125813eD68c274899e9DfAb4',
-        '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339',
-      ],
-    },
-    '0xEf977d2f931C1978Db5F6747666fa1eACB0d0339': {
-      decimals: 18,
-      symbol: '1DAI',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: [
-        '0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f',
-        '0x985458E523dB3d53125813eD68c274899e9DfAb4',
-        '0xED2a7edd7413021d440b09D654f3b87712abAB66',
-      ],
+      swappable: [],
     },
     '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22': {
       decimals: 6,
