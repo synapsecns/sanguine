@@ -347,7 +347,7 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="completed-status" className={`${sharedClass} p-2`}>
         <div
-          className="flex cursor-pointer hover:bg-[#101018] rounded-md"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-md p-1"
           onClick={handleExplorerClick}
         >
           <div>Confirmed on Synapse Explorer</div>
