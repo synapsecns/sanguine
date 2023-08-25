@@ -238,13 +238,13 @@ func (r Resolver) getRangeForDestinationLogs(ctx context.Context, chainID uint32
 	return &zero, &currentBlock, nil
 }
 func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chainID uint32, timestamp uint64, backendClient client.EVM) (*uint64, *uint64, error) {
-	// Get the current block number
+	// Get the current block number.
 	currentBlock, err := backendClient.BlockNumber(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get current block%s/%d. Error: %w", r.Config.RPCURL, chainID, err)
 	}
 
-	const maxIterations = 30 // max tries
+	const maxIterations = 25 // max tries
 	iteration := 0
 	var mid uint64
 
