@@ -67,38 +67,49 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-      flex flex-row my-2
-      text-[#C2C2D6]
-      border border-[#222235] rounded-lg`}
+      flex flex-row my-2 text-[#C2C2D6]
+      border border-[#222235] rounded-lg overflow-hidden`}
     >
-      <div className="flex border-r border-r-[#252537] px-2 py-3">
+      <div
+        className={`
+        flex border-r border-r-[#252537] px-2 py-3
+        ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
+        `}
+      >
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
           tokenAmount={originValue}
         />
       </div>
-      <div className="px-2 py-3">
-        <TransactionPayloadDetail
-          chain={destinationChain}
-          token={destinationToken}
-          tokenAmount={destinationValue}
-        />
-      </div>
-      <div className="px-2 py-3 ml-auto">
-        {transactionType === TransactionType.PENDING ? (
-          <EstimatedDuration
-            estimatedCompletionInSeconds={
-              estimatedDuration ?? estimatedCompletionInSeconds
-            }
+      <div
+        className={`
+        flex flex-row justify-between flex-1
+        ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
+        `}
+      >
+        <div className="px-2 py-3">
+          <TransactionPayloadDetail
+            chain={destinationChain}
+            token={destinationToken}
+            tokenAmount={destinationValue}
           />
-        ) : (
-          <Completed
-            transactionCompletedTime={completedTimestamp}
-            connectedAddress={connectedAddress}
-            destinationAddress={destinationAddress}
-          />
-        )}
+        </div>
+        <div className="px-2 py-3 ml-auto">
+          {transactionType === TransactionType.PENDING ? (
+            <EstimatedDuration
+              estimatedCompletionInSeconds={
+                estimatedDuration ?? estimatedCompletionInSeconds
+              }
+            />
+          ) : (
+            <Completed
+              transactionCompletedTime={completedTimestamp}
+              connectedAddress={connectedAddress}
+              destinationAddress={destinationAddress}
+            />
+          )}
+        </div>
       </div>
     </div>
   )
