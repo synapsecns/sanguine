@@ -358,26 +358,12 @@
       "destination": ["0x91fa20244Fb509e8289CA630E5db3E9166233FDc"]
     },
     "nETH": {
-      "origin": [
-        "0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00",
-        "0x74b23882a30290451A17c44f4F05243b6b58C76d"
-      ],
-      "destination": [
-        "0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00",
-        "0x74b23882a30290451A17c44f4F05243b6b58C76d"
-      ]
+      "origin": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"],
+      "destination": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"]
     },
     "nUSD": {
-      "origin": [
-        "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
-        "0x049d68029688eAbF473097a2fC38ef61633A3C7A",
-        "0xED2a7edd7413021d440b09D654f3b87712abAB66"
-      ],
-      "destination": [
-        "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
-        "0x049d68029688eAbF473097a2fC38ef61633A3C7A",
-        "0xED2a7edd7413021d440b09D654f3b87712abAB66"
-      ]
+      "origin": ["0xED2a7edd7413021d440b09D654f3b87712abAB66"],
+      "destination": ["0xED2a7edd7413021d440b09D654f3b87712abAB66"]
     },
     "synFRAX": {
       "origin": ["0x1852F70512298d56e9c8FDd905e02581E04ddb2a"],
@@ -989,28 +975,12 @@
       "destination": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"]
     },
     "nETH": {
-      "origin": [
-        "0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB",
-        "0x6983D1E6DEf3690C4d616b13597A09e6193EA013"
-      ],
-      "destination": [
-        "0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB",
-        "0x6983D1E6DEf3690C4d616b13597A09e6193EA013"
-      ]
+      "origin": ["0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB"],
+      "destination": ["0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB"]
     },
     "nUSD": {
-      "origin": [
-        "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
-        "0x985458E523dB3d53125813eD68c274899e9DfAb4",
-        "0xED2a7edd7413021d440b09D654f3b87712abAB66",
-        "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339"
-      ],
-      "destination": [
-        "0x3C2B8Be99c50593081EAA2A724F0B8285F5aba8f",
-        "0x985458E523dB3d53125813eD68c274899e9DfAb4",
-        "0xED2a7edd7413021d440b09D654f3b87712abAB66",
-        "0xEf977d2f931C1978Db5F6747666fa1eACB0d0339"
-      ]
+      "origin": ["0xED2a7edd7413021d440b09D654f3b87712abAB66"],
+      "destination": ["0xED2a7edd7413021d440b09D654f3b87712abAB66"]
     },
     "synFRAX": {
       "origin": ["0x1852F70512298d56e9c8FDd905e02581E04ddb2a"],
