@@ -73,7 +73,7 @@ export const Transaction = ({
       <div className="flex flex-row">
         <div
           className={`
-          flex border-r border-r-[#252537] px-2 py-3 min-w-[125px]
+          flex border-r border-r-[#252537] p-3 min-w-[125px]
           ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
           `}
         >
@@ -89,14 +89,14 @@ export const Transaction = ({
           ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
           `}
         >
-          <div className="px-2 py-3">
+          <div className="p-3">
             <TransactionPayloadDetail
               chain={destinationChain}
               token={destinationToken}
               tokenAmount={destinationValue}
             />
           </div>
-          <div className="px-2 py-3 ml-auto">
+          <div className="p-3">
             {transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
                 estimatedCompletionInSeconds={
@@ -193,7 +193,7 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-[#1B1B29] border-t border-[#252537] p-2 text-sm items-center'
+    'flex justify-between bg-[#1B1B29] border-t border-[#252537] px-3 py-2 text-sm items-center'
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
       <div data-test-id="pending-wallet-action-status" className={sharedClass}>
@@ -215,7 +215,10 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="pending-status" className={sharedClass}>
         <div>Sent: {originChain.explorerName} </div>
-        <TransactionOptions originChain={originChain} />
+        <TransactionOptions
+          originChain={originChain}
+          transactionStatus={transactionStatus}
+        />
       </div>
     )
   }
@@ -224,7 +227,10 @@ const TransactionStatusDetails = ({
     return (
       <div data-test-id="completed-status" className={sharedClass}>
         <div>Confirmed on Synapse Explorer</div>
-        <TransactionOptions originChain={originChain} />
+        <TransactionOptions
+          originChain={originChain}
+          transactionStatus={transactionStatus}
+        />
       </div>
     )
   }

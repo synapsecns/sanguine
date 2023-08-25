@@ -481,7 +481,7 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 mr-3 rounded-full"
+            className="w-4 h-4 mr-1.5 rounded-full"
             alt={`${chain.name} icon`}
           />
           <div>{chain.name}</div>
@@ -495,7 +495,7 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={token?.icon}
-            className="items-center w-4 h-4 mr-3 rounded-full"
+            className="items-center w-4 h-4 mr-1.5 rounded-full"
             alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'number' ? (

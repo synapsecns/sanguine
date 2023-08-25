@@ -7,8 +7,15 @@ import { ChevronDownIcon } from '@heroicons/react/outline'
 import DiscordIcon from '../icons/DiscordIcon'
 import { Chain } from '@/utils/types'
 import Button from '../ui/tailwind/Button'
+import { TransactionStatus } from './Transaction'
 
-export const TransactionOptions = ({ originChain }: { originChain: Chain }) => {
+export const TransactionOptions = ({
+  originChain,
+  transactionStatus,
+}: {
+  originChain: Chain
+  transactionStatus: TransactionStatus
+}) => {
   return (
     <Popover className="relative inline-block">
       {({ open }) => (
@@ -27,6 +34,7 @@ export const TransactionOptions = ({ originChain }: { originChain: Chain }) => {
             <OptionButton
               icon={
                 <Image
+                  className="rounded-full"
                   height={20}
                   src={originChain.chainImg}
                   alt={`${originChain.explorerName} logo`}
@@ -127,7 +135,7 @@ export const OptionButton = ({
       onClick={onClick}
       className="flex hover:cursor-pointer hover:bg-[#0A415C] rounded-sm p-1"
     >
-      <div className="my-auto">{icon}</div>
+      <div className="my-auto mr-1">{icon}</div>
       <div>{text}</div>
     </div>
   )
