@@ -79,10 +79,6 @@
       ],
       "destination": ["0xdAC17F958D2ee523a2206206994597C13D831ec7"]
     },
-    "UST": {
-      "origin": ["0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb"],
-      "destination": ["0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb"]
-    },
     "VSTA": {
       "origin": ["0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb"],
       "destination": ["0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb"]
@@ -90,10 +86,6 @@
     "WBTC": {
       "origin": ["0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"],
       "destination": ["0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"]
-    },
-    "agEUR": {
-      "origin": ["0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8"],
-      "destination": ["0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8"]
     },
     "gOHM": {
       "origin": ["0x0ab87046fBb341D058F17CBC4c1133F25a20a52f"],
@@ -126,10 +118,6 @@
     "synFRAX": {
       "origin": ["0x853d955aCEf822Db058eb8505911ED77F175b99e"],
       "destination": ["0x853d955aCEf822Db058eb8505911ED77F175b99e"]
-    },
-    "wsOHM": {
-      "origin": ["0xCa76543Cf381ebBB277bE79574059e32108e3E65"],
-      "destination": ["0xCa76543Cf381ebBB277bE79574059e32108e3E65"]
     }
   },
   "10": {
@@ -152,14 +140,6 @@
     "UNIDX": {
       "origin": ["0x28b42698Caf46B4B012CF38b6C75867E0762186D"],
       "destination": ["0x28b42698Caf46B4B012CF38b6C75867E0762186D"]
-    },
-    "UST": {
-      "origin": ["0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80"],
-      "destination": ["0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80"]
-    },
-    "agEUR": {
-      "origin": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"],
-      "destination": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"]
     },
     "gOHM": {
       "origin": ["0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB"],
@@ -245,14 +225,6 @@
       "origin": ["0xa4080f1778e69467E905B8d6F72f6e441f9e9484"],
       "destination": ["0xa4080f1778e69467E905B8d6F72f6e441f9e9484"]
     },
-    "UST": {
-      "origin": ["0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c"],
-      "destination": ["0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c"]
-    },
-    "fantOHM": {
-      "origin": ["0xc8699AbBba90C7479dedcCEF19eF78969a2fc608"],
-      "destination": ["0xc8699AbBba90C7479dedcCEF19eF78969a2fc608"]
-    },
     "gOHM": {
       "origin": ["0x88918495892BAF4536611E38E75D771Dc6Ec0863"],
       "destination": ["0x88918495892BAF4536611E38E75D771Dc6Ec0863"]
@@ -298,10 +270,6 @@
     "SYN": {
       "origin": ["0xf8F9efC0db77d8881500bb06FF5D6ABc3070E695"],
       "destination": ["0xf8F9efC0db77d8881500bb06FF5D6ABc3070E695"]
-    },
-    "UST": {
-      "origin": ["0x565098CBa693b3325f9fe01D41b7A1cd792Abab1"],
-      "destination": ["0x565098CBa693b3325f9fe01D41b7A1cd792Abab1"]
     },
     "gOHM": {
       "origin": ["0xd8cA34fd379d9ca3C6Ee3b3905678320F5b45195"],
@@ -349,10 +317,6 @@
       "origin": ["0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471"],
       "destination": ["0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471"]
     },
-    "UST": {
-      "origin": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"],
-      "destination": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"]
-    },
     "gOHM": {
       "origin": ["0x91fa20244Fb509e8289CA630E5db3E9166233FDc"],
       "destination": ["0x91fa20244Fb509e8289CA630E5db3E9166233FDc"]
@@ -374,10 +338,6 @@
     "SYN": {
       "origin": ["0xb554A55358fF0382Fb21F0a478C3546d1106Be8c"],
       "destination": ["0xb554A55358fF0382Fb21F0a478C3546d1106Be8c"]
-    },
-    "UST": {
-      "origin": ["0x61A269a9506272D128d79ABfE8E8276570967f00"],
-      "destination": ["0x61A269a9506272D128d79ABfE8E8276570967f00"]
     },
     "gOHM": {
       "origin": ["0xd22C0a4Af486C7FA08e282E9eB5f30F9AaA62C95"],
@@ -418,10 +378,6 @@
     "SYN": {
       "origin": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"],
       "destination": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"]
-    },
-    "UST": {
-      "origin": ["0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB"],
-      "destination": ["0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB"]
     },
     "gOHM": {
       "origin": ["0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80"],
@@ -465,10 +421,6 @@
       "origin": ["0xF44938b0125A6662f9536281aD2CD6c499F22004"],
       "destination": ["0xF44938b0125A6662f9536281aD2CD6c499F22004"]
     },
-    "UST": {
-      "origin": ["0x5CF84397944B9554A278870B510e86667681ff8D"],
-      "destination": ["0x5CF84397944B9554A278870B510e86667681ff8D"]
-    },
     "gOHM": {
       "origin": ["0xD2666441443DAa61492FFe0F37717578714a4521"],
       "destination": ["0xD2666441443DAa61492FFe0F37717578714a4521"]
@@ -504,10 +456,6 @@
     "SYN": {
       "origin": ["0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445"],
       "destination": ["0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445"]
-    },
-    "UST": {
-      "origin": ["0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB"],
-      "destination": ["0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB"]
     },
     "gOHM": {
       "origin": ["0x3bF21Ce864e58731B6f28D68d5928BcBEb0Ad172"],
@@ -715,17 +663,9 @@
       "origin": ["0x5429706887FCb58a595677B73E9B0441C25d993D"],
       "destination": ["0x5429706887FCb58a595677B73E9B0441C25d993D"]
     },
-    "UST": {
-      "origin": ["0x13780E6d5696DD91454F6d3BbC2616687fEa43d0"],
-      "destination": ["0x13780E6d5696DD91454F6d3BbC2616687fEa43d0"]
-    },
     "VSTA": {
       "origin": ["0xa684cd057951541187f288294a1e1C2646aA2d24"],
       "destination": ["0xa684cd057951541187f288294a1e1C2646aA2d24"]
-    },
-    "agEUR": {
-      "origin": ["0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0"],
-      "destination": ["0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0"]
     },
     "gOHM": {
       "origin": ["0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1"],
@@ -757,10 +697,6 @@
         "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
         "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
       ]
-    },
-    "wsOHM": {
-      "origin": ["0x30bD4e574a15994B35EF9C7a5bc29002F1224821"],
-      "destination": ["0x30bD4e574a15994B35EF9C7a5bc29002F1224821"]
     }
   },
   "43114": {
@@ -828,10 +764,6 @@
       "origin": ["0x1f1E7c893855525b303f99bDF5c3c05Be09ca251"],
       "destination": ["0x1f1E7c893855525b303f99bDF5c3c05Be09ca251"]
     },
-    "UST": {
-      "origin": ["0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43"],
-      "destination": ["0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43"]
-    },
     "gOHM": {
       "origin": ["0x321E7092a180BB43555132ec53AaA65a5bF84251"],
       "destination": ["0x321E7092a180BB43555132ec53AaA65a5bF84251"]
@@ -861,10 +793,6 @@
         "0xc7198437980c041c805A1EDcbA50c1Ce5db95118",
         "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"
       ]
-    },
-    "wsOHM": {
-      "origin": ["0x240E332Cd26AaE10622B24160D23425A17256F5d"],
-      "destination": ["0x240E332Cd26AaE10622B24160D23425A17256F5d"]
     }
   },
   "53935": {
@@ -898,10 +826,6 @@
       "origin": ["0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e"],
       "destination": ["0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e"]
     },
-    "UST": {
-      "origin": ["0x360d6DD540E3448371876662FBE7F1aCaf08c5Ab"],
-      "destination": ["0x360d6DD540E3448371876662FBE7F1aCaf08c5Ab"]
-    },
     "nETH": {
       "origin": ["0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852"],
       "destination": ["0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852"]
@@ -919,10 +843,6 @@
     "SYN": {
       "origin": ["0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445"],
       "destination": ["0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445"]
-    },
-    "UST": {
-      "origin": ["0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1"],
-      "destination": ["0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1"]
     },
     "nUSD": {
       "origin": [
@@ -965,10 +885,6 @@
     "SYN": {
       "origin": ["0xE55e19Fb4F2D85af758950957714292DAC1e25B2"],
       "destination": ["0xE55e19Fb4F2D85af758950957714292DAC1e25B2"]
-    },
-    "UST": {
-      "origin": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"],
-      "destination": ["0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22"]
     },
     "gOHM": {
       "origin": ["0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"],
