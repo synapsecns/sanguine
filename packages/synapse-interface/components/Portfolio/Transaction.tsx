@@ -65,7 +65,10 @@ export const Transaction = ({
   return (
     <div
       data-test-id="transaction"
-      className="flex flex-row p-3 text-[#C2C2D6]"
+      className={`
+      flex flex-row p-3 my-2
+      text-[#C2C2D6]
+      border border-[#222235] rounded-lg`}
     >
       <div className="flex border-r border-r-[#252537] px-2">
         <TransactionPayloadDetail
