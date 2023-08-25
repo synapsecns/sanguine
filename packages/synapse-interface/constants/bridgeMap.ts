@@ -1,12 +1,5 @@
 export const BRIDGE_MAP = {
   '1': {
-    '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
     '0x0642026E7f0B6cCaC5925b4E7Fa61384250e1701': {
       decimals: 18,
       symbol: 'H2O',
@@ -38,13 +31,6 @@ export const BRIDGE_MAP = {
         '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
         '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       ],
-    },
-    '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8': {
-      decimals: 18,
-      symbol: 'agEUR',
-      origin: ['agEUR'],
-      destination: ['agEUR'],
-      swappable: [],
     },
     '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599': {
       decimals: 8,
@@ -136,13 +122,6 @@ export const BRIDGE_MAP = {
       symbol: 'WETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: [],
-    },
-    '0xCa76543Cf381ebBB277bE79574059e32108e3E65': {
-      decimals: 18,
-      symbol: 'wsOHM',
-      origin: ['wsOHM'],
-      destination: ['wsOHM'],
       swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
@@ -304,20 +283,6 @@ export const BRIDGE_MAP = {
         '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
       ],
     },
-    '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
-    '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22': {
-      decimals: 18,
-      symbol: 'agEUR',
-      origin: ['agEUR'],
-      destination: ['agEUR'],
-      swappable: [],
-    },
     '0xd52f94DF742a6F4B4C8b033369fE13A41782Bf44': {
       decimals: 18,
       symbol: 'L2DAO',
@@ -439,20 +404,6 @@ export const BRIDGE_MAP = {
       destination: ['DOG'],
       swappable: [],
     },
-    '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
-    '0xc8699AbBba90C7479dedcCEF19eF78969a2fc608': {
-      decimals: 18,
-      symbol: 'USDB',
-      origin: ['fantOHM'],
-      destination: ['fantOHM'],
-      swappable: [],
-    },
     '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56': {
       decimals: 18,
       symbol: 'BUSD',
@@ -496,13 +447,6 @@ export const BRIDGE_MAP = {
       symbol: 'H2O',
       origin: ['H2O'],
       destination: ['H2O'],
-      swappable: [],
-    },
-    '0x565098CBa693b3325f9fe01D41b7A1cd792Abab1': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
       swappable: [],
     },
     '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063': {
@@ -638,13 +582,6 @@ export const BRIDGE_MAP = {
       destination: ['FTM'],
       swappable: [],
     },
-    '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
   },
   '288': {
     '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
@@ -657,13 +594,6 @@ export const BRIDGE_MAP = {
         '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
         '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
       ],
-    },
-    '0x61A269a9506272D128d79ABfE8E8276570967f00': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
     },
     '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
       decimals: 6,
@@ -744,13 +674,6 @@ export const BRIDGE_MAP = {
     },
   },
   '1088': {
-    '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
     '0x420000000000000000000000000000000000000A': {
       decimals: 18,
       symbol: 'WETH',
@@ -821,13 +744,6 @@ export const BRIDGE_MAP = {
       symbol: 'WETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: [],
-    },
-    '0x5CF84397944B9554A278870B510e86667681ff8D': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
       swappable: [],
     },
     '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3': {
@@ -907,13 +823,6 @@ export const BRIDGE_MAP = {
       symbol: 'MOVR',
       origin: ['MOVR'],
       destination: ['MOVR'],
-      swappable: [],
-    },
-    '0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
       swappable: [],
     },
     '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445': {
@@ -1203,20 +1112,6 @@ export const BRIDGE_MAP = {
       destination: ['SDT'],
       swappable: [],
     },
-    '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
-    '0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0': {
-      decimals: 18,
-      symbol: 'agEUR',
-      origin: ['agEUR'],
-      destination: ['agEUR'],
-      swappable: [],
-    },
     '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
       decimals: 18,
       symbol: 'FRAX',
@@ -1248,13 +1143,6 @@ export const BRIDGE_MAP = {
       symbol: 'L2DAO',
       origin: ['L2DAO'],
       destination: ['L2DAO'],
-      swappable: [],
-    },
-    '0x30bD4e574a15994B35EF9C7a5bc29002F1224821': {
-      decimals: 18,
-      symbol: 'wsOHM',
-      origin: ['wsOHM'],
-      destination: ['wsOHM'],
       swappable: [],
     },
     '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
@@ -1411,13 +1299,6 @@ export const BRIDGE_MAP = {
       destination: ['SYN'],
       swappable: [],
     },
-    '0x240E332Cd26AaE10622B24160D23425A17256F5d': {
-      decimals: 18,
-      symbol: 'wsOHM',
-      origin: ['wsOHM'],
-      destination: ['wsOHM'],
-      swappable: [],
-    },
     '0x321E7092a180BB43555132ec53AaA65a5bF84251': {
       decimals: 18,
       symbol: 'gOHM',
@@ -1526,13 +1407,6 @@ export const BRIDGE_MAP = {
         '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
       ],
     },
-    '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'AVAX',
@@ -1587,13 +1461,6 @@ export const BRIDGE_MAP = {
       symbol: 'FTM',
       origin: ['FTM'],
       destination: ['FTM'],
-      swappable: [],
-    },
-    '0x360d6DD540E3448371876662FBE7F1aCaf08c5Ab': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
       swappable: [],
     },
     '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
@@ -1691,13 +1558,6 @@ export const BRIDGE_MAP = {
         '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
       ],
     },
-    '0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
-      swappable: [],
-    },
     '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445': {
       decimals: 18,
       symbol: 'SYN',
@@ -1775,13 +1635,6 @@ export const BRIDGE_MAP = {
       symbol: 'nUSD',
       origin: ['nUSD'],
       destination: ['nUSD'],
-      swappable: [],
-    },
-    '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22': {
-      decimals: 6,
-      symbol: 'UST',
-      origin: ['UST'],
-      destination: ['UST'],
       swappable: [],
     },
     '0xb12c13e66AdE1F72f71834f2FC5082Db8C091358': {
