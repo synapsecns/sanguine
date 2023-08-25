@@ -942,7 +942,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	}
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	return fmt.Sprintf("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d ", allFilters, pendingFilter, pageValue, pageOffset)
+	return fmt.Sprintf("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d SETTINGS memory_overcommit_ratio_denominator=4000, memory_usage_overcommit_max_wait_microseconds=500 ", allFilters, pendingFilter, pageValue, pageOffset)
 }
 
 // nolint:cyclop
