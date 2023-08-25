@@ -88,8 +88,8 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 	tb.Cleanup(func() {
 		defer cancel()
-		// TODO: move me
-		if tb.Failed() {
+		// Do not keep containers on ci.
+		if tb.Failed() && os.Getenv("CI") == "" {
 			logger.Warn("Test failed, will temporarily continue serving \n" + tj.buildLogMessage(false))
 		} else if !tj.cfg.keepContainers {
 			tj.purgeResources()
@@ -171,8 +171,8 @@ func (j *testJaeger) purgeResources() {
 	wg.Add(len(resources))
 	for _, resource := range resources {
 		go func(resource *dockertest.Resource) {
-			defer wg.Done()
 			_ = j.pool.Purge(resource)
+			wg.Done()
 		}(resource)
 	}
 	wg.Wait()
