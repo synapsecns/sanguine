@@ -173,12 +173,6 @@ export const MostRecentTransaction = () => {
   const isLastHistoricalTransactionRecent: boolean =
     currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
-  console.log('lastHistoricalTransaction:', lastHistoricalTransaction)
-  console.log(
-    'isLastHistoricalTransactionRecent:',
-    isLastHistoricalTransactionRecent
-  )
-
   let transaction
 
   if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
@@ -187,7 +181,7 @@ export const MostRecentTransaction = () => {
 
   if (lastPendingBridgeTransaction) {
     console.log('here 1')
-    transaction = lastPendingBridgeTransaction
+    transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
@@ -206,7 +200,7 @@ export const MostRecentTransaction = () => {
 
   if (lastPendingTransaction) {
     console.log('here 2')
-    transaction = lastPendingTransaction
+    transaction = lastPendingTransaction as BridgeTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
@@ -235,11 +229,13 @@ export const MostRecentTransaction = () => {
 
   if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
     console.log('here 3')
-    transaction = lastHistoricalTransaction
+    transaction = lastHistoricalTransaction as BridgeTransaction
     return (
       <PendingTransaction
         connectedAddress={address as Address}
+        destinationAddress={transaction?.fromInfo?.address as Address}
         startedTimestamp={transaction?.fromInfo?.time}
+        completedTimestamp={transaction?.toInfo?.time}
         transactionHash={transaction?.fromInfo?.txnHash}
         transactionType={TransactionType.PENDING}
         originValue={transaction?.fromInfo?.formattedValue}
@@ -256,7 +252,6 @@ export const MostRecentTransaction = () => {
           transaction?.toInfo?.chainID,
           transaction?.toInfo?.tokenAddress
         )}
-        destinationAddress={transaction?.fromInfo?.address as Address}
         isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
         isCompleted={true}
       />

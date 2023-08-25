@@ -37,6 +37,7 @@ export interface TransactionProps {
   transactionType: TransactionType
   transactionHash?: string
   children?: React.ReactNode
+  isCompleted?: boolean
 }
 
 export const Transaction = ({
@@ -55,6 +56,7 @@ export const Transaction = ({
   transactionType,
   transactionHash,
   children,
+  isCompleted,
 }: TransactionProps) => {
   const estimatedCompletionInSeconds: number = useMemo(() => {
     return originChain
@@ -97,7 +99,7 @@ export const Transaction = ({
             />
           </div>
           <div className="p-3">
-            {transactionType === TransactionType.PENDING ? (
+            {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
                 estimatedCompletionInSeconds={
                   estimatedDuration ?? estimatedCompletionInSeconds
@@ -125,6 +127,7 @@ interface PendingTransactionProps extends TransactionProps {
 
 export const PendingTransaction = ({
   connectedAddress,
+  destinationAddress,
   originChain,
   originToken,
   originValue,
@@ -132,6 +135,7 @@ export const PendingTransaction = ({
   destinationToken,
   destinationValue,
   startedTimestamp,
+  completedTimestamp,
   transactionHash,
   isSubmitted,
   isCompleted = false,
@@ -152,8 +156,6 @@ export const PendingTransaction = ({
     }
   }, [transactionHash, isSubmitted, isCompleted])
 
-  console.log('currentStatus: ', currentStatus)
-
   const estimatedCompletionInSeconds: number = useMemo(() => {
     return originChain
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
@@ -166,6 +168,7 @@ export const PendingTransaction = ({
     <div data-test-id="pending-transaction" className="flex flex-col">
       <Transaction
         connectedAddress={connectedAddress}
+        destinationAddress={destinationAddress}
         originChain={originChain}
         originToken={originToken}
         originValue={originValue}
@@ -173,8 +176,10 @@ export const PendingTransaction = ({
         destinationToken={destinationToken}
         destinationValue={destinationValue}
         startedTimestamp={startedTimestamp}
+        completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
+        isCompleted={isCompleted}
       >
         <TransactionStatusDetails
           originChain={originChain}
