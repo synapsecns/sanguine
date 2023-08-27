@@ -373,6 +373,7 @@ class SynapseSDK {
    * @param tokenOut - The output token.
    * @param amountIn - The amount of input token.
    * @param deadline - The transaction deadline, optional.
+   * @param excludeCCTP - Flag to exclude CCTP quotes from the result, optional and defaults to False.
    *
    * @returns - A promise that resolves to the best bridge quote, or undefined if no route is found.
    *
