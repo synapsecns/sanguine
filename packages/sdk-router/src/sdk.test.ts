@@ -218,7 +218,7 @@ describe('SynapseSDK', () => {
       expect(to?.length).toBeGreaterThan(0)
     })
 
-    it('with CCTP: ETH > Arbitrum', async () => {
+    it('CCTP: ETH > Arbitrum (excludeCCTP flag omitted)', async () => {
       // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
       // which by default is routed through USDC
       const amount = BigNumber.from(10 ** 6 * 10 ** 6)
@@ -239,7 +239,30 @@ describe('SynapseSDK', () => {
       expect(routerAddress).toEqual(CCTP_ROUTER_ADDRESS[1])
     })
 
-    it('without CCTP: ETH > Arbitrum', async () => {
+    it('CCTP: ETH > Arbitrum (excludeCCTP flag off)', async () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10 ** 6 * 10 ** 6)
+      const result = await Synapse.bridgeQuote(
+        1,
+        42161,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount,
+        undefined,
+        false
+      )
+      if (!result) {
+        throw Error
+      }
+      const { originQuery, routerAddress } = result
+      // SynapseCCTPRouterQuery has router property
+      expect(originQuery).toHaveProperty('routerAdapter')
+      // Should be equal to SynapseCCTPRouter address
+      expect(routerAddress).toEqual(CCTP_ROUTER_ADDRESS[1])
+    })
+
+    it('CCTP: ETH > Arbitrum (excludeCCTP flag on)', async () => {
       // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
       // which by default is routed through USDC
       const amount = BigNumber.from(10 ** 6 * 10 ** 6)
