@@ -384,7 +384,8 @@ class SynapseSDK {
     tokenIn: string,
     tokenOut: string,
     amountIn: BigintIsh,
-    deadline?: BigNumber
+    deadline?: BigNumber,
+    excludeCCTP: boolean = false
   ): Promise<BridgeQuote | undefined> {
     invariant(
       originChainId !== destChainId,
@@ -411,6 +412,7 @@ class SynapseSDK {
 
     let cctpQuotePromise: Promise<BridgeQuote | undefined>
     if (
+      !excludeCCTP &&
       CCTP_ROUTER_ADDRESS[originChainId] &&
       CCTP_ROUTER_ADDRESS[destChainId]
     ) {
