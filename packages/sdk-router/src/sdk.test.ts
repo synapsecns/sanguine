@@ -3,7 +3,11 @@ import { providers as etherProvider } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseSDK } from './sdk'
-import { CCTP_ROUTER_ADDRESS, SupportedChainId } from './constants'
+import {
+  CCTP_ROUTER_ADDRESS,
+  ROUTER_ADDRESS,
+  SupportedChainId,
+} from './constants'
 
 const checkQueryFields = (query: any) => {
   expect(query.swapAdapter).not.toBeNull()
@@ -31,6 +35,10 @@ describe('SynapseSDK', () => {
   const bscProvider: Provider = new etherProvider.JsonRpcProvider(
     'https://endpoints.omniatech.io/v1/bsc/mainnet/public'
   )
+  // Token addresses for the tests
+  const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+  const ARB_USDC = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  const ARB_USDC_E = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'
   // test constructor
   describe('Test Constructor', () => {
     it('fails with unequal amount of chains to providers', () => {
@@ -169,15 +177,16 @@ describe('SynapseSDK', () => {
   })
 
   describe('bridgeQuote', () => {
+    const chainIds = [1, 42161]
+    const providers = [ethProvider, arbitrumProvider]
+    const Synapse = new SynapseSDK(chainIds, providers)
+
     it('CCTP: ETH > Arbitrum', async () => {
-      const chainIds = [1, 42161]
-      const providers = [ethProvider, arbitrumProvider]
-      const Synapse = new SynapseSDK(chainIds, providers)
       const result = await Synapse.bridgeQuote(
         1,
         42161,
-        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        ETH_USDC,
+        ARB_USDC,
         BigNumber.from('100000000')
       )
       if (!result) {
@@ -207,6 +216,50 @@ describe('SynapseSDK', () => {
       console.log(to)
       expect(data?.length).toBeGreaterThan(0)
       expect(to?.length).toBeGreaterThan(0)
+    })
+
+    it('with CCTP: ETH > Arbitrum', async () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10 ** 6 * 10 ** 6)
+      const result = await Synapse.bridgeQuote(
+        1,
+        42161,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount
+      )
+      if (!result) {
+        throw Error
+      }
+      const { originQuery, routerAddress } = result
+      // SynapseCCTPRouterQuery has router property
+      expect(originQuery).toHaveProperty('routerAdapter')
+      // Should be equal to SynapseCCTPRouter address
+      expect(routerAddress).toEqual(CCTP_ROUTER_ADDRESS[1])
+    })
+
+    it('without CCTP: ETH > Arbitrum', async () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10 ** 6 * 10 ** 6)
+      const result = await Synapse.bridgeQuote(
+        1,
+        42161,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount,
+        undefined,
+        true
+      )
+      if (!result) {
+        throw Error
+      }
+      const { originQuery, routerAddress } = result
+      // SynapseRouterQuery has swap property
+      expect(originQuery).toHaveProperty('swapAdapter')
+      // Should be equal to SynapseRouter address
+      expect(routerAddress).toEqual(ROUTER_ADDRESS[1])
     })
   })
 
