@@ -18,6 +18,8 @@ import dogechainImg from '@assets/chains/dogechain.png'
 import cantoImg from '@assets/chains/canto.svg'
 import baseImg from '@assets/chains/base.svg'
 
+import ethExplorerImg from '@assets/explorer/etherscan.png'
+
 import { Chain } from '@types'
 
 export const ETH: Chain = {
