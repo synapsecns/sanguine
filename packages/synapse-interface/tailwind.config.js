@@ -97,6 +97,15 @@ module.exports = {
         xxs: ['0.675rem', { lineHeight: '0.75rem' }],
       },
       colors: {
+        // updated colors
+        strong: '#FCFCFD',
+        primary: '#EEEDEF',
+        secondary: '#C0BCC2',
+        separator: '#565058',
+        surface: '#343036',
+        tint: '#252226',
+        background: '#151315',
+        // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',
         bgLight: '#353038',
