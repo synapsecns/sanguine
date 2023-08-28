@@ -251,17 +251,20 @@ export const MostRecentTransaction = () => {
     isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
 
-  const lastPendingBridgeTransaction: PendingBridgeTransaction =
-    pendingBridgeTransactions && pendingBridgeTransactions[0]
+  const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
+    return pendingBridgeTransactions && pendingBridgeTransactions[0]
+  }, [pendingBridgeTransactions])
 
-  const lastPendingTransaction: BridgeTransaction =
-    userPendingTransactions && userPendingTransactions[0]
+  const lastPendingTransaction: BridgeTransaction = useMemo(() => {
+    return userPendingTransactions && userPendingTransactions[0]
+  }, [userPendingTransactions])
 
   const currentTime: number = getTimeMinutesBeforeNow(0)
   const tenMinutesInUnix: number = 10 * 60
 
-  const lastHistoricalTransaction: BridgeTransaction =
-    userHistoricalTransactions && userHistoricalTransactions[0]
+  const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
+    return userHistoricalTransactions && userHistoricalTransactions[0]
+  }, [userHistoricalTransactions])
   const isLastHistoricalTransactionRecent: boolean =
     currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
