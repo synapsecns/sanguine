@@ -19,6 +19,11 @@ import cantoImg from '@assets/chains/canto.svg'
 import baseImg from '@assets/chains/base.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.png'
+import arbitrumExplorerImg from '@assets/explorer/arbitrum.png'
+import bnbExplorerImg from '@assets/explorer/bscscan.png'
+import avalancheExplorerImg from '@assets/explorer/avalanche.png'
+import cantoExplorerImg from '@assets/explorer/canto.png'
+import optimismExplorerImg from '@assets/explorer/optimism.png'
 
 import { Chain } from '@types'
 
@@ -36,6 +41,7 @@ export const ETH: Chain = {
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
+  explorerImg: ethExplorerImg,
   blockTime: 12000,
   nativeCurrency: {
     name: 'Ethereum',
@@ -61,6 +67,7 @@ export const ARBITRUM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   explorerName: 'Arbiscan',
+  explorerImg: arbitrumExplorerImg,
   color: 'gray',
 }
 
@@ -81,6 +88,7 @@ export const BNB: Chain = {
   nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   explorerUrl: 'https://bscscan.com',
   explorerName: 'BscScan',
+  explorerImg: bnbExplorerImg,
   color: 'yellow',
 }
 
@@ -100,6 +108,7 @@ export const AVALANCHE: Chain = {
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
   explorerName: 'Snowtrace',
+  explorerImg: avalancheExplorerImg,
   color: 'red',
 }
 
@@ -119,6 +128,7 @@ export const CANTO: Chain = {
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
+  explorerImg: cantoExplorerImg,
   color: 'teal',
 }
 
@@ -138,6 +148,7 @@ export const OPTIMISM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
   explorerName: 'Optimism Explorer',
+  explorerImg: optimismExplorerImg,
   color: 'red',
 }
 
