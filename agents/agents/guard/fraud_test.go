@@ -424,6 +424,9 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		}
 	}()
 
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
+
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
@@ -529,6 +532,13 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
+	})
+
+	// Verify that a state report was submitted on origin.
+	g.Eventually(func() bool {
+		numReports, err := g.LightInboxOnOrigin.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
+		Nil(g.T(), err)
+		return numReports.Int64() == 1
 	})
 
 	// TODO: uncomment the following case once manager messages can be executed.

@@ -208,7 +208,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		}
 
 		// Submit the state report on the remote chain.
-		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudAttestation.Notary)
+		agentStatus, err := g.domains[fraudAttestation.AgentDomain].LightManager().GetAgentStatus(ctx, fraudAttestation.Notary)
 		if err != nil {
 			return fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -216,7 +216,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if agentStatus.Flag() != types.AgentFlagActive {
 			continue
 		}
-		_, err = g.domains[fraudAttestation.AgentDomain].Inbox().SubmitStateReportWithAttestation(
+		tx, err := g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -228,6 +228,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if err != nil {
 			return fmt.Errorf("could not submit state report with attestation on agent domain %d: %w", fraudAttestation.AgentDomain, err)
 		}
+		fmt.Printf("Submitted state report with attestation on agent domain %d: %s\n", fraudAttestation.AgentDomain, tx.Hash().Hex())
 	}
 	return nil
 }
