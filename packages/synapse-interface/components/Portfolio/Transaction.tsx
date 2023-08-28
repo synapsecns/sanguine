@@ -319,7 +319,7 @@ const TransactionStatusDetails = ({
         >
           <Image
             className="w-4 h-4 my-auto mr-1.5 rounded-full"
-            src={originChain.chainImg}
+            src={originChain.explorerImg}
             alt={`${originChain.explorerName} logo`}
           />
           <div>Sent: {originChain.explorerName}</div>

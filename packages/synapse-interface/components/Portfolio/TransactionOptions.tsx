@@ -85,7 +85,7 @@ export const TransactionOptions = ({
                   <Image
                     className="rounded-full"
                     height={20}
-                    src={originChain.chainImg}
+                    src={originChain.explorerImg}
                     alt={`${originChain.explorerName} logo`}
                   />
                 }
