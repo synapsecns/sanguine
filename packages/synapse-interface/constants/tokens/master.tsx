@@ -22,7 +22,6 @@ import sdtLogo from '@assets/icons/sdt.svg'
 import sfiLogo from '@assets/icons/sfi.png'
 import newoLogo from '@assets/icons/newo.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
-import usdbLogo from '@assets/icons/usdb.png'
 import l2daoLogo from '@assets/icons/l2dao.svg'
 import plsLogo from '@assets/icons/pls.svg'
 import chainlinkLogo from '@assets/icons/chainlink.svg'
@@ -39,7 +38,6 @@ import btcLogo from '@assets/icons/btc.svg'
 import klayLogo from '@assets/icons/klay.svg'
 import maticLogo from '@assets/icons/matic.svg'
 import ftmLogo from '@assets/icons/fantom.svg'
-import fusdtLogo from '@assets/icons/fusdt.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -103,9 +101,9 @@ export const HIGH = new Token({
 
 export const JUMP = new Token({
   addresses: {
-    [CHAINS.BNB.id]: '0x130025ee738a66e691e6a7a62381cb33c6d9ae83', // redeem
-    [CHAINS.FANTOM.id]: '0x78DE9326792ce1d6eCA0c978753c6953Cdeedd73', // deposit
-    [CHAINS.METIS.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48', // redeem
+    [CHAINS.BNB.id]: '0x130025ee738a66e691e6a7a62381cb33c6d9ae83',
+    [CHAINS.FANTOM.id]: '0x78DE9326792ce1d6eCA0c978753c6953Cdeedd73',
+    [CHAINS.METIS.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
   },
   decimals: 18,
   symbol: 'JUMP',
@@ -121,7 +119,7 @@ export const JUMP = new Token({
 export const SFI = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xb753428af26e81097e7fd17f40c88aaa3e04902c',
-    [CHAINS.AVALANCHE.id]: '0xc2Bf0A1f7D8Da50D608bc96CF701110d4A438312', // deposit
+    [CHAINS.AVALANCHE.id]: '0xc2Bf0A1f7D8Da50D608bc96CF701110d4A438312',
   },
   decimals: 18,
   symbol: 'SFI',
@@ -153,10 +151,10 @@ export const DOG = new Token({
 
 export const NFD = new Token({
   addresses: {
-    [CHAINS.BNB.id]: '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51', // redeem
-    [CHAINS.AVALANCHE.id]: '0xf1293574ee43950e7a8c9f1005ff097a9a713959', // redeem
-    [CHAINS.DOGE.id]: '0x868055ADFA27D331d5b69b1BF3469aDAAc3ba7f2', // redeem
-    [CHAINS.POLYGON.id]: '0x0a5926027d407222f8fe20f24cb16e103f617046', // deposit
+    [CHAINS.BNB.id]: '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',
+    [CHAINS.AVALANCHE.id]: '0xf1293574ee43950e7a8c9f1005ff097a9a713959',
+    [CHAINS.DOGE.id]: '0x868055ADFA27D331d5b69b1BF3469aDAAc3ba7f2',
+    [CHAINS.POLYGON.id]: '0x0a5926027d407222f8fe20f24cb16e103f617046',
   },
   decimals: 18,
   symbol: 'NFD',
@@ -171,8 +169,8 @@ export const NFD = new Token({
 
 export const SOLAR = new Token({
   addresses: {
-    [CHAINS.MOONBEAM.id]: '0x0DB6729C03C85B0708166cA92801BcB5CAc781fC', // redeem
-    [CHAINS.MOONRIVER.id]: '0x76906411D07815491A5E577022757aD941fb5066', // deposit
+    [CHAINS.MOONBEAM.id]: '0x0DB6729C03C85B0708166cA92801BcB5CAc781fC',
+    [CHAINS.MOONRIVER.id]: '0x76906411D07815491A5E577022757aD941fb5066',
   },
   decimals: 18,
   symbol: 'veSOLAR',
@@ -187,8 +185,8 @@ export const SOLAR = new Token({
 
 export const GMX = new Token({
   addresses: {
-    [CHAINS.ARBITRUM.id]: '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a', // deposit
-    [CHAINS.AVALANCHE.id]: '0x62edc0692bd897d2295872a9ffcac5425011c661', // redeem
+    [CHAINS.ARBITRUM.id]: '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
+    [CHAINS.AVALANCHE.id]: '0x62edc0692bd897d2295872a9ffcac5425011c661',
   },
   wrapperAddresses: {
     [CHAINS.AVALANCHE.id]: '0x20A9DC684B4d0407EF8C9A302BEAaA18ee15F656',
@@ -206,11 +204,11 @@ export const GMX = new Token({
 
 export const SDT = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f', // deposit
-    [CHAINS.AVALANCHE.id]: '0xCCBf7c451F81752F7d2237F2c18C371E6e089E69', // redeem
+    [CHAINS.ETH.id]: '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f',
+    [CHAINS.AVALANCHE.id]: '0xCCBf7c451F81752F7d2237F2c18C371E6e089E69',
     [CHAINS.ARBITRUM.id]: '0x087d18A77465c34CDFd3a081a2504b7E86CE4EF8',
-    [CHAINS.FANTOM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48', // redeem
-    [CHAINS.HARMONY.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48', // redeem
+    [CHAINS.FANTOM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
+    [CHAINS.HARMONY.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
   },
   decimals: 18,
   symbol: 'SDT',
@@ -225,9 +223,9 @@ export const SDT = new Token({
 
 export const NEWO = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96', // deposit
-    [CHAINS.AVALANCHE.id]: '0x4Bfc90322dD638F81F034517359BD447f8E0235a', // redeem
-    [CHAINS.ARBITRUM.id]: '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433', // redeem
+    [CHAINS.ETH.id]: '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96',
+    [CHAINS.AVALANCHE.id]: '0x4Bfc90322dD638F81F034517359BD447f8E0235a',
+    [CHAINS.ARBITRUM.id]: '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433',
   },
   decimals: 18,
   symbol: 'NEWO',
@@ -238,20 +236,6 @@ export const NEWO = new Token({
   color: 'yellow',
   priorityRank: 6,
   routeSymbol: 'NEWO',
-})
-
-export const USDB = new Token({
-  addresses: {
-    [CHAINS.BNB.id]: '0xc8699abbba90c7479dedccef19ef78969a2fc608',
-  },
-  decimals: 18,
-  symbol: 'USDB',
-  name: 'USDB',
-  logo: usdbLogo,
-  docUrl: '',
-  swapableType: 'USDB',
-  priorityRank: 6,
-  routeSymbol: 'USDB',
 })
 
 export const PEPE = new Token({
@@ -271,8 +255,8 @@ export const PEPE = new Token({
 
 export const VSTA = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb', // redeem
-    [CHAINS.ARBITRUM.id]: '0xa684cd057951541187f288294a1e1c2646aa2d24', // deposit
+    [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb',
+    [CHAINS.ARBITRUM.id]: '0xa684cd057951541187f288294a1e1c2646aa2d24',
   },
   decimals: 18,
   symbol: 'VSTA',
@@ -287,14 +271,14 @@ export const VSTA = new Token({
 
 export const H2O = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x0642026e7f0b6ccac5925b4e7fa61384250e1701', // deposit
-    [CHAINS.ARBITRUM.id]: '0xD1c6f989e9552DB523aBAE2378227fBb059a3976', // redeem
-    [CHAINS.AVALANCHE.id]: '0xC6b11a4Fd833d1117E9D312c02865647cd961107', // redeem
-    [CHAINS.BNB.id]: '0x03eFca7CEb108734D3777684F3C0A0d8ad652f79', // redeem
-    [CHAINS.MOONBEAM.id]: '0xA46aDF6D5881ca0b8596EDadF8f058F8c16d8B68', // redeem
-    [CHAINS.MOONRIVER.id]: '0x9c0a820bb01e2807aCcd1c682d359e92DDd41403', // redeem
-    [CHAINS.OPTIMISM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48', // redeem
-    [CHAINS.POLYGON.id]: '0x32ba7cF7d681357529013de6a2CDF93933C0dF3f', // redeem
+    [CHAINS.ETH.id]: '0x0642026e7f0b6ccac5925b4e7fa61384250e1701',
+    [CHAINS.ARBITRUM.id]: '0xD1c6f989e9552DB523aBAE2378227fBb059a3976',
+    [CHAINS.AVALANCHE.id]: '0xC6b11a4Fd833d1117E9D312c02865647cd961107',
+    [CHAINS.BNB.id]: '0x03eFca7CEb108734D3777684F3C0A0d8ad652f79',
+    [CHAINS.MOONBEAM.id]: '0xA46aDF6D5881ca0b8596EDadF8f058F8c16d8B68',
+    [CHAINS.MOONRIVER.id]: '0x9c0a820bb01e2807aCcd1c682d359e92DDd41403',
+    [CHAINS.OPTIMISM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
+    [CHAINS.POLYGON.id]: '0x32ba7cF7d681357529013de6a2CDF93933C0dF3f',
   },
   decimals: 18,
   symbol: 'H2O',
@@ -309,8 +293,8 @@ export const H2O = new Token({
 
 export const L2DAO = new Token({
   addresses: {
-    [CHAINS.ARBITRUM.id]: '0x2CaB3abfC1670D1a452dF502e216a66883cDf079', // deposit
-    [CHAINS.OPTIMISM.id]: '0xd52f94DF742a6F4B4C8b033369fE13A41782Bf44', // redeem
+    [CHAINS.ARBITRUM.id]: '0x2CaB3abfC1670D1a452dF502e216a66883cDf079',
+    [CHAINS.OPTIMISM.id]: '0xd52f94DF742a6F4B4C8b033369fE13A41782Bf44',
   },
   decimals: 18,
   symbol: 'L2DAO',
@@ -325,8 +309,8 @@ export const L2DAO = new Token({
 
 export const PLS = new Token({
   addresses: {
-    [CHAINS.ARBITRUM.id]: '0x51318b7d00db7acc4026c88c3952b66278b6a67f', // deposit
-    [CHAINS.OPTIMISM.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6', // redeem
+    [CHAINS.ARBITRUM.id]: '0x51318b7d00db7acc4026c88c3952b66278b6a67f',
+    [CHAINS.OPTIMISM.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
   },
   decimals: 18,
   symbol: 'PLS',
@@ -341,9 +325,9 @@ export const PLS = new Token({
 
 export const AGEUR = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8', // deposit
-    [CHAINS.ARBITRUM.id]: '0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0', // redeem
-    [CHAINS.OPTIMISM.id]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22', // redeem
+    [CHAINS.ETH.id]: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8',
+    [CHAINS.ARBITRUM.id]: '0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0',
+    [CHAINS.OPTIMISM.id]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
   },
   decimals: 18,
   symbol: 'agEUR',
@@ -358,8 +342,8 @@ export const AGEUR = new Token({
 
 export const UNIDX = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6', // deposit
-    [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D', // redeem
+    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6',
+    [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D',
     [CHAINS.FANTOM.id]: '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471',
     [CHAINS.OPTIMISM.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
     [CHAINS.BASE.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
@@ -606,7 +590,7 @@ export const SYN = new Token({
     [CHAINS.ETH.id]: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
     [CHAINS.BNB.id]: '0xa4080f1778e69467e905b8d6f72f6e441f9e9484',
     [CHAINS.POLYGON.id]: '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',
-    [CHAINS.FANTOM.id]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2', // yes this is same as avax swap addr, no its not error
+    [CHAINS.FANTOM.id]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
     [CHAINS.ARBITRUM.id]: '0x080f6aed32fc474dd5717105dba5ea57268f46eb',
     [CHAINS.AVALANCHE.id]: '0x1f1E7c893855525b303f99bDF5c3c05Be09ca251',
     [CHAINS.HARMONY.id]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
@@ -847,7 +831,7 @@ export const WAVAX = new Token({
 export const JEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: zeroAddress,
-    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
+    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
     [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
   },
@@ -864,7 +848,7 @@ export const JEWEL = new Token({
 
 export const WJEWEL = new Token({
   addresses: {
-    [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260', // from actual jewl
+    [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260',
   },
   decimals: 18,
   symbol: 'WJEWEL',
@@ -882,8 +866,8 @@ export const SYNJEWEL = new Token({
     [CHAINS.HARMONY.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
   decimals: 18,
-  symbol: 'JEWEL  ', // THE SPACES ARE VERY IMPORTANT
-  name: 'JEWEL  ', // THE SPACES ARE VERY IMPORTANT
+  symbol: 'synJEWEL',
+  name: 'synJEWEL',
   logo: jewelLogo,
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
@@ -1193,22 +1177,4 @@ export const WFTM = new Token({
   color: 'blue',
   priorityRank: 5,
   routeSymbol: 'WFTM',
-})
-
-export const FUSDT = new Token({
-  addresses: {
-    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
-  },
-  decimals: {
-    [CHAINS.FANTOM.id]: 6,
-  },
-  symbol: 'fUSDT',
-  name: 'Frapped USDT',
-  logo: fusdtLogo,
-  color: 'lime',
-  swapableType: 'USD',
-  swapableOn: [CHAINS.FANTOM.id],
-  visibilityRank: 100,
-  priorityRank: 3,
-  routeSymbol: 'fUSDT',
 })
