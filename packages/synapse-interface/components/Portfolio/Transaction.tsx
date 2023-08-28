@@ -96,8 +96,7 @@ export const Transaction = ({
   return (
     <div
       data-test-id="transaction"
-      className="flex flex-col my-2 text-[#C2C2D6]
-      border border-[#222235] rounded-lg overflow-hidden"
+      className="flex flex-col my-2 overflow-hidden border rounded-lg text-secondary border-surface"
     >
       <div
         onClick={handleExplorerClick}
@@ -108,7 +107,7 @@ export const Transaction = ({
         <div
           className={`
           flex items-center p-2
-          ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
+          ${transactionType === TransactionType.PENDING && 'bg-surface'}
           `}
         >
           <TransactionPayloadDetail
@@ -118,16 +117,18 @@ export const Transaction = ({
           />
         </div>
         <TransactionArrow
-          className={`${
+          className={`
+          ${
             transactionType === TransactionType.PENDING
-              ? 'bg-[#1B1B29] fill-[#27273B] '
-              : 'stroke-[#343036]'
-          } fill-transparent stroke-[#343036]`}
+              ? 'bg-tint fill-surface'
+              : 'stroke-surface'
+          }
+          `}
         />
         <div
           className={`
           flex flex-row justify-between flex-1
-          ${transactionType === TransactionType.PENDING && 'bg-[#1B1B29]'}
+          ${transactionType === TransactionType.PENDING && 'bg-tint'}
           `}
         >
           <div className="flex items-center p-2">
@@ -295,7 +296,7 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-[#1B1B29] border-t border-[#252537] text-sm items-center'
+    'flex justify-between bg-tint border-t border-surface text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
