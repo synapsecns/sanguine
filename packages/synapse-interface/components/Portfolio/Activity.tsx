@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useEffect, useMemo, useCallback, useState } from 'react'
 import { useAccount, Address } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -30,6 +30,7 @@ import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { Transaction, PendingTransaction, TransactionType } from './Transaction'
+import ProcessingIcon from '../icons/ProcessingIcon'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -468,11 +469,14 @@ export const EstimatedDuration = ({
   }, [estimatedMinutes, elapsedTime, startTime])
 
   return (
-    <div className="text-[#C2C2D6] text-sm">
+    <div className="text-[#C2C2D6] text-sm flex flex-col">
       {timeRemaining >= 0 ? (
-        <div>
-          {timeRemaining} - {timeRemaining + 1} min
-        </div>
+        <React.Fragment>
+          <div>
+            {timeRemaining} - {timeRemaining + 1} min
+          </div>
+          <ProcessingIcon className="fill-[#343036] mt-0.5" />
+        </React.Fragment>
       ) : (
         <div>Waiting... </div>
       )}

@@ -117,7 +117,13 @@ export const Transaction = ({
             tokenAmount={originValue}
           />
         </div>
-        <TransactionArrow className="fill-transparent stroke-[#343036]" />
+        <TransactionArrow
+          className={`${
+            transactionType === TransactionType.PENDING
+              ? 'bg-[#1B1B29] fill-[#27273B] '
+              : 'stroke-[#343036]'
+          } fill-transparent stroke-[#343036]`}
+        />
         <div
           className={`
           flex flex-row justify-between flex-1
