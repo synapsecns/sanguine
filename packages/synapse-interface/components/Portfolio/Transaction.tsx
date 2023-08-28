@@ -199,6 +199,7 @@ export const PendingTransaction = ({
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
       if (eventType === 10 || eventType === 11 || isCCTP) {
+        console.log('in here')
         const attestationTime: number = 13 * 60
         return (
           (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
@@ -209,12 +210,15 @@ export const PendingTransaction = ({
       }
     }
     // All other transactions
+    console.log('in here 1')
     return originChain
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
           originChain.blockTime) /
           1000
       : null
   }, [originChain, eventType, originToken])
+
+  console.log('estimatedCompletionInSeconds:', estimatedCompletionInSeconds)
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
