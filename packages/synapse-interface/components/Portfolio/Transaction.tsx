@@ -17,6 +17,7 @@ import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/master'
 import { getTimeMinutesFromNow } from '@/utils/time'
+import TransactionArrow from '../icons/TransactionArrow'
 
 export enum TransactionType {
   PENDING,
@@ -106,7 +107,7 @@ export const Transaction = ({
       >
         <div
           className={`
-          flex items-center border-r border-r-[#252537] p-2
+          flex items-center p-2
           ${transactionType === TransactionType.PENDING && 'bg-[#27273B]'}
           `}
         >
@@ -116,6 +117,7 @@ export const Transaction = ({
             tokenAmount={originValue}
           />
         </div>
+        <TransactionArrow className="fill-transparent stroke-[#343036]" />
         <div
           className={`
           flex flex-row justify-between flex-1
