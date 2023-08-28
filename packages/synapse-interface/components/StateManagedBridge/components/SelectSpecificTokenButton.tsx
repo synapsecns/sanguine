@@ -1,4 +1,3 @@
-import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoin,
   getBorderStyleForCoinHover,
@@ -143,7 +142,7 @@ const TokenBalance = ({
           {parsedBalance}
           <span className="text-md text-secondaryTextColor">
             {' '}
-            {token ? displaySymbol(chainId, token) : ''}
+            {token ? token.symbol : ''}
           </span>
         </div>
       )}

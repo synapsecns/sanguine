@@ -1,6 +1,6 @@
 import { zeroAddress } from 'viem'
 import _ from 'lodash'
-import * as ALL_TOKENS from '@constants/tokens/master'
+import * as ALL_TOKENS from '@constants/tokens/bridgeable'
 import { BRIDGE_MAP } from '@constants/bridgeMap'
 
 export const generateChainIdAddressMapping = (routeSymbol: string) => {

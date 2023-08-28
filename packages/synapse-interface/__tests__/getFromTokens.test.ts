@@ -32,7 +32,7 @@ jest.mock('../utils/flattenPausedTokens', () => ({
   }),
 }))
 
-jest.mock('../constants/tokens/master', () => ({
+jest.mock('../constants/tokens/brideable', () => ({
   __esModule: true,
   '*': jest.fn(() => {
     return []

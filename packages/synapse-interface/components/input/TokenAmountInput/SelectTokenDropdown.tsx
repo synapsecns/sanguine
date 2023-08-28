@@ -1,5 +1,4 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import { displaySymbol } from '@utils/displaySymbol'
 import React from 'react'
 import Image from 'next/image'
 import {
@@ -24,7 +23,7 @@ const SelectTokenDropdown = ({
 }) => {
   const currentChain: Chain = CHAINS_BY_ID[chainId]
   const isUnsupportedChain: boolean = currentChain ? false : true
-  const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
+  const symbol = selectedToken ? selectedToken.symbol : ''
   const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
   return (

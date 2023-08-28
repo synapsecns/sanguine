@@ -16,9 +16,8 @@ import {
   WJEWEL,
   SYNJEWEL,
   AVAX,
-  WETH,
-} from '@constants/tokens/master'
-import { AVWETH, KLAYTN_oUSDT, MIM, MULTIAVAX } from './exceptions'
+} from '@constants/tokens/bridgeable'
+import { AVWETH, KLAYTN_oUSDT, MIM, MULTIAVAX, WETH } from './exceptions'
 
 import { Token } from '@/utils/types'
 

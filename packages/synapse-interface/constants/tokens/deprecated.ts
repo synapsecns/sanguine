@@ -1,7 +1,8 @@
 import usdbLogo from '@assets/icons/usdb.png'
-import * as CHAINS from '@/constants/chains/master'
-import { Token } from '@/utils/types'
 import fusdtLogo from '@assets/icons/fusdt.svg'
+
+import { Token } from '@/utils/types'
+import * as CHAINS from '@/constants/chains/master'
 
 export const USDB = new Token({
   addresses: {

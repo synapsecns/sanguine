@@ -1,4 +1,4 @@
-import { USDC } from '@constants/tokens/master'
+import { USDC } from '@constants/tokens/bridgeable'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 

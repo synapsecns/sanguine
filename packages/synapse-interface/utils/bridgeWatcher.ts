@@ -1,12 +1,12 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { hexZeroPad } from '@ethersproject/bytes'
-import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
 import { Contract } from '@ethersproject/contracts'
+import { getAddress, isAddress } from '@ethersproject/address'
+import { id } from '@ethersproject/hash'
 import { toHexStr } from '@utils/toHexStr'
 import { BridgeWatcherTx } from '@types'
-import { id } from '@ethersproject/hash'
+import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
-import { getAddress, isAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import {
   SYN,
@@ -33,9 +33,9 @@ import {
   AGEUR,
   NOTE,
   USDC,
-  WETH,
   SUSD,
-} from '@constants/tokens/master'
+} from '@constants/tokens/bridgeable'
+import { WETH } from '@constants/tokens/exceptions'
 
 export const getTransactionReceipt = async (
   txHash: string,

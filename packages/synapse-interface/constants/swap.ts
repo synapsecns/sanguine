@@ -1,4 +1,4 @@
-import { USDC, DAI } from '@constants/tokens/master'
+import { USDC, DAI } from '@constants/tokens/bridgeable'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 import { SwapQuote } from '@types'
