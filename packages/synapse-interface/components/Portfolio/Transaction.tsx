@@ -123,7 +123,7 @@ export const Transaction = ({
               ? 'bg-tint fill-surface'
               : 'stroke-surface'
           }
-          `}
+          fill-transparent`}
         />
         <div
           className={`
