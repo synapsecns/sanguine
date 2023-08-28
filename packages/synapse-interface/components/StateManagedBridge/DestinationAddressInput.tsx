@@ -36,8 +36,8 @@ export const DestinationAddressInput = ({
           <input
             className={`
               focus:outline-none
-              focus:border-none
               focus:ring-0
+              focus:border-none
               border-none
               bg-transparent
               w-[300px]
