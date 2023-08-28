@@ -49,7 +49,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return nil
 		}
 
-		// Submit the state report.
+		// Submit the state report to summit.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
@@ -63,7 +63,28 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			fraudSnapshot.Signature,
 		)
 		if err != nil {
-			return fmt.Errorf("could not submit state report with snapshot: %w", err)
+			return fmt.Errorf("could not submit state report with snapshot to summit: %w", err)
+		}
+
+		// Submit the state report to the remote chain.
+		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudSnapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		//TODO: mark agent as active on remote chain if necessary
+		if agentStatus.Flag() != types.AgentFlagActive {
+			continue
+		}
+		_, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			srSignature,
+			fraudSnapshot.Payload,
+			fraudSnapshot.Signature,
+		)
+		if err != nil {
+			return fmt.Errorf("could not submit state report with snapshot to agent domain %d: %w", fraudSnapshot.AgentDomain, err)
 		}
 	}
 
@@ -168,7 +189,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			return fmt.Errorf("could not verify state with attestation: %w", err)
 		}
 
-		// Submit the state report.
+		// Submit the state report on summit.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
@@ -183,7 +204,29 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			fraudAttestation.Signature,
 		)
 		if err != nil {
-			return fmt.Errorf("could not submit state report with attestation: %w", err)
+			return fmt.Errorf("could not submit state report with attestation on summit: %w", err)
+		}
+
+		// Submit the state report on the remote chain.
+		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudAttestation.Notary)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		//TODO: mark agent as active on remote chain if necessary
+		if agentStatus.Flag() != types.AgentFlagActive {
+			continue
+		}
+		_, err = g.domains[fraudAttestation.AgentDomain].Inbox().SubmitStateReportWithAttestation(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			srSignature,
+			snapPayload,
+			fraudAttestation.Payload,
+			fraudAttestation.Signature,
+		)
+		if err != nil {
+			return fmt.Errorf("could not submit state report with attestation on agent domain %d: %w", fraudAttestation.AgentDomain, err)
 		}
 	}
 	return nil
