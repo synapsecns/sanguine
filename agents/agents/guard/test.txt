@@ -1,0 +1,1 @@
+FAIL	github.com/synapsecns/sanguine/agents/agents/guard [build failed]

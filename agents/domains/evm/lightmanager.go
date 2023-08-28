@@ -86,25 +86,17 @@ func (a lightManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error
 }
 
 func (a lightManagerContract) UpdateAgentStatus(
-	ctx context.Context,
+	transactor *bind.TransactOpts,
 	unbondedSigner signer.Signer,
 	agentAddress common.Address,
 	agentStatus types.AgentStatus,
 	agentProof [][32]byte) (*ethTypes.Transaction, error) {
-	transactOpts, err := a.transactOptsSetup(ctx, unbondedSigner)
-	if err != nil {
-		return nil, fmt.Errorf("could not setup transact opts: %w", err)
-	}
-
-	transactOpts.Context = ctx
-	transactOpts.GasLimit = 5000000
-	a.nonceManager.ClearNonce(unbondedSigner.Address())
 	lightManagerAgentStatus := lightmanager.AgentStatus{
 		Flag:   uint8(agentStatus.Flag()),
 		Domain: agentStatus.Domain(),
 		Index:  agentStatus.Index(),
 	}
-	tx, err := a.contract.UpdateAgentStatus(transactOpts, agentAddress, lightManagerAgentStatus, agentProof)
+	tx, err := a.contract.UpdateAgentStatus(transactor, agentAddress, lightManagerAgentStatus, agentProof)
 	if err != nil {
 		return nil, fmt.Errorf("could not update agent status: %w", err)
 	}
