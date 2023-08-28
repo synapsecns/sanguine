@@ -1,0 +1,104 @@
+=== RUN   TestGuardSuite
+2023-08-28T17:12:42.908-0400	[33mWARN[0m	metrics	localmetrics/local.go:87	jaeger ui: http://localhost:35594
+pyroscope ui: http://localhost:35602
+Container logs will be saved to /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/dir106226042
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /health-check             --> github.com/synapsecns/sanguine/core/ginhelper.New.func4 (12 handlers)
+[GIN-debug] GET    /robots.txt               --> github.com/synapsecns/sanguine/core/ginhelper.New.func5 (12 handlers)
+2023-08-28T17:12:42.969-0400	[33mWARN[0m	metrics	metrics/base.go:120	running metrics server failed: could not listen on :8080: listen tcp :8080: bind: address already in use
+2023-08-28T17:12:42.981-0400	[33mWARN[0m	metrics	metrics/base.go:120	running metrics server failed: could not listen on :8080: listen tcp :8080: bind: address already in use
+2023-08-28T17:12:42.992-0400	[33mWARN[0m	metrics	metrics/base.go:120	running metrics server failed: could not listen on :8080: listen tcp :8080: bind: address already in use
+2023-08-28T17:12:43.002-0400	[33mWARN[0m	metrics	metrics/base.go:120	running metrics server failed: could not listen on :8080: listen tcp :8080: bind: address already in use
+=== RUN   TestGuardSuite/TestUpdateAgentStatusOnRemote
+running test TestGuardSuite/TestUpdateAgentStatusOnRemote with id 0 
+2023-08-28T17:12:43.898-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:161	started anvil node for chain 10 as container magical_hellman.  Logs will be stored at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/719814081
+2023-08-28T17:12:44.035-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:161	started anvil node for chain 97 as container cool_banach.  Logs will be stored at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/3638696477
+2023-08-28T17:12:44.183-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:161	started anvil node for chain 4 as container jovial_beaver.  Logs will be stored at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/4068376079
+2023-08-28T17:12:44.824-0400	[33mWARN[0m	backend-base-logger	base/base.go:234	could not generate stack trace for tx: 0xa23eee63fd0a30bce5e0fee6c07a265fb9263bef999465ed7ae680c884831c26
+2023-08-28T17:12:53.152-0400	[33mWARN[0m	metrics	localmetrics/local.go:87	jaeger ui: http://localhost:35594
+pyroscope ui: http://localhost:35602
+2023-08-28T17:12:53.183-0400	[33mWARN[0m	metrics	metrics/base.go:120	running metrics server failed: could not listen on :8080: listen tcp :8080: bind: address already in use
+2023-08-28T17:12:53.184-0400	[33mWARN[0m	proxy-logger	proxy/server.go:44	no refresh interval set (or interval is 0), using default of %d seconds30
+2023-08-28T17:13:02.807-0400	[33mWARN[0m	scribe	logger/handler.go:130	Creating SQL store
+2023-08-28T17:13:02.807-0400	[33mWARN[0m	scribe-sqlite	sqlite/store.go:38	database is at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/dir486477384/synapse.db
+2023-08-28T17:13:02.889-0400	[33mWARN[0m	notary-sqlite	sqlite/sqlite.go:38	notary database is at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/dir486477384/synapse.db
+2023-08-28T17:13:02.901-0400	[33mWARN[0m	guard-sqlite	sqlite/sqlite.go:38	guard database is at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/dir486477384/synapse.db
+OMNIIII http://0.0.0.0:59807/confirmations/1/rpc/10
+2023-08-28T17:13:02.911-0400	[33mWARN[0m	scribe-api	api/server.go:47	starting api server
+2023-08-28T17:13:02.911-0400	[33mWARN[0m	scribe-api	api/server.go:127	Starting database connection from api
+2023-08-28T17:13:02.911-0400	[33mWARN[0m	scribe	logger/handler.go:130	Creating SQL store
+2023-08-28T17:13:02.911-0400	[33mWARN[0m	scribe-sqlite	sqlite/store.go:38	database is at /var/folders/_w/g15ntxvs6bdcbtzfhdfmgk8c0000gn/T/dir486477384/synapse.db
+2023-08-28T17:13:02.962-0400	[33mWARN[0m	metrics	metrics/base.go:140	could not add gorm callbackserrorregistered
+started graphiql gqlServer on port: http://localhost:59816/graphiql
+2023-08-28T17:13:03.987-0400	[31mERROR[0m	guard-logger	guard/guard.go:279	Failed calling GetLatestAgentState for originID 4 on the Summit contract: err = could not decode state: invalid state length, expected 62, got 0
+2023-08-28T17:13:03.991-0400	[31mERROR[0m	guard-logger	guard/guard.go:279	Failed calling GetLatestAgentState for originID 97 on the Summit contract: err = could not decode state: invalid state length, expected 62, got 0
+2023-08-28T17:13:03.995-0400	[31mERROR[0m	guard-logger	guard/guard.go:279	Failed calling GetLatestAgentState for originID 10 on the Summit contract: err = could not decode state: invalid state length, expected 62, got 0
+guard update status destination tx 0xe173fff529cb18a98d2994830bce17c18c182d508641747a1e46d652d438de0c
+notary update status destination tx 0x64d4d2df785a9947f9d8bc510230b65bcbbc12f93a6c8c9e8b1905cae13bf95f
+notary update status origin tx 0xb523b1c4b9411cb0dca2bae4d3904e76b05e4e0195f62e4cad2f79b272153478
+guard submit snapshot summit tx 0x8b1f44bba7fa359b5118fbbd88e816b2629b21165a7aec472e16b03b762dd29f
+notary submit snapshot summit tx 0xba19d154d1d392ced0c2d1dacebda60db82487d9324298c6bfaa1b0cc74f5f98
+AAAAAAAAAAAAAa
+LOOPING -1111111
+LOOPING -1111111
+LOOPING 0000000
+guard submit snapshot summit tx 0xe5118c9d2b1119284acc08260c91ff366bc36df0cc097bcea5c8351734fb52aa
+2023-08-28T17:13:09.002-0400	[31mERROR[0m	guard-logger	guard/guard.go:310	No latest state found for origin id 97
+2023-08-28T17:13:09.008-0400	[31mERROR[0m	guard-logger	guard/guard.go:304	Failed calling SuggestLatestState for originID 10 on the Origin contract: could not get suggested latest state: no contract code at given address
+BBBBBBBBBBBBBB
+notary submit snapshot summit tx 0xa556538cd9a4ea0d67a1c853f0e19824f31b4f8c0b305e6c115f8422f9b1bd05
+2023-08-28T17:13:14.027-0400	[31mERROR[0m	guard-logger	guard/guard.go:310	No latest state found for origin id 97
+2023-08-28T17:13:14.035-0400	[31mERROR[0m	guard-logger	guard/guard.go:304	Failed calling SuggestLatestState for originID 10 on the Origin contract: could not get suggested latest state: no contract code at given address
+LOOPING AAAAAA
+LOOPING AAAAAA
+LOOPING AAAAAA
+LOOPING AAAAAA
+2023-08-28T17:13:19.043-0400	[31mERROR[0m	guard-logger	guard/guard.go:304	Failed calling SuggestLatestState for originID 10 on the Origin contract: could not get suggested latest state: no contract code at given address
+2023-08-28T17:13:19.049-0400	[31mERROR[0m	guard-logger	guard/guard.go:310	No latest state found for origin id 97
+2023/08/28 17:13:19 [32m/Users/maxplanck/Code/Synapse/sanguine51/agents/agents/guard/db/sql/base/dispute.go:66
+[0m[33m[0.648ms] [34;1m[rows:1][0m UPDATE `disputes` SET `dispute_processed_status`="1" WHERE `disputes`.`guard_address` = "0xAfd4917FAad90cEb6e5373537e8C05Aa05cEa4af"
+2023-08-28T17:13:20.812-0400	[31mERROR[0m	backend-base-logger	base/base.go:225	could not call contract: execution reverted on tx: 0x5366c73da5ae8546c98e4ecf55908ab4de894e50026ebef1bf18263006756a39
+For more info run (before the process stops): cast run --rpc-url http://localhost:35604 0x5366c73da5ae8546c98e4ecf55908ab4de894e50026ebef1bf18263006756a39 --trace-printer
+2023/08/28 17:13:21 [32m/Users/maxplanck/Code/Synapse/sanguine51/agents/agents/guard/db/sql/base/dispute.go:66
+[0m[33m[0.424ms] [34;1m[rows:1][0m UPDATE `disputes` SET `dispute_processed_status`="1" WHERE `disputes`.`notary_address` = "0xdeAd45E19DA1678A55b82561Ab803a9B61C149E8"
+CCCCCCCCCCCCCCCCC
+2023-08-28T17:13:22.884-0400	[31mERROR[0m	backend-base-logger	base/base.go:225	could not call contract: execution reverted on tx: 0xbebf1c000f9c0c877da7713f369ce04fcb308c743b0b51cc9ce879a2f054188a
+For more info run (before the process stops): cast run --rpc-url http://localhost:35604 0xbebf1c000f9c0c877da7713f369ce04fcb308c743b0b51cc9ce879a2f054188a --trace-printer
+2023-08-28T17:13:24.057-0400	[31mERROR[0m	guard-logger	guard/guard.go:310	No latest state found for origin id 97
+2023-08-28T17:13:24.063-0400	[31mERROR[0m	guard-logger	guard/guard.go:304	Failed calling SuggestLatestState for originID 10 on the Origin contract: could not get suggested latest state: no contract code at given address
+DDDDDDDDDDDDDDd
+pass agent root destination tx 0x6a03a0cada9850b124f2fbbd52aa9cdc3cae3335bafa4ba18612fa226b4dc6bd
+2023-08-28T17:13:29.129-0400	[31mERROR[0m	guard-logger	guard/guard.go:310	No latest state found for origin id 97
+2023-08-28T17:13:29.134-0400	[31mERROR[0m	guard-logger	guard/guard.go:304	Failed calling SuggestLatestState for originID 10 on the Origin contract: could not get suggested latest state: no contract code at given address
+finished running test TestGuardSuite/TestUpdateAgentStatusOnRemote with id 1 
+2023-08-28T17:13:29.610-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:109	context canceled: context canceled
+2023-08-28T17:13:29.610-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:109	context canceled: context canceled
+2023-08-28T17:13:29.610-0400	[33mWARN[0m	anvil-docker	anvil/anvil.go:109	context canceled: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 10. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 10. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:115	Error on chain 10: error running chain indexer
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 10. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 10. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 10. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 4. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 4. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:115	Error on chain 4: error running chain indexer
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 4. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 4. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 4. Error: chain level scribe context cancel
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 97. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:107	Context canceled for scribe on chain 97. Error: context canceled
+2023-08-28T17:13:29.610-0400	[31mERROR[0m	scribe	logger/handler.go:115	Error on chain 97: error running chain indexer
+2023-08-28T17:13:29.611-0400	[33mWARN[0m	ethergo-submitter	submitter/submitter.go:106	context done: context canceled
+2023-08-28T17:13:29.611-0400	[33mWARN[0m	ethergo-submitter	submitter/submitter.go:109	exiting transaction submitter
+2023-08-28T17:13:29.611-0400	[33mWARN[0m	backend-base-logger	base/base.go:209	could not get tx receipt: Post "http://localhost:35605": context canceled on tx 0xd3e81842bed89dbf73dc5b3a59e6fcbdc55c7e240dcb4d5c4693f1f83b981455
+2023-08-28T17:13:29.611-0400	[31mERROR[0m	scribe-api	api/server.go:111	grpc server stopped
+2023-08-28T17:13:29.611-0400	[33mWARN[0m	ethergo-submitter	submitter/submitter.go:106	context done: context canceled
+2023-08-28T17:13:29.611-0400	[33mWARN[0m	ethergo-submitter	submitter/submitter.go:109	exiting transaction submitter
+--- PASS: TestGuardSuite (86.23s)
+    --- PASS: TestGuardSuite/TestUpdateAgentStatusOnRemote (46.93s)
+PASS
+ok  	github.com/synapsecns/sanguine/agents/agents/guard	87.529s
