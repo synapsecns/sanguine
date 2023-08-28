@@ -54,6 +54,13 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
+		ok, err := g.prepareStateReport(ctx, state, fraudSnapshot.Agent, g.summitDomainID)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
+		}
+		if !ok {
+			continue
+		}
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
@@ -67,12 +74,11 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Submit the state report to the remote chain.
-		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudSnapshot.Agent)
+		ok, err = g.prepareStateReport(ctx, state, fraudSnapshot.Agent, fraudSnapshot.AgentDomain)
 		if err != nil {
-			return fmt.Errorf("could not get agent status: %w", err)
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
 		}
-		//TODO: mark agent as active on remote chain if necessary
-		if agentStatus.Flag() != types.AgentFlagActive {
+		if !ok {
 			continue
 		}
 		_, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
@@ -121,16 +127,7 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent co
 	if err != nil {
 		return false, fmt.Errorf("could not check validity of state: %w", err)
 	}
-	if isValid {
-		return false, nil
-	}
-
-	// Verify that the agent is in a slashable status.
-	agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, agent)
-	if err != nil {
-		return false, fmt.Errorf("could not get agent status: %w", err)
-	}
-	return isAgentSlashable(agentStatus.Flag()), nil
+	return !isValid, nil
 }
 
 // handleAttestation checks whether an attestation is valid.
@@ -161,13 +158,13 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		return fmt.Errorf("could not get snapshot: %w", err)
 	}
 
+	snapPayload, err := snapshot.Encode()
+	if err != nil {
+		return fmt.Errorf("could not encode snapshot: %w", err)
+	}
+
 	// Verify each state in the snapshot.
 	for stateIndex, state := range snapshot.States() {
-		snapPayload, err := snapshot.Encode()
-		if err != nil {
-			return fmt.Errorf("could not encode snapshot: %w", err)
-		}
-
 		isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary)
 		if err != nil {
 			return fmt.Errorf("could not check if state is slashable: %w", err)
@@ -194,6 +191,13 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
+		ok, err := g.prepareStateReport(ctx, state, fraudAttestation.Notary, g.summitDomainID)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
+		}
+		if !ok {
+			continue
+		}
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 			ctx,
 			g.unbondedSigner,
@@ -208,12 +212,11 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		}
 
 		// Submit the state report on the remote chain.
-		agentStatus, err := g.domains[fraudAttestation.AgentDomain].LightManager().GetAgentStatus(ctx, fraudAttestation.Notary)
+		ok, err = g.prepareStateReport(ctx, state, fraudAttestation.Notary, fraudAttestation.AgentDomain)
 		if err != nil {
-			return fmt.Errorf("could not get agent status: %w", err)
+			return fmt.Errorf("could not prepare state report on remote: %w", err)
 		}
-		//TODO: mark agent as active on remote chain if necessary
-		if agentStatus.Flag() != types.AgentFlagActive {
+		if !ok {
 			continue
 		}
 		tx, err := g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
@@ -231,6 +234,40 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		fmt.Printf("Submitted state report with attestation on agent domain %d: %s\n", fraudAttestation.AgentDomain, tx.Hash().Hex())
 	}
 	return nil
+}
+
+// prepareStateReport checks if the given agent is in a slashable status, and relays the
+// Summit agent status to the given chain if necessary.
+func (g Guard) prepareStateReport(ctx context.Context, state types.State, agent common.Address, chainID uint32) (ok bool, err error) {
+	var agentStatus types.AgentStatus
+	if chainID == g.summitDomainID {
+		agentStatus, err = g.domains[chainID].BondingManager().GetAgentStatus(ctx, agent)
+	} else {
+		agentStatus, err = g.domains[chainID].LightManager().GetAgentStatus(ctx, agent)
+	}
+	if err != nil {
+		return false, fmt.Errorf("could not get agent status: %w", err)
+	}
+
+	switch agentStatus.Flag() {
+	case types.AgentFlagUnknown:
+		if chainID == g.summitDomainID {
+			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
+		}
+		// Update the agent status to active using the last known root on remote chain.
+		// TODO: make sure that the given agent is actually registered in the db call with open dispute,
+		// i.e. accessible by the call to `guardDB.GetUpdateAgentStatusParameters()`.
+		err = g.updateAgentStatus(ctx, chainID)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	case types.AgentFlagActive, types.AgentFlagUnstaking:
+		// Agent is slashable.
+		return true, nil
+	}
+	// Agent is not slashable.
+	return false, nil
 }
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
