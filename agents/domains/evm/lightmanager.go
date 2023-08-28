@@ -16,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewLightManagerContract returns a bound light manager contract.
@@ -47,23 +46,6 @@ type lightManagerContract struct {
 }
 
 //nolint:dupl
-func (a lightManagerContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	return transactOpts, nil
-}
-
-//nolint:dupl
 func (a lightManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
 	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
@@ -87,7 +69,6 @@ func (a lightManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error
 
 func (a lightManagerContract) UpdateAgentStatus(
 	transactor *bind.TransactOpts,
-	unbondedSigner signer.Signer,
 	agentAddress common.Address,
 	agentStatus types.AgentStatus,
 	agentProof [][32]byte) (*ethTypes.Transaction, error) {

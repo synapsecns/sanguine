@@ -16,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -101,7 +100,7 @@ func (a bondingManagerContract) GetDispute(ctx context.Context, index *big.Int) 
 	return nil
 }
 
-func (a bondingManagerContract) CompleteSlashing(transactor *bind.TransactOpts, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
+func (a bondingManagerContract) CompleteSlashing(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.CompleteSlashing(transactor, domain, agent, proof)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)

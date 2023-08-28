@@ -75,23 +75,23 @@ type SummitContract interface {
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
-	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshotCtx
 	SubmitSnapshotCtx(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 	// VerifyAttestation verifies a snapshot on the inbox.
-	VerifyAttestation(transactor *bind.TransactOpts, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithAttestation verifies a state with attestation.
 	VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
-	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitReceipt submits a receipt to the inbox.
 	SubmitReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error)
 	// VerifyReceipt verifies a receipt on the inbox.
-	VerifyReceipt(transactor *bind.TransactOpts, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitReceiptReport submits a receipt report to the inbox.
-	SubmitReceiptReport(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitReceiptReport(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -110,7 +110,7 @@ type BondingManagerContract interface {
 	// GetDisputeStatus gets the dispute status for the given agent.
 	GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error)
 	// CompleteSlashing completes the slashing of an agent.
-	CompleteSlashing(transactor *bind.TransactOpts, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
+	CompleteSlashing(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
 	// GetAgent gets an agent status and address for a given agent index.
 	GetAgent(ctx context.Context, index *big.Int) (types.AgentStatus, common.Address, error)
 }
@@ -144,11 +144,11 @@ type LightInboxContract interface {
 		snapGas []*big.Int,
 	) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithSnapshot verifies a state within a snapshot.
-	VerifyStateWithSnapshot(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyStateWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitAttestationReport submits an attestation report to the inbox (via the light inbox contract)
-	SubmitAttestationReport(transactor *bind.TransactOpts, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitAttestationReport(transactor *bind.TransactOpts, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithAttestation verifies a state with attestation.
-	VerifyStateWithAttestation(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyReceipt verifies a receipt on the inbox.
 	VerifyReceipt(transactor *bind.TransactOpts, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 }
@@ -162,7 +162,6 @@ type LightManagerContract interface {
 	// UpdateAgentStatus updates the agent status on the remote chain.
 	UpdateAgentStatus(
 		transactor *bind.TransactOpts,
-		unbondedSigner signer.Signer,
 		agentAddress common.Address,
 		agentStatus types.AgentStatus,
 		agentProof [][32]byte) (*ethTypes.Transaction, error)

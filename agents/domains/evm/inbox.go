@@ -46,7 +46,7 @@ type inboxContract struct {
 }
 
 //nolint:dupl
-func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
@@ -109,7 +109,7 @@ func (a inboxContract) SubmitSnapshotCtx(ctx context.Context, signer signer.Sign
 	return tx, nil
 }
 
-func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyAttestation(transactor, attestation, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit attestation: %w", err)
@@ -135,7 +135,7 @@ func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer si
 	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
 
-func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
@@ -182,7 +182,7 @@ func (a inboxContract) SubmitReceipt(ctx context.Context, signer signer.Signer, 
 	return tx, nil
 }
 
-func (a inboxContract) VerifyReceipt(transactor *bind.TransactOpts, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyReceipt(transactor, rcptPayload, rcptSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
@@ -191,30 +191,9 @@ func (a inboxContract) VerifyReceipt(transactor *bind.TransactOpts, signer signe
 	return tx, nil
 }
 
-func (a inboxContract) SubmitReceiptReport(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+func (a inboxContract) SubmitReceiptReport(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.SubmitReceiptReport(transactor, rcptPayload, rcptSignature, rrSignature)
 	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
-	a.nonceManager.ClearNonce(signer.Address())
-
-	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitReceiptReport(transactOpts, rcptPayload, rcptSignature, rrSignature)
-	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit receipt report: %w", err)
 	}
 

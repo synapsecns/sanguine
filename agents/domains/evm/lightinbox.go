@@ -98,7 +98,7 @@ func (a lightInboxContract) SubmitStateReportWithSnapshot(ctx context.Context, s
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyStateWithSnapshot(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) VerifyStateWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyStateWithSnapshot(transactor, big.NewInt(stateIndex), snapPayload, snapSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
@@ -107,7 +107,7 @@ func (a lightInboxContract) VerifyStateWithSnapshot(transactor *bind.TransactOpt
 	return tx, nil
 }
 
-func (a lightInboxContract) SubmitAttestationReport(transactor *bind.TransactOpts, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) SubmitAttestationReport(transactor *bind.TransactOpts, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.SubmitAttestationReport(transactor, attestation, arSignature, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
@@ -116,7 +116,7 @@ func (a lightInboxContract) SubmitAttestationReport(transactor *bind.TransactOpt
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyStateWithAttestation(transactor *bind.TransactOpts, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyStateWithAttestation(transactor, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)

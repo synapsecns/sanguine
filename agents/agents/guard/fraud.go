@@ -13,6 +13,8 @@ import (
 
 // handleSnapshot checks a snapshot for invalid states.
 // If an invalid state is found, initiate slashing and submit a state report.
+//
+//nolint:cyclop
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
@@ -21,6 +23,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
+		stateIndex, state := stateIndex, state
 		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent)
 		if err != nil {
 			return fmt.Errorf("could not handle state: %w", err)
@@ -33,7 +36,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 				transactor,
-				g.unbondedSigner,
 				int64(stateIndex),
 				fraudSnapshot.Payload,
 				fraudSnapshot.Signature,
@@ -66,7 +68,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 				transactor,
-				g.unbondedSigner,
 				int64(stateIndex),
 				srSignature,
 				fraudSnapshot.Payload,
@@ -149,6 +150,8 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 
 // handleValidAttestation handles an attestation that is valid, but may
 // attest to a snapshot that contains an invalid state.
+//
+//nolint:cyclop
 func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
 	// Fetch the attested snapshot.
 	snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
@@ -158,6 +161,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range snapshot.States() {
+		stateIndex, state := stateIndex, state
 		snapPayload, err := snapshot.Encode()
 		if err != nil {
 			return fmt.Errorf("could not encode snapshot: %w", err)
@@ -175,7 +179,6 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				transactor,
-				g.unbondedSigner,
 				int64(stateIndex),
 				snapPayload,
 				fraudAttestation.Payload,
@@ -200,7 +203,6 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 				transactor,
-				g.unbondedSigner,
 				int64(stateIndex),
 				srSignature,
 				snapPayload,
@@ -228,7 +230,6 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 			transactor,
-			g.unbondedSigner,
 			fraudAttestation.Payload,
 			fraudAttestation.Signature,
 		)
@@ -254,7 +255,6 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudAttestation.AgentDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitAttestationReport(
 			transactor,
-			g.unbondedSigner,
 			fraudAttestation.Payload,
 			arSignatureEncoded,
 			fraudAttestation.Signature,
@@ -299,7 +299,6 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 			tx,
 				err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(
 				transactor,
-				g.unbondedSigner,
 				fraudReceipt.RcptPayload,
 				fraudReceipt.RcptSignature,
 			)
@@ -339,7 +338,12 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not encode receipt: %w", err)
 		}
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature, rrReceiptBytes)
+			tx, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(
+				transactor,
+				fraudReceipt.RcptPayload,
+				fraudReceipt.RcptSignature,
+				rrReceiptBytes,
+			)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit receipt report: %w", err)
 			}
@@ -374,7 +378,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
 				transactor,
-				g.unbondedSigner,
 				statusUpdated.Domain,
 				statusUpdated.Agent,
 				agentProof,
@@ -543,6 +546,8 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 
 // updateAgentStatus updates the status for each agent with a pending agent tree model,
 // and open dispute on remote chain.
+//
+//nolint:cyclop
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
 	if err != nil {
@@ -565,6 +570,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
+		tree := tree
 		if tree.BlockNumber >= blockNumber {
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
@@ -576,7 +582,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 				tx, err = g.domains[chainID].LightManager().UpdateAgentStatus(
 					transactor,
-					g.unbondedSigner,
 					tree.AgentAddress,
 					agentStatus,
 					tree.Proof,
