@@ -141,6 +141,7 @@ export const Transaction = ({
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
                 startTime={startedTimestamp}
+                transactionStatus={transactionStatus}
                 estimatedCompletionInSeconds={
                   estimatedDuration ?? estimatedCompletionInSeconds
                 }
@@ -186,7 +187,7 @@ export const PendingTransaction = ({
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
 
-  const currentStatus: TransactionStatus = useMemo(() => {
+  const transactionStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
     }
@@ -265,6 +266,7 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
+        transactionStatus={transactionStatus}
         isCompleted={isCompleted}
       >
         <TransactionStatusDetails
@@ -272,7 +274,7 @@ export const PendingTransaction = ({
           destinationChain={destinationChain}
           kappa={kappa}
           transactionHash={transactionHash}
-          transactionStatus={currentStatus}
+          transactionStatus={transactionStatus}
         />
       </Transaction>
     </div>

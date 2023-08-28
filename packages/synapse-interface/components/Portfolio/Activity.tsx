@@ -29,7 +29,12 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
-import { Transaction, PendingTransaction, TransactionType } from './Transaction'
+import {
+  Transaction,
+  PendingTransaction,
+  TransactionType,
+  TransactionStatus,
+} from './Transaction'
 import ProcessingIcon from '../icons/ProcessingIcon'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
@@ -437,9 +442,11 @@ export const getTransactionExplorerLink = ({
 
 export const EstimatedDuration = ({
   startTime,
+  transactionStatus,
   estimatedCompletionInSeconds,
 }: {
   startTime: number
+  transactionStatus: TransactionStatus
   estimatedCompletionInSeconds: number
 }) => {
   const [elapsedTime, setElapsedTime] = useState<number>(0)
@@ -475,7 +482,9 @@ export const EstimatedDuration = ({
           <div>
             {timeRemaining} - {timeRemaining + 1} min
           </div>
-          <ProcessingIcon className="fill-[#343036] mt-0.5" />
+          {transactionStatus !== TransactionStatus.PENDING_WALLET_ACTION && (
+            <ProcessingIcon className="fill-[#343036] mt-0.5" />
+          )}
         </React.Fragment>
       ) : (
         <div>Waiting... </div>
