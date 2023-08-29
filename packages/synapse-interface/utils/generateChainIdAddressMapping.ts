@@ -1,6 +1,6 @@
 import { zeroAddress } from 'viem'
 import _ from 'lodash'
-import * as ALL_TOKENS from '@constants/tokens/bridgeable'
+import * as BRIDGEABLE from '@constants/tokens/bridgeable'
 import { BRIDGE_MAP } from '@constants/bridgeMap'
 
 export const generateChainIdAddressMapping = (routeSymbol: string) => {
@@ -32,7 +32,7 @@ export const getAllSymbols = () => {
 
 export const getAllInternalSymbols = () => {
   return _.sortBy(
-    _.map(ALL_TOKENS, (token) => {
+    _.map(BRIDGEABLE, (token) => {
       return token.routeSymbol
     })
   )
@@ -42,7 +42,7 @@ export const getAllInternalSymbols = () => {
 Looks for discrepancies in tokens master file vs. the bridgeMap
 */
 export const testerMasterVsJson = () => {
-  Object.entries(ALL_TOKENS).forEach(([_key, token]) => {
+  Object.entries(BRIDGEABLE).forEach(([_key, token]) => {
     const map = generateChainIdAddressMapping(token.routeSymbol)
 
     if (!_.isEqual(token.addresses, map)) {

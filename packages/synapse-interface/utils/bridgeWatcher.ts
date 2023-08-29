@@ -35,7 +35,7 @@ import {
   USDC,
   SUSD,
 } from '@constants/tokens/bridgeable'
-import { WETH } from '@constants/tokens/exceptions'
+import { WETH } from '@constants/tokens/auxilliary'
 
 export const getTransactionReceipt = async (
   txHash: string,
