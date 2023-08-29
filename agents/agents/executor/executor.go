@@ -414,8 +414,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
 
-		fmt.Println("TX HASH OF MESSAGE EXECUTE IS ", tx.Hash())
-
 		return
 	})
 	if err != nil {
