@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -13,9 +12,6 @@ import (
 
 // RetryableFunc is a function that can be retried.
 type RetryableFunc func(ctx context.Context) error
-
-// FuncWrapper wraps a function to be generic. This should be checked to be a function before calling.
-type FuncWrapper any
 
 // retryWithBackoffConfig holds the configuration for WithBackoff.
 type retryWithBackoffConfig struct {
@@ -158,94 +154,6 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 	}
 
 	return ErrUnknown
-}
-
-// WithBackoffOneArg retries the given one arg function with exponential backoff.
-func WithBackoffOneArg(ctx context.Context, doFunc FuncWrapper, arg interface{}, configurators ...WithBackoffConfigurator) (val interface{}, err error) {
-	funcValue := reflect.ValueOf(doFunc)
-
-	if funcValue.Kind() != reflect.Func {
-		return nil, fmt.Errorf("doFunc is not a function")
-	}
-
-	funcType := reflect.TypeOf(doFunc)
-
-	// Ensure the function has the expected signature.
-	if funcType.NumIn() != 2 || funcType.NumOut() != 2 {
-		return nil, fmt.Errorf("function does not have the expected signature")
-	}
-
-	if !reflect.TypeOf(ctx).AssignableTo(funcType.In(0)) {
-		return nil, fmt.Errorf("context argument is not assignable to function's first parameter type")
-	}
-
-	if !reflect.TypeOf(arg).AssignableTo(funcType.In(1)) {
-		return nil, fmt.Errorf("provided argument is not assignable to function's second parameter type")
-	}
-
-	config := defaultConfig()
-
-	for _, configurator := range configurators {
-		configurator(&config)
-	}
-
-	b := &backoff.Backoff{
-		Factor: config.factor,
-		Jitter: config.jitter,
-		Min:    config.min,
-		Max:    config.max,
-	}
-
-	timeout := time.Duration(0)
-	startTime := time.Now()
-
-	attempts := 0
-	for !config.exceedsMaxAttempts(attempts) && !config.exceedsMaxTime(startTime) {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("%w while retrying", ctx.Err())
-		case <-time.After(timeout):
-			var funcCtx context.Context
-			var cancel context.CancelFunc
-
-			if config.maxAttemptTime > 0 {
-				funcCtx, cancel = context.WithTimeout(ctx, config.maxAttemptTime)
-			} else {
-				funcCtx, cancel = context.WithCancel(ctx)
-			}
-
-			// Create input args.
-			inputArgs := []reflect.Value{
-				reflect.ValueOf(funcCtx),
-				reflect.ValueOf(arg),
-			}
-
-			// Call the function.
-			output := funcValue.Call(inputArgs)
-
-			// Extract the return values.
-			val = output[0].Interface()
-			err := output[1].Interface().(error)
-
-			if err != nil {
-				timeout = b.Duration()
-				attempts++
-				cancel()
-			} else {
-				cancel()
-				return val, nil
-			}
-		}
-	}
-
-	if config.exceedsMaxAttempts(attempts) {
-		return nil, errorUtil.Wrapf(ErrMaxAttempts, "after %d attempts", attempts)
-	}
-	if config.exceedsMaxTime(startTime) {
-		return nil, errorUtil.Wrapf(ErrMaxTime, "after %s (max was %s)", time.Since(startTime).String(), config.maxAllAttemptsTime.String())
-	}
-
-	return nil, ErrUnknown
 }
 
 // ErrMaxAttempts is returned when the maximum number of retry attempts is reached.
