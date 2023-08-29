@@ -125,7 +125,7 @@ export function TransactionPopoverContainer({
       <Popover.Panel
         className={`
           absolute z-10 top-[-74px] left-[30px] transform-gpu
-          -translate-x-full border border-[#3D3D5C] bg-[#252537]
+          -translate-x-full border border-separator bg-surface
           w-screen max-w-xs rounded-md overflow-hidden
         `}
       >
