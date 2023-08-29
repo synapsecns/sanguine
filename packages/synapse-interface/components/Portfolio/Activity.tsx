@@ -321,7 +321,7 @@ export const MostRecentTransaction = () => {
         originValue={Number(transaction.originValue)}
         destinationChain={transaction.destinationChain as Chain}
         destinationToken={transaction.destinationToken as Token}
-        startedTimestamp={transaction.id as number}
+        startedTimestamp={transaction.id ?? transaction.startedTimestamp}
         transactionHash={transaction.transactionHash as string}
         isSubmitted={transaction.isSubmitted as boolean}
         transactionType={TransactionType.PENDING}
