@@ -30,7 +30,10 @@ db_config:
 # The base omnirpc url which each chain's collection of RPC's will be proxied through.
 base_omnirpc_url: http://agents-omnirpc
 
-# For each chain (domain), specify the necessary contracts. ***** TODO: Update this *****
+# For each chain (domain), specify the necessary contracts.
+# Remotes need: origin_address
+# Summit needs: origin_address, summit_address, inbox_address
+# TODO: Update this for fraud.
 domains:
   domain_client1:
     domain_id: 11155111
