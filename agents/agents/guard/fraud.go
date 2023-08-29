@@ -699,8 +699,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				if err != nil {
 					return nil, fmt.Errorf("could not update agent status: %w", err)
 				}
-				// doesn't reach this on failing runs
-				fmt.Println("UPDATING AGENT STATUS ON CHAIN", chainID, "tx", tx.Hash())
 
 				return
 			})

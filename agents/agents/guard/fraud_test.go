@@ -58,8 +58,6 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 	summitClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 
-	fmt.Println("OMNIIII", omniRPCClient.GetEndpoint(int(g.TestBackendSummit.GetChainID()), 1))
-
 	clients := map[uint32][]backend.ScribeBackend{
 		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
@@ -916,14 +914,13 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	transactor, err := g.GuardUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
 	Nil(g.T(), err)
-	tx, err := g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		transactor,
 		g.GuardBondedSigner.Address(),
 		guardStatus,
 		guardProof,
 	)
 	Nil(g.T(), err)
-	fmt.Println("guard update status destination tx", tx.Hash())
 
 	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
@@ -931,31 +928,28 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
 	Nil(g.T(), err)
-	tx, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		transactor,
 		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
 	Nil(g.T(), err)
-	fmt.Println("notary update status destination tx", tx.Hash())
 	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.OriginDomainClient.Config().DomainID)))
 	Nil(g.T(), err)
-	tx, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
 		transactor,
 		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
-	fmt.Println("notary update status origin tx", tx.Hash())
 	Nil(g.T(), err)
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
 	Nil(g.T(), err)
-	fmt.Println("guard submit snapshot summit tx", tx.Hash())
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
@@ -964,10 +958,9 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
-	fmt.Println("notary submit snapshot summit tx", tx.Hash())
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-	fmt.Println("AAAAAAAAAAAAAa")
+
 	// Submit the attestation
 	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
 	Nil(g.T(), err)
@@ -992,7 +985,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			return true
 		}
 
-		fmt.Println("LOOPING -1111111")
 		g.bumpBackends()
 		return false
 	})
@@ -1000,7 +992,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		fmt.Println("LOOPING 0000000")
 		return err == nil
 	})
 
@@ -1021,11 +1012,10 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
-	fmt.Println("guard submit snapshot summit tx", tx.Hash())
 	g.Nil(err)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
-	fmt.Println("BBBBBBBBBBBBBB")
+
 	// Submit snapshot with Notary.
 	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
 	g.Nil(err)
@@ -1035,7 +1025,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)
-	fmt.Println("notary submit snapshot summit tx", tx.Hash())
 	g.Nil(err)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
@@ -1064,7 +1053,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
-	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+10) * time.Second)
 	currentTime = &updatedTime
 
 	// Verify that the accused agent is eventually Slashed on Summit.
@@ -1074,8 +1063,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
 		}
-		fmt.Println("LOOPING AAAAAA")
-		fmt.Println("status", status.Flag())
+
 		g.bumpBackends()
 		return false
 	})
@@ -1100,7 +1088,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	fmt.Println("CCCCCCCCCCCCCCCCC")
 	// Submit snapshot with Notary.
 	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
 	g.Nil(err)
@@ -1142,7 +1129,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	notaryAttestation, err = types.NewNotaryAttestation(attEncoded, latestAgentRoot, snapGas)
 	Nil(g.T(), err)
 
-	fmt.Println("DDDDDDDDDDDDDDd")
 	// Submit the attestation.
 	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
@@ -1163,7 +1149,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
-	fmt.Println("pass agent root destination tx", tx.Hash())
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
@@ -1175,9 +1160,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			return true
 		}
 
-		fmt.Println("agent status", status.Flag())
-
-		fmt.Println("LOOPING B")
 		g.bumpBackends()
 		return false
 	})
