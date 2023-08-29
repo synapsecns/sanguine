@@ -248,6 +248,7 @@ export const PendingTransaction = ({
           await dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
       }
+
       updateResolvedTransaction()
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
@@ -296,13 +297,13 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
 }) => {
   const sharedClass: string =
-    'flex justify-between bg-tint border-t border-surface text-sm items-center'
+    'flex bg-tint border-t border-surface text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
       <div
         data-test-id="pending-wallet-action-status"
-        className={`${sharedClass} p-3`}
+        className={`${sharedClass} p-3 justify-between`}
       >
         <div>Wallet signature required</div>
         <div>Check wallet</div>
@@ -312,8 +313,11 @@ const TransactionStatusDetails = ({
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
     return (
-      <div data-test-id="initializing-status" className={`${sharedClass} p-3`}>
-        <div>Initializing...</div>
+      <div
+        data-test-id="initializing-status"
+        className={`${sharedClass} p-3 justify-between`}
+      >
+        <div>Initiating...</div>
       </div>
     )
   }
@@ -327,9 +331,9 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
     return (
-      <div data-test-id="pending-status" className={`${sharedClass} p-2`}>
+      <div data-test-id="pending-status" className={`${sharedClass} p-2 flex`}>
         <div
-          className="flex cursor-pointer hover:bg-[#101018] rounded-md"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
           onClick={handleExplorerClick}
         >
           <Image
@@ -337,8 +341,9 @@ const TransactionStatusDetails = ({
             src={originChain.explorerImg}
             alt={`${originChain.explorerName} logo`}
           />
-          <div>Sent: {originChain.explorerName}</div>
+          <div>Confirmed on {originChain.explorerName}.</div>
         </div>
+        <div className="mr-auto">Bridging to {destinationChain.name}.</div>
         <TransactionOptions
           originChain={originChain}
           destinationChain={destinationChain}
