@@ -174,8 +174,8 @@ func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, sig
 	}
 
 	transactOpts.Context = ctx
-
 	transactOpts.GasLimit = 5000000
+	a.nonceManager.ClearNonce(signer.Address())
 
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {

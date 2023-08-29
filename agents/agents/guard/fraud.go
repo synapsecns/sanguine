@@ -81,7 +81,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if !ok {
 			continue
 		}
-		_, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
+		tx, err := g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -92,6 +92,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot to agent domain %d: %w", fraudSnapshot.AgentDomain, err)
 		}
+		fmt.Printf("report hash: %v\n", tx.Hash())
 	}
 
 	return nil

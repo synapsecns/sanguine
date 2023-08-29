@@ -133,6 +133,9 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
+
 	// Start a new Guard.
 	guard, _, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
@@ -229,8 +232,13 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
-	// TODO: Add a unit test for testing the case where multiple states are in the same snapshot to ensure they are
-	// handled correctly.
+
+	// Verify that a state report was submitted on summit.
+	fraudulentState := fraudulentSnapshot.States()[0]
+	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
+
+	// // Verify that a state report was submitted on destination.
+	// g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
 }
 
 func (g GuardSuite) TestFraudulentAttestationOnDestination() {
@@ -424,9 +432,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		}
 	}()
 
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
-
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
@@ -528,11 +533,14 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		return false
 	})
 
-	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	// Verify that a dispute is now open on summit.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
+
+	// Verify that a state report was submitted on summit.
+	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
 
 	// Verify that a state report was submitted on destination.
 	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
@@ -546,10 +554,10 @@ type statementInboxContract interface {
 	}, error)
 }
 
+// Verify that a state report was submitted on the given contract.
 func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
-	// Verify that a state report was submitted on destination.
 	g.Eventually(func() bool {
-		numReports, err := g.LightInboxOnDestination.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
+		numReports, err := contract.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
 		Nil(g.T(), err)
 
 		if numReports.Int64() < expectedNumReports {
@@ -560,8 +568,21 @@ func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedN
 		}
 
 		stateReportIdx := big.NewInt(numReports.Int64() - 1)
-		stateReport, err := g.LightInboxOnDestination.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
+		stateReport, err := contract.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
 		Nil(g.T(), err)
+
+		stateReportDecoded, err := types.DecodeState(stateReport.StatementPayload)
+		Nil(g.T(), err)
+
+		logState := func(state types.State) {
+			hash, err := state.Hash()
+			Nil(g.T(), err)
+			fmt.Printf("%v,%v,%v,%v,%v,%v\n", state.BlockNumber(), state.GasData(), hash, state.Nonce(), state.Origin(), state.Root())
+		}
+		fmt.Println("state:")
+		logState(stateReportDecoded)
+		fmt.Println("expected state: ")
+		logState(expectedState)
 
 		expected, err := expectedState.Encode()
 		Nil(g.T(), err)
