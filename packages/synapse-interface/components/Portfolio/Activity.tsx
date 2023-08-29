@@ -60,12 +60,21 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     [userHistoricalTransactions]
   )
 
-  const currentUnixTimestamp = Math.floor(Date.now() / 1000)
-  console.log('currentUnixTimestamp:', currentUnixTimestamp)
+  const [currentTime, setCurrentTime] = useState<number>(
+    getTimeMinutesBeforeNow(0)
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(getTimeMinutesBeforeNow(0))
+    }, 60000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const historicalTransactionsByTime = useMemo(() => {
     if (!hasHistoricalTransactions) return
-    const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 600
+    const tenMinutesAgoUnixTimestamp = currentTime - 600
 
     const transactionsWithinLast10Mins = userHistoricalTransactions.filter(
       (transaction) =>
@@ -79,7 +88,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     )
 
     return { transactionsWithinLast10Mins, remainingTransactions }
-  }, [hasHistoricalTransactions, userHistoricalTransactions])
+  }, [hasHistoricalTransactions, userHistoricalTransactions, currentTime])
 
   console.log('historicalTransactionsByTime:', historicalTransactionsByTime)
 
