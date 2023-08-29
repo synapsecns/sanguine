@@ -62,6 +62,15 @@ export const getExplorerTxUrl = ({
   return `${baseUrl}/${type}/${hash ?? data}`
 }
 
+export const getExplorerAddressUrl = ({ address, chainId }) => {
+  let explorerUrl = Object.values(CHAINS).filter(
+    (chain) => chain.id === chainId
+  )[0].explorerUrl
+  let baseUrl = explorerUrl ?? CHAINS.ETH.explorerUrl
+
+  return `${baseUrl}/address/${address}`
+}
+
 export const getCompleteUrl = (uriPath: string) => {
   return `${SYNAPSE_BASE_URL}${uriPath}`
 }

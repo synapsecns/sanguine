@@ -11,7 +11,7 @@ import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getTransactionExplorerLink } from './Activity'
-import { getExplorerTxUrl } from '@/constants/urls'
+import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
@@ -209,7 +209,6 @@ export const PendingTransaction = ({
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
       if (eventType === 10 || eventType === 11 || isCCTP) {
-        console.log('in here')
         const attestationTime: number = 13 * 60
         return (
           (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
@@ -220,7 +219,6 @@ export const PendingTransaction = ({
       }
     }
     // All other transactions
-    console.log('in here 1')
     return originChain
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
           originChain.blockTime) /
@@ -228,14 +226,19 @@ export const PendingTransaction = ({
       : null
   }, [originChain, eventType, originToken])
 
-  console.log('estimatedCompletionInSeconds:', estimatedCompletionInSeconds)
-
   useEffect(() => {
+    console.log('startedTimestamp: ', startedTimestamp)
+    console.log('isSubmitted:', isSubmitted)
+    console.log('transactionHash: ', transactionHash)
+
     if (!isSubmitted && transactionHash) {
       const updateResolvedTransaction = async () => {
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
         })
+
+        console.log('resolvedTransaction:', resolvedTransaction)
+
         if (resolvedTransaction) {
           const currentTimestamp: number = getTimeMinutesFromNow(0)
           const updatedTransaction = {
@@ -244,6 +247,8 @@ export const PendingTransaction = ({
             transactionHash: transactionHash,
             isSubmitted: true,
           }
+
+          console.log('updating this transaction: ', updatedTransaction)
 
           await dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
@@ -272,6 +277,7 @@ export const PendingTransaction = ({
         isCompleted={isCompleted}
       >
         <TransactionStatusDetails
+          connectedAddress={connectedAddress}
           originChain={originChain}
           destinationChain={destinationChain}
           kappa={kappa}
@@ -284,12 +290,14 @@ export const PendingTransaction = ({
 }
 
 const TransactionStatusDetails = ({
+  connectedAddress,
   originChain,
   destinationChain,
   kappa,
   transactionHash,
   transactionStatus,
 }: {
+  connectedAddress: Address
   originChain: Chain
   destinationChain: Chain
   kappa?: string
@@ -323,18 +331,27 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.PENDING) {
-    const handleExplorerClick = () => {
+    const handleOriginExplorerClick = () => {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
         hash: transactionHash,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
+
+    const handleDestinationExplorerClick = () => {
+      const explorerLink: string = getExplorerAddressUrl({
+        chainId: destinationChain.id,
+        address: connectedAddress as Address,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+
     return (
       <div data-test-id="pending-status" className={`${sharedClass} p-2 flex`}>
         <div
           className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
-          onClick={handleExplorerClick}
+          onClick={handleOriginExplorerClick}
         >
           <Image
             className="w-4 h-4 my-auto mr-1.5 rounded-full"
@@ -343,7 +360,12 @@ const TransactionStatusDetails = ({
           />
           <div>Confirmed on {originChain.explorerName}.</div>
         </div>
-        <div className="mr-auto">Bridging to {destinationChain.name}.</div>
+        <div
+          onClick={handleDestinationExplorerClick}
+          className="mr-auto cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
+        >
+          Bridging to {destinationChain.name}.
+        </div>
         <TransactionOptions
           originChain={originChain}
           destinationChain={destinationChain}
@@ -365,7 +387,10 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
     return (
-      <div data-test-id="completed-status" className={`${sharedClass} p-2`}>
+      <div
+        data-test-id="completed-status"
+        className={`${sharedClass} p-2 justify-between`}
+      >
         <div
           className="flex cursor-pointer hover:bg-[#101018] rounded-md p-1"
           onClick={handleExplorerClick}
