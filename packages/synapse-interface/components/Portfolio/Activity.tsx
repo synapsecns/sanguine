@@ -60,10 +60,11 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     [userHistoricalTransactions]
   )
 
+  const currentUnixTimestamp = Math.floor(Date.now() / 1000)
+  console.log('currentUnixTimestamp:', currentUnixTimestamp)
+
   const historicalTransactionsByTime = useMemo(() => {
     if (!hasHistoricalTransactions) return
-
-    const currentUnixTimestamp = Math.floor(Date.now() / 1000)
     const tenMinutesAgoUnixTimestamp = currentUnixTimestamp - 600
 
     const transactionsWithinLast10Mins = userHistoricalTransactions.filter(

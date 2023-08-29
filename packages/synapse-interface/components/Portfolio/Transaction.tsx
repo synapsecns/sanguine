@@ -317,7 +317,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="initializing-status"
-        className={`${sharedClass} p-3 justify-between`}
+        className={`${sharedClass} p-2 justify-between`}
       >
         <div>Initiating...</div>
         <TransactionOptions
@@ -395,7 +395,7 @@ const TransactionStatusDetails = ({
         className={`${sharedClass} p-2 justify-between`}
       >
         <div
-          className="flex cursor-pointer hover:bg-[#101018] rounded-md p-1"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
           onClick={handleExplorerClick}
         >
           <div>Confirmed on Synapse Explorer</div>
