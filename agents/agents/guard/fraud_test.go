@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
@@ -1039,6 +1040,18 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
+	// Wait for the executor to have attestations before increasing time.
+	summitChainID := uint32(g.TestBackendSummit.GetChainID())
+	attestationNonce := uint32(2)
+	g.Eventually(func() bool {
+		attest, err := g.ExecutorTestDB.GetAttestation(g.GetTestContext(), db.DBAttestation{
+			Destination:      &summitChainID,
+			AttestationNonce: &attestationNonce,
+		})
+		Nil(g.T(), err)
+		return attest != nil
+	})
+
 	// Increase EVM time to allow agent status to be updated to Slashed on summit.
 	optimisticPeriodSeconds := int64(86400)
 	increaseEvmTime := func(backend backends.SimulatedTestBackend, seconds int64) {
@@ -1062,6 +1075,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			return true
 		}
 		fmt.Println("LOOPING AAAAAA")
+		fmt.Println("status", status.Flag())
 		g.bumpBackends()
 		return false
 	})
@@ -1160,6 +1174,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
 		}
+
+		fmt.Println("agent status", status.Flag())
 
 		fmt.Println("LOOPING B")
 		g.bumpBackends()

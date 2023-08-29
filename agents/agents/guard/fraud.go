@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/retry"
 )
 
 // handleSnapshot checks a snapshot for invalid states.
@@ -90,7 +91,17 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 // Only submit a state report if we are not on Summit, and the snapshot
 // agent is not currently in dispute.
 func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot) (bool, error) {
-	disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
+	var disputeStatus types.DisputeStatus
+	var err error
+	contractCall := func(ctx context.Context) error {
+		disputeStatus, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get dispute status: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return false, fmt.Errorf("could not get dispute status: %w", err)
 	}
@@ -110,10 +121,16 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent co
 	}
 
 	// Verify that the state is valid w.r.t. Origin.
-	isValid, err := g.domains[state.Origin()].Origin().IsValidState(
-		ctx,
-		statePayload,
-	)
+	var isValid bool
+	contractCall := func(ctx context.Context) error {
+		isValid, err = g.domains[state.Origin()].Origin().IsValidState(ctx, statePayload)
+		if err != nil {
+			return fmt.Errorf("could not check validity of state: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return false, fmt.Errorf("could not check validity of state: %w", err)
 	}
@@ -137,7 +154,16 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
 	}
 
-	isValid, err := g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.Payload)
+	var isValid bool
+	contractCall := func(ctx context.Context) error {
+		isValid, err = g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.Payload)
+		if err != nil {
+			return fmt.Errorf("could not check validity of attestation: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
@@ -154,7 +180,17 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 //nolint:cyclop
 func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
 	// Fetch the attested snapshot.
-	snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
+	var snapshot types.Snapshot
+	var err error
+	contractCall := func(ctx context.Context) error {
+		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
+		if err != nil {
+			return fmt.Errorf("could not get snapshot: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not get snapshot: %w", err)
 	}
@@ -284,7 +320,17 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	if err != nil {
 		return fmt.Errorf("could not decode receipt: %w", err)
 	}
-	isValid, err := g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+
+	var isValid bool
+	contractCall := func(ctx context.Context) error {
+		isValid, err = g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+		if err != nil {
+			return fmt.Errorf("could not check validity of attestation: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
@@ -360,7 +406,7 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 
 // handleStatusUpdated stores models related to a StatusUpdated event.
 //
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
 	if err != nil {
@@ -370,7 +416,16 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
-		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+		var agentProof [][32]byte
+		contractCall := func(ctx context.Context) error {
+			agentProof, err = g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+			if err != nil {
+				return fmt.Errorf("could not get proof: %w", err)
+			}
+
+			return nil
+		}
+		err = retry.WithBackoff(ctx, contractCall)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
 		}
@@ -392,12 +447,30 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not submit CompleteSlashing tx: %w", err)
 		}
 	case types.AgentFlagSlashed:
-		agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+		var agentRoot [32]byte
+		contractCall := func(ctx context.Context) error {
+			agentRoot, err = g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+			if err != nil {
+				return fmt.Errorf("could not get agent root: %w", err)
+			}
+
+			return nil
+		}
+		err = retry.WithBackoff(ctx, contractCall)
 		if err != nil {
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
 
-		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+		var agentProof [][32]byte
+		contractCall = func(ctx context.Context) error {
+			agentProof, err = g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+			if err != nil {
+				return fmt.Errorf("could not get proof: %w", err)
+			}
+
+			return nil
+		}
+		err = retry.WithBackoff(ctx, contractCall)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
 		}
@@ -454,12 +527,30 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 		return fmt.Errorf("could not parse dispute opened: %w", err)
 	}
 
-	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.guardIndex)))
+	var guardAddress common.Address
+	contractCall := func(ctx context.Context) error {
+		_, guardAddress, err = g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.guardIndex)))
+		if err != nil {
+			return fmt.Errorf("could not get agent: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not get agent: %w", err)
 	}
 
-	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.notaryIndex)))
+	var notaryAddress common.Address
+	contractCall = func(ctx context.Context) error {
+		_, notaryAddress, err = g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.notaryIndex)))
+		if err != nil {
+			return fmt.Errorf("could not get agent: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not get agent: %w", err)
 	}
@@ -558,7 +649,16 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return nil
 	}
 
-	localRoot, err := g.domains[chainID].LightManager().GetAgentRoot(ctx)
+	var localRoot [32]byte
+	contractCall := func(ctx context.Context) error {
+		localRoot, err = g.domains[chainID].LightManager().GetAgentRoot(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get agent root: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall)
 	if err != nil {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
@@ -571,8 +671,18 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
 		tree := tree
+		//nolint:nestif
 		if tree.BlockNumber >= blockNumber {
-			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
+			var agentStatus types.AgentStatus
+			contractCall = func(ctx context.Context) error {
+				agentStatus, err = g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
+				if err != nil {
+					return fmt.Errorf("could not get agent status: %w", err)
+				}
+
+				return nil
+			}
+			err = retry.WithBackoff(ctx, contractCall)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
@@ -589,6 +699,8 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				if err != nil {
 					return nil, fmt.Errorf("could not update agent status: %w", err)
 				}
+				// doesn't reach this on failing runs
+				fmt.Println("UPDATING AGENT STATUS ON CHAIN", chainID, "tx", tx.Hash())
 
 				return
 			})
