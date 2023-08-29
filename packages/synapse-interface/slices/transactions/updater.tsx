@@ -30,6 +30,9 @@ import { updatePendingBridgeTransactions } from '../bridge/actions'
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
+console.log('queryPendingTime:', queryPendingTime)
+console.log('queryHistoricalTime:', queryHistoricalTime)
+
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
@@ -41,10 +44,10 @@ export default function Updater(): null {
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 5000 })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 5000 })
 
   const { address } = useAccount({
     onDisconnect() {

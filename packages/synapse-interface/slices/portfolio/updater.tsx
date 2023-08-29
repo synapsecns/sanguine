@@ -32,7 +32,7 @@ export default function Updater(): null {
           pendingBridgeTransactions[0]
         const updateChainId: number = newestTransaction.originChain?.id
 
-        await dispatch(
+        dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
             address: address as Address,
             chainId: updateChainId,

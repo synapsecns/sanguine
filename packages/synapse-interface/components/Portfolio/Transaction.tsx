@@ -236,7 +236,7 @@ export const PendingTransaction = ({
             isSubmitted: true,
           }
 
-          await dispatch(updatePendingBridgeTransaction(updatedTransaction))
+          dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
       }
 
