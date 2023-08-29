@@ -73,7 +73,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }, [])
 
   const historicalTransactionsByTime = useMemo(() => {
-    // console.log('currentTime in activity:', currentTime)
     if (!hasHistoricalTransactions) return
     const tenMinutesAgoUnixTimestamp = currentTime - 600
 
@@ -90,8 +89,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
     return { transactionsWithinLast10Mins, remainingTransactions }
   }, [hasHistoricalTransactions, userHistoricalTransactions, currentTime])
-
-  // console.log('historicalTransactionsByTime:', historicalTransactionsByTime)
 
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
@@ -264,6 +261,7 @@ export const MostRecentTransaction = () => {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
+    seenHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
@@ -299,6 +297,17 @@ export const MostRecentTransaction = () => {
     )
   }, [currentTime])
 
+  const seenLastHistoricalTransaction: boolean = useMemo(() => {
+    if (!seenHistoricalTransactions || !userHistoricalTransactions) {
+      return false
+    }
+
+    return seenHistoricalTransactions.some(
+      (transaction: BridgeTransaction) =>
+        transaction === (lastHistoricalTransaction as BridgeTransaction)
+    )
+  }, [seenHistoricalTransactions, lastHistoricalTransaction])
+
   let transaction
 
   if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
@@ -327,7 +336,6 @@ export const MostRecentTransaction = () => {
   if (lastPendingTransaction) {
     console.log('a2')
     transaction = lastPendingTransaction as BridgeTransaction
-    // console.log('transaction?.fromInfo?.time:', transaction?.fromInfo?.time)
     return (
       <PendingTransaction
         connectedAddress={address as Address}
@@ -358,7 +366,11 @@ export const MostRecentTransaction = () => {
     )
   }
 
-  if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
+  if (
+    lastHistoricalTransaction &&
+    isLastHistoricalTransactionRecent &&
+    !seenLastHistoricalTransaction
+  ) {
     console.log('a3')
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (

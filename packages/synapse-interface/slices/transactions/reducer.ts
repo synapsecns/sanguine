@@ -15,7 +15,7 @@ export interface TransactionsState {
   isUserHistoricalTransactionsLoading: boolean
   userPendingTransactions: BridgeTransaction[]
   isUserPendingTransactionsLoading: boolean
-  seenHistoricalTransaction: BridgeTransaction[]
+  seenHistoricalTransactions: BridgeTransaction[]
 }
 
 const initialState: TransactionsState = {
@@ -23,7 +23,7 @@ const initialState: TransactionsState = {
   isUserHistoricalTransactionsLoading: true,
   userPendingTransactions: [],
   isUserPendingTransactionsLoading: true,
-  seenHistoricalTransaction: [],
+  seenHistoricalTransactions: [],
 }
 
 export const transactionsSlice = createSlice({
@@ -59,8 +59,8 @@ export const transactionsSlice = createSlice({
       .addCase(
         addSeenHistoricalTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
-          state.seenHistoricalTransaction = [
-            ...state.seenHistoricalTransaction,
+          state.seenHistoricalTransactions = [
+            ...state.seenHistoricalTransactions,
             action.payload,
           ]
         }

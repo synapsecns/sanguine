@@ -34,9 +34,6 @@ import { addSeenHistoricalTransaction } from './actions'
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
-console.log('queryPendingTime:', queryPendingTime)
-console.log('queryHistoricalTime:', queryHistoricalTime)
-
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
