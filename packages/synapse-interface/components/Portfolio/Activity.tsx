@@ -78,7 +78,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     )
 
     return { transactionsWithinLast10Mins, remainingTransactions }
-  }, [hasHistoricalTransactions])
+  }, [hasHistoricalTransactions, userHistoricalTransactions])
 
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
@@ -129,6 +129,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   isCompleted={transaction?.toInfo?.time ? true : false}
                   transactionType={TransactionType.PENDING}
                   originValue={transaction?.fromInfo?.formattedValue as number}
+                  destinationValue={
+                    transaction?.toInfo?.formattedValue as number
+                  }
                   originChain={
                     CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                   }
@@ -171,6 +174,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                     transactionType={TransactionType.PENDING}
                     originValue={
                       transaction?.fromInfo?.formattedValue as number
+                    }
+                    destinationValue={
+                      transaction?.toInfo?.formattedValue as number
                     }
                     originChain={
                       CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
