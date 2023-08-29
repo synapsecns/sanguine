@@ -534,46 +534,39 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		return err == nil
 	})
 
-	// Verify that a state report was submitted on origin.
+	// Verify that a state report was submitted on destination.
+	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
+}
+
+type statementInboxContract interface {
+	GetReportsAmount(opts *bind.CallOpts) (*big.Int, error)
+	GetGuardReport(opts *bind.CallOpts, index *big.Int) (struct {
+		StatementPayload []byte
+		ReportSignature  []byte
+	}, error)
+}
+
+func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
+	// Verify that a state report was submitted on destination.
 	g.Eventually(func() bool {
 		numReports, err := g.LightInboxOnDestination.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
 		Nil(g.T(), err)
 
-		if numReports.Int64() < 1 {
+		if numReports.Int64() < expectedNumReports {
 			return false
 		}
-		if numReports.Int64() != 1 {
-			g.T().Fatalf("too many reports; expected 1, got %v", numReports.Int64())
+		if numReports.Int64() != expectedNumReports {
+			g.T().Fatalf("too many reports; expected %d, got %v", expectedNumReports, numReports.Int64())
 		}
 
 		stateReportIdx := big.NewInt(numReports.Int64() - 1)
 		stateReport, err := g.LightInboxOnDestination.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
 		Nil(g.T(), err)
 
-		expectedState, err := fraudulentState.Encode()
+		expected, err := expectedState.Encode()
 		Nil(g.T(), err)
-		return Equal(g.T(), stateReport.StatementPayload, expectedState)
+		return Equal(g.T(), stateReport.StatementPayload, expected)
 	})
-
-	// TODO: uncomment the following case once manager messages can be executed.
-	// // Increase EVM time to allow agent status to be updated to Slashed on origin.
-	// anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendOrigin.RPCAddress())
-	// Nil(g.T(), err)
-	// optimisticPeriodSeconds := 86400
-	// err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
-	// Nil(g.T(), err)
-
-	// // Verify that the guard eventually marks the accused agent as Slashed.
-	// g.Eventually(func() bool {
-	// 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	// 	Nil(g.T(), err)
-	// 	if status.Flag() == types.AgentFlagSlashed {
-	// 		return true
-	// 	}
-
-	// 	g.bumpBackends()
-	// 	return false
-	// })
 }
 
 func (g GuardSuite) TestInvalidReceipt() {
