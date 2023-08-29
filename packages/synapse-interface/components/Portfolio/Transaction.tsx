@@ -71,11 +71,7 @@ export const Transaction = ({
   isCompleted,
 }: TransactionProps) => {
   const handleExplorerClick: () => void = useCallback(() => {
-    if (
-      kappa &&
-      originChain &&
-      transactionType === TransactionType.HISTORICAL
-    ) {
+    if (kappa && originChain && destinationChain) {
       const explorerLink: string = getTransactionExplorerLink({
         kappa,
         fromChainId: originChain.id,
@@ -152,6 +148,7 @@ export const Transaction = ({
                 transactionCompletedTime={completedTimestamp}
                 connectedAddress={connectedAddress}
                 destinationAddress={destinationAddress}
+                handleExplorerClick={handleExplorerClick}
               />
             )}
           </div>
@@ -269,6 +266,7 @@ export const PendingTransaction = ({
         estimatedDuration={estimatedCompletionInSeconds}
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
+        kappa={kappa}
       >
         <TransactionStatusDetails
           connectedAddress={connectedAddress}

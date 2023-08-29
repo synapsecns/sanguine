@@ -504,10 +504,12 @@ export const Completed = ({
   transactionCompletedTime,
   connectedAddress,
   destinationAddress,
+  handleExplorerClick,
 }: {
   transactionCompletedTime: number
   connectedAddress?: Address | string
   destinationAddress: string
+  handleExplorerClick: () => void
 }) => {
   const formattedTime: string =
     transactionCompletedTime &&
@@ -522,12 +524,15 @@ export const Completed = ({
     <div
       data-test-id="completed"
       className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm"
+      onClick={handleExplorerClick}
     >
       {!destinationIsSender && (
         <div>to {shortenAddress(destinationAddress, 3)} </div>
       )}
       {isToday ? (
-        <div className="text-[#3BDD77]">Today</div>
+        <div className="text-[#3BDD77] hover:underline cursor-pointer">
+          Today
+        </div>
       ) : (
         <div>{formattedTime}</div>
       )}
