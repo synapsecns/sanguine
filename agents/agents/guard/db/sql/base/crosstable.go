@@ -34,28 +34,29 @@ func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([
 
 	query, err := interpol.WithMap(
 		`
-		SELECT aTable.*, rTable.{agentDomain}, rTable.{updatedAgentFlag}
+		SELECT aTable.*, rTable.{updatedFlag}
 		FROM {agentTreesTable} AS aTable
 		JOIN (
 			SELECT * FROM {relayableAgentStatusesTable}
 			WHERE {agentStatusRelayedState} = ?
-			AND {agentDomain} = ?
+			AND {domain} = ?
 		) AS rTable
 		ON aTable.{agentAddress} = rTable.{agentAddress}
 		`,
 		map[string]string{
+			"domain":                      DomainFieldName,
+			"updatedFlag":                 UpdatedFlagFieldName,
 			"agentTreesTable":             agentTreesTableName,
 			"relayableAgentStatusesTable": relayableAgentStatusesTableName,
-			"agentAddress":                AgentAddressFieldName,
 			"agentStatusRelayedState":     AgentStatusRelayedStateFieldName,
-			"agentDomain":                 AgentDomainFieldName,
+			"agentAddress":                AgentAddressFieldName,
 		})
 	if err != nil {
 		return nil, fmt.Errorf("failed to interpolate query: %w", err)
 	}
 
 	var dbAgentTrees []agentTreeWithStatus
-	err = s.DB().WithContext(ctx).Raw(query, agentTypes.Queued, chainID).Scan(&dbAgentTrees).Error
+	err = s.DB().WithContext(ctx).Debug().Raw(query, agentTypes.Queued, chainID).Scan(&dbAgentTrees).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
 	}
@@ -71,7 +72,7 @@ func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([
 		agentTrees = append(agentTrees, agentTypes.AgentTree{
 			AgentRoot:        tree.AgentRoot,
 			AgentAddress:     common.HexToAddress(tree.AgentAddress),
-			AgentDomain:      tree.AgentDomain,
+			AgentDomain:      chainID,
 			UpdatedAgentFlag: tree.UpdatedAgentFlag,
 			BlockNumber:      tree.BlockNumber,
 			Proof:            proofBytes,

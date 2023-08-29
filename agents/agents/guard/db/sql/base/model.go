@@ -14,45 +14,27 @@ import (
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	AgentRootFieldName = namer.GetConsistentName("AgentRoot")
-	DisputeIndexFieldName = namer.GetConsistentName("DisputeIndex")
 	AgentAddressFieldName = namer.GetConsistentName("AgentAddress")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
-	DisputeProcessedStatusFieldName = namer.GetConsistentName("DisputeProcessedStatus")
-	NotaryAddressFieldName = namer.GetConsistentName("NotaryAddress")
+	AgentStatusRelayedStateFieldName = namer.GetConsistentName("AgentStatusRelayedState")
+	DomainFieldName = namer.GetConsistentName("Domain")
+	UpdatedFlagFieldName = namer.GetConsistentName("UpdatedFlag")
 }
 
 var (
 	// AgentRootFieldName is the field name of the agent root.
 	AgentRootFieldName string
-	// DisputeIndexFieldName is the field name of the agent root.
-	DisputeIndexFieldName string
 	// AgentAddressFieldName gets the agent address field name.
 	AgentAddressFieldName string
 	// BlockNumberFieldName gets the agent block number field name.
 	BlockNumberFieldName string
-	// DisputeProcessedStatusFieldName gets the dispute processed status field name.
-	DisputeProcessedStatusFieldName string
-	// NotaryAddressFieldName gets the notary address field name.
-	NotaryAddressFieldName string
 	// AgentStatusRelayedStateFieldName gets the relayable agent status field name.
 	AgentStatusRelayedStateFieldName string
-	// AgentDomainFieldName gets the agent domain field name.
-	AgentDomainFieldName string
+	// DomainFieldName gets the agent domain field name.
+	DomainFieldName string
+	// UpdatedFlagFieldName gets the updated flag field name.
+	UpdatedFlagFieldName string
 )
-
-// Dispute is a dispute between two agents.
-type Dispute struct {
-	// DisputeIndex is the index of the dispute on the BondingManager.
-	DisputeIndex uint64 `gorm:"column:dispute_index;primaryKey"`
-	// DisputeProcessedStatus indicates the status of the dispute.
-	DisputeProcessedStatus agentTypes.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
-	// GuardAddress is the address of the guard.
-	GuardAddress string `gorm:"column:guard_address"`
-	// NotaryIndex is the index of the notary on the BondingManager.
-	NotaryIndex uint64 `gorm:"column:notary_index"`
-	// NotaryAddress is the address of the notary.
-	NotaryAddress string `gorm:"column:notary_address"`
-}
 
 // RelayableAgentStatus is used for tracking agent statuses that are out of
 // sync and need to be relayed to a remote chain.

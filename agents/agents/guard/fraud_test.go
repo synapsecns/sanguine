@@ -165,6 +165,22 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
+	// Store agent trees and roots so that the agent status can be updated by the guard.
+	agentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
+	Nil(g.T(), err)
+	blockNumber, err := g.SummitDomainClient.BlockNumber(g.GetTestContext())
+	Nil(g.T(), err)
+	err = g.GuardTestDB.StoreAgentTree(
+		g.GetTestContext(),
+		agentRoot,
+		g.NotaryBondedSigner.Address(),
+		uint64(blockNumber),
+		notaryProof,
+	)
+	Nil(g.T(), err)
+	err = g.GuardTestDB.StoreAgentRoot(g.GetTestContext(), agentRoot, uint64(blockNumber))
+	Nil(g.T(), err)
+
 	// Before submitting the attestation, ensure that there are no disputes opened.
 	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 	NotNil(g.T(), err)
@@ -213,20 +229,6 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		return false
 	})
 
-	// TODO: Once we add updating agent statuses fully, uncomment this.
-	// Verify that the guard eventually marks the accused agent as Fraudulent on Summit
-	// g.Eventually(func() bool {
-	// 	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	// 	Nil(g.T(), err)
-
-	// 	if status.Flag() == types.AgentFlagSlashed {
-	// 		return true
-	// 	}
-
-	//  g.bumpBackends()
-	// 	return false
-	// })
-
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
@@ -237,8 +239,8 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	fraudulentState := fraudulentSnapshot.States()[0]
 	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
 
-	// // Verify that a state report was submitted on destination.
-	// g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
+	// Verify that a state report was submitted on destination.
+	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
 }
 
 func (g GuardSuite) TestFraudulentAttestationOnDestination() {
