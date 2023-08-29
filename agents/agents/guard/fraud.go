@@ -3,7 +3,6 @@ package guard
 import (
 	"context"
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -452,67 +451,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	}
 
 	return nil
-}
-
-// handleDisputeOpened stores models related to a DisputeOpened event.
-func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error {
-	disputeOpened, err := g.parseDisputeOpened(log)
-	if err != nil {
-		return fmt.Errorf("could not parse dispute opened: %w", err)
-	}
-
-	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.guardIndex)))
-	if err != nil {
-		return fmt.Errorf("could not get agent: %w", err)
-	}
-
-	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.notaryIndex)))
-	if err != nil {
-		return fmt.Errorf("could not get agent: %w", err)
-	}
-
-	// Store the dispute in the database.
-	err = g.guardDB.StoreDispute(
-		ctx,
-		disputeOpened.disputeIndex,
-		types.Opened,
-		guardAddress,
-		disputeOpened.notaryIndex,
-		notaryAddress,
-	)
-	if err != nil {
-		return fmt.Errorf("could not store dispute: %w", err)
-	}
-
-	return nil
-}
-
-// disputeOpened is a wrapper struct used to merge the
-// lightmanager.DisputeOpened and bondingmangaer.DisputeOpened structs.
-type disputeOpened struct {
-	disputeIndex *big.Int
-	guardIndex   uint32
-	notaryIndex  uint32
-}
-
-func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
-	disputeOpenedLight, err := g.lightManagerParser.ParseDisputeOpened(log)
-	if err == nil {
-		return &disputeOpened{
-			disputeIndex: disputeOpenedLight.DisputeIndex,
-			guardIndex:   disputeOpenedLight.GuardIndex,
-			notaryIndex:  disputeOpenedLight.NotaryIndex,
-		}, nil
-	}
-	disputeOpenedBonding, err := g.bondingManagerParser.ParseDisputeOpened(log)
-	if err == nil {
-		return &disputeOpened{
-			disputeIndex: disputeOpenedBonding.DisputeIndex,
-			guardIndex:   disputeOpenedBonding.GuardIndex,
-			notaryIndex:  disputeOpenedBonding.NotaryIndex,
-		}, nil
-	}
-	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
 // handleRootUpdated stores models related to a RootUpdated event.
