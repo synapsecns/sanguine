@@ -24,12 +24,6 @@ export const WETH = new Token({
   name: 'Wrapped ETH',
   logo: wethLogo,
   swapableType: 'ETH',
-  swapableOn: [
-    CHAINS.ARBITRUM.id,
-    CHAINS.BOBA.id,
-    CHAINS.OPTIMISM.id,
-    CHAINS.METIS.id,
-  ],
   color: 'sky',
   priorityRank: 3,
   routeSymbol: 'WETH',

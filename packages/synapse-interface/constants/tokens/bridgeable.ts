@@ -758,7 +758,12 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
-  swapableOn: [CHAINS.BASE.id, CHAINS.CANTO.id, CHAINS.FANTOM.id],
+  swapableOn: [
+    CHAINS.ARBITRUM.id,
+    CHAINS.BASE.id,
+    CHAINS.BOBA.id,
+    CHAINS.OPTIMISM.id,
+  ],
   routeSymbol: 'ETH',
 })
 
