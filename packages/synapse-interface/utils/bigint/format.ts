@@ -144,6 +144,10 @@ export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
 }
 
 export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
+  if (typeof rawVal !== 'string' && !rawVal) {
+    return
+  }
+
   try {
     let value = rawVal.replace(/[$,]/g, '')
     if (['.', '0.', '', '.0'].includes(value)) {

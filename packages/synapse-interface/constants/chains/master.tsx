@@ -49,8 +49,8 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/eth',
-    fallback: 'https://eth.llamarpc.com',
+    primary: 'https://eth.llamarpc.com',
+    fallback: 'https://1rpc.io/eth',
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
@@ -116,7 +116,7 @@ export const AVALANCHE: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://api.avax.network/ext/bc/C/rpc',
-    fallback: 'https://rpc.ankr.com/avalanche',
+    fallback: 'https://1rpc.io/avax/c',
   },
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
@@ -156,7 +156,7 @@ export const OPTIMISM: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://mainnet.optimism.io',
-    fallback: 'https://rpc.ankr.com/optimism',
+    fallback: 'https://1rpc.io/op',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
@@ -395,8 +395,8 @@ export const DOGE: Chain = {
   codeName: 'dogechain',
   blockTime: 2000,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/dogechain',
-    fallback: 'https://rpc.dogechain.dog',
+    primary: 'https://rpc.dogechain.dog',
+    fallback: 'https://rpc01-sg.dogechain.dog',
   },
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
