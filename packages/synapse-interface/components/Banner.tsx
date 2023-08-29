@@ -40,14 +40,15 @@ export const Banner = () => {
         role="alert"
         style={{
           background:
-            'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
+            'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
           borderRadius: '10px',
         }}
       >
         <div className="m-1 font-thin">
           <div className="container mx-auto">
-            <h1 className="text-lg">New and improved bridge navigation</h1>
-            <p className="text-md">See all routes you can bridge assets</p>
+            <p className="text-md">
+              New! Chain and token selections now list routable options first.
+            </p>
           </div>
         </div>
         <button
@@ -63,7 +64,7 @@ export const Banner = () => {
           onClick={() => setShowBanner(false)}
         >
           <svg
-            className="w-3 h-3"
+            className="w-[9px] h-[9px]"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
