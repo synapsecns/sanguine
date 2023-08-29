@@ -52,6 +52,7 @@ export const PortfolioContent = ({
       {!connectedAddress && <HomeContent />}
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
       {currentNetworkPortfolio &&
+        connectedAddress &&
         connectedChainId &&
         selectedFromChainId &&
         !isInitialFetchLoading && (
