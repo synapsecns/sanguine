@@ -69,7 +69,7 @@ export const SingleNetworkPortfolio = ({
     }
   }, [isUnsupportedChain])
 
-  if (hasNoTokenBalance) {
+  if (!isLoading && hasNoTokenBalance) {
     return <EmptyPortfolioContent />
   } else
     return (
