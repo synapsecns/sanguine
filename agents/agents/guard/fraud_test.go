@@ -536,9 +536,23 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 
 	// Verify that a state report was submitted on origin.
 	g.Eventually(func() bool {
-		numReports, err := g.LightInboxOnOrigin.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
+		numReports, err := g.LightInboxOnDestination.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
 		Nil(g.T(), err)
-		return numReports.Int64() == 1
+
+		if numReports.Int64() < 1 {
+			return false
+		}
+		if numReports.Int64() != 1 {
+			g.T().Fatalf("too many reports; expected 1, got %v", numReports.Int64())
+		}
+
+		stateReportIdx := big.NewInt(numReports.Int64() - 1)
+		stateReport, err := g.LightInboxOnDestination.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
+		Nil(g.T(), err)
+
+		expectedState, err := fraudulentState.Encode()
+		Nil(g.T(), err)
+		return Equal(g.T(), stateReport.StatementPayload, expectedState)
 	})
 
 	// TODO: uncomment the following case once manager messages can be executed.
