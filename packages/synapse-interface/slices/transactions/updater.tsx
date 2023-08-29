@@ -25,7 +25,11 @@ import {
 } from './actions'
 import { useBridgeState } from '../bridge/hooks'
 import { BridgeState } from '../bridge/reducer'
+import { PortfolioState } from '../portfolio/reducer'
+import { usePortfolioState } from '../portfolio/hooks'
+import { PortfolioTabs } from '../portfolio/actions'
 import { updatePendingBridgeTransactions } from '../bridge/actions'
+import { addSeenHistoricalTransaction } from './actions'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -42,6 +46,17 @@ export default function Updater(): null {
     userPendingTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
+  const { activeTab }: PortfolioState = usePortfolioState()
+
+  useEffect(() => {
+    if (
+      userHistoricalTransactions &&
+      userHistoricalTransactions.length > 0 &&
+      activeTab !== PortfolioTabs.PORTFOLIO
+    ) {
+      dispatch(addSeenHistoricalTransaction(userHistoricalTransactions[0]))
+    }
+  }, [userHistoricalTransactions, activeTab])
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 5000 })
