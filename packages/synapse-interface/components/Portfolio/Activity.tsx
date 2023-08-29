@@ -265,6 +265,7 @@ export const MostRecentTransaction = () => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   }: TransactionsState = useTransactionsState()
+  const { activeTab }: PortfolioState = usePortfolioState()
 
   const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
     return pendingBridgeTransactions && pendingBridgeTransactions[0]
@@ -297,16 +298,6 @@ export const MostRecentTransaction = () => {
       currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
     )
   }, [currentTime])
-
-  // console.log('currentTime:', currentTime)
-  // console.log(
-  //   'lastHistoricalTransaction?.toInfo?.time: ',
-  //   lastHistoricalTransaction?.toInfo?.time
-  // )
-  // console.log(
-  //   'isLastHistoricalTransactionRecent:',
-  //   isLastHistoricalTransactionRecent
-  // )
 
   let transaction
 
@@ -367,41 +358,41 @@ export const MostRecentTransaction = () => {
     )
   }
 
-  // if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
-  //   console.log('a3')
-  //   transaction = lastHistoricalTransaction as BridgeTransaction
-  //   return (
-  //     <PendingTransaction
-  //       connectedAddress={address as Address}
-  //       destinationAddress={transaction?.fromInfo?.address as Address}
-  //       startedTimestamp={transaction?.fromInfo?.time as number}
-  //       completedTimestamp={transaction?.toInfo?.time as number}
-  //       transactionHash={transaction?.fromInfo?.txnHash as string}
-  //       kappa={transaction?.kappa as string}
-  //       transactionType={TransactionType.PENDING}
-  //       originValue={transaction?.fromInfo?.formattedValue as number}
-  //       destinationValue={transaction?.toInfo?.formattedValue as number}
-  //       originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
-  //       destinationChain={
-  //         CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
-  //       }
-  //       originToken={
-  //         tokenAddressToToken(
-  //           transaction?.fromInfo?.chainID,
-  //           transaction?.fromInfo?.tokenAddress
-  //         ) as Token
-  //       }
-  //       destinationToken={
-  //         tokenAddressToToken(
-  //           transaction?.toInfo?.chainID,
-  //           transaction?.toInfo?.tokenAddress
-  //         ) as Token
-  //       }
-  //       isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-  //       isCompleted={true}
-  //     />
-  //   )
-  // }
+  if (lastHistoricalTransaction && isLastHistoricalTransactionRecent) {
+    console.log('a3')
+    transaction = lastHistoricalTransaction as BridgeTransaction
+    return (
+      <PendingTransaction
+        connectedAddress={address as Address}
+        destinationAddress={transaction?.fromInfo?.address as Address}
+        startedTimestamp={transaction?.fromInfo?.time as number}
+        completedTimestamp={transaction?.toInfo?.time as number}
+        transactionHash={transaction?.fromInfo?.txnHash as string}
+        kappa={transaction?.kappa as string}
+        transactionType={TransactionType.PENDING}
+        originValue={transaction?.fromInfo?.formattedValue as number}
+        destinationValue={transaction?.toInfo?.formattedValue as number}
+        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
+        destinationChain={
+          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
+        }
+        originToken={
+          tokenAddressToToken(
+            transaction?.fromInfo?.chainID,
+            transaction?.fromInfo?.tokenAddress
+          ) as Token
+        }
+        destinationToken={
+          tokenAddressToToken(
+            transaction?.toInfo?.chainID,
+            transaction?.toInfo?.tokenAddress
+          ) as Token
+        }
+        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+        isCompleted={true}
+      />
+    )
+  }
 }
 
 export const PendingTransactionAwaitingIndexing = () => {

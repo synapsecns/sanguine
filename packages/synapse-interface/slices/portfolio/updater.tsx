@@ -3,10 +3,14 @@ import { Address } from '@wagmi/core'
 import { watchPendingTransactions, waitForTransaction } from '@wagmi/core'
 import { useAppDispatch } from '@/store/hooks'
 import { useBridgeState } from '../bridge/hooks'
+import { usePortfolioState } from './hooks'
+import { PortfolioState } from './reducer'
 import { useTransactionsState } from '../transactions/hooks'
 import { TransactionsState } from '../transactions/reducer'
 import { BridgeState } from '../bridge/reducer'
+import { PortfolioTabs } from './actions'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
+
 import { useAccount } from 'wagmi'
 import {
   PendingBridgeTransaction,
@@ -21,7 +25,19 @@ export default function Updater(): null {
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
+    seenHistoricalTransaction,
   }: TransactionsState = useTransactionsState()
+  const { activeTab }: PortfolioState = usePortfolioState()
+
+  useEffect(() => {
+    if (
+      userHistoricalTransactions &&
+      userHistoricalTransactions.length > 0 &&
+      activeTab !== PortfolioTabs.PORTFOLIO
+    ) {
+      // dispatch(userHistoricalTransactions[0])
+    }
+  }, [userHistoricalTransactions, activeTab])
 
   // Update Origin balances when transaction resolves
   useEffect(() => {
