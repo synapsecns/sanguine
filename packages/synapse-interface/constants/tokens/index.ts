@@ -1,11 +1,11 @@
-import * as CHAINS from '@constants/chains/master'
-import * as all from './bridgeable'
-import * as allPool from './poolMaster'
-import { GMX, ETH, USDC, USDT } from './bridgeable'
-import { WETH } from './auxilliary'
-import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
-import { Token } from '@/utils/types'
 import _ from 'lodash'
+import * as CHAINS from '@constants/chains/master'
+import * as all from '@constants/tokens/bridgeable'
+import * as allPool from '@constants/tokens/poolMaster'
+import { GMX, ETH, USDC, USDT } from '@constants/tokens/bridgeable'
+import { WETH } from '@constants/tokens/auxilliary'
+import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
+import { Token } from '@utils/types'
 
 const allSwap = [WETH, USDC, USDT]
 
@@ -141,7 +141,7 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
 }
 
 const getTokenHashMap = () => {
-  let tokenHashMap = {}
+  const tokenHashMap = {}
 
   for (const [chainId, tokensOnChain] of _.toPairs(BRIDGABLE_TOKENS)) {
     tokenHashMap[chainId] = {}

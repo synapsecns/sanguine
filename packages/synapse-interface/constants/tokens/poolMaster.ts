@@ -1,5 +1,4 @@
 import * as CHAINS from '@constants/chains/master'
-import synapseLogo from '@assets/icons/synapse.svg'
 import {
   BUSD,
   USDC,
@@ -17,7 +16,14 @@ import {
   SYNJEWEL,
   AVAX,
 } from '@constants/tokens/bridgeable'
-import { AVWETH, KLAYTN_oUSDT, MIM, MULTIAVAX, WETH } from './auxilliary'
+import {
+  AVWETH,
+  KLAYTN_oUSDT,
+  MIM,
+  MULTIAVAX,
+  WETH,
+} from '@constants/tokens/auxilliary'
+import synapseLogo from '@assets/icons/synapse.svg'
 
 import { Token } from '@/utils/types'
 

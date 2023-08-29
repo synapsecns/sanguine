@@ -99,7 +99,7 @@ module.exports = {
     'comma-dangle': 'off',
     complexity: 'off',
     'constructor-super': 'error',
-    curly: 'error',
+    curly: 'off',
     'dot-notation': 'off',
     'eol-last': 'off',
     eqeqeq: ['error', 'smart'],
