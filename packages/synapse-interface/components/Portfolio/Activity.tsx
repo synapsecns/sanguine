@@ -81,6 +81,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return { transactionsWithinLast10Mins, remainingTransactions }
   }, [hasHistoricalTransactions, userHistoricalTransactions])
 
+  console.log('historicalTransactionsByTime:', historicalTransactionsByTime)
+
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
@@ -272,12 +274,24 @@ export const MostRecentTransaction = () => {
     return userPendingTransactions && userPendingTransactions[0]
   }, [userPendingTransactions])
 
-  const currentTime: number = getTimeMinutesBeforeNow(0)
+  const [currentTime, setCurrentTime] = useState<number>(
+    getTimeMinutesBeforeNow(0)
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(getTimeMinutesBeforeNow(0))
+    }, 60000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   const tenMinutesInUnix: number = 10 * 60
 
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
     return userHistoricalTransactions && userHistoricalTransactions[0]
   }, [userHistoricalTransactions])
+
   const isLastHistoricalTransactionRecent: boolean =
     currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
 
