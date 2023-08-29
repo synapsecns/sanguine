@@ -112,9 +112,9 @@ export const Transaction = ({
           ${
             transactionType === TransactionType.PENDING
               ? 'bg-tint fill-surface'
-              : 'stroke-surface'
+              : 'stroke-surface fill-transparent'
           }
-          fill-transparent`}
+          `}
         />
         <div
           className={`
@@ -200,7 +200,7 @@ export const PendingTransaction = ({
     if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
-      if (eventType === 10 || eventType === 11 || isCCTP) {
+      if ((eventType === 10 || eventType === 11) && isCCTP) {
         const attestationTime: number = 13 * 60
         return (
           (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
