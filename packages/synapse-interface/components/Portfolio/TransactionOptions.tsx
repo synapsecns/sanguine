@@ -1,4 +1,5 @@
 import { Fragment, useCallback } from 'react'
+import { Address } from 'viem'
 import { Popover, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
@@ -9,17 +10,19 @@ import { PopoverPanelContainer } from '../layouts/LandingPageWrapper'
 import DiscordIcon from '../icons/DiscordIcon'
 import Button from '../ui/tailwind/Button'
 import { getTransactionExplorerLink } from './Activity'
-import { getExplorerTxUrl } from '@/constants/urls'
+import { getExplorerAddressUrl, getExplorerTxUrl } from '@/constants/urls'
 import SynapseLogo from '@assets/icons/synapse.svg'
 import { DISCORD_URL } from '@/constants/urls'
 
 export const TransactionOptions = ({
+  connectedAddress,
   originChain,
   destinationChain,
   kappa,
   transactionHash,
   transactionStatus,
 }: {
+  connectedAddress: Address
   originChain: Chain
   destinationChain: Chain
   kappa?: string
@@ -38,14 +41,27 @@ export const TransactionOptions = ({
         toChainId: destinationChain.id,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    } else {
+    } else if (transactionHash) {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
         hash: transactionHash,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    } else {
+      const explorerLink: string = getExplorerAddressUrl({
+        chainId: originChain.id,
+        address: connectedAddress,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
-  }, [kappa, originChain, destinationChain, transactionStatus, transactionHash])
+  }, [
+    kappa,
+    originChain,
+    destinationChain,
+    transactionStatus,
+    transactionHash,
+    connectedAddress,
+  ])
 
   const handleSupportClick = () => {
     window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')

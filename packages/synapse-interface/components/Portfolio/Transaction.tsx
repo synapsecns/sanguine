@@ -326,6 +326,14 @@ const TransactionStatusDetails = ({
         className={`${sharedClass} p-3 justify-between`}
       >
         <div>Initiating...</div>
+        <TransactionOptions
+          connectedAddress={connectedAddress as Address}
+          originChain={originChain}
+          destinationChain={destinationChain}
+          kappa={kappa}
+          transactionHash={transactionHash}
+          transactionStatus={transactionStatus}
+        />
       </div>
     )
   }
@@ -367,6 +375,7 @@ const TransactionStatusDetails = ({
           Bridging to {destinationChain.name}.
         </div>
         <TransactionOptions
+          connectedAddress={connectedAddress as Address}
           originChain={originChain}
           destinationChain={destinationChain}
           kappa={kappa}
@@ -398,6 +407,7 @@ const TransactionStatusDetails = ({
           <div>Confirmed on Synapse Explorer</div>
         </div>
         <TransactionOptions
+          connectedAddress={connectedAddress as Address}
           originChain={originChain}
           destinationChain={destinationChain}
           kappa={kappa}
