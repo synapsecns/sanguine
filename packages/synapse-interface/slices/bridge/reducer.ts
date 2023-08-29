@@ -328,7 +328,7 @@ export const bridgeSlice = createSlice({
 
       const validFromChainIds = getFromChainIds({
         fromChainId: state.fromChainId ?? null,
-        fromTokenRouteSymbol: state.fromToken?.routeSymbol ?? null,
+        fromTokenRouteSymbol: null,
         toChainId: state.toChainId ?? null,
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })

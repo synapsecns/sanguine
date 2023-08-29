@@ -285,7 +285,6 @@ const BridgeWatcher = ({
   }, [fromSynapseContract, bridgeTxHashes])
 
   useEffect(() => {
-    console.log(fromSignerRaw)
     setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])
 
