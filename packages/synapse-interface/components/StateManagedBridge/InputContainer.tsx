@@ -105,7 +105,7 @@ export const InputContainer = () => {
       data-test-id="input-container"
       className={`
         text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
-        bg-bgLight
+        bg-surface
       `}
     >
       <div>

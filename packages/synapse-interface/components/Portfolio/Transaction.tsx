@@ -227,10 +227,6 @@ export const PendingTransaction = ({
   }, [originChain, eventType, originToken])
 
   useEffect(() => {
-    console.log('startedTimestamp: ', startedTimestamp)
-    console.log('isSubmitted:', isSubmitted)
-    console.log('transactionHash: ', transactionHash)
-
     if (!isSubmitted && transactionHash) {
       const updateResolvedTransaction = async () => {
         const resolvedTransaction = await waitForTransaction({
@@ -247,8 +243,6 @@ export const PendingTransaction = ({
             transactionHash: transactionHash,
             isSubmitted: true,
           }
-
-          console.log('updating this transaction: ', updatedTransaction)
 
           await dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
