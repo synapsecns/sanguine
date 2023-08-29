@@ -95,7 +95,6 @@ export const Transaction = ({
       className="flex flex-col my-2 overflow-hidden border rounded-lg text-secondary border-surface"
     >
       <div
-        onClick={handleExplorerClick}
         className={`flex flex-row ${
           transactionType === TransactionType.HISTORICAL && 'cursor-pointer'
         }`}
