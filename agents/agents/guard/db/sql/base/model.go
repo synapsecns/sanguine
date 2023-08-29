@@ -3,6 +3,7 @@ package base
 import (
 	"encoding/json"
 
+	"github.com/synapsecns/sanguine/agents/types"
 	agentTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
@@ -33,6 +34,10 @@ var (
 	DisputeProcessedStatusFieldName string
 	// NotaryAddressFieldName gets the notary address field name.
 	NotaryAddressFieldName string
+	// AgentStatusRelayedStateFieldName gets the relayable agent status field name.
+	AgentStatusRelayedStateFieldName string
+	// AgentDomainFieldName gets the agent domain field name.
+	AgentDomainFieldName string
 )
 
 // Dispute is a dispute between two agents.
@@ -47,6 +52,20 @@ type Dispute struct {
 	NotaryIndex uint64 `gorm:"column:notary_index"`
 	// NotaryAddress is the address of the notary.
 	NotaryAddress string `gorm:"column:notary_address"`
+}
+
+// RelayableAgentStatus is used for tracking agent statuses that are out of
+// sync and need to be relayed to a remote chain.
+type RelayableAgentStatus struct {
+	AgentAddress string `gorm:"column:agent_address"`
+	// StaleFlag is the old flag that needs to be updated.
+	StaleFlag types.AgentFlagType `gorm:"column:stale_flag"`
+	// UpdatedFlag is the new flag value that should be relayed.
+	UpdatedFlag types.AgentFlagType `gorm:"column:updated_flag"`
+	// Domain is the domain of the agent status.
+	Domain uint32 `gorm:"column:domain"`
+	// AgentStatusRelayedState is the state of the relayable agent status.
+	AgentStatusRelayedState agentTypes.AgentStatusRelayedState `gorm:"column:agent_status_relayed_state"`
 }
 
 // AgentTree is the state of an agent tree on Summit.

@@ -256,8 +256,16 @@ func (g Guard) prepareStateReport(ctx context.Context, state types.State, agent 
 			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
 		}
 		// Update the agent status to active using the last known root on remote chain.
-		// TODO: make sure that the given agent is actually registered in the db call with open dispute,
-		// i.e. accessible by the call to `guardDB.GetUpdateAgentStatusParameters()`.
+		err = g.guardDB.StoreRelayableAgentStatus(
+			ctx,
+			agent,
+			types.AgentFlagUnknown,
+			types.AgentFlagActive,
+			chainID,
+		)
+		if err != nil {
+			return false, fmt.Errorf("could not store relayable agent status: %w", err)
+		}
 		err = g.updateAgentStatus(ctx, chainID)
 		if err != nil {
 			return false, err
@@ -395,6 +403,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not get proof: %w", err)
 		}
 
+		var remoteStatus types.AgentStatus
 		if chainID == g.summitDomainID {
 			err = g.guardDB.StoreAgentTree(
 				ctx,
@@ -415,23 +424,28 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return fmt.Errorf("could not store agent root: %w", err)
 			}
+
 		}
 
-		// Mark the open dispute for this agent as Resolved.
-		var guardAddress, notaryAddress *common.Address
-		if statusUpdated.Domain == 0 {
-			guardAddress = &statusUpdated.Agent
-		} else {
-			notaryAddress = &statusUpdated.Agent
+		// Fetch the current remote status and check whether the status is synced.
+		remoteStatus, err = g.domains[statusUpdated.Domain].LightManager().GetAgentStatus(ctx, statusUpdated.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
 		}
-		err = g.guardDB.UpdateDisputeProcessedStatus(
+		if remoteStatus.Flag() == types.AgentFlagType(statusUpdated.Flag) {
+			return nil
+		}
+
+		// If not synced, store a relayable agent status.
+		err = g.guardDB.StoreRelayableAgentStatus(
 			ctx,
-			guardAddress,
-			notaryAddress,
-			types.Resolved,
+			statusUpdated.Agent,
+			remoteStatus.Flag(),
+			types.AgentFlagType(statusUpdated.Flag),
+			statusUpdated.Domain,
 		)
 		if err != nil {
-			return fmt.Errorf("could not update dispute processed status: %w", err)
+			return fmt.Errorf("could not store relayable agent status: %w", err)
 		}
 	default:
 		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
@@ -540,7 +554,7 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 // updateAgentStatus updates the status for each agent with a pending agent tree model,
 // and open dispute on remote chain.
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
-	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
+	eligibleAgentTrees, err := g.guardDB.GetRelayableAgentStatuses(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get update agent status parameters: %w", err)
 	}
@@ -559,9 +573,10 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
 	}
 
-	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
+	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, tree := range eligibleAgentTrees {
 		if tree.BlockNumber >= blockNumber {
+			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
@@ -569,6 +584,8 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			if agentStatus.Domain() != chainID {
 				continue
 			}
+
+			// Update agent status on remote.
 			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
@@ -578,6 +595,16 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			)
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)
+			}
+
+			// Mark the relayable status as Relayed.
+			err = g.guardDB.UpdateAgentStatusRelayedState(
+				ctx,
+				tree.AgentAddress,
+				types.Relayed,
+			)
+			if err != nil {
+				return fmt.Errorf("could not update agent status relayed state: %w", err)
 			}
 		}
 	}
