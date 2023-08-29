@@ -73,6 +73,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }, [])
 
   const historicalTransactionsByTime = useMemo(() => {
+    console.log('currentTime in activity:', currentTime)
     if (!hasHistoricalTransactions) return
     const tenMinutesAgoUnixTimestamp = currentTime - 600
 
@@ -301,8 +302,21 @@ export const MostRecentTransaction = () => {
     return userHistoricalTransactions && userHistoricalTransactions[0]
   }, [userHistoricalTransactions])
 
-  const isLastHistoricalTransactionRecent: boolean =
-    currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
+  const isLastHistoricalTransactionRecent: boolean = useMemo(() => {
+    return (
+      currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
+    )
+  }, [currentTime])
+
+  console.log('currentTime:', currentTime)
+  console.log(
+    'lastHistoricalTransaction?.toInfo?.time: ',
+    lastHistoricalTransaction?.toInfo?.time
+  )
+  console.log(
+    'isLastHistoricalTransactionRecent:',
+    isLastHistoricalTransactionRecent
+  )
 
   let transaction
 
@@ -332,6 +346,7 @@ export const MostRecentTransaction = () => {
   if (lastPendingTransaction) {
     console.log('a2')
     transaction = lastPendingTransaction as BridgeTransaction
+    console.log('transaction?.fromInfo?.time:', transaction?.fromInfo?.time)
     return (
       <PendingTransaction
         connectedAddress={address as Address}
