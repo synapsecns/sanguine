@@ -20,7 +20,7 @@ export const WETH = new Token({
   logo: wethLogo,
   description: 'ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
-  swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
+  // swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
   color: 'sky',
   priorityRank: 3,
 })
