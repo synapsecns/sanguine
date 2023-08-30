@@ -6,6 +6,7 @@ import {
   updateUserPendingTransactions,
   updateIsUserPendingTransactionsLoading,
   addSeenHistoricalTransaction,
+  addPendingAwaitingCompletionTransaction,
   resetTransactionsState,
 } from './actions'
 import { BridgeTransaction } from '../api/generated'
@@ -63,6 +64,15 @@ export const transactionsSlice = createSlice({
         (state, action: PayloadAction<BridgeTransaction>) => {
           state.seenHistoricalTransactions = [
             ...state.seenHistoricalTransactions,
+            action.payload,
+          ]
+        }
+      )
+      .addCase(
+        addPendingAwaitingCompletionTransaction,
+        (state, action: PayloadAction<BridgeTransaction>) => {
+          state.pendingAwaitingCompletionTransactions = [
+            ...state.pendingAwaitingCompletionTransactions,
             action.payload,
           ]
         }
