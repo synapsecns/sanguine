@@ -198,6 +198,7 @@ export const MostRecentTransaction = () => {
     const interval = setInterval(() => {
       setCurrentTime(getTimeMinutesBeforeNow(0))
     }, 60000)
+
     return () => clearInterval(interval)
   }, [])
 
