@@ -1,7 +1,8 @@
 import * as CHAINS from '@constants/chains/master'
-import * as all from './master'
+import * as all from './bridgeable'
 import * as allPool from './poolMaster'
-import { GMX, ETH, WETH, USDC, USDT } from './master'
+import { GMX, ETH, USDC, USDT } from './bridgeable'
+import { WETH } from './auxilliary'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
@@ -37,13 +38,10 @@ const sortedTokens = Object.values(all).sort(
 )
 
 // This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
-const PAUSED_TOKENS_BY_CHAIN = {
-  [CHAINS.ETH.id]: ['USDB'],
-  [CHAINS.BNB.id]: ['USDB'],
-  [CHAINS.POLYGON.id]: ['USDB'],
-  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH', 'USDB'],
-  [CHAINS.AVALANCHE.id]: ['AVWETH', 'USDB'],
-  [CHAINS.MOONRIVER.id]: ['USDB'],
+export const PAUSED_TOKENS_BY_CHAIN = {
+  [CHAINS.FANTOM.id]: ['USDC'],
+  [CHAINS.DOGE.id]: ['BUSD'],
+  [CHAINS.KLAYTN.id]: ['USDC', 'DAI', 'USDT'],
 }
 
 const getBridgeableTokens = (): TokensByChain => {
@@ -169,21 +167,10 @@ export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
 export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeableTokensByType()
-export const tokenSymbolToToken = (chainId: number, symbol: string): Token => {
+export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
     const token = BRIDGABLE_TOKENS[chainId].find((token) => {
       return token.symbol === symbol
-    })
-    return token
-  }
-}
-export const tokenAddressToToken = (
-  chainId: number,
-  tokenAddress: string
-): Token => {
-  if (chainId) {
-    const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
-      return token.addresses[chainId] === tokenAddress
     })
     return token
   }
