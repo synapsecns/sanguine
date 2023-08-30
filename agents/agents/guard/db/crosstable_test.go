@@ -46,7 +46,7 @@ func (t *DBSuite) TestGetRelayableAgentStatuses() {
 		)
 		Nil(t.T(), err)
 
-		// Insert three rows into `RelayableAgentStatus`, two will have matching agent address to `AgentTree` rows and with status `Resolved`.
+		// Insert three rows into `RelayableAgentStatus`, two will have matching agent address to `AgentTree` rows and with status `Queued`.
 		chainA := gofakeit.Uint32()
 		chainB := chainA + 1
 		err = testDB.StoreRelayableAgentStatus(

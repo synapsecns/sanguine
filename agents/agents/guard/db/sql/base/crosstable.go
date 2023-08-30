@@ -56,7 +56,7 @@ func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([
 	}
 
 	var dbAgentTrees []agentTreeWithStatus
-	err = s.DB().WithContext(ctx).Debug().Raw(query, agentTypes.Queued, chainID).Scan(&dbAgentTrees).Error
+	err = s.DB().WithContext(ctx).Raw(query, agentTypes.Queued, chainID).Scan(&dbAgentTrees).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
 	}

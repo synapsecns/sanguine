@@ -42,7 +42,7 @@ func (s Store) UpdateAgentStatusRelayedState(
 		AgentAddress: agentAddress.String(),
 	}
 
-	dbTx := s.DB().WithContext(ctx).Debug().
+	dbTx := s.DB().WithContext(ctx).
 		Model(&RelayableAgentStatus{}).
 		Where(mask).
 		Update(AgentStatusRelayedStateFieldName, state)
