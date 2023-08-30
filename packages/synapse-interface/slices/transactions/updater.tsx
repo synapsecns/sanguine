@@ -61,9 +61,11 @@ export default function Updater(): null {
         (pendingTransaction: BridgeTransaction) => {
           const isStored: boolean = pendingAwaitingCompletionTransactions.some(
             (storedTransaction: BridgeTransaction) =>
-              storedTransaction === (pendingTransaction as BridgeTransaction)
+              storedTransaction.kappa === pendingTransaction.kappa
           )
           if (!isStored) {
+            console.log('store new transaction: ', pendingTransaction)
+
             dispatch(
               addPendingAwaitingCompletionTransaction(pendingTransaction)
             )
@@ -96,17 +98,28 @@ export default function Updater(): null {
     }
 
     if (hasUserHistoricalTransactions) {
+      console.log('hit 1')
       pendingAwaitingCompletionTransactions.map(
         (pendingTransaction: BridgeTransaction) => {
+          console.log('mapping pendingTransaction: ', pendingTransaction)
+
           const isCompleted: boolean = userHistoricalTransactions.some(
-            (historicalTransaction: BridgeTransaction) =>
-              historicalTransaction ===
-              (pendingTransaction as BridgeTransaction)
+            (historicalTransaction: BridgeTransaction) => {
+              console.log(
+                'historicalTransaction.kappa: ',
+                historicalTransaction.kappa
+              )
+              console.log('pendingTransaction.kappa:', pendingTransaction.kappa)
+              return historicalTransaction.kappa === pendingTransaction.kappa
+            }
           )
 
           if (isCompleted) {
+            console.log('remove pendingTransaction:', pendingTransaction)
             dispatch(
-              removePendingAwaitingCompletionTransaction(pendingTransaction)
+              removePendingAwaitingCompletionTransaction(
+                pendingTransaction.kappa
+              )
             )
           }
         }

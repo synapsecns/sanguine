@@ -80,11 +80,12 @@ export const transactionsSlice = createSlice({
       )
       .addCase(
         removePendingAwaitingCompletionTransaction,
-        (state, action: PayloadAction<BridgeTransaction>) => {
+        (state, action: PayloadAction<string>) => {
+          const kappa: string = action.payload
+
           state.pendingAwaitingCompletionTransactions =
             state.pendingAwaitingCompletionTransactions.filter(
-              (transaction: BridgeTransaction) =>
-                transaction !== (action.payload as BridgeTransaction)
+              (transaction: BridgeTransaction) => transaction.kappa !== kappa
             )
         }
       )

@@ -21,10 +21,9 @@ export const addPendingAwaitingCompletionTransaction =
   createAction<BridgeTransaction>(
     'transactions/addPendingAwaitingCompletionTransaction'
   )
-export const removePendingAwaitingCompletionTransaction =
-  createAction<BridgeTransaction>(
-    'transactions/removePendingAwaitingCompletionTransaction'
-  )
+export const removePendingAwaitingCompletionTransaction = createAction<string>(
+  'transactions/removePendingAwaitingCompletionTransaction'
+)
 export const resetTransactionsState = createAction<void>(
   'transactions/resetTransactionsState'
 )

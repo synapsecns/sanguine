@@ -44,6 +44,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     userPendingTransactions,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
+    pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
 
@@ -197,6 +198,7 @@ export const MostRecentTransaction = () => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
     seenHistoricalTransactions,
+    pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
@@ -205,8 +207,11 @@ export const MostRecentTransaction = () => {
   }, [pendingBridgeTransactions])
 
   const lastPendingTransaction: BridgeTransaction = useMemo(() => {
-    return userPendingTransactions && userPendingTransactions[0]
-  }, [userPendingTransactions])
+    return (
+      pendingAwaitingCompletionTransactions &&
+      pendingAwaitingCompletionTransactions[0]
+    )
+  }, [pendingAwaitingCompletionTransactions])
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesBeforeNow(0)
