@@ -85,6 +85,7 @@ export const bridgeSlice = createSlice({
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       const validToChainIds = getToChainIds({
         fromChainId: incomingFromChainId ?? null,
@@ -101,6 +102,7 @@ export const bridgeSlice = createSlice({
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       let validFromToken
       let validToChainId
@@ -113,7 +115,11 @@ export const bridgeSlice = createSlice({
       ) {
         validFromToken = state.fromToken
       } else {
-        validFromToken = null
+        validFromToken = findValidToken(
+          validFromTokens,
+          state.toToken?.routeSymbol,
+          state.toToken?.swapableType
+        )
       }
 
       if (
@@ -132,7 +138,11 @@ export const bridgeSlice = createSlice({
       ) {
         validToToken = state.toToken
       } else {
-        validToToken = null
+        validToToken = findValidToken(
+          validToTokens,
+          state.fromToken?.routeSymbol,
+          state.fromToken?.swapableType
+        )
       }
 
       const {
@@ -178,13 +188,14 @@ export const bridgeSlice = createSlice({
       })
 
       const validToTokens = getToTokens({
-        fromChainId: null,
+        fromChainId: state.fromChainId ?? null,
         fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
-        toChainId: state.toChainId,
+        toChainId: state.toChainId ?? null,
         toTokenRouteSymbol: null,
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       let validFromChainId
       let validToChainId
@@ -209,7 +220,11 @@ export const bridgeSlice = createSlice({
       ) {
         validToToken = state.toToken
       } else {
-        validToToken = null
+        validToToken = findValidToken(
+          validToTokens,
+          incomingFromToken?.routeSymbol,
+          incomingFromToken?.swapableType
+        )
       }
 
       const {
@@ -255,6 +270,7 @@ export const bridgeSlice = createSlice({
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       const validToTokens = getToTokens({
         fromChainId: state.fromChainId ?? null,
@@ -264,6 +280,7 @@ export const bridgeSlice = createSlice({
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       let validFromChainId
       let validFromToken
@@ -285,7 +302,11 @@ export const bridgeSlice = createSlice({
       ) {
         validFromToken = state.fromToken
       } else {
-        validFromToken = null
+        validFromToken = findValidToken(
+          validFromTokens,
+          state.fromToken?.routeSymbol,
+          state.fromToken?.swapableType
+        )
       }
 
       if (
@@ -295,7 +316,11 @@ export const bridgeSlice = createSlice({
       ) {
         validToToken = state.toToken
       } else {
-        validToToken = null
+        validToToken = findValidToken(
+          validToTokens,
+          state.fromToken?.routeSymbol,
+          state.fromToken?.swapableType
+        )
       }
 
       const {
@@ -341,6 +366,7 @@ export const bridgeSlice = createSlice({
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
 
       const validToChainIds = getToChainIds({
         fromChainId: null,
@@ -366,7 +392,11 @@ export const bridgeSlice = createSlice({
       ) {
         validFromToken = state.fromToken
       } else {
-        validFromToken = null
+        validFromToken = findValidToken(
+          validFromTokens,
+          incomingToToken?.routeSymbol,
+          incomingToToken?.swapableType
+        )
       }
 
       if (validToChainIds?.includes(state.toChainId)) {
@@ -432,3 +462,14 @@ export const {
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
+
+const findValidToken = (
+  tokens: Token[],
+  routeSymbol: string,
+  swapableType: string
+) => {
+  const matchingToken = tokens?.find((t) => t.routeSymbol === routeSymbol)
+  const swapableToken = tokens?.find((t) => t.swapableType === swapableType)
+
+  return matchingToken ? matchingToken : swapableToken ? swapableToken : null
+}
