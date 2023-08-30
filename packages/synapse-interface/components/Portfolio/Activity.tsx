@@ -536,7 +536,7 @@ export const TransactionPayloadDetail = ({
       {chain && (
         <div
           data-test-id="transaction-payload-network"
-          className="flex flex-row items-center"
+          className="flex flex-row items-center cursor-pointer hover:text-[#99E6FF] p-1"
           onClick={handleSelectChainCallback}
         >
           <Image
