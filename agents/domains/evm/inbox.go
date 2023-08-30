@@ -142,6 +142,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 
 	transactOpts.Context = ctx
 	transactOpts.GasLimit = 5000000
+	a.nonceManager.ClearNonce(signer.Address())
 	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 
@@ -162,6 +163,7 @@ func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer si
 	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
 
+//nolint:dupl
 func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
@@ -174,8 +176,8 @@ func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, sig
 	}
 
 	transactOpts.Context = ctx
-
 	transactOpts.GasLimit = 5000000
+	a.nonceManager.ClearNonce(signer.Address())
 
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {

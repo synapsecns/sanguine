@@ -255,8 +255,6 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleAttestation(ctx, log)
 	case isReceiptAcceptedEvent(g.inboxParser, log):
 		return g.handleReceipt(ctx, log)
-	case isDisputeOpenedEvent(g.lightManagerParser, g.bondingManagerParser, log):
-		return g.handleDisputeOpened(ctx, log)
 	case isStatusUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleStatusUpdated(ctx, log, chainID)
 	case isRootUpdatedEvent(g.bondingManagerParser, log):

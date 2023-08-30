@@ -10,10 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
-func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
+func (t *DBSuite) TestGetRelayableAgentStatuses() {
 	t.RunOnAllDBs(func(testDB db.GuardDB) {
-		guardAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-
 		addressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		addressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		addressC := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -48,37 +46,36 @@ func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
 		)
 		Nil(t.T(), err)
 
-		// Insert three rows into `Dispute`, two will have matching agent address to `AgentTree` rows and with status `Resolved`.
-		err = testDB.StoreDispute(
+		// Insert three rows into `RelayableAgentStatus`, two will have matching agent address to `AgentTree` rows and with status `Queued`.
+		chainA := gofakeit.Uint32()
+		chainB := chainA + 1
+		err = testDB.StoreRelayableAgentStatus(
 			t.GetTestContext(),
-			big.NewInt(gofakeit.Int64()),
-			types.Resolved,
-			guardAddress,
-			gofakeit.Uint32(),
 			addressA,
+			types.AgentFlagUnknown,
+			types.AgentFlagActive,
+			chainA,
 		)
 		Nil(t.T(), err)
-		err = testDB.StoreDispute(
+		err = testDB.StoreRelayableAgentStatus(
 			t.GetTestContext(),
-			big.NewInt(gofakeit.Int64()),
-			types.Resolved,
-			guardAddress,
-			gofakeit.Uint32(),
 			addressB,
+			types.AgentFlagUnknown,
+			types.AgentFlagActive,
+			chainA,
 		)
 		Nil(t.T(), err)
-		err = testDB.StoreDispute(
+		err = testDB.StoreRelayableAgentStatus(
 			t.GetTestContext(),
-			big.NewInt(gofakeit.Int64()),
-			types.Opened,
-			guardAddress,
-			gofakeit.Uint32(),
 			addressC,
+			types.AgentFlagUnknown,
+			types.AgentFlagActive,
+			chainB,
 		)
 		Nil(t.T(), err)
 
 		// Get the matching agent tree from the database.
-		agentTrees, err := testDB.GetUpdateAgentStatusParameters(t.GetTestContext())
+		agentTrees, err := testDB.GetRelayableAgentStatuses(t.GetTestContext(), chainA)
 		Nil(t.T(), err)
 
 		Equal(t.T(), 2, len(agentTrees))

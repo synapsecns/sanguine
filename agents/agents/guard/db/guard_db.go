@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	agentTypes "github.com/synapsecns/sanguine/agents/types"
@@ -11,22 +10,20 @@ import (
 
 // GuardDBWriter is the interface for writing to the guard's database.
 type GuardDBWriter interface {
-	// StoreDispute stores a dispute.
-	StoreDispute(
+	// StoreRelayableAgentStatus stores a relayable agent status.
+	StoreRelayableAgentStatus(
 		ctx context.Context,
-		disputeIndex *big.Int,
-		disputeProcessedStatus agentTypes.DisputeProcessedStatus,
-		guardAddress common.Address,
-		notaryIndex uint32,
-		notaryAddress common.Address,
+		agentAddress common.Address,
+		staleFlag agentTypes.AgentFlagType,
+		updatedFlag agentTypes.AgentFlagType,
+		domain uint32,
 	) error
 
-	// UpdateDisputeProcessedStatus updates the DisputedProcessedStatus for a dispute.
-	UpdateDisputeProcessedStatus(
+	// UpdateAgentStatusRelayedState updates the relayed state for a relayable agent status.
+	UpdateAgentStatusRelayedState(
 		ctx context.Context,
-		guardAddress *common.Address,
-		notaryAddress *common.Address,
-		flag agentTypes.DisputeProcessedStatus,
+		agentAddress common.Address,
+		state agentTypes.AgentStatusRelayedState,
 	) error
 
 	// StoreAgentTree stores an agent tree.
@@ -48,10 +45,10 @@ type GuardDBWriter interface {
 
 // GuardDBReader is the interface for reading from the guard's database.
 type GuardDBReader interface {
-	// GetUpdateAgentStatusParameters gets eligible parameters for the updateAgentStatus() contract call.
-	GetUpdateAgentStatusParameters(ctx context.Context) ([]agentTypes.AgentTree, error)
+	// GetRelayableAgentStatuses gets eligible parameters for the updateAgentStatus() contract call.
+	GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([]agentTypes.AgentTree, error)
 	// GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
-	GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]byte) (uint64, error)
+	GetSummitBlockNumberForRoot(ctx context.Context, agentRoot string) (uint64, error)
 }
 
 // GuardDB is the interface for the guard's database.

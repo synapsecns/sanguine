@@ -3,7 +3,6 @@ package guard
 import (
 	"context"
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -12,6 +11,8 @@ import (
 
 // handleSnapshot checks a snapshot for invalid states.
 // If an invalid state is found, initiate slashing and submit a state report.
+//
+//nolint:cyclop
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
@@ -20,7 +21,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent)
+		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not handle state: %w", err)
 		}
@@ -49,10 +50,17 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return nil
 		}
 
-		// Submit the state report.
+		// Submit the state report to summit.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
+		}
+		ok, err := g.prepareStateReport(ctx, fraudSnapshot.Agent, g.summitDomainID)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
+		}
+		if !ok {
+			continue
 		}
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
@@ -63,7 +71,27 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			fraudSnapshot.Signature,
 		)
 		if err != nil {
-			return fmt.Errorf("could not submit state report with snapshot: %w", err)
+			return fmt.Errorf("could not submit state report with snapshot to summit: %w", err)
+		}
+
+		// Submit the state report to the remote chain.
+		ok, err = g.prepareStateReport(ctx, fraudSnapshot.Agent, fraudSnapshot.AgentDomain)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
+		}
+		if !ok {
+			continue
+		}
+		_, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			srSignature,
+			fraudSnapshot.Payload,
+			fraudSnapshot.Signature,
+		)
+		if err != nil {
+			return fmt.Errorf("could not submit state report with snapshot to agent domain %d: %w", fraudSnapshot.AgentDomain, err)
 		}
 	}
 
@@ -86,7 +114,7 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 
 // isStateSlashable checks if a state is slashable, i.e. if the state is valid on the
 // Origin, and if the agent is in a slashable status.
-func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address) (bool, error) {
+func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, error) {
 	statePayload, err := state.Encode()
 	if err != nil {
 		return false, fmt.Errorf("could not encode state: %w", err)
@@ -100,16 +128,7 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent co
 	if err != nil {
 		return false, fmt.Errorf("could not check validity of state: %w", err)
 	}
-	if isValid {
-		return false, nil
-	}
-
-	// Verify that the agent is in a slashable status.
-	agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, agent)
-	if err != nil {
-		return false, fmt.Errorf("could not get agent status: %w", err)
-	}
-	return isAgentSlashable(agentStatus.Flag()), nil
+	return !isValid, nil
 }
 
 // handleAttestation checks whether an attestation is valid.
@@ -133,6 +152,8 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 
 // handleValidAttestation handles an attestation that is valid, but may
 // attest to a snapshot that contains an invalid state.
+//
+//nolint:cyclop
 func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
 	// Fetch the attested snapshot.
 	snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
@@ -140,14 +161,14 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		return fmt.Errorf("could not get snapshot: %w", err)
 	}
 
+	snapPayload, err := snapshot.Encode()
+	if err != nil {
+		return fmt.Errorf("could not encode snapshot: %w", err)
+	}
+
 	// Verify each state in the snapshot.
 	for stateIndex, state := range snapshot.States() {
-		snapPayload, err := snapshot.Encode()
-		if err != nil {
-			return fmt.Errorf("could not encode snapshot: %w", err)
-		}
-
-		isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary)
+		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not check if state is slashable: %w", err)
 		}
@@ -168,10 +189,17 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			return fmt.Errorf("could not verify state with attestation: %w", err)
 		}
 
-		// Submit the state report.
+		// Submit the state report on summit.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
+		}
+		ok, err := g.prepareStateReport(ctx, fraudAttestation.Notary, g.summitDomainID)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on summit: %w", err)
+		}
+		if !ok {
+			continue
 		}
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 			ctx,
@@ -183,10 +211,73 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			fraudAttestation.Signature,
 		)
 		if err != nil {
-			return fmt.Errorf("could not submit state report with attestation: %w", err)
+			return fmt.Errorf("could not submit state report with attestation on summit: %w", err)
+		}
+
+		// Submit the state report on the remote chain.
+		ok, err = g.prepareStateReport(ctx, fraudAttestation.Notary, fraudAttestation.AgentDomain)
+		if err != nil {
+			return fmt.Errorf("could not prepare state report on remote: %w", err)
+		}
+		if !ok {
+			continue
+		}
+		_, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			srSignature,
+			snapPayload,
+			fraudAttestation.Payload,
+			fraudAttestation.Signature,
+		)
+		if err != nil {
+			return fmt.Errorf("could not submit state report with attestation on agent domain %d: %w", fraudAttestation.AgentDomain, err)
 		}
 	}
 	return nil
+}
+
+// prepareStateReport checks if the given agent is in a slashable status (Active or Unstaking),
+// and relays the agent status from Summit to the given chain if necessary.
+func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
+	var agentStatus types.AgentStatus
+	if chainID == g.summitDomainID {
+		agentStatus, err = g.domains[chainID].BondingManager().GetAgentStatus(ctx, agent)
+	} else {
+		agentStatus, err = g.domains[chainID].LightManager().GetAgentStatus(ctx, agent)
+	}
+	if err != nil {
+		return false, fmt.Errorf("could not get agent status: %w", err)
+	}
+
+	//nolint:exhaustive
+	switch agentStatus.Flag() {
+	case types.AgentFlagUnknown:
+		if chainID == g.summitDomainID {
+			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
+		}
+		// Update the agent status to active using the last known root on remote chain.
+		err = g.guardDB.StoreRelayableAgentStatus(
+			ctx,
+			agent,
+			types.AgentFlagUnknown,
+			types.AgentFlagActive,
+			chainID,
+		)
+		if err != nil {
+			return false, fmt.Errorf("could not store relayable agent status: %w", err)
+		}
+		err = g.updateAgentStatus(ctx, chainID)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	case types.AgentFlagActive, types.AgentFlagUnstaking:
+		return true, nil
+	default:
+		return false, nil
+	}
 }
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
@@ -313,6 +404,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not get proof: %w", err)
 		}
 
+		var remoteStatus types.AgentStatus
 		if chainID == g.summitDomainID {
 			err = g.guardDB.StoreAgentTree(
 				ctx,
@@ -335,88 +427,33 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			}
 		}
 
-		// Mark the open dispute for this agent as Resolved.
-		var guardAddress, notaryAddress *common.Address
-		if statusUpdated.Domain == 0 {
-			guardAddress = &statusUpdated.Agent
-		} else {
-			notaryAddress = &statusUpdated.Agent
-		}
-		err = g.guardDB.UpdateDisputeProcessedStatus(
-			ctx,
-			guardAddress,
-			notaryAddress,
-			types.Resolved,
-		)
-		if err != nil {
-			return fmt.Errorf("could not update dispute processed status: %w", err)
+		if statusUpdated.Domain != 0 {
+			// Fetch the current remote status and check whether the status is synced.
+			remoteStatus, err = g.domains[statusUpdated.Domain].LightManager().GetAgentStatus(ctx, statusUpdated.Agent)
+			if err != nil {
+				return fmt.Errorf("could not get agent status: %w", err)
+			}
+			if remoteStatus.Flag() == types.AgentFlagType(statusUpdated.Flag) {
+				return nil
+			}
+
+			// If not synced, store a relayable agent status.
+			err = g.guardDB.StoreRelayableAgentStatus(
+				ctx,
+				statusUpdated.Agent,
+				remoteStatus.Flag(),
+				types.AgentFlagType(statusUpdated.Flag),
+				statusUpdated.Domain,
+			)
+			if err != nil {
+				return fmt.Errorf("could not store relayable agent status: %w", err)
+			}
 		}
 	default:
 		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
 	}
 
 	return nil
-}
-
-// handleDisputeOpened stores models related to a DisputeOpened event.
-func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error {
-	disputeOpened, err := g.parseDisputeOpened(log)
-	if err != nil {
-		return fmt.Errorf("could not parse dispute opened: %w", err)
-	}
-
-	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.guardIndex)))
-	if err != nil {
-		return fmt.Errorf("could not get agent: %w", err)
-	}
-
-	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.notaryIndex)))
-	if err != nil {
-		return fmt.Errorf("could not get agent: %w", err)
-	}
-
-	// Store the dispute in the database.
-	err = g.guardDB.StoreDispute(
-		ctx,
-		disputeOpened.disputeIndex,
-		types.Opened,
-		guardAddress,
-		disputeOpened.notaryIndex,
-		notaryAddress,
-	)
-	if err != nil {
-		return fmt.Errorf("could not store dispute: %w", err)
-	}
-
-	return nil
-}
-
-// disputeOpened is a wrapper struct used to merge the
-// lightmanager.DisputeOpened and bondingmangaer.DisputeOpened structs.
-type disputeOpened struct {
-	disputeIndex *big.Int
-	guardIndex   uint32
-	notaryIndex  uint32
-}
-
-func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
-	disputeOpenedLight, err := g.lightManagerParser.ParseDisputeOpened(log)
-	if err == nil {
-		return &disputeOpened{
-			disputeIndex: disputeOpenedLight.DisputeIndex,
-			guardIndex:   disputeOpenedLight.GuardIndex,
-			notaryIndex:  disputeOpenedLight.NotaryIndex,
-		}, nil
-	}
-	disputeOpenedBonding, err := g.bondingManagerParser.ParseDisputeOpened(log)
-	if err == nil {
-		return &disputeOpened{
-			disputeIndex: disputeOpenedBonding.DisputeIndex,
-			guardIndex:   disputeOpenedBonding.GuardIndex,
-			notaryIndex:  disputeOpenedBonding.NotaryIndex,
-		}, nil
-	}
-	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
 // handleRootUpdated stores models related to a RootUpdated event.
@@ -457,8 +494,10 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 
 // updateAgentStatus updates the status for each agent with a pending agent tree model,
 // and open dispute on remote chain.
+//
+//nolint:cyclop
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
-	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
+	eligibleAgentTrees, err := g.guardDB.GetRelayableAgentStatuses(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get update agent status parameters: %w", err)
 	}
@@ -472,14 +511,20 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
 
-	blockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, localRoot)
+	localRootBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, common.BytesToHash(localRoot[:]).String())
 	if err != nil {
-		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
+		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
 
-	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
+	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, tree := range eligibleAgentTrees {
-		if tree.BlockNumber >= blockNumber {
+		// Get the first recorded summit block number for the tree agent root.
+		treeBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, tree.AgentRoot)
+		if err != nil {
+			return fmt.Errorf("could not get block number for local root: %w", err)
+		}
+		if localRootBlockNumber >= treeBlockNumber {
+			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
@@ -487,7 +532,9 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			if agentStatus.Domain() != chainID {
 				continue
 			}
-			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
+
+			// Update agent status on remote.
+			tx, err := g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
 				tree.AgentAddress,
@@ -496,6 +543,17 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			)
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)
+			}
+			logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
+
+			// Mark the relayable status as Relayed.
+			err = g.guardDB.UpdateAgentStatusRelayedState(
+				ctx,
+				tree.AgentAddress,
+				types.Relayed,
+			)
+			if err != nil {
+				return fmt.Errorf("could not update agent status relayed state: %w", err)
 			}
 		}
 	}
