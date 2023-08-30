@@ -73,8 +73,8 @@ export const transactionsSlice = createSlice({
         addPendingAwaitingCompletionTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
           state.pendingAwaitingCompletionTransactions = [
-            ...state.pendingAwaitingCompletionTransactions,
             action.payload,
+            ...state.pendingAwaitingCompletionTransactions,
           ]
         }
       )

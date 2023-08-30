@@ -87,7 +87,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
-          <PendingTransactionAwaitingIndexing />
           {pendingAwaitingCompletionTransactions &&
             pendingAwaitingCompletionTransactions.map(
               (transaction: BridgeTransaction) => (
@@ -127,6 +126,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 />
               )
             )}
+          <PendingTransactionAwaitingIndexing />
         </ActivitySection>
       )}
 

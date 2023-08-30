@@ -111,8 +111,8 @@ export const bridgeSlice = createSlice({
         addPendingBridgeTransaction,
         (state, action: PayloadAction<PendingBridgeTransaction>) => {
           state.pendingBridgeTransactions = [
-            ...state.pendingBridgeTransactions,
             action.payload,
+            ...state.pendingBridgeTransactions,
           ]
         }
       )
