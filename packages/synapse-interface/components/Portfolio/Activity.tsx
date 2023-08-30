@@ -1,34 +1,24 @@
-import React, { useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useAccount, Address } from 'wagmi'
-import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useTransactionsState } from '@/slices/transactions/hooks'
-import { PartialInfo, BridgeTransaction } from '@/slices/api/generated'
+import { BridgeTransaction } from '@/slices/api/generated'
 import {
   convertUnixTimestampToMonthAndDate,
-  getTimeMinutesBeforeNow,
   isTimestampToday,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
-import {
-  BRIDGABLE_TOKENS,
-  tokenAddressToToken,
-  tokenSymbolToToken,
-} from '@/constants/tokens'
+import { tokenAddressToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
-import EtherscanIcon from '../icons/EtherscanIcon'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { getExplorerTxUrl } from '@/constants/urls'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { shortenAddress } from '@/utils/shortenAddress'
-import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import {
   Transaction,
   PendingTransaction,
