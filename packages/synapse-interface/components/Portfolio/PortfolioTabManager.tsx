@@ -50,8 +50,8 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
     <button
       className={`
       font-medium text-2xl text-gray-500
-      border-b-2 border-transparent
-      mr-2 pb-2
+      border-b-2 border-transparent mr-2 pb-2
+      focus:outline-none focus:ring-0 active:outline-none active:ring:0 outline-none
       hover:text-white transform-gpu transition-all duration-75
       ${isCurrentlyActive && 'text-white'}
       `}
