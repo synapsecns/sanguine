@@ -6,6 +6,7 @@ import { useTransactionsState } from '@/slices/transactions/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import {
   convertUnixTimestampToMonthAndDate,
+  getTimeMinutesBeforeNow,
   isTimestampToday,
 } from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -189,6 +190,17 @@ export const MostRecentTransaction = () => {
   }: TransactionsState = useTransactionsState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
+  const [currentTime, setCurrentTime] = useState<number>(
+    getTimeMinutesBeforeNow(0)
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(getTimeMinutesBeforeNow(0))
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
     return pendingBridgeTransactions && pendingBridgeTransactions[0]
   }, [pendingBridgeTransactions])
@@ -203,6 +215,14 @@ export const MostRecentTransaction = () => {
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
     return userHistoricalTransactions && userHistoricalTransactions[0]
   }, [userHistoricalTransactions])
+
+  const tenMinutesInUnix: number = 10 * 60
+
+  const isLastHistoricalTransactionRecent: boolean = useMemo(() => {
+    return (
+      currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
+    )
+  }, [currentTime])
 
   const seenLastHistoricalTransaction: boolean = useMemo(() => {
     if (!seenHistoricalTransactions || !userHistoricalTransactions) {
@@ -273,7 +293,11 @@ export const MostRecentTransaction = () => {
     )
   }
 
-  if (lastHistoricalTransaction && !seenLastHistoricalTransaction) {
+  if (
+    lastHistoricalTransaction &&
+    isLastHistoricalTransactionRecent &&
+    !seenLastHistoricalTransaction
+  ) {
     console.log('a3')
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (
