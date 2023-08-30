@@ -6,25 +6,18 @@ import {
   USDT,
   DAI,
   NUSD,
-  KLAYTN_oUSDT,
   NOTE,
   NETH,
   ETH,
-  AVWETH,
   WETHE,
   ONEETH,
-  FTMETH,
   USDCe,
   USDTe,
-  METISETH,
-  CANTOETH,
   WJEWEL,
   SYNJEWEL,
-  MULTIAVAX,
-  SYNAVAX,
-  WETH,
-} from '@constants/tokens/master'
-import { MIM, SwapUSDC, SwapUSDT } from '@constants/tokens/swapMaster'
+  AVAX,
+} from '@constants/tokens/bridgeable'
+import { AVWETH, KLAYTN_oUSDT, MIM, MULTIAVAX, WETH } from './auxilliary'
 
 import { Token } from '@/utils/types'
 
@@ -169,7 +162,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AVALANCHE.id]: '0xA196a03653f6cc5cA0282A8BD7Ec60e93f620afc',
   },
-  poolTokens: [NUSD, SwapUSDC, SwapUSDT],
+  poolTokens: [NUSD, USDC, USDT],
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
@@ -520,7 +513,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.HARMONY.id]: '0x00A4F57D926781f62D09bb05ec76e6D8aE4268da',
   },
-  poolTokens: [SYNAVAX, MULTIAVAX],
+  poolTokens: [AVAX, MULTIAVAX],
   description: "Synapse's 2pool AVAX LP token on Harmony",
   display: true,
   priorityPool: true,
@@ -689,7 +682,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
   },
-  poolTokens: [NETH, FTMETH],
+  poolTokens: [NETH, ETH],
   description: "Synapse's ETH swap LP token on Fantom",
   display: true,
   priorityPool: true,
@@ -713,7 +706,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.METIS.id]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
   },
-  poolTokens: [NETH, METISETH],
+  poolTokens: [NETH, WETH],
   description: "Synapse's ETH swap LP token on Metis",
   display: true,
   priorityPool: true,
@@ -737,7 +730,7 @@ export const CANTO_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.CANTO.id]: '0xF60F88bA0CB381b8D8A662744fF93486273c22F9',
   },
-  poolTokens: [NETH, CANTOETH],
+  poolTokens: [NETH, ETH],
   description: "Synapse's ETH swap LP token on Canto",
   display: true,
   priorityPool: true,
