@@ -17,6 +17,7 @@ const SelectSpecificTokenButton = ({
   active,
   selectedToken,
   onClick,
+  alternateBackground = false,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -24,6 +25,7 @@ const SelectSpecificTokenButton = ({
   active: boolean
   selectedToken: Token
   onClick: () => void
+  alternateBackground?: boolean
 }) => {
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
@@ -62,6 +64,7 @@ const SelectSpecificTokenButton = ({
         cursor-pointer
         border-[1px] border-[#423F44]
         mb-1
+        ${alternateBackground && 'bg-[#282328]'}
         ${bgClassName}
         ${classNameForMenuItemStyle}
       `}

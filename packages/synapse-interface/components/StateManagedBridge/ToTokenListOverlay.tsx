@@ -171,10 +171,10 @@ export const ToTokenListOverlay = () => {
       </div>
       {possibleTokens && possibleTokens.length > 0 && (
         <>
-          <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
+          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
             Receive…
           </div>
-          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+          <div className="px-2 pb-2 md:px-2">
             {possibleTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -199,12 +199,12 @@ export const ToTokenListOverlay = () => {
       )}
       {remainingChainTokens && remainingChainTokens.length > 0 && (
         <>
-          <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
+          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
             {toChainId
               ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
               : 'All receivable tokens'}
           </div>
-          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+          <div className="px-2 pb-2 md:px-2">
             {remainingChainTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -223,10 +223,10 @@ export const ToTokenListOverlay = () => {
       )}
       {allOtherToTokens && allOtherToTokens.length > 0 && (
         <>
-          <div className="px-2 pb-2 pt-2 text-primaryTextColor text-sm bg-[#343036]">
+          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
             All receivable tokens
           </div>
-          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+          <div className="px-2 pb-2 md:px-2">
             {allOtherToTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -242,6 +242,7 @@ export const ToTokenListOverlay = () => {
                   }
                   showAllChains={true}
                   onClick={() => handleSetToToken(toToken, token)}
+                  alternateBackground={true}
                 />
               )
             })}

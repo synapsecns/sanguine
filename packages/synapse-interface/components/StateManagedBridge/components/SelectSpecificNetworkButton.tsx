@@ -17,12 +17,14 @@ export const SelectSpecificNetworkButton = ({
   active,
   onClick,
   dataId,
+  alternateBackground = false,
 }: {
   itemChainId: number
   isCurrentChain: boolean
   active: boolean
   onClick: () => void
   dataId: string
+  alternateBackground?: boolean
 }) => {
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
@@ -43,8 +45,6 @@ export const SelectSpecificNetworkButton = ({
     `
   }
 
-  const classNameForMenuItemStyle = getMenuItemStyleForChain(chain?.color)
-
   return (
     <button
       ref={ref}
@@ -57,12 +57,12 @@ export const SelectSpecificNetworkButton = ({
         cursor-pointer
         border-[1px] border-[#423F44]
         mb-1
+        ${alternateBackground && 'bg-[#282328]'}
         ${bgClassName}
         ${getNetworkButtonBorderHover(chain.color)}
         ${getNetworkHover(chain.color)}
         ${getNetworkButtonBgClassNameActive(chain.color)}
         ${getNetworkButtonBorderActive(chain.color)}
-        ${classNameForMenuItemStyle}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}

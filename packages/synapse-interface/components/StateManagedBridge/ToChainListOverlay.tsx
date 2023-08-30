@@ -142,13 +142,10 @@ export const ToChainListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      <div
-        data-test-id={dataId}
-        className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
-      >
+      <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mt-2 mb-4 text-sm font-normal text-primaryTextColor">
+            <div className="mb-4 text-sm font-normal text-primaryTextColor">
               To…
             </div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
@@ -185,6 +182,7 @@ export const ToChainListOverlay = () => {
                   active={idx + possibleChains.length === currentIdx}
                   onClick={() => handleSetToChainId(mapChainId)}
                   dataId={dataId}
+                  alternateBackground={true}
                 />
               )
             })}
