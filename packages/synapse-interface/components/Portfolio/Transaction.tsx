@@ -15,7 +15,7 @@ import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/master'
+import { USDC } from '@/constants/tokens/bridgeable'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import TransactionArrow from '../icons/TransactionArrow'
 

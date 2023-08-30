@@ -23,7 +23,7 @@ import {
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/master'
+import { USDC } from '@/constants/tokens/bridgeable'
 
 type PortfolioTokenAssetProps = {
   token: Token

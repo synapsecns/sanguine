@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { ETH } from '@/constants/tokens/master'
+import { ETH } from '@/constants/tokens/bridgeable'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
