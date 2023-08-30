@@ -1,25 +1,24 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { hexZeroPad } from '@ethersproject/bytes'
-import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
 import { Contract } from '@ethersproject/contracts'
+import { getAddress, isAddress } from '@ethersproject/address'
+import { id } from '@ethersproject/hash'
 import { toHexStr } from '@utils/toHexStr'
 import { BridgeWatcherTx } from '@types'
-import { id } from '@ethersproject/hash'
+import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
-import { getAddress, isAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import {
   SYN,
   NUSD,
   NETH,
   FRAX,
-  SYN_FRAX,
+  SYNFRAX,
   WBTC,
-  KLAYTN_WETH,
   DOG,
   LINK,
   GOHM,
-  HIGHSTREET,
+  HIGH,
   JUMP,
   NFD,
   NEWO,
@@ -27,7 +26,6 @@ import {
   GMX,
   SDT,
   UNIDX,
-  USDB,
   SFI,
   H2O,
   L2DAO,
@@ -35,8 +33,9 @@ import {
   AGEUR,
   NOTE,
   USDC,
-  WETH,
-} from '@constants/tokens/master'
+  SUSD,
+} from '@constants/tokens/bridgeable'
+import { WETH } from '@constants/tokens/auxilliary'
 
 export const getTransactionReceipt = async (
   txHash: string,
@@ -100,7 +99,7 @@ export const generateBridgeTx = (
       [
         SYN,
         LINK,
-        HIGHSTREET,
+        HIGH,
         DOG,
         JUMP,
         FRAX,
@@ -115,17 +114,16 @@ export const generateBridgeTx = (
         SFI,
         SDT,
         UNIDX,
-        USDB,
         GMX,
         WBTC,
-        KLAYTN_WETH,
         NOTE,
+        SUSD,
       ]
         .map((t) => t.addresses[chainId])
         .includes(swapTokenAddr)
     ) {
       tokenAddr = TOKEN_HASH_MAP[chainId][swapTokenAddr].addresses[chainId]
-    } else if (swapTokenAddr === SYN_FRAX.addresses[chainId]) {
+    } else if (swapTokenAddr === SYNFRAX.addresses[chainId]) {
       tokenAddr = FRAX.addresses[chainId]
     } else if (swapTokenAddr === GMX.wrapperAddresses[chainId]) {
       tokenAddr = GMX.addresses[chainId]

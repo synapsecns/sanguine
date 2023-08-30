@@ -1,4 +1,4 @@
-import { ETH, SYN } from '@constants/tokens/master'
+import { ETH, SYN } from '@constants/tokens/bridgeable'
 import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'

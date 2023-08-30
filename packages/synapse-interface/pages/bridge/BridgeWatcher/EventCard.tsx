@@ -1,6 +1,6 @@
 import { BridgeWatcherTx } from '@types'
 import { CHAINS_BY_ID } from '@constants/chains'
-import { ETH } from '@constants/tokens/master'
+import { ETH } from '@constants/tokens/bridgeable'
 import ExplorerLink from './ExplorerLink'
 import { getNetworkLinkTextColor } from '@styles/chains'
 import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'
