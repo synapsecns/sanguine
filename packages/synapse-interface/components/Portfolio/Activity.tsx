@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -15,7 +16,11 @@ import { tokenAddressToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setToChainId,
+} from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
@@ -513,6 +518,16 @@ export const TransactionPayloadDetail = ({
   tokenAmount?: number
   isOrigin: boolean
 }) => {
+  const dispatch = useAppDispatch()
+
+  const handleSelectChainCallback = useCallback(() => {
+    if (isOrigin) {
+      dispatch(setFromChainId(chain?.id))
+    } else {
+      dispatch(setToChainId(chain?.id))
+    }
+  }, [isOrigin, chain])
+
   return (
     <div
       data-test-id="transaction-payload-detail"
@@ -522,6 +537,7 @@ export const TransactionPayloadDetail = ({
         <div
           data-test-id="transaction-payload-network"
           className="flex flex-row items-center"
+          onClick={handleSelectChainCallback}
         >
           <Image
             src={chain.chainImg}
