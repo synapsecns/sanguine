@@ -41,6 +41,7 @@ export default function Updater(): null {
     isUserPendingTransactionsLoading,
     userHistoricalTransactions,
     userPendingTransactions,
+    seenHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
@@ -51,7 +52,16 @@ export default function Updater(): null {
       userHistoricalTransactions.length > 0 &&
       activeTab !== PortfolioTabs.PORTFOLIO
     ) {
-      dispatch(addSeenHistoricalTransaction(userHistoricalTransactions[0]))
+      const mostRecentHistoricalTransaction = userHistoricalTransactions[0]
+
+      const isTransactionAlreadySeen = seenHistoricalTransactions.some(
+        (transaction: BridgeTransaction) =>
+          transaction === (mostRecentHistoricalTransaction as BridgeTransaction)
+      )
+
+      if (!isTransactionAlreadySeen) {
+        dispatch(addSeenHistoricalTransaction(mostRecentHistoricalTransaction))
+      }
     }
   }, [userHistoricalTransactions, activeTab])
 
