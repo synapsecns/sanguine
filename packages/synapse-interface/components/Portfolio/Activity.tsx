@@ -66,18 +66,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     [userHistoricalTransactions]
   )
 
-  const [currentTime, setCurrentTime] = useState<number>(
-    getTimeMinutesBeforeNow(0)
-  )
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(getTimeMinutesBeforeNow(0))
-    }, 60000)
-
-    return () => clearInterval(interval)
-  }, [])
-
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
@@ -221,20 +209,6 @@ export const MostRecentTransaction = () => {
       pendingAwaitingCompletionTransactions[0]
     )
   }, [pendingAwaitingCompletionTransactions])
-
-  const [currentTime, setCurrentTime] = useState<number>(
-    getTimeMinutesBeforeNow(0)
-  )
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(getTimeMinutesBeforeNow(0))
-    }, 60000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const tenMinutesInUnix: number = 10 * 60
 
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
     return userHistoricalTransactions && userHistoricalTransactions[0]
