@@ -18,9 +18,10 @@ type agentTreeWithStatus struct {
 }
 
 // GetRelayableAgentStatuses gets the parameters for updating the agent status with the following steps:
-// 1. Outer join the `AgentTree` table on the `RelayableAgentStatus` table on the `AgentAddress` fields.
-// 2. Filter the rows where the `AgentStatusRelayedState` is `Queued`.
-// 3. Return all fields in the `AgentTree` table as well as `UpdatedFlag` from the `RelayableAgentStatus` table.
+// 1. Load the `AgentTree` table.
+// 2. Filter the rows where the `AgentStatusRelayedState` is `Queued`, and the `Domain` is the given `chainID`.
+// 3. Outer join the `AgentTree` table on the `RelayableAgentStatus` table on the `AgentAddress` fields.
+// 4. Return all fields in the `AgentTree` table as well as `UpdatedFlag` from the `RelayableAgentStatus` table.
 func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([]agentTypes.AgentTree, error) {
 	agentTreesTableName, err := dbcommon.GetModelName(s.DB(), &AgentTree{})
 	if err != nil {
