@@ -74,3 +74,27 @@ dockers:
     dockerfile: ../../docker/omnirpc.Dockerfile
     ids:
       - omnirpc
+
+# track sizes
+report_sizes: true
+
+# modified timestamps
+metadata:
+  # Set the modified timestamp on the metadata files.
+  #
+  # Templates: allowed.
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+# produce software bill of lading
+sboms:
+  - artifacts: archive
+
+# determinitsic builds
+gomod:
+  proxy: true
+
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+
+  mod: mod
