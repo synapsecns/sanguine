@@ -60,7 +60,7 @@ export const BridgeTransactionButton = ({
 
   const sufficientBalance = useMemo(() => {
     return (
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
     )
   }, [balanceForToken, fromValue])

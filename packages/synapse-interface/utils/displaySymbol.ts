@@ -1,4 +1,4 @@
-import { SYNJEWEL } from '@constants/tokens/master'
+import { SYNJEWEL } from '@constants/tokens/bridgeable'
 import * as CHAINS from '@constants/chains/master'
 
 import { Token } from '@/utils/types'

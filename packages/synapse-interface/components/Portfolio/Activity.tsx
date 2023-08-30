@@ -133,43 +133,46 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          {userHistoricalTransactions
-            .slice(0, 6) //temporarily only show recent 6
-            .map((transaction: BridgeTransaction) => (
-              <Transaction
-                key={transaction.kappa}
-                connectedAddress={address as Address}
-                destinationAddress={transaction?.fromInfo?.address as Address}
-                startedTimestamp={transaction?.fromInfo?.time as number}
-                completedTimestamp={transaction?.toInfo?.time as number}
-                transactionHash={transaction?.fromInfo?.txnHash as string}
-                kappa={transaction?.kappa}
-                isCompleted={true}
-                transactionType={TransactionType.HISTORICAL}
-                originValue={transaction?.fromInfo?.formattedValue as number}
-                destinationValue={transaction?.toInfo?.formattedValue as number}
-                originChain={
-                  CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
-                }
-                originToken={
-                  tokenAddressToToken(
-                    transaction?.fromInfo?.chainID,
-                    transaction?.fromInfo?.tokenAddress
-                  ) as Token
-                }
-                destinationChain={
-                  CHAINS_BY_ID[
-                    transaction?.fromInfo?.destinationChainID
-                  ] as Chain
-                }
-                destinationToken={
-                  tokenAddressToToken(
-                    transaction?.toInfo?.chainID,
-                    transaction?.toInfo?.tokenAddress
-                  ) as Token
-                }
-              />
-            ))}
+          {userHistoricalTransactions &&
+            userHistoricalTransactions
+              .slice(0, 6) //temporarily only show recent 6
+              .map((transaction: BridgeTransaction) => (
+                <Transaction
+                  key={transaction.kappa}
+                  connectedAddress={address as Address}
+                  destinationAddress={transaction?.fromInfo?.address as Address}
+                  startedTimestamp={transaction?.fromInfo?.time as number}
+                  completedTimestamp={transaction?.toInfo?.time as number}
+                  transactionHash={transaction?.fromInfo?.txnHash as string}
+                  kappa={transaction?.kappa}
+                  isCompleted={true}
+                  transactionType={TransactionType.HISTORICAL}
+                  originValue={transaction?.fromInfo?.formattedValue as number}
+                  destinationValue={
+                    transaction?.toInfo?.formattedValue as number
+                  }
+                  originChain={
+                    CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
+                  }
+                  originToken={
+                    tokenAddressToToken(
+                      transaction?.fromInfo?.chainID,
+                      transaction?.fromInfo?.tokenAddress
+                    ) as Token
+                  }
+                  destinationChain={
+                    CHAINS_BY_ID[
+                      transaction?.fromInfo?.destinationChainID
+                    ] as Chain
+                  }
+                  destinationToken={
+                    tokenAddressToToken(
+                      transaction?.toInfo?.chainID,
+                      transaction?.toInfo?.tokenAddress
+                    ) as Token
+                  }
+                />
+              ))}
           <ExplorerLink connectedAddress={address} />
         </ActivitySection>
       )}
