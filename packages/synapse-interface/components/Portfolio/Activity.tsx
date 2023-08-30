@@ -72,24 +72,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return () => clearInterval(interval)
   }, [])
 
-  const historicalTransactionsByTime = useMemo(() => {
-    if (!hasHistoricalTransactions) return
-    const tenMinutesAgoUnixTimestamp = currentTime - 600
-
-    const transactionsWithinLast10Mins = userHistoricalTransactions.filter(
-      (transaction) =>
-        transaction.fromInfo?.time &&
-        transaction.fromInfo.time >= tenMinutesAgoUnixTimestamp
-    )
-    const remainingTransactions = userHistoricalTransactions.filter(
-      (transaction) =>
-        transaction.fromInfo?.time &&
-        transaction.fromInfo.time < tenMinutesAgoUnixTimestamp
-    )
-
-    return { transactionsWithinLast10Mins, remainingTransactions }
-  }, [hasHistoricalTransactions, userHistoricalTransactions, currentTime])
-
   const hasNoTransactions: boolean = useMemo(() => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
@@ -157,53 +139,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 }
               />
             ))}
-          {/* {historicalTransactionsByTime?.transactionsWithinLast10Mins &&
-              historicalTransactionsByTime?.transactionsWithinLast10Mins
-                .length > 0 &&
-              historicalTransactionsByTime.transactionsWithinLast10Mins.map(
-                (transaction: BridgeTransaction) => (
-                  <PendingTransaction
-                    connectedAddress={address as Address}
-                    destinationAddress={
-                      transaction?.fromInfo?.address as Address
-                    }
-                    startedTimestamp={transaction?.fromInfo?.time as number}
-                    completedTimestamp={transaction?.toInfo?.time as number}
-                    transactionHash={transaction?.fromInfo?.txnHash as string}
-                    eventType={transaction?.fromInfo?.eventType as number}
-                    kappa={transaction?.kappa}
-                    isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-                    isCompleted={true}
-                    transactionType={TransactionType.PENDING}
-                    originValue={
-                      transaction?.fromInfo?.formattedValue as number
-                    }
-                    destinationValue={
-                      transaction?.toInfo?.formattedValue as number
-                    }
-                    originChain={
-                      CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
-                    }
-                    destinationChain={
-                      CHAINS_BY_ID[
-                        transaction?.fromInfo?.destinationChainID
-                      ] as Chain
-                    }
-                    originToken={
-                      tokenAddressToToken(
-                        transaction?.fromInfo?.chainID,
-                        transaction?.fromInfo?.tokenAddress
-                      ) as Token
-                    }
-                    destinationToken={
-                      tokenAddressToToken(
-                        transaction?.toInfo?.chainID,
-                        transaction?.toInfo?.tokenAddress
-                      ) as Token
-                    }
-                  />
-                )
-              )} */}
         </ActivitySection>
       )}
 
