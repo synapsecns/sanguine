@@ -1,7 +1,7 @@
 FROM --platform=linux/amd64 debian:11
 
 ARG VERSION_ARG=1.20.0-pro
-ARG SHA_ARG=80b1c872c90e3e910b2ccb6a77278a45b91035bc883e17dc1c979802c7eaa28e
+ARG SHA_ARG=d2d76cf4b212f67cb9995c8539167a1c6d771859aad20ed242bfab640b6d396f
 ARG FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
 ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v${VERSION_ARG}/${FILE_ARG}
 
