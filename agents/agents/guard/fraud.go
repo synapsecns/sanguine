@@ -423,28 +423,29 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return fmt.Errorf("could not store agent root: %w", err)
 			}
-
 		}
 
-		// Fetch the current remote status and check whether the status is synced.
-		remoteStatus, err = g.domains[statusUpdated.Domain].LightManager().GetAgentStatus(ctx, statusUpdated.Agent)
-		if err != nil {
-			return fmt.Errorf("could not get agent status: %w", err)
-		}
-		if remoteStatus.Flag() == types.AgentFlagType(statusUpdated.Flag) {
-			return nil
-		}
+		if statusUpdated.Domain != 0 {
+			// Fetch the current remote status and check whether the status is synced.
+			remoteStatus, err = g.domains[statusUpdated.Domain].LightManager().GetAgentStatus(ctx, statusUpdated.Agent)
+			if err != nil {
+				return fmt.Errorf("could not get agent status: %w", err)
+			}
+			if remoteStatus.Flag() == types.AgentFlagType(statusUpdated.Flag) {
+				return nil
+			}
 
-		// If not synced, store a relayable agent status.
-		err = g.guardDB.StoreRelayableAgentStatus(
-			ctx,
-			statusUpdated.Agent,
-			remoteStatus.Flag(),
-			types.AgentFlagType(statusUpdated.Flag),
-			statusUpdated.Domain,
-		)
-		if err != nil {
-			return fmt.Errorf("could not store relayable agent status: %w", err)
+			// If not synced, store a relayable agent status.
+			err = g.guardDB.StoreRelayableAgentStatus(
+				ctx,
+				statusUpdated.Agent,
+				remoteStatus.Flag(),
+				types.AgentFlagType(statusUpdated.Flag),
+				statusUpdated.Domain,
+			)
+			if err != nil {
+				return fmt.Errorf("could not store relayable agent status: %w", err)
+			}
 		}
 	default:
 		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
@@ -510,10 +511,11 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if err != nil {
 		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
 	}
+	fmt.Printf("Got block number %d for local root %v\n", blockNumber, common.BytesToHash(localRoot[:]))
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, tree := range eligibleAgentTrees {
-		if tree.BlockNumber >= blockNumber {
+		if blockNumber >= tree.BlockNumber {
 			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
@@ -524,7 +526,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			}
 
 			// Update agent status on remote.
-			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
+			tx, err := g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
 				tree.AgentAddress,
@@ -534,6 +536,8 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)
 			}
+			logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
+			fmt.Printf("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 
 			// Mark the relayable status as Relayed.
 			err = g.guardDB.UpdateAgentStatusRelayedState(

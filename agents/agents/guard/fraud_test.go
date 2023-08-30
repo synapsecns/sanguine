@@ -133,9 +133,6 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
-
 	// Start a new Guard.
 	guard, _, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
@@ -841,14 +838,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	/*
-		Test plan:
-
-		-
-		- call setAgentRoot() on remote to emit RootUpdated event
-		- updateAgentStatus() on remote (requires agent proof that includes a root emitted in RootUpdated event)
-	*/
-
 	// Start a new Guard.
 	guard, scribeClient, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
@@ -861,6 +850,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())
@@ -1070,7 +1060,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
-	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds) * time.Second)
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+10) * time.Second)
 	currentTime = &updatedTime
 
 	// Verify that the accused agent is eventually Slashed on Summit.
@@ -1160,14 +1150,29 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
+	logAgentRoots := func() {
+		agentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
+		Nil(g.T(), err)
+		fmt.Printf("Summit root: %v\n", common.BytesToHash(agentRoot[:]))
+
+		agentRoot, err = g.DestinationDomainClient.LightManager().GetAgentRoot(g.GetTestContext())
+		Nil(g.T(), err)
+		fmt.Printf("Remote root: %v\n", common.BytesToHash(agentRoot[:]))
+	}
+
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
 	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds)
 	g.bumpBackends()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	fmt.Println("roots before:")
+	logAgentRoots()
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
+	fmt.Printf("Passed agent root: %v\n", tx.Hash())
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
+	fmt.Println("roots after:")
+	logAgentRoots()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {

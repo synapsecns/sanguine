@@ -29,7 +29,7 @@ func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([
 
 	relayableAgentStatusesTableName, err := dbcommon.GetModelName(s.DB(), &RelayableAgentStatus{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get disputes table name: %w", err)
+		return nil, fmt.Errorf("failed to get relayable agent statuses table name: %w", err)
 	}
 
 	query, err := interpol.WithMap(
