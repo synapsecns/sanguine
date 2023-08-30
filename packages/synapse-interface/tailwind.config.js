@@ -113,7 +113,6 @@ module.exports = {
         bgLightest: '#58535B',
         secondaryTextColor: '#cccad3',
         primaryHover: '#ff00ff',
-        background: '#f7faff',
         default: '#0e103c',
         light: '#c7d4ed',
         dark: '#41526A',

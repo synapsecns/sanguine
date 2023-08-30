@@ -92,7 +92,11 @@ export const Transaction = ({
   return (
     <div
       data-test-id="transaction"
-      className="flex flex-col my-2 overflow-hidden border rounded-lg text-secondary border-surface"
+      className={`
+        flex flex-col my-2 overflow-hidden
+        border rounded-lg text-secondary border-surface
+        ${transactionType === TransactionType.HISTORICAL && 'bg-[#18151A]'}
+        `}
     >
       <div className={`flex flex-row`}>
         <div
