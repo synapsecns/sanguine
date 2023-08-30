@@ -142,6 +142,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 
 	transactOpts.Context = ctx
 	transactOpts.GasLimit = 5000000
+	a.nonceManager.ClearNonce(signer.Address())
 	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 
