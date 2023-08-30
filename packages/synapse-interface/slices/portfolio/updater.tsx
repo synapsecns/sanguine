@@ -22,7 +22,6 @@ export default function Updater(): null {
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
-    seenHistoricalTransaction,
   }: TransactionsState = useTransactionsState()
 
   // Update Origin balances when transaction resolves

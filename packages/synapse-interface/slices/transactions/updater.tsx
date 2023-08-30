@@ -28,7 +28,11 @@ import { BridgeState } from '../bridge/reducer'
 import { PortfolioState } from '../portfolio/reducer'
 import { usePortfolioState } from '../portfolio/hooks'
 import { PortfolioTabs } from '../portfolio/actions'
-import { updatePendingBridgeTransactions } from '../bridge/actions'
+import {
+  updatePendingBridgeTransactions,
+  removePendingBridgeTransaction,
+  PendingBridgeTransaction,
+} from '../bridge/actions'
 import {
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
@@ -80,6 +84,10 @@ export default function Updater(): null {
       Array.isArray(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
+    const hasPendingBridgeTransactions: boolean =
+      Array.isArray(pendingBridgeTransactions) &&
+      pendingBridgeTransactions.length > 0
+
     if (
       hasUserHistoricalTransactions &&
       activeTab !== PortfolioTabs.PORTFOLIO
@@ -99,7 +107,7 @@ export default function Updater(): null {
 
     if (hasUserHistoricalTransactions) {
       console.log('hit 1')
-      pendingAwaitingCompletionTransactions.map(
+      pendingAwaitingCompletionTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
           console.log('mapping pendingTransaction: ', pendingTransaction)
 
@@ -120,6 +128,27 @@ export default function Updater(): null {
               removePendingAwaitingCompletionTransaction(
                 pendingTransaction.kappa
               )
+            )
+          }
+        }
+      )
+    }
+
+    if (hasPendingBridgeTransactions && hasUserHistoricalTransactions) {
+      pendingBridgeTransactions.forEach(
+        (pendingBridgeTransaction: PendingBridgeTransaction) => {
+          const isCompleted: boolean = userHistoricalTransactions.some(
+            (historicalTransaction: BridgeTransaction) => {
+              return (
+                historicalTransaction.fromInfo.txnHash ===
+                pendingBridgeTransaction.transactionHash
+              )
+            }
+          )
+
+          if (isCompleted) {
+            dispatch(
+              removePendingBridgeTransaction(pendingBridgeTransaction.timestamp)
             )
           }
         }
