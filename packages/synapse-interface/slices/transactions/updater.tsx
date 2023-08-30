@@ -46,6 +46,10 @@ export default function Updater(): null {
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
+  // useEffect(() => {
+
+  // }, [userPendingTransactions, userHistoricalTransactions])
+
   useEffect(() => {
     if (
       userHistoricalTransactions &&

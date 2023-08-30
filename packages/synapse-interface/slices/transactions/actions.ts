@@ -17,6 +17,10 @@ export const updateIsUserPendingTransactionsLoading = createAction<boolean>(
 export const addSeenHistoricalTransaction = createAction<BridgeTransaction>(
   'transactions/addSeenHistoricalTransaction'
 )
+export const addPendingAwaitingCompletionTransaction =
+  createAction<BridgeTransaction>(
+    'transactions/addPendingAwaitingCompletionTransaction'
+  )
 export const resetTransactionsState = createAction<void>(
   'transactions/resetTransactionsState'
 )
