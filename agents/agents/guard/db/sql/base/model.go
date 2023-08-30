@@ -3,7 +3,6 @@ package base
 import (
 	"encoding/json"
 
-	"github.com/synapsecns/sanguine/agents/types"
 	agentTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
@@ -41,9 +40,9 @@ var (
 type RelayableAgentStatus struct {
 	AgentAddress string `gorm:"column:agent_address"`
 	// StaleFlag is the old flag that needs to be updated.
-	StaleFlag types.AgentFlagType `gorm:"column:stale_flag"`
+	StaleFlag agentTypes.AgentFlagType `gorm:"column:stale_flag"`
 	// UpdatedFlag is the new flag value that should be relayed.
-	UpdatedFlag types.AgentFlagType `gorm:"column:updated_flag"`
+	UpdatedFlag agentTypes.AgentFlagType `gorm:"column:updated_flag"`
 	// Domain is the domain of the agent status.
 	Domain uint32 `gorm:"column:domain"`
 	// AgentStatusRelayedState is the state of the relayable agent status.
