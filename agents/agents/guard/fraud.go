@@ -80,7 +80,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if !ok {
 			continue
 		}
-		tx, err := g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
+		_, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -91,7 +91,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot to agent domain %d: %w", fraudSnapshot.AgentDomain, err)
 		}
-		fmt.Printf("report hash: %v\n", tx.Hash())
 	}
 
 	return nil
@@ -219,7 +218,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if !ok {
 			continue
 		}
-		tx, err := g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
+		_, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -231,7 +230,6 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if err != nil {
 			return fmt.Errorf("could not submit state report with attestation on agent domain %d: %w", fraudAttestation.AgentDomain, err)
 		}
-		fmt.Printf("Submitted state report with attestation on agent domain %d: %s\n", fraudAttestation.AgentDomain, tx.Hash().Hex())
 	}
 	return nil
 }
@@ -511,7 +509,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if err != nil {
 		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
-	fmt.Printf("Got block number %d for local root %v\n", localRootBlockNumber, common.BytesToHash(localRoot[:]))
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, tree := range eligibleAgentTrees {
@@ -542,7 +539,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("could not update agent status: %w", err)
 			}
 			logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
-			fmt.Printf("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 
 			// Mark the relayable status as Relayed.
 			err = g.guardDB.UpdateAgentStatusRelayedState(

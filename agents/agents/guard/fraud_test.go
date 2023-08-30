@@ -571,19 +571,6 @@ func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedN
 		stateReport, err := contract.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
 		Nil(g.T(), err)
 
-		stateReportDecoded, err := types.DecodeState(stateReport.StatementPayload)
-		Nil(g.T(), err)
-
-		logState := func(state types.State) {
-			hash, err := state.Hash()
-			Nil(g.T(), err)
-			fmt.Printf("%v,%v,%v,%v,%v,%v\n", state.BlockNumber(), state.GasData(), hash, state.Nonce(), state.Origin(), state.Root())
-		}
-		fmt.Println("state:")
-		logState(stateReportDecoded)
-		fmt.Println("expected state: ")
-		logState(expectedState)
-
 		expected, err := expectedState.Encode()
 		Nil(g.T(), err)
 		return Equal(g.T(), stateReport.StatementPayload, expected)
@@ -851,7 +838,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	fmt.Printf("OMNIIII: %v\n", omniRPCClient.GetDefaultEndpoint(int(g.TestBackendOrigin.GetChainID())))
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())
@@ -965,10 +951,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			notaryProof,
 		)
 		Nil(g.T(), err)
-		fmt.Printf("Updated agent status to %v for notary: %v", notaryStatus.Flag().String(), bondedSigner.Address().String())
-		notaryStatus, err = g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
-		Nil(g.T(), err)
-		fmt.Printf("Updated notary status on destination: %v\n", notaryStatus.Flag().String())
 	}
 	updateNotaryStatus(g.NotaryBondedSigner, g.NotaryUnbondedSigner)
 	updateNotaryStatus(g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner)
@@ -1158,34 +1140,15 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
-	newNotaryStatus, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryOnDestinationBondedSigner.Address())
-	Nil(g.T(), err)
-	fmt.Printf("newNotaryStatus: %v\n", newNotaryStatus.Flag().String())
-	fmt.Printf("submitted attestation: %v\n", tx.Hash())
-
-	logAgentRoots := func() {
-		agentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
-		Nil(g.T(), err)
-		fmt.Printf("Summit root: %v\n", common.BytesToHash(agentRoot[:]))
-
-		agentRoot, err = g.DestinationDomainClient.LightManager().GetAgentRoot(g.GetTestContext())
-		Nil(g.T(), err)
-		fmt.Printf("Remote root: %v\n", common.BytesToHash(agentRoot[:]))
-	}
 
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
 	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds)
 	g.bumpBackends()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
-	fmt.Println("roots before:")
-	logAgentRoots()
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
-	fmt.Printf("Passed agent root: %v\n", tx.Hash())
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
-	fmt.Println("roots after:")
-	logAgentRoots()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
