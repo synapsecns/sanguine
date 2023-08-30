@@ -33,11 +33,11 @@ func (t *DBSuite) TestGetSummitBlockNumberForRoot() {
 		Nil(t.T(), err)
 
 		// Call GetSummitBlockNumberForRoot for each agent root.
-		blockNumber, err := testDB.GetSummitBlockNumberForRoot(t.GetTestContext(), agentRootA)
+		blockNumber, err := testDB.GetSummitBlockNumberForRoot(t.GetTestContext(), agentRootA.String())
 		Nil(t.T(), err)
 		Equal(t.T(), blockNumberA, blockNumber)
 
-		blockNumber, err = testDB.GetSummitBlockNumberForRoot(t.GetTestContext(), agentRootB)
+		blockNumber, err = testDB.GetSummitBlockNumberForRoot(t.GetTestContext(), agentRootB.String())
 		Nil(t.T(), err)
 		Equal(t.T(), blockNumberB, blockNumber)
 	})

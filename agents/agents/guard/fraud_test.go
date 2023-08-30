@@ -16,11 +16,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
@@ -96,6 +98,22 @@ func (g GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract 
 	backend.WaitForConfirmation(g.GetTestContext(), bumpTx)
 }
 
+func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract, bondedSigner, unbondedSigner signer.Signer, chainID uint32) {
+	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
+	Nil(g.T(), err)
+	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), bondedSigner.Address())
+	Nil(g.T(), err)
+	transactor, err := unbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(chainID)))
+	Nil(g.T(), err)
+	_, err = lightManager.UpdateAgentStatus(
+		transactor,
+		bondedSigner.Address(),
+		agentStatus,
+		agentProof,
+	)
+	Nil(g.T(), err)
+}
+
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
 func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	testDone := false
@@ -145,23 +163,29 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	}()
 
 	// Update the agent status on Origin.
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err := g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.OriginDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Verify that the agent is marked as Active
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
+	Nil(g.T(), err)
+
+	// Store agent trees and roots so that the agent status can be updated by the guard.
+	agentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
+	Nil(g.T(), err)
+	blockNumber, err := g.SummitDomainClient.BlockNumber(g.GetTestContext())
+	Nil(g.T(), err)
+	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	err = g.GuardTestDB.StoreAgentTree(
+		g.GetTestContext(),
+		agentRoot,
+		g.NotaryBondedSigner.Address(),
+		uint64(blockNumber),
+		notaryProof,
+	)
+	Nil(g.T(), err)
+	err = g.GuardTestDB.StoreAgentRoot(g.GetTestContext(), agentRoot, uint64(blockNumber))
 	Nil(g.T(), err)
 
 	// Before submitting the attestation, ensure that there are no disputes opened.
@@ -212,27 +236,18 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		return false
 	})
 
-	// TODO: Once we add updating agent statuses fully, uncomment this.
-	// Verify that the guard eventually marks the accused agent as Fraudulent on Summit
-	// g.Eventually(func() bool {
-	// 	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	// 	Nil(g.T(), err)
-
-	// 	if status.Flag() == types.AgentFlagSlashed {
-	// 		return true
-	// 	}
-
-	//  g.bumpBackends()
-	// 	return false
-	// })
-
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
-	// TODO: Add a unit test for testing the case where multiple states are in the same snapshot to ensure they are
-	// handled correctly.
+
+	// Verify that a state report was submitted on summit.
+	fraudulentState := fraudulentSnapshot.States()[0]
+	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
+
+	// Verify that a state report was submitted on destination.
+	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
 }
 
 func (g GuardSuite) TestFraudulentAttestationOnDestination() {
@@ -323,33 +338,8 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notary.
-	guardStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err := g.GuardUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.GuardBondedSigner.Address(),
-		guardStatus,
-		guardProof,
-	)
-	Nil(g.T(), err)
-
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 
 	// Submit the attestation
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(
@@ -451,42 +441,9 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notary.
-	guardStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err := g.GuardUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.GuardBondedSigner.Address(),
-		guardStatus,
-		guardProof,
-	)
-	Nil(g.T(), err)
-
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
-	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.OriginDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -532,31 +489,50 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		return false
 	})
 
-	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	// Verify that a dispute is now open on summit.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
 
-	// TODO: uncomment the following case once manager messages can be executed.
-	// // Increase EVM time to allow agent status to be updated to Slashed on origin.
-	// anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendOrigin.RPCAddress())
-	// Nil(g.T(), err)
-	// optimisticPeriodSeconds := 86400
-	// err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
-	// Nil(g.T(), err)
+	// Verify that a state report was submitted on summit.
+	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
 
-	// // Verify that the guard eventually marks the accused agent as Slashed.
-	// g.Eventually(func() bool {
-	// 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	// 	Nil(g.T(), err)
-	// 	if status.Flag() == types.AgentFlagSlashed {
-	// 		return true
-	// 	}
+	// Verify that a state report was submitted on destination.
+	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
+}
 
-	// 	g.bumpBackends()
-	// 	return false
-	// })
+type statementInboxContract interface {
+	GetReportsAmount(opts *bind.CallOpts) (*big.Int, error)
+	GetGuardReport(opts *bind.CallOpts, index *big.Int) (struct {
+		StatementPayload []byte
+		ReportSignature  []byte
+	}, error)
+}
+
+// Verify that a state report was submitted on the given contract.
+//
+//nolint:unparam
+func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
+	g.Eventually(func() bool {
+		numReports, err := contract.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
+		Nil(g.T(), err)
+
+		if numReports.Int64() < expectedNumReports {
+			return false
+		}
+		if numReports.Int64() != expectedNumReports {
+			g.T().Fatalf("too many reports; expected %d, got %v", expectedNumReports, numReports.Int64())
+		}
+
+		stateReportIdx := big.NewInt(numReports.Int64() - 1)
+		stateReport, err := contract.GetGuardReport(&bind.CallOpts{Context: g.GetTestContext()}, stateReportIdx)
+		Nil(g.T(), err)
+
+		expected, err := expectedState.Encode()
+		Nil(g.T(), err)
+		return Equal(g.T(), stateReport.StatementPayload, expected)
+	})
 }
 
 func (g GuardSuite) TestInvalidReceipt() {
@@ -664,19 +640,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	// Build and sign a receipt
 	snapshotRoot, _, err := snapshot.SnapshotRootAndProofs()
 	Nil(g.T(), err)
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err := g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 	messageHash, err := message.ToLeaf()
 	Nil(g.T(), err)
 	receipt := types.NewReceipt(
@@ -809,14 +773,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	/*
-		Test plan:
-
-		-
-		- call setAgentRoot() on remote to emit RootUpdated event
-		- updateAgentStatus() on remote (requires agent proof that includes a root emitted in RootUpdated event)
-	*/
-
 	// Start a new Guard.
 	guard, scribeClient, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
@@ -907,43 +863,12 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 	NotNil(g.T(), err)
 
-	// Update the agent status of the Guard and Notary.
-	guardStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err := g.GuardUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.GuardBondedSigner.Address(),
-		guardStatus,
-		guardProof,
-	)
-	Nil(g.T(), err)
-
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.DestinationDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
-	transactor, err = g.NotaryUnbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(g.OriginDomainClient.Config().DomainID)))
-	Nil(g.T(), err)
-	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
-		transactor,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	// Update the agent status of the Guard and Notaries.
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, destination)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, destination)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -1130,7 +1055,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 
 	// Submit the attestation.
-	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryOnDestinationBondedSigner, true)
 	Nil(g.T(), err)
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
