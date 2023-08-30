@@ -29,7 +29,11 @@ import { PortfolioState } from '../portfolio/reducer'
 import { usePortfolioState } from '../portfolio/hooks'
 import { PortfolioTabs } from '../portfolio/actions'
 import { updatePendingBridgeTransactions } from '../bridge/actions'
-import { addSeenHistoricalTransaction } from './actions'
+import {
+  addSeenHistoricalTransaction,
+  addPendingAwaitingCompletionTransaction,
+  removePendingAwaitingCompletionTransaction,
+} from './actions'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -42,21 +46,44 @@ export default function Updater(): null {
     userHistoricalTransactions,
     userPendingTransactions,
     seenHistoricalTransactions,
+    pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
 
-  // useEffect(() => {
+  useEffect(() => {
+    const hasUserPendingTransactions: boolean =
+      Array.isArray(userPendingTransactions) &&
+      !isUserPendingTransactionsLoading
 
-  // }, [userPendingTransactions, userHistoricalTransactions])
+    if (hasUserPendingTransactions) {
+      userPendingTransactions.forEach(
+        (pendingTransaction: BridgeTransaction) => {
+          const isStored: boolean = pendingAwaitingCompletionTransactions.some(
+            (storedTransaction: BridgeTransaction) =>
+              storedTransaction === (pendingTransaction as BridgeTransaction)
+          )
+          if (!isStored) {
+            dispatch(
+              addPendingAwaitingCompletionTransaction(pendingTransaction)
+            )
+          }
+        }
+      )
+    }
+  }, [userPendingTransactions])
 
   useEffect(() => {
+    const hasUserHistoricalTransactions: boolean =
+      Array.isArray(userHistoricalTransactions) &&
+      !isUserHistoricalTransactionsLoading
+
     if (
-      userHistoricalTransactions &&
-      userHistoricalTransactions.length > 0 &&
+      hasUserHistoricalTransactions &&
       activeTab !== PortfolioTabs.PORTFOLIO
     ) {
-      const mostRecentHistoricalTransaction = userHistoricalTransactions[0]
+      const mostRecentHistoricalTransaction: BridgeTransaction =
+        userHistoricalTransactions[0]
 
       const isTransactionAlreadySeen = seenHistoricalTransactions.some(
         (transaction: BridgeTransaction) =>
@@ -66,6 +93,24 @@ export default function Updater(): null {
       if (!isTransactionAlreadySeen) {
         dispatch(addSeenHistoricalTransaction(mostRecentHistoricalTransaction))
       }
+    }
+
+    if (hasUserHistoricalTransactions) {
+      pendingAwaitingCompletionTransactions.map(
+        (pendingTransaction: BridgeTransaction) => {
+          const isCompleted: boolean = userHistoricalTransactions.some(
+            (historicalTransaction: BridgeTransaction) =>
+              historicalTransaction ===
+              (pendingTransaction as BridgeTransaction)
+          )
+
+          if (isCompleted) {
+            dispatch(
+              removePendingAwaitingCompletionTransaction(pendingTransaction)
+            )
+          }
+        }
+      )
     }
   }, [userHistoricalTransactions, activeTab])
 
