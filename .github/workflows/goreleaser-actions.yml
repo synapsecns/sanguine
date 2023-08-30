@@ -78,11 +78,6 @@ jobs:
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
-#          build-args: |
-#            SHA_ARG=6528006a74f6272c0b4239d33ee9b8d4054ac39812b30c23b4115096316beb3e
-#            FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
-#            DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.13.1-pro/goreleaser-pro_Linux_x86_64.tar.gz
-#            VERSION_ARG=1.13.1-pro
 
   # TODO: we should find a way for this not to be duplicated with go.yml
   changes:
