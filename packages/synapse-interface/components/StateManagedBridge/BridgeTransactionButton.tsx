@@ -22,8 +22,7 @@ export const BridgeTransactionButton = ({
   executeBridge,
   isApproved,
 }) => {
-  // TODO: This is only implemented this way to fix a Next Hydration Error
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
+  const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
@@ -39,13 +38,13 @@ export const BridgeTransactionButton = ({
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  // Get state from Redux store
   const {
     destinationAddress,
     fromToken,
     fromValue,
     toToken,
     fromChainId,
+    toChainId,
     isLoading,
     bridgeQuote,
   } = useBridgeState()
@@ -61,6 +60,7 @@ export const BridgeTransactionButton = ({
   )?.balance
 
   const sufficientBalance = useMemo(() => {
+    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
     return (
       stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
@@ -84,7 +84,17 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!fromToken) {
+  if (!fromChainId) {
+    buttonProperties = {
+      label: 'Please select Origin network',
+      onClick: null,
+    }
+  } else if (!toChainId) {
+    buttonProperties = {
+      label: 'Please select Destination network',
+      onClick: null,
+    }
+  } else if (!fromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
       onClick: null,

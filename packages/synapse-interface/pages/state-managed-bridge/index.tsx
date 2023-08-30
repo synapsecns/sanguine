@@ -284,7 +284,18 @@ const StateManagedBridge = () => {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
         toast.dismiss(quoteToast)
-        const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        let message
+        if (!fromChainId) {
+          message = 'Please select an origin chain'
+        } else if (!toChainId) {
+          message = 'Please select a destination chain'
+        } else if (!fromToken) {
+          message = 'Please select an origin token'
+        } else if (!toToken) {
+          message = 'Please select a destination token'
+        } else {
+          message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        }
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
 

@@ -110,10 +110,6 @@ export const InputContainer = () => {
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
-  const isDisabled = useMemo(() => {
-    return !fromToken || !fromChainId || !toToken || !toChainId
-  }, [fromToken, fromChainId, toToken, toChainId])
-
   return (
     <div
       data-test-id="input-container"
@@ -140,7 +136,7 @@ export const InputContainer = () => {
                 <input
                   ref={inputRef}
                   pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={isDisabled}
+                  disabled={false}
                   className={`
                     focus:outline-none
                     focus:ring-0
