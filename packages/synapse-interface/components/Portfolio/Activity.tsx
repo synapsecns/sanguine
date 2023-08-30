@@ -506,10 +506,12 @@ export const TransactionPayloadDetail = ({
   chain,
   token,
   tokenAmount,
+  isOrigin,
 }: {
   chain?: Chain
   token?: Token
   tokenAmount?: number
+  isOrigin: boolean
 }) => {
   return (
     <div

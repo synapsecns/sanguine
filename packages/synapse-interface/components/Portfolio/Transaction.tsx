@@ -109,6 +109,7 @@ export const Transaction = ({
             chain={originChain}
             token={originToken}
             tokenAmount={originValue}
+            isOrigin={true}
           />
         </div>
         <TransactionArrow
@@ -131,6 +132,7 @@ export const Transaction = ({
               chain={destinationChain}
               token={destinationToken}
               tokenAmount={destinationValue}
+              isOrigin={false}
             />
           </div>
           <div className="p-3">
