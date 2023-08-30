@@ -507,15 +507,20 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
 
-	blockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, localRoot)
+	localRootBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, common.BytesToHash(localRoot[:]).String())
 	if err != nil {
-		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
+		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
-	fmt.Printf("Got block number %d for local root %v\n", blockNumber, common.BytesToHash(localRoot[:]))
+	fmt.Printf("Got block number %d for local root %v\n", localRootBlockNumber, common.BytesToHash(localRoot[:]))
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, tree := range eligibleAgentTrees {
-		if blockNumber >= tree.BlockNumber {
+		// Get the first recorded summit block number for the tree agent root.
+		treeBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, tree.AgentRoot)
+		if err != nil {
+			return fmt.Errorf("could not get block number for local root: %w", err)
+		}
+		if localRootBlockNumber >= treeBlockNumber {
 			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {

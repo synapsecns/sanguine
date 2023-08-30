@@ -36,12 +36,11 @@ func (s Store) StoreAgentRoot(
 }
 
 // GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
-func (s Store) GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]byte) (uint64, error) {
-	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
-
+func (s Store) GetSummitBlockNumberForRoot(ctx context.Context, agentRoot string) (uint64, error) {
 	var blockNumber uint64
 	dbTx := s.DB().WithContext(ctx).
-		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), dbAgentRoot).
+		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), agentRoot).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
 		Limit(1).
 		Model(&AgentRoot{}).
 		Pluck(BlockNumberFieldName, &blockNumber)

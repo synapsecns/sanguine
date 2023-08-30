@@ -48,7 +48,7 @@ type GuardDBReader interface {
 	// GetRelayableAgentStatuses gets eligible parameters for the updateAgentStatus() contract call.
 	GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([]agentTypes.AgentTree, error)
 	// GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
-	GetSummitBlockNumberForRoot(ctx context.Context, agentRoot [32]byte) (uint64, error)
+	GetSummitBlockNumberForRoot(ctx context.Context, agentRoot string) (uint64, error)
 }
 
 // GuardDB is the interface for the guard's database.

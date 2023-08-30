@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
@@ -929,7 +930,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 	NotNil(g.T(), err)
 
-	// Update the agent status of the Guard and Notary.
+	// Update the agent status of the Guard and Notaries.
 	guardStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Nil(g.T(), err)
 	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
@@ -943,26 +944,34 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	)
 	Nil(g.T(), err)
 
-	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Nil(g.T(), err)
-	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
-		g.GetTestContext(),
-		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
-	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
-		g.GetTestContext(),
-		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner.Address(),
-		notaryStatus,
-		notaryProof,
-	)
-	Nil(g.T(), err)
+	updateNotaryStatus := func(bondedSigner, unbondedSigner signer.Signer) {
+		notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
+		Nil(g.T(), err)
+		notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), bondedSigner.Address())
+		Nil(g.T(), err)
+		_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+			g.GetTestContext(),
+			unbondedSigner,
+			bondedSigner.Address(),
+			notaryStatus,
+			notaryProof,
+		)
+		Nil(g.T(), err)
+		_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+			g.GetTestContext(),
+			unbondedSigner,
+			bondedSigner.Address(),
+			notaryStatus,
+			notaryProof,
+		)
+		Nil(g.T(), err)
+		fmt.Printf("Updated agent status to %v for notary: %v", notaryStatus.Flag().String(), bondedSigner.Address().String())
+		notaryStatus, err = g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
+		Nil(g.T(), err)
+		fmt.Printf("Updated notary status on destination: %v\n", notaryStatus.Flag().String())
+	}
+	updateNotaryStatus(g.NotaryBondedSigner, g.NotaryUnbondedSigner)
+	updateNotaryStatus(g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner)
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -1137,7 +1146,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 
 	// Submit the attestation.
-	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	attSignature, attEncoded, _, err = attestation.SignAttestation(g.GetTestContext(), g.NotaryOnDestinationBondedSigner, true)
 	Nil(g.T(), err)
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
@@ -1149,6 +1158,10 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+	newNotaryStatus, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryOnDestinationBondedSigner.Address())
+	Nil(g.T(), err)
+	fmt.Printf("newNotaryStatus: %v\n", newNotaryStatus.Flag().String())
+	fmt.Printf("submitted attestation: %v\n", tx.Hash())
 
 	logAgentRoots := func() {
 		agentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
