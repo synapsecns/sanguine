@@ -8,7 +8,7 @@ import (
 	agentTypes "github.com/synapsecns/sanguine/agents/types"
 )
 
-// StoreRelayableAgentStatus stores an dispute.
+// StoreRelayableAgentStatus stores a relayable agent status.
 func (s Store) StoreRelayableAgentStatus(
 	ctx context.Context,
 	agentAddress common.Address,
@@ -32,7 +32,7 @@ func (s Store) StoreRelayableAgentStatus(
 	return nil
 }
 
-// UpdateAgentStatusRelayedState updates the disputed processed status for a dispute.
+// UpdateAgentStatusRelayedState updates the state for a RelayableAgentStatus.
 func (s Store) UpdateAgentStatusRelayedState(
 	ctx context.Context,
 	agentAddress common.Address,
