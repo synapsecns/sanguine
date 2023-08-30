@@ -188,6 +188,7 @@ func (a lightInboxContract) VerifyReceipt(ctx context.Context, signer signer.Sig
 	return a.contract.VerifyReceipt(transactOpts, rcptPayload, rcptSignature)
 }
 
+//nolint:dupl
 func (a lightInboxContract) SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
