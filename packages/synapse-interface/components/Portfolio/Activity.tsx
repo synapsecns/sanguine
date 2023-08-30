@@ -216,19 +216,19 @@ export const MostRecentTransaction = () => {
     return userHistoricalTransactions && userHistoricalTransactions[0]
   }, [userHistoricalTransactions])
 
-  const tenMinutesInUnix: number = 10 * 60
+  const recentMinutesInUnix: number = 15 * 60
 
-  const isLastHistoricalTransactionRecent: boolean = useMemo(() => {
-    return (
-      currentTime - lastHistoricalTransaction?.toInfo?.time < tenMinutesInUnix
-    )
-  }, [currentTime])
+  const isLastHistoricalTransactionRecent: boolean = useMemo(
+    () =>
+      currentTime - lastHistoricalTransaction?.toInfo?.time <
+      recentMinutesInUnix,
+    [currentTime]
+  )
 
   const seenLastHistoricalTransaction: boolean = useMemo(() => {
     if (!seenHistoricalTransactions || !userHistoricalTransactions) {
       return false
     }
-
     return seenHistoricalTransactions.some(
       (transaction: BridgeTransaction) =>
         transaction === (lastHistoricalTransaction as BridgeTransaction)
