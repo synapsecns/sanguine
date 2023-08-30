@@ -11,6 +11,8 @@ import (
 
 // handleSnapshot checks a snapshot for invalid states.
 // If an invalid state is found, initiate slashing and submit a state report.
+//
+//nolint:cyclop
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
@@ -19,7 +21,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent)
+		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not handle state: %w", err)
 		}
@@ -53,7 +55,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
-		ok, err := g.prepareStateReport(ctx, state, fraudSnapshot.Agent, g.summitDomainID)
+		ok, err := g.prepareStateReport(ctx, fraudSnapshot.Agent, g.summitDomainID)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on summit: %w", err)
 		}
@@ -73,7 +75,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Submit the state report to the remote chain.
-		ok, err = g.prepareStateReport(ctx, state, fraudSnapshot.Agent, fraudSnapshot.AgentDomain)
+		ok, err = g.prepareStateReport(ctx, fraudSnapshot.Agent, fraudSnapshot.AgentDomain)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on summit: %w", err)
 		}
@@ -112,7 +114,7 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 
 // isStateSlashable checks if a state is slashable, i.e. if the state is valid on the
 // Origin, and if the agent is in a slashable status.
-func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address) (bool, error) {
+func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, error) {
 	statePayload, err := state.Encode()
 	if err != nil {
 		return false, fmt.Errorf("could not encode state: %w", err)
@@ -150,6 +152,8 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 
 // handleValidAttestation handles an attestation that is valid, but may
 // attest to a snapshot that contains an invalid state.
+//
+//nolint:cyclop
 func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
 	// Fetch the attested snapshot.
 	snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
@@ -164,7 +168,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range snapshot.States() {
-		isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary)
+		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not check if state is slashable: %w", err)
 		}
@@ -190,7 +194,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
-		ok, err := g.prepareStateReport(ctx, state, fraudAttestation.Notary, g.summitDomainID)
+		ok, err := g.prepareStateReport(ctx, fraudAttestation.Notary, g.summitDomainID)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on summit: %w", err)
 		}
@@ -211,7 +215,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		}
 
 		// Submit the state report on the remote chain.
-		ok, err = g.prepareStateReport(ctx, state, fraudAttestation.Notary, fraudAttestation.AgentDomain)
+		ok, err = g.prepareStateReport(ctx, fraudAttestation.Notary, fraudAttestation.AgentDomain)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on remote: %w", err)
 		}
@@ -234,9 +238,9 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	return nil
 }
 
-// prepareStateReport checks if the given agent is in a slashable status, and relays the
-// Summit agent status to the given chain if necessary.
-func (g Guard) prepareStateReport(ctx context.Context, state types.State, agent common.Address, chainID uint32) (ok bool, err error) {
+// prepareStateReport checks if the given agent is in a slashable status (Active or Unstaking),
+// and relays the agent status from Summit to the given chain if necessary.
+func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
 	var agentStatus types.AgentStatus
 	if chainID == g.summitDomainID {
 		agentStatus, err = g.domains[chainID].BondingManager().GetAgentStatus(ctx, agent)
@@ -247,6 +251,7 @@ func (g Guard) prepareStateReport(ctx context.Context, state types.State, agent 
 		return false, fmt.Errorf("could not get agent status: %w", err)
 	}
 
+	//nolint:exhaustive
 	switch agentStatus.Flag() {
 	case types.AgentFlagUnknown:
 		if chainID == g.summitDomainID {
@@ -269,11 +274,10 @@ func (g Guard) prepareStateReport(ctx context.Context, state types.State, agent 
 		}
 		return true, nil
 	case types.AgentFlagActive, types.AgentFlagUnstaking:
-		// Agent is slashable.
 		return true, nil
+	default:
+		return false, nil
 	}
-	// Agent is not slashable.
-	return false, nil
 }
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
@@ -490,6 +494,8 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 
 // updateAgentStatus updates the status for each agent with a pending agent tree model,
 // and open dispute on remote chain.
+//
+//nolint:cyclop
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	eligibleAgentTrees, err := g.guardDB.GetRelayableAgentStatuses(ctx, chainID)
 	if err != nil {

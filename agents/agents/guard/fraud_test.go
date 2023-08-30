@@ -555,6 +555,8 @@ type statementInboxContract interface {
 }
 
 // Verify that a state report was submitted on the given contract.
+//
+//nolint:unparam
 func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
 	g.Eventually(func() bool {
 		numReports, err := contract.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})

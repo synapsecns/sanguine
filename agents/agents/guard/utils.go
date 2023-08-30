@@ -5,7 +5,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
-	"github.com/synapsecns/sanguine/agents/types"
 )
 
 func isSnapshotAcceptedEvent(parser inbox.Parser, log ethTypes.Log) bool {
@@ -34,8 +33,4 @@ func isRootUpdatedEvent(bondingParser bondingmanager.Parser, log ethTypes.Log) b
 		return true
 	}
 	return false
-}
-
-func isAgentSlashable(agentFlag types.AgentFlagType) bool {
-	return agentFlag == types.AgentFlagActive || agentFlag == types.AgentFlagUnstaking
 }
