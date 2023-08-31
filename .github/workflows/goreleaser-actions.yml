@@ -226,13 +226,13 @@ jobs:
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
 
       - name: Zip Artifacts (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        if: steps.branch-name.outputs.is_default != 'true'
         run: |
             ls
             zip -rv ${{matrix.package}}.zip dist
 
       - name: Push Artifacts (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        if: steps.branch-name.outputs.is_default != 'true'
         uses: actions/upload-artifact@v3
         with:
           name: ${{matrix.package}}.zip
