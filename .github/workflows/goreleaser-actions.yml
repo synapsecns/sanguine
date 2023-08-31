@@ -213,30 +213,37 @@ jobs:
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
+      - name: Get Project Name
+        id: project_id
+        run: |
+          project_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
+          echo "##[set-output name=project_name;]$(echo project_name)"
+
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
           docker_image=$(yq '.dockers | length' dist/config.yaml)
-          image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
           if [ $docker_image -eq "0" ]; then
             echo "No docker images to push"
             exit 0
           fi
           docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
+        env:
+          image_name: ${{ steps.project_id.outputs.project_name }}
 
       - name: Zip Artifacts (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
         run: |
             ls
-            zip -rv ${{matrix.package}}.zip dist
+            zip -rv ${{ steps.project_id.outputs.project_name }}.zip dist
 
       - name: Push Artifacts (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
         uses: actions/upload-artifact@v3
         with:
-          name: ${{matrix.package}}.zip
-          path: ${{matrix.package}}.zip
+          name: ${{steps.project_id.outputs.project_name}}.zip
+          path: ${{steps.project_id.outputs.project_name}}.zip
 
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
