@@ -151,7 +151,7 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
 			assert.Nil(b.T(), err)
-			assert.NotEmpty(b.T(), code)
+			assert.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()
 	var errMux sync.Mutex
