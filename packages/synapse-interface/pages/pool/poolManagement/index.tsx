@@ -45,7 +45,7 @@ const PoolManagement = ({
 
   return (
     <div>
-      <div className="rounded-lg text-default">
+      <div className="rounded-md text-default">
         <LiquidityManagementTabs
           cardNav={cardNav}
           setCardNav={(val) => {

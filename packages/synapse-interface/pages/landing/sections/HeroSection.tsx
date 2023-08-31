@@ -46,7 +46,7 @@ export default function HeroSection() {
           className={`
             h-12 mr-2 px-4 py-3 flex items-center
             text-base border border-white hover:opacity-75
-            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-lg
+            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-md
             text-center transform-gpu transition-all duration-75
           `}
         >
@@ -61,7 +61,7 @@ export default function HeroSection() {
           href={BRIDGE_PATH}
           className={`
             h-12 border-[#AC8FFF] flex items-center border
-            text-base px-4 py-3 hover:opacity-75 rounded-lg
+            text-base px-4 py-3 hover:opacity-75 rounded-md
             text-center transform-gpu transition-all duration-75
           `}
           style={{

@@ -10,7 +10,7 @@ const NoSwapCard = ({ chainId }: { chainId: number }) => {
       title="Swap"
       divider={false}
       className={`
-        transform transition-all duration-100 rounded-xl min-w-[320px]
+        transform transition-all duration-100 rounded-md min-w-[320px]
       `}
     >
       <div className="w-full pt-4 text-center text-gray-400">

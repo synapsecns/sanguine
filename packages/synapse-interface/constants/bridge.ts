@@ -1,4 +1,4 @@
-import { USDC } from '@constants/tokens/master'
+import { USDC } from '@constants/tokens/bridgeable'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 
@@ -77,7 +77,7 @@ export const TRANSITIONS_PROPS = {
     -ml-0 md:-ml-3
     md:mt-3
     bg-bgBase
-    z-20 rounded-3xl
+    z-20 rounded-lg
   `,
 }
 
@@ -90,7 +90,7 @@ export const SETTINGS_TRANSITIONS_PROPS = {
   -ml-0 md:-ml-3
   md:-mt-3
   bg-bgBase
-  z-20 rounded-3xl
+  z-20 rounded-lg
   `,
 }
 

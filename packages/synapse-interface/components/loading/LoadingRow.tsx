@@ -5,7 +5,7 @@ const LoadingRow = () => {
         className={`
             flex flex-grow items-center
             w-full
-            rounded-lg
+            rounded-md
             transform-gpu transition-all duration-75
             animate-pulse hover:border-opacity-30
           `}

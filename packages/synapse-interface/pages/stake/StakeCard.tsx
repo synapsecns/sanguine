@@ -112,7 +112,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       />
       <Card
         title="Your balances"
-        className="p-4 rounded-xl bg-bgBase max-h-40"
+        className="p-4 rounded-md bg-bgBase max-h-40"
         titleClassName="text-base font-base text-secondaryTextColor text-opacity-50"
         divider={false}
       >
@@ -189,12 +189,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           )}
         </Button>
       )}
-      <Card className="bg-bgBase rounded-xl" divider={false}>
+      <Card className="bg-bgBase rounded-md" divider={false}>
         <div className="flex justify-center space-x-4">
           <Button
             className={`${
               showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
-            }  w-full rounded-lg h-[48px] text-white text-xl`}
+            }  w-full rounded-md h-[48px] text-white text-xl`}
             onClick={() => setShowStake(true)}
           >
             Stake
@@ -202,7 +202,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <Button
             className={`${
               !showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
-            }  w-full rounded-lg h-[48px] text-white text-xl`}
+            }  w-full rounded-md h-[48px] text-white text-xl`}
             onClick={() => setShowStake(false)}
           >
             Unstake

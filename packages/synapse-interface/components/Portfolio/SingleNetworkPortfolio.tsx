@@ -3,8 +3,6 @@ import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
-  ROUTER_ADDRESS,
-  TokenWithBalanceAndAllowance,
   TokenWithBalanceAndAllowances,
   separateTokensByAllowance,
   sortTokensByBalanceDescending,
@@ -18,12 +16,7 @@ import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
-import {
-  setSupportedFromTokens,
-  setSupportedToTokens,
-  setToChainId,
-  initialState,
-} from '@/slices/bridge/reducer'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -64,8 +57,8 @@ export const SingleNetworkPortfolio = ({
 
   useEffect(() => {
     if (isUnsupportedChain) {
-      dispatch(setSupportedFromTokens([]))
-      dispatch(setSupportedToTokens(initialState.supportedToTokens))
+      dispatch(setFromToken(null))
+      dispatch(setToToken(null))
     }
   }, [isUnsupportedChain])
 
@@ -121,6 +114,7 @@ export const SingleNetworkPortfolio = ({
           sortedTokensWithAllowance.map(
             ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
+                key={token.symbol}
                 token={token}
                 balance={balance}
                 allowances={allowances}
@@ -135,6 +129,7 @@ export const SingleNetworkPortfolio = ({
           sortedTokensWithoutAllowance.map(
             ({ token, balance }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
+                key={token.symbol}
                 token={token}
                 balance={balance}
                 portfolioChainId={portfolioChainId}
