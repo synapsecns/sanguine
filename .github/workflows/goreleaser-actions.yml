@@ -229,7 +229,7 @@ jobs:
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
             ls
-            zip -r ${{matrix.package}}.zip dist
+            zip -rv ${{matrix.package}}.zip dist
 
       - name: Push Artifacts (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
