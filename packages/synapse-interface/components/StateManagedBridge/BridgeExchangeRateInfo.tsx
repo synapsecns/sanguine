@@ -61,7 +61,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
+    <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
       {showGasDrop && (
         <div
           className={
@@ -109,7 +109,7 @@ const GasDropLabel = ({
   toChainId: number
 }) => {
   let decimalsToDisplay
-  const symbol = CHAINS_BY_ID[toChainId].nativeCurrency.symbol
+  const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
     decimalsToDisplay = 2

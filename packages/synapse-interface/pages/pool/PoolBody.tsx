@@ -73,7 +73,7 @@ const PoolBody = ({
       </div>
       <div className="px-0 md:px-24">
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
-          <Card className="bg-bgBase rounded-3xl" divider={false}>
+          <Card className="bg-bgBase rounded-lg" divider={false}>
             {!isConnected && (
               <div className="flex flex-col justify-center h-full">
                 <TransactionButton

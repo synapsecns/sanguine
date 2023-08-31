@@ -145,7 +145,7 @@ export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
 
 export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
   if (typeof rawVal !== 'string' && !rawVal) {
-    return
+    return 0n
   }
 
   try {
@@ -173,7 +173,7 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
 
     return wholeBigInt + fractionalBigInt
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     txErrorHandler(error)
   }
 }
