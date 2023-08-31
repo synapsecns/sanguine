@@ -83,12 +83,3 @@ metadata:
 sboms:
   - artifacts: archive
 
-# determinitsic builds
-gomod:
-  proxy: true
-
-  env:
-    - GOPROXY=https://proxy.golang.org,direct
-    - GOSUMDB=sum.golang.org
-
-  mod: mod
