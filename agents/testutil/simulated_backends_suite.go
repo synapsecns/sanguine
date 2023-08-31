@@ -367,20 +367,18 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.TestBackendSummit,
 	}
 
-	/*
-		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
-			InboxType,
-			BondingManagerHarnessType,
-			SummitHarnessType,
-			AgentsTestContractType,
-			DestinationHarnessType,
-			OriginHarnessType,
-			TestClientType,
-			PingPongClientType,
-			LightInboxType,
-			LightManagerHarnessType,
-		)
-	*/
+	a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
+		InboxType,
+		BondingManagerHarnessType,
+		SummitHarnessType,
+		AgentsTestContractType,
+		DestinationHarnessType,
+		OriginHarnessType,
+		TestClientType,
+		PingPongClientType,
+		LightInboxType,
+		LightManagerHarnessType,
+	)
 
 	wg.Add(3)
 	go func() {
