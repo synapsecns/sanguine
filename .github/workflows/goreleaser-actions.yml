@@ -217,7 +217,7 @@ jobs:
         id: project_id
         run: |
           project_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
-          echo "##[set-output name=project_name;]$(echo project_name)"
+          echo "##[set-output name=project_name;]$(echo $project_name)"
 
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
