@@ -1,18 +1,17 @@
 import _ from 'lodash'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import {
   BridgeRoutes,
   EXISTING_BRIDGE_ROUTES,
-} from '@/constants/existingBridgeRoutes'
+} from '@constants/existingBridgeRoutes'
 import { useState } from 'react'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import StandardPageContainer from '@/components/layouts/StandardPageContainer'
-
-const CHAIN_IDS = Object.keys(CHAINS_BY_ID)
 
 import * as ALL_COINS from '@constants/tokens/bridgeable'
 import { Token } from '@/utils/types'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+
+const CHAIN_IDS = Object.keys(CHAINS_BY_ID)
 
 function findTokensForRoute(
   fromChainId: number,
@@ -184,16 +183,39 @@ const AvailableTokens = ({
               bg-[#101018] rounded-md w-[200px]
             `}
           >
-            {CHAINS_BY_ID[fromId].shortName} to {CHAINS_BY_ID[toId].shortName}
+            <div className="flex items-center space-x-1 text-sm">
+              <div className="flex items-center space-x-1">
+                <img
+                  src={CHAINS_BY_ID[fromId]?.chainImg.src}
+                  className="w-3 h-3"
+                />
+                <div>{CHAINS_BY_ID[fromId].shortName}</div>
+              </div>
+              <div>to</div>
+              <div className="flex items-center space-x-1">
+                <img
+                  src={CHAINS_BY_ID[toId]?.chainImg.src}
+                  className="w-3 h-3"
+                />
+                <div>{CHAINS_BY_ID[toId].shortName}</div>
+              </div>
+            </div>
+            <div className="mb-2" />
             {tokens.map((token) => {
               return (
-                <div>
-                  {token.symbol} -{'>'}{' '}
-                  {destinationTokens({
-                    fromChainId: fromId,
-                    fromToken: token,
-                    toChainId: toId,
-                  })}
+                <div className="mb-1">
+                  <div className="flex items-center space-x-1">
+                    <img className="w-4 h-4" src={token?.icon.src} />
+                    <div className="text-sm">{token.symbol}</div>
+                  </div>
+                  <div className="flex items-center ml-2 text-sm opacity-80">
+                    {'-> '}
+                    {destinationTokens({
+                      fromChainId: fromId,
+                      fromToken: token,
+                      toChainId: toId,
+                    })}
+                  </div>
                 </div>
               )
             })}
