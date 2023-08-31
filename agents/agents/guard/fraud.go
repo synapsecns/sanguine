@@ -23,8 +23,8 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	// Verify each state in the snapshot.
-	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		stateIndex, state := stateIndex, state
+	for si, s := range fraudSnapshot.Snapshot.States() {
+		stateIndex, state := si, s
 		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not handle state: %w", err)
@@ -133,7 +133,7 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return false, fmt.Errorf("could not get dispute status: %w", err)
 	}
@@ -162,7 +162,7 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, e
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return false, fmt.Errorf("could not check validity of state: %w", err)
 	}
@@ -186,7 +186,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
@@ -214,7 +214,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return fmt.Errorf("could not get snapshot: %w", err)
 	}
@@ -225,8 +225,8 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	}
 
 	// Verify each state in the snapshot.
-	for stateIndex, state := range snapshot.States() {
-		stateIndex, state := stateIndex, state
+	for si, s := range snapshot.States() {
+		stateIndex, state := si, s
 		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
 			return fmt.Errorf("could not check if state is slashable: %w", err)
@@ -333,7 +333,7 @@ func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, cha
 
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall)
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			return false, fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -346,7 +346,7 @@ func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, cha
 
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall)
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			return false, fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -455,7 +455,7 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
@@ -549,7 +549,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall)
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
 		}
@@ -580,7 +580,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall)
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
@@ -594,7 +594,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall)
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			return fmt.Errorf("could not get proof: %w", err)
 		}
@@ -632,7 +632,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 
 				return nil
 			}
-			err = retry.WithBackoff(ctx, contractCall)
+			err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
@@ -719,7 +719,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 
 		return nil
 	}
-	err = retry.WithBackoff(ctx, contractCall)
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
@@ -749,7 +749,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 
 				return nil
 			}
-			err = retry.WithBackoff(ctx, contractCall)
+			err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
