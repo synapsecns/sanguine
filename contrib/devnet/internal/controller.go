@@ -3,10 +3,12 @@ package internal
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/integralist/go-findroot/find"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"golang.org/x/sync/errgroup"
 	"os"
@@ -17,26 +19,46 @@ import (
 
 const build = false
 
+type devnetInfo struct {
+	repoRoot     string
+	configDir    string
+	devnetPath   string
+	contractsDir string
+}
+
 // Up brings the devnet up.
 func Up(ctx context.Context, metricHandler metrics.Handler) error {
+	// make the info
+	info := devnetInfo{}
+
 	// TODO: figure out if we want to allow this to be passed in w/o using igt
 	repoRoot, err := find.Repo()
 	if err != nil {
 		return fmt.Errorf("failed to find repo root: %w", err)
 	}
+	info.repoRoot = repoRoot.Path
 
-	devnetPath := path.Join(repoRoot.Path, "docker", "devnet")
+	info.configDir = path.Join(info.repoRoot, ".devnet")
+	err = os.MkdirAll(info.configDir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create config dir: %w", err)
+	}
+
+	// TODO: make sure the user has run yarn install
+
+	info.devnetPath = path.Join(repoRoot.Path, "docker", "devnet")
 
 	log.Info("Running devnet.")
 
+	// spin up our chains in a docker env
 	args := []string{"docker", "compose", "up", "-d"}
 	if build {
 		args = append(args, "--build")
 	}
 
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = devnetPath
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PWD=%s", devnetPath))
+	cmd.Dir = info.devnetPath
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PWD=%s", info.devnetPath))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -48,6 +70,8 @@ func Up(ctx context.Context, metricHandler metrics.Handler) error {
 	if err != nil {
 		return fmt.Errorf("failed to check liveness: %w", err)
 	}
+
+	deployContracts(ctx, info)
 
 	return nil
 }
@@ -96,5 +120,25 @@ func checkLiveness(ctx context.Context, metricHandler metrics.Handler) error {
 	}
 
 	return nil
+}
 
+// should match dockerfile
+const mnemonic = "tag volcano eight thank tide danger coast health above argue embrace heavy"
+
+// deploy some contracts
+func deployContracts(ctx context.Context, info devnetInfo) error {
+	// first up, let's define the deployer address in forge
+	deployer, err := wallet.FromSeedPhrase(mnemonic, accounts.DefaultBaseDerivationPath)
+	if err != nil {
+		return fmt.Errorf("could not create wallet")
+	}
+
+	forgeEnv := append(os.Environ(), fmt.Sprintf("MESSAGING_DEPLOYER_PRIVATE_KEY=%s", deployer.PrivateKeyHex()))
+	fmt.Println(deployer.PrivateKeyHex())
+	_ = forgeEnv
+
+	// do this next. TODO: a clean command should clean out everything in contracts-core/deployments/chain_a, contracts-core/deployments/chain_b, and contracts-core/deployments/chain_c
+	//  forge script script/DeployCREATE3.sol --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9 --broadcast
+
+	return nil
 }

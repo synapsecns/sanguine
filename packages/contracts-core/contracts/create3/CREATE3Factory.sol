@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {CREATE3} from "solmate/utils/CREATE3.sol";
 
-import {ICREATE3Factory} from "./contracts/create3/ICREATE3Factory.sol";
+import {ICREATE3Factory} from "./ICREATE3Factory.sol";
 
 /// @title Factory for deploying contracts to deterministic addresses via CREATE3
 /// @author zefram.eth

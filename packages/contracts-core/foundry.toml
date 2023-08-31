@@ -25,6 +25,11 @@ polygon = "${RPC_POLYGON}"
 arb_goerli = "${RPC_ARB_GOERLI}"
 op_goerli = "${RPC_OP_GOERLI}"
 sepolia = "${RPC_SEPOLIA}"
+# devnet chains
+chain_a = "http://localhost:9001/rpc/42"
+chain_b = "http://localhost:9001/rpc/43"
+chain_c = "http://localhost:9001/rpc/44"
+
 
 [etherscan]
 avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }

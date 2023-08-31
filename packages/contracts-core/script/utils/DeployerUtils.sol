@@ -23,9 +23,6 @@ contract DeployerUtils is Script {
     string private constant DEPLOYMENTS = "deployments/";
     string private constant DEPLOY_CONFIGS = "script/configs/";
 
-    // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
-    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
-
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
     /// @dev Current chain alias
@@ -34,6 +31,10 @@ contract DeployerUtils is Script {
     /// @dev Private key and address for deploying contracts
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
+
+    // TODO: this should be set from one of the config files.
+    // default to original value in the git diff. Get @chitimeschi to review
+    ICreate3Factory internal factory = ICreate3Factory(0x6438CB36cb18520774EfC7A172410D8BBBe9a428);
 
     bytes32 internal deploymentSalt;
 
@@ -52,6 +53,12 @@ contract DeployerUtils is Script {
         if (isBroadcasted_) createDir(string.concat(DEPLOYMENTS, chainAlias));
         vm.startBroadcast(broadcasterPK);
         isBroadcasted = isBroadcasted_;
+    }
+
+    function setupDevnetChains() public {
+        setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
+        setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
+        setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
     }
 
     function setupDeployerPK() public {
@@ -83,8 +90,8 @@ contract DeployerUtils is Script {
         internal
         returns (address deployment)
     {
-        require(Address.isContract(address(FACTORY)), "Factory not deployed");
-        deployment = FACTORY.deploy(
+        require(Address.isContract(address(factory)), "Factory not deployed");
+        deployment = factory.deploy(
             getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
@@ -98,8 +105,8 @@ contract DeployerUtils is Script {
 
     /// @notice Predicts the deployment address for a contract.
     function predictFactoryDeployment(string memory contractName) internal view returns (address) {
-        require(Address.isContract(address(FACTORY)), "Factory not deployed");
-        return FACTORY.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
+        require(Address.isContract(address(factory)), "Factory not deployed");
+        return factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 
     /// @notice Deploys the contract and saves the deployment artifact

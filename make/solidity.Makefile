@@ -19,5 +19,7 @@ help: ## This help dialog.
 		printf "%-30s %s\n" $$help_command $$help_info ; \
 	done
 
+# TODO: deployer utils requires jq, install
+
 foundry-install:
 	@if [ "$(shell which forge)" = "" ]; then curl -L https://foundry.paradigm.xyz | bash && foundryup; fi
