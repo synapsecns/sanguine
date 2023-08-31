@@ -978,7 +978,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
-	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+10) * time.Second)
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+30) * time.Second)
 	currentTime = &updatedTime
 
 	// Verify that the accused agent is eventually Slashed on Summit.
