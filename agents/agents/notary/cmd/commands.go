@@ -96,7 +96,7 @@ func createNotaryParameters(ctx context.Context, c *cli.Context, metrics metrics
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
 	Description: "runs the notary service",
-	Flags:       []cli.Flag{configFlag, metricsPortFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, debugFlag},
 	Action: func(c *cli.Context) error {
 		metricsProvider, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
 		if err != nil {
