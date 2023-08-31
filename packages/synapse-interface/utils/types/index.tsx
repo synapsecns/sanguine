@@ -16,6 +16,7 @@ export type Chain = {
   nativeCurrency: { name: string; symbol: string; decimals: number }
   priorityRank?: number
   color?: string
+  shortName?: string
 }
 export type PoolToken = {
   symbol: string

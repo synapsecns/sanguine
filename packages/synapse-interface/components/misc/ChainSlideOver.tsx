@@ -34,7 +34,7 @@ export const ChainSlideOver = ({
         name: 'name',
         weight: 2,
       },
-      'chainShortName',
+      'shortName',
       'chainId',
       'nativeCurrency',
     ],
@@ -106,7 +106,7 @@ export const ChainSlideOver = ({
   useEffect(enterPressedFunc, [enterPressed])
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-lg">
+    <div className="max-h-full pb-4 -mt-3 overflow-auto rounded-lg scrollbar-hide">
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-md">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox

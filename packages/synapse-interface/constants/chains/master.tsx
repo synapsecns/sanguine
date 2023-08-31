@@ -40,6 +40,7 @@ export const ETH: Chain = {
     decimals: 18,
   },
   color: 'eth',
+  shortName: 'Ethereum',
 }
 
 export const ARBITRUM: Chain = {
@@ -58,6 +59,7 @@ export const ARBITRUM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   color: 'gray',
+  shortName: 'Arbitrum',
 }
 
 export const BNB: Chain = {
@@ -77,6 +79,7 @@ export const BNB: Chain = {
   nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   explorerUrl: 'https://bscscan.com',
   color: 'yellow',
+  shortName: 'BNB',
 }
 
 export const AVALANCHE: Chain = {
@@ -95,6 +98,7 @@ export const AVALANCHE: Chain = {
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
   color: 'red',
+  shortName: 'Avalanche',
 }
 
 export const CANTO: Chain = {
@@ -113,6 +117,7 @@ export const CANTO: Chain = {
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://evm.explorer.canto.io',
   color: 'green',
+  shortName: 'Canto',
 }
 
 export const OPTIMISM: Chain = {
@@ -131,6 +136,7 @@ export const OPTIMISM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
   color: 'red',
+  shortName: 'Optimism',
 }
 
 export const POLYGON: Chain = {
@@ -149,6 +155,7 @@ export const POLYGON: Chain = {
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
   color: 'purple',
+  shortName: 'Polygon',
 }
 
 export const DFK: Chain = {
@@ -167,6 +174,7 @@ export const DFK: Chain = {
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   color: 'lime',
+  shortName: 'DFK',
 }
 
 export const KLAYTN: Chain = {
@@ -185,6 +193,7 @@ export const KLAYTN: Chain = {
   nativeCurrency: { name: 'Klaytn', symbol: 'KLAY', decimals: 18 },
   explorerUrl: 'https://scope.klaytn.com',
   color: 'orange',
+  shortName: 'Klaytn',
 }
 
 export const FANTOM: Chain = {
@@ -203,6 +212,7 @@ export const FANTOM: Chain = {
   nativeCurrency: { name: 'Fantom', symbol: 'FTM', decimals: 18 },
   explorerUrl: 'https://ftmscan.com',
   color: 'blue',
+  shortName: 'Fantom',
 }
 
 export const CRONOS: Chain = {
@@ -221,6 +231,7 @@ export const CRONOS: Chain = {
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
   color: 'gray',
+  shortName: 'Cronos',
 }
 
 export const BOBA: Chain = {
@@ -239,6 +250,7 @@ export const BOBA: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://blockexplorer.boba.network',
   color: 'lime',
+  shortName: 'Boba',
 }
 
 export const METIS: Chain = {
@@ -257,6 +269,7 @@ export const METIS: Chain = {
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
   explorerUrl: 'https://andromeda-explorer.metis.io',
   color: 'teal',
+  shortName: 'Metis',
 }
 
 export const AURORA: Chain = {
@@ -275,6 +288,7 @@ export const AURORA: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
   color: 'lime',
+  shortName: 'Aurora',
 }
 
 export const HARMONY: Chain = {
@@ -293,6 +307,7 @@ export const HARMONY: Chain = {
   nativeCurrency: { name: 'Harmony One', symbol: 'ONE', decimals: 18 },
   explorerUrl: 'https://explorer.harmony.one',
   color: 'cyan',
+  shortName: 'Harmony',
 }
 
 export const MOONBEAM: Chain = {
@@ -311,6 +326,7 @@ export const MOONBEAM: Chain = {
   nativeCurrency: { name: 'Glimmer', symbol: 'GLMR', decimals: 18 },
   explorerUrl: 'https://moonbeam.moonscan.io',
   color: 'teal',
+  shortName: 'Moonbeam',
 }
 
 export const MOONRIVER: Chain = {
@@ -329,6 +345,7 @@ export const MOONRIVER: Chain = {
   nativeCurrency: { name: 'Moonriver', symbol: 'MOVR', decimals: 18 },
   explorerUrl: 'https://moonriver.moonscan.io',
   color: 'purple',
+  shortName: 'Moonriver',
 }
 
 export const DOGE: Chain = {
@@ -347,6 +364,7 @@ export const DOGE: Chain = {
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
   color: 'purple',
+  shortName: 'Doge',
 }
 
 export const BASE: Chain = {
@@ -369,4 +387,5 @@ export const BASE: Chain = {
     decimals: 18,
   },
   color: 'blue',
+  shortName: 'Base',
 }
