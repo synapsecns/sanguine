@@ -5,7 +5,7 @@ import { getWalletClient, switchNetwork } from '@wagmi/core'
 import { Address } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-import ExchangeRateInfo from '@components/ExchangeRateInfo'
+import SwapExchangeRateInfo from '@components/SwapExchangeRateInfo'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import BridgeInputContainer from '../../components/input/TokenAmountInput/index'
 import { approveToken } from '@/utils/approveToken'
@@ -830,12 +830,11 @@ const SwapCard = ({
           />
         </Grid>
 
-        <ExchangeRateInfo
+        <SwapExchangeRateInfo
           fromAmount={fromInput.bigInt}
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
-          showGasDrop={false}
         />
         <div className="px-2 py-2 md:px-0 md:py-4">{ActionButton}</div>
       </div>
