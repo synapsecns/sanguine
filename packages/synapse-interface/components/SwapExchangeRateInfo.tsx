@@ -1,8 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
 
 import { Token } from '@/utils/types'
@@ -11,22 +8,17 @@ import {
   formatBigIntToString,
 } from '@/utils/bigint/format'
 
-const ExchangeRateInfo = ({
+const SwapExchangeRateInfo = ({
   fromAmount,
   toToken,
   exchangeRate,
   toChainId,
-  showGasDrop,
 }: {
   fromAmount: bigint
   toToken: Token
   exchangeRate: bigint
   toChainId: number
-  showGasDrop: boolean
 }) => {
-  const [gasDropChainId, setGasDropChainId] = useState<number>(null)
-  const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
-
   const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
@@ -45,39 +37,12 @@ const ExchangeRateInfo = ({
     }
   }, [numExchangeRate])
 
-  const isGasDropped = useMemo(() => {
-    if (gasDropAmount) {
-      return gasDropAmount.gt(0)
-    }
-  }, [gasDropAmount])
-
-  useEffect(() => {
-    setGasDropChainId(toChainId)
-  }, [toChainId, isGasDropped])
-
-  const memoizedGasDropLabel = useMemo(() => {
-    if (!isGasDropped || !(toChainId == gasDropChainId)) return null
-    if (loading) return null
-    return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-  }, [toChainId, gasDropChainId, isGasDropped, loading])
-
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
   }, [toChainId])
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
-      {showGasDrop && (
-        <div
-          className={
-            isGasDropped
-              ? 'flex items-center justify-between'
-              : 'flex justify-end'
-          }
-        >
-          {memoizedGasDropLabel}
-        </div>
-      )}
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
           <p>Expected Price on</p>
@@ -106,50 +71,6 @@ const ExchangeRateInfo = ({
   )
 }
 
-const GasDropLabel = ({
-  gasDropAmount,
-  toChainId,
-}: {
-  gasDropAmount: bigint
-  toChainId: number
-}) => {
-  let decimalsToDisplay
-  const symbol = CHAINS_BY_ID[toChainId].nativeCurrency.symbol
-
-  if ([CHAINS.FANTOM.id].includes(toChainId)) {
-    decimalsToDisplay = 2
-  } else if (
-    [CHAINS.BNB.id, CHAINS.AVALANCHE.id, CHAINS.BOBA.id].includes(toChainId)
-  ) {
-    decimalsToDisplay = 3
-  } else {
-    decimalsToDisplay = 4
-  }
-
-  const formattedGasDropAmount = formatBigIntToString(
-    gasDropAmount,
-    18,
-    decimalsToDisplay
-  )
-
-  const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
-
-  return (
-    <div className="flex justify-between text-[#88818C]">
-      <span className="text-[#88818C]">
-        Will also receive {formattedGasDropAmount}{' '}
-      </span>
-      <span className="ml-1 font-medium text-white">
-        {' '}
-        {symbol}{' '}
-        <span className="text-[#88818C] font-normal">
-          {airdropInDollars && `($${airdropInDollars})`}
-        </span>
-      </span>
-    </div>
-  )
-}
-
 const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
@@ -166,18 +87,4 @@ const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   ) : null
 }
 
-const getAirdropInDollars = (
-  symbol: string,
-  formattedGasDropAmount: string
-) => {
-  const price = useCoingeckoPrice(symbol)
-
-  if (price) {
-    const airdropInDollars = parseFloat(formattedGasDropAmount) * price
-
-    return airdropInDollars.toFixed(2)
-  } else {
-    return undefined
-  }
-}
-export default ExchangeRateInfo
+export default SwapExchangeRateInfo

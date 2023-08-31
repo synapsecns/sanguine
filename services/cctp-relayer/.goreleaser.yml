@@ -41,12 +41,6 @@ archives:
       - goos: windows
         format: zip
     name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
-    replacements:
-      amd64: x86_64
-      arm64: ARM64
-      darwin: macOS
-      linux: Linux
-      windows: Windows
     files:
       - README.md
 
@@ -74,3 +68,18 @@ dockers:
     dockerfile: ../../docker/cctp-relayer.Dockerfile
     ids:
       - cctp-relayer
+
+# track sizes
+report_sizes: true
+
+# modified timestamps
+metadata:
+  # Set the modified timestamp on the metadata files.
+  #
+  # Templates: allowed.
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+# produce software bill of lading
+sboms:
+  - artifacts: archive
+
