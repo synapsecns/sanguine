@@ -203,7 +203,7 @@ jobs:
 
 
       - name: Run GoReleaser (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true'
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: goreleaser --timeout 900m --snapshot --clean --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -233,13 +233,13 @@ jobs:
           image_name: ${{ steps.project_id.outputs.project_name }}
 
       - name: Zip Artifacts (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true'
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
             ls
             zip -rv ${{ steps.project_id.outputs.project_name }}.zip dist
 
       - name: Push Artifacts (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true'
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: ${{steps.project_id.outputs.project_name}}.zip
