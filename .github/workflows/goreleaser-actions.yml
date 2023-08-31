@@ -203,7 +203,7 @@ jobs:
 
 
       - name: Run GoReleaser (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        if: steps.branch-name.outputs.is_default != 'true'
         run: goreleaser --timeout 900m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
