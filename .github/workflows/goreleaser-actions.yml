@@ -230,14 +230,13 @@ jobs:
         run: |
             ls
             zip -r ${{matrix.package}}.zip dist
-            mv ${{matrix.package}}.zip ${{matrix.package}}-${GITHUB_SHA}.zip
 
       - name: Push Artifacts (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         uses: actions/upload-artifact@v3
         with:
-          name: ${{matrix.package}}-${GITHUB_SHA}.zip
-          path: ${{matrix.package}}-${GITHUB_SHA}.zip
+          name: ${{matrix.package}}.zip
+          path: ${{matrix.package}}.zip
 
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
