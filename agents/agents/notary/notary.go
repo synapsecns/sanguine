@@ -437,12 +437,19 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		))
 		return false
 	}
-	_, err = n.destinationDomain.LightManager().UpdateAgentStatus(
-		ctx,
-		n.unbondedSigner,
-		n.bondedSigner.Address(),
-		agentStatus,
-		agentProof)
+	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
+			transactor,
+			n.bondedSigner.Address(),
+			agentStatus,
+			agentProof,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("could not update agent status: %w", err)
+		}
+
+		return
+	})
 	if err != nil {
 		span.AddEvent("Error updating agent status", trace.WithAttributes(
 			attribute.String("err", err.Error()),

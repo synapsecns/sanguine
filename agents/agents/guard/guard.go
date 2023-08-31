@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -57,6 +58,7 @@ type Guard struct {
 	lightManagerParser   lightmanager.Parser
 	boundOrigins         map[uint32]*origin.Origin
 	txSubmitter          submitter.TransactionSubmitter
+	retryConfig          []retry.WithBackoffConfigurator
 	guardDB              db.GuardDB
 }
 
@@ -176,6 +178,9 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.handler = handler
 	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, guardDB.SubmitterDB(), &cfg.SubmitterConfig)
+	guard.retryConfig = []retry.WithBackoffConfigurator{
+		retry.WithMaxAttemptTime(time.Second * time.Duration(cfg.MaxRetrySeconds)),
+	}
 	guard.guardDB = guardDB
 
 	return guard, nil

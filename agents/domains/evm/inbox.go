@@ -46,33 +46,14 @@ type inboxContract struct {
 }
 
 //nolint:dupl
-func (a inboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
+func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitStateReportWithSnapshot(transactOpts, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
+	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
 	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 
@@ -128,22 +109,13 @@ func (a inboxContract) SubmitSnapshotCtx(ctx context.Context, signer signer.Sign
 	return tx, nil
 }
 
-//nolint:wrapcheck
-func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyAttestation(transactor, attestation, attSignature)
 	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
+		return nil, fmt.Errorf("could not submit attestation: %w", err)
 	}
 
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-	transactOpts.GasLimit = 5000000
-	a.nonceManager.ClearNonce(signer.Address())
-	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
+	return tx, nil
 }
 
 //nolint:wrapcheck
@@ -163,34 +135,14 @@ func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer si
 	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
 
-//nolint:dupl
-func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-	transactOpts.GasLimit = 5000000
-	a.nonceManager.ClearNonce(signer.Address())
-
+func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitStateReportWithAttestation(transactOpts, big.NewInt(stateIndex), rawSig, snapPayload, attPayload, attSignature)
+	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, big.NewInt(stateIndex), rawSig, snapPayload, attPayload, attSignature)
 	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 
@@ -230,47 +182,18 @@ func (a inboxContract) SubmitReceipt(ctx context.Context, signer signer.Signer, 
 	return tx, nil
 }
 
-//nolint:wrapcheck
-func (a inboxContract) VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+func (a inboxContract) VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyReceipt(transactor, rcptPayload, rcptSignature)
 	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
+		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-	transactOpts.GasLimit = 5000000
-	return a.contract.VerifyReceipt(transactOpts, rcptPayload, rcptSignature)
+	return tx, nil
 }
 
-func (a inboxContract) SubmitReceiptReport(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+func (a inboxContract) SubmitReceiptReport(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.SubmitReceiptReport(transactor, rcptPayload, rcptSignature, rrSignature)
 	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
-	a.nonceManager.ClearNonce(signer.Address())
-
-	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitReceiptReport(transactOpts, rcptPayload, rcptSignature, rrSignature)
-	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit receipt report: %w", err)
 	}
 

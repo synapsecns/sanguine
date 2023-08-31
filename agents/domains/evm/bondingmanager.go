@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -102,29 +100,9 @@ func (a bondingManagerContract) GetDispute(ctx context.Context, index *big.Int) 
 	return nil
 }
 
-func (a bondingManagerContract) CompleteSlashing(ctx context.Context, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+func (a bondingManagerContract) CompleteSlashing(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.CompleteSlashing(transactor, domain, agent, proof)
 	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	// TODO: why do we do this?
-	a.nonceManager.ClearNonce(signer.Address())
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
-	tx, err = a.contract.CompleteSlashing(transactOpts, domain, agent, proof)
-	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 

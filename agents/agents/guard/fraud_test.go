@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
@@ -97,14 +98,15 @@ func (g GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract 
 	backend.WaitForConfirmation(g.GetTestContext(), bumpTx)
 }
 
-func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract, bondedSigner, unbondedSigner signer.Signer) {
+func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract, bondedSigner, unbondedSigner signer.Signer, chainID uint32) {
 	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
 	Nil(g.T(), err)
 	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), bondedSigner.Address())
 	Nil(g.T(), err)
+	transactor, err := unbondedSigner.GetTransactor(g.GetTestContext(), big.NewInt(int64(chainID)))
+	Nil(g.T(), err)
 	_, err = lightManager.UpdateAgentStatus(
-		g.GetTestContext(),
-		unbondedSigner,
+		transactor,
 		bondedSigner.Address(),
 		agentStatus,
 		agentProof,
@@ -161,7 +163,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	}()
 
 	// Update the agent status on Origin.
-	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Verify that the agent is marked as Active
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
@@ -336,8 +338,8 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notary.
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner)
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 
 	// Submit the attestation
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(
@@ -439,9 +441,9 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notary.
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner)
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
-	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -638,7 +640,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	// Build and sign a receipt
 	snapshotRoot, _, err := snapshot.SnapshotRootAndProofs()
 	Nil(g.T(), err)
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 	messageHash, err := message.ToLeaf()
 	Nil(g.T(), err)
 	receipt := types.NewReceipt(
@@ -862,11 +864,11 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notaries.
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner)
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
-	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner)
-	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner)
-	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, destination)
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, destination)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
+	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
+	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -951,6 +953,18 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
+
+	// Wait for the executor to have attestations before increasing time.
+	summitChainID := uint32(g.TestBackendSummit.GetChainID())
+	attestationNonce := uint32(2)
+	g.Eventually(func() bool {
+		attest, err := g.ExecutorTestDB.GetAttestation(g.GetTestContext(), db.DBAttestation{
+			Destination:      &summitChainID,
+			AttestationNonce: &attestationNonce,
+		})
+		Nil(g.T(), err)
+		return attest != nil
+	})
 
 	// Increase EVM time to allow agent status to be updated to Slashed on summit.
 	optimisticPeriodSeconds := int64(86400)

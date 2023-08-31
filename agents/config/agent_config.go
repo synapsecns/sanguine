@@ -43,6 +43,8 @@ type AgentConfig struct {
 	DBPrefix string `yaml:"db_prefix"`
 	// SubmitterConfig is the config for the submitter.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// MaxRetrySeconds is the maximum number of seconds to retry an RPC call (not a transaction).
+	MaxRetrySeconds uint32 `yaml:"max_retry_seconds"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

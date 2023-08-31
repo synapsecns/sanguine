@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/jpillora/backoff"
 	errorUtil "github.com/pkg/errors"
-	"time"
 )
 
 // RetryableFunc is a function that can be retried.
