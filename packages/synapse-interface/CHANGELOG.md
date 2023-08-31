@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.103](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.102...@synapsecns/synapse-interface@0.1.103) (2023-08-31)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.1.102](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.101...@synapsecns/synapse-interface@0.1.102) (2023-08-28)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
