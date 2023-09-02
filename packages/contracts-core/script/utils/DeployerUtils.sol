@@ -5,6 +5,8 @@ import {console, Script, stdJson} from "forge-std/Script.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {CREATE3Factory} from "../../contracts/create3/CREATE3Factory.sol";
+
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
@@ -62,6 +64,7 @@ contract DeployerUtils is Script {
         isBroadcasted = isBroadcasted_;
     }
 
+    // @dev must be called after setupPK()
     function setupDevnetIfEnabled() public {
         DEVNET_ENABLED = vm.envOr(DEVNET_ENABLED_VAR, false);
         console.log(DEVNET_ENABLED);
@@ -75,6 +78,21 @@ contract DeployerUtils is Script {
 
             // override the configs path
             DEPLOY_CONFIGS = DEPLOY_CONFIGS_DEVNET;
+
+            chainAlias = getChainAlias();
+            address factoryDeployment = tryLoadDeployment("Create3Factory");
+            if (factoryDeployment == address(0)) {
+                if (broadcasterPK == 0){
+                    console.log("please setup a private key before calling this function");
+                }
+
+                // TODO: we should probably account for broadcast/should not broadcast here.
+                console.log("Create3Factory not deployed on devnet, deploying now");
+                CREATE3Factory NewFactory = new CREATE3Factory();
+                saveDeployment("CREATE3", "CREATE3", address(NewFactory), "0x");
+                factoryDeployment = address(NewFactory);
+            }
+            factory = ICreate3Factory(factoryDeployment);
         }
     }
 

@@ -4,7 +4,7 @@
     "137": ["0xFA68368bEaB2CbF134a481BD6FdCe6113e1D45f8"],
     "43114": ["0x2d815594a1425f9d342E27b2B41d250251c51B86"]
   },
-  "chainidSummit": 10,
+  "chainidSummit": 42,
   "domains": [0, 137, 43114],
   "owner": "0xC49926C4124cEe1cbA0Ea94Ea31a6c12318df947"
 }

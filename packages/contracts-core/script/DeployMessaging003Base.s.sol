@@ -44,9 +44,9 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
 
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
-        setupDevnetIfEnabled();
         localDomain = uint32(block.chainid);
         deploymentSalt = keccak256("Messaging003");
+        setupDevnetIfEnabled();
     }
 
     /// @dev Function to exclude script from coverage report
@@ -69,7 +69,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     }
 
     function isSynapseChain() public returns (bool) {
-        return SYNAPSE_DOMAIN == localDomain;
+        return globalConfig.readUint(".chainidSummit") == localDomain;
     }
 
     function agentManagerName() public returns (string memory) {
