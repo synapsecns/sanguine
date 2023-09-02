@@ -43,7 +43,8 @@ contract DeployerUtils is Script {
 
     // TODO: this should be set from one of the config files.
     // default to original value in the git diff. Get @chitimeschi to review
-    ICreate3Factory internal factory = ICreate3Factory(0x6438CB36cb18520774EfC7A172410D8BBBe9a428);
+    // @dev: use getFactory() to get the factory
+    ICreate3Factory private factory = ICreate3Factory(0x6438CB36cb18520774EfC7A172410D8BBBe9a428);
 
     bytes32 internal deploymentSalt;
 
@@ -64,10 +65,33 @@ contract DeployerUtils is Script {
         isBroadcasted = isBroadcasted_;
     }
 
+    // @dev this is called just in time so we can make sure that startBroadcast() is called before this.
+    // it's only overriden and deployed just-in-time in the case of devnet
+    // TODO: this pattern sucks. It introduces potential unexpected behavior if the dev calls factory. directly.
+    // It's also slow.
+    function getFactory() internal returns (ICreate3Factory) {
+        if (!DEVNET_ENABLED) {
+            return factory;
+        }
+
+        address factoryDeployment = tryLoadDeployment("Create3Factory");
+        if (factoryDeployment == address(0)) {
+            if (broadcasterPK == 0){
+                console.log("please setup a private key before calling this function");
+            }
+
+            console.log("Create3Factory not deployed on devnet, deploying now");
+            CREATE3Factory NewFactory = new CREATE3Factory();
+            saveDeployment("Create3Factory", "Create3Factory", address(NewFactory), "0x");
+            factoryDeployment = address(NewFactory);
+        }
+        factory = ICreate3Factory(factoryDeployment);
+        return factory;
+    }
+
     // @dev must be called after setupPK()
     function setupDevnetIfEnabled() public {
         DEVNET_ENABLED = vm.envOr(DEVNET_ENABLED_VAR, false);
-        console.log(DEVNET_ENABLED);
 
         if (DEVNET_ENABLED) {
             DEVNET_ENABLED = true;
@@ -80,19 +104,6 @@ contract DeployerUtils is Script {
             DEPLOY_CONFIGS = DEPLOY_CONFIGS_DEVNET;
 
             chainAlias = getChainAlias();
-            address factoryDeployment = tryLoadDeployment("Create3Factory");
-            if (factoryDeployment == address(0)) {
-                if (broadcasterPK == 0){
-                    console.log("please setup a private key before calling this function");
-                }
-
-                // TODO: we should probably account for broadcast/should not broadcast here.
-                console.log("Create3Factory not deployed on devnet, deploying now");
-                CREATE3Factory NewFactory = new CREATE3Factory();
-                saveDeployment("CREATE3", "CREATE3", address(NewFactory), "0x");
-                factoryDeployment = address(NewFactory);
-            }
-            factory = ICreate3Factory(factoryDeployment);
         }
     }
 
@@ -125,8 +136,11 @@ contract DeployerUtils is Script {
         internal
         returns (address deployment)
     {
-        require(Address.isContract(address(factory)), "Factory not deployed");
-        deployment = factory.deploy(
+        console.log("fuck");
+        console.log(address(getFactory()));
+
+        require(Address.isContract(address(getFactory())), "Factory not deployed");
+        deployment = getFactory().deploy(
             getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
@@ -139,9 +153,10 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Predicts the deployment address for a contract.
-    function predictFactoryDeployment(string memory contractName) internal view returns (address) {
-        require(Address.isContract(address(factory)), "Factory not deployed");
-        return factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
+    function predictFactoryDeployment(string memory contractName) internal returns (address) {
+        ICreate3Factory _factory  = getFactory();
+        require(Address.isContract(address(_factory)), "Factory not deployed");
+        return _factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 
     /// @notice Deploys the contract and saves the deployment artifact

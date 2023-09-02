@@ -47,6 +47,7 @@ contract SetupGasOracle003Script is DeployerUtils {
     /// @dev To simulate setup on $chainName
     /// forge script script/SetupGasOracle003.s.sol -f chainName
     function run() external {
+        setupDevnetIfEnabled();
         startBroadcast(true);
         gasDataConfig = loadGlobalDeployConfig("Messaging003GasData");
         gasOracle = GasOracle(loadDeployment(GAS_ORACLE));

@@ -26,6 +26,7 @@ contract DeployClients003Script is DeployerUtils {
 
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
+        setupDevnetIfEnabled();
     }
 
     /// @dev Function to exclude script from coverage report
