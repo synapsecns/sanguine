@@ -21,7 +21,7 @@ contract DeployerUtils is Script {
     /// @dev Path to artifacts, deployments and configs directories
     string private constant ARTIFACTS = "artifacts/";
     string private constant DEPLOYMENTS = "deployments/";
-    string private constant DEFAULT_DEPLOY_CONFIGS = "script/configs/";
+    string private constant DEPLOY_CONFIGS = "script/configs/";
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -56,7 +56,7 @@ contract DeployerUtils is Script {
     }
 
     function setupDevnetChains() public {
-        setChain("chain_a", Chain("chain_a", 10, "chain_a", "http://localhost:9001/rpc/10"));
+        setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
         setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
         setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
     }
@@ -210,7 +210,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadDeployConfig(string memory contractName) public returns (string memory json) {
+    function loadDeployConfig(string memory contractName) public view returns (string memory json) {
         return vm.readFile(deployConfigPath(contractName));
     }
 
@@ -225,7 +225,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadGlobalDeployConfig(string memory contractName) public returns (string memory json) {
+    function loadGlobalDeployConfig(string memory contractName) public view returns (string memory json) {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
@@ -248,19 +248,19 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns deploy config filename for the contract.
-    function deployConfigFn(string memory contractName) public returns (string memory path) {
+    function deployConfigFn(string memory contractName) public pure returns (string memory path) {
         return string.concat(contractName, ".dc.json");
     }
 
     /// @notice Returns path to the contract deploy config JSON on the current chain.
-    function deployConfigPath(string memory contractName) public returns (string memory path) {
+    function deployConfigPath(string memory contractName) public view returns (string memory path) {
         require(bytes(chainAlias).length != 0, "Chain not set");
-        return string.concat(vm.envOr("DEPLOY_CONFIG_PATH", DEFAULT_DEPLOY_CONFIGS), chainAlias, "/", deployConfigFn(contractName));
+        return string.concat(DEPLOY_CONFIGS, chainAlias, "/", deployConfigFn(contractName));
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
-    function globalDeployConfigPath(string memory contractName) public returns (string memory path) {
-        return string.concat(vm.envOr("DEPLOY_CONFIG_PATH", DEFAULT_DEPLOY_CONFIGS), deployConfigFn(contractName));
+    function globalDeployConfigPath(string memory contractName) public pure returns (string memory path) {
+        return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already
