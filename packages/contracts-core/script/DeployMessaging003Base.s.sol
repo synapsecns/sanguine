@@ -68,10 +68,6 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         _deploy(false);
     }
 
-    function runWithConfig(string memory configName) external  {
-        _deploy(true, vm.readFile(configName));
-    }
-
     function isSynapseChain() public returns (bool) {
         return globalConfig.readUint(".chainidSummit") == localDomain;
     }
@@ -84,15 +80,11 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         return isSynapseChain() ? "Inbox" : "LightInbox";
     }
 
-    function _deploy(bool _isBroadcasted) internal {
-        _deploy(true, loadGlobalDeployConfig("Messaging003"));
-    }
-
     /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
     /// Will save the deployments, if script is being broadcasted.
-    function _deploy(bool _isBroadcasted, string memory __config) internal {
+    function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
-        globalConfig = __config;
+        globalConfig = loadGlobalDeployConfig("Messaging003");
         // Predict deployments
         agentManager = predictFactoryDeployment(agentManagerName());
         statementInbox = predictFactoryDeployment(statementInboxName());
