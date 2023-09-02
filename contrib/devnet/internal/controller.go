@@ -135,10 +135,16 @@ func deployContracts(ctx context.Context, info devnetInfo) error {
 
 	forgeEnv := append(os.Environ(), fmt.Sprintf("MESSAGING_DEPLOYER_PRIVATE_KEY=%s", deployer.PrivateKeyHex()))
 	fmt.Println(deployer.PrivateKeyHex())
+	fmt.Println(deployer.Address())
 	_ = forgeEnv
 
 	// do this next. TODO: a clean command should clean out everything in contracts-core/deployments/chain_a, contracts-core/deployments/chain_b, and contracts-core/deployments/chain_c
 	//  forge script script/DeployCREATE3.sol --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9 --broadcast
+
+	// devnet is dependent on configs being in a different path specified by DEPLOY_CONFIG_PATH
+	// should be set on line 136
+
+	// note: for now summit must be chain_a (chain id *must be 10*) because of hardcoded constants
 
 	return nil
 }

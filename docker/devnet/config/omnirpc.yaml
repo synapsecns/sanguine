@@ -1,5 +1,5 @@
 chains:
-  42:
+  10:
     rpcs:
       - http://chain_a:8545/
     confirmations: 1

@@ -111,6 +111,7 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
         agentRootConfig.serialize("initialAgentRoot", agentRoot);
         agentRootConfig = agentRootConfig.serialize("proofs", proofsJson);
         string memory path = globalDeployConfigPath("Messaging003AgentRoot");
+        console.log(path);
         agentRootConfig.write(path);
     }
 

@@ -37,7 +37,7 @@ services:
     entrypoint: anvil
     command: >
       --host=0.0.0.0
-      --chain-id=42
+      --chain-id=10
       --allow-origin="*"
       --steps-tracing
       --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
