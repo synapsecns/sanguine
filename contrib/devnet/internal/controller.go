@@ -138,6 +138,7 @@ func deployContracts(ctx context.Context, info devnetInfo) error {
 	fmt.Println(deployer.Address())
 	_ = forgeEnv
 
+	// TODO: all this works, but right now, we can't account for the command being ran more than once, so comment out for now and exec in a bit.
 	// do this next. TODO: a clean command should clean out everything in contracts-core/deployments/chain_a, contracts-core/deployments/chain_b, and contracts-core/deployments/chain_c
 	//  forge script script/DeployMessaging003SynChain.s.sol  --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
 	//  forge script script/DeployMessaging003LightChain.s.sol  --ffi -f chain_b --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
@@ -146,5 +147,6 @@ func deployContracts(ctx context.Context, info devnetInfo) error {
 	// forge script script/DeployClients003.s.sol  --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
 	// forge script script/DeployClients003.s.sol  --ffi -f chain_b --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
 	// forge script script/DeployClients003.s.sol  --ffi -f chain_c --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+
 	return nil
 }
