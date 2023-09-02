@@ -136,9 +136,6 @@ contract DeployerUtils is Script {
         internal
         returns (address deployment)
     {
-        console.log("fuck");
-        console.log(address(getFactory()));
-
         require(Address.isContract(address(getFactory())), "Factory not deployed");
         deployment = getFactory().deploy(
             getDeploymentSalt(contractName), // salt
