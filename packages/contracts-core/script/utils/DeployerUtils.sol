@@ -21,7 +21,14 @@ contract DeployerUtils is Script {
     /// @dev Path to artifacts, deployments and configs directories
     string private constant ARTIFACTS = "artifacts/";
     string private constant DEPLOYMENTS = "deployments/";
-    string private constant DEPLOY_CONFIGS = "script/configs/";
+    string private DEPLOY_CONFIGS = "script/configs/";
+
+    // @dev wether or not devnet is enabled
+    bool private DEVNET_ENABLED = false;
+    // @dev env var for wether or not devnet is in use
+    string private constant DEVNET_ENABLED_VAR = "DEVNET";
+    // @dev artifacted path to use if devnet is enabled;
+    string private constant DEPLOY_CONFIGS_DEVNET = "script/configs/devnet/";
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -55,10 +62,20 @@ contract DeployerUtils is Script {
         isBroadcasted = isBroadcasted_;
     }
 
-    function setupDevnetChains() public {
-        setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
-        setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
-        setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
+    function setupDevnetIfEnabled() public {
+        DEVNET_ENABLED = vm.envOr(DEVNET_ENABLED_VAR, false);
+        console.log(DEVNET_ENABLED);
+
+        if (DEVNET_ENABLED) {
+            DEVNET_ENABLED = true;
+            // setup the chains
+            setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
+            setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
+            setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
+
+            // override the configs path
+            DEPLOY_CONFIGS = DEPLOY_CONFIGS_DEVNET;
+        }
     }
 
     function setupDeployerPK() public {
@@ -210,7 +227,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadDeployConfig(string memory contractName) public view returns (string memory json) {
+    function loadDeployConfig(string memory contractName) public returns (string memory json) {
         return vm.readFile(deployConfigPath(contractName));
     }
 
@@ -225,7 +242,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadGlobalDeployConfig(string memory contractName) public view returns (string memory json) {
+    function loadGlobalDeployConfig(string memory contractName) public returns (string memory json) {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
@@ -253,13 +270,13 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns path to the contract deploy config JSON on the current chain.
-    function deployConfigPath(string memory contractName) public view returns (string memory path) {
+    function deployConfigPath(string memory contractName) public returns (string memory path) {
         require(bytes(chainAlias).length != 0, "Chain not set");
         return string.concat(DEPLOY_CONFIGS, chainAlias, "/", deployConfigFn(contractName));
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
-    function globalDeployConfigPath(string memory contractName) public pure returns (string memory path) {
+    function globalDeployConfigPath(string memory contractName) public returns (string memory path) {
         return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
     }
 

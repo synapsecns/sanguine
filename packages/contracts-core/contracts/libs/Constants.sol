@@ -50,4 +50,6 @@ uint256 constant FRESH_DATA_TIMEOUT = 4 hours;
 uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
 /// @dev Domain of the Synapse Chain
 // TODO: replace the placeholder with actual value (for MVP this is Optimism chainId)
-uint32 constant SYNAPSE_DOMAIN = 10;
+// TODO: this shouldn't be a contant, but should be set in the constuctor of each contract and then become immutable.
+// Note: DO NOT MERGE WITH THIS SET TO 42
+uint32 constant SYNAPSE_DOMAIN = 42;

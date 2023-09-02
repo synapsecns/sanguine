@@ -14,7 +14,7 @@ contract DeployCREATE3 is DeployerUtils {
     using Strings for uint256;
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
-        setupDevnetChains();
+        setupDevnetIfEnabled();
     }
 
     function run() external {
