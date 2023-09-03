@@ -152,6 +152,15 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
 			require.Nil(b.T(), err)
+			if len(code) == 0 {
+				receipt, err := b.Client().TransactionReceipt(b.ctx, contract.DeployTx().Hash())
+				require.Nil(b.T(), err)
+
+				jsonReceipt, err := receipt.MarshalJSON()
+				require.Nil(b.T(), err)
+
+				fmt.Println(jsonReceipt)
+			}
 			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()
