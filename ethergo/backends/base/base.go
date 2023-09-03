@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/require"
 	"math/big"
 	"os"
 	"sync"
@@ -150,8 +151,8 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 	go func() {
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
-			assert.Nil(b.T(), err)
-			assert.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
+			require.Nil(b.T(), err)
+			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()
 	var errMux sync.Mutex
