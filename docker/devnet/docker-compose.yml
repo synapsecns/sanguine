@@ -24,6 +24,9 @@ services:
       - "guard-run"
       - "--config"
       - "/config/guard-config.yml"
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
 
   omnirpc:
     depends_on:
@@ -41,6 +44,9 @@ services:
       --config=/config/omnirpc.yaml
     volumes:
       - "${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml"
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
 # TODO, consider re-enabling.
 #    healthcheck:
 #      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
@@ -100,3 +106,17 @@ services:
     volumes:
       - chain_b_data:/data
 
+
+  tracing:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+      - 14250:14250
+      - 14268:14268
+      - 14269:14269
+      - 9411:9411
