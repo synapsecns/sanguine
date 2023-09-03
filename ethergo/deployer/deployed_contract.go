@@ -73,4 +73,9 @@ func (d DeployedContract) ChainID() *big.Int {
 	return core.CopyBigInt(d.chainID)
 }
 
+// String returns a string representation of the contract metadata.
+func (d DeployedContract) String() string {
+	return fmt.Sprintf("address: %s, owner: %s, chainID: %s", d.address.String(), d.owner.String(), d.chainID.String())
+}
+
 var _ contracts.DeployedContract = DeployedContract{}
