@@ -75,6 +75,9 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
+          # Note: this automatically pushes the latest tag for sanguine-goreleaser even on branched workflows. While unlikely,
+          # this could break local devnets that rely on working versions of this image and as such the latest tag should only be pushed on master
+          # additionally, tags representing a specific version rather than the hash of the file should be considered for future use.
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max

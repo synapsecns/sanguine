@@ -6,8 +6,24 @@ volumes:
   chain_a_data:
   chain_b_data:
   chain_c_data:
+  guard_data:
 
 services:
+  guard:
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - "${PWD}/guard-config.yml:/config/guard-config.yml"
+      - "${PWD}/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
+      - guard_data:/data
+    command:
+      - "guard-run"
+      - "--config"
+      - "/config/guard-config.yml"
+
   omnirpc:
     depends_on:
       - chain_a

@@ -12,14 +12,14 @@ COPY ./go.work /app/go.work
 COPY ./go.work.sum /app/go.work.sum
 COPY ./.git /app/.git
 
-WORKDIR /app/services/omnirpc
+WORKDIR /app/agents
 
 RUN GOPROXY=https://proxy.golang.org go mod download
 
-RUN CC=gcc CXX=g++  go build -tags=netgo,osusergo -ldflags="-s -w -extldflags '-static'" -o /app/bin/omnirpc  main.go
+RUN CC=gcc CXX=g++  go build -tags=netgo,osusergo -ldflags="-s -w -extldflags '-static'" -o /app/bin/agents  main.go
 
 FROM alpine:3.16
 
-COPY --from=builder /app/bin/omnirpc /usr/local/bin
+COPY --from=builder /app/bin/agents /usr/local/bin
 
-CMD ["omnirpc"]
+CMD ["agents"]
