@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/contrib/tfcore
 
-go 1.19
+go 1.20
 
 require (
 	cloud.google.com/go/bigtable v1.10.1

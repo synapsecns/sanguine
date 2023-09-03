@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/services/cctp-relayer
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -225,8 +225,8 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/puzpuzpuz/xsync v1.4.3 // indirect
-	github.com/pyroscope-io/client v0.7.0 // indirect
-	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
+	github.com/pyroscope-io/client v0.7.2 // indirect
+	github.com/pyroscope-io/godeltaprof v0.1.2 // indirect
 	github.com/pyroscope-io/otel-profiling-go v0.4.0 // indirect
 	github.com/ravilushqa/otelgqlgen v0.13.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect

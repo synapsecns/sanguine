@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/ethergo
 
-go 1.19
+go 1.20
 
 require (
 	cloud.google.com/go/kms v1.10.1
@@ -226,8 +226,8 @@ require (
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
-	github.com/pyroscope-io/client v0.7.0 // indirect
-	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
+	github.com/pyroscope-io/client v0.7.2 // indirect
+	github.com/pyroscope-io/godeltaprof v0.1.2 // indirect
 	github.com/pyroscope-io/otel-profiling-go v0.4.0 // indirect
 	github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect

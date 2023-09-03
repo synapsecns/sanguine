@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         go-version:
-          - 1.20.x
+          - 1.21.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
@@ -253,7 +253,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
-          go-version: 1.19.x
+          go-version: 1.21.x
 
       - uses: actions/checkout@v3
         with:
@@ -332,7 +332,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.20.x
+          go-version: 1.21.x
 
       - name: Go modules cache
         uses: actions/cache@v3
@@ -439,7 +439,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.20.x
+          go-version: 1.21.x
 
       - name: Go modules cache
         uses: actions/cache@v3

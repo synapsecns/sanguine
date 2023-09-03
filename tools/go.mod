@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/tools
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
