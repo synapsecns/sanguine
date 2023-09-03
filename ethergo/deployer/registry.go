@@ -2,15 +2,12 @@ package deployer
 
 import (
 	"context"
-	"sync"
-	"testing"
-	"time"
-
 	"github.com/neverlee/keymutex"
 	"github.com/stretchr/testify/require"
-	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"sync"
+	"testing"
 )
 
 // ContractDeployer is a contract deployer for a single contract type.
@@ -154,24 +151,15 @@ func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType contract
 	deploymentHandle := c.deployers[contractType.ID()]
 	c.structMux.RUnlock()
 
-	var deployedContract contracts.DeployedContract
-	err := retry.WithBackoff(ctx, func(ctx context.Context) (err error) {
-		deployedContract, err = deploymentHandle.Deploy(ctx)
-		if err != nil {
-			return
-		}
-		c.backend.WaitForConfirmation(ctx, deployedContract.DeployTx())
-		err = c.backend.VerifyContract(contractType, deployedContract)
-		if err != nil {
-			return
-		}
-		logger.Debugf("added contract %s of types %s in tx %s on chain id %s", deployedContract.Address(), contractType.Name(), deployedContract.DeployTx().Hash().String(), deployedContract.ChainID().String())
-		return
-	}, retry.WithMax(120*time.Second))
+	deployedContract, err := deploymentHandle.Deploy(ctx)
 	require.Nil(c.tb, err)
+
+	c.backend.WaitForConfirmation(ctx, deployedContract.DeployTx())
+	err = c.backend.VerifyContract(contractType, deployedContract)
 	if err != nil {
 		logger.Warnf("got error %s while verifying contract, skipping", err)
 	}
+	logger.Debugf("added contract %s of types %s in tx %s on chain id %s", deployedContract.Address(), contractType.Name(), deployedContract.DeployTx().Hash().String(), deployedContract.ChainID().String())
 
 	return deployedContract
 }

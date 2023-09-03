@@ -140,8 +140,8 @@ func (d InboxDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, 
 	originAddress := originContract.Address()
 	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
-		if d.Backend().GetChainID() == SynChainID {
-			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on synchain", d.ContractType().ContractName())
+		if d.Backend().GetChainID() != SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on non-synchain", d.ContractType().ContractName())
 		}
 
 		// deploy the inbox contract
