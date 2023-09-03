@@ -78,7 +78,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
-		Tag:        "nightly-577dae3f632b392856d1d62a5016c765fadd872d",
+		Tag:        "latest",
 		Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
