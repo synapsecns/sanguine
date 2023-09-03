@@ -250,24 +250,26 @@ func tryGetPushEvent() (base, head string, ok bool, err error) {
 
 // note: we don't  handle the case of no previous commit, this will error.
 func getHeadBase(repo *git.Repository) (head string, base string, err error) {
-	co, err := repo.CommitObjects()
+	co, err := repo.Head()
 	if err != nil {
 		return "", "", fmt.Errorf("could not get head: %w", err)
 	}
 
-	var rawHead, rawBase *object.Commit
-	// skip the current commit
-	rawHead, err = co.Next()
+	citer, err := repo.Log(&git.LogOptions{From: co.Hash()})
 	if err != nil {
-		return "", "", fmt.Errorf("could not get current commit: %w", err)
+		return "", "", fmt.Errorf("could not get logs: %w", err)
 	}
 
-	rawBase, err = co.Next()
+	_, err = citer.Next()
+	if err != nil {
+		return "", "", fmt.Errorf("could not pass head: %w", err)
+	}
+	lastCommit, err := citer.Next()
 	if err != nil {
 		return "", "", fmt.Errorf("could not get last commit: %w", err)
 	}
 
-	return rawBase.Hash.String(), rawHead.Hash.String(), nil
+	return co.Hash().String(), lastCommit.Hash.String(), nil
 }
 
 // getHead gets the head of the current branch.
