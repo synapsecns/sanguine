@@ -10,14 +10,15 @@ volumes:
 
 services:
   guard:
+    entrypoint: agents
     depends_on:
       - omnirpc
     build:
       context: ../../
       dockerfile: docker/devnet/agents.Dockerfile
     volumes:
-      - "${PWD}/guard-config.yml:/config/guard-config.yml"
-      - "${PWD}/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
+      - "${PWD}/config/guard-config.yml:/config/guard-config.yml"
+      - "${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
       - guard_data:/data
     command:
       - "guard-run"
