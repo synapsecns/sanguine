@@ -159,7 +159,7 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 				jsonReceipt, err := receipt.MarshalJSON()
 				require.Nil(b.T(), err)
 
-				fmt.Println(jsonReceipt)
+				fmt.Println(string(jsonReceipt))
 			}
 			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
