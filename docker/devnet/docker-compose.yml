@@ -7,6 +7,7 @@ volumes:
   chain_b_data:
   chain_c_data:
   guard_data:
+  notary43_data:
 
 services:
   guard:
@@ -28,11 +29,34 @@ services:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
 
+  notary-43:
+    entrypoint: agents
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - "${PWD}/config/notary43-config.yml:/config/notary-config.yml"
+      - "${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt"
+      - notary43_data:/config/synapse.db
+
+    command:
+      - "notary-run"
+      - "--config"
+      - "/config/notary-config.yml"
+      - "--debug"
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+      GOLOG_LOG_LEVEL: debug
+
   omnirpc:
     depends_on:
       - chain_a
       - chain_b
       - chain_c
+      - tracing
     build:
       context: ../../
       dockerfile: docker/devnet/omnirpc.Dockerfile
