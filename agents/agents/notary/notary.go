@@ -3,6 +3,9 @@ package notary
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
@@ -12,8 +15,6 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -361,9 +362,6 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
 		if state.Nonce() == 0 {
-			continue
-		}
-		if state.Origin() == n.destinationDomain.Config().DomainID {
 			continue
 		}
 		snapshotStates = append(snapshotStates, state)

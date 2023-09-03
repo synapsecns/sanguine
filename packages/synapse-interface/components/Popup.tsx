@@ -14,7 +14,7 @@ const Popup = ({ chainId }) => {
   if (!active) return null
   return (
     <div className="w-full mb-[100px]">
-      <div className="bg-slate-600/40 shadow-lg pt-3 px-6 pb-6 rounded-lg text-white relative">
+      <div className="bg-slate-600/40 shadow-lg pt-3 px-6 pb-6 rounded-md text-white relative">
         <div className="pr-3 text-center">
           {IMPAIRED_CHAINS[chainId] && IMPAIRED_CHAINS[chainId].content()}
         </div>

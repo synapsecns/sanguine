@@ -52,7 +52,7 @@ export const SelectSpecificNetworkButton = ({
       className={`
         flex items-center
         transition-all duration-75
-        w-full rounded-xl
+        w-full rounded-md
         px-2 py-3
         cursor-pointer
         border border-transparent

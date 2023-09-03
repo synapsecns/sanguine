@@ -2,7 +2,7 @@ const LoadingText = () => {
   return (
     <div
       className={`
-            rounded-lg
+            rounded-md
             transform-gpu transition-all duration-75
             animate-pulse hover:border-opacity-30
           `}
