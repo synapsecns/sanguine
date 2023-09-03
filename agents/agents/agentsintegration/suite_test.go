@@ -39,7 +39,5 @@ func (u *AgentsIntegrationSuite) SetupSuite() {
 }
 
 func TestAgentsIntegrationSuite(t *testing.T) {
-	for {
-		suite.Run(t, NewAgentsIntegrationSuite(t))
-	}
+	suite.Run(t, NewAgentsIntegrationSuite(t))
 }
