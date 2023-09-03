@@ -448,6 +448,8 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 // cleanAfterTestSuite does cleanup after test suite is finished.
 func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
+	// This shouldn't be neccesary, but is added for a recurring flake
+	a.TestBackendSummit = nil
 }
 
 // BumpBackend is a helper to get the test backend to emit expected events.
