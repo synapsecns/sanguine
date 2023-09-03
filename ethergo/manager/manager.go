@@ -33,7 +33,7 @@ type IDeployManager interface {
 // DeployerManager is responsible for wrapping contract registry with easy to use getters that correctly cast the handles.
 // since ContractRegistry is meant to be kept pure and go does not support generics, the sole function is to provide
 // handler wrappers around the registry. This will no longer be required when go supports generics: https://blog.golang.org/generics-proposal
-// TODO: go 1.19 supports generics, this can be improved.
+// TODO: go 1.20 supports generics, this can be improved.
 type DeployerManager struct {
 	// t is the testing object
 	t *testing.T

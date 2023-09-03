@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { readContract, fetchBalance, Address } from '@wagmi/core'
-import { SYN } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { SYN } from '@constants/tokens/bridgeable'
+import { WETH } from '@constants/tokens/auxilliary'
 import * as ALL_CHAINS from '@constants/chains/master'
-import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
 } from '@constants/chainlink'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
+import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 
 export const usePrices = (connectedChainId: number) => {
   const [synPrices, setSynPrices] = useState<any>(undefined)

@@ -23,7 +23,7 @@ import {
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/master'
+import { USDC } from '@/constants/tokens/bridgeable'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -318,7 +318,7 @@ const PortfolioAssetActionButton = ({
 }: PortfolioAssetActionButtonProps) => {
   const buttonClassName = `
     flex ml-auto justify-center
-    py-1 px-6 ml-2 rounded-3xl
+    py-1 px-6 ml-2 rounded-lg
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `

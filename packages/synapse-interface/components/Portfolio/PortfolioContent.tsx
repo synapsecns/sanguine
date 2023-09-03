@@ -60,6 +60,7 @@ export const PortfolioContent = ({
               const tokens = remainingNetworksPortfolios[chainId]
               return (
                 <SingleNetworkPortfolio
+                  key={Number(chainId)}
                   portfolioChainId={Number(chainId)}
                   connectedChainId={connectedChainId}
                   selectedFromChainId={selectedFromChainId}

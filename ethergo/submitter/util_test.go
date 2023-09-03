@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/google/go-cmp/cmp"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -82,7 +83,7 @@ func assertTransactOptsEquality(tb testing.TB, toA, toB *bind.TransactOpts) {
 	assertBigIntsCopiedEqual(tb, toA.GasPrice, toB.GasPrice, "GasPrice")
 	assertBigIntsCopiedEqual(tb, toA.GasFeeCap, toB.GasFeeCap, "GasFeeCap")
 	assertBigIntsCopiedEqual(tb, toA.GasTipCap, toB.GasTipCap, "GasFeeCap")
-	assert.DeepEqual(tb, toA, toB, testsuite.BigIntComparer())
+	assert.DeepEqual(tb, toA, toB, testsuite.BigIntComparer(), cmp.AllowUnexported(context.Background()))
 }
 
 // assertBigIntsCopiedEqual checks that the given big.Ints are equal and that

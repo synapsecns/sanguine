@@ -63,7 +63,7 @@ const BridgeInputContainer = ({
   return (
     <div
       className={`
-        text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
+        text-left px-2 sm:px-4 pt-2 pb-4 rounded-md
         bg-bgLight
       `}
     >
@@ -98,7 +98,7 @@ const BridgeInputContainer = ({
             flex flex-grow items-center
             pl-3 sm:pl-4
             w-full h-20
-            rounded-xl
+            rounded-md
             border border-white border-opacity-20
             ${
               isOrigin &&

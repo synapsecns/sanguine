@@ -57,7 +57,7 @@ function ResourceCard({ title, description, buttonText, linkUrl }) {
   return (
     <Card
       className={`
-        text-center rounded-lg border
+        text-center rounded-md border
         border-white border-opacity-10
         bg-[#2F2F2F] bg-opacity-70 py-6 px-6
       `}

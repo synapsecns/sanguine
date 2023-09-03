@@ -1,6 +1,5 @@
 import { formatBigIntToString } from '@utils/bigint/format'
 import { commify } from '@ethersproject/units'
-import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 
 const TokenBalance = ({
@@ -28,7 +27,7 @@ const TokenBalance = ({
           {formattedBalance}
           <span className="text-sm opacity-80">
             {' '}
-            {token ? displaySymbol(chainId, token) : ''}
+            {token ? token.symbol : ''}
           </span>
         </div>
       )}
