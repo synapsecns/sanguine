@@ -17,7 +17,7 @@ export function MoreButton({
       onClick={onClick ? onClick : () => {}}
       className={`
         w-full
-        group rounded-lg
+        group rounded-md
         px-2.5 py-2.5
         border border-[#2F2F2F] hover:border-white
         bg-transparent hover:bg-transparent

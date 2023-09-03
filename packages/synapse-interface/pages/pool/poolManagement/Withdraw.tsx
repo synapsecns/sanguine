@@ -303,6 +303,7 @@ const Withdraw = ({ address }: { address: string }) => {
         <WithdrawTokenInput
           onChange={(value) => onChangeInputValue(pool, value)}
         />
+        <div className="mb-4" />
         <WithdrawButton
           approveTxn={approveTxn}
           withdrawTxn={withdrawTxn}

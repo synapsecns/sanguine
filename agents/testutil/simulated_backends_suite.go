@@ -5,9 +5,11 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/brianvoe/gofakeit"
 	"github.com/synapsecns/sanguine/core"
 
 	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
@@ -446,4 +448,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 // cleanAfterTestSuite does cleanup after test suite is finished.
 func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
+}
+
+// BumpBackend is a helper to get the test backend to emit expected events.
+// TODO: Look into using anvil EvmMine() instead of this.
+func (a *SimulatedBackendsTestSuite) BumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
+	// Call EmitAgentsEventA 3 times on the backend.
+	for i := 0; i < 3; i++ {
+		bumpTx, err := contract.EmitAgentsEventA(txOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		a.Nil(err)
+		backend.WaitForConfirmation(a.GetTestContext(), bumpTx)
+	}
 }

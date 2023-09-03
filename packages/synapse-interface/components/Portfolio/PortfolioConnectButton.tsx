@@ -33,7 +33,7 @@ const ConnectedButton = () => {
       data-test-id="connected-button"
       className={`
       flex items-center justify-center
-      text-base text-white px-3 py-1 rounded-3xl
+      text-base text-white px-3 py-1 rounded-lg
       text-center transform-gpu transition-all duration-75
       border border-solid border-transparent
       `}
@@ -76,7 +76,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
       data-test-id="connect-button"
       className={`
       flex items-right justify-center
-      text-base text-white px-3 py-1 rounded-3xl
+      text-base text-white px-3 py-1 rounded-lg
       text-center transform-gpu transition-all duration-75
       border border-solid border-transparent
       hover:border-[#3D3D5C]

@@ -100,7 +100,7 @@ func createGuardParameters(ctx context.Context, c *cli.Context, metrics metrics.
 var GuardRunCommand = &cli.Command{
 	Name:        "guard-run",
 	Description: "runs the guard service",
-	Flags:       []cli.Flag{configFlag, metricsPortFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, debugFlag},
 	Action: func(c *cli.Context) error {
 		var scribeClient client.ScribeClient
 

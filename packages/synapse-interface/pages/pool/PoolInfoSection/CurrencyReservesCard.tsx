@@ -1,6 +1,5 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
-import { displaySymbol } from '@utils/displaySymbol'
 import LoadingRow from '@/components/loading/LoadingRow'
 import { commify, formatBigIntToString } from '@utils/bigint/format'
 import { stringToBigInt } from '@/utils/bigint/format'
@@ -37,8 +36,6 @@ const CurrencyReservesCard = () => {
 }
 
 function CurrencyInfoListItem({ chainId, percent, balance, token }) {
-  const symbol = displaySymbol(chainId, token)
-
   const showContent =
     balance !== '0'
       ? commify(
@@ -54,10 +51,12 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
     <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
       <div className="flex items-center w-30">
         <img className="relative mr-2 w-7" src={token.icon.src} />
-        <div>{symbol}</div>
+        <div>{token.symbol}</div>
       </div>
       <div className="text-right">{percent}</div>
-      {balance && <AugmentWithUnits content={showContent} label={symbol} />}
+      {balance && (
+        <AugmentWithUnits content={showContent} label={token.symbol} />
+      )}
     </div>
   )
 }

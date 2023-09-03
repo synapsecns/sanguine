@@ -364,9 +364,6 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		if state.Nonce() == 0 {
 			continue
 		}
-		if state.Origin() == n.destinationDomain.Config().DomainID {
-			continue
-		}
 		snapshotStates = append(snapshotStates, state)
 	}
 	if len(snapshotStates) > 0 {

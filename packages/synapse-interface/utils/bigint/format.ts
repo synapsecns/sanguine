@@ -66,7 +66,7 @@ export const formatBigIntToPercentString = (
     )
 
     // Convert the bigint to a floating-point number, preserving the requested number of decimal places
-    const num = Number(bn) / Number(conversionFactor)
+    const num = (Number(bn) * 100) / Number(conversionFactor)
 
     // Format the number as a percentage string
     return `${num.toFixed(decimalPlaces)}%`
@@ -144,6 +144,10 @@ export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
 }
 
 export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
+  if (typeof rawVal !== 'string' && !rawVal) {
+    return 0n
+  }
+
   try {
     let value = rawVal.replace(/[$,]/g, '')
     if (['.', '0.', '', '.0'].includes(value)) {
@@ -169,7 +173,7 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
 
     return wholeBigInt + fractionalBigInt
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     txErrorHandler(error)
   }
 }

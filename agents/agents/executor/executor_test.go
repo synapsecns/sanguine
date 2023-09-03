@@ -244,9 +244,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		if err != nil {
 			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
 			// do lastBlockNumber - 1.
-			tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			e.Nil(err)
-			e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+			e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
 
 			return false
 		}
@@ -273,9 +271,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
 	// Advance block again.
-	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
 
 	header = types.NewHeader(types.MessageFlagBase, chainID, 2, destination, optimisticSeconds[1])
 
@@ -295,9 +291,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		if err != nil {
 			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
 			// do lastBlockNumber - 1.
-			tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			e.Nil(err)
-			e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+			e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
 			return false
 		}
 
@@ -592,9 +586,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
 	// do lastBlockNumber - 1.
-	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, txContextOrigin.TransactOpts)
 
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
@@ -986,10 +978,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
-
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, txContextOrigin.TransactOpts)
 	// Get the origin state so we can submit it on the Summit.
 	originStateRaw, err := originHarnessOverrideRef.SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
 	e.Nil(err)
@@ -1009,9 +998,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
 
 	// Submit snapshot with Notary.
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
@@ -1024,9 +1011,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	)
 	e.Nil(err)
 	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
-	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
 
 	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
 	// the manager message can be executed.
@@ -1035,9 +1020,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	bondingManagerOptimisticSecs := 86400
 	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(bondingManagerOptimisticSecs))
 	e.Nil(err)
-	tx, err = e.TestContractOnSummit.EmitAgentsEventA(txContext.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	e.Nil(err)
-	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
 
 	// Check that the message is eventually executed.
 	e.Eventually(func() bool {

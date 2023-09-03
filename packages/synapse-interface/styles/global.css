@@ -4,6 +4,8 @@
 
 body {
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 @font-face {
@@ -194,4 +196,20 @@ body {
 
 .no-mt {
   margin-top: 0 !important;
+}
+
+
+/* FromTokenSelect */
+.select-hidden {
+  display: none;
+}
+
+/* Hide parsedBalance when option is selected */
+.mySelect__single-value .select-hidden {
+  display: none;
+}
+
+/* Show parsedBalance when dropdown is opened */
+.mySelect__option .select-hidden {
+  display: block;
 }
