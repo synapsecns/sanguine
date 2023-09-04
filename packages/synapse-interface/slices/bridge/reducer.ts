@@ -266,7 +266,7 @@ export const bridgeSlice = createSlice({
         fromChainId: state.fromChainId ?? null,
         fromTokenRouteSymbol: state.fromToken?.routeSymbol ?? null,
         toChainId: incomingToChainId ?? null,
-        toTokenRouteSymbol: state.toToken?.routeSymbol ?? null,
+        toTokenRouteSymbol: null,
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
