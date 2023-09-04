@@ -62,8 +62,8 @@ contract OriginTest is AgentSecuredTest {
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
-        address gasOracle_ = address(new GasOracle(localDomain(), random.nextAddress()));
-        Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
+        address gasOracle_ = address(new GasOracle(DOMAIN_SYNAPSE, random.nextAddress()));
+        Origin cleanContract = new Origin(DOMAIN_SYNAPSE, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");

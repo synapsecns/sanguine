@@ -110,7 +110,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     // ═════════════════════════════════════════════ DEPLOY CONTRACTS ══════════════════════════════════════════════════
 
     function deployLightManager() public virtual {
-        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
+        lightManager = new LightManagerHarness(DOMAIN_SYNAPSE);
         vm.label(address(lightManager), "LightManager");
     }
 
@@ -128,7 +128,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployLightInbox() public virtual {
-        lightInbox = new LightInbox(DOMAIN_LOCAL);
+        lightInbox = new LightInbox(DOMAIN_SYNAPSE);
     }
 
     function initLightInbox() public virtual {
@@ -148,7 +148,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_GAS_ORACLE) {
             gasOracle = address(new GasOracleMock());
         } else if (option == DEPLOY_PROD_GAS_ORACLE) {
-            gasOracle = address(new GasOracle(DOMAIN_LOCAL, destination));
+            gasOracle = address(new GasOracle(DOMAIN_SYNAPSE, destination));
             GasOracle(gasOracle).initialize();
         } else {
             revert("Unknown option: GasOracle");
@@ -161,7 +161,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_DESTINATION) {
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = address(new Destination(DOMAIN_LOCAL, address(lightManager), address(lightInbox)));
+            destination = address(new Destination(DOMAIN_SYNAPSE, address(lightManager), address(lightInbox)));
             // Destination will be initialized once agents are setup
         } else {
             revert("Unknown option: Destination");
@@ -174,7 +174,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_ORIGIN) {
             origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = address(new Origin(DOMAIN_LOCAL, address(lightManager), address(lightInbox), gasOracle));
+            origin = address(new Origin(DOMAIN_SYNAPSE, address(lightManager), address(lightInbox), gasOracle));
             Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");

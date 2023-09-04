@@ -55,7 +55,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
         vm.assume(domain != DOMAIN_SYNAPSE);
         vm.expectRevert(MustBeSynapseDomain.selector);
-        new BondingManager(domain);
+        new BondingManager(DOMAIN_SYNAPSE);
     }
 
     function test_setup() public override {

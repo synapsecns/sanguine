@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {BONDING_OPTIMISTIC_PERIOD} from "../libs/Constants.sol";
 import {
     AgentCantBeAdded,
     CallerNotDestination,
@@ -59,8 +59,8 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
+    constructor(uint32 synapseDomain) MessagingBase("0.0.3", synapseDomain) {
+        if (localDomain != block.chainid) revert MustBeSynapseDomain();
     }
 
     function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
@@ -78,7 +78,7 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
+        if (domain == synapseDomain) revert SynapseDomainForbidden();
         // Check the STORED status of the added agent in the merkle tree
         AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`

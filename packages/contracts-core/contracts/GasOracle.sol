@@ -49,7 +49,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, address destination_) MessagingBase("0.0.3", domain) {
+    constructor(uint32 synapseDomain, address destination_) MessagingBase("0.0.3", synapseDomain) {
         destination = destination_;
     }
 
@@ -150,7 +150,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         // Same logic for converting the cost from remote Ether to local Ether applies here.
         // forgefmt: disable-next-item
         uint256 executionTip = (
-            remoteGasData.gasPrice().decompress() * request.gasLimit() + 
+            remoteGasData.gasPrice().decompress() * request.gasLimit() +
             remoteGasData.dataPrice().decompress() * contentLength +
             remoteGasData.execBuffer().decompress()
         ) * remoteEtherPrice / localEtherPrice;

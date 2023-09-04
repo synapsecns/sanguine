@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
-import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {BONDING_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
 import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
 import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
@@ -85,10 +85,10 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, address agentManager_, address inbox_)
-        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    constructor(uint32 synapseDomain, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", synapseDomain, agentManager_, inbox_)
     {
-        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
+        if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 
     function initialize() external initializer {

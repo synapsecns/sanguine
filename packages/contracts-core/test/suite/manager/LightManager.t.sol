@@ -30,7 +30,7 @@ contract LightManagerTest is AgentManagerTest {
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
         address inbox_ = random.nextAddress();
-        LightManager cleanContract = new LightManager(domain);
+        LightManager cleanContract = new LightManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
         cleanContract.initialize(origin_, destination_, inbox_);
         assertEq(cleanContract.localDomain(), domain);
