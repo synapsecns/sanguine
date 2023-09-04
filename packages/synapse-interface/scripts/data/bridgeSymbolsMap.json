@@ -121,6 +121,10 @@
     }
   },
   "10": {
+    "CCTP.USDC": {
+      "origin": ["0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"],
+      "destination": ["0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"]
+    },
     "H2O": {
       "origin": ["0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48"],
       "destination": ["0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48"]

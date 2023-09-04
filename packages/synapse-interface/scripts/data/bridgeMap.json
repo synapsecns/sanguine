@@ -158,6 +158,13 @@
     }
   },
   "10": {
+    "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85": {
+      "decimals": 6,
+      "symbol": "USDC",
+      "origin": ["CCTP.USDC"],
+      "destination": ["CCTP.USDC"],
+      "swappable": []
+    },
     "0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB": {
       "decimals": 18,
       "symbol": "gOHM",
@@ -203,7 +210,7 @@
     },
     "0x7F5c764cBc14f9669B88837ca1490cCa17c31607": {
       "decimals": 6,
-      "symbol": "USDC",
+      "symbol": "USDC.e",
       "origin": ["nUSD"],
       "destination": ["nUSD"],
       "swappable": [
