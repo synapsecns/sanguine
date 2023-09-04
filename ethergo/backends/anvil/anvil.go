@@ -177,7 +177,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Cleanup(func() {
 		select {
 		case <-ctx.Done():
-			_ = pool.Purge(resource)
+			if !t.Failed() {
+				_ = pool.Purge(resource)
+			}
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
