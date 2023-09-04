@@ -121,7 +121,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	// to prevent old containers from piling up, we set a timeout to remove the container.
 	require.Nil(t, resource.Expire(args.expirySeconds))
 
-	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
+	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
 	var chainID *big.Int
 	if err := pool.Retry(func() error {

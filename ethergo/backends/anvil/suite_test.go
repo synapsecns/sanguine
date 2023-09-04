@@ -33,27 +33,29 @@ func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 }
 
 func (a *AnvilSuite) SetupSuite() {
-	a.TestSuite.SetupSuite()
+	for {
+		a.TestSuite.SetupSuite()
 
-	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
-	options := anvil.NewAnvilOptionBuilder()
-	err := options.SetForkURL(a.forkAddress)
-	Nil(a.T(), err)
+		a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
+		options := anvil.NewAnvilOptionBuilder()
+		err := options.SetForkURL(a.forkAddress)
+		Nil(a.T(), err)
 
-	// enable otterscan
-	options.OtterscanEnabled(true)
+		// enable otterscan
+		options.OtterscanEnabled(true)
 
-	a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
-	a.options = options
-	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
-	Nil(a.T(), err)
+		a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
+		a.options = options
+		a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
+		Nil(a.T(), err)
 
-	deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
-	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
+		deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
+		deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
 
-	var ok bool
-	a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
-	True(a.T(), ok)
+		var ok bool
+		a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
+		True(a.T(), ok)
+	}
 }
 
 func TestAnvilSuite(t *testing.T) {
