@@ -29,9 +29,10 @@ Object.keys(providers).forEach((chainId) => {
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
 const SynapseCCTPRouterAddress = '0xd359bc471554504f683fbd4f6e36848612349ddf'
 const SynapseCCTPAddress = '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+const SynapseCCTPOptimismAddress = '0x5e69c336661dde70404e3345BA61F9c01DdB4C36'
 
 // Chain IDs where SynapseCCTPRouter is allowed
-const allowedChainIdsForSynapseCCTPRouter = [1, 42161, 43114]
+const allowedChainIdsForSynapseCCTPRouter = [1, 10, 42161, 43114]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
@@ -60,7 +61,7 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
     providers[chainId]
   )
   SynapseCCTPs[chainId] = new ethers.Contract(
-    SynapseCCTPAddress,
+    chainId === 10 ? SynapseCCTPOptimismAddress : SynapseCCTPAddress,
     SynapseCCTPABI,
     providers[chainId]
   )
