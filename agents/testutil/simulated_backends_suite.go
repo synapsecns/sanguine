@@ -389,7 +389,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 		// TODO: remove this check, it's redundant.
 		if a.TestBackendSummit.ChainConfig().ChainID.Int64() != 10 {
-			a.T().Fatal("Summit chain id is not 10")
+			a.T().Fatalf("Summit chain id is not 10 (got %s)", a.TestBackendSummit.ChainConfig().ChainID.String())
 		}
 	}()
 	wg.Wait()
