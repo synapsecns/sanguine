@@ -60,7 +60,7 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 synapseDomain) MessagingBase("0.0.3", synapseDomain) {
-        if (localDomain != block.chainid) revert MustBeSynapseDomain();
+        if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 
     function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
