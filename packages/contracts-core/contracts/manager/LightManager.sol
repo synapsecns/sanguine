@@ -44,8 +44,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 synapseDomain) MessagingBase("0.0.3", synapseDomain) {
-        if (localDomain == synapseDomain) revert SynapseDomainForbidden();
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
+        if (localDomain == synapseDomain_) revert SynapseDomainForbidden();
     }
 
     function initialize(address origin_, address destination_, address inbox_) external initializer {
