@@ -371,21 +371,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
-		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
+		anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
 	}()
 	go func() {
 		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
-		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		anvilOptsDestination := anvil.NewAnvilOptionBuilder()
+		anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
 	}()
 	go func() {
 		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(10))
-		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+		anvilOptsSummit := anvil.NewAnvilOptionBuilder()
+		anvilOptsSummit.SetChainID(uint64(10))
+		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
 
 		// TODO: remove this check, it's redundant.
 		if a.TestBackendSummit.ChainConfig().ChainID.Int64() != 10 {
