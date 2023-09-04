@@ -453,7 +453,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 // cleanAfterTestSuite does cleanup after test suite is finished.
 func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
-	// This shouldn't be neccesary, but is added for a recurring flake
+	// This shouldn't be necessary, but is added for a recurring flake
 	a.TestBackendSummit = nil
 	a.TestBackendOrigin = nil
 	a.TestBackendDestination = nil
