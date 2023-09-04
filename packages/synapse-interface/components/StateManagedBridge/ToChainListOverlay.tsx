@@ -16,6 +16,8 @@ import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 
+import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
+
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -37,7 +39,7 @@ export const ToChainListOverlay = () => {
       Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
       toChainIds.map((id) => CHAINS_BY_ID[id])
     )
-  )
+  ).filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
