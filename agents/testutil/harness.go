@@ -353,7 +353,7 @@ func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		inboxAddress = lightInboxContract.Address()
 	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress, inboxAddress)
+		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, SynapseChainID, agentManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
