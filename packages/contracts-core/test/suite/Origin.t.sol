@@ -12,6 +12,7 @@ import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+import {console, stdJson} from "forge-std/Script.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -58,11 +59,12 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function test_cleanSetup(Random memory random) public override {
-        uint32 domain = random.nextUint32();
+        uint32 domain = uint32(block.chainid);
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address gasOracle_ = address(new GasOracle(DOMAIN_SYNAPSE, random.nextAddress()));
+
         Origin cleanContract = new Origin(DOMAIN_SYNAPSE, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();

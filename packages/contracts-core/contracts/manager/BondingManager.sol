@@ -59,7 +59,7 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 synapseDomain) MessagingBase("0.0.3", synapseDomain) {
+    constructor(uint32 _synapseDomain) MessagingBase("0.0.3", _synapseDomain) {
         if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 

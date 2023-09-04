@@ -76,6 +76,9 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         setupAgentsLM();
         // Skip block
         skipBlock();
+        // cleanup the env.
+        vm.chainId(DOMAIN_LOCAL);
+
     }
 
     function setupAgentsBM() public virtual {
@@ -110,6 +113,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     // ═════════════════════════════════════════════ DEPLOY CONTRACTS ══════════════════════════════════════════════════
 
     function deployLightManager() public virtual {
+        vm.chainId(DOMAIN_LOCAL);
         lightManager = new LightManagerHarness(DOMAIN_SYNAPSE);
         vm.label(address(lightManager), "LightManager");
     }
@@ -119,6 +123,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployBondingManager() public virtual {
+        vm.chainId(DOMAIN_SYNAPSE);
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
         vm.label(address(bondingManager), "BondingManager");
     }
@@ -128,6 +133,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployLightInbox() public virtual {
+        vm.chainId(DOMAIN_LOCAL);
         lightInbox = new LightInbox(DOMAIN_SYNAPSE);
     }
 
@@ -136,6 +142,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployInbox() public virtual {
+        vm.chainId(DOMAIN_SYNAPSE);
         inbox = new Inbox(DOMAIN_SYNAPSE);
     }
 
@@ -223,6 +230,8 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deploySummit() public virtual {
+        vm.chainId(DOMAIN_SYNAPSE);
+
         uint256 option = deployMask & DEPLOY_MASK_SUMMIT;
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
