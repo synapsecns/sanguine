@@ -170,7 +170,7 @@ jobs:
         uses: lhotari/action-upterm@v1
         with:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-          limit-access-to-actor: true
+          limit-access-to-users: trajan0x,cryptomaxplanck
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
