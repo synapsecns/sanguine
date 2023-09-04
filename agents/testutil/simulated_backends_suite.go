@@ -386,6 +386,11 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		anvilOpts := anvil.NewAnvilOptionBuilder()
 		anvilOpts.SetChainID(uint64(10))
 		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
+
+		// TODO: remove this check, it's redundant.
+		if a.TestBackendSummit.ChainConfig().ChainID.Int64() != 10 {
+			a.T().Fatal("Summit chain id is not 10")
+		}
 	}()
 	wg.Wait()
 
