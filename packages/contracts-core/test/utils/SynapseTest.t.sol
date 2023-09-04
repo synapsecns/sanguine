@@ -78,7 +78,6 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         skipBlock();
         // cleanup the env.
         vm.chainId(DOMAIN_LOCAL);
-
     }
 
     function setupAgentsBM() public virtual {
