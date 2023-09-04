@@ -39,6 +39,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address caller = random.nextAddress();
         BondingManager manager = new BondingManager(domain);
         address inbox_ = random.nextAddress();

@@ -37,6 +37,7 @@ contract InboxTest is StatementInboxTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address origin_ = random.nextAddress();
