@@ -62,8 +62,9 @@ contract InboxTest is StatementInboxTest {
 
     function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
         vm.assume(domain != DOMAIN_SYNAPSE);
+        vm.chainId(domain);
         vm.expectRevert(MustBeSynapseDomain.selector);
-        new Inbox(domain);
+        new Inbox(DOMAIN_SYNAPSE);
     }
 
     function initializeLocalContract() public override {
