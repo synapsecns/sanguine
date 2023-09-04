@@ -60,8 +60,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 synapseDomain, address agentManager_, address inbox_)
-        AgentSecured("0.0.3", synapseDomain, agentManager_, inbox_)
+    constructor(uint32 synapseDomain_, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", synapseDomain_, agentManager_, inbox_)
     {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:

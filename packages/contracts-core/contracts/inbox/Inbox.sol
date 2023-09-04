@@ -53,7 +53,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 synapseDomain) MessagingBase("0.0.3", synapseDomain) {
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
         if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 

@@ -49,7 +49,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 synapseDomain, address destination_) MessagingBase("0.0.3", synapseDomain) {
+    constructor(uint32 synapseDomain_, address destination_) MessagingBase("0.0.3", synapseDomain_) {
         destination = destination_;
     }
 
