@@ -113,10 +113,7 @@ export const InputContainer = () => {
   return (
     <div
       data-test-id="input-container"
-      className={`
-        text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
-        bg-surface
-      `}
+      className="text-left rounded-md p-md bg-bgLight"
     >
       <div className="flex items-center justify-between mb-3">
         <FromChainSelector />

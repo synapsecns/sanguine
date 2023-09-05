@@ -38,17 +38,8 @@ import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
 
-import * as AUXILLIARY from './auxilliary'
-import * as BRIDGEABLE from './bridgeable'
-import * as DEPRECATED from './deprecated'
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
-
-export const ALL_TOKENS = {
-  ...AUXILLIARY,
-  ...BRIDGEABLE,
-  ...DEPRECATED,
-}
 
 export const GOHM = new Token({
   addresses: {

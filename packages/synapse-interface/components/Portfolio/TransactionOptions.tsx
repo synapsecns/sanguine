@@ -11,7 +11,7 @@ import DiscordIcon from '../icons/DiscordIcon'
 import Button from '../ui/tailwind/Button'
 import { getTransactionExplorerLink } from './Activity'
 import { getExplorerAddressUrl, getExplorerTxUrl } from '@/constants/urls'
-import SynapseLogo from '@assets/icons/synapse.svg'
+import SynapseLogo from '@assets/icons/syn.svg'
 import { DISCORD_URL } from '@/constants/urls'
 
 export const TransactionOptions = ({

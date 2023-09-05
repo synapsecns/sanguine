@@ -62,91 +62,6 @@ export const SingleNetworkPortfolio = ({
     }
   }, [isUnsupportedChain])
 
-<<<<<<< HEAD
-  if (!isLoading && hasNoTokenBalance) {
-    return <EmptyPortfolioContent />
-  } else
-    return (
-      <div data-test-id="single-network-portfolio" className="flex flex-col">
-        <PortfolioAccordion
-          connectedChainId={connectedChainId}
-          portfolioChainId={portfolioChainId}
-          selectedFromChainId={selectedFromChainId}
-          initializeExpanded={initializeExpanded}
-          header={
-            <PortfolioNetwork
-              displayName={currentChain?.name}
-              chainIcon={currentChain?.chainImg}
-              isUnsupportedChain={isUnsupportedChain}
-            />
-          }
-          expandedProps={
-            <PortfolioConnectButton
-              connectedChainId={connectedChainId}
-              portfolioChainId={portfolioChainId}
-            />
-          }
-          collapsedProps={
-            <PortfolioTokenVisualizer
-              portfolioTokens={sortedTokensForVisualizer}
-            />
-          }
-        >
-          {isUnsupportedChain && (
-            <WarningMessage
-              twClassName="!p-2 !mt-0"
-              message={
-                <p className="leading-6">
-                  This chain is not yet supported. New chain or token support
-                  can be discussed on{' '}
-                  <a target="_blank" className="underline" href={TWITTER_URL}>
-                    Twitter
-                  </a>{' '}
-                  or{' '}
-                  <a target="_blank" className="underline" href={DISCORD_URL}>
-                    Discord
-                  </a>
-                  .
-                </p>
-              }
-            />
-          )}
-          <PortfolioHeader />
-          {sortedTokensWithAllowance &&
-            sortedTokensWithAllowance.length > 0 &&
-            sortedTokensWithAllowance.map(
-              ({
-                token,
-                balance,
-                allowances,
-              }: TokenWithBalanceAndAllowances) => (
-                <PortfolioTokenAsset
-                  token={token}
-                  balance={balance}
-                  allowances={allowances}
-                  portfolioChainId={portfolioChainId}
-                  connectedChainId={connectedChainId}
-                  isApproved={true}
-                />
-              )
-            )}
-          {sortedTokensWithoutAllowance &&
-            sortedTokensWithoutAllowance.length > 0 &&
-            sortedTokensWithoutAllowance.map(
-              ({ token, balance }: TokenWithBalanceAndAllowances) => (
-                <PortfolioTokenAsset
-                  token={token}
-                  balance={balance}
-                  portfolioChainId={portfolioChainId}
-                  connectedChainId={connectedChainId}
-                  isApproved={false}
-                />
-              )
-            )}
-        </PortfolioAccordion>
-      </div>
-    )
-=======
   return (
     <div data-test-id="single-network-portfolio" className="flex flex-col">
       <PortfolioAccordion
@@ -226,7 +141,6 @@ export const SingleNetworkPortfolio = ({
       </PortfolioAccordion>
     </div>
   )
->>>>>>> master
 }
 
 type PortfolioNetworkProps = {
