@@ -904,6 +904,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	g.Eventually(func() bool {
+		time.Sleep(5 * time.Second)
+		fmt.Println("AAAAAAAAAAA")
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagFraudulent {
@@ -916,6 +918,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
+		time.Sleep(5 * time.Second)
+		fmt.Println("BBBBBBBBBBB")
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
@@ -958,6 +962,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	summitChainID := uint32(g.TestBackendSummit.GetChainID())
 	attestationNonce := uint32(2)
 	g.Eventually(func() bool {
+		time.Sleep(5 * time.Second)
+		fmt.Println("CCCCCCCCCCC")
 		attest, err := g.ExecutorTestDB.GetAttestation(g.GetTestContext(), db.DBAttestation{
 			Destination:      &summitChainID,
 			AttestationNonce: &attestationNonce,
@@ -983,6 +989,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Verify that the accused agent is eventually Slashed on Summit.
 	g.Eventually(func() bool {
+		time.Sleep(5 * time.Second)
+		fmt.Println("DDDDDDDDDDD")
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
@@ -1079,6 +1087,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
+		time.Sleep(5 * time.Second)
+		fmt.Println("EEEEEEEEEEE")
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
