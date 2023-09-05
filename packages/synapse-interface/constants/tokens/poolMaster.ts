@@ -23,7 +23,7 @@ import {
   MULTIAVAX,
   WETH,
 } from '@constants/tokens/auxilliary'
-import synapseLogo from '@assets/icons/synapse.svg'
+import synapseLogo from '@assets/icons/syn.svg'
 
 import { Token } from '@/utils/types'
 

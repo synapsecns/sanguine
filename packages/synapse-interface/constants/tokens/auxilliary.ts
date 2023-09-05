@@ -1,4 +1,4 @@
-import avaxLogo from '@assets/icons/avalanche.svg'
+import avaxLogo from '@assets/icons/avax.svg'
 import avwethLogo from '@assets/icons/avweth.svg'
 import mimLogo from '@assets/icons/mim.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
