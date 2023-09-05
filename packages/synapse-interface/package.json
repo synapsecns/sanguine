@@ -52,7 +52,7 @@
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
     "bignumber": "^1.1.0",
-    "cypress": "^12.9.0",
+    "cypress": "^13.0.0",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "ethers": "5.7.2",
