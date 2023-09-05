@@ -654,7 +654,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			}
 		}
 	default:
-		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
+		logger.Errorf("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
 	}
 
 	return nil
@@ -739,7 +739,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		}
 		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
-			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
+			logger.Errorf("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.
 			var agentStatus types.AgentStatus
 			contractCall := func(ctx context.Context) error {
@@ -770,7 +770,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				if err != nil {
 					return nil, fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 				}
-				logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
+				logger.Errorf("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 				return
 			})
 			if err != nil {
