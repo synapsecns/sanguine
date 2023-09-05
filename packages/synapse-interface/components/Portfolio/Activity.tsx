@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  Dispatch,
+  SetStateAction,
+} from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
 import Link from 'next/link'
@@ -415,16 +422,18 @@ export const getTransactionExplorerLink = ({
 }
 
 export const EstimatedDuration = ({
+  elapsedTime,
+  setElapsedTime,
   startTime,
   transactionStatus,
   estimatedCompletionInSeconds,
 }: {
+  elapsedTime: number
+  setElapsedTime: Dispatch<SetStateAction<number>>
   startTime: number
   transactionStatus: TransactionStatus
   estimatedCompletionInSeconds: number
 }) => {
-  const [elapsedTime, setElapsedTime] = useState<number>(0)
-
   useEffect(() => {
     const currentTime: number = Math.floor(Date.now() / 1000)
     const elapsedMinutes: number = Math.floor((currentTime - startTime) / 60)

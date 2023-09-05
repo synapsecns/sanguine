@@ -70,6 +70,8 @@ export const Transaction = ({
   children,
   isCompleted,
 }: TransactionProps) => {
+  const [elapsedTime, setElapsedTime] = useState<number>(0)
+
   const handleExplorerClick: () => void = useCallback(() => {
     if (kappa && originChain && destinationChain) {
       const explorerLink: string = getTransactionExplorerLink({
@@ -138,6 +140,8 @@ export const Transaction = ({
           <div className="p-3">
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
+                elapsedTime={elapsedTime}
+                setElapsedTime={setElapsedTime}
                 startTime={startedTimestamp}
                 transactionStatus={transactionStatus}
                 estimatedCompletionInSeconds={
