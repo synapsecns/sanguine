@@ -41,7 +41,7 @@ func (s *RelayerAPISuite) SetupTest() {
 
 	// create the test metrics handler
 	var err error
-	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Jaeger)
+	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Null)
 	s.Require().NoError(err)
 
 	// create the test store

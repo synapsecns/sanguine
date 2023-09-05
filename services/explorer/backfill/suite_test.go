@@ -2,6 +2,7 @@ package backfill_test
 
 import (
 	"fmt"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,9 +22,10 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
-	"go.uber.org/atomic"
 	"math/big"
 	"testing"
+
+	"go.uber.org/atomic"
 )
 
 type BackfillSuite struct {
@@ -55,7 +57,7 @@ func (b *BackfillSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
 	var err error
-	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	b.Require().Nil(err)
 }
 

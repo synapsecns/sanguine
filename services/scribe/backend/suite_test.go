@@ -1,11 +1,12 @@
 package backend_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -53,7 +54,7 @@ func (b *BackendSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
 	var err error
-	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	Nil(b.T(), err)
 }
 

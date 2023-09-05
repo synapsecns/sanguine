@@ -3,17 +3,18 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"os"
-	"sync"
-	"sync/atomic"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -56,7 +57,8 @@ func (t *DBSuite) SetupSuite() {
 
 	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+
 	t.Require().Nil(err)
 }
 

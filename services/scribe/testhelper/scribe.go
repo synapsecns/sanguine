@@ -3,6 +3,8 @@ package testhelper
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"github.com/synapsecns/sanguine/services/scribe/service"
-	"testing"
 )
 
 var logger = log.Logger("scribe-testhelper")
@@ -33,7 +34,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
 	localmetrics.SetupTestJaeger(ctx, tb)
-	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Null)
 	assert.Nil(tb, err)
 
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)

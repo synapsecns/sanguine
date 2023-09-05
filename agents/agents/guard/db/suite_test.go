@@ -44,7 +44,7 @@ func (t *DBSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	Nil(t.T(), err)
 }
 

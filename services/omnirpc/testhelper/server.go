@@ -3,6 +3,9 @@ package testhelper
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/ginhelper"
@@ -14,8 +17,6 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"net/http"
-	"testing"
 )
 
 func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.ClientType) config.Config {
@@ -46,7 +47,7 @@ func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.S
 
 	localmetrics.SetupTestJaeger(ctx, tb)
 
-	handler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	handler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Null)
 	assert.Nil(tb, err)
 
 	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP), handler)
