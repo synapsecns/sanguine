@@ -38,15 +38,15 @@ func (s Store) StoreAgentRoot(
 // GetSummitBlockNumberForRoot gets the summit block number for a given agent root.
 func (s Store) GetSummitBlockNumberForRoot(ctx context.Context, agentRoot string) (uint64, error) {
 	var blockNumber uint64
-	dbTx := s.DB().WithContext(ctx).
-		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), agentRoot).
-		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
-		Limit(1).
+	err := s.DB().WithContext(ctx).Debug().
 		Model(&AgentRoot{}).
-		Pluck(BlockNumberFieldName, &blockNumber)
+		Where(fmt.Sprintf("%s = ?", AgentRootFieldName), agentRoot).
+		Select(fmt.Sprintf("MIN(%s)", BlockNumberFieldName)).
+		Row().
+		Scan(&blockNumber)
 
-	if dbTx.Error != nil {
-		return blockNumber, fmt.Errorf("failed to get summit block number for root: %w", dbTx.Error)
+	if err != nil {
+		return blockNumber, fmt.Errorf("failed to get summit block number for root: %w", err)
 	}
 
 	return blockNumber, nil
