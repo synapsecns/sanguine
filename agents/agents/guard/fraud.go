@@ -739,6 +739,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		}
 		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
+			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.
 			var agentStatus types.AgentStatus
 			contractCall := func(ctx context.Context) error {
@@ -758,7 +759,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				continue
 			}
 
-			var loggerTx *ethTypes.Transaction
 			// Update agent status on remote.
 			_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 				tx, err = g.domains[chainID].LightManager().UpdateAgentStatus(
@@ -770,16 +770,12 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				if err != nil {
 					return nil, fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 				}
-
-				loggerTx = tx
-
+				logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 				return
 			})
 			if err != nil {
 				return fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 			}
-
-			logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), loggerTx.Hash())
 
 			// Mark the relayable status as Relayed.
 			err = g.guardDB.UpdateAgentStatusRelayedState(
