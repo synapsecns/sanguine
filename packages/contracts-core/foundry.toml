@@ -24,13 +24,13 @@ optimism = "${RPC_OPTIMISM}"
 polygon = "${RPC_POLYGON}"
 arb_goerli = "${RPC_ARB_GOERLI}"
 op_goerli = "${RPC_OP_GOERLI}"
-sepolia = ${RPC_SEPOLIA}"
-arb_sepolia = ${RPC_ARB_SEPOLIA}"
-synapse_sepolia = ${RPC_SYNAPSE_SEPOLIA}"
+sepolia = "${RPC_SEPOLIA}"
+arb_sepolia = "${RPC_ARB_SEPOLIA}"
+synapse_sepolia = "${RPC_SYNAPSE_SEPOLIA}"
 
 [etherscan]
-avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }
-optimism = { key = "${ETHERSCAN_OPTIMISM_KEY}" }
-polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
+# avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }
+# optimism = { key = "${ETHERSCAN_OPTIMISM_KEY}" }
+# polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config

@@ -2,13 +2,13 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ CONTRACT IMPORTS ══════════════════════════════
 
-import {PingPongClient} from "../contracts/client/PingPongClient.sol";
-import {TestClient} from "../contracts/client/TestClient.sol";
-import {IStateHub} from "../contracts/interfaces/IStateHub.sol";
+import { PingPongClient } from "../contracts/client/PingPongClient.sol";
+import { TestClient } from "../contracts/client/TestClient.sol";
+import { IStateHub } from "../contracts/interfaces/IStateHub.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {DeployerUtils} from "./utils/DeployerUtils.sol";
+import { DeployerUtils } from "./utils/DeployerUtils.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {console, stdJson} from "forge-std/Script.sol";
+import { console, stdJson } from "forge-std/Script.sol";
 
 // solhint-disable no-console
 // solhint-disable ordering
@@ -51,7 +51,12 @@ contract DeployClients003Script is DeployerUtils {
         pingPongClient = predictFactoryDeployment(PING_PONG_CLIENT_NAME);
         testClient = predictFactoryDeployment(TEST_CLIENT_NAME);
         // Deploy clients
-        _deployAndCheckAddress(PING_PONG_CLIENT_NAME, _deployPingPongClient, _initNoop, pingPongClient);
+        _deployAndCheckAddress(
+            PING_PONG_CLIENT_NAME,
+            _deployPingPongClient,
+            _initNoop,
+            pingPongClient
+        );
         _deployAndCheckAddress(TEST_CLIENT_NAME, _deployTestClient, _initNoop, testClient);
         stopBroadcast();
         // Check clients without broadcasting
@@ -64,20 +69,34 @@ contract DeployClients003Script is DeployerUtils {
         function(address) internal initFunc,
         address predictedDeployment
     ) internal {
-        (address deployment,) = deployContract(contractName, deployFunc, initFunc);
+        (address deployment, ) = deployContract(contractName, deployFunc, initFunc);
         require(deployment == predictedDeployment, string.concat(contractName, ": wrong address"));
     }
 
-    function _deployPingPongClient() internal returns (address deployment, bytes memory constructorArgs) {
+    function _deployPingPongClient()
+        internal
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new PingPongClient(origin, destination)
         constructorArgs = abi.encode(origin, destination);
-        deployment = factoryDeploy(PING_PONG_CLIENT_NAME, type(PingPongClient).creationCode, constructorArgs);
+        deployment = factoryDeploy(
+            PING_PONG_CLIENT_NAME,
+            type(PingPongClient).creationCode,
+            constructorArgs
+        );
     }
 
-    function _deployTestClient() internal returns (address deployment, bytes memory constructorArgs) {
+    function _deployTestClient()
+        internal
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new TestClient(origin, destination)
         constructorArgs = abi.encode(origin, destination);
-        deployment = factoryDeploy(TEST_CLIENT_NAME, type(TestClient).creationCode, constructorArgs);
+        deployment = factoryDeploy(
+            TEST_CLIENT_NAME,
+            type(TestClient).creationCode,
+            constructorArgs
+        );
     }
 
     function _initNoop(address _deployment) internal {}
@@ -87,12 +106,22 @@ contract DeployClients003Script is DeployerUtils {
         uint256 initialStates = IStateHub(origin).statesAmount();
         uint32 remoteDomain = block.chainid == 10 ? 137 : 10;
         // Check Test Client
-        TestClient(testClient).sendMessage(remoteDomain, address(testClient), 0, 100_000, 0, "test message");
+        TestClient(testClient).sendMessage(
+            remoteDomain,
+            address(testClient),
+            0,
+            100_000,
+            0,
+            "test message"
+        );
         require(IStateHub(origin).statesAmount() == initialStates + 1, "TestClient didn't send");
         console.log(unicode"   TestClient: ✅");
         // Check Ping Pong Client
         PingPongClient(pingPongClient).doPing(remoteDomain, address(pingPongClient), 0);
-        require(IStateHub(origin).statesAmount() == initialStates + 2, "PingPongClient didn't send");
+        require(
+            IStateHub(origin).statesAmount() == initialStates + 2,
+            "PingPongClient didn't send"
+        );
         console.log(unicode"   PingPongClient: ✅");
     }
 }
