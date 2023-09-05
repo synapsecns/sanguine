@@ -3,8 +3,6 @@ import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
-  ROUTER_ADDRESS,
-  TokenWithBalanceAndAllowance,
   TokenWithBalanceAndAllowances,
   separateTokensByAllowance,
   sortTokensByBalanceDescending,
@@ -18,12 +16,7 @@ import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
-import {
-  setSupportedFromTokens,
-  setSupportedToTokens,
-  setToChainId,
-  initialState,
-} from '@/slices/bridge/reducer'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -64,11 +57,12 @@ export const SingleNetworkPortfolio = ({
 
   useEffect(() => {
     if (isUnsupportedChain) {
-      dispatch(setSupportedFromTokens([]))
-      dispatch(setSupportedToTokens(initialState.supportedToTokens))
+      dispatch(setFromToken(null))
+      dispatch(setToToken(null))
     }
   }, [isUnsupportedChain])
 
+<<<<<<< HEAD
   if (!isLoading && hasNoTokenBalance) {
     return <EmptyPortfolioContent />
   } else
@@ -152,6 +146,87 @@ export const SingleNetworkPortfolio = ({
         </PortfolioAccordion>
       </div>
     )
+=======
+  return (
+    <div data-test-id="single-network-portfolio" className="flex flex-col">
+      <PortfolioAccordion
+        connectedChainId={connectedChainId}
+        portfolioChainId={portfolioChainId}
+        selectedFromChainId={selectedFromChainId}
+        initializeExpanded={initializeExpanded}
+        header={
+          <PortfolioNetwork
+            displayName={currentChain?.name}
+            chainIcon={currentChain?.chainImg}
+            isUnsupportedChain={isUnsupportedChain}
+          />
+        }
+        expandedProps={
+          <PortfolioConnectButton
+            connectedChainId={connectedChainId}
+            portfolioChainId={portfolioChainId}
+          />
+        }
+        collapsedProps={
+          <PortfolioTokenVisualizer
+            portfolioTokens={sortedTokensForVisualizer}
+          />
+        }
+      >
+        {isUnsupportedChain && (
+          <WarningMessage
+            twClassName="!p-2 !mt-0"
+            message={
+              <p className="leading-6">
+                This chain is not yet supported. New chain or token support can
+                be discussed on{' '}
+                <a target="_blank" className="underline" href={TWITTER_URL}>
+                  Twitter
+                </a>{' '}
+                or{' '}
+                <a target="_blank" className="underline" href={DISCORD_URL}>
+                  Discord
+                </a>
+                .
+              </p>
+            }
+          />
+        )}
+        <PortfolioHeader />
+        {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
+        {sortedTokensWithAllowance &&
+          sortedTokensWithAllowance.length > 0 &&
+          sortedTokensWithAllowance.map(
+            ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
+              <PortfolioTokenAsset
+                key={token.symbol}
+                token={token}
+                balance={balance}
+                allowances={allowances}
+                portfolioChainId={portfolioChainId}
+                connectedChainId={connectedChainId}
+                isApproved={true}
+              />
+            )
+          )}
+        {sortedTokensWithoutAllowance &&
+          sortedTokensWithoutAllowance.length > 0 &&
+          sortedTokensWithoutAllowance.map(
+            ({ token, balance }: TokenWithBalanceAndAllowances) => (
+              <PortfolioTokenAsset
+                key={token.symbol}
+                token={token}
+                balance={balance}
+                portfolioChainId={portfolioChainId}
+                connectedChainId={connectedChainId}
+                isApproved={false}
+              />
+            )
+          )}
+      </PortfolioAccordion>
+    </div>
+  )
+>>>>>>> master
 }
 
 type PortfolioNetworkProps = {

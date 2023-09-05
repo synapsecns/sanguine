@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.102",
+  "version": "0.1.110",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -18,7 +18,8 @@
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
-    "graphql:generate": "graphql-codegen --config codegen.ts"
+    "graphql:generate": "graphql-codegen --config codegen.ts",
+    "test": "jest --watch"
   },
   "dependencies": {
     "@depay/web3-mock": "^14.0.0",
@@ -38,7 +39,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.2.14",
+    "@synapsecns/sdk-router": "^0.2.15",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
@@ -55,7 +56,7 @@
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
     "bignumber": "^1.1.0",
-    "cypress": "^12.9.0",
+    "cypress": "^13.0.0",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "ethers": "5.7.2",
@@ -109,6 +110,10 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.0",
     "@graphql-codegen/client-preset": "4.1.0",
-    "@graphql-codegen/introspection": "4.0.0"
+    "@graphql-codegen/introspection": "4.0.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^14.0.0",
+    "jest": "^29.6.1",
+    "jest-environment-jsdom": "^29.6.1"
   }
 }

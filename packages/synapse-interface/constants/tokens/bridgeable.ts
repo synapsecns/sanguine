@@ -1,45 +1,54 @@
 import { zeroAddress } from 'viem'
-import synapseLogo from '@assets/icons/synapse.svg'
-import busdLogo from '@assets/icons/busd.svg'
-import usdtLogo from '@assets/icons/usdt.svg'
-import ethLogo from '@assets/icons/eth.svg'
-import nethLogo from '@assets/icons/neth.svg'
-import fraxLogo from '@assets/icons/frax.svg'
-import daiLogo from '@assets/icons/dai.png'
-import nusdLogo from '@assets/icons/nusd.svg'
-import avaxLogo from '@assets/icons/avalanche.svg'
-import movrLogo from '@assets/icons/moonriver.jpeg'
-import jewelLogo from '@assets/icons/jewel.png'
-import wbtcLogo from '@assets/icons/wbtc.svg'
-import noteLogo from '@assets/icons/note.svg'
-import ohmLogo from '@assets/icons/ohm.svg'
-import highLogo from '@assets/icons/highstreet.svg'
-import hyperjumpLogo from '@assets/icons/hyperjump.png'
-import dogLogo from '@assets/icons/dog.png'
-import nfdLogo from '@assets/icons/nfd.svg'
-import sdtLogo from '@assets/icons/sdt.svg'
-import sfiLogo from '@assets/icons/sfi.png'
-import newoLogo from '@assets/icons/newo.svg'
-import vstaLogo from '@assets/icons/vsta.svg'
-import l2daoLogo from '@assets/icons/l2dao.svg'
-import plsLogo from '@assets/icons/pls.svg'
-import chainlinkLogo from '@assets/icons/chainlink.svg'
-import unidexLogo from '@assets/icons/unidex.png'
-import wethLogo from '@assets/icons/weth.svg'
-import usdcLogo from '@assets/icons/usdc.svg'
-import solarbeamLogo from '@assets/icons/solarbeam.png'
-import h2oLogo from '@assets/icons/h2o.svg'
-import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
-import pepeLogo from '@assets/icons/pepe-token.webp'
-import susdLogo from '@assets/icons/sUSD.svg'
+import avaxLogo from '@assets/icons/avax.svg'
 import btcLogo from '@assets/icons/btc.svg'
+import busdLogo from '@assets/icons/busd.svg'
+import linkLogo from '@assets/icons/link.svg'
+import daiLogo from '@assets/icons/dai.svg'
+import dogLogo from '@assets/icons/dog.svg'
+import ethLogo from '@assets/icons/eth.svg'
+import fraxLogo from '@assets/icons/frax.svg'
+import ftmLogo from '@assets/icons/ftm.svg'
+import gmxLogo from '@assets/icons/gmx.svg'
+import h2oLogo from '@assets/icons/h2o.svg'
+import highLogo from '@assets/icons/highstreet.svg'
+import hyperjumpLogo from '@assets/icons/hyperjump.svg'
+import jewelLogo from '@assets/icons/jewel.svg'
 import klayLogo from '@assets/icons/klay.svg'
+import l2daoLogo from '@assets/icons/l2dao.svg'
 import maticLogo from '@assets/icons/matic.svg'
-import ftmLogo from '@assets/icons/fantom.svg'
+import movrLogo from '@assets/icons/movr.svg'
+import nethLogo from '@assets/icons/neth.svg'
+import newoLogo from '@assets/icons/newo.svg'
+import nfdLogo from '@assets/icons/nfd.svg'
+import noteLogo from '@assets/icons/note.svg'
+import nusdLogo from '@assets/icons/nusd.svg'
+import ohmLogo from '@assets/icons/ohm.svg'
+import pepeLogo from '@assets/icons/pepe.svg'
+import plsLogo from '@assets/icons/pls.svg'
+import sdtLogo from '@assets/icons/sdt.svg'
+import sfiLogo from '@assets/icons/sfi.svg'
+import solarbeamLogo from '@assets/icons/solar.svg'
+import susdLogo from '@assets/icons/susd.svg'
+import synapseLogo from '@assets/icons/syn.svg'
+import unidexLogo from '@assets/icons/unidex.svg'
+import usdcLogo from '@assets/icons/usdc.svg'
+import usdtLogo from '@assets/icons/usdt.svg'
+import vstaLogo from '@assets/icons/vsta.svg'
+import wbtcLogo from '@assets/icons/wbtc.svg'
+import wethLogo from '@assets/icons/weth.svg'
 
+import * as AUXILLIARY from './auxilliary'
+import * as BRIDGEABLE from './bridgeable'
+import * as DEPRECATED from './deprecated'
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
+
+export const ALL_TOKENS = {
+  ...AUXILLIARY,
+  ...BRIDGEABLE,
+  ...DEPRECATED,
+}
 
 export const GOHM = new Token({
   addresses: {
@@ -76,7 +85,7 @@ export const LINK = new Token({
   decimals: 18,
   symbol: 'LINK',
   name: 'ChainLink Token',
-  logo: chainlinkLogo,
+  logo: linkLogo,
   swapableType: 'LINK',
   color: 'blue',
   priorityRank: 6,
@@ -758,7 +767,12 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
-  swapableOn: [CHAINS.BASE.id, CHAINS.CANTO.id, CHAINS.FANTOM.id],
+  swapableOn: [
+    CHAINS.ARBITRUM.id,
+    CHAINS.BASE.id,
+    CHAINS.BOBA.id,
+    CHAINS.OPTIMISM.id,
+  ],
   routeSymbol: 'ETH',
 })
 

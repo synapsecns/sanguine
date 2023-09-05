@@ -1,22 +1,22 @@
-import ethImg from '@assets/chains/eth.jpg'
-import bscImg from '@assets/chains/bsc.jpg'
-import polygonImg from '@assets/chains/polygon.jpg'
-import fantomImg from '@assets/chains/fantom.jpg'
-import arbitrumImg from '@assets/chains/arbitrum.jpg'
-import avalancheImg from '@assets/chains/avalanche.jpg'
-import dfkImg from '@assets/chains/dfk.png'
-import auroraImg from '@assets/chains/aurora.png'
-import harmonyImg from '@assets/chains/harmonyone.jpg'
-import optimismImg from '@assets/chains/optimism.png'
-import bobaImg from '@assets/chains/boba.png'
-import moonbeamImg from '@assets/chains/moonbeam.jpg'
-import moonriverImg from '@assets/chains/moonriver.jpeg'
-import cronosImg from '@assets/chains/cronos.png'
-import metisImg from '@assets/chains/metis.png'
-import klaytnImg from '@assets/chains/klaytn.jpeg'
-import dogechainImg from '@assets/chains/dogechain.png'
-import cantoImg from '@assets/chains/canto.svg'
+import arbitrumImg from '@assets/chains/arbitrum.svg'
+import auroraImg from '@assets/chains/aurora.svg'
+import avalancheImg from '@assets/chains/avalanche.svg'
 import baseImg from '@assets/chains/base.svg'
+import bobaImg from '@assets/chains/boba.svg'
+import bscImg from '@assets/chains/bnb.svg'
+import cantoImg from '@assets/chains/canto.svg'
+import cronosImg from '@assets/chains/cronos.svg'
+import dfkImg from '@assets/chains/dfk.svg'
+import dogechainImg from '@assets/chains/dogechain.svg'
+import ethImg from '@assets/chains/ethereum.svg'
+import fantomImg from '@assets/chains/fantom.svg'
+import harmonyImg from '@assets/chains/harmony.svg'
+import klaytnImg from '@assets/chains/klaytn.svg'
+import metisImg from '@assets/chains/metis.svg'
+import moonbeamImg from '@assets/chains/moonbeam.svg'
+import moonriverImg from '@assets/chains/moonriver.svg'
+import optimismImg from '@assets/chains/optimism.svg'
+import polygonImg from '@assets/chains/polygon.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.png'
 import arbitrumExplorerImg from '@assets/explorer/arbitrum.png'
@@ -139,10 +139,15 @@ export const CANTO: Chain = {
     fallback: 'https://canto.slingshot.finance',
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
+<<<<<<< HEAD
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
   explorerImg: cantoExplorerImg,
   color: 'teal',
+=======
+  explorerUrl: 'https://evm.explorer.canto.io',
+  color: 'green',
+>>>>>>> master
 }
 
 export const OPTIMISM: Chain = {
@@ -260,9 +265,13 @@ export const CRONOS: Chain = {
   },
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
+<<<<<<< HEAD
   explorerName: 'CronoScan',
   explorerImg: cronosExplorerImg,
   color: 'blue',
+=======
+  color: 'gray',
+>>>>>>> master
 }
 
 export const BOBA: Chain = {

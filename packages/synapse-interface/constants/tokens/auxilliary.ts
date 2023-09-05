@@ -1,4 +1,4 @@
-import avaxLogo from '@assets/icons/avalanche.svg'
+import avaxLogo from '@assets/icons/avax.svg'
 import avwethLogo from '@assets/icons/avweth.svg'
 import mimLogo from '@assets/icons/mim.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
@@ -24,12 +24,6 @@ export const WETH = new Token({
   name: 'Wrapped ETH',
   logo: wethLogo,
   swapableType: 'ETH',
-  swapableOn: [
-    CHAINS.ARBITRUM.id,
-    CHAINS.BOBA.id,
-    CHAINS.OPTIMISM.id,
-    CHAINS.METIS.id,
-  ],
   color: 'sky',
   priorityRank: 3,
   routeSymbol: 'WETH',

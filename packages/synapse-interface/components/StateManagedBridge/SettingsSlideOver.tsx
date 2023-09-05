@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Switch } from '@headlessui/react'
@@ -21,9 +21,9 @@ const SettingsSlideOver = () => {
   const dispatch = useDispatch()
   const escPressed = useKeyPress('Escape')
 
-  const [expertMode, setExpertMode] = useState(false)
-
-  const { deadlineMinutes } = useSelector((state: RootState) => state.bridge)
+  const { showDestinationAddress } = useSelector(
+    (state: RootState) => state.bridgeDisplay
+  )
 
   function onClose() {
     dispatch(setShowSettingsSlideOver(false))
@@ -38,23 +38,15 @@ const SettingsSlideOver = () => {
   useEffect(escFunc, [escPressed])
 
   return (
-    <div className="max-h-full pb-4 overflow-auto rounded-3xl">
+    <div className="max-h-full pb-4 overflow-auto rounded-lg">
       <div
         className={`
-         px-3 md:px-6 rounded-xl text-base focus:outline-none
+         px-3 md:px-6 rounded-md text-base focus:outline-none
           overflow-hidden z-10 w-full
           space-y-4
         `}
       >
-        <div className="pt-2">
-          {/* <div className="flex items-center mb-4 text-sm font-light text-white">
-            Deadline
-            <Tooltip content="Enter deadline in minutes">
-              <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
-            </Tooltip>
-          </div>
-          <DeadlineInput deadlineMinutes={deadlineMinutes} /> */}
-        </div>
+        <div className="pt-2"></div>
         <div className="text-sm font-light text-white">Options</div>
         {/* @ts-ignore */}
         <Switch.Group>
@@ -66,21 +58,19 @@ const SettingsSlideOver = () => {
               </Tooltip>
             </Switch.Label>
             <Switch
-              checked={expertMode}
+              checked={showDestinationAddress}
               onChange={(selected: boolean) => {
                 if (selected) {
                   dispatch(setShowDestinationAddress(true))
-                  setExpertMode(true)
                 } else {
                   dispatch(setShowDestinationAddress(false))
                   dispatch(setDestinationAddress(null))
-                  setExpertMode(false)
                 }
               }}
               className={`
                 bg-gradient-to-r
                 ${
-                  expertMode
+                  showDestinationAddress
                     ? ' from-[#FF00FF] to-[#AC8FFF]'
                     : 'from-gray-900 to-gray-900'
                 }
@@ -89,14 +79,14 @@ const SettingsSlideOver = () => {
             >
               <span
                 className={`
-                  ${expertMode ? 'translate-x-6' : 'translate-x-1'}
+                  ${showDestinationAddress ? 'translate-x-6' : 'translate-x-1'}
                   inline-block w-6 h-6 transform bg-white rounded-full transition-transform
                 `}
               />
             </Switch>
           </div>
         </Switch.Group>
-        {expertMode && <WithdrawalWarning onClose={onClose} />}
+        {showDestinationAddress && <WithdrawalWarning onClose={onClose} />}
       </div>
     </div>
   )
@@ -104,7 +94,7 @@ const SettingsSlideOver = () => {
 
 const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
   return (
-    <div className="w-full p-4 bg-bgLight rounded-xl">
+    <div className="w-full p-4 bg-bgLight rounded-md">
       <div className="flex items-center justify-between space-x-1">
         <div className="w-3/4 text-xs text-white md:text-sm">
           Do not send your funds to a custodial wallet or exchange address!{' '}
@@ -114,7 +104,7 @@ const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
         </div>
         <Button
           className={`
-            p-4 rounded-xl
+            p-4 rounded-md
             text-sm font-medium text-white
             bg-bgLighter hover:bg-bgLightest active:bg-bgLightest
           `}
@@ -141,7 +131,7 @@ const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
           hover:border-gradient-br-magenta-melrose-bgLight hover:border-solid
           focus-within:border-gradient-br-magenta-melrose-bgLight focus-within:border-solid
           pl-1
-          py-0.5 rounded-xl
+          py-0.5 rounded-md
         `}
       >
         <input

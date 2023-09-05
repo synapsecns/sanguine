@@ -14,6 +14,7 @@ import {
   useChainModal,
 } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 export const BridgeTransactionButton = ({
@@ -21,8 +22,7 @@ export const BridgeTransactionButton = ({
   executeBridge,
   isApproved,
 }) => {
-  // TODO: This is only implemented this way to fix a Next Hydration Error
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
+  const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
@@ -38,15 +38,16 @@ export const BridgeTransactionButton = ({
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  // Get state from Redux store
   const {
     destinationAddress,
     fromToken,
     fromValue,
+    toToken,
     fromChainId,
+    toChainId,
     isLoading,
     bridgeQuote,
-  } = useSelector((state: RootState) => state.bridge)
+  } = useBridgeState()
 
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
@@ -55,10 +56,11 @@ export const BridgeTransactionButton = ({
   const balances = usePortfolioBalances()
   const balancesForChain = balances[fromChainId]
   const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken.addresses[fromChainId]
+    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
   const sufficientBalance = useMemo(() => {
+    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
     return (
       stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
@@ -82,7 +84,17 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!fromToken) {
+  if (!fromChainId) {
+    buttonProperties = {
+      label: 'Please select Origin network',
+      onClick: null,
+    }
+  } else if (!toChainId) {
+    buttonProperties = {
+      label: 'Please select Destination network',
+      onClick: null,
+    }
+  } else if (!fromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
       onClick: null,
