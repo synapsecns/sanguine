@@ -82,20 +82,7 @@ export const TransactionOptions = ({
             <DropdownButton open={open} />
           </Popover.Button>
           <TransactionPopoverContainer>
-            {transactionStatus === TransactionStatus.COMPLETED ? (
-              <OptionButton
-                icon={
-                  <Image
-                    className="rounded-full"
-                    height={20}
-                    src={SynapseLogo}
-                    alt={`${originChain.explorerName} logo`}
-                  />
-                }
-                text={`Check on Synapse Explorer`}
-                onClick={handleExplorerClick}
-              />
-            ) : (
+            {transactionStatus === TransactionStatus.INITIALIZING && (
               <OptionButton
                 icon={
                   <Image
@@ -106,6 +93,34 @@ export const TransactionOptions = ({
                   />
                 }
                 text={`Check on ${originChain.explorerName}`}
+                onClick={handleExplorerClick}
+              />
+            )}
+            {transactionStatus === TransactionStatus.PENDING && (
+              <OptionButton
+                icon={
+                  <Image
+                    className="rounded-full"
+                    height={20}
+                    src={destinationChain.explorerImg}
+                    alt={`${destinationChain.explorerName} logo`}
+                  />
+                }
+                text={`Check on ${destinationChain.explorerName}`}
+                onClick={handleExplorerClick}
+              />
+            )}
+            {transactionStatus === TransactionStatus.COMPLETED && (
+              <OptionButton
+                icon={
+                  <Image
+                    className="rounded-full"
+                    height={20}
+                    src={SynapseLogo}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                }
+                text={`Check on Synapse Explorer`}
                 onClick={handleExplorerClick}
               />
             )}
