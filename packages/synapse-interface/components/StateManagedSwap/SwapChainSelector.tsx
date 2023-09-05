@@ -1,37 +1,37 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
+import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
 import {
   getNetworkButtonBgClassNameActive,
   getNetworkButtonBorderActive,
   getNetworkButtonBorderHover,
   getNetworkHover,
 } from '@/styles/chains'
+import { useSwapState } from '@/slices/swap/hooks'
+import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 
-export const FromChainSelector = () => {
+export const SwapChainSelector = () => {
   const dispatch = useDispatch()
-  const { fromChainId } = useBridgeState()
-  const fromChain = CHAINS_BY_ID[fromChainId]
+  const { swapChainId } = useSwapState()
+  const chain = CHAINS_BY_ID[swapChainId]
 
   let buttonContent
 
-  if (fromChainId) {
+  if (swapChainId) {
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div>
           <img
-            src={fromChain.chainImg.src}
-            alt={fromChain.name}
+            src={chain.chainImg.src}
+            alt={chain.name}
             className="w-6 h-6 rounded-sm"
           />
         </div>
         <div className="text-left">
           <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">{fromChain.name}</div>
+          <div className="text-md text-primaryTextColor">{chain.name}</div>
         </div>
         <DropDownArrowSvg />
       </div>
@@ -54,14 +54,14 @@ export const FromChainSelector = () => {
       className={`
         bg-transparent
         p-md
-        ${getNetworkHover(fromChain?.color)}
-        ${getNetworkButtonBgClassNameActive(fromChain?.color)}
+        ${getNetworkHover(chain?.color)}
+        ${getNetworkButtonBgClassNameActive(chain?.color)}
         border border-transparent
-        ${getNetworkButtonBorderActive(fromChain?.color)}
-        ${getNetworkButtonBorderHover(fromChain?.color)}
+        ${getNetworkButtonBorderActive(chain?.color)}
+        ${getNetworkButtonBorderHover(chain?.color)}
         rounded-sm
       `}
-      onClick={() => dispatch(setShowFromChainListOverlay(true))}
+      onClick={() => dispatch(setShowSwapChainListOverlay(true))}
     >
       <div className="flex items-center">{buttonContent}</div>
     </button>

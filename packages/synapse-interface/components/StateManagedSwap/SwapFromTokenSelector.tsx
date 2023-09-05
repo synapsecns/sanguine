@@ -1,24 +1,24 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
 } from '@/styles/tokens'
+import { useSwapState } from '@/slices/swap/hooks'
+import { setShowSwapFromTokenListOverlay } from '@/slices/swapDisplaySlice'
 
-export const FromTokenSelector = () => {
+export const SwapFromTokenSelector = () => {
   const dispatch = useDispatch()
 
-  const { fromToken } = useBridgeState()
+  const { swapFromToken } = useSwapState()
 
   let buttonContent
 
-  if (fromToken) {
-    const src = fromToken.icon.src
-    const symbol = fromToken.symbol
+  if (swapFromToken) {
+    const src = swapFromToken.icon.src
+    const symbol = swapFromToken.symbol
 
     buttonContent = (
       <div className="flex items-center space-x-2">
@@ -48,11 +48,11 @@ export const FromTokenSelector = () => {
       className={`
         p-md rounded-sm min-w-[80px]
         bg-[#565058]
-        ${getMenuItemHoverBgForCoin(fromToken?.color)}
+        ${getMenuItemHoverBgForCoin(swapFromToken?.color)}
         border border-transparent
-        ${getBorderStyleForCoinHover(fromToken?.color)}
+        ${getBorderStyleForCoinHover(swapFromToken?.color)}
       `}
-      onClick={() => dispatch(setShowFromTokenListOverlay(true))}
+      onClick={() => dispatch(setShowSwapFromTokenListOverlay(true))}
     >
       {buttonContent}
     </button>

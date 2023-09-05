@@ -1,24 +1,24 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
 } from '@/styles/tokens'
+import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
+import { useSwapState } from '@/slices/swap/hooks'
 
-export const FromTokenSelector = () => {
+export const SwapToTokenSelector = () => {
   const dispatch = useDispatch()
 
-  const { fromToken } = useBridgeState()
+  const { swapToToken } = useSwapState()
 
   let buttonContent
 
-  if (fromToken) {
-    const src = fromToken.icon.src
-    const symbol = fromToken.symbol
+  if (swapToToken) {
+    const src = swapToToken.icon.src
+    const symbol = swapToToken.symbol
 
     buttonContent = (
       <div className="flex items-center space-x-2">
@@ -35,7 +35,7 @@ export const FromTokenSelector = () => {
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
-          <div className="text-lg text-primaryTextColor">In</div>
+          <div className="text-lg text-primaryTextColor">Out</div>
         </div>
         <DropDownArrowSvg className="flex-none" />
       </div>
@@ -44,15 +44,15 @@ export const FromTokenSelector = () => {
 
   return (
     <button
-      data-test-id="bridge-origin-token"
+      data-test-id="bridge-destination-token"
       className={`
         p-md rounded-sm min-w-[80px]
         bg-[#565058]
-        ${getMenuItemHoverBgForCoin(fromToken?.color)}
+        ${getMenuItemHoverBgForCoin(swapToToken?.color)}
         border border-transparent
-        ${getBorderStyleForCoinHover(fromToken?.color)}
+        ${getBorderStyleForCoinHover(swapToToken?.color)}
       `}
-      onClick={() => dispatch(setShowFromTokenListOverlay(true))}
+      onClick={() => dispatch(setShowSwapToTokenListOverlay(true))}
     >
       {buttonContent}
     </button>

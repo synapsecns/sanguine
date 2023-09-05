@@ -10,6 +10,7 @@ import poolDepositReducer from '@/slices/poolDepositSlice'
 import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
 import portfolioReducer from '@/slices/portfolio/reducer'
 import swapReducer from '@/slices/swap/reducer'
+import swapDisplayReducer from '@/slices/swapDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
@@ -22,6 +23,7 @@ export const store = configureStore({
     poolWithdraw: poolWithdrawReducer,
     portfolio: portfolioReducer,
     swap: swapReducer,
+    swapDisplay: swapDisplayReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
