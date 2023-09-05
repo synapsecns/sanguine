@@ -440,27 +440,27 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   chainId: CHAINS.CANTO.id,
 })
 
-export const CANTO_USDC_SWAP_TOKEN = new Token({
-  addresses: {
-    [CHAINS.CANTO.id]: '0xB690FCA5bDc6Ae32c7316dF9B7B7963B7103Fc95',
-  },
-  decimals: 18,
-  name: 'Synapse nUSD LP Token Canto',
-  symbol: 'nUSD-LP',
-  logo: synapseLogo,
-  poolName: 'Canto USDC Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
-  routerIndex: 'cantousdcpool',
-  poolId: 2,
-  poolType: 'USD',
-  swapAddresses: {
-    [CHAINS.CANTO.id]: '0x273508478e099Fdf953349e6B3704E7c3dEE91a5',
-  },
-  poolTokens: [NUSD, USDC],
-  description: "Synapse's nUSD & USDC stableswap LP token on Canto",
-  display: true,
-  priorityRank: 6,
-  chainId: CHAINS.CANTO.id,
-})
+// export const CANTO_USDC_SWAP_TOKEN = new Token({
+//   addresses: {
+//     [CHAINS.CANTO.id]: '0xB690FCA5bDc6Ae32c7316dF9B7B7963B7103Fc95',
+//   },
+//   decimals: 18,
+//   name: 'Synapse nUSD LP Token Canto',
+//   symbol: 'nUSD-LP',
+//   logo: synapseLogo,
+//   poolName: 'Canto USDC Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+//   routerIndex: 'cantousdcpool',
+//   poolId: 2,
+//   poolType: 'USD',
+//   swapAddresses: {
+//     [CHAINS.CANTO.id]: '0x273508478e099Fdf953349e6B3704E7c3dEE91a5',
+//   },
+//   poolTokens: [NUSD, USDC],
+//   description: "Synapse's nUSD & USDC stableswap LP token on Canto",
+//   display: true,
+//   priorityRank: 6,
+//   chainId: CHAINS.CANTO.id,
+// })
 
 export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   addresses: {
