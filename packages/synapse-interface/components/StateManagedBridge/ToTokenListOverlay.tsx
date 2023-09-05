@@ -14,7 +14,6 @@ import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import { sortByPriorityRank } from './helpers/sortByPriorityRank'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
@@ -22,7 +21,6 @@ import { SearchResults } from './components/SearchResults'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, toTokens, toChainId, toToken } = useBridgeState()
-  const portfolioBalances = usePortfolioBalances()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -38,9 +36,9 @@ export const ToTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingChainTokens = sortByPriorityRank(
-    _.difference(allToChainTokens, toTokens)
-  )
+  let remainingChainTokens = toChainId
+    ? sortByPriorityRank(_.difference(allToChainTokens, toTokens))
+    : []
 
   const { toTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
@@ -49,9 +47,9 @@ export const ToTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherToTokens = sortByPriorityRank(
-    _.difference(allTokens, allToChainTokens)
-  )
+  let allOtherToTokens = toChainId
+    ? sortByPriorityRank(_.difference(allTokens, allToChainTokens))
+    : sortByPriorityRank(allTokens)
 
   const possibleTokenswithSource = possibleTokens.map((token) => ({
     ...token,
