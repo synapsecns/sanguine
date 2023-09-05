@@ -3,11 +3,6 @@ package client_test
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"net/url"
-	"sync"
-	"testing"
-
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -18,6 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"golang.org/x/sync/errgroup"
+	"math/big"
+	"net/url"
+	"sync"
+	"testing"
 )
 
 type TestClientSuite struct {
@@ -70,7 +69,7 @@ func (s *TestClientSuite) SetupJaeger() {
 	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 
 	var err error
-	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	s.Require().Nil(err)
 }
 

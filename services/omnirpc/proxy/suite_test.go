@@ -1,14 +1,13 @@
 package proxy_test
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
+	"testing"
 )
 
 type ProxySuite struct {
@@ -30,7 +29,7 @@ func (p *ProxySuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(p.GetSuiteContext(), p.T())
 
 	var err error
-	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(p.T(), err)
 }
 

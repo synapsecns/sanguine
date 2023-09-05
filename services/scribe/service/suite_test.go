@@ -1,12 +1,11 @@
 package service_test
 
 import (
-	"testing"
-	"time"
-
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -57,7 +56,7 @@ func (s *ScribeSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 
 	var err error
-	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	Nil(s.T(), err)
 
 	s.nullMetrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)

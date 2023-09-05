@@ -3,10 +3,6 @@ package db_test
 import (
 	dbSQL "database/sql"
 	"fmt"
-	"os"
-	"sync"
-	"testing"
-
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -19,6 +15,9 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/mysql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	"gorm.io/gorm/schema"
+	"os"
+	"sync"
+	"testing"
 )
 
 type DBSuite struct {
@@ -41,7 +40,7 @@ func (d *DBSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(d.GetSuiteContext(), d.T())
 
 	var err error
-	d.metrics, err = metrics.NewByType(d.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	d.metrics, err = metrics.NewByType(d.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	Nil(d.T(), err)
 }
 

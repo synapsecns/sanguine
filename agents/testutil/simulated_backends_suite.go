@@ -158,7 +158,7 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 
 	if useMetrics {
 		localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
-		metricsHandler = metrics.Null
+		metricsHandler = metrics.Jaeger
 	}
 
 	var err error

@@ -4,12 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math/big"
-	"os"
-	"sync"
-	"testing"
-	"time"
-
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -37,6 +31,11 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"math/big"
+	"os"
+	"sync"
+	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -93,7 +92,7 @@ func (s *SubmitterSuite) SetupSuite() {
 		defer wg.Done()
 		var err error
 		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
-		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Null)
+		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Jaeger)
 		s.Require().NoError(err)
 	}()
 
@@ -183,7 +182,7 @@ func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metrics.Null)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metrics.Jaeger)
 	t.Require().NoError(err)
 }
 

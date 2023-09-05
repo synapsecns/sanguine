@@ -1,8 +1,6 @@
 package db_test
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -14,6 +12,7 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"go.uber.org/atomic"
+	"testing"
 )
 
 type DBSuite struct {
@@ -42,7 +41,7 @@ func (t *DBSuite) SetupTest() {
 	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 
 	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	t.Require().Nil(err)
 	t.db, t.eventDB, t.gqlClient, t.logIndex, t.cleanup, t.testBackend, t.deployManager = testutil.NewTestEnvDB(t.GetTestContext(), t.T(), t.scribeMetrics)
 }

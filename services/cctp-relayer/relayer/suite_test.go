@@ -3,13 +3,12 @@ package relayer_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/sqlite"
 	"math/big"
 	"net/url"
 	"strconv"
 	"testing"
-
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/sqlite"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -165,7 +164,7 @@ func (s *CCTPRelayerSuite) SetupTest() {
 
 	// create the test metrics handler
 	var err error
-	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Null)
+	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Jaeger)
 	s.Require().NoError(err)
 
 	// create the test store

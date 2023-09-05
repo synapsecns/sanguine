@@ -2,7 +2,6 @@ package consumer_test
 
 import (
 	"fmt"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -16,14 +15,13 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 
-	"math/big"
-	"testing"
-
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"go.uber.org/atomic"
+	"math/big"
+	"testing"
 )
 
 // ConsumerSuite is the config test suite.
@@ -101,7 +99,7 @@ func (c *ConsumerSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
 	var err error
-	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)
 }
 

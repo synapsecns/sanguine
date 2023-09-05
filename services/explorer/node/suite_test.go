@@ -2,9 +2,6 @@ package node_test
 
 import (
 	"fmt"
-	"math/big"
-	"testing"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -15,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
+	"math/big"
+	"testing"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
@@ -89,9 +88,9 @@ func (c *NodeSuite) SetupSuite() {
 
 	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
 	var err error
-	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Null)
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)
-	c.explorerMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	c.explorerMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)
 }
 

@@ -2,8 +2,6 @@ package client_test
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -15,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"testing"
 )
 
 // ClientSuite defines the basic test suite.
@@ -45,7 +44,7 @@ func (g *ClientSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
 
 	var err error
-	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	g.Require().Nil(err)
 }
 

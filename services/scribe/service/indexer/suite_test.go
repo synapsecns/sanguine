@@ -1,12 +1,11 @@
 package indexer_test
 
 import (
-	"testing"
-	"time"
-
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -54,7 +53,7 @@ func (x *IndexerSuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(x.GetSuiteContext(), x.T())
 
 	var err error
-	x.metrics, err = metrics.NewByType(x.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
+	x.metrics, err = metrics.NewByType(x.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	Nil(x.T(), err)
 }
 
