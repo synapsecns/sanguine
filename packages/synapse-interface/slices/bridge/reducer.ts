@@ -3,19 +3,6 @@ import { Address } from 'wagmi'
 
 import { ETH } from '@/constants/tokens/bridgeable'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-<<<<<<< HEAD
-import { ETH } from '@/constants/tokens/bridgeable'
-import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
-import { BridgeQuote, Token } from '@/utils/types'
-import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
-import {
-  PendingBridgeTransaction,
-  addPendingBridgeTransaction,
-  removePendingBridgeTransaction,
-  updatePendingBridgeTransaction,
-  updatePendingBridgeTransactions,
-} from './actions'
-=======
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import {
@@ -27,7 +14,13 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
->>>>>>> master
+import {
+  PendingBridgeTransaction,
+  addPendingBridgeTransaction,
+  removePendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+  updatePendingBridgeTransactions,
+} from './actions'
 
 export interface BridgeState {
   fromChainId: number
