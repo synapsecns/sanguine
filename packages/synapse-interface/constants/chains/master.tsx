@@ -139,15 +139,10 @@ export const CANTO: Chain = {
     fallback: 'https://canto.slingshot.finance',
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
-<<<<<<< HEAD
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
   explorerImg: cantoExplorerImg,
-  color: 'teal',
-=======
-  explorerUrl: 'https://evm.explorer.canto.io',
   color: 'green',
->>>>>>> master
 }
 
 export const OPTIMISM: Chain = {
@@ -265,13 +260,9 @@ export const CRONOS: Chain = {
   },
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
-<<<<<<< HEAD
   explorerName: 'CronoScan',
   explorerImg: cronosExplorerImg,
-  color: 'blue',
-=======
   color: 'gray',
->>>>>>> master
 }
 
 export const BOBA: Chain = {
