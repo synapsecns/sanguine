@@ -16,9 +16,13 @@ import {
   SYNJEWEL,
   AVAX,
   METISUSDC,
+  DAIE,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
+  FANTOMETH,
+  FANTOMUSDC,
+  FANTOMUSDT,
   KLAYTN_oUSDT,
   MIM,
   MULTIAVAX,
@@ -95,7 +99,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.OPTIMISM.id]: '0xF44938b0125A6662f9536281aD2CD6c499F22004',
   },
-  poolTokens: [NUSD, USDC],
+  poolTokens: [NUSD, USDCe],
   description: "Synapse's 2pool stableswap LP token on Optimism",
   display: true,
   priorityPool: true,
@@ -190,7 +194,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AVALANCHE.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
   },
-  poolTokens: [NUSD, DAI, USDCe, USDTe],
+  poolTokens: [NUSD, DAIE, USDCe, USDTe],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
@@ -236,7 +240,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
   },
-  poolTokens: [NUSD, MIM, USDC, USDT],
+  poolTokens: [NUSD, MIM, FANTOMUSDC, FANTOMUSDT],
   description: "Synapse's 4pool stableswap LP token on Fantom",
   display: true,
   legacy: true,
@@ -311,7 +315,7 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AURORA.id]: '0xcEf6C2e20898C2604886b888552CA6CcF66933B0',
   },
-  poolTokens: [NUSD, USDC, USDT],
+  poolTokens: [NUSD, USDCe, USDTe],
   description: "Synapse's 3pool stableswap LP token on Aurora",
   display: true,
   legacy: true,
@@ -382,7 +386,7 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x85662fd123280827e11C59973Ac9fcBE838dC3B4',
   },
-  poolTokens: [NUSD, USDC, USDT],
+  poolTokens: [NUSD, FANTOMUSDC, FANTOMUSDT],
   description: "Synapse's 3pool stableswap LP token on Fantom",
   display: true,
   priorityPool: true,
@@ -689,7 +693,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
   },
-  poolTokens: [NETH, ETH],
+  poolTokens: [NETH, FANTOMETH],
   description: "Synapse's ETH swap LP token on Fantom",
   display: true,
   priorityPool: true,
