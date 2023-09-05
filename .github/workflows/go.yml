@@ -160,17 +160,17 @@ jobs:
           PYROSCOPE_PATH: "${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}"
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
-      - name: Test
-        uses: nick-fields/retry@v2
+      #      - name: Test
+      #        uses: nick-fields/retry@v2
+      #        with:
+      #          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
+      #          max_attempts: 2
+      #          timeout_minutes: 20
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
         with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
-          max_attempts: 2
-          timeout_minutes: 20
-#      - name: Setup upterm session
-#        uses: lhotari/action-upterm@v1
-#        with:
           ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-          #limit-access-to-users: trajan0x,cryptomaxplanck
+          limit-access-to-users: trajan0x,cryptomaxplanck
         env:
           PYROSCOPE_PATH: "${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}"
           ENABLE_MYSQL_TEST: true
