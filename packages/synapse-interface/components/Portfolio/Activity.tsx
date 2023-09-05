@@ -501,7 +501,7 @@ export const Completed = ({
           Today
         </div>
       ) : (
-        <div>{formattedTime}</div>
+        <div className="cursor-pointer hover:underline">{formattedTime}</div>
       )}
     </div>
   )
