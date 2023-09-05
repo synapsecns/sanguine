@@ -412,35 +412,57 @@ const TransactionStatusDetails = ({
 
     return (
       <div data-test-id="pending-status" className={`${sharedClass} p-2 flex`}>
-        <div
-          className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
-          onClick={handleOriginExplorerClick}
-        >
-          <Image
-            className="w-4 h-4 my-auto mr-1.5 rounded-full"
-            src={originChain.explorerImg}
-            alt={`${originChain.explorerName} logo`}
-          />
-          {isDelayed ? (
-            <div className="text-[#FFDD33]">Taking longer than expected.</div>
-          ) : (
-            <div>Confirmed on {originChain.explorerName}.</div>
-          )}
-        </div>
-        <div
-          onClick={handleDestinationExplorerClick}
-          className="mr-auto cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
-        >
-          Bridging to {destinationChain.name}.
-        </div>
-        <TransactionOptions
-          connectedAddress={connectedAddress as Address}
-          originChain={originChain}
-          destinationChain={destinationChain}
-          kappa={kappa}
-          transactionHash={transactionHash}
-          transactionStatus={transactionStatus}
-        />
+        {isDelayed ? (
+          <>
+            <div
+              className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#FFDD33] hover:underline p-1 items-center"
+              onClick={handleDestinationExplorerClick}
+            >
+              <Image
+                className="w-4 h-4 my-auto mr-1.5 rounded-full"
+                src={destinationChain.explorerImg}
+                alt={`${destinationChain.explorerName} logo`}
+              />
+              <div className="text-[#FFDD33]">Taking longer than expected.</div>
+            </div>
+            <TransactionOptions
+              connectedAddress={connectedAddress as Address}
+              originChain={originChain}
+              destinationChain={destinationChain}
+              kappa={kappa}
+              transactionHash={transactionHash}
+              transactionStatus={transactionStatus}
+            />
+          </>
+        ) : (
+          <>
+            <div
+              className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1 items-center"
+              onClick={handleOriginExplorerClick}
+            >
+              <Image
+                className="w-4 h-4 my-auto mr-1.5 rounded-full"
+                src={originChain.explorerImg}
+                alt={`${originChain.explorerName} logo`}
+              />
+              <div>Confirmed on {originChain.explorerName}.</div>
+            </div>
+            <div
+              onClick={handleDestinationExplorerClick}
+              className="mr-auto cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
+            >
+              Bridging to {destinationChain.name}.
+            </div>
+            <TransactionOptions
+              connectedAddress={connectedAddress as Address}
+              originChain={originChain}
+              destinationChain={destinationChain}
+              kappa={kappa}
+              transactionHash={transactionHash}
+              transactionStatus={transactionStatus}
+            />
+          </>
+        )}
       </div>
     )
   }
