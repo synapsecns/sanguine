@@ -251,6 +251,38 @@ export const PendingTransaction = ({
       : null
   }, [originChain, eventType, originToken])
 
+  const [elapsedTime, setElapsedTime] = useState<number>(0)
+
+  useEffect(() => {
+    const currentTime: number = Math.floor(Date.now() / 1000)
+    const elapsedMinutes: number = Math.floor(
+      (currentTime - startedTimestamp) / 60
+    )
+    setElapsedTime(elapsedMinutes)
+  }, [startedTimestamp])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime: number = Math.floor(Date.now() / 1000)
+      const elapsedMinutes: number = Math.floor(
+        (currentTime - startedTimestamp) / 60
+      )
+      setElapsedTime(elapsedMinutes)
+    }, 60000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [startedTimestamp])
+
+  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const timeRemaining: number = useMemo(() => {
+    if (!startedTimestamp || !elapsedTime) return estimatedMinutes
+    return estimatedMinutes - elapsedTime
+  }, [estimatedMinutes, elapsedTime, startedTimestamp])
+
+  const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
       const updateResolvedTransaction = async () => {
@@ -303,6 +335,7 @@ export const PendingTransaction = ({
           kappa={kappa}
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
+          isDelayed={isDelayed}
         />
       </Transaction>
     </div>
@@ -316,6 +349,7 @@ const TransactionStatusDetails = ({
   kappa,
   transactionHash,
   transactionStatus,
+  isDelayed,
 }: {
   connectedAddress: Address
   originChain: Chain
@@ -323,6 +357,7 @@ const TransactionStatusDetails = ({
   kappa?: string
   transactionHash?: string
   transactionStatus: TransactionStatus
+  isDelayed: boolean
 }) => {
   const sharedClass: string =
     'flex bg-tint border-t border-surface text-sm items-center'
@@ -386,7 +421,11 @@ const TransactionStatusDetails = ({
             src={originChain.explorerImg}
             alt={`${originChain.explorerName} logo`}
           />
-          <div>Confirmed on {originChain.explorerName}.</div>
+          {isDelayed ? (
+            <div className="text-[#FFDD33]">Taking longer than expected.</div>
+          ) : (
+            <div>Confirmed on {originChain.explorerName}.</div>
+          )}
         </div>
         <div
           onClick={handleDestinationExplorerClick}
