@@ -91,6 +91,34 @@ export const Transaction = ({
       : null
   }, [originChain])
 
+  useEffect(() => {
+    const currentTime: number = Math.floor(Date.now() / 1000)
+    const elapsedMinutes: number = Math.floor(
+      (currentTime - startedTimestamp) / 60
+    )
+    setElapsedTime(elapsedMinutes)
+  }, [startedTimestamp])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime: number = Math.floor(Date.now() / 1000)
+      const elapsedMinutes: number = Math.floor(
+        (currentTime - startedTimestamp) / 60
+      )
+      setElapsedTime(elapsedMinutes)
+    }, 60000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [startedTimestamp])
+
+  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const timeRemaining: number = useMemo(() => {
+    if (!startedTimestamp || !elapsedTime) return estimatedMinutes
+    return estimatedMinutes - elapsedTime
+  }, [estimatedMinutes, elapsedTime, startedTimestamp])
+
   return (
     <div
       data-test-id="transaction"
@@ -140,13 +168,8 @@ export const Transaction = ({
           <div className="p-3">
             {!isCompleted && transactionType === TransactionType.PENDING ? (
               <EstimatedDuration
-                elapsedTime={elapsedTime}
-                setElapsedTime={setElapsedTime}
-                startTime={startedTimestamp}
+                timeRemaining={timeRemaining}
                 transactionStatus={transactionStatus}
-                estimatedCompletionInSeconds={
-                  estimatedDuration ?? estimatedCompletionInSeconds
-                }
               />
             ) : (
               <Completed

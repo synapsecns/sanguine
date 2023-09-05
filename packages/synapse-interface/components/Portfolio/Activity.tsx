@@ -422,42 +422,12 @@ export const getTransactionExplorerLink = ({
 }
 
 export const EstimatedDuration = ({
-  elapsedTime,
-  setElapsedTime,
-  startTime,
+  timeRemaining,
   transactionStatus,
-  estimatedCompletionInSeconds,
 }: {
-  elapsedTime: number
-  setElapsedTime: Dispatch<SetStateAction<number>>
-  startTime: number
+  timeRemaining: number
   transactionStatus: TransactionStatus
-  estimatedCompletionInSeconds: number
 }) => {
-  useEffect(() => {
-    const currentTime: number = Math.floor(Date.now() / 1000)
-    const elapsedMinutes: number = Math.floor((currentTime - startTime) / 60)
-    setElapsedTime(elapsedMinutes)
-  }, [startTime])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime: number = Math.floor(Date.now() / 1000)
-      const elapsedMinutes: number = Math.floor((currentTime - startTime) / 60)
-      setElapsedTime(elapsedMinutes)
-    }, 60000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [startTime])
-
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
-  const timeRemaining: number = useMemo(() => {
-    if (!startTime || !elapsedTime) return estimatedMinutes
-    return estimatedMinutes - elapsedTime
-  }, [estimatedMinutes, elapsedTime, startTime])
-
   return (
     <div className="text-[#C2C2D6] text-sm flex flex-col">
       {timeRemaining >= 0 ? (
