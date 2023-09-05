@@ -45,14 +45,24 @@ export const testerMasterVsJson = () => {
   Object.entries(BRIDGEABLE).forEach(([_key, token]) => {
     const map = generateChainIdAddressMapping(token.routeSymbol)
 
-    if (!_.isEqual(token.addresses, map)) {
+    if (!caseInsensitiveDeepEqual(token.addresses, map)) {
       console.log(token.routeSymbol)
       console.log(`token.addresses count`, Object.keys(token.addresses).length)
       console.log(`map`, Object.keys(map).length)
       console.log(`token.addresses`, token.addresses)
       console.log(`map`, map)
-      console.log('same addresses', _.isEqual(token.addresses, map))
+      console.log(
+        'same addresses',
+        caseInsensitiveDeepEqual(token.addresses, map)
+      )
       console.log('\n')
     }
   })
+}
+
+const caseInsensitiveDeepEqual = (obj1, obj2) => {
+  const formattedObj1 = _.mapValues(obj1, (v) => v.toLowerCase())
+  const formattedObj2 = _.mapValues(obj2, (v) => v.toLowerCase())
+
+  return _.isEqual(formattedObj1, formattedObj2)
 }
