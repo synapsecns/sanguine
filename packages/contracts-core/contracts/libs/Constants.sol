@@ -47,7 +47,7 @@ uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 /// @dev Amount of time without fresh data from Notaries before contract owner can resolve stuck disputes manually
 uint256 constant FRESH_DATA_TIMEOUT = 4 hours;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
-uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
+uint256 constant MAX_CONTENT_BYTES = 2 * 2**10;
 /// @dev Domain of the Synapse Chain
 // TODO: replace the placeholder with actual value (for MVP this is Optimism chainId)
-uint32 constant SYNAPSE_DOMAIN = 10;
+uint32 constant SYNAPSE_DOMAIN = 444;

@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {console, Script, stdJson} from "forge-std/Script.sol";
+import { console, Script, stdJson } from "forge-std/Script.sol";
 
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 interface ICreate3Factory {
-    function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
+    function deploy(bytes32 salt, bytes memory creationCode)
+        external
+        payable
+        returns (address deployed);
 
     function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
 }
@@ -24,7 +27,11 @@ contract DeployerUtils is Script {
     string private constant DEPLOY_CONFIGS = "script/configs/";
 
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
-    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+    // ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+
+    // TODO: this is only deployed on Arb Sepolia, Sepolia, and Synapse Sepolia.
+    ICreate3Factory internal constant FACTORY =
+        ICreate3Factory(0x3bA9E3Fa083133222026614C8023810c2e15aA22);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -79,10 +86,11 @@ contract DeployerUtils is Script {
     // ════════════════════════════════════════════════ DEPLOYMENTS ════════════════════════════════════════════════════
 
     /// @notice Deploys the contract using Create3Factory. Does not save anything.
-    function factoryDeploy(string memory contractName, bytes memory creationCode, bytes memory constructorArgs)
-        internal
-        returns (address deployment)
-    {
+    function factoryDeploy(
+        string memory contractName,
+        bytes memory creationCode,
+        bytes memory constructorArgs
+    ) internal returns (address deployment) {
         require(Address.isContract(address(FACTORY)), "Factory not deployed");
         deployment = FACTORY.deploy(
             getDeploymentSalt(contractName), // salt
@@ -143,7 +151,10 @@ contract DeployerUtils is Script {
     /// Reverts if it doesn't exist.
     function loadDeployment(string memory contractName) public returns (address deployment) {
         deployment = tryLoadDeployment(contractName);
-        require(deployment != address(0), string.concat(contractName, " doesn't exist on ", chainAlias));
+        require(
+            deployment != address(0),
+            string.concat(contractName, " doesn't exist on ", chainAlias)
+        );
     }
 
     /// @notice Returns the deployment for a contract on the current chain, if it exists.
@@ -218,7 +229,11 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadGlobalDeployConfig(string memory contractName) public view returns (string memory json) {
+    function loadGlobalDeployConfig(string memory contractName)
+        public
+        view
+        returns (string memory json)
+    {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
@@ -252,15 +267,18 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
-    function globalDeployConfigPath(string memory contractName) public pure returns (string memory path) {
+    function globalDeployConfigPath(string memory contractName)
+        public
+        pure
+        returns (string memory path)
+    {
         return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already
     function createDir(string memory dirPath) public {
         // solhint-disable-next-line no-empty-blocks
-        try vm.fsMetadata(dirPath) {}
-        catch {
+        try vm.fsMetadata(dirPath) {} catch {
             string[] memory inputs = new string[](3);
             inputs[0] = "mkdir";
             inputs[1] = "--p";
@@ -285,8 +303,8 @@ contract DeployerUtils is Script {
     // ═════════════════════════════════════════════ INTERNAL HELPERS ══════════════════════════════════════════════════
 
     function _fromWei(uint256 amount) internal pure returns (string memory s) {
-        string memory a = Strings.toString(amount / 10 ** 18);
-        string memory b = Strings.toString(amount % 10 ** 18);
+        string memory a = Strings.toString(amount / 10**18);
+        string memory b = Strings.toString(amount % 10**18);
         // Add leading zeroes to the decimal part
         while (bytes(b).length < 18) {
             b = string.concat("0", b);
