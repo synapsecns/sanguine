@@ -15,6 +15,7 @@ import {
   WJEWEL,
   SYNJEWEL,
   AVAX,
+  METISUSDC,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
@@ -405,7 +406,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.METIS.id]: '0x555982d2E211745b96736665e19D9308B615F78e',
   },
-  poolTokens: [NUSD, USDC],
+  poolTokens: [NUSD, METISUSDC],
   description: "Synapse's 2pool stableswap LP token on Metis",
   display: true,
   priorityPool: true,
