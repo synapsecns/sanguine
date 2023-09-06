@@ -65,7 +65,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div
       data-test-id="single-network-portfolio"
-      className="flex flex-col my-2 border rounded-md border-surface"
+      className="flex flex-col my-4 border rounded-md border-surface"
     >
       <PortfolioAccordion
         connectedChainId={connectedChainId}

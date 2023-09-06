@@ -39,7 +39,7 @@ export const PortfolioAccordion = ({
       <div
         data-test-id="portfolio-accordion-header"
         className={`
-        flex items-center justify-between border border-transparent pr-2
+        flex items-center justify-between border border-transparent pr-2 select-none
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
         ${
