@@ -378,11 +378,10 @@ export const USDC = new Token({
   visibilityRank: 101,
   addresses: {
     [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+    [CHAINS.OPTIMISM.id]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
     [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
     [CHAINS.BNB.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
     [CHAINS.BOBA.id]: '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc',
     [CHAINS.DOGE.id]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
     [CHAINS.CANTO.id]: '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
@@ -397,7 +396,6 @@ export const USDC = new Token({
     [CHAINS.CRONOS.id]: 6,
     [CHAINS.BNB.id]: 18,
     [CHAINS.POLYGON.id]: 6,
-    [CHAINS.FANTOM.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.DOGE.id]: 6,
     [CHAINS.CANTO.id]: 6,
@@ -418,7 +416,6 @@ export const USDC = new Token({
     CHAINS.BNB.id,
     CHAINS.ETH.id,
     CHAINS.POLYGON.id,
-    CHAINS.FANTOM.id,
     CHAINS.ARBITRUM.id,
     CHAINS.AVALANCHE.id,
     CHAINS.HARMONY.id,
@@ -742,7 +739,6 @@ export const ETH = new Token({
   addresses: {
     [CHAINS.ETH.id]: zeroAddress,
     [CHAINS.OPTIMISM.id]: zeroAddress,
-    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
     [CHAINS.BOBA.id]: zeroAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
     [CHAINS.BASE.id]: zeroAddress,
@@ -785,11 +781,11 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
+    [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
+    [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
     [CHAINS.AVALANCHE.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
-    [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
-    [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
-    [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
+    [CHAINS.HARMONY.id]: '0xb12c13e66AdE1F72f71834f2FC5082Db8C091358',
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -897,6 +893,7 @@ export const XJEWEL = new Token({
 
 export const USDCe = new Token({
   addresses: {
+    [CHAINS.OPTIMISM.id]: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
@@ -907,7 +904,7 @@ export const USDCe = new Token({
   logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
-  swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id],
+  swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id, CHAINS.OPTIMISM.id],
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'USDC.e',

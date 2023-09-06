@@ -1,6 +1,8 @@
 import avaxLogo from '@assets/icons/avax.svg'
 import avwethLogo from '@assets/icons/avweth.svg'
+import ethLogo from '@assets/icons/eth.svg'
 import mimLogo from '@assets/icons/mim.svg'
+import usdcLogo from '@assets/icons/usdc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
 import wethLogo from '@assets/icons/weth.svg'
 
@@ -87,4 +89,58 @@ export const MULTIAVAX = new Token({
   color: 'red',
   priorityRank: 3,
   routeSymbol: 'MULTIAVAX',
+})
+
+export const FANTOMUSDC = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
+  },
+  decimals: {
+    [CHAINS.FANTOM.id]: 6,
+  },
+  symbol: 'USDC',
+  name: 'USD Coin',
+  logo: usdcLogo,
+  swapableType: 'USD',
+  swapableOn: [],
+  color: 'blue',
+  priorityRank: 1,
+  routeSymbol: 'USDC',
+})
+
+export const FANTOMUSDT = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
+  },
+  swapExceptions: {},
+  decimals: {
+    [CHAINS.FANTOM.id]: 6,
+  },
+  symbol: 'USDT',
+  name: 'USD Tether',
+  logo: usdtLogo,
+  color: 'lime',
+  swapableType: 'USD',
+  swapableOn: [],
+  visibilityRank: 100,
+  priorityRank: 1,
+  routeSymbol: 'USDT',
+})
+
+export const FANTOMETH = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
+  },
+  decimals: 18,
+  symbol: 'ETH',
+  name: 'Ethereum',
+  logo: ethLogo,
+  isNative: true,
+  swapableType: 'ETH',
+  color: 'sky',
+  visibilityRank: 101,
+  priorityRank: 2,
+  swapableOn: [],
+  routeSymbol: 'ETH',
 })

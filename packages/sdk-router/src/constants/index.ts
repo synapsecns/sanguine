@@ -27,6 +27,7 @@ export const CCTP_ROUTER_ADDRESS: { [chainId: number]: string } = {
   [SupportedChainId.ETH]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.ARBITRUM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.AVALANCHE]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
+  [SupportedChainId.OPTIMISM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
 }
 
 export const ROUTER_ADDRESS: { [chainId: number]: string } = {
