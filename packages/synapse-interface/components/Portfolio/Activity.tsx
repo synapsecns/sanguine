@@ -44,7 +44,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
   const {
     userHistoricalTransactions,
-    userPendingTransactions,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
     pendingAwaitingCompletionTransactions,
@@ -196,7 +195,6 @@ export const MostRecentTransaction = () => {
   const { address } = useAccount()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
-    userPendingTransactions,
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -258,7 +256,6 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastPendingBridgeTransaction) {
-    console.log('a1')
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
       <PendingTransaction
@@ -277,7 +274,6 @@ export const MostRecentTransaction = () => {
   }
 
   if (lastPendingTransaction) {
-    console.log('a2')
     transaction = lastPendingTransaction as BridgeTransaction
     return (
       <PendingTransaction
@@ -314,7 +310,6 @@ export const MostRecentTransaction = () => {
     isLastHistoricalTransactionRecent &&
     !seenLastHistoricalTransaction
   ) {
-    console.log('a3')
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (
       <PendingTransaction
