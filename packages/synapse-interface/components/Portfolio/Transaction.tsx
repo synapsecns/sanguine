@@ -366,7 +366,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="pending-wallet-action-status"
-        className={`${sharedClass} p-3 justify-between`}
+        className={`${sharedClass} py-3 px-3 justify-between`}
       >
         <div>Wallet signature required</div>
         <div>Check wallet</div>
@@ -378,7 +378,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="initializing-status"
-        className={`${sharedClass} p-3 justify-between`}
+        className={`${sharedClass} py-2 px-3 justify-between`}
       >
         <div>Initiating...</div>
         <TransactionOptions
@@ -440,7 +440,7 @@ const TransactionStatusDetails = ({
         ) : (
           <>
             <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline p-1 items-center"
+              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
               onClick={handleOriginExplorerClick}
             >
               <Image
@@ -452,7 +452,7 @@ const TransactionStatusDetails = ({
             </div>
             <div
               onClick={handleDestinationExplorerClick}
-              className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline p-1"
+              className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
             >
               Bridging to {destinationChain.name}.
             </div>
@@ -485,7 +485,7 @@ const TransactionStatusDetails = ({
         className={`${sharedClass} p-2 justify-between`}
       >
         <div
-          className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
+          className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
           onClick={handleExplorerClick}
         >
           <div>Confirmed on Synapse Explorer</div>

@@ -32,7 +32,6 @@ export const PortfolioTabManager = () => {
       >
         <MostRecentTransaction />
       </div>
-      {/* {activeTab !== PortfolioTabs.ACTIVITY && <MostRecentTransaction />} */}
     </div>
   )
 }
