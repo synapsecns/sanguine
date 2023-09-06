@@ -39,7 +39,7 @@ export const PortfolioAccordion = ({
       <div
         data-test-id="portfolio-accordion-header"
         className={`
-        flex items-center justify-between border border-transparent
+        flex items-center justify-between border border-transparent pr-2
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
         ${
@@ -59,7 +59,7 @@ export const PortfolioAccordion = ({
           </div>
         </div>
         {isExpanded && expandedProps}
-        <AccordionIcon isExpanded={isExpanded} />
+        {/* <AccordionIcon isExpanded={isExpanded} /> */}
       </div>
       <div
         data-test-id="portfolio-accordion-contents"
@@ -73,11 +73,11 @@ export const PortfolioAccordion = ({
 
 export const AccordionIcon = ({ isExpanded }: { isExpanded: boolean }) => {
   return (
-    <div className="p-0.5 border rounded-full border-separator">
+    <div className="p-1 mx-2 border rounded-full border-separator">
       {isExpanded ? (
-        <ChevronDoubleUpIcon className="w-5 h-5 stroke-[3] stroke-separator" />
+        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-separator" />
       ) : (
-        <ChevronDoubleDownIcon className="w-5 h-5 stroke-[3] stroke-separator" />
+        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-separator" />
       )}
     </div>
   )
