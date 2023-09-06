@@ -38,10 +38,6 @@ function hasOnlyZeros(input: string): boolean {
   return /^0+(\.0+)?$/.test(input)
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
 const handleFocusOnInput = () => {
   inputRef.current.focus()
 }
@@ -146,14 +142,12 @@ export const PortfolioTokenAsset = ({
         formatBigIntToString(balance, token.decimals[portfolioChainId])
       )
     )
-    scrollToTop()
     handleFocusOnInput()
   }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
-    scrollToTop()
     handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
 
@@ -178,7 +172,6 @@ export const PortfolioTokenAsset = ({
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
-        await scrollToTop()
         await approveToken(
           tokenRouterAddress,
           portfolioChainId,
