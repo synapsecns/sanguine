@@ -164,10 +164,10 @@ const PortfolioNetwork = ({
     >
       <div className="flex flex-row items-center px-4">
         {isUnsupportedChain ? (
-          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-2 text-white rounded-md" />
         ) : (
           <Image
-            className="w-6 h-6 mr-3 rounded-md"
+            className="w-6 h-6 mr-2 rounded-md"
             alt={`${displayName} img`}
             src={chainIcon}
           />
