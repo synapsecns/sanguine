@@ -83,6 +83,9 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *g
 		if err != nil {
 			return fmt.Errorf("could not create guard: %w", err)
 		}
+		if testGuard == nil {
+			return fmt.Errorf("guard is nil")
+		}
 
 		return nil
 	}, retry.WithMax(1*time.Minute))
