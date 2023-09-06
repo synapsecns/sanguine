@@ -147,6 +147,7 @@ export const PortfolioTokenAsset = ({
       )
     )
     scrollToTop()
+    handleFocusOnInput()
   }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
