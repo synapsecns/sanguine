@@ -65,7 +65,7 @@ export const BridgeTransactionButton = ({
       stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
     )
-  }, [balanceForToken, fromValue])
+  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
 
   const isButtonDisabled =
     isLoading ||
