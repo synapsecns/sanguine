@@ -709,6 +709,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
+	fmt.Printf("Got eligible agent trees: %v\n", eligibleAgentTrees)
 
 	var localRoot [32]byte
 	contractCall := func(ctx context.Context) error {
@@ -723,23 +724,27 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if err != nil {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
+	fmt.Printf("Got local root: %v\n", common.BytesToHash(localRoot[:]).String())
 
 	localRootBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, common.BytesToHash(localRoot[:]).String())
 	if err != nil {
 		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
+	fmt.Printf("Got local block number: %v\n", localRootBlockNumber)
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
-	for _, tree := range eligibleAgentTrees {
-		tree := tree
+	for _, t := range eligibleAgentTrees {
+		tree := t
 		// Get the first recorded summit block number for the tree agent root.
 		treeBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, tree.AgentRoot)
 		if err != nil {
 			return fmt.Errorf("could not get block number for local root: %w", err)
 		}
 		//nolint:nestif
+		fmt.Printf("Comparing local block number %v to tree block number %v with tree root %v and local root %v\n", localRootBlockNumber, treeBlockNumber, tree.AgentRoot, common.BytesToHash(localRoot[:]))
 		if localRootBlockNumber >= treeBlockNumber {
-			logger.Errorf("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
+			fmt.Printf("Relaying agent status for agent %v on chain %d", tree.AgentAddress.String(), chainID)
+			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.
 			var agentStatus types.AgentStatus
 			contractCall := func(ctx context.Context) error {
@@ -756,6 +761,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			}
 
 			if agentStatus.Domain() != chainID {
+				fmt.Println("Skipping bad domain")
 				continue
 			}
 
@@ -770,12 +776,14 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 				if err != nil {
 					return nil, fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 				}
-				logger.Errorf("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
+				logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
+				fmt.Printf("Updated agent status on chain %d for agent %s: %s [hash: %s]\n", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 				return
 			})
 			if err != nil {
 				return fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 			}
+			fmt.Println("Submitted agent status")
 
 			// Mark the relayable status as Relayed.
 			err = g.guardDB.UpdateAgentStatusRelayedState(
