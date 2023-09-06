@@ -411,11 +411,14 @@ const TransactionStatusDetails = ({
     }
 
     return (
-      <div data-test-id="pending-status" className={`${sharedClass} p-2 flex`}>
+      <div
+        data-test-id="pending-status"
+        className={`${sharedClass} p-2 flex justify-between`}
+      >
         {isDelayed ? (
           <>
             <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#FFDD33] hover:underline p-1 items-center"
+              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 items-center"
               onClick={handleDestinationExplorerClick}
             >
               <Image
@@ -437,7 +440,7 @@ const TransactionStatusDetails = ({
         ) : (
           <>
             <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1 items-center"
+              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline p-1 items-center"
               onClick={handleOriginExplorerClick}
             >
               <Image
@@ -449,7 +452,7 @@ const TransactionStatusDetails = ({
             </div>
             <div
               onClick={handleDestinationExplorerClick}
-              className="mr-auto cursor-pointer hover:bg-[#101018] rounded-md hover:text-[#99E6FF] hover:underline p-1"
+              className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline p-1"
             >
               Bridging to {destinationChain.name}.
             </div>

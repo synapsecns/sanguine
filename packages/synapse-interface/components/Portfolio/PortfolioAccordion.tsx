@@ -39,6 +39,7 @@ export const PortfolioAccordion = ({
         border border-transparent rounded-md
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
+
         `}
         data-test-id="portfolio-accordion"
       >
