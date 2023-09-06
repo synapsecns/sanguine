@@ -441,7 +441,10 @@ export const EstimatedDuration = ({
           )}
         </React.Fragment>
       ) : (
-        <div>Waiting... </div>
+        <React.Fragment>
+          <div>Waiting... </div>
+          <ProcessingIcon className="fill-[#343036] mt-0.5" />
+        </React.Fragment>
       )}
     </div>
   )
