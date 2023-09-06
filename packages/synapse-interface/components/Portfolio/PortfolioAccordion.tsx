@@ -34,12 +34,15 @@ export const PortfolioAccordion = ({
     <div data-test-id="portfolio-accordion">
       <div
         className={`
-        flex flex-row
-        items-center justify-between
-        border border-transparent rounded-md
+        flex items-center justify-between
+        border border-transparent
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
-
+        ${
+          isExpanded
+            ? 'bg-tint hover:rounded-t-md'
+            : 'bg-transparent rounded-md'
+        }
         `}
         data-test-id="portfolio-accordion"
       >
