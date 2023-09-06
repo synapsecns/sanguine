@@ -217,7 +217,7 @@ export const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row items-center py-2 text-white"
+      className="flex flex-row items-center p-2 text-white"
     >
       <div className="flex flex-row justify-between w-2/3">
         <div
