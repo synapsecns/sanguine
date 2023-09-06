@@ -992,6 +992,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		time.Sleep(5 * time.Second)
 		fmt.Println("DDDDDDDDDDD")
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		fmt.Println("status", status.Flag().String())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
@@ -1090,6 +1091,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		time.Sleep(5 * time.Second)
 		fmt.Println("EEEEEEEEEEE")
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		fmt.Println("status", status.Flag().String())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
