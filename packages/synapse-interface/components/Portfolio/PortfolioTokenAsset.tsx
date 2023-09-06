@@ -219,11 +219,6 @@ export const PortfolioTokenAsset = ({
       data-test-id="portfolio-token-asset"
       className="flex flex-row items-center py-2 text-white"
     >
-      {isTokenSelected ? (
-        <div className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </div>
-      ) : (
-        <div className="w-4" />
-      )}
       <div className="flex flex-row justify-between w-2/3">
         <div
           onClick={handleSelectFromTokenCallback}
@@ -318,7 +313,7 @@ const PortfolioAssetActionButton = ({
 }: PortfolioAssetActionButtonProps) => {
   const buttonClassName = `
     flex ml-auto justify-center
-    py-1 px-6 ml-2 rounded-lg
+    py-1 px-6 ml-2 rounded-sm
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
@@ -342,7 +337,7 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border border-[#3D3D5C]
+            border border-separator
             hover:border-[#A3A3C2]
             hover:bg-[#272731]
             active:border-[#A3A3C2]
