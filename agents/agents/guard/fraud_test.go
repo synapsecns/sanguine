@@ -981,7 +981,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 	}
-	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds)
+	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+30)
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
