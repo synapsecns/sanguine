@@ -31,7 +31,7 @@ export const PortfolioAccordion = ({
   }, [portfolioChainId, selectedFromChainId])
 
   return (
-    <div>
+    <div data-test-id="portfolio-accordion">
       <div
         className={`
         flex flex-row

@@ -160,9 +160,9 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1 py-4 pl-2 cursor-pointer"
+      className="flex flex-row justify-between flex-1 py-4 cursor-pointer"
     >
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center px-4">
         {isUnsupportedChain ? (
           <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
         ) : (
