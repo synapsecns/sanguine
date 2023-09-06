@@ -211,13 +211,13 @@ const PortfolioTokenVisualizer = ({
       {hasTwoTokens && (
         <Image
           loading="lazy"
-          className="w-6 h-6 ml-1 rounded-md"
+          className="w-6 h-6 ml-1.5 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
         />
       )}
       {numOverTwoTokens > 0 && (
-        <div className="ml-1 text-white">+ {numOverTwoTokens}</div>
+        <div className="ml-1.5 text-white">+ {numOverTwoTokens}</div>
       )}
       <div className="relative inline-block">
         {isHovered && (
