@@ -213,7 +213,11 @@ export const PortfolioTokenAsset = ({
       data-test-id="portfolio-token-asset"
       className={`
         flex flex-row items-center p-2 text-white
-        ${isTokenSelected ? 'bg-tint border-y border-surface' : ''}
+        ${
+          isTokenSelected
+            ? 'bg-tint border-y border-surface'
+            : 'border-y border-transparent'
+        }
         `}
     >
       <div className="flex flex-row justify-between w-2/3">
