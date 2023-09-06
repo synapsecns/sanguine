@@ -137,21 +137,11 @@ export const EmptyPortfolioContent = () => {
   const { address } = useAccount()
   const shortened = shortenAddress(address, 3)
   return (
-    <div>
-      <p
-        data-test-id="empty-portfolio-content"
-        className={`
-        text-[#C2C2D6] pb-4
-        `}
-      >
+    <div data-test-id="empty-portfolio-content" className="p-1">
+      <p className="text-[#C2C2D6] mb-4">
         No supported assets found {address && `for ${shortened}`}.
       </p>
-      <p
-        data-test-id="empty-portfolio-content"
-        className={`
-        text-[#C2C2D6] pb-4
-        `}
-      >
+      <p className="text-[#C2C2D6] mb-4">
         Don't see a chain or token you want to bridge?
       </p>
       <a className="text-[#C2C2D6]">
