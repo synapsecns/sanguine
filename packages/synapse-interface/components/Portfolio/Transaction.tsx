@@ -123,7 +123,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col my-2 overflow-hidden
+        flex flex-col mt-2 overflow-hidden
         border rounded-lg text-secondary border-surface
         ${transactionType === TransactionType.HISTORICAL && 'bg-[#18151A]'}
         `}
@@ -310,7 +310,7 @@ export const PendingTransaction = ({
   }, [startedTimestamp, isSubmitted, transactionHash])
 
   return (
-    <div data-test-id="pending-transaction" className="flex flex-col">
+    <div data-test-id="pending-transaction" className="flex flex-col mt-1">
       <Transaction
         connectedAddress={connectedAddress}
         destinationAddress={destinationAddress}
