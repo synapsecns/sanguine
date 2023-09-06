@@ -110,7 +110,7 @@ export const SingleNetworkPortfolio = ({
             }
           />
         )}
-        <PortfolioHeader />
+        {/* <PortfolioHeader /> */}
         {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
