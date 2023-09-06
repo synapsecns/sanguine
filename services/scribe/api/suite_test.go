@@ -2,6 +2,11 @@ package api_test
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
@@ -10,9 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/phayes/freeport"
@@ -51,10 +53,18 @@ func NewTestSuite(tb testing.TB) *APISuite {
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	g.Require().Nil(err)
 }
 
