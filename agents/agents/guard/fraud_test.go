@@ -53,6 +53,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Println("OMNIIII", omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1))
 	originClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 	destinationClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
@@ -1078,7 +1079,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
-	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds)
+	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+30)
 	g.bumpBackends()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
