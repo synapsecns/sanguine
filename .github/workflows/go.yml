@@ -5,7 +5,7 @@ on:
   pull_request:
   push:
     branches-ignore:
-      - "gh-pages"
+      - 'gh-pages'
 
 jobs:
   cancel-outdated:
@@ -16,7 +16,7 @@ jobs:
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
-          cancel_others: "true"
+          cancel_others: 'true'
 
   # changes allows us to only run a job on changed packages
   changes:
@@ -33,21 +33,21 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_deps
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: "10m"
+          timeout: '10m'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: "10m"
+          timeout: '10m'
 
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
@@ -157,22 +157,22 @@ jobs:
         run: $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME .
         shell: bash
         env:
-          PYROSCOPE_PATH: "${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}"
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
-      #      - name: Test
-      #        uses: nick-fields/retry@v2
-      #        with:
-      #          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
-      #          max_attempts: 2
-      #          timeout_minutes: 20
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+      - name: Test
+        uses: nick-fields/retry@v2
         with:
-          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-          limit-access-to-users: trajan0x,cryptomaxplanck,dwasse
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
+          max_attempts: 2
+          timeout_minutes: 20
+        # - name: Setup upterm session
+        #   uses: lhotari/action-upterm@v1
+        #   with:
+        #     ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+        #     limit-access-to-users: trajan0x,cryptomaxplanck,dwasse
         env:
-          PYROSCOPE_PATH: "${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}"
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
           MYSQL_USER: user
@@ -307,12 +307,12 @@ jobs:
       fail-fast: false
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
-        package: ["agents"]
+        package: ['agents']
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
@@ -386,7 +386,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          add-labels: "needs-go-generate-${{matrix.package}}"
+          add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
@@ -394,7 +394,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed != 'true'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          remove-labels: "needs-go-generate-${{matrix.package}}"
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
@@ -412,7 +412,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
@@ -524,7 +524,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          add-labels: "needs-go-generate-${{matrix.package}}"
+          add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
@@ -532,6 +532,6 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed != 'true'
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
-          remove-labels: "needs-go-generate-${{matrix.package}}"
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
