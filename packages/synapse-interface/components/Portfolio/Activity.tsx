@@ -515,7 +515,7 @@ export const TransactionPayloadDetail = ({
       {chain && (
         <div
           data-test-id="transaction-payload-network"
-          className="flex flex-row items-center cursor-pointer hover:text-[#99E6FF] p-1"
+          className="flex flex-row items-center cursor-pointer hover:text-[#99E6FF] px-1"
           onClick={handleSelectChainCallback}
         >
           <Image
@@ -530,7 +530,7 @@ export const TransactionPayloadDetail = ({
       {token && tokenAmount && (
         <div
           data-test-id="transaction-payload-token"
-          className="flex flex-row items-center"
+          className="flex flex-row items-center px-1"
         >
           <Image
             src={token?.icon}

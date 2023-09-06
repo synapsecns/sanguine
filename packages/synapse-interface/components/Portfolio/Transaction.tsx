@@ -418,7 +418,7 @@ const TransactionStatusDetails = ({
         {isDelayed ? (
           <>
             <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 items-center"
+              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
               onClick={handleDestinationExplorerClick}
             >
               <Image
