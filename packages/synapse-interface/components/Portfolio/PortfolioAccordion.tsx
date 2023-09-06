@@ -35,7 +35,12 @@ export const PortfolioAccordion = ({
   }, [portfolioChainId, selectedFromChainId])
 
   return (
-    <div data-test-id="portfolio-accordion">
+    <div
+      data-test-id="portfolio-accordion"
+      className={
+        isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
+      }
+    >
       <div
         data-test-id="portfolio-accordion-header"
         className={`
