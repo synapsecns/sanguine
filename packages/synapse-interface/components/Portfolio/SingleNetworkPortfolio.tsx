@@ -63,7 +63,10 @@ export const SingleNetworkPortfolio = ({
   }, [isUnsupportedChain])
 
   return (
-    <div data-test-id="single-network-portfolio" className="flex flex-col">
+    <div
+      data-test-id="single-network-portfolio"
+      className="flex flex-col my-2 border rounded-md border-surface"
+    >
       <PortfolioAccordion
         connectedChainId={connectedChainId}
         portfolioChainId={portfolioChainId}
