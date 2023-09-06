@@ -258,50 +258,54 @@ export const MostRecentTransaction = () => {
   if (lastPendingBridgeTransaction) {
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
-      <PendingTransaction
-        connectedAddress={address as Address}
-        originChain={transaction.originChain as Chain}
-        originToken={transaction.originToken as Token}
-        originValue={Number(transaction.originValue)}
-        destinationChain={transaction.destinationChain as Chain}
-        destinationToken={transaction.destinationToken as Token}
-        startedTimestamp={transaction.id ?? transaction.startedTimestamp}
-        transactionHash={transaction.transactionHash as string}
-        isSubmitted={transaction.isSubmitted as boolean}
-        transactionType={TransactionType.PENDING}
-      />
+      <div className="mt-3">
+        <PendingTransaction
+          connectedAddress={address as Address}
+          originChain={transaction.originChain as Chain}
+          originToken={transaction.originToken as Token}
+          originValue={Number(transaction.originValue)}
+          destinationChain={transaction.destinationChain as Chain}
+          destinationToken={transaction.destinationToken as Token}
+          startedTimestamp={transaction.id ?? transaction.startedTimestamp}
+          transactionHash={transaction.transactionHash as string}
+          isSubmitted={transaction.isSubmitted as boolean}
+          transactionType={TransactionType.PENDING}
+        />
+      </div>
     )
   }
 
   if (lastPendingTransaction) {
     transaction = lastPendingTransaction as BridgeTransaction
     return (
-      <PendingTransaction
-        connectedAddress={address as Address}
-        startedTimestamp={transaction?.fromInfo?.time as number}
-        transactionHash={transaction?.fromInfo?.txnHash as string}
-        transactionType={TransactionType.PENDING}
-        originValue={transaction?.fromInfo?.formattedValue as number}
-        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
-        destinationChain={
-          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
-        }
-        originToken={
-          tokenAddressToToken(
-            transaction?.fromInfo?.chainID,
-            transaction?.fromInfo?.tokenAddress
-          ) as Token
-        }
-        destinationToken={
-          tokenAddressToToken(
-            transaction?.toInfo?.chainID,
-            transaction?.toInfo?.tokenAddress
-          ) as Token
-        }
-        destinationAddress={transaction?.fromInfo?.address as Address}
-        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={transaction?.toInfo?.time ? true : false}
-      />
+      <div className="mt-3">
+        <PendingTransaction
+          connectedAddress={address as Address}
+          startedTimestamp={transaction?.fromInfo?.time as number}
+          transactionHash={transaction?.fromInfo?.txnHash as string}
+          transactionType={TransactionType.PENDING}
+          originValue={transaction?.fromInfo?.formattedValue as number}
+          originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
+          destinationChain={
+            CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
+          }
+          originToken={
+            tokenAddressToToken(
+              transaction?.fromInfo?.chainID,
+              transaction?.fromInfo?.tokenAddress
+            ) as Token
+          }
+          destinationToken={
+            tokenAddressToToken(
+              transaction?.toInfo?.chainID,
+              transaction?.toInfo?.tokenAddress
+            ) as Token
+          }
+          destinationAddress={transaction?.fromInfo?.address as Address}
+          isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+          isCompleted={transaction?.toInfo?.time ? true : false}
+        />
+      </div>
     )
   }
 
@@ -312,35 +316,37 @@ export const MostRecentTransaction = () => {
   ) {
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (
-      <PendingTransaction
-        connectedAddress={address as Address}
-        destinationAddress={transaction?.fromInfo?.address as Address}
-        startedTimestamp={transaction?.fromInfo?.time as number}
-        completedTimestamp={transaction?.toInfo?.time as number}
-        transactionHash={transaction?.fromInfo?.txnHash as string}
-        kappa={transaction?.kappa as string}
-        transactionType={TransactionType.PENDING}
-        originValue={transaction?.fromInfo?.formattedValue as number}
-        destinationValue={transaction?.toInfo?.formattedValue as number}
-        originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
-        destinationChain={
-          CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
-        }
-        originToken={
-          tokenAddressToToken(
-            transaction?.fromInfo?.chainID,
-            transaction?.fromInfo?.tokenAddress
-          ) as Token
-        }
-        destinationToken={
-          tokenAddressToToken(
-            transaction?.toInfo?.chainID,
-            transaction?.toInfo?.tokenAddress
-          ) as Token
-        }
-        isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-        isCompleted={true}
-      />
+      <div className="mt-3">
+        <PendingTransaction
+          connectedAddress={address as Address}
+          destinationAddress={transaction?.fromInfo?.address as Address}
+          startedTimestamp={transaction?.fromInfo?.time as number}
+          completedTimestamp={transaction?.toInfo?.time as number}
+          transactionHash={transaction?.fromInfo?.txnHash as string}
+          kappa={transaction?.kappa as string}
+          transactionType={TransactionType.PENDING}
+          originValue={transaction?.fromInfo?.formattedValue as number}
+          destinationValue={transaction?.toInfo?.formattedValue as number}
+          originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
+          destinationChain={
+            CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
+          }
+          originToken={
+            tokenAddressToToken(
+              transaction?.fromInfo?.chainID,
+              transaction?.fromInfo?.tokenAddress
+            ) as Token
+          }
+          destinationToken={
+            tokenAddressToToken(
+              transaction?.toInfo?.chainID,
+              transaction?.toInfo?.tokenAddress
+            ) as Token
+          }
+          isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+          isCompleted={true}
+        />
+      </div>
     )
   }
 }

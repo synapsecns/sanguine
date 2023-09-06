@@ -123,7 +123,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col mt-2 overflow-hidden
+        flex flex-col mb-2 overflow-hidden
         border rounded-lg text-secondary border-surface
         ${transactionType === TransactionType.HISTORICAL && 'bg-[#18151A]'}
         `}
@@ -310,7 +310,7 @@ export const PendingTransaction = ({
   }, [startedTimestamp, isSubmitted, transactionHash])
 
   return (
-    <div data-test-id="pending-transaction" className="flex flex-col mt-1">
+    <div data-test-id="pending-transaction" className="flex flex-col">
       <Transaction
         connectedAddress={connectedAddress}
         destinationAddress={destinationAddress}
@@ -378,7 +378,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="initializing-status"
-        className={`${sharedClass} p-2 justify-between`}
+        className={`${sharedClass} p-3 justify-between`}
       >
         <div>Initiating...</div>
         <TransactionOptions
@@ -422,7 +422,7 @@ const TransactionStatusDetails = ({
               onClick={handleDestinationExplorerClick}
             >
               <Image
-                className="w-4 h-4 my-auto mr-1.5 rounded-full"
+                className="w-4 h-4 ml-1 mr-1.5 my-auto rounded-full"
                 src={destinationChain.explorerImg}
                 alt={`${destinationChain.explorerName} logo`}
               />
@@ -444,7 +444,7 @@ const TransactionStatusDetails = ({
               onClick={handleOriginExplorerClick}
             >
               <Image
-                className="w-4 h-4 my-auto mr-1.5 rounded-full"
+                className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
                 src={originChain.explorerImg}
                 alt={`${originChain.explorerName} logo`}
               />
