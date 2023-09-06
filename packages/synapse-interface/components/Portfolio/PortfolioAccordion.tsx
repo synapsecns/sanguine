@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import {
+  ChevronDoubleDownIcon,
+  ChevronDoubleUpIcon,
+} from '@heroicons/react/outline'
 
 type PortfolioAccordionProps = {
   header: React.ReactNode
@@ -33,32 +37,48 @@ export const PortfolioAccordion = ({
   return (
     <div data-test-id="portfolio-accordion">
       <div
+        data-test-id="portfolio-accordion-header"
         className={`
-        flex items-center justify-between
-        border border-transparent
+        flex items-center justify-between border border-transparent
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
         ${
           isExpanded
-            ? 'bg-tint hover:rounded-t-md'
+            ? 'bg-tint rounded-t-md hover:rounded-t-md'
             : 'bg-transparent rounded-md'
         }
         `}
-        data-test-id="portfolio-accordion"
       >
         <div onClick={handleToggle} className="flex-1 mr-3">
-          <div className="flex flex-row justify-between">
+          <div
+            data-test-id="portfolio-accordion-clickable"
+            className="flex flex-row justify-between"
+          >
             {header}
             {!isExpanded && collapsedProps}
           </div>
         </div>
         {isExpanded && expandedProps}
+        <AccordionIcon isExpanded={isExpanded} />
       </div>
-      <div className="flex flex-col">
+      <div
+        data-test-id="portfolio-accordion-contents"
+        className="flex flex-col"
+      >
         {isExpanded && <React.Fragment>{children}</React.Fragment>}
       </div>
     </div>
   )
 }
 
-export default PortfolioAccordion
+export const AccordionIcon = ({ isExpanded }: { isExpanded: boolean }) => {
+  return (
+    <div className="p-0.5 border rounded-full border-separator">
+      {isExpanded ? (
+        <ChevronDoubleUpIcon className="w-5 h-5 stroke-[3] stroke-separator" />
+      ) : (
+        <ChevronDoubleDownIcon className="w-5 h-5 stroke-[3] stroke-separator" />
+      )}
+    </div>
+  )
+}

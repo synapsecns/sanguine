@@ -8,7 +8,7 @@ import {
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
-import PortfolioAccordion from './PortfolioAccordion'
+import { PortfolioAccordion } from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
