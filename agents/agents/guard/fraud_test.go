@@ -52,6 +52,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *g
 				File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 			},
 			RefreshIntervalSeconds: 5,
+			MaxRetrySeconds:        60,
 		}
 
 		// Scribe setup.
