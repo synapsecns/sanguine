@@ -89,7 +89,7 @@ export const PortfolioTokenAsset = ({
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
   const { address } = useAccount()
-  const { icon, symbol, decimals, addresses } = token
+  const { icon, symbol, decimals, addresses } = token as Token
 
   const parsedBalance: string = useMemo(() => {
     const formattedBalance = formatBigIntToString(
@@ -135,26 +135,29 @@ export const PortfolioTokenAsset = ({
   const isDisabled: boolean = false
 
   const handleTotalBalanceInputCallback = useCallback(async () => {
-    await dispatch(setFromChainId(portfolioChainId))
-    await dispatch(setFromToken(token))
+    await dispatch(setFromChainId(portfolioChainId as number))
+    await dispatch(setFromToken(token as Token))
     await dispatch(
       await updateFromValue(
-        formatBigIntToString(balance, token.decimals[portfolioChainId])
+        formatBigIntToString(
+          balance,
+          token.decimals[portfolioChainId]
+        ) as string
       )
     )
     handleFocusOnInput()
   }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
-    dispatch(setFromChainId(portfolioChainId))
-    dispatch(setFromToken(token))
+    dispatch(setFromChainId(portfolioChainId as number))
+    dispatch(setFromToken(token as Token))
     handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
     if (isCurrentlyConnected) {
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(setFromToken(token))
+      dispatch(setFromChainId(portfolioChainId as number))
+      dispatch(setFromToken(token as Token))
       await approveToken(
         tokenRouterAddress,
         connectedChainId,
@@ -164,8 +167,8 @@ export const PortfolioTokenAsset = ({
           fetchAndStoreSingleTokenAllowance({
             routerAddress: tokenRouterAddress as Address,
             tokenAddress: tokenAddress as Address,
-            address: address,
-            chainId: portfolioChainId,
+            address: address as Address,
+            chainId: portfolioChainId as number,
           })
         )
       })
@@ -182,8 +185,8 @@ export const PortfolioTokenAsset = ({
               fetchAndStoreSingleTokenAllowance({
                 routerAddress: tokenRouterAddress as Address,
                 tokenAddress: tokenAddress as Address,
-                address: address,
-                chainId: portfolioChainId,
+                address: address as Address,
+                chainId: portfolioChainId as number,
               })
             )
         })
@@ -278,7 +281,7 @@ export const HoverClickableText = ({
   hoverText: string
   callback: () => void
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState<boolean>(false)
   return (
     <div
       data-test-id="hover-clickable-text"
