@@ -1060,8 +1060,8 @@ export const KLAY = new Token({
     [CHAINS.DFK.id]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
   },
   decimals: {
-    [CHAINS.KLAYTN.id]: 8,
-    [CHAINS.DFK.id]: 8,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.DFK.id]: 18,
   },
   symbol: 'KLAY',
   name: 'Klaytn',
@@ -1078,7 +1078,7 @@ export const WKLAY = new Token({
     [CHAINS.KLAYTN.id]: '0x5819b6af194A78511c79C85Ea68D2377a7e9335f',
   },
   decimals: {
-    [CHAINS.KLAYTN.id]: 8,
+    [CHAINS.KLAYTN.id]: 18,
   },
   symbol: 'WKLAY',
   name: 'Wrapped Klaytn',
