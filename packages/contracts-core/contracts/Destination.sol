@@ -92,16 +92,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ) external onlyInbox returns (bool wasAccepted) {
         if (_isInDispute(notaryIndex)) revert NotaryInDispute();
         // First, try passing current agent merkle root
-        (bool rootPassed, bool rootPending) = passAgentRoot();
-        // Don't accept attestation, if the agent root was updated in LightManager,
-        // as the following agent check will fail.
-        if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
+        (, bool rootPending) = passAgentRoot();
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         _saveGasData(snapGas, notaryIndex);
         return true;
