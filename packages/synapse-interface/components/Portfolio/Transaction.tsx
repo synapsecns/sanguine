@@ -43,6 +43,7 @@ export interface TransactionProps {
   startedTimestamp: number
   completedTimestamp?: number
   estimatedDuration?: number
+  timeRemaining?: number
   transactionStatus?: TransactionStatus
   transactionType: TransactionType
   transactionHash?: string
@@ -63,6 +64,7 @@ export const Transaction = ({
   startedTimestamp,
   completedTimestamp,
   estimatedDuration,
+  timeRemaining,
   transactionStatus,
   transactionType,
   transactionHash,
@@ -70,8 +72,6 @@ export const Transaction = ({
   children,
   isCompleted,
 }: TransactionProps) => {
-  const [elapsedTime, setElapsedTime] = useState<number>(0)
-
   const handleExplorerClick: () => void = useCallback(() => {
     if (kappa && originChain && destinationChain) {
       const explorerLink: string = getTransactionExplorerLink({
@@ -82,42 +82,6 @@ export const Transaction = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
   }, [kappa, originChain, destinationChain, transactionStatus, transactionHash])
-
-  const estimatedCompletionInSeconds: number = useMemo(() => {
-    return originChain
-      ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-          originChain.blockTime) /
-          1000
-      : null
-  }, [originChain])
-
-  useEffect(() => {
-    const currentTime: number = Math.floor(Date.now() / 1000)
-    const elapsedMinutes: number = Math.floor(
-      (currentTime - startedTimestamp) / 60
-    )
-    setElapsedTime(elapsedMinutes)
-  }, [startedTimestamp])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime: number = Math.floor(Date.now() / 1000)
-      const elapsedMinutes: number = Math.floor(
-        (currentTime - startedTimestamp) / 60
-      )
-      setElapsedTime(elapsedMinutes)
-    }, 60000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [startedTimestamp])
-
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
-  const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !elapsedTime) return estimatedMinutes
-    return estimatedMinutes - elapsedTime
-  }, [estimatedMinutes, elapsedTime, startedTimestamp])
 
   return (
     <div
@@ -276,9 +240,13 @@ export const PendingTransaction = ({
   }, [startedTimestamp])
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+
   const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !elapsedTime) return estimatedMinutes
-    return estimatedMinutes - elapsedTime
+    if (!startedTimestamp || !elapsedTime) {
+      return estimatedMinutes
+    } else {
+      return estimatedMinutes - elapsedTime
+    }
   }, [estimatedMinutes, elapsedTime, startedTimestamp])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
@@ -289,8 +257,6 @@ export const PendingTransaction = ({
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
         })
-
-        console.log('resolvedTransaction:', resolvedTransaction)
 
         if (resolvedTransaction) {
           const currentTimestamp: number = getTimeMinutesFromNow(0)
@@ -324,6 +290,7 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
+        timeRemaining={timeRemaining}
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}
@@ -332,10 +299,10 @@ export const PendingTransaction = ({
           connectedAddress={connectedAddress}
           originChain={originChain}
           destinationChain={destinationChain}
-          kappa={kappa}
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
           isDelayed={isDelayed}
+          kappa={kappa}
         />
       </Transaction>
     </div>

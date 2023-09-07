@@ -25,15 +25,6 @@ import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
 
-type PortfolioTokenAssetProps = {
-  token: Token
-  balance: bigint
-  allowances?: Allowances
-  portfolioChainId: number
-  connectedChainId: number
-  isApproved: boolean
-}
-
 function hasOnlyZeros(input: string): boolean {
   return /^0+(\.0+)?$/.test(input)
 }
@@ -76,6 +67,15 @@ function checkIfUsingCCTP({
   )
 
   return isTokensUSDC && isSupportedCCTPChains
+}
+
+type PortfolioTokenAssetProps = {
+  token: Token
+  balance: bigint
+  allowances?: Allowances
+  portfolioChainId: number
+  connectedChainId: number
+  isApproved: boolean
 }
 
 export const PortfolioTokenAsset = ({
