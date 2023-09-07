@@ -260,7 +260,7 @@ export const MostRecentTransaction = () => {
   if (lastPendingBridgeTransaction) {
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
-      <div className="mt-3">
+      <div data-test-id="most-recent-transaction" className="mt-3">
         <PendingTransaction
           connectedAddress={address as Address}
           originChain={transaction.originChain as Chain}
@@ -280,7 +280,7 @@ export const MostRecentTransaction = () => {
   if (lastPendingTransaction) {
     transaction = lastPendingTransaction as BridgeTransaction
     return (
-      <div className="mt-3">
+      <div data-test-id="most-recent-transaction" className="mt-3">
         <PendingTransaction
           connectedAddress={address as Address}
           startedTimestamp={transaction?.fromInfo?.time as number}
@@ -318,7 +318,7 @@ export const MostRecentTransaction = () => {
   ) {
     transaction = lastHistoricalTransaction as BridgeTransaction
     return (
-      <div className="mt-3">
+      <div data-test-id="most-recent-transaction" className="mt-3">
         <PendingTransaction
           connectedAddress={address as Address}
           destinationAddress={transaction?.fromInfo?.address as Address}
@@ -432,7 +432,10 @@ export const EstimatedDuration = ({
   transactionStatus: TransactionStatus
 }) => {
   return (
-    <div className="text-[#C2C2D6] text-sm flex flex-col">
+    <div
+      data-test-id="estimated-duration"
+      className="text-[#C2C2D6] text-sm flex flex-col"
+    >
       {timeRemaining >= 0 ? (
         <React.Fragment>
           <div>
