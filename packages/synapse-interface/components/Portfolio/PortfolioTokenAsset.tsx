@@ -218,15 +218,14 @@ export const PortfolioTokenAsset = ({
             ? 'bg-tint border-y border-surface'
             : 'border-y border-transparent'
         }
-        `}
+      `}
     >
       <div className="flex flex-row justify-between w-2/3">
         <div
           onClick={handleSelectFromTokenCallback}
           className={`
           flex flex-row px-2 py-2 mb-auto
-          hover:cursor-pointer
-          hover:bg-tint
+          cursor-pointer hover:bg-tint active:opacity-[67%]
         `}
         >
           <Image
@@ -282,16 +281,17 @@ export const HoverClickableText = ({
   const [isHovered, setIsHovered] = useState(false)
   return (
     <div
+      data-test-id="hover-clickable-text"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={callback}
       className={`
-      group px-2
-      text-[#A3A3C2]
-      hover:text-[#75E6F0]
-      hover:underline
-      hover:cursor-pointer
-      active:opacity-[67%]
+        group px-2
+        text-[#A3A3C2]
+        hover:text-[#75E6F0]
+        hover:underline
+        hover:cursor-pointer
+        active:opacity-[67%]
       `}
     >
       <div className="text-[14px]">{isHovered ? hoverText : defaultText}</div>
