@@ -90,7 +90,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *g
 		return nil
 	}, retry.WithMax(1*time.Minute))
 
-	return
+	return testGuard, sclient, err
 }
 
 func (g GuardSuite) bumpBackends() {
