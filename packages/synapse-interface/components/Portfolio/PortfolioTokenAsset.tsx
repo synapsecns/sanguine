@@ -326,8 +326,7 @@ const PortfolioAssetActionButton = ({
           className={`
             ${buttonClassName}
             border border-[#D747FF] mr-1
-            hover:bg-[#272731]
-            active:opacity-[67%]
+            hover:bg-tint active:opacity-[67%]
           `}
           onClick={selectCallback}
         >
@@ -339,10 +338,7 @@ const PortfolioAssetActionButton = ({
           className={`
             ${buttonClassName}
             border border-separator
-            hover:border-[#A3A3C2]
-            hover:bg-[#272731]
-            active:border-[#A3A3C2]
-            active:opacity-[67%]
+            hover:bg-tint active:opacity-[67%]
           `}
           onClick={approveCallback}
         >
