@@ -40,8 +40,7 @@ contract DestinationTest is ExecutionHubTest {
         // Check version
         assertEq(dst.version(), LATEST_VERSION, "!version");
         // Check pending Agent Merkle Root
-        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
-        assertFalse(rootPassed);
+        (bool rootPending) = dst.passAgentRoot();
         assertFalse(rootPending);
     }
 
@@ -211,8 +210,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
         skip(timePassed);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
-        assertFalse(rootPassed);
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         assertTrue(rootPending);
         assertEq(lightManager.agentRoot(), agentRootLM);
     }
@@ -221,8 +219,7 @@ contract DestinationTest is ExecutionHubTest {
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
-        assertTrue(rootPassed);
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         assertFalse(rootPending);
         assertEq(lightManager.agentRoot(), ra._agentRoot);
     }

@@ -10,7 +10,7 @@ contract DestinationMock is ExecutionHubMock, AgentSecuredMock, InterfaceDestina
     /// @notice Prevents this contract from being included in the coverage report
     function testDestinationMock() external {}
 
-    function passAgentRoot() external returns (bool rootPassed, bool rootPending) {}
+    function passAgentRoot() external returns (bool rootPending) {}
 
     function acceptAttestation(
         uint32 notaryIndex,
