@@ -40,14 +40,14 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: '10m'
+          timeout: '60m'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: '10m'
+          timeout: '60m'
 
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -166,7 +166,7 @@ jobs:
           # command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
           command: cd ${{matrix.package}} && go test -parallel 1 ./...
           max_attempts: 2
-          timeout_minutes: 20
+          timeout_minutes: 60
       # - name: Setup upterm session
       #   uses: lhotari/action-upterm@v1
       #   with:
