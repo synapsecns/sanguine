@@ -21,6 +21,7 @@ export const TransactionOptions = ({
   kappa,
   transactionHash,
   transactionStatus,
+  isDelayed,
 }: {
   connectedAddress: Address
   originChain: Chain
@@ -28,6 +29,7 @@ export const TransactionOptions = ({
   kappa?: string
   transactionHash?: string
   transactionStatus: TransactionStatus
+  isDelayed: boolean
 }) => {
   const handleExplorerClick: () => void = useCallback(() => {
     if (

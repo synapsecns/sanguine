@@ -355,6 +355,7 @@ const TransactionStatusDetails = ({
           kappa={kappa}
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
+          isDelayed={false}
         />
       </div>
     )
@@ -403,6 +404,7 @@ const TransactionStatusDetails = ({
               kappa={kappa}
               transactionHash={transactionHash}
               transactionStatus={transactionStatus}
+              isDelayed={isDelayed}
             />
           </>
         ) : (
@@ -431,6 +433,7 @@ const TransactionStatusDetails = ({
               kappa={kappa}
               transactionHash={transactionHash}
               transactionStatus={transactionStatus}
+              isDelayed={isDelayed}
             />
           </>
         )}
@@ -465,6 +468,7 @@ const TransactionStatusDetails = ({
           kappa={kappa}
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
+          isDelayed={false}
         />
       </div>
     )
