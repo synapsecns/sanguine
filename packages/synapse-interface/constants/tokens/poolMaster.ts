@@ -17,6 +17,9 @@ import {
   AVAX,
   METISUSDC,
   DAIE,
+  ONEDAI,
+  ONEUSDC,
+  ONEUSDT,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
@@ -265,7 +268,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.HARMONY.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
   },
-  poolTokens: [NUSD, DAI, USDC, USDT],
+  poolTokens: [NUSD, ONEDAI, ONEUSDC, ONEUSDT],
   description: "Synapse's 4pool stableswap LP token on Harmony",
   display: true,
   priorityPool: true,
@@ -501,7 +504,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.KLAYTN.id]: '0xfDbaD1699A550F933EFebF652a735F2f89d3833c',
   },
-  poolTokens: [KLAYTN_oUSDT],
+  poolTokens: [USDT, KLAYTN_oUSDT],
   description: "Synapse's 2pool stableswap LP token on Klaytn",
   display: true,
   priorityPool: true,
