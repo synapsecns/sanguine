@@ -8,7 +8,7 @@ const LoadingPoolCard = () => {
       titleClassName="text-white font-light text-xl"
       className={`
         items-center row-span-1
-      bg-bgBase transition-all rounded-xl
+      bg-bgBase transition-all rounded-md
         py-6 mt-4 pr-2 h-40
         border border-transparent
         hover:bg-bgLight animate-pulse

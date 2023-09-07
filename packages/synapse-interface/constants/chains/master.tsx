@@ -1,22 +1,22 @@
-import ethImg from '@assets/chains/eth.jpg'
-import bscImg from '@assets/chains/bsc.jpg'
-import polygonImg from '@assets/chains/polygon.jpg'
-import fantomImg from '@assets/chains/fantom.jpg'
-import arbitrumImg from '@assets/chains/arbitrum.jpg'
-import avalancheImg from '@assets/chains/avalanche.jpg'
-import dfkImg from '@assets/chains/dfk.png'
-import auroraImg from '@assets/chains/aurora.png'
-import harmonyImg from '@assets/chains/harmonyone.jpg'
-import optimismImg from '@assets/chains/optimism.png'
-import bobaImg from '@assets/chains/boba.png'
-import moonbeamImg from '@assets/chains/moonbeam.jpg'
-import moonriverImg from '@assets/chains/moonriver.jpeg'
-import cronosImg from '@assets/chains/cronos.png'
-import metisImg from '@assets/chains/metis.png'
-import klaytnImg from '@assets/chains/klaytn.jpeg'
-import dogechainImg from '@assets/chains/dogechain.png'
-import cantoImg from '@assets/chains/canto.svg'
+import arbitrumImg from '@assets/chains/arbitrum.svg'
+import auroraImg from '@assets/chains/aurora.svg'
+import avalancheImg from '@assets/chains/avalanche.svg'
 import baseImg from '@assets/chains/base.svg'
+import bobaImg from '@assets/chains/boba.svg'
+import bscImg from '@assets/chains/bnb.svg'
+import cantoImg from '@assets/chains/canto.svg'
+import cronosImg from '@assets/chains/cronos.svg'
+import dfkImg from '@assets/chains/dfk.svg'
+import dogechainImg from '@assets/chains/dogechain.svg'
+import ethImg from '@assets/chains/ethereum.svg'
+import fantomImg from '@assets/chains/fantom.svg'
+import harmonyImg from '@assets/chains/harmony.svg'
+import klaytnImg from '@assets/chains/klaytn.svg'
+import metisImg from '@assets/chains/metis.svg'
+import moonbeamImg from '@assets/chains/moonbeam.svg'
+import moonriverImg from '@assets/chains/moonriver.svg'
+import optimismImg from '@assets/chains/optimism.svg'
+import polygonImg from '@assets/chains/polygon.svg'
 
 import { Chain } from '@types'
 
@@ -29,8 +29,8 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/eth',
-    fallback: 'https://eth.llamarpc.com',
+    primary: 'https://eth.llamarpc.com',
+    fallback: 'https://1rpc.io/eth',
   },
   explorerUrl: 'https://etherscan.com',
   blockTime: 10000,
@@ -90,7 +90,7 @@ export const AVALANCHE: Chain = {
   blockTime: 5000,
   rpcUrls: {
     primary: 'https://api.avax.network/ext/bc/C/rpc',
-    fallback: 'https://rpc.ankr.com/avalanche',
+    fallback: 'https://1rpc.io/avax/c',
   },
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
@@ -112,7 +112,7 @@ export const CANTO: Chain = {
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://evm.explorer.canto.io',
-  color: 'teal',
+  color: 'green',
 }
 
 export const OPTIMISM: Chain = {
@@ -126,7 +126,7 @@ export const OPTIMISM: Chain = {
   blockTime: 10000,
   rpcUrls: {
     primary: 'https://mainnet.optimism.io',
-    fallback: 'https://rpc.ankr.com/optimism',
+    fallback: 'https://1rpc.io/op',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
@@ -220,7 +220,7 @@ export const CRONOS: Chain = {
   },
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
-  color: 'blue',
+  color: 'gray',
 }
 
 export const BOBA: Chain = {
@@ -341,8 +341,8 @@ export const DOGE: Chain = {
   codeName: 'dogechain',
   blockTime: 10000,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/dogechain',
-    fallback: 'https://rpc.dogechain.dog',
+    primary: 'https://rpc.dogechain.dog',
+    fallback: 'https://rpc01-sg.dogechain.dog',
   },
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',

@@ -66,7 +66,7 @@ const PoolCards = memo(
                       className={({ selected }) => {
                         return `
                         bg-bgLight
-                          px-4 py-2 rounded-lg
+                          px-4 py-2 rounded-md
                           text-sm text-white
                           transform-gpu transition-all duration-75
                           hover:bg-bgLighter

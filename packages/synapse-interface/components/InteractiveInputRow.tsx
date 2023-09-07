@@ -47,14 +47,14 @@ const InteractiveInputRow = ({
 
   return (
     <div className="mt-4">
-      <div className="border-none rounded-xl">
+      <div className="border-none rounded-md">
         <div className="flex space-x-2">
           <div
             className={`
               flex flex-grow items-center
               pl-3 sm:pl-4
               w-full h-20
-              rounded-lg
+              rounded-md
               border border-white border-opacity-20
               transform-gpu transition-all duration-75
               hover:border-opacity-30
@@ -63,12 +63,12 @@ const InteractiveInputRow = ({
             <div className="sm:mt-[-1px] ">
               <div
                 className={`
-                group rounded-xl
+                group rounded-md
                 ${getMenuItemBgForCoin(token?.color)}
               `}
               >
                 <div
-                  className={`flex justify-center md:justify-start items-center rounded-lg py-1.5 px-2 ${width}`}
+                  className={`flex justify-center md:justify-start items-center rounded-md py-1.5 px-2 ${width}`}
                 >
                   <div className="self-center flex-shrink-0 hidden mr-2 sm:block">
                     <div
@@ -136,7 +136,7 @@ const InteractiveInputRow = ({
           <Button
             className={`
               ${buttonWidth}
-              rounded-xl my-2 px-4 py-3
+              rounded-md my-2 px-4 py-3
               max-w-content disabled:bg-[#353038]
               text-white text-opacity-100
               transform-gpu transition-all duration-200

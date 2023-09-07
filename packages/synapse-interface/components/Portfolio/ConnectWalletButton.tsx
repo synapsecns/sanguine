@@ -45,7 +45,7 @@ export function ConnectWalletButton() {
 
   const buttonClassName = `
     h-10 border-[#AC8FFF] flex items-center border
-    text-base text-white px-6 py-5 hover:opacity-75 rounded-lg
+    text-base text-white px-6 py-5 hover:opacity-75 rounded-md
     text-center transform-gpu transition-all duration-75
   `
 

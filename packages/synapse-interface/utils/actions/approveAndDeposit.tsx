@@ -9,8 +9,9 @@ import ExplorerToastLink from '@components/ExplorerToastLink'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { AVWETH, WETHE } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { WETHE } from '@constants/tokens/bridgeable'
+import { WETH } from '@/constants/tokens/auxilliary'
+import { AVWETH } from '@/constants/tokens/auxilliary'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
 import { zeroAddress } from 'viem'
@@ -26,7 +27,7 @@ export const approve = async (
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
 
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+  const { poolAddress, swapType } = getSwapDepositContractFields(pool, chainId)
 
   const requestingApprovalPopup = toast(
     `Requesting approval on ${currentChainName}`,
@@ -42,10 +43,14 @@ export const approve = async (
       (inputValue[tokenAddr] === 0n ||
         inputValue[tokenAddr] <= depositQuote.allowances[tokenAddr])
     ) {
+      toast.dismiss(requestingApprovalPopup)
       return
     }
 
-    if (token.symbol === WETH.symbol) return
+    if (token.symbol === WETH.symbol) {
+      toast.dismiss(requestingApprovalPopup)
+      return
+    }
 
     const tokenToApprove =
       token.symbol === AVWETH.symbol
@@ -81,7 +86,9 @@ export const approve = async (
     return approveTx
   }
 
-  for (let token of pool.poolTokens) {
+  const tokens = swapType === 'AV_SWAP' ? pool.nativeTokens : pool.poolTokens
+
+  for (let token of tokens) {
     try {
       const value = inputValue[token.addresses[chainId]]
       const hasNonZeroValue = !!value && value !== 0n

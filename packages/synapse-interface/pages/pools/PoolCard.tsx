@@ -89,7 +89,7 @@ const PoolCard = memo(
             }
             titleClassName="text-white font-light text-xl"
             className={`
-            bg-bgBase transition-all rounded-xl items-center
+            bg-bgBase transition-all rounded-md items-center
             hover:bg-bgLight
               py-6 mt-4
               border border-transparent

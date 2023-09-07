@@ -17,7 +17,7 @@ const NoPoolBody = ({
         title="Pool Info "
         className={`
           bg-bgBase
-          my-8 transform transition-all duration-100 rounded-3xl place-self-center
+          my-8 transform transition-all duration-100 rounded-lg place-self-center
           min-w-4/5 sm:min-w-3/4 md:min-w-3/5 lg:min-w-1/2
         `}
         divider={false}

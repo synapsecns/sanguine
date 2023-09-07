@@ -4,7 +4,7 @@ import { Chain } from '@types'
 
 export const CheckingConfPlaceholder = ({ chain }: { chain: Chain }) => {
   return (
-    <div className="flex items-center p-1 max-w-[80%] rounded-lg ">
+    <div className="flex items-center p-1 max-w-[80%] rounded-md ">
       <div>
         <div>
           <div className="w-full text-sm">
@@ -32,7 +32,7 @@ export const PendingCreditTransactionItem = ({
   const chain = CHAINS_BY_ID[chainId]
 
   return (
-    <div className="flex items-center p-1 rounded-lg ">
+    <div className="flex items-center p-1 rounded-md ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
@@ -63,7 +63,7 @@ export const PendingCreditTransactionItem = ({
 export const EmptySubTransactionItem = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return (
-    <div className="flex items-center py-1 pl-3 rounded-lg ">
+    <div className="flex items-center py-1 pl-3 rounded-md ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
@@ -77,7 +77,7 @@ export const EmptySubTransactionItem = ({ chainId }: { chainId: number }) => {
 export const CreditedTransactionItem = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return (
-    <div className="flex items-center p-1 border border-gray-700 rounded-lg">
+    <div className="flex items-center p-1 border border-gray-700 rounded-md">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
