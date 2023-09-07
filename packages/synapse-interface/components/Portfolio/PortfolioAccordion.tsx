@@ -64,7 +64,7 @@ export const PortfolioAccordion = ({
           </div>
         </div>
         {isExpanded && expandedProps}
-        {/* <AccordionIcon isExpanded={isExpanded} /> */}
+        <AccordionIcon isExpanded={isExpanded} onClick={handleToggle} />
       </div>
       <div
         data-test-id="portfolio-accordion-contents"
@@ -76,9 +76,21 @@ export const PortfolioAccordion = ({
   )
 }
 
-export const AccordionIcon = ({ isExpanded }: { isExpanded: boolean }) => {
+export const AccordionIcon = ({
+  isExpanded,
+  onClick,
+}: {
+  isExpanded: boolean
+  onClick: () => void
+}) => {
   return (
-    <div className="p-1 mx-2 border rounded-full border-separator">
+    <div
+      onClick={onClick}
+      className={`
+        p-1 mx-2 border border-surface rounded-full
+        cursor-pointer hover:border-transparent
+      `}
+    >
       {isExpanded ? (
         <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-separator" />
       ) : (
