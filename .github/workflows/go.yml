@@ -167,24 +167,24 @@ jobs:
           command: cd ${{matrix.package}} && go test -parallel 1 ./...
           max_attempts: 2
           timeout_minutes: 60
-      # - name: Setup upterm session
-      #   uses: lhotari/action-upterm@v1
-      #   with:
-      #     ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-      #     limit-access-to-users: trajan0x,cryptomaxplanck,dwasse
-      #   env:
-      #     PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
-      #     ENABLE_MYSQL_TEST: true
-      #     MYSQL_HOST: 0.0.0.0
-      #     MYSQL_USER: user
-      #     MYSQL_PASSWORD: password
-      #     MYSQL_DATABASE: test
-      #     MYSQL_ROOT_PASSWORD: password
-      #     MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-      #     GOMEMLIMIT: 3GiB
-      #     GOGC: -1
-      #     ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
-      #     GOPROXY: https://proxy.golang.org
+        # - name: Setup upterm session
+        #   uses: lhotari/action-upterm@v1
+        #   with:
+        #     ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+        #     limit-access-to-users: trajan0x,cryptomaxplanck,dwasse
+        env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
+          ENABLE_MYSQL_TEST: true
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+          GOMEMLIMIT: 3GiB
+          GOGC: -1
+          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
+          GOPROXY: https://proxy.golang.org
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
