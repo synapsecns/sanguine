@@ -504,7 +504,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.KLAYTN.id]: '0xfDbaD1699A550F933EFebF652a735F2f89d3833c',
   },
-  poolTokens: [KLAYTN_oUSDT],
+  poolTokens: [USDT, KLAYTN_oUSDT],
   description: "Synapse's 2pool stableswap LP token on Klaytn",
   display: true,
   priorityPool: true,
