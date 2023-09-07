@@ -513,7 +513,7 @@ export const TransactionPayloadDetail = ({
     }
   }, [isOrigin, chain])
 
-  const handleSelectFromTokenCallback = useCallback(() => {
+  const handleSelectTokenCallback = useCallback(() => {
     if (isOrigin && chain && token) {
       dispatch(setFromChainId(chain?.id))
       dispatch(setFromToken(token))
@@ -549,7 +549,11 @@ export const TransactionPayloadDetail = ({
       {token && tokenAmount && (
         <div
           data-test-id="transaction-payload-token"
-          className="flex flex-row items-center px-1"
+          onClick={handleSelectTokenCallback}
+          className={`
+            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
+            hover:bg-tint active:opacity-[67%]
+          `}
         >
           <Image
             src={token?.icon}
