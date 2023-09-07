@@ -98,10 +98,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
         if (_notaryDisputeTimeout(notaryIndex)) revert DisputeTimeoutNotOver();
         // First, try passing current agent merkle root
-        (bool rootPassed, bool rootPending) = passAgentRoot();
-        // Don't accept attestation, if the agent root was updated in LightManager,
-        // as the following agent check will fail.
-        if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // Check that this Notary hasn't used a more fresh nonce
@@ -112,6 +108,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _saveAttestation(att, notaryIndex, sigIndex);
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
+        (, bool rootPending) = passAgentRoot();
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         _saveGasData(snapGas, notaryIndex);
         return true;
