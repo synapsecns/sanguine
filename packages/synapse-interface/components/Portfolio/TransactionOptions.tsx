@@ -43,6 +43,12 @@ export const TransactionOptions = ({
         toChainId: destinationChain.id,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    } else if (isDelayed) {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else if (transactionHash) {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
@@ -99,7 +105,20 @@ export const TransactionOptions = ({
                 onClick={handleExplorerClick}
               />
             )}
-            {transactionStatus === TransactionStatus.PENDING && (
+            {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
+              <OptionButton
+                icon={
+                  <Image
+                    className="rounded-full"
+                    height={20}
+                    src={SynapseLogo}
+                    alt="Synapse Logo"
+                  />
+                }
+                text={`Check on Synapse Explorer`}
+                onClick={handleExplorerClick}
+              />
+            ) : (
               <OptionButton
                 icon={
                   <Image
@@ -120,7 +139,7 @@ export const TransactionOptions = ({
                     className="rounded-full"
                     height={20}
                     src={SynapseLogo}
-                    alt={`${originChain.explorerName} logo`}
+                    alt="Synapse Logo"
                   />
                 }
                 text={`Check on Synapse Explorer`}

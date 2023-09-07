@@ -419,9 +419,13 @@ export const getTransactionExplorerLink = ({
 }: {
   kappa: string
   fromChainId: number
-  toChainId: number
+  toChainId?: number
 }): string => {
-  return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
+  if (typeof toChainId === 'number') {
+    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
+  } else {
+    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}`
+  }
 }
 
 export const EstimatedDuration = ({
