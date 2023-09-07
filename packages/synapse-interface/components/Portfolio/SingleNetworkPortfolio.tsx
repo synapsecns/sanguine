@@ -228,15 +228,17 @@ const PortfolioTokenVisualizer = ({
               bg-[#101018] rounded-md
             `}
           >
-            {portfolioTokens.map((token: TokenWithBalanceAndAllowances) => {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap">
-                  {balance} {tokenSymbol}
-                </div>
-              )
-            })}
+            {portfolioTokens.map(
+              (token: TokenWithBalanceAndAllowances, key: number) => {
+                const tokenSymbol = token.token.symbol
+                const balance = token.parsedBalance
+                return (
+                  <div className="whitespace-nowrap" key={key}>
+                    {balance} {tokenSymbol}
+                  </div>
+                )
+              }
+            )}
           </div>
         )}
       </div>

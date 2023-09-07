@@ -85,10 +85,11 @@ export const AccordionIcon = ({
 }) => {
   return (
     <div
+      data-test-id="accordion-icon"
       onClick={onClick}
       className={`
         p-1 mx-2 border border-surface rounded-full
-        cursor-pointer hover:border-transparent
+        cursor-pointer hover:border-transparent active:border-transparent
       `}
     >
       {isExpanded ? (
