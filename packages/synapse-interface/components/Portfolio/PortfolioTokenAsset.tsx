@@ -226,7 +226,7 @@ export const PortfolioTokenAsset = ({
           className={`
           flex flex-row px-2 py-2 mb-auto
           hover:cursor-pointer
-          hover:bg-[#272731]
+          hover:bg-tint
         `}
         >
           <Image
@@ -242,7 +242,7 @@ export const PortfolioTokenAsset = ({
             onClick={handleTotalBalanceInputCallback}
             className={`
             p-2 ml-auto cursor-pointer
-            hover:bg-[#272731] active:opacity-[67%]
+            hover:bg-tint active:opacity-[67%]
           `}
           >
             {parsedBalance}
