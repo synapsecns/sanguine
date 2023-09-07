@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"os"
+	"strings"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -28,12 +35,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
-	"math"
-	"math/big"
-	"os"
-	"strings"
-	"sync"
-	"testing"
 )
 
 const gasLimit = 10000000
@@ -177,9 +178,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Cleanup(func() {
 		select {
 		case <-ctx.Done():
-			if !t.Failed() {
-				_ = pool.Purge(resource)
-			}
+			err = pool.Purge(resource)
+			logger.Errorf("error purging anvil container: %w", err)
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
