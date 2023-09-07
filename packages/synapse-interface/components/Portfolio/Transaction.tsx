@@ -125,7 +125,7 @@ export const Transaction = ({
       className={`
         flex flex-col mb-2 overflow-hidden
         border rounded-lg text-secondary border-surface
-        ${transactionType === TransactionType.HISTORICAL && 'bg-[#18151A]'}
+        ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
         `}
     >
       <div className={`flex flex-row`}>
