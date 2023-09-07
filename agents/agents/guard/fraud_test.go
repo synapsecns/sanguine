@@ -1090,6 +1090,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		fmt.Printf("status at time %v: %v\n", time.Now().String(), status.Flag().String())
 		Nil(g.T(), err)
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
