@@ -159,7 +159,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	case <-ctx.Done():
 		t.Errorf("context canceled before anvil node started")
 	case logInfo := <-logInfoChan:
-		logger.Warnf("started anvil node for chain %s as container %s. %s Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), otterscanMessage, logInfo.LogDir())
+		logger.Warnf("started anvil node for chain %s as container %s. %s Logs will be stored at %s [accessable at %s]", chainID, strings.TrimPrefix(resource.Container.Name, "/"), otterscanMessage, logInfo.LogDir(), address)
 	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
