@@ -507,19 +507,19 @@ export const TransactionPayloadDetail = ({
 
   const handleSelectChainCallback = useCallback(() => {
     if (isOrigin) {
-      dispatch(setFromChainId(chain?.id))
+      dispatch(setFromChainId(chain?.id as number))
     } else {
-      dispatch(setToChainId(chain?.id))
+      dispatch(setToChainId(chain?.id as number))
     }
   }, [isOrigin, chain])
 
   const handleSelectTokenCallback = useCallback(() => {
     if (isOrigin && chain && token) {
-      dispatch(setFromChainId(chain?.id))
-      dispatch(setFromToken(token))
+      dispatch(setFromChainId(chain?.id as number))
+      dispatch(setFromToken(token as Token))
     } else {
-      dispatch(setToChainId(chain?.id))
-      dispatch(setToToken(token))
+      dispatch(setToChainId(chain?.id as number))
+      dispatch(setToToken(token as Token))
     }
   }, [isOrigin, token, chain])
 
