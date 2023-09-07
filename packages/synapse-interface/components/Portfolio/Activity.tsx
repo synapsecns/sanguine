@@ -27,6 +27,8 @@ import {
   BridgeState,
   setFromChainId,
   setToChainId,
+  setFromToken,
+  setToToken,
 } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
@@ -510,6 +512,16 @@ export const TransactionPayloadDetail = ({
       dispatch(setToChainId(chain?.id))
     }
   }, [isOrigin, chain])
+
+  const handleSelectFromTokenCallback = useCallback(() => {
+    if (isOrigin && chain && token) {
+      dispatch(setFromChainId(chain?.id))
+      dispatch(setFromToken(token))
+    } else {
+      dispatch(setToChainId(chain?.id))
+      dispatch(setToToken(token))
+    }
+  }, [isOrigin, token, chain])
 
   return (
     <div
