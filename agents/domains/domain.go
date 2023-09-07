@@ -152,7 +152,7 @@ type LightInboxContract interface {
 	// VerifyStateWithAttestation verifies a state with attestation.
 	VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyReceipt verifies a receipt on the inbox.
-	VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyReceipt(transactor *bind.TransactOpts, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.

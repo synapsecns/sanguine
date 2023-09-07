@@ -7,7 +7,7 @@ import (
 
 // GetPort returns the port of a container.
 // unlike resource.GetPort this returns the ports in reverse order.
-// this can be useful in ci environments(?)
+// this can be useful in ci enviornments(?)
 func GetPort(resource *dockertest.Resource, port string) string {
 	if resource.Container == nil || resource.Container.NetworkSettings == nil {
 		return ""

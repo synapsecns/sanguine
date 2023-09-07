@@ -106,7 +106,7 @@ func (a lightInboxContract) VerifyStateWithAttestation(transactor *bind.Transact
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) VerifyReceipt(transactor *bind.TransactOpts, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyReceipt(transactor, rcptPayload, rcptSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
