@@ -15,9 +15,10 @@ contract GasOracleTest is MessagingBaseTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
+        vm.chainId(domain);
         address caller = random.nextAddress();
         address destination_ = random.nextAddress();
-        GasOracle cleanContract = new GasOracle(domain, destination_);
+        GasOracle cleanContract = new GasOracle(DOMAIN_SYNAPSE, destination_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");

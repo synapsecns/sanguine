@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
-import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
 import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/stack/GasData.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
@@ -60,8 +60,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, address agentManager_, address inbox_)
-        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    constructor(uint32 synapseDomain_, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", synapseDomain_, agentManager_, inbox_)
     {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
@@ -72,7 +72,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Initialize ReeentrancyGuard
         __ReentrancyGuard_init();
         // Set Agent Merkle Root in Light Manager
-        if (localDomain != SYNAPSE_DOMAIN) {
+        if (localDomain != synapseDomain) {
             _nextAgentRoot = agentRoot;
             InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
             destStatus.agentRootTime = uint40(block.timestamp);
@@ -112,7 +112,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
         // Agent root is not passed on Synapse Chain, as it could be accessed via BondingManager
-        if (localDomain == SYNAPSE_DOMAIN) return (false, false);
+        if (localDomain == synapseDomain) return (false, false);
         bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
         bytes32 newRoot = _nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
@@ -158,7 +158,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             timestamp_: rootData.attTS
         });
         // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
-        if (localDomain != SYNAPSE_DOMAIN) {
+        if (localDomain != synapseDomain) {
             attSignature = IStatementInbox(inbox).getStoredSignature(rootData.sigIndex);
         }
     }
@@ -177,7 +177,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     function nextAgentRoot() external view returns (bytes32) {
         // Return current agent root on Synapse Chain for consistency
-        return localDomain == SYNAPSE_DOMAIN ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
+        return localDomain == synapseDomain ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -195,7 +195,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // No need to save agent roots on Synapse Chain, as they could be accessed via BondingManager
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (localDomain != SYNAPSE_DOMAIN && !rootPending && _nextAgentRoot != agentRoot) {
+        if (localDomain != synapseDomain && !rootPending && _nextAgentRoot != agentRoot) {
             status.agentRootTime = uint40(block.timestamp);
             status.notaryIndex = notaryIndex;
             _nextAgentRoot = agentRoot;
