@@ -418,14 +418,15 @@ const TransactionStatusDetails = ({
         {isDelayed ? (
           <>
             <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
-              onClick={handleDestinationExplorerClick}
+              className="flex items-center p-1 ml-1 rounded-sm"
+              // className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
+              // onClick={handleDestinationExplorerClick}
             >
-              <Image
+              {/* <Image
                 className="w-4 h-4 ml-1 mr-1.5 my-auto rounded-full"
                 src={destinationChain.explorerImg}
                 alt={`${destinationChain.explorerName} logo`}
-              />
+              /> */}
               <div className="text-[#FFDD33]">Taking longer than expected.</div>
             </div>
             <TransactionOptions
