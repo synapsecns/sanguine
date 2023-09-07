@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD} from "../libs/Constants.sol";
 import {
     IncorrectAgentIndex,
     IncorrectAgentProof,
@@ -44,8 +44,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
+        if (localDomain == synapseDomain_) revert SynapseDomainForbidden();
     }
 
     function initialize(address origin_, address destination_, address inbox_) external initializer {
@@ -96,7 +96,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Only destination can pass Manager Messages
         if (msg.sender != destination) revert CallerNotDestination();
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
-        if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
+        if (msgOrigin != synapseDomain) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough
         // TODO: separate constant for withdrawing tips optimistic period
         if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert WithdrawTipsOptimisticPeriod();
@@ -111,7 +111,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Send a manager message to BondingManager on SynChain
         // remoteSlashAgent(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
         InterfaceOrigin(origin).sendManagerMessage({
-            destination: SYNAPSE_DOMAIN,
+            destination: synapseDomain,
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
             payload: abi.encodeWithSelector(InterfaceBondingManager.remoteSlashAgent.selector, domain, agent, prover)
         });

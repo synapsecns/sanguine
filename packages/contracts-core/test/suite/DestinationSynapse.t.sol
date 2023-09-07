@@ -38,11 +38,12 @@ contract DestinationSynapseTest is ExecutionHubTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address caller = random.nextAddress();
         BondingManager manager = new BondingManager(domain);
         address inbox_ = random.nextAddress();
         bytes32 agentRoot = random.next();
-        Destination cleanContract = new Destination(domain, address(manager), inbox_);
+        Destination cleanContract = new Destination(DOMAIN_SYNAPSE, address(manager), inbox_);
         manager.initialize(address(0), address(cleanContract), inbox_, address(0));
         // agentRoot should be ignored on Synapse Chain
         vm.prank(caller);

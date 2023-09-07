@@ -818,7 +818,7 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	agentAddress := txContextOrigin.From
 	originHarnessOverride, err := deployer.DeploySimpleContract(e.GetTestContext(), func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *ethTypes.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(e.TestBackendOrigin.GetChainID()), agentAddress, inboxAddr, gasOracleAddr)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, testutil.SynapseChainID, agentAddress, inboxAddr, gasOracleAddr)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy origin override: %w", err)
 		}

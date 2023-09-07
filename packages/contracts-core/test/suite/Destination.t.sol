@@ -48,10 +48,11 @@ contract DestinationTest is ExecutionHubTest {
         uint32 domain = random.nextUint32();
         vm.assume(domain != DOMAIN_SYNAPSE);
         address caller = random.nextAddress();
-        LightManager agentManager = new LightManager(domain);
+        vm.chainId(uint256(domain));
+        LightManager agentManager = new LightManager(DOMAIN_SYNAPSE);
         address inbox_ = random.nextAddress();
         bytes32 agentRoot = random.next();
-        Destination cleanContract = new Destination(domain, address(agentManager), inbox_);
+        Destination cleanContract = new Destination(DOMAIN_SYNAPSE, address(agentManager), inbox_);
         agentManager.initialize(address(0), address(cleanContract), inbox_);
         vm.prank(caller);
         cleanContract.initialize(agentRoot);
