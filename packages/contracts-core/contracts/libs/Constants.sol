@@ -48,6 +48,3 @@ uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 uint256 constant FRESH_DATA_TIMEOUT = 4 hours;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
-/// @dev Domain of the Synapse Chain
-// TODO: replace the placeholder with actual value (for MVP this is Optimism chainId)
-uint32 constant SYNAPSE_DOMAIN = 10;
