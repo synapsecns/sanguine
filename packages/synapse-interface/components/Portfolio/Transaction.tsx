@@ -378,6 +378,14 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
 
+    const handleSynapseExplorerTxClick = () => {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+
     return (
       <div
         data-test-id="pending-status"
@@ -386,9 +394,8 @@ const TransactionStatusDetails = ({
         {isDelayed ? (
           <>
             <div
-              className="flex items-center p-1 ml-1 rounded-sm"
-              // className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
-              // onClick={handleDestinationExplorerClick}
+              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
+              onClick={handleSynapseExplorerTxClick}
             >
               {/* <Image
                 className="w-4 h-4 ml-1 mr-1.5 my-auto rounded-full"

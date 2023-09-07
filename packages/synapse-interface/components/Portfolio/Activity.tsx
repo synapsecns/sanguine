@@ -306,6 +306,7 @@ export const MostRecentTransaction = () => {
           destinationAddress={transaction?.fromInfo?.address as Address}
           isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
           isCompleted={transaction?.toInfo?.time ? true : false}
+          kappa={transaction?.kappa}
         />
       </div>
     )
