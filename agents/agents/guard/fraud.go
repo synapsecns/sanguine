@@ -485,7 +485,6 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(receipt.Destination())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[receipt.Destination()].LightInbox().VerifyReceipt(
 				transactor,
-				g.unbondedSigner,
 				fraudReceipt.RcptPayload,
 				fraudReceipt.RcptSignature,
 			)
@@ -740,8 +739,8 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		if err != nil {
 			return fmt.Errorf("could not get block number for local root: %w", err)
 		}
-		//nolint:nestif
 		fmt.Printf("Comparing local block number %v to tree block number %v with tree root %v and local root %v\n", localRootBlockNumber, treeBlockNumber, tree.AgentRoot, common.BytesToHash(localRoot[:]))
+		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
 			fmt.Printf("Relaying agent status for agent %v on chain %d", tree.AgentAddress.String(), chainID)
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
