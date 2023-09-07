@@ -44,14 +44,14 @@ export const PortfolioAccordion = ({
       <div
         data-test-id="portfolio-accordion-header"
         className={`
-        flex items-center justify-between border border-transparent pr-2 select-none
-        hover:border-[#3D3D5C] hover:bg-[#272731]
-        active:border-[#3D3D5C] active:opacity-[67%]
-        ${
-          isExpanded
-            ? 'bg-tint rounded-t-md hover:rounded-t-md'
-            : 'bg-transparent rounded-md'
-        }
+          flex items-center justify-between border border-transparent pr-2 select-none
+          hover:border-[#3D3D5C] hover:bg-[#272731]
+          active:border-[#3D3D5C] active:opacity-[67%]
+          ${
+            isExpanded
+              ? 'bg-tint rounded-t-md hover:rounded-t-md'
+              : 'bg-transparent rounded-md'
+          }
         `}
       >
         <div onClick={handleToggle} className="flex-1 mr-3">

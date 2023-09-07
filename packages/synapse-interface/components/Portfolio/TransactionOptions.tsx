@@ -75,8 +75,9 @@ export const TransactionOptions = ({
             as="div"
             onMouseEnter={() => {}}
             className={`
-            ${open ? 'text-gray-900' : 'text-purple-800'}
-            group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
+              group rounded-md inline-flex items-center
+              hover:text-gray-900 focus:outline-none
+              ${open ? 'text-gray-900' : 'text-purple-800'}
             `}
           >
             <DropdownButton open={open} />

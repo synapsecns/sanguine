@@ -536,9 +536,9 @@ export const TransactionPayloadDetail = ({
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
           className={`
-          flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-          hover:bg-tint active:opacity-[67%]
-        `}
+            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
+            hover:bg-tint active:opacity-[67%]
+          `}
         >
           <Image
             src={chain.chainImg}

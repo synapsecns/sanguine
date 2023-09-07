@@ -90,13 +90,13 @@ export const Transaction = ({
         flex flex-col mb-2 overflow-hidden
         border rounded-lg text-secondary border-surface
         ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
-        `}
+      `}
     >
       <div className={`flex flex-row`}>
         <div
           className={`
-          flex items-center p-2
-          ${transactionType === TransactionType.PENDING && 'bg-surface'}
+            flex items-center p-2
+            ${transactionType === TransactionType.PENDING && 'bg-surface'}
           `}
         >
           <TransactionPayloadDetail
@@ -117,8 +117,8 @@ export const Transaction = ({
         />
         <div
           className={`
-          flex flex-row justify-between flex-1
-          ${transactionType === TransactionType.PENDING && 'bg-tint'}
+            flex flex-row justify-between flex-1
+            ${transactionType === TransactionType.PENDING && 'bg-tint'}
           `}
         >
           <div className="flex items-center p-2">

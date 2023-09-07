@@ -227,9 +227,9 @@ export const PortfolioTokenAsset = ({
         <div
           onClick={handleSelectFromTokenCallback}
           className={`
-          flex flex-row px-2 py-2 mb-auto
-          cursor-pointer hover:bg-tint active:opacity-[67%]
-        `}
+            flex flex-row px-2 py-2 mb-auto
+            cursor-pointer hover:bg-tint active:opacity-[67%]
+          `}
         >
           <Image
             loading="lazy"
@@ -243,9 +243,9 @@ export const PortfolioTokenAsset = ({
           <div
             onClick={handleTotalBalanceInputCallback}
             className={`
-            p-2 ml-auto cursor-pointer
-            hover:bg-tint active:opacity-[67%]
-          `}
+              p-2 ml-auto cursor-pointer
+              hover:bg-tint active:opacity-[67%]
+            `}
           >
             {parsedBalance}
           </div>
