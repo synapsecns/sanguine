@@ -161,9 +161,15 @@ export const BRIDGE_MAP = {
     '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
       decimals: 6,
       symbol: 'USDC',
-      origin: ['CCTP.USDC'],
+      origin: ['CCTP.USDC', 'nUSD'],
       destination: ['CCTP.USDC'],
-      swappable: [],
+      swappable: [
+        '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
+        '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+        '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
+        '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+        '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+      ],
     },
     '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
       decimals: 18,
@@ -202,6 +208,7 @@ export const BRIDGE_MAP = {
       origin: ['nUSD'],
       destination: ['nUSD'],
       swappable: [
+        '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
         '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
         '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
@@ -211,9 +218,10 @@ export const BRIDGE_MAP = {
     '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
       decimals: 6,
       symbol: 'USDC.e',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
+      origin: ['CCTP.USDC', 'nUSD'],
+      destination: ['CCTP.USDC', 'nUSD'],
       swappable: [
+        '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
         '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
         '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
@@ -233,9 +241,10 @@ export const BRIDGE_MAP = {
     '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
       decimals: 18,
       symbol: 'sUSD',
-      origin: ['nUSD'],
-      destination: [],
+      origin: ['CCTP.USDC', 'nUSD'],
+      destination: ['CCTP.USDC'],
       swappable: [
+        '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
         '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
@@ -245,9 +254,10 @@ export const BRIDGE_MAP = {
     '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
       decimals: 6,
       symbol: 'USDT',
-      origin: ['nUSD'],
-      destination: [],
+      origin: ['CCTP.USDC', 'nUSD'],
+      destination: ['CCTP.USDC'],
       swappable: [
+        '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
         '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
@@ -264,9 +274,10 @@ export const BRIDGE_MAP = {
     '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
       decimals: 18,
       symbol: 'DAI',
-      origin: ['nUSD'],
-      destination: [],
+      origin: ['CCTP.USDC', 'nUSD'],
+      destination: ['CCTP.USDC'],
       swappable: [
+        '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
         '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
