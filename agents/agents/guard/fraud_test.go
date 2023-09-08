@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 	"time"
@@ -20,7 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -34,64 +32,56 @@ import (
 )
 
 func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *guard.Guard, sclient client.ScribeClient, err error) {
-	err = retry.WithBackoff(g.GetTestContext(), func(ctx context.Context) error {
-		testConfig := config.AgentConfig{
-			Domains: map[string]config.DomainConfig{
-				"origin_client":      g.OriginDomainClient.Config(),
-				"destination_client": g.DestinationDomainClient.Config(),
-				"summit_client":      g.SummitDomainClient.Config(),
-			},
-			DomainID:       uint32(0),
-			SummitDomainID: g.SummitDomainClient.Config().DomainID,
-			BondedSigner: signerConfig.SignerConfig{
-				Type: signerConfig.FileType.String(),
-				File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
-			},
-			UnbondedSigner: signerConfig.SignerConfig{
-				Type: signerConfig.FileType.String(),
-				File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
-			},
-			RefreshIntervalSeconds: 5,
-			MaxRetrySeconds:        60,
-		}
+	testConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      g.OriginDomainClient.Config(),
+			"destination_client": g.DestinationDomainClient.Config(),
+			"summit_client":      g.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: g.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+		MaxRetrySeconds:        60,
+	}
 
-		// Scribe setup.
-		omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-		originClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
-		Nil(g.T(), err)
-		destinationClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
-		Nil(g.T(), err)
-		summitClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
-		Nil(g.T(), err)
+	// Scribe setup.
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	originClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	destinationClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	summitClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
 
-		clients := map[uint32][]backend.ScribeBackend{
-			uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
-			uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
-			uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
-		}
-		scribe, err := service.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
-		Nil(g.T(), err)
-		scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
+	clients := map[uint32][]backend.ScribeBackend{
+		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
+	}
+	scribe, err := service.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	Nil(g.T(), err)
+	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
 
-		//nolint:errcheck
-		go scribeClient.Start(g.GetTestContext())
-		//nolint:errcheck
-		go scribe.Start(g.GetTestContext())
-		//nolint:wrapcheck
-		testGuard, err = guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
-		sclient = scribeClient.ScribeClient
-		if err != nil {
-			return fmt.Errorf("could not create guard: %w", err)
-		}
-		if testGuard == nil {
-			return fmt.Errorf("guard is nil")
-		}
-
-		return nil
-	}, retry.WithMaxTotalTime(1*time.Minute))
-
+	//nolint:errcheck
+	go scribeClient.Start(g.GetTestContext())
+	//nolint:errcheck
+	go scribe.Start(g.GetTestContext())
+	//nolint:wrapcheck
+	testGuard, err = guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	sclient = scribeClient.ScribeClient
 	if err != nil {
 		return nil, sclient, fmt.Errorf("could not create guard: %w", err)
+	}
+	if testGuard == nil {
+		return nil, sclient, fmt.Errorf("guard is nil")
 	}
 
 	return testGuard, sclient, nil
