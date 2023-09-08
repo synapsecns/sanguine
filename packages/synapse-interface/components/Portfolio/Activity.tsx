@@ -36,10 +36,10 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { shortenAddress } from '@/utils/shortenAddress'
 import {
   Transaction,
-  PendingTransaction,
   TransactionType,
   TransactionStatus,
 } from './Transaction/Transaction'
+import { PendingTransaction } from './Transaction/PendingTransaction'
 import ProcessingIcon from '../icons/ProcessingIcon'
 
 function checkTransactionsExist(
