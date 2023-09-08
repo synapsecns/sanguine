@@ -8,13 +8,13 @@ import {
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
-import { PortfolioAccordion } from './PortfolioAccordion'
-import { PortfolioConnectButton } from './PortfolioConnectButton'
+import { PortfolioAccordion } from './components/PortfolioAccordion'
+import { PortfolioConnectButton } from './components/PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
-import { PortfolioTokenAsset } from './PortfolioTokenAsset'
+import { PortfolioTokenAsset } from './components/PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { WarningMessage } from '../Warning'
+import { WarningMessage } from '../../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 

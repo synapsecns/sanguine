@@ -62,7 +62,11 @@ import {
   fetchAndStoreSingleTokenBalance,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
-import { updatePendingBridgeTransaction, addPendingBridgeTransaction, removePendingBridgeTransaction } from '@/slices/bridge/actions'
+import {
+  updatePendingBridgeTransaction,
+  addPendingBridgeTransaction,
+  removePendingBridgeTransaction,
+} from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'

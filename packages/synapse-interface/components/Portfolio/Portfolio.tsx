@@ -7,7 +7,7 @@ import {
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { PortfolioContent } from './PortfolioContent'
+import { PortfolioContent } from './PortfolioContent/PortfolioContent'
 import {
   useFetchPortfolioBalances,
   fetchAndStorePortfolioBalances,

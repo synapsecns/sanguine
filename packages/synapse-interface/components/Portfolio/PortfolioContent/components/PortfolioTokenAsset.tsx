@@ -10,7 +10,7 @@ import {
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { inputRef } from '../StateManagedBridge/InputContainer'
+import { inputRef } from '../../../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
 import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
