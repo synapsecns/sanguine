@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -74,37 +73,6 @@ func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, encodedSnap
 	return tx, nil
 }
 
-func (a inboxContract) SubmitSnapshotCtx(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return nil, fmt.Errorf("could not encode signature: %w", err)
-	}
-
-	tx, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
-	if err != nil {
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
-		return nil, fmt.Errorf("could not submit sanpshot: %w", err)
-	}
-
-	return tx, nil
-}
-
 func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	tx, err = a.contract.VerifyAttestation(transactor, attestation, attSignature)
 	if err != nil {
@@ -128,33 +96,14 @@ func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.Transac
 	return tx, nil
 }
 
-func (a inboxContract) SubmitReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	transactOpts.GasLimit = 5000000
-
+func (a inboxContract) SubmitReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(rcptSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitReceipt(transactOpts, rcptPayload, rawSig, paddedTips, headerHash, bodyHash)
+	tx, err = a.contract.SubmitReceipt(transactor, rcptPayload, rawSig, paddedTips, headerHash, bodyHash)
 	if err != nil {
-		// TODO: Why is this done? And if it is necessary, we should functionalize it.
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 

@@ -78,14 +78,12 @@ type InboxContract interface {
 	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(transactor *bind.TransactOpts, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
-	// SubmitSnapshotCtx
-	SubmitSnapshotCtx(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 	// VerifyAttestation verifies a snapshot on the inbox.
 	VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
 	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitReceipt submits a receipt to the inbox.
-	SubmitReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error)
+	SubmitReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error)
 	// VerifyReceipt verifies a receipt on the inbox.
 	VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitReceiptReport submits a receipt report to the inbox.

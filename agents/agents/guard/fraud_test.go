@@ -216,14 +216,15 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	// Submit the snapshot with a guard then notary
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
-	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, guardSnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
 	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -453,7 +454,8 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
-	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	transactOptsSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(transactOptsSummit.TransactOpts, encodedSnapshot, guardSnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -461,7 +463,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// Submit the snapshot with a notary
 	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(transactOptsSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -629,7 +631,8 @@ func (g GuardSuite) TestInvalidReceipt() {
 	snapshot := types.NewSnapshot([]types.State{latestOriginState})
 	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, guardSnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -637,7 +640,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	// Submit the snapshot with a notary
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -670,9 +673,10 @@ func (g GuardSuite) TestInvalidReceipt() {
 	Nil(g.T(), err)
 	paddedTips, err := types.EncodeTipsBigInt(tips)
 	Nil(g.T(), err)
+
+	txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	tx, err = g.SummitDomainClient.Inbox().SubmitReceipt(
-		g.GetTestContext(),
-		g.NotaryUnbondedSigner,
+		txContextSummit.TransactOpts,
 		rcptPayload,
 		rcptSignature,
 		paddedTips,
@@ -878,7 +882,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Submit the snapshot with a guard
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
-	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, guardSnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -886,7 +891,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Submit the snapshot with a notary
 	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
@@ -935,7 +940,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Submit snapshot with Guard.
 	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	g.Nil(err)
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+	txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContextSummit.TransactOpts,
 		encodedSnapshot,
