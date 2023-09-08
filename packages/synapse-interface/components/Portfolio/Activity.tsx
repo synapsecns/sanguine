@@ -42,6 +42,14 @@ import {
 } from './Transaction'
 import ProcessingIcon from '../icons/ProcessingIcon'
 
+function checkTransactionsExist(
+  transactions: any[] | undefined | null
+): boolean {
+  const exists: boolean =
+    transactions && Array.isArray(transactions) && transactions.length > 0
+  return exists
+}
+
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
   const {
