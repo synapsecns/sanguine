@@ -163,7 +163,16 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && echo "mode: atomic" > coverage.txt; for pkg in $(go list ./...); do go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg; if [ -f profile.cov ]; then tail -n +2 profile.cov >> coverage.txt; rm profile.cov; fi; done
+          run: |
+            cd ${{ matrix.package }}
+            echo "mode: atomic" > coverage.txt
+            for pkg in $(go list ./...); do
+              go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+              if [ -f profile.cov ]; then
+                tail -n +2 profile.cov >> coverage.txt
+                rm profile.cov
+              fi
+            done
           max_attempts: 2
           timeout_minutes: 60
         # - name: Setup upterm session
