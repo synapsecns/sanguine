@@ -393,7 +393,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, n.unbondedSigner, encodedSnapshot, snapshotSignature)
+			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}

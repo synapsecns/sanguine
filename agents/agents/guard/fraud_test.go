@@ -938,7 +938,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContextSummit.TransactOpts,
-		g.GuardUnbondedSigner,
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
@@ -951,7 +950,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContextSummit.TransactOpts,
-		g.NotaryOnOriginUnbondedSigner,
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)
@@ -1010,7 +1008,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContextSummit.TransactOpts,
-		g.GuardUnbondedSigner,
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
@@ -1023,7 +1020,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContextSummit.TransactOpts,
-		g.NotaryOnOriginUnbondedSigner,
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)

@@ -49,8 +49,6 @@ func (a destinationContract) Execute(transactor *bind.TransactOpts, message type
 		return nil, fmt.Errorf("could not encode message: %w", err)
 	}
 
-	a.nonceManager.ClearNonce(transactor.From)
-
 	tx, err = a.contract.Execute(transactor, encodedMessage, originProof[:], snapshotProof, index, gasLimit)
 	if err != nil {
 		return nil, fmt.Errorf("could not execute message: %w", err)

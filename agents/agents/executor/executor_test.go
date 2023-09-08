@@ -992,7 +992,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.GuardUnbondedSigner,
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
@@ -1005,7 +1004,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.NotaryUnbondedSigner,
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)
