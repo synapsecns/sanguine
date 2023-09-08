@@ -41,7 +41,7 @@ jobs:
         working-directory: packages/contracts-core/
         # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
         run: |
-          forge doc
+          forge doc --repository https://github.com/synapsecns/sanguine/tree/master/packages/contracts-core
           cp vercel.package.json docs/package.json
           cp book.toml docs/book.toml
       - name: Deploy (Prod)
