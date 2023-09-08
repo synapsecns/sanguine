@@ -1,8 +1,15 @@
 [book]
+src = "src"
 title = "Synapse Contracts"
 language = "en"
 description = "Synapse Contracts"
 
 [output.html]
+no-section-label = true
+additional-js = ["solidity.min.js"]
+additional-css = ["book.css"]
 git-repository-url = "https://github.com/synapsecns/sanguine/tree/master/packages/contracts-core"
 edit-url = "https://github.com/synapsecns/sanguine/edit/master/packages/contracts-core/{path}"
+
+[output.html.fold]
+enable = true
