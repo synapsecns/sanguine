@@ -180,10 +180,14 @@ export const tokenAddressToToken = (
   tokenAddress: string
 ): Token => {
   if (chainId) {
-    const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
-      return token.addresses[chainId] === tokenAddress
-    })
-    return token
+    if (tokenAddress === WETH.addresses[chainId]) {
+      return WETH
+    } else {
+      const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
+        return token.addresses[chainId] === tokenAddress
+      })
+      return token
+    }
   }
 }
 
