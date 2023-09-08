@@ -1,12 +1,9 @@
 import { useCallback } from 'react'
 import { Chain, Token } from '@/utils/types'
-import {
-  TransactionPayloadDetail,
-  Completed,
-  EstimatedDuration,
-} from '../Activity'
+import { Completed, EstimatedDuration } from '../Activity'
 import { Address } from 'viem'
 import { getTransactionExplorerLink } from '../Activity'
+import { TransactionPayloadDetail } from './components/TransactionPayloadDetail'
 import TransactionArrow from '../../icons/TransactionArrow'
 
 export enum TransactionType {
