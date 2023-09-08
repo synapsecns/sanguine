@@ -1,19 +1,17 @@
 import React, { useMemo } from 'react'
 import { useAccount, Address } from 'wagmi'
-import Link from 'next/link'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
-import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
-import { TransactionExplorerLink } from './Transaction/components/TransactionExplorerLink'
+import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 
 function checkTransactionsExist(
   transactions: any[] | undefined | null
@@ -165,7 +163,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-          <ExplorerLink connectedAddress={address} />
+          <UserExplorerLink connectedAddress={address} />
         </ActivitySection>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Chain, Token } from '@/utils/types'
 import { Address } from 'viem'
-import { getTransactionExplorerLink } from '../Activity'
+import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { TransactionPayloadDetail } from './components/TransactionPayloadDetail'
 import { Completed } from './components/Completed'
 import { EstimatedDuration } from './components/EstimatedDuration'

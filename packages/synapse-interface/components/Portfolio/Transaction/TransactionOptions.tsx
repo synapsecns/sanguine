@@ -1,18 +1,16 @@
 import { Fragment, useCallback } from 'react'
+import Image from 'next/image'
 import { Address } from 'viem'
 import { Popover, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import Image from 'next/image'
 import { Chain } from '@/utils/types'
-import { MoreButton } from '../../layouts/LandingPageWrapper/MoreButton'
 import { TransactionStatus } from './Transaction'
-import { PopoverPanelContainer } from '../../layouts/LandingPageWrapper'
-import DiscordIcon from '../../icons/DiscordIcon'
-import Button from '../../ui/tailwind/Button'
-import { getTransactionExplorerLink } from '../Activity'
+import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { getExplorerAddressUrl, getExplorerTxUrl } from '@/constants/urls'
-import SynapseLogo from '@assets/icons/syn.svg'
 import { DISCORD_URL } from '@/constants/urls'
+import Button from '../../ui/tailwind/Button'
+import SynapseLogo from '@assets/icons/syn.svg'
+import DiscordIcon from '../../icons/DiscordIcon'
 
 export const TransactionOptions = ({
   connectedAddress,
