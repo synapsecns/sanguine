@@ -6,18 +6,18 @@ import {
   TransactionPayloadDetail,
   Completed,
   EstimatedDuration,
-} from './Activity'
+} from '../Activity'
 import { Address } from 'viem'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
-import { getTransactionExplorerLink } from './Activity'
+import { getTransactionExplorerLink } from '../Activity'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { useAppDispatch } from '@/store/hooks'
 import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import TransactionArrow from '../icons/TransactionArrow'
+import TransactionArrow from '../../icons/TransactionArrow'
 
 export enum TransactionType {
   PENDING,

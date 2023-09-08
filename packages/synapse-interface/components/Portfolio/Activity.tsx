@@ -39,7 +39,7 @@ import {
   PendingTransaction,
   TransactionType,
   TransactionStatus,
-} from './Transaction'
+} from './Transaction/Transaction'
 import ProcessingIcon from '../icons/ProcessingIcon'
 
 function checkTransactionsExist(
