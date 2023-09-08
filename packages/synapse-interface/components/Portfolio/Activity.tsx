@@ -112,6 +112,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   eventType={transaction?.fromInfo?.eventType as number}
                   isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                   isCompleted={transaction?.toInfo?.time ? true : false}
+                  kappa={transaction?.kappa as string}
                   transactionType={TransactionType.PENDING}
                   originValue={transaction?.fromInfo?.formattedValue as number}
                   destinationValue={
