@@ -41,7 +41,7 @@ jobs:
         working-directory: packages/contracts-core/
         # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
         run: |
-          forge build
+          forge doc
           cp vercel.package.json docs/package.json
       - name: Build Docs
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
