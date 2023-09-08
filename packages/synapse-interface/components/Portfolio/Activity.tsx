@@ -61,20 +61,17 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
 
   const hasPendingTransactions: boolean = useMemo(() => {
-    if (
-      pendingAwaitingCompletionTransactions &&
-      pendingAwaitingCompletionTransactions.length > 0
-    ) {
+    if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
       return true
     }
-    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
+    if (checkTransactionsExist(pendingBridgeTransactions)) {
       return true
     }
     return false
   }, [pendingBridgeTransactions, pendingAwaitingCompletionTransactions])
 
   const hasHistoricalTransactions: boolean = useMemo(
-    () => userHistoricalTransactions && userHistoricalTransactions.length > 0,
+    () => checkTransactionsExist(userHistoricalTransactions),
     [userHistoricalTransactions]
   )
 
