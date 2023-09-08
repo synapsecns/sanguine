@@ -209,7 +209,6 @@ export const MostRecentTransaction = () => {
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
-  const { activeTab }: PortfolioState = usePortfolioState()
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesBeforeNow(0)
@@ -224,18 +223,15 @@ export const MostRecentTransaction = () => {
   }, [])
 
   const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
-    return pendingBridgeTransactions && pendingBridgeTransactions[0]
+    return pendingBridgeTransactions?.[0]
   }, [pendingBridgeTransactions])
 
   const lastPendingTransaction: BridgeTransaction = useMemo(() => {
-    return (
-      pendingAwaitingCompletionTransactions &&
-      pendingAwaitingCompletionTransactions[0]
-    )
+    return pendingAwaitingCompletionTransactions?.[0]
   }, [pendingAwaitingCompletionTransactions])
 
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
-    return userHistoricalTransactions && userHistoricalTransactions[0]
+    return userHistoricalTransactions?.[0]
   }, [userHistoricalTransactions])
 
   const recentMinutesInUnix: number = 15 * 60
@@ -250,11 +246,12 @@ export const MostRecentTransaction = () => {
   const seenLastHistoricalTransaction: boolean = useMemo(() => {
     if (!seenHistoricalTransactions || !userHistoricalTransactions) {
       return false
+    } else {
+      return seenHistoricalTransactions.some(
+        (transaction: BridgeTransaction) =>
+          transaction === (lastHistoricalTransaction as BridgeTransaction)
+      )
     }
-    return seenHistoricalTransactions.some(
-      (transaction: BridgeTransaction) =>
-        transaction === (lastHistoricalTransaction as BridgeTransaction)
-    )
   }, [seenHistoricalTransactions, lastHistoricalTransaction])
 
   let transaction
