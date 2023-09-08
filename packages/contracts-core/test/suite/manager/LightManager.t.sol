@@ -26,11 +26,12 @@ contract LightManagerTest is AgentManagerTest {
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
         vm.assume(domain != DOMAIN_SYNAPSE);
+        vm.chainId(domain);
         address caller = random.nextAddress();
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
         address inbox_ = random.nextAddress();
-        LightManager cleanContract = new LightManager(domain);
+        LightManager cleanContract = new LightManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
         cleanContract.initialize(origin_, destination_, inbox_);
         assertEq(cleanContract.localDomain(), domain);
@@ -48,6 +49,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
+        vm.chainId(DOMAIN_SYNAPSE);
         vm.expectRevert(SynapseDomainForbidden.selector);
         new LightManagerHarness(DOMAIN_SYNAPSE);
     }
