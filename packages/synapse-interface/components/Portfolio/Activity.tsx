@@ -1,46 +1,19 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  Dispatch,
-  SetStateAction,
-} from 'react'
-import { useAppDispatch } from '@/store/hooks'
+import React, { useMemo } from 'react'
 import { useAccount, Address } from 'wagmi'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
-import {
-  convertUnixTimestampToMonthAndDate,
-  getTimeMinutesBeforeNow,
-  isTimestampToday,
-} from '@/utils/time'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
-import {
-  BridgeState,
-  setFromChainId,
-  setToChainId,
-  setFromToken,
-  setToToken,
-} from '@/slices/bridge/reducer'
+import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { PortfolioState } from '@/slices/portfolio/reducer'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { shortenAddress } from '@/utils/shortenAddress'
-import {
-  Transaction,
-  TransactionType,
-  TransactionStatus,
-} from './Transaction/Transaction'
+import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
-import ProcessingIcon from '../icons/ProcessingIcon'
+import { TransactionExplorerLink } from './Transaction/components/TransactionExplorerLink'
 
 function checkTransactionsExist(
   transactions: any[] | undefined | null
@@ -100,7 +73,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {address && !isLoading && hasNoTransactions && (
         <div className="text-[#C2C2D6]">
           Your pending and recent transactions will appear here.
-          <ExplorerLink connectedAddress={address} />
+          <UserExplorerLink connectedAddress={address} />
         </div>
       )}
 
@@ -224,23 +197,6 @@ export const PendingTransactionAwaitingIndexing = () => {
   )
 }
 
-export const ExplorerLink = ({
-  connectedAddress,
-}: {
-  connectedAddress?: Address | string
-}) => {
-  const explorerLink: string = connectedAddress
-    ? `${ANALYTICS_PATH}address/${connectedAddress}`
-    : ANALYTICS_PATH
-  return (
-    <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
-      <Link href={explorerLink} target="_blank">
-        <span className="hover:underline">Explorer</span> →
-      </Link>
-    </div>
-  )
-}
-
 export const ActivitySection = ({
   title,
   children,
@@ -256,20 +212,4 @@ export const ActivitySection = ({
       {children}
     </div>
   )
-}
-
-export const getTransactionExplorerLink = ({
-  kappa,
-  fromChainId,
-  toChainId,
-}: {
-  kappa: string
-  fromChainId: number
-  toChainId?: number
-}): string => {
-  if (typeof toChainId === 'number') {
-    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
-  } else {
-    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}`
-  }
 }

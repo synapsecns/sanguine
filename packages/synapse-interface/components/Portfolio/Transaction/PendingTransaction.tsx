@@ -15,7 +15,7 @@ import {
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
-import { getTransactionExplorerLink } from '../Activity'
+import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
 
 interface PendingTransactionProps extends TransactionProps {
