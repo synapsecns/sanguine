@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
 import { Router } from './router'
 import { Abi } from '../utils/types'
@@ -65,6 +66,27 @@ export abstract class RouterSet {
     address: string,
     abi: Abi
   ): Router
+
+  /**
+   * Returns the existing Router instance for the given address on the given chain.
+   * If the router address is not valid, it will return undefined.
+   *
+   * @param chainId - The ID of the chain.
+   * @param routerAddress - The address of the router.
+   * @returns The Router instance, or undefined if the router address is not valid.
+   */
+  public getRouter(chainId: number, routerAddress: string): Router | undefined {
+    const router = this.routers[chainId]
+    // Check if router exists on chain and that router address matches
+    if (
+      router?.routerContract.address.toLowerCase() ===
+      routerAddress.toLowerCase()
+    ) {
+      return router
+    } else {
+      return undefined
+    }
+  }
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.
@@ -133,6 +155,7 @@ export abstract class RouterSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
+          originRouterAddress: originRouter.routerContract.address,
         })
       )
       // Return routes with non-zero minAmountOut
@@ -160,9 +183,9 @@ export abstract class RouterSet {
     bridgeRoute: BridgeRoute,
     deadline?: BigNumber
   ): Promise<BridgeQuote> {
-    // If there's route to finalize, routers on both chains always exists
     const originRouter = this.routers[bridgeRoute.originChainId]
     const destRouter = this.routers[bridgeRoute.destChainId]
+    invariant(originRouter && destRouter, 'Route not supported')
     const { originQuery, destQuery, bridgeToken } = bridgeRoute
     // Set origin deadline to 10 mins if not provided
     originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)

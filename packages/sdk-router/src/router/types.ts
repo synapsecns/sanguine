@@ -71,6 +71,7 @@ export type BridgeRoute = {
   originQuery: Query
   destQuery: Query
   bridgeToken: BridgeToken
+  originRouterAddress: string
 }
 
 /**
