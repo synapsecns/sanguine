@@ -70,6 +70,7 @@ contract SummitTest is AgentSecuredTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address caller = random.nextAddress();

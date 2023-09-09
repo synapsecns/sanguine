@@ -1,7 +1,6 @@
-import { shortenAddress } from '@/utils/shortenAddress'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useContext } from 'react'
 
 const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 
@@ -15,8 +14,7 @@ export const analytics = AnalyticsBrowser.load(
 export const segmentAnalyticsEvent = (eventTitle: string, eventData: {}) => {
   const defaultOptions = { context: { ip: '0.0.0.0' } }
 
-  const account = getAccount()
-  const { address } = account
+  const { address } = getAccount()
 
   const enrichedEventData = {
     ...eventData,
@@ -24,10 +22,7 @@ export const segmentAnalyticsEvent = (eventTitle: string, eventData: {}) => {
     timestamp: Date.now(),
   }
 
-  const showAddress = address ? shortenAddress(address) : 'No address'
-  const enrichedEventTitle = `[${showAddress}] ${eventTitle}`
-
-  analytics.track(enrichedEventTitle, enrichedEventData, defaultOptions)
+  analytics.track(eventTitle, enrichedEventData, defaultOptions)
 }
 
 export const SegmentAnalyticsProvider = ({ children }) => (

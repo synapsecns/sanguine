@@ -782,6 +782,27 @@ func (_m *ILightInbox) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpt
 	return r0, r1
 }
 
+// SynapseDomain provides a mock function with given fields: opts
+func (_m *ILightInbox) SynapseDomain(opts *bind.CallOpts) (uint32, error) {
+	ret := _m.Called(opts)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
+		r0 = rf(opts)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TransferOwnership provides a mock function with given fields: opts, newOwner
 func (_m *ILightInbox) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, newOwner)

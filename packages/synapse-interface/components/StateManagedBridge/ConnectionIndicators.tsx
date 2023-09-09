@@ -14,6 +14,7 @@ import {
   getNetworkButtonBorderHover,
   getNetworkHover,
 } from '@/styles/chains'
+import { LoaderIcon } from 'react-hot-toast'
 
 export const ConnectedIndicator = () => {
   return (
@@ -120,7 +121,10 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
               border border-green-300 border-solid rounded-full
             `}
           />
-          Connecting...
+          <div className="flex items-center space-x-2">
+            <div>Connecting</div>
+            <LoaderIcon />
+          </div>
         </div>
       ) : (
         <div className="flex flex-row text-sm">
@@ -130,7 +134,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
               border border-indigo-300 border-solid rounded-full
             `}
           />
-          Connect
+          Switch Network
         </div>
       )}
     </button>
@@ -167,7 +171,7 @@ export function ConnectWalletButton() {
                             border border-indigo-300 border-solid rounded-full
                           `}
                         />
-                        Connect
+                        Connect Wallet
                       </button>
                     )
                   }

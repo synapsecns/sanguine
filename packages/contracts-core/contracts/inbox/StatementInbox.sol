@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
-import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentNotGuard,
     AgentNotNotary,
@@ -376,7 +375,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     function _verifyNotaryDomain(uint32 notaryDomain) internal view {
         // Notary needs to be from the local domain (if contract is not deployed on Synapse Chain).
         // Or Notary could be from any domain (if contract is deployed on Synapse Chain).
-        if (notaryDomain != localDomain && localDomain != SYNAPSE_DOMAIN) revert IncorrectAgentDomain();
+        if (notaryDomain != localDomain && localDomain != synapseDomain) revert IncorrectAgentDomain();
     }
 
     // ════════════════════════════════════════ ATTESTATION RELATED CHECKS ═════════════════════════════════════════════

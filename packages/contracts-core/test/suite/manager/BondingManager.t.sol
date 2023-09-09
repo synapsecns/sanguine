@@ -31,6 +31,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address caller = random.nextAddress();
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
@@ -55,7 +56,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
         vm.assume(domain != DOMAIN_SYNAPSE);
         vm.expectRevert(MustBeSynapseDomain.selector);
-        new BondingManager(domain);
+        new BondingManager(DOMAIN_SYNAPSE);
     }
 
     function test_setup() public override {
@@ -91,6 +92,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_addAgent_fromScratch() public {
         // Deploy fresh instance of BondingManager
+        vm.chainId(DOMAIN_SYNAPSE);
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
         bondingManager.initialize(originSynapse, destinationSynapse, address(inbox), summit);
         // Try to add all agents one by one

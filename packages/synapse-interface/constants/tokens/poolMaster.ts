@@ -15,15 +15,23 @@ import {
   WJEWEL,
   SYNJEWEL,
   AVAX,
+  METISUSDC,
+  DAIE,
+  ONEDAI,
+  ONEUSDC,
+  ONEUSDT,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
+  FANTOMETH,
+  FANTOMUSDC,
+  FANTOMUSDT,
   KLAYTN_oUSDT,
   MIM,
   MULTIAVAX,
   WETH,
 } from '@constants/tokens/auxilliary'
-import synapseLogo from '@assets/icons/synapse.svg'
+import synapseLogo from '@assets/icons/syn.svg'
 
 import { Token } from '@/utils/types'
 
@@ -94,7 +102,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.OPTIMISM.id]: '0xF44938b0125A6662f9536281aD2CD6c499F22004',
   },
-  poolTokens: [NUSD, USDC],
+  poolTokens: [NUSD, USDCe],
   description: "Synapse's 2pool stableswap LP token on Optimism",
   display: true,
   priorityPool: true,
@@ -189,7 +197,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AVALANCHE.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
   },
-  poolTokens: [NUSD, DAI, USDCe, USDTe],
+  poolTokens: [NUSD, DAIE, USDCe, USDTe],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
@@ -235,7 +243,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
   },
-  poolTokens: [NUSD, MIM, USDC, USDT],
+  poolTokens: [NUSD, MIM, FANTOMUSDC, FANTOMUSDT],
   description: "Synapse's 4pool stableswap LP token on Fantom",
   display: true,
   legacy: true,
@@ -260,7 +268,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.HARMONY.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
   },
-  poolTokens: [NUSD, DAI, USDC, USDT],
+  poolTokens: [NUSD, ONEDAI, ONEUSDC, ONEUSDT],
   description: "Synapse's 4pool stableswap LP token on Harmony",
   display: true,
   priorityPool: true,
@@ -310,7 +318,7 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AURORA.id]: '0xcEf6C2e20898C2604886b888552CA6CcF66933B0',
   },
-  poolTokens: [NUSD, USDC, USDT],
+  poolTokens: [NUSD, USDCe, USDTe],
   description: "Synapse's 3pool stableswap LP token on Aurora",
   display: true,
   legacy: true,
@@ -381,7 +389,7 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x85662fd123280827e11C59973Ac9fcBE838dC3B4',
   },
-  poolTokens: [NUSD, USDC, USDT],
+  poolTokens: [NUSD, FANTOMUSDC, FANTOMUSDT],
   description: "Synapse's 3pool stableswap LP token on Fantom",
   display: true,
   priorityPool: true,
@@ -405,7 +413,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.METIS.id]: '0x555982d2E211745b96736665e19D9308B615F78e',
   },
-  poolTokens: [NUSD, USDC],
+  poolTokens: [NUSD, METISUSDC],
   description: "Synapse's 2pool stableswap LP token on Metis",
   display: true,
   priorityPool: true,
@@ -435,27 +443,27 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   chainId: CHAINS.CANTO.id,
 })
 
-export const CANTO_USDC_SWAP_TOKEN = new Token({
-  addresses: {
-    [CHAINS.CANTO.id]: '0xB690FCA5bDc6Ae32c7316dF9B7B7963B7103Fc95',
-  },
-  decimals: 18,
-  name: 'Synapse nUSD LP Token Canto',
-  symbol: 'nUSD-LP',
-  logo: synapseLogo,
-  poolName: 'Canto USDC Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
-  routerIndex: 'cantousdcpool',
-  poolId: 2,
-  poolType: 'USD',
-  swapAddresses: {
-    [CHAINS.CANTO.id]: '0x273508478e099Fdf953349e6B3704E7c3dEE91a5',
-  },
-  poolTokens: [NUSD, USDC],
-  description: "Synapse's nUSD & USDC stableswap LP token on Canto",
-  display: true,
-  priorityRank: 6,
-  chainId: CHAINS.CANTO.id,
-})
+// export const CANTO_USDC_SWAP_TOKEN = new Token({
+//   addresses: {
+//     [CHAINS.CANTO.id]: '0xB690FCA5bDc6Ae32c7316dF9B7B7963B7103Fc95',
+//   },
+//   decimals: 18,
+//   name: 'Synapse nUSD LP Token Canto',
+//   symbol: 'nUSD-LP',
+//   logo: synapseLogo,
+//   poolName: 'Canto USDC Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+//   routerIndex: 'cantousdcpool',
+//   poolId: 2,
+//   poolType: 'USD',
+//   swapAddresses: {
+//     [CHAINS.CANTO.id]: '0x273508478e099Fdf953349e6B3704E7c3dEE91a5',
+//   },
+//   poolTokens: [NUSD, USDC],
+//   description: "Synapse's nUSD & USDC stableswap LP token on Canto",
+//   display: true,
+//   priorityRank: 6,
+//   chainId: CHAINS.CANTO.id,
+// })
 
 export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   addresses: {
@@ -496,7 +504,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.KLAYTN.id]: '0xfDbaD1699A550F933EFebF652a735F2f89d3833c',
   },
-  poolTokens: [KLAYTN_oUSDT],
+  poolTokens: [USDT, KLAYTN_oUSDT],
   description: "Synapse's 2pool stableswap LP token on Klaytn",
   display: true,
   priorityPool: true,
@@ -688,7 +696,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
   },
-  poolTokens: [NETH, ETH],
+  poolTokens: [NETH, FANTOMETH],
   description: "Synapse's ETH swap LP token on Fantom",
   display: true,
   priorityPool: true,

@@ -62,6 +62,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function suggestState(uint32 nonce) view returns(bytes stateData)
 	SuggestState(opts *bind.CallOpts, nonce uint32) ([]byte, error)
+	// SynapseDomain is a free data retrieval call binding the contract method 0x717b8638.
+	//
+	// Solidity: function synapseDomain() view returns(uint32)
+	SynapseDomain(opts *bind.CallOpts) (uint32, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

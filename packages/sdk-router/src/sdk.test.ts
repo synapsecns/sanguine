@@ -317,7 +317,7 @@ describe('SynapseSDK', () => {
 
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
+        routerAddress!,
         42161,
         10,
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
