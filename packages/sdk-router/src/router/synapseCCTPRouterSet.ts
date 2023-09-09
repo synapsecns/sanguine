@@ -22,7 +22,7 @@ export class SynapseCCTPRouterSet extends RouterSet {
   /**
    * Returns the existing SynapseCCTPRouter instance for the given chain.
    */
-  public getSynapseRouter(chainId: number): SynapseCCTPRouter {
+  public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
     return this.routers[chainId] as SynapseCCTPRouter
   }
 }
