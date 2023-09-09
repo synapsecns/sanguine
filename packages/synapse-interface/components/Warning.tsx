@@ -11,6 +11,8 @@ export const Warning = () => {
 
   const isCCTP = useMemo(() => {
     return (
+      fromChainId &&
+      fromToken &&
       fromChainId !== AVALANCHE.id &&
       fromToken.swapableType === 'USD' &&
       bridgeQuote.routerAddress.toLowerCase() ===

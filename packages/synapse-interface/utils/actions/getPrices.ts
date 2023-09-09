@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { readContract, fetchBalance, Address } from '@wagmi/core'
-import { SYN } from '@constants/tokens/bridgeable'
-import { WETH } from '@constants/tokens/auxilliary'
+import { SYN, WETH } from '@constants/tokens/bridgeable'
 import * as ALL_CHAINS from '@constants/chains/master'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
