@@ -1,11 +1,18 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
-import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
+import {
+  SynapseRouterSet,
+  SynapseCCTPRouterSet,
+  ChainProvider,
+  Query,
+  PoolToken,
+} from './router'
 import routerAbi from './abi/SynapseRouter.json'
 import cctpRouterAbi from './abi/SynapseCCTPRouter.json'
 import { ROUTER_ADDRESS, CCTP_ROUTER_ADDRESS } from './constants'
 import * as operations from './operations'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
 
 class SynapseSDK {
   public synapseRouterSet: SynapseRouterSet
@@ -67,4 +74,4 @@ class SynapseSDK {
   public swapQuote = operations.swapQuote
 }
 
-export { SynapseSDK }
+export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }
