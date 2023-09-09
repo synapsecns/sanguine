@@ -169,7 +169,7 @@ jobs:
             echo "hi"
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
-              go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+              $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
               if [ -f profile.cov ]; then
                 tail -n +2 profile.cov >> coverage.txt
                 rm profile.cov
