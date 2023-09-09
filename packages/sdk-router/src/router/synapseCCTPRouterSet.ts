@@ -4,7 +4,7 @@ import { Abi } from '../utils/types'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { RouterSet } from './routerSet'
 
-export class SynapseRouterSet extends RouterSet {
+export class SynapseCCTPRouterSet extends RouterSet {
   public readonly routerName = 'SynapseCCTPRouter'
 
   /**
