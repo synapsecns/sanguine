@@ -5,6 +5,7 @@ import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
 import routerAbi from './abi/SynapseRouter.json'
 import cctpRouterAbi from './abi/SynapseCCTPRouter.json'
 import { ROUTER_ADDRESS, CCTP_ROUTER_ADDRESS } from './constants'
+import * as operations from './operations'
 
 class SynapseSDK {
   public synapseRouterSet: SynapseRouterSet
@@ -45,6 +46,19 @@ class SynapseSDK {
       cctpRouterAbi
     )
   }
+
+  // Define Pool operations
+  public getPoolTokens = operations.getPoolTokens
+  public getPoolInfo = operations.getPoolInfo
+  public getAllPools = operations.getAllPools
+
+  public calculateAddLiquidity = operations.calculateAddLiquidity
+  public calculateRemoveLiquidity = operations.calculateRemoveLiquidity
+  public calculateRemoveLiquidityOne = operations.calculateRemoveLiquidityOne
+
+  // Define Swap operations
+  public swap = operations.swap
+  public swapQuote = operations.swapQuote
 }
 
 export { SynapseSDK }
