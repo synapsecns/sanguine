@@ -36,3 +36,14 @@ export type FeeConfig = {
   minFee: BigNumber
   maxFee: BigNumber
 }
+
+/**
+ * Reduces the object to contain only the keys that are present in the FeeConfig type.
+ */
+export const reduceToFeeConfig = (feeConfig: FeeConfig): FeeConfig => {
+  return {
+    bridgeFee: feeConfig.bridgeFee,
+    minFee: feeConfig.minFee,
+    maxFee: feeConfig.maxFee,
+  }
+}

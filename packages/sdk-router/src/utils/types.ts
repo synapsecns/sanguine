@@ -1,4 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { Fragment, JsonFragment } from '@ethersproject/abi'
+
+export type Abi = ReadonlyArray<Fragment | JsonFragment | string>
 
 export type RawQuery = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
