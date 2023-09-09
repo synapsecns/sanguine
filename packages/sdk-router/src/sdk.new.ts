@@ -47,6 +47,12 @@ class SynapseSDK {
     )
   }
 
+  // Define Bridge operations
+  public bridge = operations.bridge
+  public bridgeQuote = operations.bridgeQuote
+
+  public getBridgeGas = operations.getBridgeGas
+
   // Define Pool operations
   public getPoolTokens = operations.getPoolTokens
   public getPoolInfo = operations.getPoolInfo
