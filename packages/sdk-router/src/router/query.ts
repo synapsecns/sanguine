@@ -1,6 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { AddressZero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 import { XOR } from 'ts-xor'
+
+import { ETH_NATIVE_TOKEN_ADDRESS } from '../sdk'
 
 /**
  * Matches SwapQuery passed to/returned by SynapseRouter (V1).
@@ -76,4 +79,25 @@ export const narrowToRouterQuery = (query: Query): RouterQuery => {
 export const narrowToCCTPRouterQuery = (query: Query): CCTPRouterQuery => {
   invariant(query.routerAdapter, 'routerAdapter is undefined')
   return query
+}
+
+/**
+ * Checks if the query will lead to a complex bridge action, when used as the destination query.
+ * Complex action is defined as an additional external call that the Bridge contract will have to perform
+ * in order to complete the bridge action (e.g. mintAndSwap).
+ *
+ * @param destQuery The query to check.
+ * @returns True if the query will lead to a complex bridge action, false otherwise.
+ */
+export const hasComplexBridgeAction = (destQuery: Query): boolean => {
+  // Extract the adapter address: swapAdapter for SynapseRouter (V1), routerAdapter for SynapseCCTPRouter.
+  const adapterAddress = destQuery.swapAdapter ?? destQuery.routerAdapter
+  // Complex action will happen if the adapter address is not the zero address.
+  // The tokenOut also needs to be different from ETH_ADDRESS, because WETH -> ETH is done in the Bridge contract,
+  // without any additional external calls. We don't check tokenIn, as it could never be ETH_ADDRESS in destQuery,
+  // because the Bridge contract does not natively work with ETH.
+  return (
+    adapterAddress !== AddressZero &&
+    destQuery.tokenOut !== ETH_NATIVE_TOKEN_ADDRESS
+  )
 }
