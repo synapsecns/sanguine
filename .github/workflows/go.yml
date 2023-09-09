@@ -165,7 +165,7 @@ jobs:
         with:
           command: |
             cd ${{ matrix.package }}
-            go test -run=nope ./...  # pre-compile all the tests (w/o running)
+            GOMEMLIMIT=5Gi go test -run=nope ./...  # pre-compile all the tests (w/o running). At this point, no containers are running so we can also up the memlimit
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
               go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
