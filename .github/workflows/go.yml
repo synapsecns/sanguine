@@ -165,6 +165,7 @@ jobs:
         with:
           command: |
             cd ${{ matrix.package }}
+            go test -run=nope ./...  # pre-compile all the tests (w/o running)
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
               go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
