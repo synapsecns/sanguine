@@ -2,7 +2,7 @@ import invariant from 'tiny-invariant'
 import { BigNumber, PopulatedTransaction } from 'ethers'
 
 import { BigintIsh } from '../constants'
-import { SynapseSDK } from '../sdk.new'
+import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { BridgeQuote, Query, RouterSet, findBestRoute } from '../router'
 

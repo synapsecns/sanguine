@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { BigintIsh } from '../constants'
 import { Query } from '../router'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { SynapseSDK } from '../sdk.new'
+import { SynapseSDK } from '../sdk'
 import { getOriginDeadline } from '../utils/deadlines'
 
 /**

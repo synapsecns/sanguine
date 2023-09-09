@@ -2,7 +2,7 @@ import { Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { Pool, PoolInfo, PoolToken } from '../router'
-import { SynapseSDK } from '../sdk.new'
+import { SynapseSDK } from '../sdk'
 
 /**
  * Gets pool tokens for a pool address.
