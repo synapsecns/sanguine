@@ -33,6 +33,7 @@ jobs:
 
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
+  # for details on how to use, please see ui-preview.md
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
