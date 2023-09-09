@@ -5,20 +5,51 @@ import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { Abi } from '../utils/types'
-import { SynapseRouter as SynapseRouterContract } from '../typechain/SynapseRouter'
+import {
+  SynapseRouter as SynapseRouterContract,
+  PoolStructOutput,
+} from '../typechain/SynapseRouter'
 import { Router } from './router'
 import { Query, narrowToRouterQuery, reduceToQuery } from './query'
+import bridgeAbi from '../abi/SynapseBridge.json'
 import { BigintIsh } from '../constants'
 import {
   BridgeToken,
   DestRequest,
   FeeConfig,
+  Pool,
+  PoolInfo,
+  PoolToken,
   reduceToBridgeToken,
   reduceToFeeConfig,
+  reduceToPoolToken,
 } from './types'
+
+/**
+ * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
+ */
+const wrapToPoolInfo = (poolInfo: [BigNumber, string]): PoolInfo => {
+  return {
+    tokens: poolInfo[0],
+    lpToken: poolInfo[1],
+  }
+}
+
+/**
+ * Wraps the PoolStructOutput object returned by the SynapseRouter contract into a Pool object.
+ */
+const wrapToPool = (pool: PoolStructOutput): Pool => {
+  return {
+    poolAddress: pool.pool,
+    tokens: pool.tokens.map(reduceToPoolToken),
+    lpToken: pool.lpToken,
+  }
+}
 
 export class SynapseRouter extends Router {
   public readonly routerContract: SynapseRouterContract
+
+  private bridgeContractCache: Contract | undefined
 
   constructor(chainId: number, provider: Provider, address: string, abi: Abi) {
     super(chainId, provider)
@@ -93,6 +124,65 @@ export class SynapseRouter extends Router {
       amount,
       narrowToRouterQuery(originQuery),
       narrowToRouterQuery(destQuery)
+    )
+  }
+
+  // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
+
+  private async getBridgeContract(): Promise<Contract> {
+    // Populate the cache if necessary
+    if (!this.bridgeContractCache) {
+      const bridgeAddress = await this.routerContract.synapseBridge()
+      this.bridgeContractCache = new Contract(
+        bridgeAddress,
+        new Interface(bridgeAbi),
+        this.provider
+      )
+    }
+    // Return the cached contract
+    return this.bridgeContractCache
+  }
+
+  public async chainGasAmount(): Promise<BigNumber> {
+    const bridgeContract = await this.getBridgeContract()
+    return bridgeContract.chainGasAmount()
+  }
+
+  public async getPoolTokens(poolAddress: string): Promise<PoolToken[]> {
+    return this.routerContract.poolTokens(poolAddress)
+  }
+
+  public async getPoolInfo(poolAddress: string): Promise<PoolInfo> {
+    return this.routerContract.poolInfo(poolAddress).then(wrapToPoolInfo)
+  }
+
+  public async getAllPools(): Promise<Pool[]> {
+    return this.routerContract.allPools().then((pools) => {
+      return pools.map(wrapToPool)
+    })
+  }
+
+  public async getAmountOut(
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh
+  ): Promise<Query> {
+    return this.routerContract
+      .getAmountOut(tokenIn, tokenOut, amountIn)
+      .then(reduceToQuery)
+  }
+
+  public async swap(
+    to: string,
+    token: string,
+    amount: BigintIsh,
+    query: Query
+  ): Promise<PopulatedTransaction> {
+    return this.routerContract.populateTransaction.swap(
+      to,
+      token,
+      amount,
+      narrowToRouterQuery(query)
     )
   }
 }
