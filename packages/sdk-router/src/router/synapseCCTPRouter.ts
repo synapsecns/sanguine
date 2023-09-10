@@ -17,10 +17,11 @@ import {
 } from './types'
 
 export class SynapseCCTPRouter extends Router {
-  public readonly routerContract: SynapseCCTPRouterContract
+  static routerInterface = new Interface(cctpRouterAbi)
+
   public readonly address: string
 
-  static routerInterface = new Interface(cctpRouterAbi)
+  private readonly routerContract: SynapseCCTPRouterContract
 
   constructor(chainId: number, provider: Provider, address: string) {
     super(chainId, provider)

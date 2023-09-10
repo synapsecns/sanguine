@@ -1,4 +1,4 @@
-import { Contract, PopulatedTransaction } from 'ethers'
+import { PopulatedTransaction } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
@@ -9,7 +9,6 @@ import { Query } from './query'
 import { BridgeToken, DestRequest, FeeConfig } from './types'
 
 export abstract class Router {
-  abstract readonly routerContract: Contract
   abstract readonly address: string
   public readonly chainId: number
   public readonly provider: Provider

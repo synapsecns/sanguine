@@ -47,10 +47,11 @@ const wrapToPool = (pool: PoolStructOutput): Pool => {
 }
 
 export class SynapseRouter extends Router {
-  public readonly routerContract: SynapseRouterContract
+  static routerInterface = new Interface(routerAbi)
+
   public readonly address: string
 
-  static routerInterface = new Interface(routerAbi)
+  private readonly routerContract: SynapseRouterContract
   private bridgeContractCache: Contract | undefined
 
   constructor(chainId: number, provider: Provider, address: string) {
