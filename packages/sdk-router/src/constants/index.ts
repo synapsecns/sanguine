@@ -23,38 +23,73 @@ export enum SupportedChainId {
   HARMONY = 1666600000,
 }
 
+/**
+ * List of supported chain ids, where SynapseBridge is deployed.
+ */
+export const SUPPORTED_CHAIN_IDS: number[] = Object.values(SupportedChainId)
+  .map((chainId) => Number(chainId))
+  .filter((chainId) => !isNaN(chainId))
+
+/**
+ * List of chain ids where SynapseCCTP is deployed.
+ *
+ * Note: This is a subset of SUPPORTED_CHAIN_IDS.
+ */
+export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ETH,
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.OPTIMISM,
+]
+
 export type AddressMap = {
   [chainId: number]: string
 }
 
-export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = {
-  [SupportedChainId.ETH]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
-  [SupportedChainId.ARBITRUM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
-  [SupportedChainId.AVALANCHE]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
-  [SupportedChainId.OPTIMISM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
+/**
+ * Generates an address map for a given address and list of chain ids.
+ * Will use the same address for all chain ids unless an exception map is provided.
+ * In which case, the exception map will be used to override the address for the
+ * specified chain ids.
+ *
+ * @param chainIds list of chain ids
+ * @param address address to use for all chain ids unless overridden by exception map
+ * @param exceptionMap optional map of chain ids to addresses to override the address param
+ * @returns
+ */
+const generateAddressMap = (
+  chainIds: number[],
+  address: string,
+  exceptionMap?: AddressMap
+): AddressMap => {
+  return Object.fromEntries(
+    chainIds.map((chainId) => [chainId, exceptionMap?.[chainId] ?? address])
+  )
 }
 
-export const ROUTER_ADDRESS_MAP: AddressMap = {
-  [SupportedChainId.BSC]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.ETH]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.POLYGON]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.BOBA]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.MOONBEAM]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.MOONRIVER]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.ARBITRUM]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.OPTIMISM]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.AVALANCHE]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.DFK]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.FANTOM]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.HARMONY]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.AURORA]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.CRONOS]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.METIS]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.KLAYTN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.DOGECHAIN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.CANTO]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.BASE]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-}
+/**
+ * SynapseRouter contract address for all chains except ones from ROUTER_EXCEPTION_MAP.
+ */
+const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
+const ROUTER_EXCEPTION_MAP: AddressMap = {}
+
+export const ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
+  SUPPORTED_CHAIN_IDS,
+  ROUTER_ADDRESS,
+  ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * SynapseCCTP contract address for all chains except ones from CCTP_ROUTER_EXCEPTION_MAP.
+ */
+const CCTP_ROUTER_ADDRESS = '0xd359bc471554504f683fbd4f6e36848612349ddf'
+const CCTP_ROUTER_EXCEPTION_MAP: AddressMap = {}
+
+export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
+  CCTP_SUPPORTED_CHAIN_IDS,
+  CCTP_ROUTER_ADDRESS,
+  CCTP_ROUTER_EXCEPTION_MAP
+)
 
 // exports for external consumption
 export type BigintIsh = JSBI | BigNumber | string | number
