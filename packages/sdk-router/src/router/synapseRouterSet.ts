@@ -1,6 +1,5 @@
 import { Provider } from '@ethersproject/abstract-provider'
 
-import { Abi } from '../utils/types'
 import { SynapseRouter } from './synapseRouter'
 import { RouterSet } from './routerSet'
 
@@ -13,10 +12,9 @@ export class SynapseRouterSet extends RouterSet {
   public instantiateRouter(
     chainId: number,
     provider: Provider,
-    address: string,
-    abi: Abi
+    address: string
   ): SynapseRouter {
-    return new SynapseRouter(chainId, provider, address, abi)
+    return new SynapseRouter(chainId, provider, address)
   }
 
   /**

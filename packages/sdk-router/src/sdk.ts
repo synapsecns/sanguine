@@ -8,8 +8,6 @@ import {
   Query,
   PoolToken,
 } from './router'
-import routerAbi from './abi/SynapseRouter.json'
-import cctpRouterAbi from './abi/SynapseCCTPRouter.json'
 import { ROUTER_ADDRESS, CCTP_ROUTER_ADDRESS } from './constants'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
@@ -42,15 +40,10 @@ class SynapseSDK {
       this.providers[chainProvider.chainId] = chainProvider.provider
     })
     // Initialize SynapseRouterSet and SynapseCCTPRouterSet
-    this.synapseRouterSet = new SynapseRouterSet(
-      chainProviders,
-      ROUTER_ADDRESS,
-      routerAbi
-    )
+    this.synapseRouterSet = new SynapseRouterSet(chainProviders, ROUTER_ADDRESS)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(
       chainProviders,
-      CCTP_ROUTER_ADDRESS,
-      cctpRouterAbi
+      CCTP_ROUTER_ADDRESS
     )
   }
 

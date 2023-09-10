@@ -1,6 +1,5 @@
 import { Provider } from '@ethersproject/abstract-provider'
 
-import { Abi } from '../utils/types'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { RouterSet } from './routerSet'
 
@@ -13,10 +12,9 @@ export class SynapseCCTPRouterSet extends RouterSet {
   public instantiateRouter(
     chainId: number,
     provider: Provider,
-    address: string,
-    abi: Abi
+    address: string
   ): SynapseCCTPRouter {
-    return new SynapseCCTPRouter(chainId, provider, address, abi)
+    return new SynapseCCTPRouter(chainId, provider, address)
   }
 
   /**

@@ -4,7 +4,7 @@ import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { Abi } from '../utils/types'
+import routerAbi from '../abi/SynapseRouter.json'
 import {
   SynapseRouter as SynapseRouterContract,
   PoolStructOutput,
@@ -50,15 +50,16 @@ export class SynapseRouter extends Router {
   public readonly routerContract: SynapseRouterContract
   public readonly address: string
 
+  static routerInterface = new Interface(routerAbi)
   private bridgeContractCache: Contract | undefined
 
-  constructor(chainId: number, provider: Provider, address: string, abi: Abi) {
+  constructor(chainId: number, provider: Provider, address: string) {
     super(chainId, provider)
     invariant(address, 'ADDRESS_UNDEFINED')
-    invariant(abi?.length, 'ABI_UNDEFINED')
+    invariant(SynapseRouter.routerInterface, 'INTERFACE_UNDEFINED')
     this.routerContract = new Contract(
       address,
-      new Interface(abi),
+      SynapseRouter.routerInterface,
       provider
     ) as SynapseRouterContract
     this.address = address

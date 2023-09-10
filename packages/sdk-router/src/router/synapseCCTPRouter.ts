@@ -4,7 +4,7 @@ import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { Abi } from '../utils/types'
+import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
 import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
@@ -20,13 +20,15 @@ export class SynapseCCTPRouter extends Router {
   public readonly routerContract: SynapseCCTPRouterContract
   public readonly address: string
 
-  constructor(chainId: number, provider: Provider, address: string, abi: Abi) {
+  static routerInterface = new Interface(cctpRouterAbi)
+
+  constructor(chainId: number, provider: Provider, address: string) {
     super(chainId, provider)
     invariant(address, 'ADDRESS_UNDEFINED')
-    invariant(abi?.length, 'ABI_UNDEFINED')
+    invariant(SynapseCCTPRouter.routerInterface, 'INTERFACE_UNDEFINED')
     this.routerContract = new Contract(
       address,
-      new Interface(abi),
+      SynapseCCTPRouter.routerInterface,
       provider
     ) as SynapseCCTPRouterContract
     this.address = address
