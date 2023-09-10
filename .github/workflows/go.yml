@@ -184,6 +184,7 @@ jobs:
               fi
             done
             cp coverage.txt profile.cov
+            docker ps
           max_attempts: 2
           timeout_minutes: 60
         env:
