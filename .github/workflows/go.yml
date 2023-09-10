@@ -160,12 +160,19 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
+      - name: Precompile Tests
+        working-directory: ${{ matrix.package }}
+        run: go test -run=nope ./...
+        env:
+          # no other containers are running at this point so we can use all available memory for compilation
+          GOMEMLIMIT: 5GiB
+          GOGC: -1
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
           command: |
             cd ${{ matrix.package }}
-            GOMEMLIMIT=5GiB go test -run=nope ./...  # pre-compile all the tests (w/o running). At this point, no containers are running so we can also up the memlimit
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
               $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
