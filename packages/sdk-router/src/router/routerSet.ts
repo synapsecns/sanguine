@@ -78,10 +78,7 @@ export abstract class RouterSet {
   public getRouter(chainId: number, routerAddress: string): Router | undefined {
     const router = this.routers[chainId]
     // Check if router exists on chain and that router address matches
-    if (
-      router?.routerContract.address.toLowerCase() ===
-      routerAddress.toLowerCase()
-    ) {
+    if (router?.address.toLowerCase() === routerAddress.toLowerCase()) {
       return router
     } else {
       return undefined
@@ -155,7 +152,7 @@ export abstract class RouterSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
-          originRouterAddress: originRouter.routerContract.address,
+          originRouterAddress: originRouter.address,
         })
       )
       // Return routes with non-zero minAmountOut
@@ -200,7 +197,7 @@ export abstract class RouterSet {
     return {
       feeAmount,
       feeConfig,
-      routerAddress: originRouter.routerContract.address,
+      routerAddress: originRouter.address,
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,

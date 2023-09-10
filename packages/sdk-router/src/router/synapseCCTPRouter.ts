@@ -18,6 +18,7 @@ import {
 
 export class SynapseCCTPRouter extends Router {
   public readonly routerContract: SynapseCCTPRouterContract
+  public readonly address: string
 
   constructor(chainId: number, provider: Provider, address: string, abi: Abi) {
     super(chainId, provider)
@@ -28,6 +29,7 @@ export class SynapseCCTPRouter extends Router {
       new Interface(abi),
       provider
     ) as SynapseCCTPRouterContract
+    this.address = address
   }
 
   public async getOriginAmountOut(

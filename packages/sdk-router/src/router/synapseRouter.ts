@@ -48,6 +48,7 @@ const wrapToPool = (pool: PoolStructOutput): Pool => {
 
 export class SynapseRouter extends Router {
   public readonly routerContract: SynapseRouterContract
+  public readonly address: string
 
   private bridgeContractCache: Contract | undefined
 
@@ -60,6 +61,7 @@ export class SynapseRouter extends Router {
       new Interface(abi),
       provider
     ) as SynapseRouterContract
+    this.address = address
   }
 
   public async getOriginAmountOut(

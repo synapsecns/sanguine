@@ -57,7 +57,7 @@ export async function swapQuote(
   tokenIn = handleNativeToken(tokenIn)
   // Get SynapseRouter instance for given chain
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
-  const routerAddress = router.routerContract.address
+  const routerAddress = router.address
   const query = await router.getAmountOut(tokenIn, tokenOut, amountIn)
   const maxAmountOut = query.minAmountOut
   if (query.minAmountOut.isZero()) {

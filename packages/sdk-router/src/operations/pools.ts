@@ -66,7 +66,7 @@ export async function calculateAddLiquidity(
   amounts: Record<string, BigNumber>
 ): Promise<{ amount: BigNumber; routerAddress: string }> {
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
-  const routerAddress = router.routerContract.address
+  const routerAddress = router.address
   const poolTokens = await router.getPoolTokens(poolAddress)
   // Populate amounts array by combining amounts map and pool tokens, preserving tokens order
   // and adding 0 for tokens not in the map
@@ -99,7 +99,7 @@ export async function calculateRemoveLiquidity(
   routerAddress: string
 }> {
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
-  const routerAddress = router.routerContract.address
+  const routerAddress = router.address
   const amountsOut = await router.routerContract.calculateRemoveLiquidity(
     poolAddress,
     amount
@@ -129,7 +129,7 @@ export async function calculateRemoveLiquidityOne(
   routerAddress: string
 }> {
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
-  const routerAddress = router.routerContract.address
+  const routerAddress = router.address
   const amountOut = {
     value: await router.routerContract.calculateWithdrawOneToken(
       poolAddress,

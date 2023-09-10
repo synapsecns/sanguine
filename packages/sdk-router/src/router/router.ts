@@ -10,6 +10,7 @@ import { BridgeToken, DestRequest, FeeConfig } from './types'
 
 export abstract class Router {
   abstract readonly routerContract: Contract
+  abstract readonly address: string
   public readonly chainId: number
   public readonly provider: Provider
 
