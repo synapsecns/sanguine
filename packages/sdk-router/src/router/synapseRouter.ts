@@ -165,6 +165,32 @@ export class SynapseRouter extends Router {
     })
   }
 
+  public async calculateAddLiquidity(
+    poolAddress: string,
+    amounts: BigintIsh[]
+  ): Promise<BigNumber> {
+    return this.routerContract.calculateAddLiquidity(poolAddress, amounts)
+  }
+
+  public async calculateRemoveLiquidity(
+    poolAddress: string,
+    amount: BigintIsh
+  ): Promise<BigNumber[]> {
+    return this.routerContract.calculateRemoveLiquidity(poolAddress, amount)
+  }
+
+  public async calculateWithdrawOneToken(
+    poolAddress: string,
+    amount: BigintIsh,
+    tokenIndex: number
+  ): Promise<BigNumber> {
+    return this.routerContract.calculateWithdrawOneToken(
+      poolAddress,
+      amount,
+      tokenIndex
+    )
+  }
+
   public async getAmountOut(
     tokenIn: string,
     tokenOut: string,

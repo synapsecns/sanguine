@@ -77,7 +77,7 @@ export async function calculateAddLiquidity(
   // Don't do a contract call if all amounts are 0
   const amount = amountsArr.every((value) => value.isZero())
     ? Zero
-    : await router.routerContract.calculateAddLiquidity(poolAddress, amountsArr)
+    : await router.calculateAddLiquidity(poolAddress, amountsArr)
   return { amount, routerAddress }
 }
 
@@ -100,10 +100,7 @@ export async function calculateRemoveLiquidity(
 }> {
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
   const routerAddress = router.address
-  const amountsOut = await router.routerContract.calculateRemoveLiquidity(
-    poolAddress,
-    amount
-  )
+  const amountsOut = await router.calculateRemoveLiquidity(poolAddress, amount)
   // Zip amounts with token indexes
   const amounts = amountsOut.map((value, index) => ({ value, index }))
   return { amounts, routerAddress }
@@ -131,7 +128,7 @@ export async function calculateRemoveLiquidityOne(
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
   const routerAddress = router.address
   const amountOut = {
-    value: await router.routerContract.calculateWithdrawOneToken(
+    value: await router.calculateWithdrawOneToken(
       poolAddress,
       amount,
       poolIndex
