@@ -3,14 +3,10 @@ import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 
 import { Router } from './router'
-import { BigintIsh } from '../constants'
+import { AddressMap, BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, DestRequest } from './types'
 import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
 import { hasComplexBridgeAction } from './query'
-
-export type AddressMap = {
-  [chainId: number]: string
-}
 
 export type ChainProvider = {
   chainId: number
@@ -26,6 +22,7 @@ export type ChainProvider = {
  */
 export abstract class RouterSet {
   abstract readonly routerName: string
+  abstract readonly addressMap: AddressMap
 
   public routers: {
     [chainId: number]: Router
@@ -38,11 +35,11 @@ export abstract class RouterSet {
    * Constructor for a RouterSet class.
    * It creates the Router instances for each chain that has both a provider and a router address.
    */
-  constructor(chains: ChainProvider[], addresses: AddressMap) {
+  constructor(chains: ChainProvider[]) {
     this.routers = {}
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
-      const address = addresses[chainId]
+      const address = this.addressMap[chainId]
       // Skip chains without a router address
       if (address) {
         this.routers[chainId] = this.instantiateRouter(

@@ -8,7 +8,6 @@ import {
   Query,
   PoolToken,
 } from './router'
-import { ROUTER_ADDRESS, CCTP_ROUTER_ADDRESS } from './constants'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
 
@@ -40,11 +39,8 @@ class SynapseSDK {
       this.providers[chainProvider.chainId] = chainProvider.provider
     })
     // Initialize SynapseRouterSet and SynapseCCTPRouterSet
-    this.synapseRouterSet = new SynapseRouterSet(chainProviders, ROUTER_ADDRESS)
-    this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(
-      chainProviders,
-      CCTP_ROUTER_ADDRESS
-    )
+    this.synapseRouterSet = new SynapseRouterSet(chainProviders)
+    this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
   }
 
   // Define Bridge operations

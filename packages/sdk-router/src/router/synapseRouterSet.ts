@@ -2,9 +2,11 @@ import { Provider } from '@ethersproject/abstract-provider'
 
 import { SynapseRouter } from './synapseRouter'
 import { RouterSet } from './routerSet'
+import { ROUTER_ADDRESS_MAP } from '../constants'
 
 export class SynapseRouterSet extends RouterSet {
   public readonly routerName = 'SynapseRouter'
+  public readonly addressMap = ROUTER_ADDRESS_MAP
 
   /**
    * Creates a new Router instance for the given chain.

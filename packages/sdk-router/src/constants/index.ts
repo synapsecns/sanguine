@@ -15,22 +15,26 @@ export enum SupportedChainId {
   DOGECHAIN = 2000,
   CANTO = 7700,
   KLAYTN = 8217,
+  BASE = 8453,
   ARBITRUM = 42161,
   AVALANCHE = 43114,
   DFK = 53935,
   AURORA = 1313161554,
   HARMONY = 1666600000,
-  BASE = 8453,
 }
 
-export const CCTP_ROUTER_ADDRESS: { [chainId: number]: string } = {
+export type AddressMap = {
+  [chainId: number]: string
+}
+
+export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.ETH]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.ARBITRUM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.AVALANCHE]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.OPTIMISM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
 }
 
-export const ROUTER_ADDRESS: { [chainId: number]: string } = {
+export const ROUTER_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.BSC]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.ETH]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.POLYGON]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',

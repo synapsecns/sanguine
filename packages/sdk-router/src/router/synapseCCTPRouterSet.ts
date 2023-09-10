@@ -2,9 +2,11 @@ import { Provider } from '@ethersproject/abstract-provider'
 
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { RouterSet } from './routerSet'
+import { CCTP_ROUTER_ADDRESS_MAP } from '../constants'
 
 export class SynapseCCTPRouterSet extends RouterSet {
   public readonly routerName = 'SynapseCCTPRouter'
+  public readonly addressMap = CCTP_ROUTER_ADDRESS_MAP
 
   /**
    * Creates a new Router instance for the given chain.
