@@ -197,7 +197,7 @@ jobs:
           action: codecov/codecov-action@v3
           with: |
             token: ${{ secrets.CODECOV }}
-            files: profile.cov
+            files: coverage.txt
             flags: ${{ steps.coverage.outputs.flag }}
             fail_ci_if_error: true # optional (default = false)
             verbose: true # optional (default = false)
