@@ -172,6 +172,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           command: |
+            set -e
             cd ${{ matrix.package }}
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
