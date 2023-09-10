@@ -34,8 +34,8 @@ import {
   NOTE,
   USDC,
   SUSD,
+  WETH,
 } from '@constants/tokens/bridgeable'
-import { WETH } from '@constants/tokens/auxilliary'
 
 export const getTransactionReceipt = async (
   txHash: string,
