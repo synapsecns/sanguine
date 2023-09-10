@@ -166,7 +166,6 @@ jobs:
           command: |
             cd ${{ matrix.package }}
             GOMEMLIMIT=5GiB go test -run=nope ./...  # pre-compile all the tests (w/o running). At this point, no containers are running so we can also up the memlimit
-            echo "hi"
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
               $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
