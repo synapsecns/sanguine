@@ -54,6 +54,7 @@ jobs:
       - name: Extract renovate cache
         run: |
           set -x
+          mkdir -p $cache_dir
           # Skip if no cache is set, such as the first time it runs.
           if [ ! -d cache-download ] ; then
             echo "No cache found."
@@ -61,7 +62,6 @@ jobs:
           fi
 
           # Make sure the directory exists, and extract it there. Note that it's nested in the download directory.
-          mkdir -p $cache_dir
           tar -xzf cache-download/$cache_archive -C $cache_dir
 
           # Unfortunately, the permissions expected within renovate's docker container
@@ -74,7 +74,7 @@ jobs:
       - uses: renovatebot/github-action@v39.0.5
         with:
           configurationFile: .github/renovate.json
-          token: ${{ secrets.PUBLISH_TOKEN}}
+          token: ${{ secrets.PUBLISH_TOKEN }}
         env:
           # This enables the cache -- if this is set, it's not necessary to add it to renovate.json.
           RENOVATE_REPOSITORY_CACHE: ${{ github.event.inputs.repoCache || 'enabled' }}
