@@ -55,12 +55,11 @@ jobs:
         run: |
           set -x
           mkdir -p $cache_dir
-          # change perms, see explanation below
-          sudo chown -R runneradmin:root /tmp/renovate/
-
           # Skip if no cache is set, such as the first time it runs.
           if [ ! -d cache-download ] ; then
             echo "No cache found."
+            # change perms, see explanation below
+            sudo chown -R runneradmin:root /tmp/renovate/
             exit 0
           fi
 
