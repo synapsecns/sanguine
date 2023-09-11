@@ -2,7 +2,7 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
-import { Query } from '../router'
+import { Query, SwapQuote } from '../router'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
 import { getOriginDeadline } from '../utils/deadlines'
@@ -48,11 +48,7 @@ export async function swapQuote(
   tokenOut: string,
   amountIn: BigintIsh,
   deadline?: BigNumber
-): Promise<{
-  routerAddress: string
-  maxAmountOut: BigNumber
-  query: Query
-}> {
+): Promise<SwapQuote> {
   tokenOut = handleNativeToken(tokenOut)
   tokenIn = handleNativeToken(tokenIn)
   // Get SynapseRouter instance for given chain
