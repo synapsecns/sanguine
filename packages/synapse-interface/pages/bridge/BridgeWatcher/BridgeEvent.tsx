@@ -2,13 +2,13 @@ import EventCard from './EventCard'
 import DestinationTx from './DestinationTx'
 import { BridgeWatcherTx } from '@types'
 import Link from 'next/link'
-import { ANALYTICS_KAPPA } from '@urls'
+import { EXPLORER_KAPPA } from '@urls'
 import { memo } from 'react'
 
 const BridgeEvent = memo((fromEvent: BridgeWatcherTx) => {
   // Saving Event Link for when indexing occurs faster
   const EventLink = (
-    <Link href={ANALYTICS_KAPPA + fromEvent.kappa} target="_blank">
+    <Link href={EXPLORER_KAPPA + fromEvent.kappa} target="_blank">
       <u className="w-auto pt-1 text-sm text-gray-500 underline-offset-2 hover:text-gray-400">
         View on Explorer
       </u>{' '}

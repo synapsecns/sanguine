@@ -1,6 +1,6 @@
 import { ArrowSmRightIcon, ChartSquareBarIcon } from '@heroicons/react/outline'
 
-import { ANALYTICS_PATH } from '@/constants/urls'
+import { EXPLORER_PATH } from '@/constants/urls'
 
 export const ActionCardFooter = ({ link }: { link: string }) => {
   return (
@@ -14,7 +14,7 @@ export const ActionCardFooter = ({ link }: { link: string }) => {
         </a>
         <ArrowSmRightIcon className="w-5 h-5" />
       </div>
-      <a href={ANALYTICS_PATH} target="_blank">
+      <a href={EXPLORER_PATH} target="_blank">
         <div className="flex items-center text-opacity-50 transition-all duration-75 text-secondaryTextColor hover:text-opacity-100 hover:text-white transform-gpu ">
           <ChartSquareBarIcon className="w-5 h-5 mr-2" />
           <span className="cursor-pointer">Explorer</span>
