@@ -23,7 +23,7 @@ jobs:
     name: Foundry Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Foundry Gas Snapshot
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 

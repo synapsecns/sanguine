@@ -2,8 +2,7 @@ import _ from 'lodash'
 import * as CHAINS from '@constants/chains/master'
 import * as all from '@constants/tokens/bridgeable'
 import * as allPool from '@constants/tokens/poolMaster'
-import { GMX, ETH, USDC, USDT } from '@constants/tokens/bridgeable'
-import { WETH } from '@constants/tokens/auxilliary'
+import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { Token } from '@utils/types'
 
@@ -37,11 +36,30 @@ const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
 
-// This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
+// Key value pairs here will override bridgeMap to hide particular chain-token pairs
 export const PAUSED_TOKENS_BY_CHAIN = {
+  [CHAINS.ETH.id]: ['WETH'],
+  [CHAINS.OPTIMISM.id]: ['WETH'],
+  [CHAINS.BOBA.id]: ['WETH'],
+  [CHAINS.MOONBEAM.id]: ['WETH'],
+  [CHAINS.BASE.id]: ['WETH'],
+  [CHAINS.ARBITRUM.id]: ['WETH'],
   [CHAINS.FANTOM.id]: [],
-  [CHAINS.DOGE.id]: ['BUSD'],
-  [CHAINS.KLAYTN.id]: [],
+  [CHAINS.DOGE.id]: ['BUSD', 'WETH'],
+  [CHAINS.KLAYTN.id]: ['WETH'],
+}
+
+export const findChainIdsWithPausedToken = (routeSymbol: string) => {
+  return _.reduce(
+    PAUSED_TOKENS_BY_CHAIN,
+    (result, tokens, chainId) => {
+      if (_.includes(tokens, routeSymbol)) {
+        result.push(chainId)
+      }
+      return result
+    },
+    []
+  )
 }
 
 const getBridgeableTokens = (): TokensByChain => {
