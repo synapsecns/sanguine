@@ -2,12 +2,15 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
 
 import {
+  ETH_NUSD,
+  ETH_USDC,
   PUBLIC_PROVIDER_URLS,
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
 } from '../constants'
 import { SynapseRouter } from './synapseRouter'
 import { RouterQuery } from './query'
+import { BridgeToken } from './types'
 
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
@@ -59,7 +62,7 @@ describe('SynapseRouter', () => {
     })
   })
 
-  describe('Bridge', () => {
+  describe('ETH SynapseRouter', () => {
     const synapseRouter = new SynapseRouter(
       SupportedChainId.ETH,
       ethProvider,
@@ -76,6 +79,21 @@ describe('SynapseRouter', () => {
         emptyQuery
       )
       expect(data?.length).toBeGreaterThan(0)
+    })
+
+    it('Fetches bridge tokens for USDC', async () => {
+      const expectedTokens: BridgeToken[] = [
+        {
+          symbol: 'nUSD',
+          token: ETH_NUSD,
+        },
+        {
+          symbol: 'USDC',
+          token: ETH_USDC,
+        },
+      ]
+      const bridgeTokens = await synapseRouter.getBridgeTokens(ETH_USDC)
+      expect(bridgeTokens).toEqual(expectedTokens)
     })
   })
 

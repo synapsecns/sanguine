@@ -5,9 +5,11 @@ import {
   PUBLIC_PROVIDER_URLS,
   CCTP_ROUTER_ADDRESS_MAP,
   SupportedChainId,
+  ETH_USDC,
 } from '../constants'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { CCTPRouterQuery } from './query'
+import { BridgeToken } from './types'
 
 describe('SynapseCCTPRouter', () => {
   const ethAddress = CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
@@ -67,7 +69,7 @@ describe('SynapseCCTPRouter', () => {
     })
   })
 
-  describe('Bridge', () => {
+  describe('ETH SynapseCCTPRouter', () => {
     const cctpRouter = new SynapseCCTPRouter(
       SupportedChainId.ETH,
       ethProvider,
@@ -84,6 +86,17 @@ describe('SynapseCCTPRouter', () => {
         emptyQuery
       )
       expect(data?.length).toBeGreaterThan(0)
+    })
+
+    it('Fetches bridge tokens for USDC', async () => {
+      const expectedTokens: BridgeToken[] = [
+        {
+          symbol: 'CCTP.USDC',
+          token: ETH_USDC,
+        },
+      ]
+      const tokens = await cctpRouter.getBridgeTokens(ETH_USDC)
+      expect(tokens).toEqual(expectedTokens)
     })
   })
 
