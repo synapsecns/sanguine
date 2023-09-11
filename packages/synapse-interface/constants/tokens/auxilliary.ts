@@ -4,32 +4,9 @@ import ethLogo from '@assets/icons/eth.svg'
 import mimLogo from '@assets/icons/mim.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
-import wethLogo from '@assets/icons/weth.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
-
-export const WETH = new Token({
-  addresses: {
-    [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
-    [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
-    [CHAINS.METIS.id]: '0x420000000000000000000000000000000000000A',
-    [CHAINS.MOONBEAM.id]: '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A',
-    [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
-    [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
-    [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
-    [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-  },
-  decimals: 18,
-  symbol: 'WETH',
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  swapableType: 'ETH',
-  color: 'sky',
-  priorityRank: 3,
-  routeSymbol: 'WETH',
-})
 
 export const AVWETH = new Token({
   addresses: {

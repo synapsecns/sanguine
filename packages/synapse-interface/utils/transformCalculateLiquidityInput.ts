@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { zeroAddress } from 'viem'
 
-import { WETH } from '@/constants/tokens/auxilliary'
+import { WETH } from '@/constants/tokens/bridgeable'
 import { Token } from './types'
 
 const replaceKey = (
