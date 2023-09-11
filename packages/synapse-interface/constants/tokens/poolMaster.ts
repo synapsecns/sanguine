@@ -20,6 +20,7 @@ import {
   ONEDAI,
   ONEUSDC,
   ONEUSDT,
+  WETH,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
@@ -29,7 +30,6 @@ import {
   KLAYTN_oUSDT,
   MIM,
   MULTIAVAX,
-  WETH,
 } from '@constants/tokens/auxilliary'
 import synapseLogo from '@assets/icons/syn.svg'
 
