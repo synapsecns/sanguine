@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, PopulatedTransaction, providers } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 
 import { SynapseSDK } from './sdk'
 import {
@@ -15,7 +16,7 @@ import {
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
 } from './constants'
-import { BridgeQuote, FeeConfig } from './router'
+import { BridgeQuote, FeeConfig, RouterQuery } from './router'
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -336,6 +337,96 @@ describe('SynapseSDK', () => {
         amount,
         resultPromise
       )
+    })
+  })
+
+  describe('Errors', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.BSC],
+      [ethProvider, bscProvider]
+    )
+
+    const amount = BigNumber.from(10).pow(9)
+    const emptyQuery: RouterQuery = {
+      swapAdapter: AddressZero,
+      tokenOut: ETH_USDC,
+      minAmountOut: amount,
+      deadline: BigNumber.from(0),
+      rawParams: '0x',
+    }
+    const mockAddress = '0x0000000000000000000000000000000000001337'
+
+    describe('origin == destination', () => {
+      it('bridgeQuote throws', async () => {
+        await expect(
+          synapse.bridgeQuote(
+            SupportedChainId.ETH,
+            SupportedChainId.ETH,
+            ETH_USDC,
+            BSC_USDC,
+            amount
+          )
+        ).rejects.toThrow(
+          'Origin chainId cannot be equal to destination chainId'
+        )
+      })
+
+      it('bridge throws', async () => {
+        await expect(
+          synapse.bridge(
+            mockAddress,
+            ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
+            SupportedChainId.ETH,
+            SupportedChainId.ETH,
+            ETH_USDC,
+            amount,
+            emptyQuery,
+            emptyQuery
+          )
+        ).rejects.toThrow(
+          'Origin chainId cannot be equal to destination chainId'
+        )
+      })
+    })
+
+    it('bridgeQuote throws on unknown chainId', async () => {
+      await expect(
+        synapse.bridgeQuote(
+          SupportedChainId.ETH,
+          SupportedChainId.AVALANCHE,
+          ETH_USDC,
+          AVAX_USDC_E,
+          amount
+        )
+      ).rejects.toThrow('No route found')
+    })
+
+    it('bridgeQuote throws when amount too low', async () => {
+      await expect(
+        synapse.bridgeQuote(
+          SupportedChainId.ETH,
+          SupportedChainId.BSC,
+          ETH_USDC,
+          BSC_USDC,
+          BigNumber.from(10).pow(3)
+        )
+      ).rejects.toThrow('No route found')
+    })
+
+    it('bridge throws when incorrect router address', async () => {
+      // Use MockAddress as router address
+      await expect(
+        synapse.bridge(
+          mockAddress,
+          mockAddress,
+          SupportedChainId.ETH,
+          SupportedChainId.BSC,
+          ETH_USDC,
+          amount,
+          emptyQuery,
+          emptyQuery
+        )
+      ).rejects.toThrow('Invalid router address')
     })
   })
 })
