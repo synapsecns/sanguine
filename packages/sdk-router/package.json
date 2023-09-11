@@ -9,6 +9,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
   "engines": {
     "node": ">=10"
   },
