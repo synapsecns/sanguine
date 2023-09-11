@@ -201,6 +201,30 @@ jobs:
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
           GOPROXY: https://proxy.golang.org
 
+      # TODO: these 3 steps should be moved into a reusable action.
+      # also,should be noted these aren't comprehensive, as many of the containers are automatically removed
+      # and we'd need something like this for all logs: https://github.com/synapsecns/sanguine/pull/1280#discussion_r1320889916
+      # but this should be better than nothing as long as you don't assume the logs are complete
+      #
+      # there's a good case to have this in addition to the suggestions referenced in the comment above because
+      # logs are not collected there in the case of sigterms (because logs stop piping when app breaks), which are caught here
+      #
+      # in any case this should be considered an early implementation
+      - name: Collect docker logs on failure
+        if: always()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          dest: './logs'
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf ./logs.tgz ./logs
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name:  ${{matrix.package}}-logs.tgz
+          path: ./logs.tgz
+
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
         with:
