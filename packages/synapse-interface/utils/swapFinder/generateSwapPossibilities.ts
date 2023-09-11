@@ -30,7 +30,7 @@ export const getSwapPossibilities = ({
   const fromTokenRouteSymbol = fromToken && fromToken.routeSymbol
   const toTokenRouteSymbol = toToken && toToken.routeSymbol
 
-  const fromChainIds: number[] = getFromChainIds({
+  const fromChainIds: number[] = getSwapFromChainIds({
     fromChainId,
     fromTokenRouteSymbol,
     toChainId,
@@ -38,7 +38,7 @@ export const getSwapPossibilities = ({
   })
 
   const fromTokens: Token[] = _(
-    getFromTokens({
+    getSwapFromTokens({
       fromChainId,
       fromTokenRouteSymbol,
       toChainId,
@@ -53,7 +53,7 @@ export const getSwapPossibilities = ({
     .value()
 
   const toTokens: Token[] = _(
-    getToTokens({
+    getSwapToTokens({
       fromChainId,
       fromTokenRouteSymbol,
       toChainId,

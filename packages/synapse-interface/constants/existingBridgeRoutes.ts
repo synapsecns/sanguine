@@ -1,6 +1,6 @@
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
-import { FILTERED } from './existingSwapRoutes'
+import { EXISTING_SWAP_ROUTES, FILTERED } from './existingSwapRoutes'
 
 export type BridgeRoutes = Record<string, string[]>
 
@@ -54,4 +54,5 @@ export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = constructJSON(
   PAUSED_TOKENS
 )
 
-console.log(`FILTERED`, FILTERED)
+console.log('FILTERED', FILTERED)
+console.log(`TRANFORMED`, EXISTING_SWAP_ROUTES)
