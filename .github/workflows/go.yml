@@ -214,10 +214,10 @@ jobs:
         if: always()
         uses: jwalton/gh-docker-logs@v2
         with:
-          dest: './logs'
+          dest: '/tmp/logs'
       - name: Tar logs
         if: failure()
-        run: tar cvzf ./logs.tgz ./logs
+        run: tar cvzf ./logs.tgz ./tmp/logs
       - name: Upload logs to GitHub
         if: failure()
         uses: actions/upload-artifact@master
