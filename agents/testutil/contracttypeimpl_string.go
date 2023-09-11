@@ -8,32 +8,32 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[OriginType-0]
-	_ = x[MessageHarnessType-1]
-	_ = x[BaseMessageHarnessType-2]
-	_ = x[ReceiptHarnessType-3]
-	_ = x[RequestHarnessType-4]
-	_ = x[OriginHarnessType-5]
-	_ = x[StateHarnessType-6]
-	_ = x[SnapshotHarnessType-7]
-	_ = x[AttestationHarnessType-8]
-	_ = x[TipsHarnessType-9]
-	_ = x[HeaderHarnessType-10]
-	_ = x[DestinationHarnessType-11]
-	_ = x[SummitHarnessType-12]
-	_ = x[SummitType-13]
-	_ = x[DestinationType-14]
-	_ = x[AgentsTestContractType-15]
-	_ = x[TestClientType-16]
-	_ = x[PingPongClientType-17]
-	_ = x[LightManagerHarnessType-18]
-	_ = x[BondingManagerHarnessType-19]
-	_ = x[LightManagerType-20]
-	_ = x[BondingManagerType-21]
-	_ = x[GasDataHarnessType-22]
-	_ = x[GasOracleType-23]
-	_ = x[InboxType-24]
-	_ = x[LightInboxType-25]
+	_ = x[OriginType-1]
+	_ = x[MessageHarnessType-2]
+	_ = x[BaseMessageHarnessType-3]
+	_ = x[ReceiptHarnessType-4]
+	_ = x[RequestHarnessType-5]
+	_ = x[OriginHarnessType-6]
+	_ = x[StateHarnessType-7]
+	_ = x[SnapshotHarnessType-8]
+	_ = x[AttestationHarnessType-9]
+	_ = x[TipsHarnessType-10]
+	_ = x[HeaderHarnessType-11]
+	_ = x[DestinationHarnessType-12]
+	_ = x[SummitHarnessType-13]
+	_ = x[SummitType-14]
+	_ = x[DestinationType-15]
+	_ = x[AgentsTestContractType-16]
+	_ = x[TestClientType-17]
+	_ = x[PingPongClientType-18]
+	_ = x[LightManagerHarnessType-19]
+	_ = x[BondingManagerHarnessType-20]
+	_ = x[LightManagerType-21]
+	_ = x[BondingManagerType-22]
+	_ = x[GasDataHarnessType-23]
+	_ = x[GasOracleType-24]
+	_ = x[InboxType-25]
+	_ = x[LightInboxType-26]
 }
 
 const _contractTypeImpl_name = "OriginMessageHarnessBaseMessageHarnessReceiptHarnessRequestHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitHarnessSummitDestinationAgentsTestContractTestClientPingPongClientLightManagerHarnessBondingManagerHarnessLightManagerBondingManagerGasDataHarnessTypeGasOracleInboxLightInbox"
@@ -41,8 +41,9 @@ const _contractTypeImpl_name = "OriginMessageHarnessBaseMessageHarnessReceiptHar
 var _contractTypeImpl_index = [...]uint16{0, 6, 20, 38, 52, 66, 79, 95, 114, 136, 151, 168, 186, 199, 205, 216, 234, 244, 258, 277, 298, 310, 324, 342, 351, 356, 366}
 
 func (i contractTypeImpl) String() string {
+	i -= 1
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {
-		return "contractTypeImpl(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "contractTypeImpl(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _contractTypeImpl_name[_contractTypeImpl_index[i]:_contractTypeImpl_index[i+1]]
 }

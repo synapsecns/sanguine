@@ -33,7 +33,7 @@ import (
 
 // set all contact types.
 func init() {
-	for i := 0; i < len(_contractTypeImpl_index)-1; i++ {
+	for i := 1; i < len(_contractTypeImpl_index); i++ {
 		contractType := contractTypeImpl(i)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
@@ -65,7 +65,7 @@ type contractTypeImpl int
 
 const (
 	// OriginType is the type of the origin.
-	OriginType contractTypeImpl = iota // Origin
+	OriginType contractTypeImpl = iota + 1 // Origin
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType // MessageHarness
 	// BaseMessageHarnessType is the type of the base message harness contract.
