@@ -18,6 +18,9 @@
   "files": [
     "contracts/**/*.sol"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "devDependencies": {
     "@typechain/ethers-v5": "10.0.0",
