@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
 	"math/big"
 	"os"
 	"sync"
@@ -17,12 +14,15 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -152,15 +152,6 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
 			require.Nil(b.T(), err)
-			if len(code) == 0 {
-				receipt, err := b.Client().TransactionReceipt(b.ctx, contract.DeployTx().Hash())
-				require.Nil(b.T(), err)
-
-				jsonReceipt, err := receipt.MarshalJSON()
-				require.Nil(b.T(), err)
-
-				fmt.Println(string(jsonReceipt))
-			}
 			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()

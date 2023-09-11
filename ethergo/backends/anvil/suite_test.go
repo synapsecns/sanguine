@@ -1,6 +1,8 @@
 package anvil_test
 
 import (
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -10,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"testing"
 )
 
 var vitalik = common.HexToAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
@@ -33,29 +34,27 @@ func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 }
 
 func (a *AnvilSuite) SetupSuite() {
-	for {
-		a.TestSuite.SetupSuite()
+	a.TestSuite.SetupSuite()
 
-		a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
-		options := anvil.NewAnvilOptionBuilder()
-		err := options.SetForkURL(a.forkAddress)
-		Nil(a.T(), err)
+	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://1rpc.io/eth")
+	options := anvil.NewAnvilOptionBuilder()
+	err := options.SetForkURL(a.forkAddress)
+	Nil(a.T(), err)
 
-		// enable otterscan
-		options.OtterscanEnabled(true)
+	// enable otterscan
+	options.OtterscanEnabled(true)
 
-		a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
-		a.options = options
-		a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
-		Nil(a.T(), err)
+	a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
+	a.options = options
+	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
+	Nil(a.T(), err)
 
-		deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
-		deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
+	deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
+	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
 
-		var ok bool
-		a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
-		True(a.T(), ok)
-	}
+	var ok bool
+	a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
+	True(a.T(), ok)
 }
 
 func TestAnvilSuite(t *testing.T) {
