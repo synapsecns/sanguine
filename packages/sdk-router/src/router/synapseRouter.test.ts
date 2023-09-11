@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 
 import {
   ETH_NUSD,
@@ -69,31 +70,63 @@ describe('SynapseRouter', () => {
       ethAddress
     )
 
-    it('Bridge with nUSD', async () => {
-      const { data } = await synapseRouter.bridge(
-        recipient,
-        SupportedChainId.ARBITRUM,
-        ethNusd,
-        BigNumber.from(10),
-        emptyQuery,
-        emptyQuery
-      )
-      expect(data?.length).toBeGreaterThan(0)
+    describe('bridge', () => {
+      it('Bridge with nUSD', async () => {
+        const { data } = await synapseRouter.bridge(
+          recipient,
+          SupportedChainId.ARBITRUM,
+          ethNusd,
+          BigNumber.from(10),
+          emptyQuery,
+          emptyQuery
+        )
+        expect(data?.length).toBeGreaterThan(0)
+      })
     })
 
-    it('Fetches bridge tokens for USDC', async () => {
-      const expectedTokens: BridgeToken[] = [
-        {
-          symbol: 'nUSD',
-          token: ETH_NUSD,
-        },
-        {
-          symbol: 'USDC',
-          token: ETH_USDC,
-        },
-      ]
-      const bridgeTokens = await synapseRouter.getBridgeTokens(ETH_USDC)
-      expect(bridgeTokens).toEqual(expectedTokens)
+    describe('getBridgeTokens', () => {
+      it('Fetches bridge tokens for USDC', async () => {
+        const expectedTokens: BridgeToken[] = [
+          {
+            symbol: 'nUSD',
+            token: ETH_NUSD,
+          },
+          {
+            symbol: 'USDC',
+            token: ETH_USDC,
+          },
+        ]
+        const bridgeTokens = await synapseRouter.getBridgeTokens(ETH_USDC)
+        expect(bridgeTokens).toEqual(expectedTokens)
+      })
+    })
+
+    describe('getOriginQueries', () => {
+      it('Fetches origin queries for USDC', async () => {
+        const originQueries = await synapseRouter.getOriginQueries(
+          ETH_USDC,
+          ['USDC', 'nUSD'],
+          BigNumber.from(10 ** 9)
+        )
+        expect(originQueries.length).toBe(2)
+        expect(originQueries[0].tokenOut).toBe(ETH_USDC)
+        expect(originQueries[0].minAmountOut.gt(0)).toBe(true)
+        expect(originQueries[1].tokenOut).toBe(ETH_NUSD)
+        expect(originQueries[1].minAmountOut.gt(0)).toBe(true)
+      })
+
+      it('Does not filter zero amount queries', async () => {
+        const originQueries = await synapseRouter.getOriginQueries(
+          ETH_USDC,
+          ['USDC', 'fakeSymbol'],
+          BigNumber.from(10 ** 9)
+        )
+        expect(originQueries.length).toBe(2)
+        expect(originQueries[0].tokenOut).toBe(ETH_USDC)
+        expect(originQueries[0].minAmountOut.gt(0)).toBe(true)
+        expect(originQueries[1].tokenOut).toBe(AddressZero)
+        expect(originQueries[1].minAmountOut).toEqual(BigNumber.from(0))
+      })
     })
   })
 

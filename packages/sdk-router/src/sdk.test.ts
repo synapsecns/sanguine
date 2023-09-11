@@ -69,36 +69,6 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('getOriginQueries', () => {
-    it('fetches origin queries from both SynapseRouter and SynapseCCTPRouter', async () => {
-      const originChainId = SupportedChainId.ETH
-      const tokenIn = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-      const routerTokenSymbols = ['USDC']
-      const cctpTokenSymbols = ['CCTP.USDC']
-      const amountIn = BigNumber.from('100000000')
-      const sdk = new SynapseSDK([originChainId], [ethProvider])
-
-      const synapseRouterOriginQuery = await sdk.getOriginQueries(
-        sdk.synapseRouters[originChainId],
-        tokenIn,
-        routerTokenSymbols,
-        amountIn
-      )
-      const synapseCCTPRouterOriginQuery = await sdk.getOriginQueries(
-        sdk.synapseCCTPRouters[originChainId],
-        tokenIn,
-        cctpTokenSymbols,
-        amountIn
-      )
-
-      expect(synapseRouterOriginQuery).toBeTruthy()
-      expect(synapseCCTPRouterOriginQuery).toBeTruthy()
-
-      expect(synapseRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
-      expect(synapseCCTPRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
-    })
-  })
-
   describe('getDestinationQueries', () => {
     it('fetches destination queries from both SynapseRouter and SynapseCCTPRouter', async () => {
       const destChainId = SupportedChainId.ETH
