@@ -9,6 +9,7 @@
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
     "build:typescript": "forge build && typechain --target ethers-v5 'artifacts/**/*json'",
+    "prepublishOnly": "yarn build:typescript",
     "test": "forge test",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
