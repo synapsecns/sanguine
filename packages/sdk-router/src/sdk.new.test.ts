@@ -5,6 +5,10 @@ import { SynapseSDK } from './sdk'
 import {
   ARB_USDC,
   ARB_USDC_E,
+  AVAX_GOHM,
+  AVAX_USDC_E,
+  BSC_GOHM,
+  BSC_USDC,
   CCTP_ROUTER_ADDRESS_MAP,
   ETH_USDC,
   PUBLIC_PROVIDER_URLS,
@@ -84,10 +88,6 @@ describe('SynapseSDK', () => {
     PUBLIC_PROVIDER_URLS[SupportedChainId.AVALANCHE]
   )
 
-  const optProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.OPTIMISM]
-  )
-
   const bscProvider: Provider = new providers.JsonRpcProvider(
     PUBLIC_PROVIDER_URLS[SupportedChainId.BSC]
   )
@@ -165,7 +165,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('bridgeQuote (ETH -> ARB)', () => {
+  describe('Bridging: ETH -> ARB', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
       [ethProvider, arbProvider]
@@ -289,6 +289,53 @@ describe('SynapseSDK', () => {
           expect(result.originQuery.swapAdapter).toBeDefined()
         })
       })
+    })
+  })
+
+  describe('Bridging: AVAX -> BSC', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.AVALANCHE, SupportedChainId.BSC],
+      [avaxProvider, bscProvider]
+    )
+
+    describe('AVAX USDC.e -> BSC USDC', () => {
+      const amount = BigNumber.from(10).pow(9)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_USDC_E,
+        BSC_USDC,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_USDC_E,
+        amount,
+        resultPromise
+      )
+    })
+
+    describe('AVAX gOHM -> BSC gOHM', () => {
+      const amount = BigNumber.from(10).pow(21)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_GOHM,
+        BSC_GOHM,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_GOHM,
+        amount,
+        resultPromise
+      )
     })
   })
 })
