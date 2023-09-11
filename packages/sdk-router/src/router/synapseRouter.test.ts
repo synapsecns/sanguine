@@ -11,7 +11,7 @@ import {
 } from '../constants'
 import { SynapseRouter } from './synapseRouter'
 import { RouterQuery } from './query'
-import { BridgeToken } from './types'
+import { BridgeToken, DestRequest } from './types'
 
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
@@ -106,7 +106,7 @@ describe('SynapseRouter', () => {
         const originQueries = await synapseRouter.getOriginQueries(
           ETH_USDC,
           ['USDC', 'nUSD'],
-          BigNumber.from(10 ** 9)
+          BigNumber.from(10).pow(9)
         )
         expect(originQueries.length).toBe(2)
         expect(originQueries[0].tokenOut).toBe(ETH_USDC)
@@ -119,13 +119,59 @@ describe('SynapseRouter', () => {
         const originQueries = await synapseRouter.getOriginQueries(
           ETH_USDC,
           ['USDC', 'fakeSymbol'],
-          BigNumber.from(10 ** 9)
+          BigNumber.from(10).pow(9)
         )
         expect(originQueries.length).toBe(2)
         expect(originQueries[0].tokenOut).toBe(ETH_USDC)
         expect(originQueries[0].minAmountOut.gt(0)).toBe(true)
         expect(originQueries[1].tokenOut).toBe(AddressZero)
         expect(originQueries[1].minAmountOut).toEqual(BigNumber.from(0))
+      })
+    })
+
+    describe('getDestinationQueries', () => {
+      it('Fetches destination queries for USDC', async () => {
+        // $1000 requests: should be above minimum bridge fee
+        const destRequests: DestRequest[] = [
+          {
+            symbol: 'USDC',
+            amountIn: BigNumber.from(10).pow(9),
+          },
+          {
+            symbol: 'nUSD',
+            amountIn: BigNumber.from(10).pow(21),
+          },
+        ]
+        const destQueries = await synapseRouter.getDestinationQueries(
+          destRequests,
+          ETH_USDC
+        )
+        expect(destQueries.length).toBe(2)
+        expect(destQueries[0].tokenOut).toBe(ETH_USDC)
+        expect(destQueries[0].minAmountOut.gt(0)).toBe(true)
+        expect(destQueries[1].tokenOut).toBe(ETH_USDC)
+        expect(destQueries[1].minAmountOut.gt(0)).toBe(true)
+      })
+
+      it('Does not filter zero amount queries', async () => {
+        const destRequests: DestRequest[] = [
+          {
+            symbol: 'USDC',
+            amountIn: BigNumber.from(10).pow(9),
+          },
+          {
+            symbol: 'fakeSymbol',
+            amountIn: BigNumber.from(10).pow(9),
+          },
+        ]
+        const destQueries = await synapseRouter.getDestinationQueries(
+          destRequests,
+          ETH_USDC
+        )
+        expect(destQueries.length).toBe(2)
+        expect(destQueries[0].tokenOut).toBe(ETH_USDC)
+        expect(destQueries[0].minAmountOut.gt(0)).toBe(true)
+        expect(destQueries[1].minAmountOut).toEqual(BigNumber.from(0))
       })
     })
   })

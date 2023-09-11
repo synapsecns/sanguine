@@ -69,41 +69,6 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('getDestinationQueries', () => {
-    it('fetches destination queries from both SynapseRouter and SynapseCCTPRouter', async () => {
-      const destChainId = SupportedChainId.ETH
-      const tokenOut = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-      const routerRequests = [
-        { symbol: 'nUSD', amountIn: BigNumber.from('100000000000000000000') },
-      ]
-      const cctpRequests = [
-        { symbol: 'CCTP.USDC', amountIn: BigNumber.from('100000000') },
-      ]
-      const sdk = new SynapseSDK([destChainId], [ethProvider])
-
-      const synapseRouterDestinationQuery = await sdk.getDestinationQueries(
-        sdk.synapseRouters[destChainId],
-        routerRequests,
-        tokenOut
-      )
-      const synapseCCTPRouterDestinationQuery = await sdk.getDestinationQueries(
-        sdk.synapseCCTPRouters[destChainId],
-        cctpRequests,
-        tokenOut
-      )
-
-      // Ensure the function returned queries
-      expect(synapseRouterDestinationQuery).toBeTruthy()
-      expect(synapseCCTPRouterDestinationQuery).toBeTruthy()
-
-      // Ensure minAmountOut is greater than 0
-      expect(synapseRouterDestinationQuery[0].minAmountOut.gt(0)).toBeTruthy()
-      expect(
-        synapseCCTPRouterDestinationQuery[0].minAmountOut.gt(0)
-      ).toBeTruthy()
-    })
-  })
-
   describe('bridgeQuote', () => {
     const chainIds = [1, 42161]
     const providers = [ethProvider, arbitrumProvider]
