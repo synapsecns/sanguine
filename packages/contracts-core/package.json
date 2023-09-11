@@ -1,8 +1,7 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "",
-  "private": "false",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
     "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/*.sol contracts/inbox/*.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/**/*.sol contracts/client/*.sol",
@@ -16,6 +15,9 @@
     "lint": "forge fmt",
     "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
   },
+  "files": [
+    "contracts/**/*.sol"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@typechain/ethers-v5": "10.0.0",
