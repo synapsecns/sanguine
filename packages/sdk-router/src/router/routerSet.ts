@@ -22,7 +22,6 @@ export type ChainProvider = {
  */
 export abstract class RouterSet {
   abstract readonly routerName: string
-  abstract readonly addressMap: AddressMap
 
   public routers: {
     [chainId: number]: Router
@@ -35,11 +34,11 @@ export abstract class RouterSet {
    * Constructor for a RouterSet class.
    * It creates the Router instances for each chain that has both a provider and a router address.
    */
-  constructor(chains: ChainProvider[]) {
+  constructor(chains: ChainProvider[], addressMap: AddressMap) {
     this.routers = {}
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
-      const address = this.addressMap[chainId]
+      const address = addressMap[chainId]
       // Skip chains without a router address
       if (address) {
         this.routers[chainId] = this.instantiateRouter(
