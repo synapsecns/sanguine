@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
 <a href="https://interchain.synapseprotocol.com/" target="_blank">
-<img src="https://raw.githubusercontent.com/synapsecns/sanguine/feat/readme-updates/assets/interchain-logo.svg" width="225" alt="Synapse Interchain logo">
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/assets/interchain-logo.svg" width="225" alt="Synapse Interchain logo">
 </a>
 </p>
 <br/>
