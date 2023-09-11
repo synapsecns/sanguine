@@ -2,7 +2,7 @@
   "name": "@synapsecns/contracts-core",
   "version": "1.0.9",
   "description": "",
-  "private": "true",
+  "private": "false",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
     "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/*.sol contracts/inbox/*.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/**/*.sol contracts/client/*.sol",
