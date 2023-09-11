@@ -26,3 +26,6 @@ export const PUBLIC_PROVIDER_URLS: { [chainId: number]: string } = {
 // Token addresses on Ehtereum mainnet
 export const ETH_NUSD = '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F'
 export const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+// Token addresses on Arbitrum mainnet
+export const ARB_USDC = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+export const ARB_USDC_E = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'

@@ -1,8 +1,75 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { providers } from 'ethers'
+import { BigNumber, PopulatedTransaction, providers } from 'ethers'
 
 import { SynapseSDK } from './sdk'
-import { PUBLIC_PROVIDER_URLS, SupportedChainId } from './constants'
+import {
+  ARB_USDC,
+  ARB_USDC_E,
+  CCTP_ROUTER_ADDRESS_MAP,
+  ETH_USDC,
+  PUBLIC_PROVIDER_URLS,
+  ROUTER_ADDRESS_MAP,
+  SupportedChainId,
+} from './constants'
+import { BridgeQuote, FeeConfig } from './router'
+
+const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
+  expect(feeConfig).toBeDefined()
+  expect(feeConfig.bridgeFee).toBeGreaterThan(0)
+  expect(feeConfig.minFee.gt(0)).toBe(true)
+  expect(feeConfig.maxFee.gt(0)).toBe(true)
+}
+
+const expectCorrectBridgeQuote = (bridgeQuote: BridgeQuote) => {
+  expect(bridgeQuote).toBeDefined()
+  expect(bridgeQuote.feeAmount.gt(0)).toBe(true)
+  expectCorrectFeeConfig(bridgeQuote.feeConfig)
+  expect(bridgeQuote.routerAddress?.length).toBeGreaterThan(0)
+  expect(bridgeQuote.maxAmountOut.gt(0)).toBe(true)
+  expect(bridgeQuote.originQuery).toBeDefined()
+  expect(bridgeQuote.destQuery).toBeDefined()
+}
+
+const expectCorrectPopulatedTransaction = (
+  populatedTransaction: PopulatedTransaction
+) => {
+  expect(populatedTransaction).toBeDefined()
+  expect(populatedTransaction.data?.length).toBeGreaterThan(0)
+  expect(populatedTransaction.to?.length).toBeGreaterThan(0)
+}
+
+const createBridgeQuoteTests = (
+  synapse: SynapseSDK,
+  originChainId: number,
+  destChainId: number,
+  token: string,
+  amount: BigNumber,
+  resultPromise: Promise<BridgeQuote>
+) => {
+  let result: BridgeQuote
+  beforeAll(async () => {
+    result = await resultPromise
+  })
+
+  it('Fetches a bridge quote', async () => {
+    expectCorrectBridgeQuote(result)
+  })
+
+  it('Could be used for bridging', async () => {
+    synapse
+      .bridge(
+        '0x0000000000000000000000000000000000001337',
+        result.routerAddress,
+        originChainId,
+        destChainId,
+        token,
+        amount,
+        result.originQuery,
+        result.destQuery
+      )
+      .then(expectCorrectPopulatedTransaction)
+  })
+}
 
 describe('SynapseSDK', () => {
   const ethProvider: Provider = new providers.JsonRpcProvider(
@@ -95,6 +162,133 @@ describe('SynapseSDK', () => {
       expect(synapse.providers[SupportedChainId.MOONBEAM]).toBe(
         moonbeamProvider
       )
+    })
+  })
+
+  describe('bridgeQuote (ETH -> ARB)', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
+    )
+
+    describe('ETH USDC -> ARB USDC', () => {
+      const amount = BigNumber.from(10).pow(9)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDC,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+    })
+
+    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag omitted)', () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10).pow(12)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a CCTP bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+          )
+          // SynapseCCTPRouterQuery has routerAdapter property
+          expect(result.originQuery.routerAdapter).toBeDefined()
+        })
+      })
+    })
+
+    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag off)', () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10).pow(12)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount,
+        undefined,
+        false
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a CCTP bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+          )
+          // SynapseCCTPRouterQuery has routerAdapter property
+          expect(result.originQuery.routerAdapter).toBeDefined()
+        })
+      })
+    })
+
+    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag on)', () => {
+      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+      // which by default is routed through USDC
+      const amount = BigNumber.from(10).pow(12)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDC_E,
+        amount,
+        undefined,
+        true
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+        })
+      })
     })
   })
 })
