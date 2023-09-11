@@ -63,5 +63,6 @@
     "fileFilters": [],
     "executionMode": "update"
   },
-  "allowPostUpgradeCommandTemplating": true
+  "allowPostUpgradeCommandTemplating": true,
+  "autodiscover": true
 }
