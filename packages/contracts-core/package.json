@@ -8,7 +8,7 @@
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
-    "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
+    "build:typescript": "forge build && typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
@@ -16,7 +16,8 @@
     "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
   },
   "files": [
-    "contracts/**/*.sol"
+    "contracts/**/*.sol",
+    "types/"
   ],
   "publishConfig": {
     "access": "public"
