@@ -25,7 +25,7 @@ type EVM interface {
 	// this is used for deploying an interacting with contracts
 	bind.ContractBackend
 	// ChainReader ethereum.ChainReader for getting transactions
-	ethereum.ChainReacder
+	ethereum.ChainReader
 	// TransactionReader is used for reading txes by hash
 	ethereum.TransactionReader
 	// ChainStateReader gets the chain state reader
