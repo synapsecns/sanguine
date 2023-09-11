@@ -3,7 +3,7 @@ import Grid from '@/components/ui/tailwind/Grid'
 import Button from '@/components/ui/tailwind/Button'
 import Card from '@/components/ui/tailwind/Card'
 import { SectionContainer } from '../../../components/landing/shared'
-import { ANALYTICS_PATH } from '@/constants/urls'
+import { EXPLORER_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
   getTotalTxCount,
@@ -37,7 +37,7 @@ export default function ExplorerSection() {
           </div>
         </div>
         <div className="hidden col-span-1 text-center md:block">
-          <Link href={ANALYTICS_PATH} target="_blank">
+          <Link href={EXPLORER_PATH} target="_blank">
             <Button
               className={`
                   border-[#AC8FFF] border text-sm

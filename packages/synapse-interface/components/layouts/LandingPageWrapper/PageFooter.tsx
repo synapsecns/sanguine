@@ -2,7 +2,7 @@ import Grid from '@tw/Grid'
 import Link from 'next/link'
 
 import {
-  BRIDGE_PATH,
+  BRIDGE_PATH, BUILD_ON_URL,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,
@@ -11,7 +11,7 @@ import {
   POOLS_PATH,
   PRIVACY_POLICY_PATH,
   STAKE_PATH,
-  SWAP_PATH,
+  SWAP_PATH, TELEGRAM_URL,
   TERMS_OF_SERVICE_PATH,
   TWITTER_URL,
 } from '@/constants/urls'
@@ -63,9 +63,9 @@ const developersList: FooterDataProps[] = [
     url: null,
   },
   {
-    text: 'References',
+    text: 'Build on Synapse',
     type: FooterType.URL,
-    url: GITHUB_URL,
+    url: BUILD_ON_URL,
   },
   {
     text: 'Documentation',
@@ -105,11 +105,11 @@ const supportList: FooterDataProps[] = [
     type: FooterType.URL,
     url: FORUM_URL,
   },
-  //   {
-  //     text: 'Careers',
-  //     type: 'url',
-  //     url: CAREERS_URL,
-  //   },
+    {
+      text: 'Telegram',
+      type: 'url',
+      url: TELEGRAM_URL,
+    },
 ]
 
 export function PageFooter() {

@@ -47,7 +47,8 @@ export const Banner = () => {
         <div className="m-1 font-thin">
           <div className="container mx-auto">
             <p className="text-md">
-              New! Chain and token selections now list routable options first.
+              {/* TODO: replace w/ tweetlink directly */}
+              <a href={"https://twitter.com/synapseprotocol"} target={"_blank"}>Synapse Interchain Network & Synapse Chain are live on testnet.</a>
             </p>
           </div>
         </div>
@@ -57,7 +58,7 @@ export const Banner = () => {
             inline-flex items-center justify-center
             h-7 w-7
             ml-auto -mx-1.5 -my-1.5 p-1.5
-            text-primaryTextColor 
+            text-primaryTextColor
           `}
           data-dismiss-target="#banner-default"
           aria-label="Close"
