@@ -1,12 +1,47 @@
-# Sanguine
+<br/>
+<p align="center">
+<a href="https://synapseprotoocol.com" target="_blank">
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/assets/logo.svg" width="225" alt="Synapse logo">
+</a>
+</p>
+<br/>
 
-[![Go Workflows](https://github.com/synapsecns/sanguine/actions/workflows/go.yml/badge.svg)](https://github.com/synapsecns/sanguine/actions/workflows/go.yml)
-[![Foundry Tests](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml/badge.svg)](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml)
+[![GitHub](https://img.shields.io/github/license/synapsecns/sanguine)](https://github.com/synapsecns/sanguine/blob/master/LICENSE)
+[![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/y/synapsecns/sanguine?style=flat-square)](https://github.com/synapsecns/sanguine/commits/)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/synapsecns/sanguine)
+[![Codecov](https://img.shields.io/codecov/c/github/synapsecns/sanguine?style=flat-square&logo=codecov&link=https%3A%2F%2Fapp.codecov.io%2Fgh%2Fsynapsecns%2Fsanguine)](https://app.codecov.io/gh/synapsecns/sanguine)
+[![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability-percentage/synapsecns/sanguine)](https://codeclimate.com/github/synapsecns/sanguine/progress/maintainability)
+
+
+[![Gitbook](https://img.shields.io/badge/docs-grey?logo=gitbook&style=flat-square)](https://docs.synapseprotocol.com/)
+[![Discord](https://img.shields.io/discord/887411327696511027?style=flat-square&logo=discord)](https://discord.com/invite/3AHETJmrXW)
+[![Telegram](https://img.shields.io/badge/chat-telegram-blue?logo=telegram&style=flat-square)](https://t.me/synapseprotocol)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/synapseprotocol?style=flat-square&logo=twitter)](https://x.com/synapseprotocol)
+
+
+
+[Synapse](https://synapseprotocol.com/) is a interchain messaging protocol & bridge that allows for the creation of decentralized applications that can be deployed across multiple chains. This repo contains a variety of tools, interfaces and services that form the basis of, or are built on top of Synapse.
+
+This repo serves as (or will serve) as the monrepo for all synapse code. Currently, only the [liquidity/bridge contracts](https://github.com/synapsecns/synapse-contracts) still need to be migrated.
 
 ## Contributing
-
 Read through [CONTRIBUTING.md](./CONTRIBUTING.md) for a general overview of our contribution process.
 Then check out our list of [good first issues](https://github.com/synapsecns/sanguine/contribute) to find something fun to work on!
+
+## Projects
+
+There are a variety of different packages in this repo, covered comprehensively in the [Directory Structure](#directory-structure) section of this document. However, for ease of use to new contributors, a comprehensive list of user-facing components are listed below, along with their source code components.
+
+- Synapse Interchain Network: An optimistic proof-of-stake interchain messaging network.  Please see docs [here](https://docs.synapseprotocol.com/synapse-interchain-network-sin/synapse-interchain-network)
+  - [Contracts](packages/contracts-core)
+  - [Off Chain Agents](agents)
+- Synapse Bridge: A cross-chain liquidity + canonical token bridge. Please see docs [here](https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge)
+  - [Contracts](https://github.com/synapsecns/synapse-contracts): The contracts used to power the synapse bridge.
+  - [Frontend](packages/synapse-interface): The frontend used to interact with the bridge.
+  - [SDK](packages/sdk-router): The SDK used to interact with the bridge.
+- Explorer: A bridge explorer that allows users to view on-chain data state about the bridge.
+  - [Backend](services/explorer): The backend used to power the explorer.
+  - [Frontend](packages/explorer-ui): The frontend used to interact with the explorer.
 
 ## Directory Structure
 
@@ -27,7 +62,7 @@ root
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
-│   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation
+│   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
 │   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
 │   ├── <a href="./packages/sdk-router">synapse-interface</a>: Synapse frontend code
