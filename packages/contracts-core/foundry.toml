@@ -35,3 +35,4 @@ polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
 
 [doc]
 title="Synapse Contracts"
+repository-url="https://github.com/synapsecns/sanguine"
