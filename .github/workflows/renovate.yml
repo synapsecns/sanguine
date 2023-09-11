@@ -74,7 +74,7 @@ jobs:
       - uses: renovatebot/github-action@v39.0.5
         with:
           configurationFile: .github/renovate.json
-          token: ${{ secrets.TAG_TOKEN}}
+          token: ${{ secrets.PUBLISH_TOKEN}}
         env:
           # This enables the cache -- if this is set, it's not necessary to add it to renovate.json.
           RENOVATE_REPOSITORY_CACHE: ${{ github.event.inputs.repoCache || 'enabled' }}
