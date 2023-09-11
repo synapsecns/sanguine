@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
 <a href="https://synapseprotoocol.com" target="_blank">
-<img src="https://raw.githubusercontent.com/synapsecns/sanguine/feat/readme-updates/assets/logo.svg" width="225" alt="Synapse logo">
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/assets/logo.svg" width="225" alt="Synapse logo">
 </a>
 </p>
 <br/>
