@@ -1,5 +1,3 @@
-import { Provider } from '@ethersproject/abstract-provider'
-
 import { SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { ROUTER_ADDRESS_MAP } from '../constants'
@@ -8,18 +6,7 @@ export class SynapseRouterSet extends RouterSet {
   public readonly routerName = 'SynapseRouter'
 
   constructor(chains: ChainProvider[]) {
-    super(chains, ROUTER_ADDRESS_MAP)
-  }
-
-  /**
-   * Creates a new Router instance for the given chain.
-   */
-  public instantiateRouter(
-    chainId: number,
-    provider: Provider,
-    address: string
-  ): SynapseRouter {
-    return new SynapseRouter(chainId, provider, address)
+    super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)
   }
 
   /**
