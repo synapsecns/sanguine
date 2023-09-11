@@ -55,5 +55,12 @@
   "prConcurrentLimit": 7,
   "git-submodules": {
     "enabled": true
+  },
+  "postUpgradeTasks": {
+    "commands": [
+      "./make/scripts/tidy.sh"
+    ],
+    "fileFilters": [],
+    "executionMode": "update"
   }
 }
