@@ -210,7 +210,7 @@ jobs:
       # logs are not collected there in the case of sigterms (because logs stop piping when app breaks), which are caught here
       #
       # in any case this should be considered an early implementation
-      - name: Collect docker logs on failure
+      - name: Collect docker logs
         if: always()
         uses: jwalton/gh-docker-logs@v2
         with:
