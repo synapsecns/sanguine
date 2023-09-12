@@ -65,14 +65,20 @@ export async function calculateAddLiquidity(
   poolAddress: string,
   amounts: Record<string, BigNumber>
 ): Promise<{ amount: BigNumber; routerAddress: string }> {
+  // TODO (Chi): use amounts array as the input instead of map in the first place
   const router = this.synapseRouterSet.getSynapseRouter(chainId)
   const routerAddress = router.address
   const poolTokens = await router.getPoolTokens(poolAddress)
+  // Create a map that uses lowercase token addresses as keys
+  const amountsMap: Record<string, BigNumber> = {}
+  Object.entries(amounts).map(([token, tokenAmount]) => {
+    amountsMap[token.toLowerCase()] = tokenAmount
+  })
   // Populate amounts array by combining amounts map and pool tokens, preserving tokens order
   // and adding 0 for tokens not in the map
   const amountsArr: BigNumber[] = []
-  poolTokens.map((token) => {
-    amountsArr.push(amounts[token.token] ?? Zero)
+  poolTokens.map((poolToken) => {
+    amountsArr.push(amountsMap[poolToken.token.toLowerCase()] ?? Zero)
   })
   // Don't do a contract call if all amounts are 0
   const amount = amountsArr.every((value) => value.isZero())
