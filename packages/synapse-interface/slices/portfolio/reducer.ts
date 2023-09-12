@@ -26,7 +26,7 @@ export interface PortfolioState {
 }
 
 const initialState: PortfolioState = {
-  activeTab: PortfolioTabs.HOME,
+  activeTab: PortfolioTabs.PORTFOLIO,
   balancesAndAllowances: {},
   status: FetchState.IDLE,
   error: null,

@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 import { AVALANCHE, DOGE, FANTOM, HARMONY } from '@/constants/chains/master'
 import { useBridgeState } from '@/slices/bridge/hooks'
-
 import { CCTP_ROUTER_ADDRESS } from '@/utils/actions/fetchPortfolioBalances'
 
 export const Warning = () => {
@@ -14,7 +13,7 @@ export const Warning = () => {
       fromChainId &&
       fromToken &&
       fromChainId !== AVALANCHE.id &&
-      fromToken.swapableType === 'USD' &&
+      fromToken?.swapableType === 'USD' &&
       bridgeQuote.routerAddress.toLowerCase() ===
         CCTP_ROUTER_ADDRESS.toLowerCase()
     )
