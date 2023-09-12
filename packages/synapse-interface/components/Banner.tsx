@@ -50,7 +50,7 @@ export const Banner = () => {
               {/* TODO: replace w/ tweetlink directly */}
               <a
                 href={
-                  'https://twitter.com/SynapseProtocol/status/1701313369939030440'
+                  'https://twitter.com/SynapseProtocol/status/1701315115692466220'
                 }
                 target={'_blank'}
               >
