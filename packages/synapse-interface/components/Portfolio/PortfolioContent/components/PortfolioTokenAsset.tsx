@@ -10,7 +10,7 @@ import {
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { inputRef } from '../StateManagedBridge/InputContainer'
+import { inputRef } from '../../../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
 import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
@@ -25,21 +25,8 @@ import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
 
-type PortfolioTokenAssetProps = {
-  token: Token
-  balance: bigint
-  allowances?: Allowances
-  portfolioChainId: number
-  connectedChainId: number
-  isApproved: boolean
-}
-
 function hasOnlyZeros(input: string): boolean {
   return /^0+(\.0+)?$/.test(input)
-}
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const handleFocusOnInput = () => {
@@ -82,6 +69,15 @@ function checkIfUsingCCTP({
   return isTokensUSDC && isSupportedCCTPChains
 }
 
+type PortfolioTokenAssetProps = {
+  token: Token
+  balance: bigint
+  allowances?: Allowances
+  portfolioChainId: number
+  connectedChainId: number
+  isApproved: boolean
+}
+
 export const PortfolioTokenAsset = ({
   token,
   balance,
@@ -93,7 +89,7 @@ export const PortfolioTokenAsset = ({
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
   const { address } = useAccount()
-  const { icon, symbol, decimals, addresses } = token
+  const { icon, symbol, decimals, addresses } = token as Token
 
   const parsedBalance: string = useMemo(() => {
     const formattedBalance = formatBigIntToString(
@@ -139,27 +135,29 @@ export const PortfolioTokenAsset = ({
   const isDisabled: boolean = false
 
   const handleTotalBalanceInputCallback = useCallback(async () => {
-    await dispatch(setFromChainId(portfolioChainId))
-    await dispatch(setFromToken(token))
+    await dispatch(setFromChainId(portfolioChainId as number))
+    await dispatch(setFromToken(token as Token))
     await dispatch(
       await updateFromValue(
-        formatBigIntToString(balance, token.decimals[portfolioChainId])
+        formatBigIntToString(
+          balance,
+          token.decimals[portfolioChainId]
+        ) as string
       )
     )
-    scrollToTop()
+    handleFocusOnInput()
   }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
-    dispatch(setFromChainId(portfolioChainId))
-    dispatch(setFromToken(token))
-    scrollToTop()
+    dispatch(setFromChainId(portfolioChainId as number))
+    dispatch(setFromToken(token as Token))
     handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
     if (isCurrentlyConnected) {
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(setFromToken(token))
+      dispatch(setFromChainId(portfolioChainId as number))
+      dispatch(setFromToken(token as Token))
       await approveToken(
         tokenRouterAddress,
         connectedChainId,
@@ -169,15 +167,14 @@ export const PortfolioTokenAsset = ({
           fetchAndStoreSingleTokenAllowance({
             routerAddress: tokenRouterAddress as Address,
             tokenAddress: tokenAddress as Address,
-            address: address,
-            chainId: portfolioChainId,
+            address: address as Address,
+            chainId: portfolioChainId as number,
           })
         )
       })
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
-        await scrollToTop()
         await approveToken(
           tokenRouterAddress,
           portfolioChainId,
@@ -188,8 +185,8 @@ export const PortfolioTokenAsset = ({
               fetchAndStoreSingleTokenAllowance({
                 routerAddress: tokenRouterAddress as Address,
                 tokenAddress: tokenAddress as Address,
-                address: address,
-                chainId: portfolioChainId,
+                address: address as Address,
+                chainId: portfolioChainId as number,
               })
             )
         })
@@ -217,21 +214,22 @@ export const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row items-center py-2 text-white"
+      className={`
+        flex flex-row items-center p-2 text-white
+        ${
+          isTokenSelected
+            ? 'bg-tint border-y border-surface'
+            : 'border-y border-transparent'
+        }
+      `}
     >
-      {isTokenSelected ? (
-        <div className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </div>
-      ) : (
-        <div className="w-4" />
-      )}
       <div className="flex flex-row justify-between w-2/3">
         <div
           onClick={handleSelectFromTokenCallback}
           className={`
-          flex flex-row px-2 py-2 mb-auto
-          hover:cursor-pointer
-          hover:bg-[#272731]
-        `}
+            flex flex-row px-2 py-2 mb-auto
+            cursor-pointer hover:bg-tint active:opacity-[67%]
+          `}
         >
           <Image
             loading="lazy"
@@ -245,9 +243,9 @@ export const PortfolioTokenAsset = ({
           <div
             onClick={handleTotalBalanceInputCallback}
             className={`
-            p-2 ml-auto cursor-pointer
-            hover:bg-[#272731] active:opacity-[67%]
-          `}
+              p-2 ml-auto cursor-pointer
+              hover:bg-tint active:opacity-[67%]
+            `}
           >
             {parsedBalance}
           </div>
@@ -283,19 +281,20 @@ export const HoverClickableText = ({
   hoverText: string
   callback: () => void
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState<boolean>(false)
   return (
     <div
+      data-test-id="hover-clickable-text"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={callback}
       className={`
-      group px-2
-      text-[#A3A3C2]
-      hover:text-[#75E6F0]
-      hover:underline
-      hover:cursor-pointer
-      active:opacity-[67%]
+        group px-2
+        text-[#A3A3C2]
+        hover:text-[#75E6F0]
+        hover:underline
+        hover:cursor-pointer
+        active:opacity-[67%]
       `}
     >
       <div className="text-[14px]">{isHovered ? hoverText : defaultText}</div>
@@ -318,7 +317,7 @@ const PortfolioAssetActionButton = ({
 }: PortfolioAssetActionButtonProps) => {
   const buttonClassName = `
     flex ml-auto justify-center
-    py-1 px-6 ml-2 rounded-lg
+    py-1 px-6 ml-2 rounded-sm
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
@@ -330,8 +329,7 @@ const PortfolioAssetActionButton = ({
           className={`
             ${buttonClassName}
             border border-[#D747FF] mr-1
-            hover:bg-[#272731]
-            active:opacity-[67%]
+            hover:bg-tint active:opacity-[67%]
           `}
           onClick={selectCallback}
         >
@@ -342,11 +340,8 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border border-[#3D3D5C]
-            hover:border-[#A3A3C2]
-            hover:bg-[#272731]
-            active:border-[#A3A3C2]
-            active:opacity-[67%]
+            border border-separator
+            hover:bg-tint active:opacity-[67%]
           `}
           onClick={approveCallback}
         >

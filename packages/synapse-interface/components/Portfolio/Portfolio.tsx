@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -7,7 +7,7 @@ import {
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { PortfolioContent, HomeContent } from './PortfolioContent'
+import { PortfolioContent } from './PortfolioContent/PortfolioContent'
 import {
   useFetchPortfolioBalances,
   fetchAndStorePortfolioBalances,
@@ -18,6 +18,8 @@ import {
   resetPortfolioState,
   setActiveTab,
 } from '@/slices/portfolio/actions'
+import { resetTransactionsState } from '@/slices/transactions/actions'
+import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
@@ -28,18 +30,21 @@ export const Portfolio = () => {
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
-    onConnect() {
-      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-    },
     onDisconnect() {
       dispatch(resetPortfolioState())
+      dispatch(resetTransactionsState())
     },
   })
+
   const { balancesAndAllowances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
+
+  useEffect(() => {
+    dispatch(resetPortfolioState())
+  }, [address])
 
   useEffect(() => {
     ;(async () => {
@@ -50,22 +55,28 @@ export const Portfolio = () => {
     })()
   }, [chain, address])
 
+  const [mounted, setMounted] = useState<boolean>(false)
+  useEffect(() => setMounted(true), [])
+
   return (
     <div
       data-test-id="portfolio"
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
     >
       <PortfolioTabManager />
-      <div className="mt-4">
-        {activeTab === PortfolioTabs.HOME && <HomeContent />}
-        {activeTab === PortfolioTabs.PORTFOLIO && (
-          <PortfolioContent
-            connectedAddress={address}
-            connectedChainId={chain?.id}
-            selectedFromChainId={fromChainId}
-            networkPortfolioWithBalances={filteredPortfolioDataForBalances}
-            fetchState={fetchState}
-          />
+      <div className="mt-3">
+        {mounted && (
+          <>
+            <PortfolioContent
+              connectedAddress={address}
+              connectedChainId={chain?.id}
+              selectedFromChainId={fromChainId}
+              networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+              fetchState={fetchState}
+              visibility={activeTab === PortfolioTabs.PORTFOLIO}
+            />
+            <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
+          </>
         )}
       </div>
     </div>

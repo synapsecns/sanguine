@@ -193,6 +193,22 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
     return token
   }
 }
+export const tokenAddressToToken = (
+  chainId: number,
+  tokenAddress: string
+): Token => {
+  if (chainId) {
+    if (tokenAddress === WETH.addresses[chainId]) {
+      return WETH
+    } else {
+      const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
+        return token.addresses[chainId] === tokenAddress
+      })
+      return token
+    }
+  }
+}
+
 export const TOKEN_HASH_MAP = getTokenHashMap()
 
 // SWAPS

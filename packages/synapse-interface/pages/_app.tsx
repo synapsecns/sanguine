@@ -47,6 +47,9 @@ import { Provider } from 'react-redux'
 import { store } from '@/store/store'
 import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
 
+import PortfolioUpdater from '@/slices/portfolio/updater'
+import TransactionsUpdater from '@/slices/transactions/updater'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -124,6 +127,15 @@ export const wagmiConfig = createConfig({
   webSocketPublicClient,
 })
 
+function Updaters() {
+  return (
+    <>
+      <PortfolioUpdater />
+      <TransactionsUpdater />
+    </>
+  )
+}
+
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
@@ -136,6 +148,7 @@ const App = ({ Component, pageProps }: AppProps) => {
             <SegmentAnalyticsProvider>
               <WalletAnalyticsProvider>
                 <Provider store={store}>
+                  <Updaters />
                   <Component {...pageProps} />
                   <CustomToaster />
                 </Provider>
