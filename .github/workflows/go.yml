@@ -217,7 +217,7 @@ jobs:
           dest: '/tmp/logs'
       - name: Tar logs
         if: failure()
-        run: mkdir ./tmp/logs; tar cvzf ./logs.tgz ./tmp/logs
+        run: mkdir -p ./tmp/logs; tar cvzf ./logs.tgz ./tmp/logs
       - name: Upload logs to GitHub
         if: failure()
         uses: actions/upload-artifact@master
