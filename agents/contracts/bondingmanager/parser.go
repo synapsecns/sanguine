@@ -2,6 +2,7 @@ package bondingmanager
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -80,7 +81,7 @@ type EventType uint
 
 const (
 	// StatusUpdatedEvent is an StatusUpdated event.
-	StatusUpdatedEvent EventType = iota
+	StatusUpdatedEvent EventType = iota + 1
 	// DisputeOpenedEvent is an DisputeOpened event.
 	DisputeOpenedEvent
 	// RootUpdatedEvent is an RootUpdated event.

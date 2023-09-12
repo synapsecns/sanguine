@@ -11,6 +11,8 @@ import (
 )
 
 func (t *DBSuite) TestGetRelayableAgentStatuses() {
+	// Test by setting up multiple addresses and agent roots in the database. Then, once each agent tree is stored with
+	// the agent root and address, get the agent trees that match up with a specific chain ID.
 	t.RunOnAllDBs(func(testDB db.GuardDB) {
 		addressA := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		addressB := common.BigToAddress(big.NewInt(gofakeit.Int64()))
