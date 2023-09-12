@@ -126,6 +126,6 @@ export async function bridgeQuote(
 export async function getBridgeGas(
   this: SynapseSDK,
   chainId: number
-): Promise<BigintIsh> {
+): Promise<BigNumber> {
   return this.synapseRouterSet.getSynapseRouter(chainId).chainGasAmount()
 }
