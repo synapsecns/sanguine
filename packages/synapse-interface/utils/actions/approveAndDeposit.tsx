@@ -80,7 +80,9 @@ export const approve = async (
       id: 'approve-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Pool Approval] Successful for ${pool?.name}`, {})
+    segmentAnalyticsEvent(`[Pool Approval] Successful`, {
+      poolName: pool?.name,
+    })
 
     return approveTx
   }
@@ -120,7 +122,9 @@ export const deposit = async (
 
   try {
     // get this from quote?
-    segmentAnalyticsEvent(`[Pool Deposit] Attempt for ${pool?.name}`, {})
+    segmentAnalyticsEvent(`[Pool Deposit] Attempt`, {
+      poolName: pool?.name,
+    })
 
     let minToMint: any = await swapPoolCalculateTokenAmount({
       chainId,
@@ -175,7 +179,8 @@ export const deposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Pool Deposit] Success for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Pool Deposit] Success`, {
+      poolName: pool?.name,
       inputAmounts,
     })
 
@@ -183,7 +188,8 @@ export const deposit = async (
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Pool Deposit] Failure for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Pool Deposit] Failure`, {
+      poolName: pool?.name,
       inputAmounts,
       errorCode: error.code,
     })
@@ -206,7 +212,9 @@ export const emptyPoolDeposit = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Attempt for ${pool?.name}`, {})
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Attempt`, {
+      poolName: pool?.name,
+    })
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
@@ -249,7 +257,8 @@ export const emptyPoolDeposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Success for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Success`, {
+      poolName: pool?.name,
       inputAmounts,
     })
 
@@ -257,7 +266,8 @@ export const emptyPoolDeposit = async (
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Failure for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Failure`, {
+      poolName: pool?.name,
       inputAmounts,
       errorCode: error.code,
     })
