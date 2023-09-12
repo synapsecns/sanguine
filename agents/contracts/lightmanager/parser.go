@@ -2,7 +2,6 @@ package lightmanager
 
 import (
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -70,7 +69,7 @@ type EventType uint
 
 const (
 	// DisputeOpenedEvent is an DisputeOpened event.
-	DisputeOpenedEvent EventType = iota + 1
+	DisputeOpenedEvent EventType = iota
 	// RootUpdatedEvent is an RootUpdated event.
 	RootUpdatedEvent
 )

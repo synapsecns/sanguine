@@ -78,7 +78,7 @@ type EventType uint
 
 const (
 	// SnapshotAcceptedEvent is a SnapshotAccepted event.
-	SnapshotAcceptedEvent EventType = iota + 1
+	SnapshotAcceptedEvent EventType = iota
 	// ReceiptAcceptedEvent is a ReceiptAccepted event.
 	ReceiptAcceptedEvent
 )
