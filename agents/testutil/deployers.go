@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/gasoracle"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -22,6 +23,7 @@ import (
 )
 
 // SynChainID the id of the SynChain.
+// TODO: no longer needs to be hardcoded: https://github.com/synapsecns/sanguine/pull/1280#discussion_r1320882617
 const SynChainID uint = 10
 
 // LightInboxDeployer deploys the light inbox contract.
