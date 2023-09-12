@@ -31,12 +31,24 @@ export const SwapChainListOverlay = () => {
 
   possibleChains = sortChains(possibleChains)
 
+  let remainingChains = sortChains(
+    _.difference(
+      Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+      swapFromChainIds.map((id) => CHAINS_BY_ID[id])
+    )
+  )
+
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
     source: 'possibleChains',
   }))
 
-  const masterList = [...possibleChainsWithSource]
+  const remainingChainsWithSource = remainingChains.map((chain) => ({
+    ...chain,
+    source: 'remainingChains',
+  }))
+
+  const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
 
   const fuseOptions = {
     includeScore: true,
@@ -57,6 +69,9 @@ export const SwapChainListOverlay = () => {
     const results = fuse.search(searchStr).map((i) => i.item)
 
     possibleChains = results.filter((item) => item.source === 'possibleChains')
+    remainingChains = results.filter(
+      (item) => item.source === 'remainingChains'
+    )
   }
 
   const escPressed = useKeyPress('Escape')
@@ -98,7 +113,7 @@ export const SwapChainListOverlay = () => {
   useEffect(arrowUpFunc, [arrowUp])
   useCloseOnOutsideClick(overlayRef, onClose)
 
-  const handleSetFromChainId = (chainId) => {
+  const handleSetSwapChainId = (chainId) => {
     const eventTitle = `[Swap User Action] Sets new fromChainId`
     const eventData = {
       previousFromChainId: swapChainId,
@@ -141,10 +156,30 @@ export const SwapChainListOverlay = () => {
                     if (swapChainId === mapChainId) {
                       onClose()
                     } else {
-                      handleSetFromChainId(mapChainId)
+                      handleSetSwapChainId(mapChainId)
                     }
                   }}
                   dataId={dataId}
+                />
+              )
+            })}
+          </>
+        )}
+        {remainingChains && remainingChains.length > 0 && (
+          <>
+            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
+              All chains
+            </div>
+            {remainingChains.map(({ id: mapChainId }, idx) => {
+              return (
+                <SelectSpecificNetworkButton
+                  key={mapChainId}
+                  itemChainId={mapChainId}
+                  isCurrentChain={swapChainId === mapChainId}
+                  active={idx + possibleChains.length === currentIdx}
+                  onClick={() => handleSetSwapChainId(mapChainId)}
+                  dataId={dataId}
+                  alternateBackground={true}
                 />
               )
             })}

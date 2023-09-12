@@ -7,8 +7,8 @@ import {
 import { memo, useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { useSwapState } from '@/slices/swap/hooks'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -29,7 +29,7 @@ const SelectSpecificTokenButton = ({
 }) => {
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
-  const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
+  const { swapChainId, swapFromToken, swapToToken } = useSwapState()
 
   useEffect(() => {
     if (active) {
@@ -37,7 +37,7 @@ const SelectSpecificTokenButton = ({
     }
   }, [active])
 
-  const chainId = isOrigin ? fromChainId : toChainId
+  const chainId = swapChainId
 
   let bgClassName
 

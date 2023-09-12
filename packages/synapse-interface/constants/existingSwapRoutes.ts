@@ -1,8 +1,8 @@
 import _ from 'lodash'
+import { zeroAddress } from 'viem'
 
 import { BRIDGE_MAP } from './bridgeMap'
 import { findTokenByAddressAndChain } from '@/utils/findTokenByAddressAndChainId'
-import { zeroAddress } from 'viem'
 
 export const FILTERED = _(BRIDGE_MAP)
   .mapValues((chainObj) => {

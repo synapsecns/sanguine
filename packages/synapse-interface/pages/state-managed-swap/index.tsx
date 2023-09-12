@@ -367,7 +367,7 @@ const StateManagedSwap = () => {
   return (
     <LandingPageWrapper>
       <StandardPageContainer connectedChainId={1} address={address}>
-        <div className="flex justify-center w-full mx-auto lg:mx-0">
+        <div className="flex justify-center mx-auto lg:mx-0">
           <div className="flex flex-col">
             <div className="flex items-center justify-between">
               <PageHeader title="Swap" subtitle="Exchange assets on chain." />
@@ -414,10 +414,14 @@ const StateManagedSwap = () => {
                   {...SECTION_TRANSITION_PROPS}
                 >
                   <SwapExchangeRateInfo
-                    fromAmount={stringToBigInt(
-                      swapFromValue,
-                      swapFromToken.decimals[swapChainId]
-                    )}
+                    fromAmount={
+                      swapFromToken
+                        ? stringToBigInt(
+                            swapFromValue,
+                            swapFromToken.decimals[swapChainId]
+                          )
+                        : 0n
+                    }
                     toToken={swapToToken}
                     exchangeRate={swapQuote.exchangeRate}
                     toChainId={swapChainId}

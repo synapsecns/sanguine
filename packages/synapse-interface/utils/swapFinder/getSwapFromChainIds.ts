@@ -1,9 +1,11 @@
 import _ from 'lodash'
 
-import { EXISTING_SWAP_ROUTES } from '@/constants/existingSwapRoutes'
+import {
+  EXISTING_SWAP_ROUTES,
+  SWAP_CHAIN_IDS,
+} from '@/constants/existingSwapRoutes'
 import { RouteQueryFields } from './generateSwapPossibilities'
 import { getTokenAndChainId } from './getTokenAndChainId'
-import { SWAP_CHAIN_IDS } from '@/constants/existingSwapRoutes'
 
 export const getAllFromChainIds = () => SWAP_CHAIN_IDS
 

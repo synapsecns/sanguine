@@ -7,7 +7,6 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
@@ -18,36 +17,38 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapToToken } from '@/slices/swap/reducer'
+import { useSwapState } from '@/slices/swap/hooks'
+import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 
 export const SwapToTokenListOverlay = () => {
-  const { fromChainId, toTokens, toChainId, toToken } = useBridgeState()
+  const { swapChainId, swapToTokens, swapToToken } = useSwapState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   const overlayRef = useRef(null)
 
-  let possibleTokens = sortByPriorityRank(toTokens)
+  let possibleTokens = sortByPriorityRank(swapToTokens)
 
-  const { toTokens: allToChainTokens } = getRoutePossibilities({
-    fromChainId,
+  const { toTokens: allToChainTokens } = getSwapPossibilities({
+    fromChainId: swapChainId,
     fromToken: null,
-    toChainId,
+    toChainId: swapChainId,
     toToken: null,
   })
 
-  let remainingChainTokens = toChainId
-    ? sortByPriorityRank(_.difference(allToChainTokens, toTokens))
+  let remainingChainTokens = swapChainId
+    ? sortByPriorityRank(_.difference(allToChainTokens, swapToTokens))
     : []
 
-  const { toTokens: allTokens } = getRoutePossibilities({
+  const { toTokens: allTokens } = getSwapPossibilities({
     fromChainId: null,
     fromToken: null,
     toChainId: null,
     toToken: null,
   })
 
-  let allOtherToTokens = toChainId
+  let allOtherToTokens = swapChainId
     ? sortByPriorityRank(_.difference(allTokens, allToChainTokens))
     : sortByPriorityRank(allTokens)
 
@@ -82,7 +83,7 @@ export const SwapToTokenListOverlay = () => {
         weight: 2,
       },
       'routeSymbol',
-      `addresses.${toChainId}`,
+      `addresses.${swapChainId}`,
       'name',
     ],
   }
@@ -141,7 +142,7 @@ export const SwapToTokenListOverlay = () => {
   useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetToToken = (oldToken: Token, newToken: Token) => {
-    const eventTitle = `[Bridge User Action] Sets new toToken`
+    const eventTitle = `[Swap User Action] Sets new toToken`
     const eventData = {
       previousToToken: oldToken?.symbol,
       newToToken: newToken?.symbol,
@@ -179,14 +180,14 @@ export const SwapToTokenListOverlay = () => {
                   isOrigin={false}
                   key={idx}
                   token={token}
-                  selectedToken={toToken}
+                  selectedToken={swapToToken}
                   active={idx === currentIdx}
                   showAllChains={false}
                   onClick={() => {
-                    if (token === toToken) {
+                    if (token === swapToToken) {
                       onClose()
                     } else {
-                      handleSetToToken(toToken, token)
+                      handleSetToToken(swapToToken, token)
                     }
                   }}
                 />
@@ -198,9 +199,9 @@ export const SwapToTokenListOverlay = () => {
       {remainingChainTokens && remainingChainTokens.length > 0 && (
         <>
           <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            {toChainId
-              ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
-              : 'All receivable tokens'}
+            {swapChainId
+              ? `More on ${CHAINS_BY_ID[swapChainId]?.name}`
+              : 'All swapable tokens'}
           </div>
           <div className="px-2 pb-2 md:px-2">
             {remainingChainTokens.map((token, idx) => {
@@ -209,10 +210,10 @@ export const SwapToTokenListOverlay = () => {
                   isOrigin={false}
                   key={idx}
                   token={token}
-                  selectedToken={toToken}
+                  selectedToken={swapToToken}
                   active={idx + possibleTokens.length === currentIdx}
                   showAllChains={false}
-                  onClick={() => handleSetToToken(toToken, token)}
+                  onClick={() => handleSetToToken(swapToToken, token)}
                 />
               )
             })}
@@ -222,7 +223,7 @@ export const SwapToTokenListOverlay = () => {
       {allOtherToTokens && allOtherToTokens.length > 0 && (
         <>
           <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            All receivable tokens
+            All swapable tokens
           </div>
           <div className="px-2 pb-2 md:px-2">
             {allOtherToTokens.map((token, idx) => {
@@ -231,7 +232,7 @@ export const SwapToTokenListOverlay = () => {
                   isOrigin={false}
                   key={idx}
                   token={token}
-                  selectedToken={toToken}
+                  selectedToken={swapToToken}
                   active={
                     idx +
                       possibleTokens.length +
@@ -239,7 +240,7 @@ export const SwapToTokenListOverlay = () => {
                     currentIdx
                   }
                   showAllChains={true}
-                  onClick={() => handleSetToToken(toToken, token)}
+                  onClick={() => handleSetToToken(swapToToken, token)}
                   alternateBackground={true}
                 />
               )

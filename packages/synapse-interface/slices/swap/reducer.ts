@@ -1,9 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { DAI, NUSD, USDC } from '@/constants/tokens/bridgeable'
-import { SwapQuote, Token } from '@/utils/types'
+import { DAI, USDC } from '@/constants/tokens/bridgeable'
 import { EMPTY_SWAP_QUOTE } from '@/constants/swap'
-import { SWAP_CHAIN_IDS } from '@/constants/existingSwapRoutes'
+import { ETH as ETHEREUM } from '@/constants/chains/master'
+import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { SwapQuote, Token } from '@/utils/types'
+import { getSwapFromTokens } from '@/utils/swapFinder/getSwapFromTokens'
+import { getSymbol } from '@/utils/getSymbol'
+import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import { getSwapToTokens } from '@/utils/swapFinder/getSwapToTokens'
+import { getSwapFromChainIds } from '@/utils/swapFinder/getSwapFromChainIds'
 
 export interface SwapState {
   swapChainId: number
@@ -18,13 +24,21 @@ export interface SwapState {
   isLoading: boolean
 }
 
+const { fromChainId, fromToken, toToken, fromChainIds, fromTokens, toTokens } =
+  getSwapPossibilities({
+    fromChainId: ETHEREUM.id,
+    fromToken: USDC,
+    toChainId: ETHEREUM.id,
+    toToken: DAI,
+  })
+
 export const initialState: SwapState = {
-  swapChainId: 1,
-  swapFromToken: USDC,
-  swapToToken: DAI,
-  swapFromChainIds: SWAP_CHAIN_IDS,
-  swapFromTokens: [USDC, NUSD, DAI],
-  swapToTokens: [USDC, NUSD, DAI],
+  swapChainId: fromChainId,
+  swapFromToken: fromToken,
+  swapToToken: toToken,
+  swapFromChainIds: fromChainIds,
+  swapFromTokens: fromTokens,
+  swapToTokens: toTokens,
 
   swapFromValue: '',
   swapQuote: EMPTY_SWAP_QUOTE,
@@ -39,13 +53,209 @@ export const swapSlice = createSlice({
       state.isLoading = action.payload
     },
     setSwapChainId: (state, action: PayloadAction<number>) => {
-      state.swapChainId = action.payload
+      const incomingFromChainId = action.payload
+
+      const validFromTokens = getSwapFromTokens({
+        fromChainId: incomingFromChainId ?? null,
+        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+        toChainId: incomingFromChainId ?? null,
+        toTokenRouteSymbol: null,
+      })
+        ?.map(getSymbol)
+        .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
+
+      const validToTokens = getSwapToTokens({
+        fromChainId: incomingFromChainId ?? null,
+        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+        toChainId: incomingFromChainId ?? null,
+        toTokenRouteSymbol: null,
+      })
+        ?.map(getSymbol)
+        .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
+
+      let validFromToken
+      let validToToken
+
+      if (
+        validFromTokens?.some(
+          (token) => token?.routeSymbol === state.swapFromToken?.routeSymbol
+        )
+      ) {
+        validFromToken = state.swapFromToken
+      } else {
+        validFromToken = findValidToken(
+          validFromTokens,
+          state.swapToToken?.routeSymbol,
+          state.swapToToken?.swapableType
+        )
+      }
+
+      if (
+        validToTokens?.some(
+          (token) => token?.routeSymbol === state.swapToToken?.routeSymbol
+        )
+      ) {
+        validToToken = state.swapToToken
+      } else {
+        validToToken = findValidToken(
+          validToTokens,
+          state.swapFromToken?.routeSymbol,
+          state.swapFromToken?.swapableType
+        )
+      }
+
+      const {
+        fromChainId,
+        fromToken,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toTokens,
+      } = getSwapPossibilities({
+        fromChainId: incomingFromChainId,
+        fromToken: validFromToken,
+        toChainId: incomingFromChainId,
+        toToken: validToToken,
+      })
+
+      state.swapChainId = fromChainId
+      state.swapFromToken = fromToken
+      state.swapToToken = toToken
+      state.swapFromChainIds = fromChainIds
+      state.swapFromTokens = fromTokens
+      state.swapToTokens = toTokens
     },
     setSwapFromToken: (state, action: PayloadAction<Token>) => {
-      state.swapFromToken = action.payload
+      const incomingFromToken = action.payload
+
+      const validFromChainIds = getSwapFromChainIds({
+        fromChainId: state.swapChainId ?? null,
+        fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
+        toChainId: null,
+        toTokenRouteSymbol: null,
+      })
+
+      const validToTokens = getSwapToTokens({
+        fromChainId: state.swapChainId ?? null,
+        fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
+        toChainId: state.swapChainId ?? null,
+        toTokenRouteSymbol: null,
+      })
+        ?.map(getSymbol)
+        .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
+
+      let validFromChainId
+      let validToChainId
+      let validToToken
+
+      if (validFromChainIds?.includes(state.swapChainId)) {
+        validFromChainId = state.swapChainId
+      } else {
+        validFromChainId = null
+      }
+
+      if (
+        validToTokens?.some(
+          (token) => token?.routeSymbol === state.swapToToken?.routeSymbol
+        )
+      ) {
+        validToToken = state.swapToToken
+      } else {
+        validToToken = findValidToken(
+          validToTokens,
+          incomingFromToken?.routeSymbol,
+          incomingFromToken?.swapableType
+        )
+      }
+
+      const {
+        fromChainId,
+        fromToken,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toTokens,
+      } = getSwapPossibilities({
+        fromChainId: validFromChainId,
+        fromToken: incomingFromToken,
+        toChainId: validToChainId,
+        toToken: validToToken,
+      })
+
+      state.swapChainId = fromChainId
+      state.swapFromToken = fromToken
+      state.swapToToken = toToken
+      state.swapFromChainIds = fromChainIds
+      state.swapFromTokens = fromTokens
+      state.swapToTokens = toTokens
     },
     setSwapToToken: (state, action: PayloadAction<Token>) => {
-      state.swapToToken = action.payload
+      const incomingToToken = action.payload
+
+      const validFromChainIds = getSwapFromChainIds({
+        fromChainId: state.swapChainId ?? null,
+        fromTokenRouteSymbol: null,
+        toChainId: state.swapChainId ?? null,
+        toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
+      })
+
+      const validFromTokens = getSwapFromTokens({
+        fromChainId: state.swapChainId ?? null,
+        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+        toChainId: state.swapChainId ?? null,
+        toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
+      })
+        ?.map(getSymbol)
+        .map((s) => findTokenByRouteSymbol(s))
+        .filter(Boolean)
+
+      let validFromChainId
+      let validFromToken
+      let validToChainId
+
+      if (validFromChainIds?.includes(state.swapChainId)) {
+        validFromChainId = state.swapChainId
+      } else {
+        validFromChainId = null
+      }
+
+      if (
+        validFromTokens?.some(
+          (token) => token?.routeSymbol === state.swapFromToken?.routeSymbol
+        )
+      ) {
+        validFromToken = state.swapFromToken
+      } else {
+        validFromToken = findValidToken(
+          validFromTokens,
+          incomingToToken?.routeSymbol,
+          incomingToToken?.swapableType
+        )
+      }
+
+      const {
+        fromChainId,
+        fromToken,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toTokens,
+      } = getSwapPossibilities({
+        fromChainId: validFromChainId,
+        fromToken: validFromToken,
+        toChainId: validToChainId,
+        toToken: incomingToToken,
+      })
+
+      state.swapChainId = fromChainId
+      state.swapFromToken = fromToken
+      state.swapToToken = toToken
+      state.swapFromChainIds = fromChainIds
+      state.swapFromTokens = fromTokens
+      state.swapToTokens = toTokens
     },
     setSwapQuote: (state, action: PayloadAction<SwapQuote>) => {
       state.swapQuote = action.payload
@@ -66,3 +276,14 @@ export const {
 } = swapSlice.actions
 
 export default swapSlice.reducer
+
+const findValidToken = (
+  tokens: Token[],
+  routeSymbol: string,
+  swapableType: string
+) => {
+  const matchingToken = tokens?.find((t) => t.routeSymbol === routeSymbol)
+  const swapableToken = tokens?.find((t) => t.swapableType === swapableType)
+
+  return matchingToken ? matchingToken : swapableToken ? swapableToken : null
+}
