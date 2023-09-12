@@ -46,6 +46,11 @@ const wrapToPool = (pool: PoolStructOutput): Pool => {
   }
 }
 
+/**
+ * Wrapper class for interacting with a SynapseRouter contract.
+ * Abstracts away the contract interaction: the Router users don't need to know about the contract,
+ * or the data structures used to interact with it.
+ */
 export class SynapseRouter extends Router {
   static routerInterface = new Interface(routerAbi)
 

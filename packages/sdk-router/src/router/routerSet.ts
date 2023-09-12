@@ -20,7 +20,10 @@ export type RouterConstructor = new (
 ) => Router
 
 /**
- * Abstract class for a set of routers existing on a few chains.
+ * Abstract class for a set of routers existing on a few chains. Handles Router interactions
+ * on a set of chains: the RouterSet users don't need to know which Router contract is used.
+ *
+ * The class children should provide the router addresses for each chain, as well as the Router constructor.
  *
  * @property routerName The name of the router set.
  * @property routers Collection of Router instances indexed by chainId.

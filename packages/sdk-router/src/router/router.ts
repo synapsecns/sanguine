@@ -8,6 +8,17 @@ import { BigintIsh } from '../constants'
 import { Query } from './query'
 import { BridgeToken, DestRequest, FeeConfig } from './types'
 
+/**
+ * Abstract class for a router contract deployed on a chain.
+ * Handles contract interaction: the Router users don't need to know about the contract,
+ * or the data structures used to interact with it.
+ *
+ * Instead, they use the Router class and generic types such as Query and BridgeToken.
+ *
+ * @property address The address of the router contract.
+ * @property chainId The chain ID of chain the router is deployed on.
+ * @property provider The provider used to interact with the chain router is deployed on.
+ */
 export abstract class Router {
   abstract readonly address: string
   public readonly chainId: number
