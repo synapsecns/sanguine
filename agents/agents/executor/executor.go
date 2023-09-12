@@ -309,6 +309,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	fmt.Printf("entering msg execution: %v\n", message)
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -402,6 +403,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		fmt.Printf("executing message with destination %d: %v\n", destinationDomain, message)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -793,6 +795,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 
 			page := 1
 			currentTime := uint64(e.NowFunc().Unix())
+			fmt.Printf("got current time: %v, real time: %v\n", currentTime, time.Now().Unix())
 
 			messageMask := db.DBMessage{
 				ChainID: &chainID,
@@ -807,6 +810,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if len(messages) == 0 {
 					break
 				}
+				fmt.Printf("got executable messages: %v\n", messages)
 
 				ctx, span := e.handler.Tracer().Start(parentCtx, "executeExecutable", trace.WithAttributes(
 					attribute.Int(metrics.ChainID, int(chainID)),
@@ -814,6 +818,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					attribute.Int(metrics.Page, page),
 				))
 
+				fmt.Printf("executor processing messages: %v\n", messages)
 				for _, message := range messages {
 					messageExecuted, err := e.checkIfExecuted(ctx, message)
 					if err != nil {

@@ -940,6 +940,25 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	originState, err := types.DecodeState(originStateRaw)
 	g.Nil(err)
 	snapshot := types.NewSnapshot([]types.State{originState})
+	stateHash, err := originState.Hash()
+	g.Nil(err)
+	fmt.Printf("[TEST] submitting suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(stateHash[:]), originState.Nonce())
+
+	go func() {
+		for {
+			originStateRaw, err := g.OriginContract.SuggestLatestState(&bind.CallOpts{Context: g.GetTestContext()})
+			if err != nil {
+				continue
+			}
+			g.Nil(err)
+			originState, err := types.DecodeState(originStateRaw)
+			g.Nil(err)
+			stateHash, err := originState.Hash()
+			g.Nil(err)
+			fmt.Printf("[TEST] suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(stateHash[:]), originState.Nonce())
+			time.Sleep(250 * time.Millisecond)
+		}
+	}()
 
 	// Submit snapshot with Guard.
 	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -1004,6 +1023,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.bumpBackends()
 		return false
 	})
+	fmt.Println("slashed on summit")
 
 	// Get the origin state so we can submit it on the Summit.
 	originStateRaw, err = g.OriginContract.SuggestLatestState(&bind.CallOpts{Context: g.GetTestContext()})
@@ -1078,14 +1098,27 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
+	logAgentRoots := func() {
+		summitAgentRoot, err := g.SummitDomainClient.BondingManager().GetAgentRoot(g.GetTestContext())
+		g.Nil(err)
+		destAgentRoot, err := g.LightManagerOnDestination.AgentRoot(&bind.CallOpts{Context: g.GetTestContext()})
+		g.Nil(err)
+		nextAgentRoot, err := g.DestinationContract.NextAgentRoot(&bind.CallOpts{Context: g.GetTestContext()})
+		g.Nil(err)
+		fmt.Printf("Summit agent root: %v\n, destination agent root: %v\n, next agent root: %v\n", summitAgentRoot, destAgentRoot, nextAgentRoot)
+	}
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
 	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+30)
 	g.bumpBackends()
+	fmt.Println("roots before passing agent root:")
+	logAgentRoots()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
 	g.Nil(err)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
+	fmt.Println("roots after passing agent root:")
+	logAgentRoots()
 
 	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
