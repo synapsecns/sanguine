@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Address } from 'viem'
-import { ANALYTICS_KAPPA, ANALYTICS_PATH } from '@/constants/urls'
+import { EXPLORER_KAPPA, EXPLORER_PATH } from '@/constants/urls'
 
 export const getTransactionExplorerLink = ({
   kappa,
@@ -12,9 +12,9 @@ export const getTransactionExplorerLink = ({
   toChainId?: number
 }): string => {
   if (typeof toChainId === 'number') {
-    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
+    return `${EXPLORER_KAPPA}${kappa}?chainIdFrom=${fromChainId}&chainIdTo=${toChainId}`
   } else {
-    return `${ANALYTICS_KAPPA}${kappa}?chainIdFrom=${fromChainId}`
+    return `${EXPLORER_KAPPA}${kappa}?chainIdFrom=${fromChainId}`
   }
 }
 
@@ -24,8 +24,8 @@ export const UserExplorerLink = ({
   connectedAddress?: Address | string
 }) => {
   const explorerLink: string = connectedAddress
-    ? `${ANALYTICS_PATH}address/${connectedAddress}`
-    : ANALYTICS_PATH
+    ? `${EXPLORER_PATH}address/${connectedAddress}`
+    : EXPLORER_PATH
   return (
     <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
       <Link href={explorerLink} target="_blank">
