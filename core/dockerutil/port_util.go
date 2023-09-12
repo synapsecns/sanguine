@@ -6,8 +6,9 @@ import (
 )
 
 // GetPort returns the port of a container.
-// unlike resource.GetPort this returns the ports in reverse order.
-// this can be useful in ci environments(?)
+// We intentionally get the last port due to quirky behaviuor of docker-for-mac,
+// which does not enforce uniqueness on 0.0.0.0:xxx ports. Not entirely sure why
+// docker-for-mac behaves this way.
 func GetPort(resource *dockertest.Resource, port string) string {
 	if resource.Container == nil || resource.Container.NetworkSettings == nil {
 		return ""
