@@ -117,6 +117,7 @@ func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract,
 		agentProof,
 	)
 	Nil(g.T(), err)
+	g.bumpBackends()
 }
 
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
