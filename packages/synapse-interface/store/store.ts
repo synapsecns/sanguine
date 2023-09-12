@@ -11,6 +11,8 @@ import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
 import portfolioReducer from '@/slices/portfolio/reducer'
 import swapReducer from '@/slices/swap/reducer'
 import swapDisplayReducer from '@/slices/swapDisplaySlice'
+import transactionsReducer from '@/slices/transactions/reducer'
+import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
@@ -24,11 +26,13 @@ export const store = configureStore({
     portfolio: portfolioReducer,
     swap: swapReducer,
     swapDisplay: swapDisplayReducer,
+    transactions: transactionsReducer,
+    [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(api.middleware),
 })
 
 let previousState = store.getState()

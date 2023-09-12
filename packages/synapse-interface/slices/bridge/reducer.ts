@@ -14,6 +14,13 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import {
+  PendingBridgeTransaction,
+  addPendingBridgeTransaction,
+  removePendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+  updatePendingBridgeTransactions,
+} from './actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -31,6 +38,7 @@ export interface BridgeState {
   deadlineMinutes: number | null
   destinationAddress: Address | null
   bridgeTxHashes: string[] | null
+  pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
 const {
@@ -65,6 +73,7 @@ export const initialState: BridgeState = {
   deadlineMinutes: null,
   destinationAddress: null,
   bridgeTxHashes: [],
+  pendingBridgeTransactions: [],
 }
 
 export const bridgeSlice = createSlice({
@@ -445,6 +454,60 @@ export const bridgeSlice = createSlice({
     addBridgeTxHash: (state, action: PayloadAction<string>) => {
       state.bridgeTxHashes = [...state.bridgeTxHashes, action.payload]
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(
+        addPendingBridgeTransaction,
+        (state, action: PayloadAction<PendingBridgeTransaction>) => {
+          state.pendingBridgeTransactions = [
+            action.payload,
+            ...state.pendingBridgeTransactions,
+          ]
+        }
+      )
+      .addCase(
+        updatePendingBridgeTransaction,
+        (
+          state,
+          action: PayloadAction<{
+            id: number
+            timestamp: number
+            transactionHash: string
+            isSubmitted: boolean
+          }>
+        ) => {
+          const { id, timestamp, transactionHash, isSubmitted } = action.payload
+          const transactionIndex = state.pendingBridgeTransactions.findIndex(
+            (transaction) => transaction.id === id
+          )
+
+          if (transactionIndex !== -1) {
+            state.pendingBridgeTransactions =
+              state.pendingBridgeTransactions.map((transaction, index) =>
+                index === transactionIndex
+                  ? { ...transaction, transactionHash, isSubmitted, timestamp }
+                  : transaction
+              )
+          }
+        }
+      )
+      .addCase(
+        removePendingBridgeTransaction,
+        (state, action: PayloadAction<number>) => {
+          const idTimestampToRemove = action.payload
+          state.pendingBridgeTransactions =
+            state.pendingBridgeTransactions.filter(
+              (transaction) => transaction.id !== idTimestampToRemove
+            )
+        }
+      )
+      .addCase(
+        updatePendingBridgeTransactions,
+        (state, action: PayloadAction<PendingBridgeTransaction[]>) => {
+          state.pendingBridgeTransactions = action.payload
+        }
+      )
   },
 })
 
