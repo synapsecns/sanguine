@@ -160,19 +160,31 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
+      - name: Precompile Tests
+        working-directory: ${{ matrix.package }}
+        run: go test -run=nope ./...
+        env:
+          # no other containers are running at this point so we can use all available memory for compilation
+          GOMEMLIMIT: 5GiB
+          GOGC: -1
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
           command: |
+            set -e
             cd ${{ matrix.package }}
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
+              #$PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
               go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
               if [ -f profile.cov ]; then
                 tail -n +2 profile.cov >> coverage.txt
                 rm profile.cov
               fi
             done
+            cp coverage.txt profile.cov
+            docker ps
           max_attempts: 2
           timeout_minutes: 60
         env:
@@ -188,6 +200,30 @@ jobs:
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
           GOPROXY: https://proxy.golang.org
+
+      # TODO: these 3 steps should be moved into a reusable action.
+      # also,should be noted these aren't comprehensive, as many of the containers are automatically removed
+      # and we'd need something like this for all logs: https://github.com/synapsecns/sanguine/pull/1280#discussion_r1320889916
+      # but this should be better than nothing as long as you don't assume the logs are complete
+      #
+      # there's a good case to have this in addition to the suggestions referenced in the comment above because
+      # logs are not collected there in the case of sigterms (because logs stop piping when app breaks), which are caught here
+      #
+      # in any case this should be considered an early implementation
+      - name: Collect docker logs
+        if: always()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          dest: '/tmp/logs'
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf ./logs.tgz ./tmp/logs
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name:  ${{matrix.package}}-logs.tgz
+          path: ./logs.tgz
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
