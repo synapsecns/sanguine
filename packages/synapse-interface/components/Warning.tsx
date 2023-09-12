@@ -14,7 +14,7 @@ export const Warning = () => {
       fromChainId &&
       fromToken &&
       fromChainId !== AVALANCHE.id &&
-      fromToken.swapableType === 'USD' &&
+      fromToken?.swapableType === 'USD' &&
       bridgeQuote.routerAddress.toLowerCase() ===
         CCTP_ROUTER_ADDRESS.toLowerCase()
     )
