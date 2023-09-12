@@ -151,11 +151,11 @@ const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
     <span className="flex items-center space-x-1">
       <Image
         alt="chain image"
-        src={chain.chainImg}
+        src={chain?.chainImg}
         className="w-4 h-4 rounded-full"
       />
       <span className="text-white">
-        {chain.name.length > 10 ? chain.chainSymbol : chain.name}
+        {chain?.name?.length > 10 ? chain?.chainSymbol : chain?.name}
       </span>
     </span>
   ) : null

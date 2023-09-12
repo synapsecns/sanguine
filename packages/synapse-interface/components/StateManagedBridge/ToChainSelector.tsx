@@ -24,14 +24,14 @@ export const ToChainSelector = () => {
       <div className="flex items-center space-x-3">
         <div className="">
           <img
-            src={toChain.chainImg.src}
-            alt={toChain.name}
+            src={toChain?.chainImg?.src}
+            alt={toChain?.name}
             className="w-6 h-6 rounded-sm"
           />
         </div>
         <div className="text-left">
           <div className="text-xs text-secondaryTextColor">To</div>
-          <div className="text-md text-primaryTextColor">{toChain.name}</div>
+          <div className="text-md text-primaryTextColor">{toChain?.name}</div>
         </div>
         <DropDownArrowSvg />
       </div>
