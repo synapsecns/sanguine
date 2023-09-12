@@ -1,22 +1,32 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, PopulatedTransaction, providers } from 'ethers'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 
 import { SynapseSDK } from './sdk'
 import {
+  ARB_NETH,
+  ARB_NUSD,
+  ARB_POOL_ETH_WRAPPER,
+  ARB_POOL_NETH,
+  ARB_POOL_NUSD,
   ARB_USDC,
   ARB_USDC_E,
+  ARB_USDT,
+  ARB_WETH,
   AVAX_GOHM,
   AVAX_USDC_E,
   BSC_GOHM,
   BSC_USDC,
   CCTP_ROUTER_ADDRESS_MAP,
+  ETH_DAI,
+  ETH_POOL_NUSD,
   ETH_USDC,
+  ETH_USDT,
   PUBLIC_PROVIDER_URLS,
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
 } from './constants'
-import { BridgeQuote, FeeConfig, RouterQuery } from './router'
+import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './router'
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -71,6 +81,38 @@ const createBridgeQuoteTests = (
         amount,
         result.originQuery,
         result.destQuery
+      )
+      .then(expectCorrectPopulatedTransaction)
+  })
+}
+
+const createSwapQuoteTests = (
+  synapse: SynapseSDK,
+  chainId: number,
+  token: string,
+  amount: BigNumber,
+  resultPromise: Promise<SwapQuote>
+) => {
+  let result: SwapQuote
+  beforeAll(async () => {
+    result = await resultPromise
+  })
+
+  it('Fetches a swap quote', async () => {
+    expect(result).toBeDefined()
+    expect(result.routerAddress?.length).toBeGreaterThan(0)
+    expect(result.maxAmountOut.gt(0)).toBe(true)
+    expect(result.query).toBeDefined()
+  })
+
+  it('Could be used for swapping', async () => {
+    synapse
+      .swap(
+        chainId,
+        '0x0000000000000000000000000000000000001337',
+        token,
+        amount,
+        result.query
       )
       .then(expectCorrectPopulatedTransaction)
   })
@@ -427,6 +469,239 @@ describe('SynapseSDK', () => {
           emptyQuery
         )
       ).rejects.toThrow('Invalid router address')
+    })
+  })
+
+  describe('Swap', () => {
+    const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
+    const amount = BigNumber.from(10).pow(9)
+    const resultPromise: Promise<SwapQuote> = synapse.swapQuote(
+      SupportedChainId.ARBITRUM,
+      ARB_USDC,
+      ARB_USDC_E,
+      amount
+    )
+
+    createSwapQuoteTests(
+      synapse,
+      SupportedChainId.ARBITRUM,
+      ARB_USDC,
+      amount,
+      resultPromise
+    )
+  })
+
+  describe('Get bridge gas', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
+    )
+
+    it('Returns zero for ETH', async () => {
+      const gas = await synapse.getBridgeGas(SupportedChainId.ETH)
+      expect(gas).toEqual(Zero)
+    })
+
+    it('Returns non-zero for ARBITRUM', async () => {
+      const gas = await synapse.getBridgeGas(SupportedChainId.ARBITRUM)
+      expect(gas.gt(0)).toBe(true)
+    })
+  })
+
+  // TODO: improve tests
+  describe('Pool inspection', () => {
+    const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
+
+    it('Get all pools', async () => {
+      const pools = await synapse.getAllPools(SupportedChainId.ARBITRUM)
+      expect(pools).toBeDefined()
+      expect(pools.length).toBeGreaterThan(0)
+      expect(pools[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
+    })
+
+    it('Get pool info', async () => {
+      const poolInfo = await synapse.getPoolInfo(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NUSD
+      )
+      expect(poolInfo).toBeDefined()
+      expect(poolInfo.lpToken).toEqual(
+        '0xcFd72be67Ee69A0dd7cF0f846Fc0D98C33d60F16'
+      )
+      expect(poolInfo.tokens).toEqual(BigNumber.from(3))
+    })
+
+    it('Get pool tokens', async () => {
+      const poolTokens = await synapse.getPoolTokens(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NUSD
+      )
+      expect(poolTokens).toBeDefined()
+      expect(poolTokens.length).toEqual(3)
+      expect(poolTokens[0].token).toEqual(ARB_NUSD)
+      expect(poolTokens[1].token).toEqual(ARB_USDC_E)
+      expect(poolTokens[2].token).toEqual(ARB_USDT)
+    })
+  })
+
+  describe('calculate add liquidity', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+
+    it('Arbitrum nETH pool', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ARB_NETH] = BigNumber.from(10).pow(18)
+      amounts[ARB_WETH] = BigNumber.from(10).pow(18).mul(2)
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amounts
+      )
+      expect(result).toBeDefined()
+      expect(result.amount.gt(0)).toBe(true)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+      )
+    })
+
+    it('Handles lowercase token addresses', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ARB_NETH.toLowerCase()] = BigNumber.from(10).pow(18)
+      amounts[ARB_WETH.toLowerCase()] = BigNumber.from(10).pow(18).mul(2)
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amounts
+      )
+      expect(result).toBeDefined()
+      expect(result.amount.gt(0)).toBe(true)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+      )
+    })
+
+    it('Handles uppercase token addresses', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ARB_NETH.toUpperCase()] = BigNumber.from(10).pow(18)
+      amounts[ARB_WETH.toLowerCase()] = BigNumber.from(10).pow(18).mul(2)
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amounts
+      )
+      expect(result).toBeDefined()
+      expect(result.amount.gt(0)).toBe(true)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+      )
+    })
+
+    it('Handles single token: first one', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ARB_NETH] = BigNumber.from(10).pow(18)
+      const amountsFull: Record<string, BigNumber> = {}
+      amountsFull[ARB_NETH] = BigNumber.from(10).pow(18)
+      amountsFull[ARB_WETH] = Zero
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amounts
+      )
+      const expectedResult = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amountsFull
+      )
+      expect(result).toBeDefined()
+      expect(expectedResult).toBeDefined()
+      expect(result).toEqual(expectedResult)
+    })
+
+    it('Handles single token: second one', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ARB_WETH] = BigNumber.from(10).pow(18)
+      const amountsFull: Record<string, BigNumber> = {}
+      amountsFull[ARB_NETH] = Zero
+      amountsFull[ARB_WETH] = BigNumber.from(10).pow(18)
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amounts
+      )
+      const expectedResult = await synapse.calculateAddLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_NETH,
+        amountsFull
+      )
+      expect(result).toBeDefined()
+      expect(expectedResult).toBeDefined()
+      expect(result).toEqual(expectedResult)
+    })
+
+    it('Ethereum nUSD pool', async () => {
+      const amounts: Record<string, BigNumber> = {}
+      amounts[ETH_USDC] = BigNumber.from(10).pow(6)
+      amounts[ETH_DAI] = BigNumber.from(10).pow(18).mul(2)
+      amounts[ETH_USDT] = BigNumber.from(10).pow(6).mul(3)
+      const result = await synapse.calculateAddLiquidity(
+        SupportedChainId.ETH,
+        ETH_POOL_NUSD,
+        amounts
+      )
+      expect(result).toBeDefined()
+      expect(result.amount.gt(0)).toBe(true)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+      )
+    })
+  })
+
+  describe('calculate remove liquidity', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+
+    it('Arbitrum EthWrapper', async () => {
+      const result = await synapse.calculateRemoveLiquidity(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_ETH_WRAPPER,
+        BigNumber.from(10).pow(18)
+      )
+      expect(result).toBeDefined()
+      expect(result.amounts.length).toEqual(2)
+      expect(result.amounts[0].value.gt(0)).toBe(true)
+      expect(result.amounts[0].index).toEqual(0)
+      expect(result.amounts[1].value.gt(0)).toBe(true)
+      expect(result.amounts[1].index).toEqual(1)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+      )
+    })
+  })
+
+  describe('calculate remove liquidity one', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+
+    it('Arbitrum EthWrapper', async () => {
+      const poolIndex = 0
+      const result = await synapse.calculateRemoveLiquidityOne(
+        SupportedChainId.ARBITRUM,
+        ARB_POOL_ETH_WRAPPER,
+        BigNumber.from(10).pow(18),
+        poolIndex
+      )
+      expect(result).toBeDefined()
+      expect(result.amount.value.gt(0)).toBe(true)
+      expect(result.amount.index).toEqual(poolIndex)
+      expect(result.routerAddress).toEqual(
+        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+      )
     })
   })
 })
