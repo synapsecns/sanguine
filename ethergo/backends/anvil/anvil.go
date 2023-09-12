@@ -195,7 +195,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 		Repository: "otterscan/otterscan",
 		Tag:        "latest",
 		Env: []string{
-			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", dockerutil.GetPort(anvilResource, "8545/tcp")),
 		},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
@@ -242,7 +242,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 	case logInfo := <-logInfoChan:
 		// debug level stuff
 		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
-		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+		return fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp"))
 	}
 	return ""
 }
