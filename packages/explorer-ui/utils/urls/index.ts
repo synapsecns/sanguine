@@ -5,6 +5,7 @@ export const ANALYTICS_PATH = 'https://analytics.synapseprotocol.com/'
 export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = 'https://synapseprotocol.com/swap'
 export const STAKE_PATH = 'https://synapseprotocol.com/stake'
+export const INTERCHAIN_PATH = 'https://interchain.synapseprotocol.com/'
 export const POOLS_PATH = 'https://synapseprotocol.com/pools'
 export const BRIDGE_PATH =
   'https://synapseprotocol.com/?inputCurrency=USDC&outputCurrency=USDC&outputChain=10'
@@ -21,8 +22,9 @@ export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
-export const CAREERS_URL =
-  'https://synapseprotocol.notion.site/synapseprotocol/Synapse-Job-Board-3851178379bf45b2b47c6ec8bf9d6753'
+export const BUILD_ON_URL =
+  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
+export const MIRROR_URL = 'https://synapse.mirror.xyz/'
 
 export const TERMS_OF_SERVICE_URL =
   'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
