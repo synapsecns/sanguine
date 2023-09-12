@@ -138,9 +138,9 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 		return false, fmt.Errorf("could not get dispute status: %w", err)
 	}
 
-	isNotSummit := snapshot.AgentDomain != 0
+	isNotary := snapshot.AgentDomain != 0
 	isNotInDispute := disputeStatus.Flag() == types.DisputeFlagNone
-	shouldSubmit := isNotSummit && isNotInDispute
+	shouldSubmit := isNotary && isNotInDispute
 	return shouldSubmit, nil
 }
 
