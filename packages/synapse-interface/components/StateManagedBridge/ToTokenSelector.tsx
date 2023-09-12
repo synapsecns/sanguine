@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from './components/DropDownArrowSvg'
+
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
