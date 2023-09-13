@@ -259,6 +259,7 @@ const sortMapByKeys = (map) => {
 const printMaps = async () => {
   const bridgeMap = {}
   const bridgeSymbolsMap = {}
+  console.log('Starting on chains: ', Object.keys(providers))
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
       // Get map from token to set of bridge token symbols
@@ -282,6 +283,7 @@ const printMaps = async () => {
       )
       bridgeMap[chainId] = sortMapByKeys(tokens)
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
+      console.log('Finished chain: ', chainId)
     })
   )
   prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
@@ -367,6 +369,7 @@ const getTokenDecimals = async (chainId, token) => {
 
 // Writes map export to a TypeScript file, then runs prettier on the file
 const prettyPrintTS = (map, mapName, fn) => {
+  console.log(`Writing ${mapName} to ${fn}`)
   const json = JSON.stringify(map)
   fs.writeFileSync(fn, `export const ${mapName} = ${json}`)
   // Run prettier on the file using terminal command:
