@@ -185,6 +185,7 @@ jobs:
             done
             cp coverage.txt profile.cov
             docker ps
+          on_retry_command: docker rm -f $(docker ps -a -q)
           max_attempts: 5
           timeout_minutes: 60
         env:
@@ -222,7 +223,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@master
         with:
-          name:  ${{matrix.package}}-logs.tgz
+          name: ${{matrix.package}}-logs.tgz
           path: ./logs.tgz
 
       - name: Send Coverage (Codecov)
