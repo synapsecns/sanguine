@@ -1022,6 +1022,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		}
 
 		g.bumpBackends()
+		fmt.Println("AGENT STATUS PRE SLASHING", status.Flag().String())
 		return false
 	})
 	fmt.Println("slashed on summit")

@@ -421,6 +421,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		} else {
 			fmt.Println("EXECUTE TX HASH IS NIL")
 		}
+		fmt.Println("MESSAGE TYPE IS:", message.Header().Flag())
 
 		return
 	})
