@@ -941,30 +941,67 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	snapshot := types.NewSnapshot([]types.State{originState})
 
+	submitAndVerifySnapshot := func(originState types.State, agentSigner signer.Signer) error {
+		agentSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), agentSigner)
+		if err != nil {
+			return err
+		}
+		txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+		tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+			txContextSummit.TransactOpts,
+			encodedSnapshot,
+			agentSnapshotSignature,
+		)
+		if err != nil {
+			return err
+		}
+		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+		g.bumpBackends()
+
+		latestStateRaw, err := g.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: g.GetTestContext()}, uint32(g.TestBackendOrigin.GetChainID()), agentSigner.Address())
+		if err != nil {
+			return err
+		}
+		latestState, err := types.DecodeState(latestStateRaw)
+		if err != nil {
+			return err
+		}
+		latestStateHash, err := latestState.Hash()
+		if err != nil {
+			return err
+		}
+		originStateHash, err := originState.Hash()
+		if err != nil {
+			return err
+		}
+		latestStateHashHex := common.BytesToHash(latestStateHash[:])
+		originStateHashHex := common.BytesToHash(originStateHash[:])
+		if latestStateHash != originStateHash {
+			return fmt.Errorf("latest state hash mismatch; expected %v, got %v", originStateHashHex, latestStateHashHex)
+		}
+		return nil
+	}
+
 	// Submit snapshot with Guard.
-	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
-	g.Nil(err)
-	txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
-		txContextSummit.TransactOpts,
-		encodedSnapshot,
-		guardSnapshotSignature,
-	)
-	g.Nil(err)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-	g.bumpBackends()
+	g.Eventually(func() bool {
+		err := submitAndVerifySnapshot(originState, g.GuardBondedSigner)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		return true
+	})
+	time.Sleep(5 * time.Second)
 
 	// Submit snapshot with Notary.
-	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
-	g.Nil(err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
-		txContextSummit.TransactOpts,
-		encodedSnapshot,
-		notarySnapshotSignature,
-	)
-	g.Nil(err)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-	g.bumpBackends()
+	g.Eventually(func() bool {
+		err := submitAndVerifySnapshot(originState, g.NotaryOnOriginBondedSigner)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		return true
+	})
 
 	// Wait for the executor to have attestations before increasing time.
 	summitChainID := uint32(g.TestBackendSummit.GetChainID())
@@ -980,17 +1017,18 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Increase EVM time to allow agent status to be updated to Slashed on summit.
 	optimisticPeriodSeconds := int64(86400)
+	offset := optimisticPeriodSeconds / 2
 	increaseEvmTime := func(backend backends.SimulatedTestBackend, seconds int64) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 	}
-	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+30)
+	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
-	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+30) * time.Second)
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+offset) * time.Second)
 	currentTime = &updatedTime
 
 	// Verify that the accused agent is eventually Slashed on Summit.
@@ -1079,7 +1117,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
-	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+30)
+	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	tx, err = g.DestinationDomainClient.Destination().PassAgentRoot(txContextDestination.TransactOpts)
