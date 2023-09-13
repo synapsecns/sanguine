@@ -1,14 +1,17 @@
+import _ from 'lodash'
+import { memo, useEffect, useRef, useState } from 'react'
+
 import {
   getBorderStyleForCoin,
   getBorderStyleForCoinHover,
   getMenuItemBgForCoin,
   getMenuItemStyleForCoin,
 } from '@styles/tokens'
-import { memo, useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { findChainIdsWithPausedToken } from '@/constants/tokens'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -155,14 +158,15 @@ const TokenBalance = ({
 
 const AvailableChains = ({ token }: { token: Token }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const chainIds = Object.keys(token.addresses)
+  const pausedChainIds = findChainIdsWithPausedToken(token.routeSymbol)
+  const chainIds = _.difference(Object.keys(token.addresses), pausedChainIds)
   const hasOneChain = chainIds.length > 0
   const hasMultipleChains = chainIds.length > 1
   const numOverTwoChains = chainIds.length - 2 > 0 ? chainIds.length - 2 : 0
 
   return (
     <div
-      data-test-id="portfolio-token-visualizer"
+      data-test-id="available-chains"
       className="flex flex-row items-center space-x-1 hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

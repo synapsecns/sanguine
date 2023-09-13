@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation} from "../libs/memory/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/memory/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/memory/ByteString.sol";
-import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {
     AlreadyExecuted,
     AlreadyFailed,
@@ -261,7 +261,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         ReceiptData memory rcptData
     ) internal returns (bool) {
         // Do nothing if contract is not deployed on Synapse Chain
-        if (localDomain != SYNAPSE_DOMAIN) return false;
+        if (localDomain != synapseDomain) return false;
         // Do nothing for messages with no tips (TODO: introduce incentives for manager messages?)
         if (paddedTips == 0) return false;
         return InterfaceInbox(inbox).passReceipt({
