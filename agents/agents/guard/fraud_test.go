@@ -1019,7 +1019,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		if status.Flag() == types.AgentFlagSlashed {
 			return true
 		}
-
+		time.Sleep(5 * time.Second)
 		g.bumpBackends()
 		return false
 	})
