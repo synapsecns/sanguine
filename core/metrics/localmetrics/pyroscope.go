@@ -2,11 +2,15 @@ package localmetrics
 
 import (
 	"context"
+
 	"github.com/Flaque/filet"
 
 	// embeds the pyroscope config file.
 	_ "embed"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/ory/dockertest/v3/docker/types/mount"
@@ -16,8 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/synapsecns/sanguine/core/retry"
-	"os"
-	"time"
 )
 
 //go:embed pyroscope.yaml
@@ -82,7 +84,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	})
 	assert.Nil(j.tb, err)
 
-	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("4040/tcp")))
+	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "4040/tcp")))
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))

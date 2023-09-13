@@ -3,7 +3,13 @@ package client_test
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"net/url"
+	"sync"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -13,10 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"net/url"
-	"sync"
-	"testing"
 )
 
 type TestClientSuite struct {
@@ -66,10 +68,18 @@ func (s *TestClientSuite) SetupTest() {
 }
 
 func (s *TestClientSuite) SetupJaeger() {
-	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	s.Require().Nil(err)
 }
 

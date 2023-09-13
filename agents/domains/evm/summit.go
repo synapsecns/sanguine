@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -94,4 +95,42 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 	}
 
 	return sub, nil
+}
+
+//nolint:wrapcheck
+func (a summitContract) IsValidAttestation(ctx context.Context, attestation []byte) (bool, error) {
+	return a.contract.IsValidAttestation(&bind.CallOpts{Context: ctx}, attestation)
+}
+
+func (a summitContract) GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, error) {
+	rawSnapshot, err := a.contract.GetNotarySnapshot(&bind.CallOpts{Context: ctx}, attPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve notary snapshot: %w", err)
+	}
+
+	snapshot, err := types.DecodeSnapshot(rawSnapshot.SnapPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode snapshot: %w", err)
+	}
+
+	return snapshot, nil
+}
+
+func (a summitContract) GetAttestation(ctx context.Context, attNonce uint32) (types.NotaryAttestation, error) {
+	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, attNonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
+	}
+
+	if len(rawAttestation.AttPayload) == 0 {
+		//nolint:nil,nil
+		return nil, nil
+	}
+
+	attestation, err := types.NewNotaryAttestation(rawAttestation.AttPayload, rawAttestation.AgentRoot, rawAttestation.SnapGas)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
+	}
+
+	return attestation, nil
 }

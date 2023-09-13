@@ -195,17 +195,17 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 		return false, false
 	}
 
-	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner)
+	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 	if err != nil {
 		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 		return false, false
 	}
-	if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagUnknown {
+	if agentStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
 		return true, true
-	} else if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagActive {
+	} else if agentStatus.Flag() == types.AgentFlagActive {
 		// Here we already added the Notary and can proceed with sending to destination
 		return false, true
 	}
@@ -393,7 +393,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, n.unbondedSigner, encodedSnapshot, snapshotSignature)
+			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
@@ -419,7 +419,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
 	defer span.End()
 
-	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner)
+	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
 	if err != nil {
 		logger.Errorf("Error getting agent proof: %v", err)
 		span.AddEvent("Error getting agent proof", trace.WithAttributes(
@@ -427,19 +427,26 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		))
 		return false
 	}
-	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner)
+	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 	if err != nil {
 		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 		return false
 	}
-	err = n.destinationDomain.LightManager().UpdateAgentStatus(
-		ctx,
-		n.unbondedSigner,
-		n.bondedSigner,
-		agentStatus,
-		agentProof)
+	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
+			transactor,
+			n.bondedSigner.Address(),
+			agentStatus,
+			agentProof,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("could not update agent status: %w", err)
+		}
+
+		return
+	})
 	if err != nil {
 		span.AddEvent("Error updating agent status", trace.WithAttributes(
 			attribute.String("err", err.Error()),
@@ -462,7 +469,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		return
 	}
 
-	attestationSignature, _, _, err := n.myLatestNotaryAttestation.Attestation().SignAttestation(ctx, n.bondedSigner)
+	attestationSignature, _, _, err := n.myLatestNotaryAttestation.Attestation().SignAttestation(ctx, n.bondedSigner, true)
 	if err != nil {
 		logger.Errorf("Error signing attestation: %v", err)
 		span.AddEvent("Error signing attestation", trace.WithAttributes(
