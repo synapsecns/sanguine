@@ -72,9 +72,8 @@ export default function Updater(): null {
   })
 
   // Start fetch when connected address exists
-  // Unsubscribe when address is unconnected
   useEffect(() => {
-    if (address) {
+    if (address && isWindowFocused) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -83,19 +82,10 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else {
-      fetchUserHistoricalActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
-
-      fetchUserPendingActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
     }
-  }, [address])
+  }, [address, isWindowFocused])
 
+  // Unsubscribe when address is unconnected/disconnected
   useEffect(() => {
     const isLoading: boolean =
       isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
