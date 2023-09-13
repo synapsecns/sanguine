@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
+import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { useAccount } from 'wagmi'
 import {
   useLazyGetUserHistoricalActivityQuery,
@@ -67,6 +68,8 @@ export default function Updater(): null {
     },
   })
 
+  // Start fetch when connected address exists
+  // Unsubscribe when address is unconnected
   useEffect(() => {
     if (address) {
       fetchUserHistoricalActivity({
@@ -77,6 +80,16 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
+    } else {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
     }
   }, [address])
 
