@@ -93,9 +93,6 @@ export default function Updater(): null {
       checkTransactionsExist(userPendingTransactions) ||
       checkTransactionsExist(userHistoricalTransactions)
 
-    console.log('isWindowFocused: ', isWindowFocused)
-    console.log('userTransactionsExist: ', userTransactionsExist)
-
     if (!isLoading && userTransactionsExist && !isWindowFocused) {
       fetchUserHistoricalActivity({
         address: null,
