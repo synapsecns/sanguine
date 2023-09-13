@@ -44,14 +44,12 @@ export function ConnectWalletButton() {
   }, [address])
 
   const buttonClassName = `
-    h-10 border-[#AC8FFF] flex items-center border
-    text-base text-white px-6 py-5 hover:opacity-75 rounded-md
+    h-10 border-[#CA5CFF] border-[1.5px] flex items-center border
+    text-base text-white px-6 py-5 hover:opacity-75 rounded-lg
     text-center transform-gpu transition-all duration-75
   `
 
   const buttonStyle = {
-    background:
-      'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
     borderRadius: '30px',
   }
 
