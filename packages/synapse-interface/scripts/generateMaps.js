@@ -4,11 +4,11 @@ const { execSync } = require('child_process')
 const { ethers } = require('ethers')
 
 // Provider URLs
-const providers = require('./providers.json')
+const providers = require('./data/providers.json')
 // List of ignored bridge symbols
-const ignoredBridgeSymbols = require('./ignoredBridgeSymbols.json')
+const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
-const symbolOverrides = require('./symbolOverrides.json')
+const symbolOverrides = require('./data/symbolOverrides.json')
 // Contract ABIs
 const SynapseRouterABI = require('./abi/SynapseRouter.json')
 const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
