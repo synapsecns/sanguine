@@ -154,8 +154,6 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
-	fmt.Printf("processSnapshot at block %d: %v\n", logBlockNumber, snapshot)
-	fmt.Printf("snapshot states: %v\n", snapshot.States())
 	for _, state := range snapshot.States() {
 		statePayload, err := state.Encode()
 		if err != nil {
@@ -169,24 +167,9 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
-
-		originState, err := e.chainExecutors[state.Origin()].boundOrigin.SuggestLatestState(ctx)
-		if err != nil {
-			return err
-		}
-		stateHash, err := originState.Hash()
-		if err != nil {
-			return err
-		}
-		fmt.Printf("suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(stateHash[:]), originState.Nonce())
-		stateRoot := state.Root()
-		fmt.Printf("provided snapshot. Origin: %d. SnapshotRoot: %s, Nonce: %d\n", state.Origin(), common.BytesToHash(stateRoot[:]).String(), state.Nonce())
-
 		if !valid {
 			stateRoot := state.Root()
-			fmt.Printf("snapshot has invalid state. Origin: %d. SnapshotRoot: %s, Nonce: %d\n", state.Origin(), common.BytesToHash(stateRoot[:]).String(), state.Nonce())
 			logger.Infof("snapshot has invalid state. Origin: %d. SnapshotRoot: %s", state.Origin(), common.BytesToHash(stateRoot[:]).String())
-
 			return nil
 		}
 	}
@@ -195,7 +178,6 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 	}
 
-	fmt.Println("storing states")
 	err = e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, logBlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store states: %w", err)
