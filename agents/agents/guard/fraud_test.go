@@ -54,6 +54,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *g
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+	fmt.Println("OMNIIIII", omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1))
 	originClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 	destinationClient, err := backend.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
@@ -956,7 +957,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 			stateHash, err := originState.Hash()
 			g.Nil(err)
 			fmt.Printf("[TEST] suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(stateHash[:]), originState.Nonce())
-			time.Sleep(250 * time.Millisecond)
+			time.Sleep(5 * time.Second)
 		}
 	}()
 

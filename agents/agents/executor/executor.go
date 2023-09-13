@@ -416,6 +416,12 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
 
+		if tx != nil {
+			fmt.Println("EXECUTE TX HASH:", tx.Hash())
+		} else {
+			fmt.Println("EXECUTE TX HASH IS NIL")
+		}
+
 		return
 	})
 	if err != nil {
