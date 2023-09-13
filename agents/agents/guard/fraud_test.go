@@ -1022,7 +1022,11 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		}
 
 		g.bumpBackends()
-		fmt.Println("AGENT STATUS PRE SLASHING", status.Flag().String())
+		time.Sleep(5 * time.Second)
+		fmt.Println("NOTARY STATUS PRE SLASHING", status.Flag().String())
+		status, err = g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+		Nil(g.T(), err)
+		fmt.Println("GUARD STATUS PRE SLASHING", status.Flag().String())
 		return false
 	})
 	fmt.Println("slashed on summit")
