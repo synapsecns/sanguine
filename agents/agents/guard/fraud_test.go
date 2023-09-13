@@ -941,9 +941,9 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	originState, err := types.DecodeState(originStateRaw)
 	g.Nil(err)
 	snapshot := types.NewSnapshot([]types.State{originState})
-	stateHash, err := originState.Hash()
+	originStateHash, err := originState.Hash()
 	g.Nil(err)
-	fmt.Printf("[TEST] submitting suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(stateHash[:]), originState.Nonce())
+	fmt.Printf("[TEST] submitting suggested latest origin state with root: %v, hash: %v, nonce: %v\n", originState.Root(), common.BytesToHash(originStateHash[:]), originState.Nonce())
 
 	go func() {
 		for {
@@ -961,40 +961,67 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		}
 	}()
 
+	submitAndVerifySnapshot := func(originState types.State, agentSigner signer.Signer) error {
+		fmt.Println("submitting snapshot")
+		agentSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), agentSigner)
+		if err != nil {
+			return err
+		}
+		txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+		tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
+			txContextSummit.TransactOpts,
+			encodedSnapshot,
+			agentSnapshotSignature,
+		)
+		if err != nil {
+			return err
+		}
+		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+		g.bumpBackends()
+
+		fmt.Println("verifying state")
+		latestStateRaw, err := g.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: g.GetTestContext()}, uint32(g.TestBackendOrigin.GetChainID()), agentSigner.Address())
+		if err != nil {
+			return err
+		}
+		latestState, err := types.DecodeState(latestStateRaw)
+		if err != nil {
+			return err
+		}
+		latestStateHash, err := latestState.Hash()
+		if err != nil {
+			return err
+		}
+		latestStateHashHex := common.BytesToHash(latestStateHash[:])
+		originStateHashHex := common.BytesToHash(originStateHash[:])
+		if latestStateHash != originStateHash {
+			return fmt.Errorf("latest state hash mismatch; expected %v, got %v", originStateHashHex, latestStateHashHex)
+		}
+		return nil
+	}
+
 	// Submit snapshot with Guard.
-	guardSnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
-	g.Nil(err)
-	txContextSummit = g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
-		txContextSummit.TransactOpts,
-		encodedSnapshot,
-		guardSnapshotSignature,
-	)
-	g.Nil(err)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-	g.bumpBackends()
-
-	latestStateRaw, err := g.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: g.GetTestContext()}, uint32(g.TestBackendOrigin.GetChainID()), g.GuardBondedSigner.Address())
-	g.Nil(err)
-	latestState, err := types.DecodeState(latestStateRaw)
-	g.Nil(err)
-	latestStateHash, err := latestState.Hash()
-	g.Nil(err)
-	g.Equal(latestStateHash, stateHash)
-
+	g.Eventually(func() bool {
+		err := submitAndVerifySnapshot(originState, g.GuardBondedSigner)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		return true
+	})
+	fmt.Println("submitted snapshot with guard")
 	time.Sleep(5 * time.Second)
 
 	// Submit snapshot with Notary.
-	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
-	g.Nil(err)
-	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(
-		txContextSummit.TransactOpts,
-		encodedSnapshot,
-		notarySnapshotSignature,
-	)
-	g.Nil(err)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
-	g.bumpBackends()
+	g.Eventually(func() bool {
+		err := submitAndVerifySnapshot(originState, g.NotaryOnOriginBondedSigner)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		return true
+	})
+	fmt.Println("submitted snapshot with notary")
 
 	// Wait for the executor to have attestations before increasing time.
 	summitChainID := uint32(g.TestBackendSummit.GetChainID())
