@@ -974,6 +974,14 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
+	latestStateRaw, err := g.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: g.GetTestContext()}, uint32(g.TestBackendOrigin.GetChainID()), g.GuardBondedSigner.Address())
+	g.Nil(err)
+	latestState, err := types.DecodeState(latestStateRaw)
+	g.Nil(err)
+	latestStateHash, err := latestState.Hash()
+	g.Nil(err)
+	g.Equal(latestStateHash, stateHash)
+
 	time.Sleep(5 * time.Second)
 
 	// Submit snapshot with Notary.
@@ -1002,17 +1010,18 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 
 	// Increase EVM time to allow agent status to be updated to Slashed on summit.
 	optimisticPeriodSeconds := int64(86400)
+	offset := optimisticPeriodSeconds / 2
 	increaseEvmTime := func(backend backends.SimulatedTestBackend, seconds int64) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 	}
-	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+30)
+	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
 
 	// Increase executor time so that the manager message may be executed.
-	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+30) * time.Second)
+	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+offset) * time.Second)
 	currentTime = &updatedTime
 
 	// Verify that the accused agent is eventually Slashed on Summit.
@@ -1116,7 +1125,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		fmt.Printf("Summit agent root: %v\n, destination agent root: %v\n, next agent root: %v\n", summitAgentRoot, destAgentRoot, nextAgentRoot)
 	}
 	// Advance time on destination and call passAgentRoot() so that the latest agent root is accepted.
-	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+30)
+	increaseEvmTime(g.TestBackendDestination, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
 	fmt.Println("roots before passing agent root:")
 	logAgentRoots()
