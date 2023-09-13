@@ -1,3 +1,4 @@
+import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { skipToken } from '@reduxjs/toolkit/dist/query'
@@ -45,6 +46,7 @@ const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
+  const isWindowFocused: boolean = useWindowFocus()
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -71,7 +73,8 @@ export default function Updater(): null {
   // Start fetch when connected address exists
   // Unsubscribe when address is unconnected
   useEffect(() => {
-    if (address) {
+    console.log('isWindowFocused:', isWindowFocused)
+    if (address && isWindowFocused) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -91,7 +94,7 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [address])
+  }, [address, isWindowFocused])
 
   useEffect(() => {
     const {
