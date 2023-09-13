@@ -166,7 +166,7 @@ const AvailableChains = ({ token }: { token: Token }) => {
 
   return (
     <div
-      data-test-id="portfolio-token-visualizer"
+      data-test-id="available-chains"
       className="flex flex-row items-center space-x-1 hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
