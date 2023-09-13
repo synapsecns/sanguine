@@ -16,6 +16,9 @@ const config: CodegenConfig = {
           },
         },
       ],
+      hooks: {
+        afterOneFileWrite: ['prettier --write'],
+      },
     },
   },
 }
