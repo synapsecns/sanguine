@@ -185,7 +185,7 @@ jobs:
             done
             cp coverage.txt profile.cov
             docker ps
-          max_attempts: 2
+          max_attempts: 5
           timeout_minutes: 60
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
