@@ -284,8 +284,7 @@ const printMaps = async () => {
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
     })
   )
-  prettyPrint(sortMapByKeys(bridgeMap), './data/bridgeMap.json')
-  prettyPrint(sortMapByKeys(bridgeSymbolsMap), './data/bridgeSymbolsMap.json')
+  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 
 // Extracts the list of tokens that can be swapped into a token via single on-chain swap
@@ -366,9 +365,10 @@ const getTokenDecimals = async (chainId, token) => {
   return decimals
 }
 
-// Writes obj to fn as a pretty printed JSON file
-const prettyPrint = (obj, fn) => {
-  fs.writeFileSync(fn, JSON.stringify(obj, null, 2))
+// Writes map export to a TypeScript file, then runs prettier on the file
+const prettyPrintTS = (map, mapName, fn) => {
+  const json = JSON.stringify(map)
+  fs.writeFileSync(fn, `export const ${mapName} = ${json}`)
   // Run prettier on the file using terminal command:
   execSync(`npx prettier --write ${fn}`)
 }
