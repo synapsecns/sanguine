@@ -719,7 +719,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	})
 }
 
-//nolint:maintidx
+//nolint:maintidx,cyclop
 func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	testDone := false
 	defer func() {
@@ -941,6 +941,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.Nil(err)
 	snapshot := types.NewSnapshot([]types.State{originState})
 
+	//nolint:wrapcheck
 	submitAndVerifySnapshot := func(originState types.State, agentSigner signer.Signer) error {
 		agentSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), agentSigner)
 		if err != nil {
