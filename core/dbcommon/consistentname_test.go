@@ -17,20 +17,20 @@ import (
 // of the column as such. E.g.: column:origin_chain_id.
 type ExplicitColumnTestModel struct {
 	gorm.Model
-	TestField uint64 `gorm:"column:test_field" ,json:"not_test_field"`
+	TestField uint64 `,json:"not_test_field" gorm:"column:test_field"`
 }
 
 // ExplicitColumnTestModel tests implicit naming
 // of the column as such. E.g.: origin_chain_id.
 type ImplicitColumnTestModel struct {
 	gorm.Model
-	TestField uint64 `gorm:"test_field" ,json:"not_test_field"`
+	TestField uint64 `,json:"not_test_field" gorm:"test_field"`
 }
 
 // MultiColumnModel tests multiple tags in gorm.
 type MultiColumnModel struct {
 	gorm.Model
-	TestField uint64 `gorm:"column:test_field;uniqueIndex:idx_id" ,json:"not_test_field"`
+	TestField uint64 `,json:"not_test_field" gorm:"column:test_field;uniqueIndex:idx_id"`
 }
 
 // TestGetGormFieldName tests getting the gorm field by name.
@@ -153,12 +153,12 @@ func (t testReplacer) Replace(name string) string {
 // NonConsistentModelName tests a model with a non-consistent name.
 type NonConsistentModelName struct {
 	gorm.Model
-	TestField uint64 `gorm:"column:test_field" ,json:"not_test_field"`
+	TestField uint64 `,json:"not_test_field" gorm:"column:test_field"`
 }
 
 type OtherNonConsistentModelName struct {
 	gorm.Model
-	TestField uint64 `gorm:"column:test_field_with_different_name" ,json:"not_test_field"`
+	TestField uint64 `,json:"not_test_field" gorm:"column:test_field_with_different_name"`
 }
 
 func TestNonConsistentName(t *testing.T) {

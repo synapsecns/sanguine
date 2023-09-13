@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	agentsTestutil "github.com/synapsecns/sanguine/agents/testutil"
-	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 )
 
 // ExecutorSuite tests the executor agent.
@@ -24,8 +23,6 @@ func NewExecutorSuite(tb testing.TB) *ExecutorSuite {
 }
 
 func (e *ExecutorSuite) SetupTest() {
-	chainwatcher.PollInterval = time.Second
-
 	e.SimulatedBackendsTestSuite.SetupTest()
 	e.SetTestTimeout(time.Minute * 5)
 }
