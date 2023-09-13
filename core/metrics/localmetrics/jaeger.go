@@ -3,6 +3,9 @@ package localmetrics
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
@@ -11,8 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/synapsecns/sanguine/core/retry"
-	"os"
-	"time"
 )
 
 // StartJaegerServer starts a new jaeger instance.
@@ -46,9 +47,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	})
 	assert.Nil(j.tb, err)
 
-	j.tb.Setenv(internal.JaegerEndpoint, fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp")))
+	j.tb.Setenv(internal.JaegerEndpoint, fmt.Sprintf("http://localhost:%s/api/traces", dockerutil.GetPort(resource, "14268/tcp")))
 	// uiEndpoint is the jaeger endpoint, we want to instead use the pyroscope endpoint
-	uiEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
+	uiEndpoint := fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "16686/tcp"))
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
@@ -123,7 +124,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	assert.Nil(j.tb, err)
 
 	// must only be done after the container is started
-	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
+	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp")))
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))

@@ -10,7 +10,7 @@ const (
 // AgentStatus is the agent status interface.
 type AgentStatus interface {
 	// Flag is the current status flag of the agent.
-	Flag() uint8
+	Flag() AgentFlagType
 	// Domain that agent is assigned to.
 	Domain() uint32
 	// Index of the agent in list of agents.
@@ -18,13 +18,13 @@ type AgentStatus interface {
 }
 
 type agentStatus struct {
-	flag   uint8
+	flag   AgentFlagType
 	domain uint32
 	index  uint32
 }
 
 // NewAgentStatus creates a new agent status.
-func NewAgentStatus(flag uint8, domain, index uint32) AgentStatus {
+func NewAgentStatus(flag AgentFlagType, domain, index uint32) AgentStatus {
 	return &agentStatus{
 		flag:   flag,
 		domain: domain,
@@ -32,7 +32,7 @@ func NewAgentStatus(flag uint8, domain, index uint32) AgentStatus {
 	}
 }
 
-func (s agentStatus) Flag() uint8 {
+func (s agentStatus) Flag() AgentFlagType {
 	return s.flag
 }
 
