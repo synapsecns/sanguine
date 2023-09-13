@@ -3,6 +3,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import '@/patch'
+import { Analytics } from '@vercel/analytics/react'
 
 import {
   boba,
@@ -150,6 +151,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                 <Provider store={store}>
                   <Updaters />
                   <Component {...pageProps} />
+                  <Analytics />
                   <CustomToaster />
                 </Provider>
               </WalletAnalyticsProvider>
