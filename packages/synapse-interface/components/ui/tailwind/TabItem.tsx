@@ -27,7 +27,7 @@ const TabItem = ({
         flex justify-center items-center
         p-2 w-full cursor-pointer
         font-medium
-        rounded-xl
+        rounded-md
         transition-all duration-75
         h-14
         ${statusClassname}

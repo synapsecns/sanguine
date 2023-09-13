@@ -45,8 +45,8 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
         _;
     }
 
-    constructor(string memory version_, uint32 localDomain_, address agentManager_, address inbox_)
-        MessagingBase(version_, localDomain_)
+    constructor(string memory version_, uint32 synapseDomain_, address agentManager_, address inbox_)
+        MessagingBase(version_, synapseDomain_)
     {
         agentManager = agentManager_;
         inbox = inbox_;

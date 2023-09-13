@@ -30,7 +30,7 @@ jobs:
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         go-version:
-          - 1.20.x
+          - 1.21.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
@@ -100,7 +100,7 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -163,9 +163,9 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
-          max_attempts: 6
-          timeout_minutes: 15
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
+          max_attempts: 2
+          timeout_minutes: 20
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
@@ -175,10 +175,11 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMAXPROCS: 18
-          GOMEMLIMIT: 6GiB
+          GOMEMLIMIT: 3GiB
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
+          GOPROXY: https://proxy.golang.org
+
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
@@ -203,11 +204,11 @@ jobs:
       fail-fast: false
       matrix:
         go-version:
-          - 1.20.x
+          - 1.21.x
         platform:
           - ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Install Go
@@ -252,9 +253,10 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
+          # TODO: with this being 3 behind this should be done sooner rather than later.
           go-version: 1.19.x
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -305,7 +307,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -331,7 +333,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.20.x
+          go-version: 1.21.x
 
       - name: Go modules cache
         uses: actions/cache@v3
@@ -405,7 +407,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -438,7 +440,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.20.x
+          go-version: 1.21.x
 
       - name: Go modules cache
         uses: actions/cache@v3

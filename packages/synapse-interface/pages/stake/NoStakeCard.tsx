@@ -10,7 +10,7 @@ const NoStakeCard = ({ chain }: { chain?: Chain }) => {
       divider={false}
       className={`
         transform transition-all duration-100
-        rounded-xl max-w-[420px]
+        rounded-md max-w-[420px]
       `}
     >
       <div className="w-full pt-4 text-center text-gray-400">

@@ -27,7 +27,7 @@ export default function Modal({
           <div className="relative w-auto max-w-3xl mx-auto my-6">
             <div
               className={`
-                border-0 rounded-lg relative flex flex-col w-full outline-none focus:outline-none
+                border-0 rounded-md relative flex flex-col w-full outline-none focus:outline-none
                 bg-gray-800
               `}
             >

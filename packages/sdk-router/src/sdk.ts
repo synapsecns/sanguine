@@ -373,6 +373,7 @@ class SynapseSDK {
    * @param tokenOut - The output token.
    * @param amountIn - The amount of input token.
    * @param deadline - The transaction deadline, optional.
+   * @param excludeCCTP - Flag to exclude CCTP quotes from the result, optional and defaults to False.
    *
    * @returns - A promise that resolves to the best bridge quote, or undefined if no route is found.
    *
@@ -384,7 +385,8 @@ class SynapseSDK {
     tokenIn: string,
     tokenOut: string,
     amountIn: BigintIsh,
-    deadline?: BigNumber
+    deadline?: BigNumber,
+    excludeCCTP: boolean = false
   ): Promise<BridgeQuote | undefined> {
     invariant(
       originChainId !== destChainId,
@@ -411,6 +413,7 @@ class SynapseSDK {
 
     let cctpQuotePromise: Promise<BridgeQuote | undefined>
     if (
+      !excludeCCTP &&
       CCTP_ROUTER_ADDRESS[originChainId] &&
       CCTP_ROUTER_ADDRESS[destChainId]
     ) {

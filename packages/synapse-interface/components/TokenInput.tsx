@@ -1,6 +1,5 @@
 import { useCallback, MouseEvent, useMemo } from 'react'
 import InteractiveInputRow from './InteractiveInputRow'
-import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -25,8 +24,6 @@ export const DepositTokenInput = ({
   chainId: number
   address: string
 }) => {
-  const symbol = displaySymbol(chainId, token)
-
   const onClickMax = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
@@ -45,7 +42,7 @@ export const DepositTokenInput = ({
     <div className="items-center">
       <div className="w-full">
         <InteractiveInputRow
-          title={symbol}
+          title={token.symbol}
           isConnected={address !== undefined}
           balanceStr={balanceStr}
           onClickBalance={onClickMax}

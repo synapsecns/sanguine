@@ -7,7 +7,7 @@ import {AgentManager, AgentManagerHarness} from "./AgentManagerHarness.t.sol";
 
 // solhint-disable no-empty-blocks
 contract LightManagerHarness is LightManager, AgentManagerHarness {
-    constructor(uint32 domain) LightManager(domain) {}
+    constructor(uint32 synapseDomain) LightManager(synapseDomain) {}
 
     function _afterAgentSlashed(uint32 domain, address agent, address prover)
         internal

@@ -5,7 +5,7 @@ import { getWalletClient, switchNetwork } from '@wagmi/core'
 import { Address } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-import ExchangeRateInfo from '@components/ExchangeRateInfo'
+import SwapExchangeRateInfo from '@components/SwapExchangeRateInfo'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import BridgeInputContainer from '../../components/input/TokenAmountInput/index'
 import { approveToken } from '@/utils/approveToken'
@@ -607,9 +607,8 @@ const SwapCard = ({
       w-full h-full
       md:w-[95%] md:h-[95%]
       -ml-0 md:-ml-3
-      md:mt-3
       bg-bgBase
-      z-20 rounded-3xl
+      z-20 rounded-lg
     `,
   }
 
@@ -763,7 +762,7 @@ const SwapCard = ({
   return (
     <Card
       divider={false}
-      className="max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
+      className="max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-md bg-bgBase md:px-6 lg:px-6"
     >
       <div className="mb-8">
         <Transition show={displayType === 'from'} {...transitionProps}>
@@ -798,8 +797,7 @@ const SwapCard = ({
             setDisplayType={setDisplayType}
           />
         </Transition>
-        <Grid cols={{ xs: 1 }} gap={4} className="place-content-center">
-          <div className="pt-3 "></div>
+        <Grid cols={{ xs: 1 }} className="place-content-center">
           <BridgeInputContainer
             address={address}
             isOrigin={true}
@@ -814,6 +812,7 @@ const SwapCard = ({
             setDisplayType={setDisplayType}
             fromTokenBalance={fromTokenBalance}
           />
+          <div className="mb-4"></div>
           <BridgeInputContainer
             address={address}
             isOrigin={false}
@@ -830,12 +829,11 @@ const SwapCard = ({
           />
         </Grid>
 
-        <ExchangeRateInfo
+        <SwapExchangeRateInfo
           fromAmount={fromInput.bigInt}
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
-          showGasDrop={false}
         />
         <div className="px-2 py-2 md:px-0 md:py-4">{ActionButton}</div>
       </div>

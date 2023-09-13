@@ -12,12 +12,13 @@ func _() {
 	_ = x[DestinationContract-2]
 	_ = x[LightInboxContract-3]
 	_ = x[InboxContract-4]
-	_ = x[Other-5]
+	_ = x[SummitContract-5]
+	_ = x[Other-6]
 }
 
-const _ContractType_name = "OriginContractDestinationContractLightInboxContractInboxContractOther"
+const _ContractType_name = "OriginContractDestinationContractLightInboxContractInboxContractSummitContractOther"
 
-var _ContractType_index = [...]uint8{0, 14, 33, 51, 64, 69}
+var _ContractType_index = [...]uint8{0, 14, 33, 51, 64, 78, 83}
 
 func (i ContractType) String() string {
 	i -= 1

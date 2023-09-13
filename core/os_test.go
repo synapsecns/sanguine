@@ -1,6 +1,8 @@
 package core_test
 
 import (
+	"bytes"
+	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
 	common "github.com/synapsecns/sanguine/core"
@@ -108,5 +110,44 @@ func TestGetEnvBool(t *testing.T) {
 				t.Errorf("GetEnvBool() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestCopyFile(t *testing.T) {
+	// Prepare test files
+	content := []byte("This is a test content.")
+	src := filet.TmpFile(t, "", string(content))
+
+	dest := filet.TmpFile(t, "", string(content))
+	_ = dest.Close()
+
+	// Copy file
+	if err := common.CopyFile(src.Name(), dest.Name()); err != nil {
+		t.Errorf("CopyFile() error: %v", err)
+	}
+
+	// Check if file is copied correctly
+	destContent, err := os.ReadFile(dest.Name())
+	if err != nil {
+		t.Fatalf("Failed to read dest file: %v", err)
+	}
+
+	if !bytes.Equal(content, destContent) {
+		t.Errorf("Content mismatch: expected %s, got %s", content, destContent)
+	}
+
+	// Check if permissions are the same
+	srcInfo, err := os.Stat(src.Name())
+	if err != nil {
+		t.Fatalf("Failed to stat src file: %v", err)
+	}
+
+	destInfo, err := os.Stat(dest.Name())
+	if err != nil {
+		t.Fatalf("Failed to stat dest file: %v", err)
+	}
+
+	if srcInfo.Mode() != destInfo.Mode() {
+		t.Errorf("Permission mismatch: expected %v, got %v", srcInfo.Mode(), destInfo.Mode())
 	}
 }

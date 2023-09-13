@@ -106,8 +106,8 @@ export const ChainSlideOver = ({
   useEffect(enterPressedFunc, [enterPressed])
 
   return (
-    <div className="max-h-full pb-4 overflow-auto scrollbar-hide rounded-3xl">
-      <div className="absolute z-10 w-full pt-3 bg-bgLight rounded-t-xl">
+    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-lg">
+      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-md">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
             placeholder="Search by asset, name, or chainID..."

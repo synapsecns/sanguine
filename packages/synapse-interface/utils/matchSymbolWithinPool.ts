@@ -1,5 +1,5 @@
-import { WETHE, AVWETH, ETH } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { AVWETH } from '@constants/tokens/auxilliary'
+import { WETHE, ETH, WETH } from '@constants/tokens/bridgeable'
 
 /**
  * @param {Token} matchCoin the coin in the pool/ token of poolTokens
