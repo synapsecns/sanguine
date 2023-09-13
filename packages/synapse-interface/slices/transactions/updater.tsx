@@ -40,6 +40,7 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { checkTransactionsExist } from '@/components/Portfolio/Activity'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -73,8 +74,7 @@ export default function Updater(): null {
   // Start fetch when connected address exists
   // Unsubscribe when address is unconnected
   useEffect(() => {
-    console.log('isWindowFocused:', isWindowFocused)
-    if (address && isWindowFocused) {
+    if (address) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -94,7 +94,36 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [address, isWindowFocused])
+  }, [address])
+
+  useEffect(() => {
+    const isLoading: boolean =
+      isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
+    const userTransactionsExist: boolean =
+      checkTransactionsExist(userPendingTransactions) ||
+      checkTransactionsExist(userHistoricalTransactions)
+
+    console.log('isWindowFocused: ', isWindowFocused)
+    console.log('userTransactionsExist: ', userTransactionsExist)
+
+    if (!isLoading && userTransactionsExist && !isWindowFocused) {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+    }
+  }, [
+    isWindowFocused,
+    userPendingTransactions,
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
+  ])
 
   useEffect(() => {
     const {
