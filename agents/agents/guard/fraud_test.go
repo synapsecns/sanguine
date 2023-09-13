@@ -974,6 +974,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
+	time.Sleep(5 * time.Second)
+
 	// Submit snapshot with Notary.
 	notarySnapshotSignature, encodedSnapshot, _, err = snapshot.SignSnapshot(g.GetTestContext(), g.NotaryOnOriginBondedSigner)
 	g.Nil(err)
