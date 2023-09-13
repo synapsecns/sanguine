@@ -962,7 +962,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	}()
 
 	submitAndVerifySnapshot := func(originState types.State, agentSigner signer.Signer) error {
-		fmt.Println("submitting snapshot")
 		agentSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), agentSigner)
 		if err != nil {
 			return err
@@ -979,7 +978,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 		g.bumpBackends()
 
-		fmt.Println("verifying state")
 		latestStateRaw, err := g.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: g.GetTestContext()}, uint32(g.TestBackendOrigin.GetChainID()), agentSigner.Address())
 		if err != nil {
 			return err
