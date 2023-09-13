@@ -3,9 +3,12 @@ package testhelper
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -17,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"github.com/synapsecns/sanguine/services/scribe/service"
-	"testing"
 )
 
 var logger = log.Logger("scribe-testhelper")
@@ -32,8 +34,17 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
-	localmetrics.SetupTestJaeger(ctx, tb)
-	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(ctx, tb)
+		metricsHandler = metrics.Jaeger
+	}
+
+	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metricsHandler)
 	assert.Nil(tb, err)
 
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)

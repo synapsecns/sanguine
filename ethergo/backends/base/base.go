@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
 	"sync"
@@ -16,12 +14,15 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hashicorp/go-multierror"
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -150,8 +151,8 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 	go func() {
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
-			assert.Nil(b.T(), err)
-			assert.NotEmpty(b.T(), code)
+			require.Nil(b.T(), err)
+			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()
 	var errMux sync.Mutex

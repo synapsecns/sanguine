@@ -3,17 +3,16 @@ package types
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // Snapshot is the snapshot interface.
 type Snapshot interface {
+	Encoder
 	// States are the states of the snapshot.
 	States() []State
 
@@ -76,26 +75,7 @@ func (s snapshot) TreeHeight() uint32 {
 }
 
 func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	encodedSnapshot, err := EncodeSnapshot(s)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
-	}
-
-	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_VALID_SALT"))
-
-	hashedEncodedSnapshot := crypto.Keccak256Hash(encodedSnapshot).Bytes()
-	toSign := append(snapshotSalt.Bytes(), hashedEncodedSnapshot...)
-
-	hashedSnapshot, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash snapshot: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)
-	}
-	return signature, encodedSnapshot, hashedSnapshot, nil
+	return signEncoder(ctx, signer, s, SnapshotValidSalt)
 }
 
 var _ Snapshot = &snapshot{}

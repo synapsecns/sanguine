@@ -23,10 +23,10 @@ func NewGuardSuite(tb testing.TB) *GuardSuite {
 	}
 }
 
-func (u *GuardSuite) SetupTest() {
+func (g *GuardSuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
-	u.SimulatedBackendsTestSuite.SetupTest()
+	g.SimulatedBackendsTestSuite.SetupTest()
 }
 
 func TestGuardSuite(t *testing.T) {
