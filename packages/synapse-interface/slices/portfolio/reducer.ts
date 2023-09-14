@@ -27,7 +27,7 @@ export interface PortfolioState {
   error?: string
 }
 
-const initialState: PortfolioState = {
+export const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
   balancesAndAllowances: {},
   searchInput: '',

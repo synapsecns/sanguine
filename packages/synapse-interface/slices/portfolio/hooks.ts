@@ -14,6 +14,7 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { getTokenAllowance } from './../../utils/actions/getTokenAllowance'
 import { Token } from '@/utils/types'
+import { initialState } from './reducer'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
@@ -25,6 +26,7 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
 
 export const usePortfolioActionHandlers = (): {
   onSearchInput: (searchInput: string) => void
+  clearSearchInput: () => void
 } => {
   const dispatch = useAppDispatch()
 
@@ -35,8 +37,13 @@ export const usePortfolioActionHandlers = (): {
     [dispatch]
   )
 
+  const clearSearchInput = useCallback(() => {
+    dispatch(typeSearchInput({ searchInput: initialState.searchInput }))
+  }, [dispatch])
+
   return {
     onSearchInput,
+    clearSearchInput,
   }
 }
 
