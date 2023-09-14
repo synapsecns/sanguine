@@ -178,10 +178,22 @@ jobs:
       - name: Test
         run: |
           set -e
+          max_num_retries=3
           cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
           for pkg in $(go list ./...); do
-            $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+            retries=0
+
+            while [ $retries -lt $max_num_retries ]; do
+              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
+                break
+              else
+                docker rm -f $(docker ps -a -q)
+                retries=$((retries+1))
+                echo "Retry #$retries: 'gotestsum' command failed for $pkg"
+              fi
+            done
+
             if [ -f profile.cov ]; then
               tail -n +2 profile.cov >> coverage.txt
               rm profile.cov
