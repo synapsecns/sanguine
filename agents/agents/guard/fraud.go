@@ -33,6 +33,16 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			continue
 		}
 
+		// Ensure the agent that provided the snapshot is active on origin.
+		ok, err := g.ensureAgentActive(ctx, fraudSnapshot.Agent, state.Origin())
+		if err != nil {
+			return fmt.Errorf("could not ensure agent is active: %w", err)
+		}
+		if !ok {
+			logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", fraudSnapshot.Agent.Hex(), state.Origin())
+			continue
+		}
+
 		// Initiate slashing on origin.
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
@@ -58,12 +68,14 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Submit the state report on each eligible chain.
+		// If a notary has not been reported anywhere,
+		// report should be submitted on both summit and remote.
 		for _, chainID := range stateReportChains {
 			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
 			}
-			ok, err := g.prepareStateReport(ctx, fraudSnapshot.Agent, chainID)
+			ok, err := g.ensureAgentActive(ctx, fraudSnapshot.Agent, chainID)
 			if err != nil {
 				return fmt.Errorf("could not prepare state report on chain %d: %w", chainID, err)
 			}
@@ -254,7 +266,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
-		ok, err := g.prepareStateReport(ctx, fraudAttestation.Notary, g.summitDomainID)
+		ok, err := g.ensureAgentActive(ctx, fraudAttestation.Notary, g.summitDomainID)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on summit: %w", err)
 		}
@@ -281,7 +293,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		}
 
 		// Submit the state report on the remote chain.
-		ok, err = g.prepareStateReport(ctx, fraudAttestation.Notary, fraudAttestation.AgentDomain)
+		ok, err = g.ensureAgentActive(ctx, fraudAttestation.Notary, fraudAttestation.AgentDomain)
 		if err != nil {
 			return fmt.Errorf("could not prepare state report on remote: %w", err)
 		}
@@ -311,11 +323,11 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	return nil
 }
 
-// prepareStateReport checks if the given agent is in a slashable status (Active or Unstaking),
+// ensureAgentActive checks if the given agent is in a slashable status (Active or Unstaking),
 // and relays the agent status from Summit to the given chain if necessary.
 //
 //nolint:cyclop
-func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
+func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
 	var agentStatus types.AgentStatus
 	//nolint:nestif
 	if chainID == g.summitDomainID {
@@ -356,17 +368,7 @@ func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, cha
 			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
 		}
 		// Update the agent status to active using the last known root on remote chain.
-		err = g.guardDB.StoreRelayableAgentStatus(
-			ctx,
-			agent,
-			types.AgentFlagUnknown,
-			types.AgentFlagActive,
-			chainID,
-		)
-		if err != nil {
-			return false, fmt.Errorf("could not store relayable agent status: %w", err)
-		}
-		err = g.updateAgentStatus(ctx, chainID)
+		err = g.relayActiveAgentStatus(ctx, agent, chainID)
 		if err != nil {
 			return false, err
 		}
@@ -376,6 +378,26 @@ func (g Guard) prepareStateReport(ctx context.Context, agent common.Address, cha
 	default:
 		return false, nil
 	}
+}
+
+// relayActiveAgentStatus relays an Active agent status from Summit to a remote
+// chain where the agent is unknown.
+func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address, chainID uint32) error {
+	err := g.guardDB.StoreRelayableAgentStatus(
+		ctx,
+		agent,
+		types.AgentFlagUnknown,
+		types.AgentFlagActive,
+		chainID,
+	)
+	if err != nil {
+		return fmt.Errorf("could not store relayable agent status: %w", err)
+	}
+	err = g.updateAgentStatus(ctx, chainID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
