@@ -21,16 +21,16 @@ services:
 #      context: ../../
 #      dockerfile: docker/devnet/agents.Dockerfile
 #    volumes:
-#      - "${PWD}/config/guard-config.yml:/config/guard-config.yml"
-#      - "${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
+#      - '${PWD}/config/guard-config.yml:/config/guard-config.yml'
+#      - '${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt'
 #      - guard_data:/data
 #    command:
-#      - "guard-run"
-#      - "--config"
-#      - "/config/guard-config.yml"
+#      - 'guard-run'
+#      - '--config'
+#      - '/config/guard-config.yml'
 #    environment:
 #      METRICS_HANDLER: jaeger
-#      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+#      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
 #
 #  notary-43:
 #    entrypoint: agents
@@ -40,17 +40,17 @@ services:
 #      context: ../../
 #      dockerfile: docker/devnet/agents.Dockerfile
 #    volumes:
-#      - "${PWD}/config/notary43-config.yml:/config/notary-config.yml"
-#      - "${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt"
+#      - '${PWD}/config/notary43-config.yml:/config/notary-config.yml'
+#      - '${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt'
 #      - notary43_data:/config/synapse.db
 #    command:
-#      - "notary-run"
-#      - "--config"
-#      - "/config/notary-config.yml"
-#      - "--debug"
+#      - 'notary-run'
+#      - '--config'
+#      - '/config/notary-config.yml'
+#      - '--debug'
 #    environment:
 #      METRICS_HANDLER: jaeger
-#      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+#      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
 #      GOLOG_LOG_LEVEL: debug
 
   scribe-indexer:
@@ -66,11 +66,11 @@ services:
         --db=sqlite
         --path=/data
     volumes:
-      - "${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml"
+      - '${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml'
       - scribe_data:/data
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   scribe:
@@ -87,15 +87,15 @@ services:
       --path=/data
       --omnirpc=http://omnirpc:9001/confirmations
     volumes:
-      - "${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml"
+      - '${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml'
       - scribe_data:/data
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
     ports:
-#      - "8080:7004"
-      - "9002:9002"
+#      - '8080:7004'
+      - '9002:9002'
 
 
   omnirpc:
@@ -108,73 +108,73 @@ services:
       context: ../../
       dockerfile: docker/devnet/omnirpc.Dockerfile
     ports:
-      - "9001:9001"
-#      - "8080:7005"
+      - '9001:9001'
+#      - '8080:7005'
     command: >
       omnirpc
       server
       --config=/config/omnirpc.yaml
     volumes:
-      - "${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml"
+      - '${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml'
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
 # TODO, consider re-enabling.
 #    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
+#      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
 #      interval: 1s
 #      timeout: 20s
 #      retries: 10
 #      start_period: 5s
 
   chain_a:
-    image: "ghcr.io/foundry-rs/foundry:latest"
+    image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
       --host=0.0.0.0
       --chain-id=42
-      --allow-origin="*"
+      --allow-origin='*'
       --steps-tracing
-      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
     ports:
-      - "8042:8545"
+      - '8042:8545'
     volumes:
       - chain_a_data:/data
 
   chain_b:
-    image: "ghcr.io/foundry-rs/foundry:latest"
+    image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
       --host=0.0.0.0
       --chain-id=43
-      --allow-origin="*"
+      --allow-origin='*'
       --steps-tracing
-      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
     ports:
-      - "8043:8545"
+      - '8043:8545'
     volumes:
       - chain_b_data:/data
 
   chain_c:
-    image: "ghcr.io/foundry-rs/foundry:latest"
+    image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
       --host=0.0.0.0
       --chain-id=44
-      --allow-origin="*"
+      --allow-origin='*'
       --steps-tracing
-      --mnemonic="tag volcano eight thank tide danger coast health above argue embrace heavy"
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
     ports:
-      - "8044:8545"
+      - '8044:8545'
     volumes:
       - chain_b_data:/data
 
@@ -198,6 +198,6 @@ services:
     ports:
       - 9000:9090
     volumes:
-      - "${PWD}/config/prometheus:/etc/prometheus"
+      - '${PWD}/config/prometheus:/etc/prometheus'
       - prometheus-data:/prometheus
     command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
