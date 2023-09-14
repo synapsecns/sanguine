@@ -12,6 +12,8 @@ export interface TokenAndBalance {
   tokenAddress: string
   balance: bigint
   parsedBalance: string
+  queriedChainId: number
+  queriedChainName: string
 }
 
 export interface TokenAndAllowance {
@@ -47,10 +49,10 @@ function mergeBalancesAndAllowances(
   balances: TokenAndBalance[],
   allowances: TokenAndAllowance[]
 ): TokenWithBalanceAndAllowances[] {
-  return balances.map((balance) => {
+  return balances.map((balance: TokenAndBalance) => {
     const tokenAllowances = {}
     const matchedAllowancesByToken: TokenAndAllowance[] = allowances.filter(
-      (allowance) => allowance.token === balance.token
+      (allowance: TokenAndAllowance) => allowance.token === balance.token
     )
 
     matchedAllowancesByToken.forEach((spenderAllowance: TokenAndAllowance) => {
@@ -59,6 +61,8 @@ function mergeBalancesAndAllowances(
     })
 
     return {
+      queriedChainId: balance.queriedChainId,
+      queriedChainName: balance.queriedChainName,
       token: balance.token,
       tokenAddress: balance.tokenAddress,
       balance: balance.balance,

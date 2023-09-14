@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -23,11 +23,12 @@ import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
   const { fromChainId }: BridgeState = useBridgeState()
-  const { activeTab }: PortfolioState = usePortfolioState()
+  const { activeTab, searchInput }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
     onDisconnect() {
@@ -41,6 +42,31 @@ export const Portfolio = () => {
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
+
+  const filteredBySearchInput = useMemo(() => {
+    if (filteredPortfolioDataForBalances) {
+      const flattened = []
+
+      console.log(
+        'filteredPortfolioDataForBalances: ',
+        filteredPortfolioDataForBalances
+      )
+
+      Object.entries(filteredPortfolioDataForBalances).forEach(
+        ([chainId, tokens]) => {
+          tokens.forEach((token: TokenWithBalanceAndAllowance) => {
+            flattened.push({
+              ...token,
+              chainId: chainId,
+              chainName: CHAINS_BY_ID[chainId]?.name,
+            })
+          })
+        }
+      )
+
+      console.log('flattened:', flattened)
+    }
+  }, [searchInput, filteredPortfolioDataForBalances])
 
   useEffect(() => {
     dispatch(resetPortfolioState())

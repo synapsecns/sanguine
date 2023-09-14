@@ -6,6 +6,7 @@ import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from './bigint/format'
 import { TokenAndBalance } from './actions/fetchPortfolioBalances'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
   if (tokens === undefined) {
@@ -86,6 +87,8 @@ export const sortByTokenBalance = async (
             tokenBalance: { result: bigint; status: string } | undefined,
             index: number
           ) => ({
+            queriedChainId: chainId,
+            queriedChainName: CHAINS_BY_ID[chainId],
             token: tokens[index],
             tokenAddress: tokens[index].addresses[chainId],
             balance: tokenBalance.result,
