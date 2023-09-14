@@ -179,7 +179,6 @@ jobs:
         run: |
           set -e
           max_num_retries=5
-          cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
 
           # Loop through each package and run tests, with package level retries
