@@ -140,7 +140,7 @@ export const EmptyPortfolioContent = () => {
   return (
     <div data-test-id="empty-portfolio-content" className="p-1">
       <p className="text-[#C2C2D6] mb-4">
-        No supported assets found {address && `for ${shortened}`}.
+        No bridgeable assets found {address && `for ${shortened}`}.
       </p>
       <p className="text-[#C2C2D6] mb-4">
         Don't see a chain or token you want to bridge?

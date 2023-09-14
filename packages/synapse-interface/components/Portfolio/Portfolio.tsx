@@ -45,49 +45,57 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const filteredBySearchInput = useMemo(() => {
-    if (filteredPortfolioDataForBalances) {
-      const flattened: TokenWithBalanceAndAllowances[] = []
+  const searchInputActive: boolean = searchInput.length > 0
+
+  const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
+    useMemo(() => {
       const reconstructedFilteredData: NetworkTokenBalancesAndAllowances = {}
 
-      Object.entries(filteredPortfolioDataForBalances).forEach(
-        ([chainId, tokens]) => {
-          tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-            flattened.push({ ...token })
+      if (filteredPortfolioDataForBalances) {
+        const flattened: TokenWithBalanceAndAllowances[] = []
+
+        Object.entries(filteredPortfolioDataForBalances).forEach(
+          ([chainId, tokens]) => {
+            tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+              flattened.push({ ...token })
+            })
+          }
+        )
+
+        const fuseOptions = {
+          includeScore: true,
+          threshold: 0.0,
+          keys: ['queriedChain.name', 'token.name', 'token.symbol'],
+        }
+
+        const fuse = new Fuse(flattened, fuseOptions)
+
+        if (searchInput.length > 0) {
+          const results = fuse
+            .search(searchInput)
+            .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
+
+          results.forEach((item: TokenWithBalanceAndAllowances) => {
+            const chainId = item.queriedChain.id
+
+            if (reconstructedFilteredData[chainId]) {
+              reconstructedFilteredData[chainId] = [
+                ...reconstructedFilteredData[chainId],
+                item,
+              ]
+            } else {
+              reconstructedFilteredData[chainId] = [item]
+            }
           })
         }
-      )
-
-      const fuseOptions = {
-        includeScore: true,
-        threshold: 0.0,
-        keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
+      // const hasFilteredData: boolean =
+      //   Object.values(reconstructedFilteredData).length > 0
+      // return hasFilteredData ? reconstructedFilteredData : null
+      return reconstructedFilteredData
+    }, [searchInput, filteredPortfolioDataForBalances])
 
-      const fuse = new Fuse(flattened, fuseOptions)
-
-      if (searchInput.length > 0) {
-        const results = fuse
-          .search(searchInput)
-          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
-
-        results.forEach((item: TokenWithBalanceAndAllowances) => {
-          const chainId = item.queriedChain.id
-
-          if (reconstructedFilteredData[chainId]) {
-            reconstructedFilteredData[chainId] = [
-              ...reconstructedFilteredData[chainId],
-              item,
-            ]
-          } else {
-            reconstructedFilteredData[chainId] = [item]
-          }
-        })
-
-        console.log('reconstructedFilteredData:', reconstructedFilteredData)
-      }
-    }
-  }, [searchInput, filteredPortfolioDataForBalances])
+  console.log('filteredBySearchInput:', filteredBySearchInput)
 
   useEffect(() => {
     dispatch(resetPortfolioState())
@@ -118,7 +126,11 @@ export const Portfolio = () => {
               connectedAddress={address}
               connectedChainId={chain?.id}
               selectedFromChainId={fromChainId}
-              networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+              networkPortfolioWithBalances={
+                searchInputActive
+                  ? filteredBySearchInput
+                  : filteredPortfolioDataForBalances
+              }
               fetchState={fetchState}
               visibility={activeTab === PortfolioTabs.PORTFOLIO}
             />
