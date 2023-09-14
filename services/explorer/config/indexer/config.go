@@ -84,7 +84,7 @@ func (c *Config) IsValid() error {
 	if len(c.BridgeConfigAddress) != (common.AddressLength*2)+2 {
 		return fmt.Errorf("field Address: %w", config.ErrAddressLength)
 	}
-	if len(c.Chains) > 0 {
+	if len(c.Chains) == 0 {
 		return fmt.Errorf("no chains specified for indexing")
 	}
 
