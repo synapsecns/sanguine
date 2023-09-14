@@ -1,11 +1,13 @@
 package indexer_test
 
 import (
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -50,10 +52,19 @@ func (x *IndexerSuite) SetupTest() {
 
 func (x *IndexerSuite) SetupSuite() {
 	x.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(x.GetSuiteContext(), x.T())
+
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(x.GetSuiteContext(), x.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	x.metrics, err = metrics.NewByType(x.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	x.metrics, err = metrics.NewByType(x.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(x.T(), err)
 }
 

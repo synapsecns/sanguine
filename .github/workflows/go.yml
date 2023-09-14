@@ -25,12 +25,12 @@ jobs:
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
-      packages_nodeps:  ${{ steps.filter_go_nodeps.outputs.changed_modules }}
+      packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
       package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -100,7 +100,7 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -160,12 +160,34 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
+      - name: Precompile Tests
+        working-directory: ${{ matrix.package }}
+        run: go test -run=nope ./...
+        env:
+          # no other containers are running at this point so we can use all available memory for compilation
+          GOMEMLIMIT: 5GiB
+          GOGC: -1
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -parallel 1 -coverpkg=./... ./... -coverprofile=profile.cov
-          max_attempts: 2
-          timeout_minutes: 20
+          command: |
+            set -e
+            cd ${{ matrix.package }}
+            echo "mode: atomic" > coverage.txt
+            for pkg in $(go list ./...); do
+              #$PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+              go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+              if [ -f profile.cov ]; then
+                tail -n +2 profile.cov >> coverage.txt
+                rm profile.cov
+              fi
+            done
+            cp coverage.txt profile.cov
+            docker ps
+          on_retry_command: docker rm -f $(docker ps -a -q)
+          max_attempts: 5
+          timeout_minutes: 60
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
@@ -180,6 +202,29 @@ jobs:
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
           GOPROXY: https://proxy.golang.org
 
+      # TODO: these 3 steps should be moved into a reusable action.
+      # also,should be noted these aren't comprehensive, as many of the containers are automatically removed
+      # and we'd need something like this for all logs: https://github.com/synapsecns/sanguine/pull/1280#discussion_r1320889916
+      # but this should be better than nothing as long as you don't assume the logs are complete
+      #
+      # there's a good case to have this in addition to the suggestions referenced in the comment above because
+      # logs are not collected there in the case of sigterms (because logs stop piping when app breaks), which are caught here
+      #
+      # in any case this should be considered an early implementation
+      - name: Collect docker logs
+        if: always()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          dest: '/tmp/logs'
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf ./logs.tgz /tmp/logs
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{matrix.package}}-logs.tgz
+          path: ./logs.tgz
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
@@ -208,7 +253,7 @@ jobs:
         platform:
           - ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Install Go
@@ -256,7 +301,7 @@ jobs:
           # TODO: with this being 3 behind this should be done sooner rather than later.
           go-version: 1.19.x
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -278,7 +323,6 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: -1
 
-
   issue_number:
     # this is needed to prevent us from hitting the github api rate limit
     name: Get The Issue Number
@@ -293,7 +337,6 @@ jobs:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
 
-
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
   check-generation-solidity:
@@ -307,7 +350,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -407,7 +450,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -430,7 +473,6 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
         if: ${{ contains(matrix.package, 'agents') }}
-
 
       # Generate flattened files
       - name: Run flattener
@@ -458,7 +500,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-generate-${{matrix.package}}
 
-
       - name: Cache Linuxbrew
         uses: actions/cache@v3
         if: ${{ contains(matrix.package, 'scribe') }}
@@ -485,17 +526,16 @@ jobs:
 
       - name: Run Make Generate CI Deps (Scribe)
         working-directory: ${{matrix.package}}/
-        if:  ${{ contains(matrix.package, 'scribe') }}
+        if: ${{ contains(matrix.package, 'scribe') }}
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
           make generate-ci || exit 0
 
       - name: Run Make Generate CI (Scribe)
         working-directory: ${{matrix.package}}/
-        if:  ${{ contains(matrix.package, 'scribe') }}
+        if: ${{ contains(matrix.package, 'scribe') }}
         run: |
           make generate-ci
-
 
       # See if we need to rerun go generate
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to speed up process if possible

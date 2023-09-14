@@ -3,6 +3,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import '@/patch'
+import { Analytics } from '@vercel/analytics/react'
 
 import {
   boba,
@@ -46,6 +47,9 @@ import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { Provider } from 'react-redux'
 import { store } from '@/store/store'
 import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
+
+import PortfolioUpdater from '@/slices/portfolio/updater'
+import TransactionsUpdater from '@/slices/transactions/updater'
 
 const rawChains = [
   mainnet,
@@ -124,6 +128,15 @@ export const wagmiConfig = createConfig({
   webSocketPublicClient,
 })
 
+function Updaters() {
+  return (
+    <>
+      <PortfolioUpdater />
+      <TransactionsUpdater />
+    </>
+  )
+}
+
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
@@ -136,7 +149,9 @@ const App = ({ Component, pageProps }: AppProps) => {
             <SegmentAnalyticsProvider>
               <WalletAnalyticsProvider>
                 <Provider store={store}>
+                  <Updaters />
                   <Component {...pageProps} />
+                  <Analytics />
                   <CustomToaster />
                 </Provider>
               </WalletAnalyticsProvider>

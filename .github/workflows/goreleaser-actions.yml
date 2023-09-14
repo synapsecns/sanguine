@@ -17,7 +17,7 @@ jobs:
       contents: write
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
@@ -93,7 +93,7 @@ jobs:
       packages: ${{ steps.filter_go.outputs.changed_modules }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -132,7 +132,7 @@ jobs:
       volumes: [ /repo ]
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'

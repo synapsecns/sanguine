@@ -33,7 +33,7 @@ describe('SynapseSDK', () => {
     'https://1rpc.io/op'
   )
   const bscProvider: Provider = new etherProvider.JsonRpcProvider(
-    'https://endpoints.omniatech.io/v1/bsc/mainnet/public'
+    'https://binance.llamarpc.com'
   )
   // Token addresses for the tests
   const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'

@@ -17,8 +17,8 @@ export const ToTokenSelector = () => {
   let buttonContent
 
   if (toToken) {
-    const src = toToken.icon.src
-    const symbol = toToken.symbol
+    const src = toToken?.icon?.src
+    const symbol = toToken?.symbol
 
     buttonContent = (
       <div className="flex items-center space-x-2">

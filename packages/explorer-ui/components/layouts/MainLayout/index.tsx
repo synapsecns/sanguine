@@ -10,7 +10,7 @@ import {
   CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
-  FORUM_URL,
+  FORUM_URL, INTERCHAIN_PATH,
   LANDING_PATH,
   POOLS_PATH,
   PORTFOLIO_PATH,
@@ -188,6 +188,7 @@ function TopBarButtons() {
       <TopBarNavLink to={SWAP_PATH} labelText="Swap" />
       <TopBarNavLink to={POOLS_PATH} labelText="Pools" />
       <TopBarNavLink to={STAKE_PATH} labelText="Stake" />
+      <TopBarNavLink to={INTERCHAIN_PATH} labelText={'Interchain Network'} />
       <TopBarNavLink
         className="hidden mdl:block"
         to={ANALYTICS_PATH}

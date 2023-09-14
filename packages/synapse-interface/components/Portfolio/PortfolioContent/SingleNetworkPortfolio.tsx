@@ -8,13 +8,13 @@ import {
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
-import PortfolioAccordion from './PortfolioAccordion'
-import { PortfolioConnectButton } from './PortfolioConnectButton'
+import { PortfolioAccordion } from './components/PortfolioAccordion'
+import { PortfolioConnectButton } from './components/PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
-import { PortfolioTokenAsset } from './PortfolioTokenAsset'
+import { PortfolioTokenAsset } from './components/PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { WarningMessage } from '../Warning'
+import { WarningMessage } from '../../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 
@@ -63,7 +63,10 @@ export const SingleNetworkPortfolio = ({
   }, [isUnsupportedChain])
 
   return (
-    <div data-test-id="single-network-portfolio" className="flex flex-col">
+    <div
+      data-test-id="single-network-portfolio"
+      className="flex flex-col mb-4 border rounded-md border-surface"
+    >
       <PortfolioAccordion
         connectedChainId={connectedChainId}
         portfolioChainId={portfolioChainId}
@@ -107,7 +110,7 @@ export const SingleNetworkPortfolio = ({
             }
           />
         )}
-        <PortfolioHeader />
+        {/* <PortfolioHeader /> */}
         {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
@@ -157,14 +160,14 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1 py-4 pl-2"
+      className="flex flex-row justify-between flex-1 py-4 cursor-pointer"
     >
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center px-4">
         {isUnsupportedChain ? (
-          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-2 text-white rounded-md" />
         ) : (
           <Image
-            className="w-6 h-6 mr-3 rounded-md"
+            className="w-6 h-6 mr-2 rounded-md"
             alt={`${displayName} img`}
             src={chainIcon}
           />
@@ -193,7 +196,7 @@ const PortfolioTokenVisualizer = ({
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center hover-trigger"
+      className="flex flex-row items-center cursor-pointer hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -208,31 +211,34 @@ const PortfolioTokenVisualizer = ({
       {hasTwoTokens && (
         <Image
           loading="lazy"
-          className="w-6 h-6 ml-1 rounded-md"
+          className="w-6 h-6 ml-1.5 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
         />
       )}
       {numOverTwoTokens > 0 && (
-        <div className="ml-1 text-white">+ {numOverTwoTokens}</div>
+        <div className="ml-1.5 text-white">+ {numOverTwoTokens}</div>
       )}
       <div className="relative inline-block">
         {isHovered && (
           <div
             className={`
-            absolute z-50 hover-content p-2 text-white
-            border border-solid border-[#252537]
-            bg-[#101018] rounded-md`}
+              absolute z-50 hover-content p-2 text-white
+              border border-solid border-[#252537]
+              bg-[#101018] rounded-md
+            `}
           >
-            {portfolioTokens.map((token: TokenWithBalanceAndAllowances) => {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap">
-                  {balance} {tokenSymbol}
-                </div>
-              )
-            })}
+            {portfolioTokens.map(
+              (token: TokenWithBalanceAndAllowances, key: number) => {
+                const tokenSymbol = token.token.symbol
+                const balance = token.parsedBalance
+                return (
+                  <div className="whitespace-nowrap" key={key}>
+                    {balance} {tokenSymbol}
+                  </div>
+                )
+              }
+            )}
           </div>
         )}
       </div>
