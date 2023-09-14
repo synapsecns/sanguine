@@ -178,7 +178,7 @@ jobs:
       - name: Test
         run: |
           set -e
-          max_num_retries=3
+          max_num_retries=5
           cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
 
