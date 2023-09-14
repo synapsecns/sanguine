@@ -5,13 +5,7 @@ import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from './bigint/format'
-
-export interface TokenAndBalance {
-  token: Token
-  tokenAddress: string
-  balance: bigint
-  parsedBalance: string
-}
+import { TokenAndBalance } from './actions/fetchPortfolioBalances'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
   if (tokens === undefined) {
