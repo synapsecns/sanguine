@@ -16,6 +16,7 @@ import (
 
 func TestHandleJSONAmountStat(t *testing.T) {
 	valueString := gofakeit.Word()
+	// nolint
 	valueStruct := gqlClient.GetAmountStatistic{
 		Response: &struct {
 			Value *string `json:"value" graphql:"value"`
@@ -30,6 +31,7 @@ func TestHandleJSONAmountStat(t *testing.T) {
 
 func TestHandleJSONDailyStat(t *testing.T) {
 	valueFloat := gofakeit.Float64()
+	// nolint
 	valueStruct := gqlClient.GetDailyStatisticsByChain{
 		Response: []*struct {
 			Date      *string  `json:"date" graphql:"date"`
