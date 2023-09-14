@@ -55,10 +55,11 @@ type BridgeTransaction struct {
 
 // BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
 type BridgeWatcherTx struct {
-	BridgeTx *PartialInfo  `json:"bridgeTx,omitempty"`
-	Pending  *bool         `json:"pending,omitempty"`
-	Type     *BridgeTxType `json:"type,omitempty"`
-	Kappa    *string       `json:"kappa,omitempty"`
+	BridgeTx    *PartialInfo  `json:"bridgeTx,omitempty"`
+	Pending     *bool         `json:"pending,omitempty"`
+	Type        *BridgeTxType `json:"type,omitempty"`
+	Kappa       *string       `json:"kappa,omitempty"`
+	KappaStatus *KappaStatus  `json:"kappaStatus,omitempty"`
 }
 
 // DateResult is a given statistic for a given date.
@@ -456,6 +457,49 @@ func (e *HistoricalResultType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HistoricalResultType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type KappaStatus string
+
+const (
+	KappaStatusExists  KappaStatus = "EXISTS"
+	KappaStatusPending KappaStatus = "PENDING"
+	KappaStatusUnknown KappaStatus = "UNKNOWN"
+)
+
+var AllKappaStatus = []KappaStatus{
+	KappaStatusExists,
+	KappaStatusPending,
+	KappaStatusUnknown,
+}
+
+func (e KappaStatus) IsValid() bool {
+	switch e {
+	case KappaStatusExists, KappaStatusPending, KappaStatusUnknown:
+		return true
+	}
+	return false
+}
+
+func (e KappaStatus) String() string {
+	return string(e)
+}
+
+func (e *KappaStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = KappaStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid KappaStatus", str)
+	}
+	return nil
+}
+
+func (e KappaStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
