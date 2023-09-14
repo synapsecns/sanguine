@@ -181,6 +181,9 @@ jobs:
           max_num_retries=3
           cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
+
+          # Loop through each package and run tests, with package level retries
+          # as well as individual test retries.
           for pkg in $(go list ./...); do
             retries=0
 
@@ -199,6 +202,7 @@ jobs:
               rm profile.cov
             fi
           done
+
           cp coverage.txt profile.cov
           docker ps
         env:
