@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react'
 import { useAccount, Address } from 'wagmi'
 import { useTransactionsState } from '@/slices/transactions/hooks'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
+import { PortfolioState } from '@/slices/portfolio/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -30,6 +32,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
+  const { searchInput }: PortfolioState = usePortfolioState()
 
   const hasPendingTransactions: boolean = useMemo(() => {
     if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
@@ -52,6 +55,21 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
   const isLoading: boolean =
     isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
+
+  const searchInputActive: boolean = searchInput.length > 0
+
+  const filteredHistoricalTransactionsBySearchInput = useMemo(() => {
+    const searchFiltered: BridgeTransaction[] = []
+    const fuseOptions = {
+      includeScore: true,
+      threshold: 0.0,
+      keys: [''],
+    }
+  }, [
+    searchInput,
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+  ])
 
   return (
     <div

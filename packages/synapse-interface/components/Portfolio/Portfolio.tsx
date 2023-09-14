@@ -25,7 +25,6 @@ import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
-import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
