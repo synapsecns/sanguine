@@ -21,6 +21,7 @@ import {
 export interface PortfolioState {
   activeTab: PortfolioTabs
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  searchInput: string
   status: FetchState
   error?: string
 }
@@ -28,6 +29,7 @@ export interface PortfolioState {
 const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
   balancesAndAllowances: {},
+  searchInput: '',
   status: FetchState.IDLE,
   error: null,
 }

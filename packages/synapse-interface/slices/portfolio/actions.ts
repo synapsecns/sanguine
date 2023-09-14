@@ -27,3 +27,6 @@ export const updateSingleTokenAllowance = createAction<{
 export const resetPortfolioState = createAction<void>(
   'portfolio/resetPortfolioState'
 )
+export const typeSearchInput = createAction<{ searchInput: string }>(
+  'portfolio/typeSearchInput'
+)
