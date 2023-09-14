@@ -150,6 +150,10 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
+	if config.MaxRetrySeconds == 0 {
+		config.MaxRetrySeconds = 30
+	}
+
 	retryConfig := []retry.WithBackoffConfigurator{
 		retry.WithMaxAttemptTime(time.Second * time.Duration(config.MaxRetrySeconds)),
 	}
