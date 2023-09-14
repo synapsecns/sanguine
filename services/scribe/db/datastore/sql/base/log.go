@@ -233,8 +233,6 @@ func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFil
 	}
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
-	// TODO DELETE
-	logger.Infof("[RECEIPT QUERY] Retrieving logs between blocks %d and %d. Filter: %v", startBlock, endBlock, queryFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
@@ -253,31 +251,4 @@ func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFil
 	}
 
 	return buildLogsFromDBLogs(dbLogs), nil
-}
-
-func (s Store) DeleteRangeTemp(ctx context.Context, chainID uint64, startBlock uint64, endBlock uint64) error {
-	dbTx := s.DB().WithContext(ctx).
-		Where("chain_id = ?", chainID).
-		Where("block_number BETWEEN ? AND ?", startBlock, endBlock).
-		Delete(&Log{})
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not delete logs: %w", dbTx.Error)
-	}
-	dbTx = s.DB().WithContext(ctx).
-		Where("chain_id = ?", chainID).
-		Where("block_number BETWEEN ? AND ?", startBlock, endBlock).
-		Delete(&Receipt{})
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not delete rec: %w", dbTx.Error)
-	}
-	dbTx = s.DB().WithContext(ctx).
-		Where("chain_id = ?", chainID).
-		Where("block_number BETWEEN ? AND ?", startBlock, endBlock).
-		Delete(&EthTx{})
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not delete tx: %w", dbTx.Error)
-	}
-
-	return nil
 }

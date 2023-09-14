@@ -334,13 +334,13 @@ func (s *ScribeSuite) TestLivefillParity() {
 			}
 			fromBlock := latestBlocks[chains[i]] - blockRange
 			toBlock := latestBlocks[chains[i]]
-			dbLogCount := 0
+			var dbLogCount int
 			var dbLogs []*types.Log
 			dbLogCount, dbLogs, err = getLogAmount(s.GetTestContext(), s.testDB, logFilter, fromBlock, toBlock)
 			Nil(s.T(), err)
 
 			txs := make(map[int64]string)
-			explorerLogCount := 0
+			var explorerLogCount int
 			explorerLogCount, err = getLogs(s.GetTestContext(), contract.Address, fromBlock, toBlock, apiURLs[chain.ChainID], &txs)
 			Nil(s.T(), err)
 

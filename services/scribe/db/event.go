@@ -102,9 +102,6 @@ type EventDBReader interface {
 
 	// FlushFromHeadTables flushes unconfirmed logs, receipts, and txs from the head.
 	FlushFromHeadTables(ctx context.Context, time int64) error
-
-	// DeleteRangeTemp
-	DeleteRangeTemp(ctx context.Context, chainID uint64, startBlock uint64, endBlock uint64) error
 }
 
 // EventDB stores events.

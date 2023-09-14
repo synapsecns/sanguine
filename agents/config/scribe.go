@@ -27,7 +27,7 @@ type ScribeConfig struct {
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
 func (c *ScribeConfig) IsValid(ctx context.Context) (ok bool, err error) {
-	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
+	if ok, err = c.EmbeddedScribeConfig.IsValid(); !ok {
 		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 
