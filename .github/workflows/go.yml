@@ -128,6 +128,9 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+
       - name: Verify MariaDB connection
         env:
           PORT: ${{ job.services.mariadb.ports[3306] }}
@@ -176,7 +179,7 @@ jobs:
             cd ${{ matrix.package }}
             echo "mode: atomic" > coverage.txt
             for pkg in $(go list ./...); do
-              #$PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+              #$PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="." --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg
               go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
               if [ -f profile.cov ]; then
                 tail -n +2 profile.cov >> coverage.txt
@@ -186,7 +189,7 @@ jobs:
             cp coverage.txt profile.cov
             docker ps
           on_retry_command: docker rm -f $(docker ps -a -q)
-          max_attempts: 5
+          max_attempts: 3
           timeout_minutes: 60
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
