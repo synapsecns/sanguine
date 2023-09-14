@@ -18,7 +18,7 @@ func TestHandleJSONAmountStat(t *testing.T) {
 	valueString := gofakeit.Word()
 	valueStruct := gqlClient.GetAmountStatistic{
 		Response: &struct {
-			Value *string `graphql:"value" json:"value"`
+			Value *string `json:"value" graphql:"value"`
 		}{
 			Value: &valueString,
 		},
@@ -32,27 +32,27 @@ func TestHandleJSONDailyStat(t *testing.T) {
 	valueFloat := gofakeit.Float64()
 	valueStruct := gqlClient.GetDailyStatisticsByChain{
 		Response: []*struct {
-			Date      *string  `graphql:"date"      json:"date"`
-			Ethereum  *float64 `graphql:"ethereum"  json:"ethereum"`
-			Optimism  *float64 `graphql:"optimism"  json:"optimism"`
-			Cronos    *float64 `graphql:"cronos"    json:"cronos"`
-			Bsc       *float64 `graphql:"bsc"       json:"bsc"`
-			Polygon   *float64 `graphql:"polygon"   json:"polygon"`
-			Fantom    *float64 `graphql:"fantom"    json:"fantom"`
-			Boba      *float64 `graphql:"boba"      json:"boba"`
-			Metis     *float64 `graphql:"metis"     json:"metis"`
-			Moonbeam  *float64 `graphql:"moonbeam"  json:"moonbeam"`
-			Moonriver *float64 `graphql:"moonriver" json:"moonriver"`
-			Klaytn    *float64 `graphql:"klaytn"    json:"klaytn"`
-			Arbitrum  *float64 `graphql:"arbitrum"  json:"arbitrum"`
-			Avalanche *float64 `graphql:"avalanche" json:"avalanche"`
-			Dfk       *float64 `graphql:"dfk"       json:"dfk"`
-			Aurora    *float64 `graphql:"aurora"    json:"aurora"`
-			Harmony   *float64 `graphql:"harmony"   json:"harmony"`
-			Canto     *float64 `graphql:"canto"     json:"canto"`
-			Dogechain *float64 `graphql:"dogechain" json:"dogechain"`
-			Base      *float64 `graphql:"base"      json:"base"`
-			Total     *float64 `graphql:"total"     json:"total"`
+			Date      *string  `json:"date" graphql:"date"`
+			Ethereum  *float64 `json:"ethereum" graphql:"ethereum"`
+			Optimism  *float64 `json:"optimism" graphql:"optimism"`
+			Cronos    *float64 `json:"cronos" graphql:"cronos"`
+			Bsc       *float64 `json:"bsc" graphql:"bsc"`
+			Polygon   *float64 `json:"polygon" graphql:"polygon"`
+			Fantom    *float64 `json:"fantom" graphql:"fantom"`
+			Boba      *float64 `json:"boba" graphql:"boba"`
+			Metis     *float64 `json:"metis" graphql:"metis"`
+			Moonbeam  *float64 `json:"moonbeam" graphql:"moonbeam"`
+			Moonriver *float64 `json:"moonriver" graphql:"moonriver"`
+			Klaytn    *float64 `json:"klaytn" graphql:"klaytn"`
+			Arbitrum  *float64 `json:"arbitrum" graphql:"arbitrum"`
+			Avalanche *float64 `json:"avalanche" graphql:"avalanche"`
+			Dfk       *float64 `json:"dfk" graphql:"dfk"`
+			Aurora    *float64 `json:"aurora" graphql:"aurora"`
+			Harmony   *float64 `json:"harmony" graphql:"harmony"`
+			Canto     *float64 `json:"canto" graphql:"canto"`
+			Dogechain *float64 `json:"dogechain" graphql:"dogechain"`
+			Base      *float64 `json:"base" graphql:"base"`
+			Total     *float64 `json:"total" graphql:"total"`
 		}{
 			{
 				Total: &valueFloat,

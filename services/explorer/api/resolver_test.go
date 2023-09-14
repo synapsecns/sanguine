@@ -676,7 +676,7 @@ func (g APISuite) TestAmountStatistic() {
 	}
 	count := float64(len(cumulativePrice))
 	mean := total / count
-	median := 0.0
+	var median float64
 	sort.Float64s(cumulativePrice)
 	switch {
 	case count == 0:

@@ -258,13 +258,15 @@ func (r Resolver) getRangeForHistoricalDestinationLogs(ctx context.Context, chai
 		}
 		timeDifference := int64(blockHeader.Time) - int64(timestamp)
 
-		if -6000 < timeDifference && timeDifference <= 0 {
+		switch {
+		case -6000 < timeDifference && timeDifference <= 0:
 			return &mid, &currentBlock, nil
-		} else if timeDifference >= 0 {
+		case timeDifference >= 0:
 			upper = mid
-		} else {
+		default:
 			lower = mid
 		}
+
 		iteration++
 	}
 
