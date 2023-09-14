@@ -87,8 +87,7 @@ export const sortByTokenBalance = async (
             tokenBalance: { result: bigint; status: string } | undefined,
             index: number
           ) => ({
-            queriedChainId: chainId,
-            queriedChainName: CHAINS_BY_ID[chainId],
+            queriedChain: CHAINS_BY_ID[chainId],
             token: tokens[index],
             tokenAddress: tokens[index].addresses[chainId],
             balance: tokenBalance.result,

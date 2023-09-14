@@ -45,7 +45,7 @@ export const Portfolio = () => {
 
   const filteredBySearchInput = useMemo(() => {
     if (filteredPortfolioDataForBalances) {
-      const flattened = []
+      const flattened: TokenWithBalanceAndAllowance[] = []
 
       console.log(
         'filteredPortfolioDataForBalances: ',
@@ -55,14 +55,23 @@ export const Portfolio = () => {
       Object.entries(filteredPortfolioDataForBalances).forEach(
         ([chainId, tokens]) => {
           tokens.forEach((token: TokenWithBalanceAndAllowance) => {
-            flattened.push({
-              ...token,
-              chainId: chainId,
-              chainName: CHAINS_BY_ID[chainId]?.name,
-            })
+            flattened.push({ ...token })
           })
         }
       )
+
+      const fuseOptions = {
+        includeScore: true,
+        threshold: 0.0,
+        keys: [
+          {
+            name: 'name',
+            weight: 2,
+          },
+          'id',
+          'nativeCurrency.symbol',
+        ],
+      }
 
       console.log('flattened:', flattened)
     }

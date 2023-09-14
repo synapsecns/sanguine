@@ -1,6 +1,6 @@
 import { multicall, erc20ABI, Address } from '@wagmi/core'
 import { sortByTokenBalance } from '../sortTokens'
-import { Token } from '../types'
+import { Chain, Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
@@ -12,8 +12,7 @@ export interface TokenAndBalance {
   tokenAddress: string
   balance: bigint
   parsedBalance: string
-  queriedChainId: number
-  queriedChainName: string
+  queriedChain: Chain
 }
 
 export interface TokenAndAllowance {
@@ -61,8 +60,7 @@ function mergeBalancesAndAllowances(
     })
 
     return {
-      queriedChainId: balance.queriedChainId,
-      queriedChainName: balance.queriedChainName,
+      queriedChain: balance.queriedChain,
       token: balance.token,
       tokenAddress: balance.tokenAddress,
       balance: balance.balance,
