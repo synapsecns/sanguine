@@ -65,6 +65,32 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       threshold: 0.0,
       keys: [''],
     }
+
+    if (
+      !isUserHistoricalTransactionsLoading &&
+      checkTransactionsExist(userHistoricalTransactions)
+    ) {
+      const formatted = userHistoricalTransactions.map(
+        (transaction: BridgeTransaction) => {
+          return {
+            ...transaction,
+            originChain: CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain,
+            originToken: tokenAddressToToken(
+              transaction?.fromInfo?.chainID,
+              transaction?.fromInfo?.tokenAddress
+            ) as Token,
+            destinationChain: CHAINS_BY_ID[
+              transaction?.toInfo?.chainID
+            ] as Chain,
+            destinationToken: tokenAddressToToken(
+              transaction?.toInfo?.chainID,
+              transaction?.toInfo?.tokenAddress
+            ) as Token,
+          }
+        }
+      )
+      console.log('formatted:', formatted)
+    }
   }, [
     searchInput,
     userHistoricalTransactions,
