@@ -13,6 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// ContractType is the type of contract specified by the config and used for selecting the correct parser.
 type ContractType int
 
 const (
