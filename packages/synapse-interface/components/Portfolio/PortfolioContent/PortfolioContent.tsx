@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
+import { Address, useAccount, useNetwork } from 'wagmi'
 import Link from 'next/link'
 import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
@@ -136,11 +136,12 @@ const UnconnectedPortfolioContent = () => {
 
 export const EmptyPortfolioContent = () => {
   const { address } = useAccount()
+  const { chain } = useNetwork()
   const shortened = shortenAddress(address, 3)
   return (
     <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
-        No bridgeable assets found {address && `for ${shortened}`}.
+        No bridgeable assets found {address && `for ${shortened}`} on {chain?.name}.
       </p>
       <p className="text-[#C2C2D6] mb-4">
         Don't see a chain or token you want to bridge?
