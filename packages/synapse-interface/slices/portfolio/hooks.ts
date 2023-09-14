@@ -1,10 +1,11 @@
+import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount, Address } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
-import { FetchState } from './actions'
-import { useAppSelector } from '@/store/hooks'
+import { FetchState, typeSearchInput } from './actions'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
@@ -20,6 +21,23 @@ export const usePortfolioState = (): RootState['portfolio'] => {
 
 export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
+}
+
+export const usePortfolioActionHandlers = (): {
+  onSearchInput: (searchInput: string) => void
+} => {
+  const dispatch = useAppDispatch()
+
+  const onSearchInput = useCallback(
+    (searchInput: string) => {
+      dispatch(typeSearchInput({ searchInput }))
+    },
+    [dispatch]
+  )
+
+  return {
+    onSearchInput,
+  }
 }
 
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
