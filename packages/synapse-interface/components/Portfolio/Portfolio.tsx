@@ -49,11 +49,15 @@ export const Portfolio = () => {
 
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
-      const reconstructedFilteredData: NetworkTokenBalancesAndAllowances = {}
+      const searchFiltered: NetworkTokenBalancesAndAllowances = {}
+      const fuseOptions = {
+        includeScore: true,
+        threshold: 0.0,
+        keys: ['queriedChain.name', 'token.name', 'token.symbol'],
+      }
 
       if (filteredPortfolioDataForBalances) {
         const flattened: TokenWithBalanceAndAllowances[] = []
-
         Object.entries(filteredPortfolioDataForBalances).forEach(
           ([chainId, tokens]) => {
             tokens.forEach((token: TokenWithBalanceAndAllowances) => {
@@ -61,38 +65,21 @@ export const Portfolio = () => {
             })
           }
         )
-
-        const fuseOptions = {
-          includeScore: true,
-          threshold: 0.0,
-          keys: ['queriedChain.name', 'token.name', 'token.symbol'],
-        }
-
         const fuse = new Fuse(flattened, fuseOptions)
 
         if (searchInput.length > 0) {
           const results = fuse
             .search(searchInput)
             .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
-
-          results.forEach((item: TokenWithBalanceAndAllowances) => {
-            const chainId = item.queriedChain.id
-
-            if (reconstructedFilteredData[chainId]) {
-              reconstructedFilteredData[chainId] = [
-                ...reconstructedFilteredData[chainId],
-                item,
-              ]
-            } else {
-              reconstructedFilteredData[chainId] = [item]
-            }
-          })
+            .forEach((item: TokenWithBalanceAndAllowances) => {
+              const chainId: number = item.queriedChain.id
+              searchFiltered[chainId] = searchFiltered[chainId]
+                ? [...searchFiltered[chainId], item]
+                : [item]
+            })
         }
       }
-      // const hasFilteredData: boolean =
-      //   Object.values(reconstructedFilteredData).length > 0
-      // return hasFilteredData ? reconstructedFilteredData : null
-      return reconstructedFilteredData
+      return searchFiltered
     }, [searchInput, filteredPortfolioDataForBalances])
 
   console.log('filteredBySearchInput:', filteredBySearchInput)
