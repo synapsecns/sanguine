@@ -191,7 +191,6 @@ jobs:
               if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
                 break
               else
-                docker rm -f $(docker ps -a -q)
                 retries=$((retries+1))
                 echo "Retry #$retries: 'gotestsum' command failed for $pkg"
               fi
