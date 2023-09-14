@@ -21,7 +21,7 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
     /// Note: requires Origin, Destination, StatementInbox and Summit addresses to be set
     function _deployAgentManager() internal override returns (address deployment, bytes memory constructorArgs) {
         // new BondingManager(domain)
-        constructorArgs = abi.encode(localDomain);
+        constructorArgs = abi.encode(synapseDomain);
         deployment = factoryDeploy(agentManagerName(), type(BondingManager).creationCode, constructorArgs);
         require(origin != address(0), "Origin not set");
         require(destination != address(0), "Destination not set");
