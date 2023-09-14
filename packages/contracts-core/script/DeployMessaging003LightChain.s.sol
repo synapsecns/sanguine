@@ -41,7 +41,7 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     /// @dev Deploys Inbox or LightInbox
     /// Note: requires AgentManager, Origin and Destination addresses to be set
     function _deployStatementInbox() internal override returns (address deployment, bytes memory constructorArgs) {
-        // new LightInbox(domain)
+        // new LightInbox(synapseDomain)
         constructorArgs = abi.encode(synapseDomain);
         deployment = factoryDeploy(statementInboxName(), type(LightInbox).creationCode, constructorArgs);
         require(agentManager != address(0), "Agent Manager not set");
