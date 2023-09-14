@@ -29,7 +29,7 @@ const (
 
 // Config is used to configure the explorer's data consumption.
 type Config struct {
-	// DefaultRefreshRate
+	// DefaultRefreshRate is the default rate at which data is refreshed.
 	DefaultRefreshRate int `yaml:"default_refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
@@ -91,7 +91,7 @@ func (c *Config) IsValid() error {
 	for _, chain := range c.Chains {
 		err := chain.IsValid()
 		if err != nil {
-			return err
+			return fmt.Errorf("chain with ID %d is invalid: %w", chain.ChainID, err)
 		}
 	}
 
@@ -113,7 +113,7 @@ func (c ChainConfig) IsValid() error {
 	for _, contract := range c.Contracts {
 		err := contract.IsValid()
 		if err != nil {
-			return err
+			return fmt.Errorf("contract with address %s is invalid: %w", contract.Address, err)
 		}
 		if intSet.Contains(contract.Address) {
 			return fmt.Errorf("address %s appears twice", contract.Address)
@@ -139,6 +139,9 @@ func (c ContractConfig) IsValid() error {
 
 // DecodeConfig parses in a config from a file.
 func DecodeConfig(filePath string) (cfg Config, err error) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return Config{}, fmt.Errorf("config file does not exist: %w", err)
+	}
 	input, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to read file: %w", err)
