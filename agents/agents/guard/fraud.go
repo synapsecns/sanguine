@@ -52,81 +52,79 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Check if we should submit the state report.
-		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot)
+		stateReportChains, err := g.getStateReportChains(ctx, fraudSnapshot)
 		if err != nil {
-			return fmt.Errorf("could not check if should submit state report: %w", err)
-		}
-		if !shouldSubmit {
-			return nil
+			return fmt.Errorf("could not get state report chains: %w", err)
 		}
 
-		// Submit the state report to summit.
-		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
-		if err != nil {
-			return fmt.Errorf("could not sign state: %w", err)
-		}
-		ok, err := g.prepareStateReport(ctx, fraudSnapshot.Agent, g.summitDomainID)
-		if err != nil {
-			return fmt.Errorf("could not prepare state report on summit: %w", err)
-		}
-		if !ok {
-			continue
-		}
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
-				transactor,
-				int64(stateIndex),
-				srSignature,
-				fraudSnapshot.Payload,
-				fraudSnapshot.Signature,
-			)
+		// Submit the state report on each eligible chain.
+		for _, chainID := range stateReportChains {
+			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
-				return nil, fmt.Errorf("could not submit state report with snapshot to summit: %w", err)
+				return fmt.Errorf("could not sign state: %w", err)
 			}
-
-			return
-		})
-		if err != nil {
-			return fmt.Errorf("could not submit SubmitStateReportWithSnapshot tx: %w", err)
-		}
-
-		// Submit the state report to the remote chain.
-		ok, err = g.prepareStateReport(ctx, fraudSnapshot.Agent, fraudSnapshot.AgentDomain)
-		if err != nil {
-			return fmt.Errorf("could not prepare state report on summit: %w", err)
-		}
-		if !ok {
-			continue
-		}
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudSnapshot.AgentDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[fraudSnapshot.AgentDomain].LightInbox().SubmitStateReportWithSnapshot(
-				transactor,
-				int64(stateIndex),
-				srSignature,
-				fraudSnapshot.Payload,
-				fraudSnapshot.Signature,
-			)
+			ok, err := g.prepareStateReport(ctx, fraudSnapshot.Agent, chainID)
 			if err != nil {
-				return nil, fmt.Errorf("could not submit state report with snapshot to agent domain %d: %w", fraudSnapshot.AgentDomain, err)
+				return fmt.Errorf("could not prepare state report on chain %d: %w", chainID, err)
 			}
-
-			return
-		})
-		if err != nil {
-			return fmt.Errorf("could not submit SubmitStateReportWithSnapshot tx: %w", err)
+			if !ok {
+				continue
+			}
+			_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+				// TODO: can make the summit / remote contracts more composed
+				if chainID == g.summitDomainID {
+					tx, err = g.domains[chainID].Inbox().SubmitStateReportWithSnapshot(
+						transactor,
+						int64(stateIndex),
+						srSignature,
+						fraudSnapshot.Payload,
+						fraudSnapshot.Signature,
+					)
+				} else {
+					tx, err = g.domains[chainID].LightInbox().SubmitStateReportWithSnapshot(
+						transactor,
+						int64(stateIndex),
+						srSignature,
+						fraudSnapshot.Payload,
+						fraudSnapshot.Signature,
+					)
+				}
+				if err != nil {
+					return nil, fmt.Errorf("could not submit state report with snapshot to chain %d: %w", chainID, err)
+				}
+				return
+			})
+			if err != nil {
+				return fmt.Errorf("could not submit SubmitStateReportWithSnapshot tx: %w", err)
+			}
 		}
 	}
 
 	return nil
 }
 
-// Only submit a state report if we are not on Summit, and the snapshot
-// agent is not currently in dispute.
-func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot) (bool, error) {
-	var disputeStatus types.DisputeStatus
-	var err error
+// Determine which chains need to receive the state report.
+// A chain should receive a state report if the fraudulent Notary has not yet been reported on that chain-
+// That is, a dispute has not yet been opened with this notary on that chain.
+func (g Guard) getStateReportChains(ctx context.Context, snapshot *types.FraudSnapshot) ([]uint32, error) {
+	stateReportChains := []uint32{}
+	for _, chainID := range []uint32{g.summitDomainID, snapshot.AgentDomain} {
+		status, err := g.getDisputeStatus(ctx, chainID, snapshot.Agent)
+		if err != nil {
+			return []uint32{}, err
+		}
+		isNotary := snapshot.AgentDomain != 0
+		isNotInDispute := status.Flag() == types.DisputeFlagNone
+		if isNotary && isNotInDispute {
+			stateReportChains = append(stateReportChains, chainID)
+		}
+	}
+	return stateReportChains, nil
+}
+
+func (g Guard) getDisputeStatus(ctx context.Context, chainID uint32, agent common.Address) (status types.DisputeStatus, err error) {
 	contractCall := func(ctx context.Context) error {
-		disputeStatus, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
+		status, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, agent)
 		if err != nil {
 			return fmt.Errorf("could not get dispute status: %w", err)
 		}
@@ -135,13 +133,9 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 	}
 	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
-		return false, fmt.Errorf("could not get dispute status: %w", err)
+		return nil, fmt.Errorf("could not get dispute status: %w", err)
 	}
-
-	isNotary := snapshot.AgentDomain != 0
-	isNotInDispute := disputeStatus.Flag() == types.DisputeFlagNone
-	shouldSubmit := isNotary && isNotInDispute
-	return shouldSubmit, nil
+	return status, nil
 }
 
 // isStateSlashable checks if a state is slashable, i.e. if the state is valid on the
