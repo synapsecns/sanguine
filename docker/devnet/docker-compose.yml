@@ -8,48 +8,95 @@ volumes:
   chain_c_data:
   guard_data:
   notary43_data:
+  scribe_data:
+  prometheus-data:
+
 
 services:
-  guard:
-    entrypoint: agents
+#  guard:
+#    entrypoint: agents
+#    depends_on:
+#      - omnirpc
+#    build:
+#      context: ../../
+#      dockerfile: docker/devnet/agents.Dockerfile
+#    volumes:
+#      - "${PWD}/config/guard-config.yml:/config/guard-config.yml"
+#      - "${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
+#      - guard_data:/data
+#    command:
+#      - "guard-run"
+#      - "--config"
+#      - "/config/guard-config.yml"
+#    environment:
+#      METRICS_HANDLER: jaeger
+#      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+#
+#  notary-43:
+#    entrypoint: agents
+#    depends_on:
+#      - omnirpc
+#    build:
+#      context: ../../
+#      dockerfile: docker/devnet/agents.Dockerfile
+#    volumes:
+#      - "${PWD}/config/notary43-config.yml:/config/notary-config.yml"
+#      - "${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt"
+#      - notary43_data:/config/synapse.db
+#    command:
+#      - "notary-run"
+#      - "--config"
+#      - "/config/notary-config.yml"
+#      - "--debug"
+#    environment:
+#      METRICS_HANDLER: jaeger
+#      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+#      GOLOG_LOG_LEVEL: debug
+
+  scribe-indexer:
     depends_on:
-      - omnirpc
+    - omnirpc
     build:
       context: ../../
-      dockerfile: docker/devnet/agents.Dockerfile
+      dockerfile: docker/devnet/scribe.Dockerfile
+    entrypoint: scribe
+    command: >
+        scribe
+        --config=/config/scribe.yaml
+        --db=sqlite
+        --path=/data
     volumes:
-      - "${PWD}/config/guard-config.yml:/config/guard-config.yml"
-      - "${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt"
-      - guard_data:/data
-    command:
-      - "guard-run"
-      - "--config"
-      - "/config/guard-config.yml"
-    environment:
-      METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
-
-  notary-43:
-    entrypoint: agents
-    depends_on:
-      - omnirpc
-    build:
-      context: ../../
-      dockerfile: docker/devnet/agents.Dockerfile
-    volumes:
-      - "${PWD}/config/notary43-config.yml:/config/notary-config.yml"
-      - "${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt"
-      - notary43_data:/config/synapse.db
-
-    command:
-      - "notary-run"
-      - "--config"
-      - "/config/notary-config.yml"
-      - "--debug"
+      - "${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml"
+      - scribe_data:/data
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
       GOLOG_LOG_LEVEL: debug
+
+  scribe:
+    depends_on:
+      - scribe-indexer
+    build:
+      context: ../../
+      dockerfile: docker/devnet/scribe.Dockerfile
+    entrypoint: scribe
+    command: >
+      server
+      --port=9002
+      --db=sqlite
+      --path=/data
+      --omnirpc=http://omnirpc:9001/confirmations
+    volumes:
+      - "${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml"
+      - scribe_data:/data
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: "http://tracing:14268/api/traces"
+      GOLOG_LOG_LEVEL: debug
+    ports:
+#      - "8080:7004"
+      - "9002:9002"
+
 
   omnirpc:
     depends_on:
@@ -62,6 +109,7 @@ services:
       dockerfile: docker/devnet/omnirpc.Dockerfile
     ports:
       - "9001:9001"
+#      - "8080:7005"
     command: >
       omnirpc
       server
@@ -144,3 +192,12 @@ services:
       - 14268:14268
       - 14269:14269
       - 9411:9411
+
+  prometheus:
+    image: prom/prometheus:v2.46.0
+    ports:
+      - 9000:9090
+    volumes:
+      - "${PWD}/config/prometheus:/etc/prometheus"
+      - prometheus-data:/prometheus
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml

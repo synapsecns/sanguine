@@ -88,6 +88,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 }
 
 var scribeCommand = &cli.Command{
+	// TODO: rename this command to indexer
 	Name:        "scribe",
 	Description: "scribe runs the scribe, livefilling across all specified chains",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},

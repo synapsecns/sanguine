@@ -87,6 +87,8 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         globalConfig = loadGlobalDeployConfig("Messaging003");
         synapseDomain = globalConfig.readUint(".chainidSummit");
         startBroadcast(_isBroadcasted);
+        // assert this is the first thing deployed
+        getFactory();
         // Predict deployments
         agentManager = predictFactoryDeployment(agentManagerName());
         statementInbox = predictFactoryDeployment(statementInboxName());

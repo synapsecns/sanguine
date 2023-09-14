@@ -13,4 +13,9 @@ These don't need to be made for every package, just those involved in devnet.
 |------------------------|------|
 | omnirpc                | 9001 |
 | chain_a (chain_id: 42) | 8042 |
+| chain_b (chain_id: 43) | 8043 |
+| chain_c (chain_id: 44) | 8044 |
+| scribe                 | 9002 |
+
+
 
