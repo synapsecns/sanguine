@@ -2,10 +2,16 @@ import { createContext, useContext, useEffect, useRef } from 'react'
 import { Chain, useAccount, useNetwork } from 'wagmi'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
+import { setSwapChainId } from '@/slices/swap/reducer'
+
+import { useDispatch } from 'react-redux'
 
 const WalletStatusContext = createContext(undefined)
 
+// Refactor as User Provider
+
 export const WalletAnalyticsProvider = ({ children }) => {
+  const dispatch = useDispatch()
   const { chain } = useNetwork()
   const router = useRouter()
   const { query, pathname } = router
@@ -30,10 +36,16 @@ export const WalletAnalyticsProvider = ({ children }) => {
   const prevChain = prevChainRef.current
 
   useEffect(() => {
+    if (chain) {
+      dispatch(setSwapChainId(chain.id))
+    }
+
     if (!chain) {
       return
     }
     if (prevChain && chain !== prevChain) {
+      dispatch(setSwapChainId(chain.id))
+
       segmentAnalyticsEvent(`[Wallet Analytics] connected to new chain`, {
         previousNetworkName: prevChain.name,
         previousChainId: prevChain.id,

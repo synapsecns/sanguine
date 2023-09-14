@@ -146,16 +146,16 @@ const App = ({ Component, pageProps }: AppProps) => {
       <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <SynapseProvider chains={chains}>
-            <SegmentAnalyticsProvider>
-              <WalletAnalyticsProvider>
-                <Provider store={store}>
+            <Provider store={store}>
+              <SegmentAnalyticsProvider>
+                <WalletAnalyticsProvider>
                   <Updaters />
                   <Component {...pageProps} />
                   <Analytics />
                   <CustomToaster />
-                </Provider>
-              </WalletAnalyticsProvider>
-            </SegmentAnalyticsProvider>
+                </WalletAnalyticsProvider>
+              </SegmentAnalyticsProvider>
+            </Provider>
           </SynapseProvider>
         </RainbowKitProvider>
       </WagmiConfig>
