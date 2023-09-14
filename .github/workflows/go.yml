@@ -128,9 +128,6 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
-
       - name: Verify MariaDB connection
         env:
           PORT: ${{ job.services.mariadb.ports[3306] }}
@@ -140,9 +137,16 @@ jobs:
           done
 
       - name: Install pyroscope-ci
-        uses: jaxxstorm/action-install-gh-release@v1.5.0
+        uses: jaxxstorm/action-install-gh-release@v1.10.0
         with: # Grab the latest version
           repo: pyroscope-io/ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install gotestsum
+        uses: jaxxstorm/action-install-gh-release@v1.10.0
+        with: # Grab the latest version
+          repo: gotestyourself/gotestsum
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
