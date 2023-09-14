@@ -73,7 +73,6 @@ func (c *Config) IsValid() error {
 		return fmt.Errorf("db_address, %w", config.ErrRequiredGlobalField)
 	}
 	intSet := collection.Set[uint32]{}
-	fmt.Println("chains", c.Chains)
 	for _, chain := range c.Chains {
 		err := chain.IsValid()
 		if err != nil {

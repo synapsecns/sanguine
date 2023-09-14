@@ -75,20 +75,6 @@ func (_m *EventDB) DeleteLogsForBlockHash(ctx context.Context, blockHash common.
 	return r0
 }
 
-// DeleteRangeTemp provides a mock function with given fields: ctx, chainID, startBlock, endBlock
-func (_m *EventDB) DeleteRangeTemp(ctx context.Context, chainID uint64, startBlock uint64, endBlock uint64) error {
-	ret := _m.Called(ctx, chainID, startBlock, endBlock)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint64) error); ok {
-		r0 = rf(ctx, chainID, startBlock, endBlock)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // DeleteReceiptsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
 func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	ret := _m.Called(ctx, chainID, blockHash)
