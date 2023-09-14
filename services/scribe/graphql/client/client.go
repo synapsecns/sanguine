@@ -37,7 +37,6 @@ type Query struct {
 	LogsAtHeadRange          []*model.Log         "json:\"logsAtHeadRange\" graphql:\"logsAtHeadRange\""
 	ReceiptsAtHeadRange      []*model.Receipt     "json:\"receiptsAtHeadRange\" graphql:\"receiptsAtHeadRange\""
 	TransactionsAtHeadRange  []*model.Transaction "json:\"transactionsAtHeadRange\" graphql:\"transactionsAtHeadRange\""
-	DelRangeTemp             *bool                "json:\"delRangeTemp\" graphql:\"delRangeTemp\""
 }
 type GetLogs struct {
 	Response []*struct {
@@ -296,9 +295,6 @@ type GetReceiptCount struct {
 }
 type GetBlockTimeCount struct {
 	Response *int "json:\"response\" graphql:\"response\""
-}
-type DeleteRangeTemp struct {
-	Response *bool "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsDocument = `query GetLogs ($chain_id: Int!, $page: Int!) {
@@ -898,26 +894,6 @@ func (c *Client) GetBlockTimeCount(ctx context.Context, chainID int, httpRequest
 
 	var res GetBlockTimeCount
 	if err := c.Client.Post(ctx, "GetBlockTimeCount", GetBlockTimeCountDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const DeleteRangeTempDocument = `query DeleteRangeTemp ($chain_id: Int!, $start_block: Int!, $end_block: Int!) {
-	response: delRangeTemp(chain_id: $chain_id, start_block: $start_block, end_block: $end_block)
-}
-`
-
-func (c *Client) DeleteRangeTemp(ctx context.Context, chainID int, startBlock int, endBlock int, httpRequestOptions ...client.HTTPRequestOption) (*DeleteRangeTemp, error) {
-	vars := map[string]interface{}{
-		"chain_id":    chainID,
-		"start_block": startBlock,
-		"end_block":   endBlock,
-	}
-
-	var res DeleteRangeTemp
-	if err := c.Client.Post(ctx, "DeleteRangeTemp", DeleteRangeTempDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

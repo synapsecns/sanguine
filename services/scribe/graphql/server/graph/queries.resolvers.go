@@ -261,16 +261,6 @@ func (r *queryResolver) TransactionsAtHeadRange(ctx context.Context, txHash *str
 	return r.ethTxsToModelTransactions(ctx, transactions, transactionsFilter.ChainID), nil
 }
 
-// DelRangeTemp is the resolver for the delRangeTemp field.
-func (r *queryResolver) DelRangeTemp(ctx context.Context, chainID int, startBlock int, endBlock int) (*bool, error) {
-	err := r.DB.DeleteRangeTemp(ctx, uint64(chainID), uint64(startBlock), uint64(endBlock))
-	if err != nil {
-		return nil, fmt.Errorf("error deleting range: %w", err)
-	}
-	t := true
-	return &t, nil
-}
-
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
