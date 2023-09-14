@@ -16,10 +16,15 @@ import (
 type ContractType int
 
 const (
+	// BridgeContractType is the ContractType for the bridge contract.
 	BridgeContractType ContractType = iota
+	// SwapContractType is the ContractType for the swap contract.
 	SwapContractType
+	// MessageBusContractType is the ContractType for the message bus contract.
 	MessageBusContractType
+	// MetaSwapContractType is the ContractType for the meta swap contract.
 	MetaSwapContractType
+	// CCTPContractType is the ContractType for the cctp contract.
 	CCTPContractType
 )
 
@@ -27,6 +32,7 @@ func (c ContractType) String() string {
 	return [...]string{"bridge", "swap", "messagebus", "metaswap", "cctp"}[c]
 }
 
+// ContractTypeFromString converts a string (intended to be from parsed config) into the ContractType type.
 func ContractTypeFromString(s string) (ContractType, error) {
 	switch s {
 	case "bridge":

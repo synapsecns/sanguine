@@ -437,15 +437,11 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 	if filter == nil {
 		return nil, fmt.Errorf("this swap address is not in the server config, chainid: %d, server: %s", chainID, swapLog.Address.String())
 	}
-	swapEvent, err := filter.ParseTokenSwap(swapLog)
-	if err != nil || swapEvent == nil {
+	iFace, err := filter.ParseTokenSwap(swapLog)
+	if err != nil || iFace == nil {
 		return nil, fmt.Errorf("error parsing log, chainid: %d, server: %s", chainID, swapLog.Address.String())
 	}
 
-	iFace, err := filter.ParseTokenSwap(swapLog)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse swap event: %w", err)
-	}
 	soldID := iFace.SoldId
 	address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
 	if err != nil {
@@ -493,6 +489,9 @@ func (r Resolver) storeBridgeEvent(bridgeEvent interface{}) {
 	defer cancel()
 	storeErr := r.DB.StoreEvent(storeCtx, bridgeEvent)
 	if storeErr != nil {
+		// Log the error and continue. This function is only called by the get origin/destination function, which its only purpose is to return data
+		// from the chain and return it to the user. If storage fails, it should not disrupt this core purpose. Furthermore, we can assume that in
+		// the case that storage of this data fails, it will be picked up by scribe and explorer in the next minute and stored correctly.
 		logger.Errorf("could not store log while storing origin bridge watcher tx %v", storeErr)
 	}
 }

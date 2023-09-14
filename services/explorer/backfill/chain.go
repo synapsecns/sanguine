@@ -119,7 +119,6 @@ func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig)
 	contractType, err := indexerconfig.ContractTypeFromString(contract.ContractType)
 	if err != nil {
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
-
 	}
 	switch contractType {
 	case indexerconfig.BridgeContractType:
@@ -132,7 +131,6 @@ func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig)
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 	case indexerconfig.CCTPContractType:
 		eventParser = c.cctpParser
-
 	}
 	return eventParser, nil
 }
