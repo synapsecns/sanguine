@@ -9,7 +9,7 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { XIcon } from '@heroicons/react/outline'
 
 export const SearchBar = () => {
-  const { onSearchInput } = usePortfolioActionHandlers()
+  const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
   const { searchInput }: PortfolioState = usePortfolioState()
 
   const isSearchActive: boolean = searchInput.length > 0
@@ -24,7 +24,7 @@ export const SearchBar = () => {
         searchStr={searchInput}
         onSearch={onSearchInput}
       />
-      <ClearSearchButton show={isSearchActive} onClick={() => null} />
+      <ClearSearchButton show={isSearchActive} onClick={clearSearchInput} />
     </div>
   )
 }
@@ -43,7 +43,7 @@ export const ClearSearchButton = ({
         flex w-6 h-6 right-1
         items-center justify-center
         border border-separator rounded-full
-        hover:cursor-pointer
+        hover:cursor-pointer hover:border-0
       `}
       onClick={onClick}
     >
