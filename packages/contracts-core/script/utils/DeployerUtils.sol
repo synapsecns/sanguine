@@ -84,14 +84,9 @@ contract DeployerUtils is Script {
             CREATE3Factory NewFactory = new CREATE3Factory();
             saveDeployment("Create3Factory", "Create3Factory", address(NewFactory), "0x");
             factoryDeployment = address(NewFactory);
-            console.log("all done");
-            address homie = tryLoadDeployment("Create3Factory");
-            console.log("fuck them");
-            console.log(homie);
 
         }
         factory = ICreate3Factory(factoryDeployment);
-        console.log(address(factory));
         return factory;
     }
 
