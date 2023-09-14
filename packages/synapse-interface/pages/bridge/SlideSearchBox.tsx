@@ -14,6 +14,7 @@ export default function SlideSearchBox({
 
   return (
     <input
+      data-test-id="slide-search-box"
       ref={inputRef}
       className={`
         text-primaryTextColor
