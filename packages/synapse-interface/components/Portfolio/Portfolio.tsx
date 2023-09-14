@@ -7,6 +7,7 @@ import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
+  TokenWithBalanceAndAllowances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { PortfolioContent } from './PortfolioContent/PortfolioContent'
 import {
@@ -46,22 +47,16 @@ export const Portfolio = () => {
 
   const filteredBySearchInput = useMemo(() => {
     if (filteredPortfolioDataForBalances) {
-      const flattened: TokenWithBalanceAndAllowance[] = []
-
-      console.log(
-        'filteredPortfolioDataForBalances: ',
-        filteredPortfolioDataForBalances
-      )
+      const flattened: TokenWithBalanceAndAllowances[] = []
+      const reconstructedFilteredData: NetworkTokenBalancesAndAllowances = {}
 
       Object.entries(filteredPortfolioDataForBalances).forEach(
         ([chainId, tokens]) => {
-          tokens.forEach((token: TokenWithBalanceAndAllowance) => {
+          tokens.forEach((token: TokenWithBalanceAndAllowances) => {
             flattened.push({ ...token })
           })
         }
       )
-
-      console.log('flattened:', flattened)
 
       const fuseOptions = {
         includeScore: true,
@@ -74,9 +69,22 @@ export const Portfolio = () => {
       if (searchInput.length > 0) {
         const results = fuse
           .search(searchInput)
-          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowance>) => i.item)
+          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
 
-        console.log('results:', results)
+        results.forEach((item: TokenWithBalanceAndAllowances) => {
+          const chainId = item.queriedChain.id
+
+          if (reconstructedFilteredData[chainId]) {
+            reconstructedFilteredData[chainId] = [
+              ...reconstructedFilteredData[chainId],
+              item,
+            ]
+          } else {
+            reconstructedFilteredData[chainId] = [item]
+          }
+        })
+
+        console.log('reconstructedFilteredData:', reconstructedFilteredData)
       }
     }
   }, [searchInput, filteredPortfolioDataForBalances])
