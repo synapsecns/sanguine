@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/agents/config"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
@@ -116,7 +117,7 @@ var ExecutorRunCommand = &cli.Command{
 		}
 
 		switch executorConfig.ScribeConfig.Type {
-		case "embedded":
+		case config.EmbeddedScribeType:
 			eventDB, err := scribeAPI.InitDB(
 				ctx,
 				executorConfig.DBConfig.Type,
@@ -171,7 +172,7 @@ var ExecutorRunCommand = &cli.Command{
 			})
 
 			scribeClient = embedded.ScribeClient
-		case "remote":
+		case config.RemoteScribeType:
 			scribeClient = client.NewRemoteScribe(
 				uint16(executorConfig.ScribeConfig.Port),
 				executorConfig.ScribeConfig.URL,

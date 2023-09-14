@@ -22,7 +22,7 @@ func configFixture(c ConfigSuite) executor.Config {
 			Source: gofakeit.Word(),
 		},
 		ScribeConfig: config.ScribeConfig{
-			Type: "embedded",
+			Type: config.EmbeddedScribeType,
 			EmbeddedDBConfig: scribeConfig.DBConfig{
 				Type: "mysql",
 			},
