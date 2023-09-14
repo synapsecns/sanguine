@@ -177,8 +177,7 @@ jobs:
           cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
           for pkg in $(go list ./...); do
-            #$PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="." --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg
-            go test -coverpkg="$pkg" -coverprofile=profile.cov $pkg
+            $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg
             if [ -f profile.cov ]; then
               tail -n +2 profile.cov >> coverage.txt
               rm profile.cov
