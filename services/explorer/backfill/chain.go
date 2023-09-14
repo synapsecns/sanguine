@@ -116,7 +116,12 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 // makeEventParser returns a parser for a contract using it's config.
 // in the event one is not present, this function will return an error.
 func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig) (eventParser parser.Parser, err error) {
-	switch contract.ContractType {
+	contractType, err := indexerconfig.ContractTypeFromString(contract.ContractType)
+	if err != nil {
+		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
+
+	}
+	switch contractType {
 	case indexerconfig.BridgeContractType:
 		eventParser = c.bridgeParser
 	case indexerconfig.SwapContractType:
@@ -127,8 +132,7 @@ func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig)
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 	case indexerconfig.CCTPContractType:
 		eventParser = c.cctpParser
-	default:
-		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
+
 	}
 	return eventParser, nil
 }

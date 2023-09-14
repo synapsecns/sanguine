@@ -13,19 +13,36 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TODO: these should be put into the contracts themselves and implement a custom type.
+type ContractType int
+
 const (
-	// BridgeContractType is the bridge contract type.
-	BridgeContractType = "bridge"
-	// SwapContractType is the swap contract type.
-	SwapContractType = "swap"
-	// MessageBusContractType is the message bus contract type.
-	MessageBusContractType = "messagebus"
-	// MetaSwapContractType is the meta swap contract type.
-	MetaSwapContractType = "metaswap"
-	// CCTPContractType is the CCTP contract type.
-	CCTPContractType = "cctp"
+	BridgeContractType ContractType = iota
+	SwapContractType
+	MessageBusContractType
+	MetaSwapContractType
+	CCTPContractType
 )
+
+func (c ContractType) String() string {
+	return [...]string{"bridge", "swap", "messagebus", "metaswap", "cctp"}[c]
+}
+
+func ContractTypeFromString(s string) (ContractType, error) {
+	switch s {
+	case "bridge":
+		return BridgeContractType, nil
+	case "swap":
+		return SwapContractType, nil
+	case "messagebus":
+		return MessageBusContractType, nil
+	case "metaswap":
+		return MetaSwapContractType, nil
+	case "cctp":
+		return CCTPContractType, nil
+	default:
+		return -1, fmt.Errorf("unknown contract type: %s", s)
+	}
+}
 
 // Config is used to configure the explorer's data consumption.
 type Config struct {
@@ -126,13 +143,16 @@ func (c ChainConfig) IsValid() error {
 
 // IsValid validates the chain config.
 func (c ContractConfig) IsValid() error {
+	_, err := ContractTypeFromString(c.ContractType)
+	if err != nil {
+		return fmt.Errorf("contract_type %s invalid for address %s", c.ContractType, c.Address)
+	}
+
 	switch {
 	case c.StartBlock == 0:
 		return fmt.Errorf("start_block, %w", config.ErrRequiredContractField)
 	case c.Address == "":
 		return fmt.Errorf("address, %w", config.ErrRequiredContractField)
-	case c.ContractType != BridgeContractType && c.ContractType != SwapContractType && c.ContractType != MessageBusContractType && c.ContractType != MetaSwapContractType && c.ContractType != CCTPContractType:
-		return fmt.Errorf("contract_type %s invalid for address %s", c.ContractType, c.Address)
 	}
 	return nil
 }
