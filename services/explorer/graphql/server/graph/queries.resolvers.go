@@ -10,7 +10,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
@@ -19,9 +18,6 @@ import (
 
 // BridgeTransactions is the resolver for the bridgeTransactions2 field.
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) ([]*model.BridgeTransaction, error) {
-	// hardcode for now. This is for a hotfix to the explorer api.
-	useMv = core.PtrTo(true)
-
 	var results []*model.BridgeTransaction
 	if useMv != nil && *useMv {
 		var mvResults []*model.BridgeTransaction
