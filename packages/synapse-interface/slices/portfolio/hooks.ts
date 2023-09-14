@@ -9,9 +9,9 @@ import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
   getTokenBalances,
+  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { getTokenAllowance } from './../../utils/actions/getTokenAllowance'
-import { TokenAndBalance } from '@/utils/sortTokens'
 import { Token } from '@/utils/types'
 
 export const usePortfolioState = (): RootState['portfolio'] => {

@@ -6,6 +6,7 @@ import {
   setActiveTab,
   updateSingleTokenAllowance,
   resetPortfolioState,
+  typeSearchInput,
 } from './actions'
 import {
   fetchAndStorePortfolioBalances,
@@ -111,9 +112,13 @@ export const portfolioSlice = createSlice({
           }
         )
       })
+      .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
+        state.searchInput = searchInput
+      })
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
         state.balancesAndAllowances = initialState.balancesAndAllowances
+        state.searchInput = initialState.searchInput
         state.status = initialState.status
         state.error = initialState.error
       })
