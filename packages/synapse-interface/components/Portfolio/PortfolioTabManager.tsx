@@ -2,6 +2,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import { MostRecentTransaction } from './Transaction/MostRecentTransaction'
+import { SearchBar } from './SearchBar'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ export const PortfolioTabManager = () => {
           tabType={PortfolioTabs.ACTIVITY}
           handleTabChange={handleTabChange}
         />
+        <SearchBar />
       </div>
       <div
         className={activeTab === PortfolioTabs.ACTIVITY ? 'hidden' : 'block'}
