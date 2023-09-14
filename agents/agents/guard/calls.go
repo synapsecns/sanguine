@@ -1,0 +1,96 @@
+package guard
+
+import (
+	"context"
+	"fmt"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+)
+
+type agentStatusContract interface {
+	// GetAgentStatus returns the current agent status for the given agent.
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
+}
+
+func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.Address) (agentStatus types.AgentStatus, err error) {
+	var contract agentStatusContract
+	if chainID == g.summitDomainID {
+		contract = g.domains[chainID].BondingManager()
+	} else {
+		contract = g.domains[chainID].LightManager()
+	}
+	contractCall := func(ctx context.Context) error {
+		agentStatus, err = contract.GetAgentStatus(ctx, agent)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get agent status: %w", err)
+	}
+	return agentStatus, err
+}
+
+type stateReportContract interface {
+	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
+	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
+	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+}
+
+func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state types.State, stateIndex int, data interface{}) (err error) {
+	var contract stateReportContract
+	if chainID == g.summitDomainID {
+		contract = g.domains[chainID].Inbox()
+	} else {
+		contract = g.domains[chainID].LightInbox()
+	}
+
+	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
+	switch fraudData := data.(type) {
+	case *types.FraudSnapshot:
+		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+		if err != nil {
+			return fmt.Errorf("could not sign state: %w", err)
+		}
+		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = contract.SubmitStateReportWithSnapshot(
+				transactor,
+				int64(stateIndex),
+				srSignature,
+				fraudData.Payload,
+				fraudData.Signature,
+			)
+			return
+		}
+	case *types.FraudAttestation:
+		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+		if err != nil {
+			return fmt.Errorf("could not sign state: %w", err)
+		}
+		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = contract.SubmitStateReportWithAttestation(
+				transactor,
+				int64(stateIndex),
+				srSignature,
+				fraudData.SnapshotPayload,
+				fraudData.Payload,
+				fraudData.Signature,
+			)
+			return
+		}
+	}
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), submitFunc)
+	if err != nil {
+		return fmt.Errorf("could not submit state report to chain %d: %w", chainID, err)
+	}
+	return nil
+}

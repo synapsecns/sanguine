@@ -218,7 +218,8 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		return fmt.Errorf("could not get snapshot: %w", err)
 	}
 
-	snapPayload, err := snapshot.Encode()
+	// Set the SnapshotPayload so that it can be passed to contract calls.
+	fraudAttestation.SnapshotPayload, err = snapshot.Encode()
 	if err != nil {
 		return fmt.Errorf("could not encode snapshot: %w", err)
 	}
@@ -249,7 +250,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				transactor,
 				int64(stateIndex),
-				snapPayload,
+				fraudAttestation.SnapshotPayload,
 				fraudAttestation.Payload,
 				fraudAttestation.Signature,
 			)
@@ -265,27 +266,9 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		}
 
 		// Submit the state report on summit.
-		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+		err = g.submitStateReport(ctx, g.summitDomainID, state, stateIndex, fraudAttestation)
 		if err != nil {
-			return fmt.Errorf("could not sign state: %w", err)
-		}
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
-				transactor,
-				int64(stateIndex),
-				srSignature,
-				snapPayload,
-				fraudAttestation.Payload,
-				fraudAttestation.Signature,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("could not submit state report with attestation on summit: %w", err)
-			}
-
-			return
-		})
-		if err != nil {
-			return fmt.Errorf("could not submit SubmitStateReportWithAttestation tx: %w", err)
+			return fmt.Errorf("could not submit state report: %w", err)
 		}
 
 		// Submit the state report on the remote chain.
@@ -296,23 +279,9 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		if !ok {
 			continue
 		}
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudAttestation.AgentDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitStateReportWithAttestation(
-				transactor,
-				int64(stateIndex),
-				srSignature,
-				snapPayload,
-				fraudAttestation.Payload,
-				fraudAttestation.Signature,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("could not submit state report with attestation on agent domain %d: %w", fraudAttestation.AgentDomain, err)
-			}
-
-			return
-		})
+		err = g.submitStateReport(ctx, g.summitDomainID, state, stateIndex, fraudAttestation)
 		if err != nil {
-			return fmt.Errorf("could not submit SubmitStateReportWithAttestation tx: %w", err)
+			return fmt.Errorf("could not submit state report: %w", err)
 		}
 	}
 

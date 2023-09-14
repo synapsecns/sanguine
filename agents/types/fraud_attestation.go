@@ -14,6 +14,8 @@ type FraudAttestation struct {
 	Payload []byte
 	// Signature is the signature of the attestation payload signed by the Notary.
 	Signature []byte
+	// SnapshotPayload is the snapshot payload for the snapshot that the attestation corresponds to.
+	SnapshotPayload []byte
 }
 
 // NewFraudAttestationFromPayload creates a new FraudAttestation from the attestation payload, domain, notary and attestation signature.
