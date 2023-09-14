@@ -108,9 +108,6 @@ func (c ChainConfig) IsValid() error {
 	case c.MaxGoroutines == 0:
 		return fmt.Errorf("max_goroutines, %w", config.ErrRequiredGlobalField)
 	}
-	if len(c.Contracts) > 0 {
-		return fmt.Errorf("no contracts specified for chain %d", c.ChainID)
-	}
 
 	intSet := collection.Set[string]{}
 	for _, contract := range c.Contracts {
