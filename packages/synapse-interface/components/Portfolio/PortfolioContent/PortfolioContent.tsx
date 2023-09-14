@@ -138,7 +138,7 @@ export const EmptyPortfolioContent = () => {
   const { address } = useAccount()
   const shortened = shortenAddress(address, 3)
   return (
-    <div data-test-id="empty-portfolio-content" className="p-1">
+    <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
         No bridgeable assets found {address && `for ${shortened}`}.
       </p>
