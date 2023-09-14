@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
+import Fuse from 'fuse.js'
 import { useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -60,20 +61,23 @@ export const Portfolio = () => {
         }
       )
 
+      console.log('flattened:', flattened)
+
       const fuseOptions = {
         includeScore: true,
         threshold: 0.0,
-        keys: [
-          {
-            name: 'name',
-            weight: 2,
-          },
-          'id',
-          'nativeCurrency.symbol',
-        ],
+        keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
 
-      console.log('flattened:', flattened)
+      const fuse = new Fuse(flattened, fuseOptions)
+
+      if (searchInput.length > 0) {
+        const results = fuse
+          .search(searchInput)
+          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowance>) => i.item)
+
+        console.log('results:', results)
+      }
     }
   }, [searchInput, filteredPortfolioDataForBalances])
 
