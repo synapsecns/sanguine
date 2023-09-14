@@ -59,3 +59,8 @@ submitter_config:
       gas_bump_percentage: 40
       is_l2: true
       gas_estimate: 7500000
+
+scribe_config:
+  type: 'remote'
+  port: 9002
+  url: 'scribe'

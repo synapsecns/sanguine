@@ -13,7 +13,7 @@ devnet-clean: ## Delete all devnet data and docker containers
 	cd ../../docker/devnet && docker-compose down --volumes
 
 devnet-up: ## This should be run to start the devnet docker-containers. This does not deploy anything.
-	cd ../../docker/devnet && docker-compose up -d
+	cd ../../docker/devnet && docker-compose up -d --build
 
 devnet-deploy: ## This should be run exactly once to deploy the contracts to the devnet.
 	# backup the .env in case there's real data in there
@@ -27,3 +27,6 @@ devnet-deploy: ## This should be run exactly once to deploy the contracts to the
 	forge script script/DeployClients003.s.sol  --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
 	forge script script/DeployClients003.s.sol  --ffi -f chain_b --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
 	forge script script/DeployClients003.s.sol  --ffi -f chain_c --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+
+devnet-logs:
+	cd ../../docker/devnet && docker-compose logs -f

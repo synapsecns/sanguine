@@ -13,24 +13,26 @@ volumes:
 
 
 services:
-#  guard:
-#    entrypoint: agents
-#    depends_on:
-#      - omnirpc
-#    build:
-#      context: ../../
-#      dockerfile: docker/devnet/agents.Dockerfile
-#    volumes:
-#      - '${PWD}/config/guard-config.yml:/config/guard-config.yml'
-#      - '${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt'
-#      - guard_data:/data
-#    command:
-#      - 'guard-run'
-#      - '--config'
-#      - '/config/guard-config.yml'
-#    environment:
-#      METRICS_HANDLER: jaeger
-#      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+  guard:
+    entrypoint: agents
+    depends_on:
+      - omnirpc
+      - scribe
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/guard-config.yml:/config/guard-config.yml'
+      - '${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt'
+      - guard_data:/data
+    command:
+      - 'guard-run'
+      - '--config'
+      - '/config/guard-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
 #
 #  notary-43:
 #    entrypoint: agents
@@ -85,16 +87,14 @@ services:
       --port=9002
       --db=sqlite
       --path=/data
-      --omnirpc=http://omnirpc:9001/confirmations
+      --omnirpc=http://omnirpc:9001
     volumes:
-      - '${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml'
       - scribe_data:/data
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
     ports:
-#      - '8080:7004'
       - '9002:9002'
 
 
@@ -109,7 +109,6 @@ services:
       dockerfile: docker/devnet/omnirpc.Dockerfile
     ports:
       - '9001:9001'
-#      - '8080:7005'
     command: >
       omnirpc
       server
