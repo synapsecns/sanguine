@@ -38,27 +38,24 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 	var toResults []*model.BridgeTransaction
 
 	var wg sync.WaitGroup
-	var err error
+	var originErr error
+	var destinationErr error
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		fromResults, err = r.GetBridgeTxsFromOrigin(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, onlyCctp, page, false)
+		fromResults, originErr = r.GetBridgeTxsFromOrigin(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, onlyCctp, page, false)
 	}()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		toResults, err = r.GetBridgeTxsFromDestination(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, tokenAddressFrom, tokenAddressTo, onlyCctp, page, pending)
+		toResults, destinationErr = r.GetBridgeTxsFromDestination(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, tokenAddressFrom, tokenAddressTo, onlyCctp, page, pending)
 	}()
 
 	wg.Wait()
-	if err != nil {
-		return nil, err
+	if originErr != nil || destinationErr != nil {
+		return nil, fmt.Errorf("error while getting txs. orgin err: %w, destination err: %w", originErr, destinationErr)
 	}
 	results = r.mergeBridgeTransactions(fromResults, toResults)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
-	}
 	sort.Sort(SortBridgeTxType(results))
 	return results, nil
 }
