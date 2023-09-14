@@ -179,6 +179,7 @@ jobs:
         run: |
           set -e
           max_num_retries=5
+          pwd
           cd ${{ matrix.package }}
           echo "mode: atomic" > coverage.txt
 
