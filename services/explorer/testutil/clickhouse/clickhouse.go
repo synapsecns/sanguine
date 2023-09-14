@@ -3,14 +3,16 @@ package clickhouse
 import (
 	"database/sql"
 	"fmt"
-	"github.com/ClickHouse/clickhouse-go/v2"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
-	"github.com/phayes/freeport"
 	"net"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
+	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core/dockerutil"
 )
 
 // NewClickhouseStore creates a new clickhouse db hosted at localhost:xxxx with ory/dockertest.
@@ -56,7 +58,7 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 	})
 
 	// Fetch port assigned to container
-	address := fmt.Sprintf("%s:%s", "localhost", resource.GetPort("9000/tcp"))
+	address := fmt.Sprintf("%s:%s", "localhost", dockerutil.GetPort(resource, "9000/tcp"))
 
 	// Docker will hard kill the container in 360 seconds (this is a test env).
 	// In a continuous integration environment, this is increased to allow for the lower cpu count

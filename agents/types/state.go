@@ -1,8 +1,12 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/crypto"
+	"context"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 const (
@@ -17,6 +21,7 @@ const (
 
 // State is the state interface.
 type State interface {
+	Encoder
 	// Root is the root of the Origin Merkle Tree.
 	Root() [32]byte
 	// Origin is the domain where Origin is located.
@@ -34,6 +39,8 @@ type State interface {
 	Hash() ([32]byte, error)
 	// SubLeaves returns the left and right sub-leaves of the state.
 	SubLeaves() (leftLeaf, rightLeaf [32]byte, err error)
+	// SignState returns the signature of the state payload signed by the signer.
+	SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
 }
 
 type state struct {
@@ -93,7 +100,7 @@ func (s state) Hash() ([32]byte, error) {
 }
 
 func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
-	encodedState, err := EncodeState(s)
+	encodedState, err := s.Encode()
 	if err != nil {
 		return
 	}
@@ -101,6 +108,10 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	leftLeaf = crypto.Keccak256Hash(encodedState[stateOffsetRoot:stateOffsetNonce])
 	rightLeaf = crypto.Keccak256Hash(encodedState[stateOffsetNonce:stateSize])
 	return
+}
+
+func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
+	return signEncoder(ctx, signer, s, StateInvalidSalt)
 }
 
 var _ State = state{}
