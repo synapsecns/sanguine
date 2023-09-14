@@ -75,13 +75,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
 			}
-			ok, err := g.ensureAgentActive(ctx, fraudSnapshot.Agent, chainID)
-			if err != nil {
-				return fmt.Errorf("could not prepare state report on chain %d: %w", chainID, err)
-			}
-			if !ok {
-				continue
-			}
 			_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 				// TODO: can make the summit / remote contracts more composed
 				if chainID == g.summitDomainID {
@@ -241,6 +234,16 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			continue
 		}
 
+		// Ensure the agent that provided the snapshot is active on origin.
+		ok, err := g.ensureAgentActive(ctx, fraudAttestation.Notary, state.Origin())
+		if err != nil {
+			return fmt.Errorf("could not ensure agent is active: %w", err)
+		}
+		if !ok {
+			logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", fraudAttestation.Notary.Hex(), state.Origin())
+			continue
+		}
+
 		// Initiate slashing on origin.
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
@@ -265,13 +268,6 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
-		}
-		ok, err := g.ensureAgentActive(ctx, fraudAttestation.Notary, g.summitDomainID)
-		if err != nil {
-			return fmt.Errorf("could not prepare state report on summit: %w", err)
-		}
-		if !ok {
-			continue
 		}
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
