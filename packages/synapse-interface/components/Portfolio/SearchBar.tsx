@@ -1,6 +1,4 @@
-import Fuse from 'fuse.js'
 import SlideSearchBox from '@/pages/bridge/SlideSearchBox'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
   usePortfolioActionHandlers,
   usePortfolioState,

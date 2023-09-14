@@ -82,8 +82,6 @@ export const Portfolio = () => {
       return searchFiltered
     }, [searchInput, filteredPortfolioDataForBalances])
 
-  console.log('filteredBySearchInput:', filteredBySearchInput)
-
   useEffect(() => {
     dispatch(resetPortfolioState())
   }, [address])
