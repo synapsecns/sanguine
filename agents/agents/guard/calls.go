@@ -18,6 +18,7 @@ type agentStatusContract interface {
 	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 }
 
+// getAgentStatus fetches the agent status of an agent from the given chain.
 func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.Address) (agentStatus types.AgentStatus, err error) {
 	var contract agentStatusContract
 	if chainID == g.summitDomainID {
@@ -39,6 +40,7 @@ func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.
 	return agentStatus, nil
 }
 
+// verifyState verifies a state on a given chain.
 func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex int, data types.StateValidationData) (err error) {
 	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
 	if types.HasAttestation(data) {
@@ -88,6 +90,7 @@ type stateReportContract interface {
 	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
+// submitStateReport submits a state report to the given chain, provided a snapshot or attestation.
 func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state types.State, stateIndex int, data types.StateValidationData) (err error) {
 	var contract stateReportContract
 	if chainID == g.summitDomainID {
@@ -142,4 +145,20 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 	}
 	fmt.Printf("submitted state report on chain %v\n", chainID)
 	return nil
+}
+
+// getDisputeStatus fetches the dispute status of an agent from Summit.
+func (g Guard) getDisputeStatus(ctx context.Context, agent common.Address) (status types.DisputeStatus, err error) {
+	contractCall := func(ctx context.Context) error {
+		status, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, agent)
+		if err != nil {
+			return fmt.Errorf("could not get dispute status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get dispute status: %w", err)
+	}
+	return status, nil
 }

@@ -48,21 +48,6 @@ func (g Guard) getStateReportChains(ctx context.Context, chainID uint32, agent c
 	return stateReportChains, nil
 }
 
-func (g Guard) getDisputeStatus(ctx context.Context, agent common.Address) (status types.DisputeStatus, err error) {
-	contractCall := func(ctx context.Context) error {
-		status, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, agent)
-		if err != nil {
-			return fmt.Errorf("could not get dispute status: %w", err)
-		}
-		return nil
-	}
-	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
-	if err != nil {
-		return nil, fmt.Errorf("could not get dispute status: %w", err)
-	}
-	return status, nil
-}
-
 // isStateSlashable checks if a state is slashable, i.e. if the state is valid on the
 // Origin, and if the agent is in a slashable status.
 func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, error) {
@@ -288,6 +273,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 	return nil
 }
 
+// handleReceiptAccepted checks whether a receipt is valid and submits a receipt report if not.
+//
 //nolint:cyclop
 func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) error {
 	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
