@@ -56,38 +56,38 @@ func NewAttestationWithMetadata(attestationPayload []byte, agentDomain uint32, n
 }
 
 // SetSnapshotPayload sets the snapshot payload.
-func (f AttestationWithMetadata) SetSnapshotPayload(snapshotPayload []byte) {
-	f.snapshotPayload = snapshotPayload
+func (a *AttestationWithMetadata) SetSnapshotPayload(snapshotPayload []byte) {
+	a.snapshotPayload = snapshotPayload
 }
 
 // Agent returns the agent that submitted the attestation.
-func (f AttestationWithMetadata) Agent() common.Address {
-	return f.notary
+func (a *AttestationWithMetadata) Agent() common.Address {
+	return a.notary
 }
 
 // AgentDomain returns the domain of the agent that submitted the attestation.
-func (f AttestationWithMetadata) AgentDomain() uint32 {
-	return f.agentDomain
+func (a *AttestationWithMetadata) AgentDomain() uint32 {
+	return a.agentDomain
 }
 
 // SnapshotPayload returns the snapshot payload.
-func (f AttestationWithMetadata) SnapshotPayload() []byte {
-	return f.snapshotPayload
+func (a *AttestationWithMetadata) SnapshotPayload() []byte {
+	return a.snapshotPayload
 }
 
 // SnapshotSignature returns the nil, since the data corresponds to an attestation.
-func (f AttestationWithMetadata) SnapshotSignature() []byte {
+func (a *AttestationWithMetadata) SnapshotSignature() []byte {
 	return nil
 }
 
 // AttestationPayload returns the attestation payload.
-func (f AttestationWithMetadata) AttestationPayload() []byte {
-	return f.attestationPayload
+func (a *AttestationWithMetadata) AttestationPayload() []byte {
+	return a.attestationPayload
 }
 
 // AttestationSignature returns the attestation signature.
-func (f AttestationWithMetadata) AttestationSignature() []byte {
-	return f.attestationSignature
+func (a *AttestationWithMetadata) AttestationSignature() []byte {
+	return a.attestationSignature
 }
 
 // SnapshotWithMetadata is a snapshot type with additional metadata for fraud handling.
@@ -117,31 +117,31 @@ func NewSnapshotWithMetadata(snapshotPayload []byte, agentDomain uint32, agent c
 }
 
 // Agent returns the agent that submitted the snapshot.
-func (f SnapshotWithMetadata) Agent() common.Address {
-	return f.agent
+func (s *SnapshotWithMetadata) Agent() common.Address {
+	return s.agent
 }
 
 // AgentDomain returns the domain of the agent that submitted the snapshot.
-func (f SnapshotWithMetadata) AgentDomain() uint32 {
-	return f.agentDomain
+func (s *SnapshotWithMetadata) AgentDomain() uint32 {
+	return s.agentDomain
 }
 
 // SnapshotPayload returns the snapshot payload.
-func (f SnapshotWithMetadata) SnapshotPayload() []byte {
-	return f.snapshotPayload
+func (s *SnapshotWithMetadata) SnapshotPayload() []byte {
+	return s.snapshotPayload
 }
 
 // SnapshotSignature returns the snapshot signature.
-func (f SnapshotWithMetadata) SnapshotSignature() []byte {
-	return f.snapshotSignature
+func (s *SnapshotWithMetadata) SnapshotSignature() []byte {
+	return s.snapshotSignature
 }
 
 // AttestationPayload returns nil, since the data corresponds to a snapshot.
-func (f SnapshotWithMetadata) AttestationPayload() []byte {
+func (s *SnapshotWithMetadata) AttestationPayload() []byte {
 	return nil
 }
 
 // AttestationSignature returns nil, since the data corresponds to a snapshot.
-func (f SnapshotWithMetadata) AttestationSignature() []byte {
+func (s *SnapshotWithMetadata) AttestationSignature() []byte {
 	return nil
 }
