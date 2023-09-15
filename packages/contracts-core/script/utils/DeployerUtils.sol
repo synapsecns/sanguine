@@ -86,7 +86,7 @@ contract DeployerUtils is Script {
     }
 
     // @dev must be called after setupPK()
-    function setupDevnetIfEnabled() public {
+    function setupDevnetIfEnabled() internal {
         devnetEnabled = vm.envOr(DEVNET_ENABLED_VAR, false);
 
         if (devnetEnabled) {
