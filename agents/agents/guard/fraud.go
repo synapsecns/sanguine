@@ -61,46 +61,21 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not submit VerifyStateWithSnapshot tx: %w", err)
 		}
 
-		// Check if we should submit the state report.
-		stateReportChains, err := g.getStateReportChains(ctx, fraudSnapshot)
+		// Evaluate which chains need a state report.
+		stateReportChains, err := g.getStateReportChains(ctx, fraudSnapshot.AgentDomain, fraudSnapshot.Agent)
 		if err != nil {
 			return fmt.Errorf("could not get state report chains: %w", err)
 		}
+		fmt.Printf("stateReportChains: %v\n", stateReportChains)
 
 		// Submit the state report on each eligible chain.
 		// If a notary has not been reported anywhere,
 		// report should be submitted on both summit and remote.
 		for _, chainID := range stateReportChains {
-			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+			err = g.submitStateReport(ctx, chainID, state, stateIndex, fraudSnapshot)
 			if err != nil {
-				return fmt.Errorf("could not sign state: %w", err)
-			}
-			_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-				// TODO: can make the summit / remote contracts more composed
-				if chainID == g.summitDomainID {
-					tx, err = g.domains[chainID].Inbox().SubmitStateReportWithSnapshot(
-						transactor,
-						int64(stateIndex),
-						srSignature,
-						fraudSnapshot.Payload,
-						fraudSnapshot.Signature,
-					)
-				} else {
-					tx, err = g.domains[chainID].LightInbox().SubmitStateReportWithSnapshot(
-						transactor,
-						int64(stateIndex),
-						srSignature,
-						fraudSnapshot.Payload,
-						fraudSnapshot.Signature,
-					)
-				}
-				if err != nil {
-					return nil, fmt.Errorf("could not submit state report with snapshot to chain %d: %w", chainID, err)
-				}
-				return
-			})
-			if err != nil {
-				return fmt.Errorf("could not submit SubmitStateReportWithSnapshot tx: %w", err)
+				fmt.Printf("state report err: %v\n", err)
+				return fmt.Errorf("could not submit state report: %w", err)
 			}
 		}
 	}
@@ -111,14 +86,14 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 // Determine which chains need to receive the state report.
 // A chain should receive a state report if the fraudulent Notary has not yet been reported on that chain-
 // That is, a dispute has not yet been opened with this notary on that chain.
-func (g Guard) getStateReportChains(ctx context.Context, snapshot *types.FraudSnapshot) ([]uint32, error) {
+func (g Guard) getStateReportChains(ctx context.Context, chainID uint32, agent common.Address) ([]uint32, error) {
 	stateReportChains := []uint32{}
-	for _, chainID := range []uint32{g.summitDomainID, snapshot.AgentDomain} {
-		status, err := g.getDisputeStatus(ctx, chainID, snapshot.Agent)
+	for _, chainID := range []uint32{g.summitDomainID, chainID} {
+		status, err := g.getDisputeStatus(ctx, chainID, agent)
 		if err != nil {
 			return []uint32{}, err
 		}
-		isNotary := snapshot.AgentDomain != 0
+		isNotary := chainID != 0
 		isNotInDispute := status.Flag() == types.DisputeFlagNone
 		if isNotary && isNotInDispute {
 			stateReportChains = append(stateReportChains, chainID)
@@ -260,28 +235,24 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 			return
 		})
-
 		if err != nil {
 			return fmt.Errorf("could not submit VerifyStateWithAttestation tx: %w", err)
 		}
 
-		// Submit the state report on summit.
-		err = g.submitStateReport(ctx, g.summitDomainID, state, stateIndex, fraudAttestation)
+		// Evaluate which chains need a state report.
+		stateReportChains, err := g.getStateReportChains(ctx, fraudAttestation.AgentDomain, fraudAttestation.Notary)
 		if err != nil {
-			return fmt.Errorf("could not submit state report: %w", err)
+			return fmt.Errorf("could not get state report chains: %w", err)
 		}
 
-		// Submit the state report on the remote chain.
-		ok, err = g.ensureAgentActive(ctx, fraudAttestation.Notary, fraudAttestation.AgentDomain)
-		if err != nil {
-			return fmt.Errorf("could not prepare state report on remote: %w", err)
-		}
-		if !ok {
-			continue
-		}
-		err = g.submitStateReport(ctx, g.summitDomainID, state, stateIndex, fraudAttestation)
-		if err != nil {
-			return fmt.Errorf("could not submit state report: %w", err)
+		// Submit the state report on each eligible chain.
+		// If a notary has not been reported anywhere,
+		// report should be submitted on both summit and remote.
+		for _, chainID := range stateReportChains {
+			err = g.submitStateReport(ctx, chainID, state, stateIndex, fraudAttestation)
+			if err != nil {
+				return fmt.Errorf("could not submit state report: %w", err)
+			}
 		}
 	}
 

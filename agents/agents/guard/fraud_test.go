@@ -234,6 +234,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
+		fmt.Printf("agent flag: %v\n", status.Flag().String())
 
 		if status.Flag() == types.AgentFlagFraudulent {
 			return true
@@ -248,13 +249,16 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		return err == nil
 	})
+	fmt.Println("got dispute")
 
 	// Verify that a state report was submitted on summit.
 	fraudulentState := fraudulentSnapshot.States()[0]
 	g.verifyStateReport(g.InboxOnSummit, 1, fraudulentState)
+	fmt.Println("verified state report 1")
 
 	// Verify that a state report was submitted on destination.
 	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
+	fmt.Println("verified state report 2")
 }
 
 func (g GuardSuite) TestFraudulentAttestationOnDestination() {

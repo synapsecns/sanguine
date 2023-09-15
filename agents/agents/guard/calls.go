@@ -54,9 +54,11 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 		contract = g.domains[chainID].LightInbox()
 	}
 
+	var agent common.Address
 	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
 	switch fraudData := data.(type) {
 	case *types.FraudSnapshot:
+		agent = fraudData.Agent
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
@@ -72,6 +74,7 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 			return
 		}
 	case *types.FraudAttestation:
+		agent = fraudData.Notary
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
@@ -88,9 +91,21 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 			return
 		}
 	}
+
+	// Ensure the agent that provided the snapshot is active on the agent's respective domain.
+	ok, err := g.ensureAgentActive(ctx, agent, chainID)
+	if err != nil {
+		return fmt.Errorf("could not ensure agent is active: %w", err)
+	}
+	if !ok {
+		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", agent.Hex(), chainID)
+		return nil
+	}
+
 	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), submitFunc)
 	if err != nil {
 		return fmt.Errorf("could not submit state report to chain %d: %w", chainID, err)
 	}
+	fmt.Printf("submitted state report on chain %v\n", chainID)
 	return nil
 }
