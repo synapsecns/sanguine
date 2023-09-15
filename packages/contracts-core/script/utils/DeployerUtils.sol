@@ -41,10 +41,7 @@ contract DeployerUtils is Script {
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
 
-    // TODO: this should be set from one of the config files.
-    // default to original value in the git diff. Get @chitimeschi to review
-    // @dev: use getFactory() to get the factory
-    ICreate3Factory private factory = ICreate3Factory(0x6438CB36cb18520774EfC7A172410D8BBBe9a428);
+    ICreate3Factory private factory = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     bytes32 internal deploymentSalt;
 
