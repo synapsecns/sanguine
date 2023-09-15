@@ -45,6 +45,40 @@ func AllEventTypes() []EventType {
 		WithdrawAndRemoveEvent, RedeemV2Event, CircleRequestSentEvent, CircleRequestFulfilledEvent}
 }
 
+// GetEventType gets the str/clear text event type from EventType.
+//
+// nolint:cyclop
+func GetEventType(eventType uint8) string {
+	switch eventType {
+	case 0:
+		return "DepositEvent"
+	case 1:
+		return "RedeemEvent"
+	case 2:
+		return "WithdrawEvent"
+	case 3:
+		return "MintEvent"
+	case 4:
+		return "DepositAndSwapEvent"
+	case 5:
+		return "MintAndSwapEvent"
+	case 6:
+		return "RedeemAndSwapEvent"
+	case 7:
+		return "RedeemAndRemoveEvent"
+	case 8:
+		return "WithdrawAndRemoveEvent"
+	case 9:
+		return "RedeemV2Event"
+	case 10:
+		return "CircleRequestSentEvent"
+	case 11:
+		return "CircleRequestFulfilledEvent"
+	default:
+		return "Unknown"
+	}
+}
+
 // Int gets the int value of the event type.
 func (i EventType) Int() uint8 {
 	return uint8(i)

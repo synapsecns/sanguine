@@ -37,6 +37,8 @@ const (
 	EmptyGetLogsChunk
 	// FatalScribeError is for when something goes wrong with scribe.
 	FatalScribeError
+	// ErroneousHeadBlock is returned when the head block is below the last indexed.
+	ErroneousHeadBlock
 )
 
 const (
@@ -48,6 +50,10 @@ const (
 	FlushingLivefillAtHead
 	// CreatingSQLStore is returned when a SQL store is being created.
 	CreatingSQLStore
+	// BackfillCompleted is returned when a backfill is completed.
+	BackfillCompleted
+	// BeginBackfillIndexing is returned when a backfill is beginning.
+	BeginBackfillIndexing
 )
 
 // ErrorType is a type of error.
@@ -93,6 +99,8 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 		logger.Errorf("Could not read data from database. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case EmptyGetLogsChunk:
 		logger.Warnf("Encountered empty getlogs chunk%s", unpackIndexerConfig(indexerData))
+	case ErroneousHeadBlock:
+		logger.Warnf("Head block is below last indexed block%s", unpackIndexerConfig(indexerData))
 	default:
 		logger.Errorf("Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	}
@@ -122,6 +130,10 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 	switch statusType {
 	case InitiatingLivefill:
 		logger.Warnf("Initiating livefill on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
+	case BackfillCompleted:
+		logger.Warnf("Backfill completed on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
+	case BeginBackfillIndexing:
+		logger.Warnf("Backfill beginning on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case ConcurrencyThresholdReached:
 		logger.Warnf("Concurrency threshold reached on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case FlushingLivefillAtHead:
