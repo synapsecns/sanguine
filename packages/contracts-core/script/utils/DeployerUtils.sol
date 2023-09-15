@@ -22,10 +22,10 @@ contract DeployerUtils is Script {
     /// @dev Path to artifacts, deployments and configs directories
     string private constant ARTIFACTS = "artifacts/";
     string private constant DEPLOYMENTS = "deployments/";
-    string private DEPLOY_CONFIGS = "script/configs/";
+    string private deployConfigs = "script/configs/";
 
     // @dev wether or not devnet is enabled
-    bool private DEVNET_ENABLED = false;
+    bool private devnetEnabled = false;
     // @dev env var for wether or not devnet is in use
     string private constant DEVNET_ENABLED_VAR = "DEVNET";
     // @dev artifacted path to use if devnet is enabled;
@@ -66,7 +66,7 @@ contract DeployerUtils is Script {
     // TODO: this pattern sucks. It introduces potential unexpected behavior if the dev calls factory. directly.
     // It's also slow.
     function getFactory() internal returns (ICreate3Factory) {
-        if (!DEVNET_ENABLED) {
+        if (!devnetEnabled) {
             return factory;
         }
 
@@ -87,17 +87,17 @@ contract DeployerUtils is Script {
 
     // @dev must be called after setupPK()
     function setupDevnetIfEnabled() public {
-        DEVNET_ENABLED = vm.envOr(DEVNET_ENABLED_VAR, false);
+        devnetEnabled = vm.envOr(DEVNET_ENABLED_VAR, false);
 
-        if (DEVNET_ENABLED) {
-            DEVNET_ENABLED = true;
+        if (devnetEnabled) {
+            devnetEnabled = true;
             // setup the chains
             setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
             setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
             setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
 
             // override the configs path
-            DEPLOY_CONFIGS = DEPLOY_CONFIGS_DEVNET;
+            deployConfigs = DEPLOY_CONFIGS_DEVNET;
 
             chainAlias = getChainAlias();
         }
@@ -298,12 +298,12 @@ contract DeployerUtils is Script {
     /// @notice Returns path to the contract deploy config JSON on the current chain.
     function deployConfigPath(string memory contractName) public returns (string memory path) {
         require(bytes(chainAlias).length != 0, "Chain not set");
-        return string.concat(DEPLOY_CONFIGS, chainAlias, "/", deployConfigFn(contractName));
+        return string.concat(deployConfigs, chainAlias, "/", deployConfigFn(contractName));
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
     function globalDeployConfigPath(string memory contractName) public returns (string memory path) {
-        return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
+        return string.concat(deployConfigs, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already
