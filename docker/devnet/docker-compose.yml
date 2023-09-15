@@ -10,10 +10,14 @@ volumes:
   notary43_data:
   scribe_data:
   prometheus-data:
+  badger-data:
+  notary44_data:
+  executor_data:
 
 
 services:
   guard:
+    restart: unless-stopped
     entrypoint: agents
     depends_on:
       - omnirpc
@@ -33,18 +37,64 @@ services:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
-#
-#  notary-43:
+
+  notary-43:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/notary43-config.yml:/config/notary-config.yml'
+      - '${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt'
+      - notary43_data:/config/synapse.db
+    command:
+      - 'notary-run'
+      - '--config'
+      - '/config/notary-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+
+  notary-44:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/notary44-config.yml:/config/notary-config.yml'
+      - '${PWD}/config/notary44-bonded-signer.txt:/config/notary-bonded-signer.txt'
+      - notary44_data:/config/synapse.db
+    command:
+      - 'notary-run'
+      - '--config'
+      - '/config/notary-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+#  executor:
 #    entrypoint: agents
+#    restart: unless-stopped
 #    depends_on:
 #      - omnirpc
 #    build:
 #      context: ../../
 #      dockerfile: docker/devnet/agents.Dockerfile
 #    volumes:
-#      - '${PWD}/config/notary43-config.yml:/config/notary-config.yml'
-#      - '${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt'
-#      - notary43_data:/config/synapse.db
+#      - '${PWD}/config/notary44-config.yml:/config/notary-config.yml'
+#      - '${PWD}/config/executor-signer.txt:/config/executor-signer.txt'
+#      - executor_data:/config/synapse.db
 #    command:
 #      - 'notary-run'
 #      - '--config'
@@ -55,6 +105,7 @@ services:
 #      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
 #      GOLOG_LOG_LEVEL: debug
 
+
   scribe-indexer:
     depends_on:
     - omnirpc
@@ -62,6 +113,7 @@ services:
       context: ../../
       dockerfile: docker/devnet/scribe.Dockerfile
     entrypoint: scribe
+    restart: unless-stopped
     command: >
         scribe
         --config=/config/scribe.yaml
@@ -76,6 +128,7 @@ services:
       GOLOG_LOG_LEVEL: debug
 
   scribe:
+    restart: unless-stopped
     depends_on:
       - scribe-indexer
     build:
@@ -99,6 +152,7 @@ services:
 
 
   omnirpc:
+    restart: unless-stopped
     depends_on:
       - chain_a
       - chain_b
@@ -127,6 +181,7 @@ services:
 #      start_period: 5s
 
   chain_a:
+    restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
@@ -144,6 +199,7 @@ services:
       - chain_a_data:/data
 
   chain_b:
+    restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
@@ -161,6 +217,7 @@ services:
       - chain_b_data:/data
 
   chain_c:
+    restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
     command: >
@@ -177,8 +234,8 @@ services:
     volumes:
       - chain_b_data:/data
 
-
   tracing:
+    restart: unless-stopped
     image: jaegertracing/all-in-one:latest
     ports:
       - 6831:6831/udp
@@ -191,8 +248,16 @@ services:
       - 14268:14268
       - 14269:14269
       - 9411:9411
+    environment:
+      SPAN_STORAGE_TYPE: "badger"
+      BADGER_EPHEMERAL: "false"
+      BADGER_DIRECTORY_VALUE: "/badger/data"
+      BADGER_DIRECTORY_KEY: "/badger/key"
+    volumes:
+      - badger-data:/badger
 
   prometheus:
+    restart: unless-stopped
     image: prom/prometheus:v2.46.0
     ports:
       - 9000:9090

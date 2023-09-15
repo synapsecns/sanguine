@@ -1,0 +1,73 @@
+# The `db_config` field specifies the database type and the source (either a path or a connection string).
+db_config:
+  # Must be mysql or sqlite.
+  type: sqlite
+  # Source is either a path (for sqlite) or a connection string (for mysql).
+  source: '/config/synapse.db'
+
+# The base omnirpc url which each chain's collection of RPC's will be proxied through.
+base_omnirpc_url: http://omnirpc:9001
+refresh_interval_seconds: 5
+
+# For each chain (domain), specify the necessary contracts.
+# Remotes need: origin_address, destination_address, light_inbox_address, light_manager_address
+# Summit needs: origin_address, destination_address, summit_address, inbox_address, bonding_manager_address
+domains:
+  domain_client43:
+    domain_id: 43
+    type: EVM
+    required_confirmations: 0
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+    light_inbox_address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+    light_manager_address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
+  domain_client44:
+    domain_id: 44
+    type: EVM
+    required_confirmations: 0
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+    light_inbox_address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+    light_manager_address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
+  domain_client42:
+    domain_id: 42
+    type: EVM
+    required_confirmations: 0
+    # for some reason, origin and summit addresses are switched on synchain
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    summit_address: 0x1EC96ab1Fdb92565A0839b12d42c13c8135f6c11
+    inbox_address: 0x2eB68A0C21413aA78055F6F7F262De56979aFBEa
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+    bonding_manager_address: 0x27006519C5786863fAE35612Da9E0f0622ff8c58
+
+
+# Specify the summit domain id
+summit_domain_id: 42
+# A Notary's `domain_id` is the domain id of the chain it has posted a bond for.
+domain_id: 44
+
+# The `unbonded_signer` field specifies the path to the file containing the private key of the signer
+unbonded_signer:
+  type: 'File'
+  file: '/config/notary-bonded-signer.txt'
+
+# The `bonded_signer` is the account that will post a bond to the Summit contract. Specify its path to
+# the file containing the private key of the signer
+bonded_signer:
+  type: 'File'
+  file: '/config/notary-bonded-signer.txt'
+
+# The `submitter_config` field specifies how the submitter should submit messages to the chains.
+submitter_config:
+  chains:
+    42:
+      supports_eip_1559: true
+      gas_estimate: 7500000
+    43:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000
+    44:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000

@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/go/pkg/mod  --mount=type=cache,target=/root/
 
 FROM ubuntu:latest
 
-RUN apt update && apt install -y bash
+RUN apt update && apt install -y bash sqlite3 htop
 COPY --from=builder /app/bin/scribe /usr/local/bin
 
 CMD ["scribe"]
