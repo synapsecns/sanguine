@@ -143,7 +143,6 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 	if err != nil {
 		return fmt.Errorf("could not submit state report to chain %d: %w", chainID, err)
 	}
-	fmt.Printf("submitted state report on chain %v\n", chainID)
 	return nil
 }
 
