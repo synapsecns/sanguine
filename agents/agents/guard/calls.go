@@ -29,13 +29,13 @@ func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.
 	contractCall := func(ctx context.Context) error {
 		agentStatus, err = contract.GetAgentStatus(ctx, agent)
 		if err != nil {
-			return fmt.Errorf("could not get agent status: %w", err)
+			return fmt.Errorf("could not get agent status from contract: %w", err)
 		}
 		return nil
 	}
 	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get agent status: %w", err)
+		return nil, fmt.Errorf("could not get agent status after retry: %w", err)
 	}
 	return agentStatus, nil
 }
