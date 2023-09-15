@@ -1,0 +1,1 @@
+../path/to/repo/root/make/go.Makefile
