@@ -296,7 +296,7 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns path to the contract deploy config JSON on the current chain.
-    function deployConfigPath(string memory contractName) public returns (string memory path) {
+    function deployConfigPath(string memory contractName) internal returns (string memory path) {
         require(bytes(chainAlias).length != 0, "Chain not set");
         return string.concat(deployConfigs, chainAlias, "/", deployConfigFn(contractName));
     }
