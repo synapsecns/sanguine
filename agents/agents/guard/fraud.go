@@ -179,7 +179,6 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		if err != nil {
 			return fmt.Errorf("could not get state report chains: %w", err)
 		}
-		fmt.Printf("stateReportChains: %v\n", stateReportChains)
 
 		// Submit the state report on each eligible chain.
 		// If a notary has not been reported anywhere,
@@ -187,7 +186,6 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		for _, chainID := range stateReportChains {
 			err = g.submitStateReport(ctx, chainID, state, stateIndex, data)
 			if err != nil {
-				fmt.Printf("state report err: %v\n", err)
 				return fmt.Errorf("could not submit state report: %w", err)
 			}
 		}
