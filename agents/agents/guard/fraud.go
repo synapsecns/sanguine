@@ -17,12 +17,12 @@ import (
 //
 //nolint:cyclop,gocognit
 func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) error {
-	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
+	snapshotData, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
 	}
 
-	err = g.handleSnapshot(ctx, fraudSnapshot.Snapshot, fraudSnapshot)
+	err = g.handleSnapshot(ctx, snapshotData.Snapshot, snapshotData)
 	if err != nil {
 		return fmt.Errorf("could not handle snapshot: %w", err)
 	}
@@ -92,14 +92,14 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, e
 // handleAttestationAccepted checks whether an attestation is valid.
 // If invalid, initiate slashing and/or submit a fraud report.
 func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) error {
-	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
+	attestationData, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
 	}
 
 	var isValid bool
 	contractCall := func(ctx context.Context) error {
-		isValid, err = g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.AttestationPayload())
+		isValid, err = g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, attestationData.AttestationPayload())
 		if err != nil {
 			return fmt.Errorf("could not check validity of attestation: %w", err)
 		}
@@ -112,22 +112,22 @@ func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) 
 	}
 
 	if isValid {
-		return g.handleValidAttestation(ctx, fraudAttestation)
+		return g.handleValidAttestation(ctx, attestationData)
 	}
 
-	return g.handleInvalidAttestation(ctx, fraudAttestation)
+	return g.handleInvalidAttestation(ctx, attestationData)
 }
 
 // handleValidAttestation handles an attestation that is valid, but may
 // attest to a snapshot that contains an invalid state.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
+func (g Guard) handleValidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
 	// Fetch the attested snapshot.
 	var snapshot types.Snapshot
 	var err error
 	contractCall := func(ctx context.Context) error {
-		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.AttestationPayload())
+		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, attestationData.AttestationPayload())
 		if err != nil {
 			return fmt.Errorf("could not get snapshot: %w", err)
 		}
@@ -144,9 +144,9 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	if err != nil {
 		return fmt.Errorf("could not encode snapshot: %w", err)
 	}
-	fraudAttestation.SetSnapshotPayload(snapshotPayload)
+	attestationData.SetSnapshotPayload(snapshotPayload)
 
-	err = g.handleSnapshot(ctx, snapshot, fraudAttestation)
+	err = g.handleSnapshot(ctx, snapshot, attestationData)
 	if err != nil {
 		return fmt.Errorf("could not handle snapshot: %w", err)
 	}
@@ -274,13 +274,13 @@ func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address,
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
 // then submitting an attestation fraud report on the accused agent's Domain.
-func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *types.FraudAttestation) error {
+func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
 	// Initiate slashing for invalid attestation.
 	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 			transactor,
-			fraudAttestation.AttestationPayload(),
-			fraudAttestation.AttestationSignature(),
+			attestationData.AttestationPayload(),
+			attestationData.AttestationSignature(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not verify attestation: %w", err)
@@ -293,7 +293,7 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	}
 
 	// Submit a fraud report by calling `submitAttestationReport()` on the remote chain.
-	arSignature, _, _, err := fraudAttestation.Attestation.SignAttestation(ctx, g.bondedSigner, false)
+	arSignature, _, _, err := attestationData.Attestation.SignAttestation(ctx, g.bondedSigner, false)
 	if err != nil {
 		return fmt.Errorf("could not sign attestation: %w", err)
 	}
@@ -301,12 +301,12 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
-	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudAttestation.AgentDomain())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		tx, err = g.domains[fraudAttestation.AgentDomain()].LightInbox().SubmitAttestationReport(
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(attestationData.AgentDomain())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = g.domains[attestationData.AgentDomain()].LightInbox().SubmitAttestationReport(
 			transactor,
-			fraudAttestation.AttestationPayload(),
+			attestationData.AttestationPayload(),
 			arSignatureEncoded,
-			fraudAttestation.AttestationSignature(),
+			attestationData.AttestationSignature(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not submit attestation report: %w", err)

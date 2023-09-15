@@ -21,8 +21,8 @@ func HasAttestation(data StateValidationData) bool {
 	return data.AttestationPayload() != nil
 }
 
-// FraudAttestation is an attestation that was submitted by a Notary and was deemed fraudulent.
-type FraudAttestation struct {
+// AttestationWithMetadata is an attestation that was submitted by a Notary and was deemed fraudulent.
+type AttestationWithMetadata struct {
 	// Attestation is the underlying attestation.
 	Attestation Attestation
 	// AgentDomain is the domain of the Notary who signed the attestation.
@@ -37,14 +37,14 @@ type FraudAttestation struct {
 	snapshotPayload []byte
 }
 
-// NewFraudAttestationFromPayload creates a new FraudAttestation from the attestation payload, domain, notary and attestation signature.
-func NewFraudAttestationFromPayload(attestationPayload []byte, agentDomain uint32, notary common.Address, attSignature []byte) (*FraudAttestation, error) {
+// NewAttestationWithMetadata creates a new AttestationWithMetadata from the attestation payload, domain, notary and attestation signature.
+func NewAttestationWithMetadata(attestationPayload []byte, agentDomain uint32, notary common.Address, attSignature []byte) (*AttestationWithMetadata, error) {
 	decodedAttestation, err := DecodeAttestation(attestationPayload)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FraudAttestation{
+	return &AttestationWithMetadata{
 		Attestation: decodedAttestation,
 		agentDomain: agentDomain,
 		notary:      notary,
@@ -53,36 +53,36 @@ func NewFraudAttestationFromPayload(attestationPayload []byte, agentDomain uint3
 	}, nil
 }
 
-func (f FraudAttestation) Agent() common.Address {
+func (f AttestationWithMetadata) Agent() common.Address {
 	return f.notary
 }
 
-func (f FraudAttestation) AgentDomain() uint32 {
+func (f AttestationWithMetadata) AgentDomain() uint32 {
 	return f.agentDomain
 }
 
-func (f FraudAttestation) SetSnapshotPayload(snapshotPayload []byte) {
+func (f AttestationWithMetadata) SetSnapshotPayload(snapshotPayload []byte) {
 	f.snapshotPayload = snapshotPayload
 }
 
-func (f FraudAttestation) SnapshotPayload() []byte {
+func (f AttestationWithMetadata) SnapshotPayload() []byte {
 	return f.snapshotPayload
 }
 
-func (f FraudAttestation) SnapshotSignature() []byte {
+func (f AttestationWithMetadata) SnapshotSignature() []byte {
 	return nil
 }
 
-func (f FraudAttestation) AttestationPayload() []byte {
+func (f AttestationWithMetadata) AttestationPayload() []byte {
 	return f.payload
 }
 
-func (f FraudAttestation) AttestationSignature() []byte {
+func (f AttestationWithMetadata) AttestationSignature() []byte {
 	return f.signature
 }
 
-// FraudSnapshot is a snapshot type with additional metadata for fraud handling.
-type FraudSnapshot struct {
+// SnapshotWithMetadata is a snapshot type with additional metadata for fraud handling.
+type SnapshotWithMetadata struct {
 	// Snapshot is the underlying snapshot.
 	Snapshot Snapshot
 	// AgentDomain is the domain of the agent that submitted the snapshot.
@@ -95,14 +95,14 @@ type FraudSnapshot struct {
 	signature []byte
 }
 
-// NewFraudSnapshotFromPayload returns a new FraudSnapshot from a Snapshot payload and other metadata.
-func NewFraudSnapshotFromPayload(snapshotPayload []byte, agentDomain uint32, agent common.Address, snapSignature []byte) (*FraudSnapshot, error) {
+// NewSnapshotWithMetadata returns a new SnapshotWithMetadata from a Snapshot payload and other metadata.
+func NewSnapshotWithMetadata(snapshotPayload []byte, agentDomain uint32, agent common.Address, snapSignature []byte) (*SnapshotWithMetadata, error) {
 	decodedSnapshot, err := DecodeSnapshot(snapshotPayload)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode snapshot: %w", err)
 	}
 
-	return &FraudSnapshot{
+	return &SnapshotWithMetadata{
 		Snapshot:    decodedSnapshot,
 		agentDomain: agentDomain,
 		agent:       agent,
@@ -111,26 +111,26 @@ func NewFraudSnapshotFromPayload(snapshotPayload []byte, agentDomain uint32, age
 	}, nil
 }
 
-func (f FraudSnapshot) Agent() common.Address {
+func (f SnapshotWithMetadata) Agent() common.Address {
 	return f.agent
 }
 
-func (f FraudSnapshot) AgentDomain() uint32 {
+func (f SnapshotWithMetadata) AgentDomain() uint32 {
 	return f.agentDomain
 }
 
-func (f FraudSnapshot) SnapshotPayload() []byte {
+func (f SnapshotWithMetadata) SnapshotPayload() []byte {
 	return f.payload
 }
 
-func (f FraudSnapshot) SnapshotSignature() []byte {
+func (f SnapshotWithMetadata) SnapshotSignature() []byte {
 	return f.signature
 }
 
-func (f FraudSnapshot) AttestationPayload() []byte {
+func (f SnapshotWithMetadata) AttestationPayload() []byte {
 	return nil
 }
 
-func (f FraudSnapshot) AttestationSignature() []byte {
+func (f SnapshotWithMetadata) AttestationSignature() []byte {
 	return nil
 }
