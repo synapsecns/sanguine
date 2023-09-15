@@ -50,7 +50,6 @@ root
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
 ├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
 ├── <a href="./contrib">contrib</a>: Devops related tools
-│   ├── <a href="./contrib/devnet">devnet</a>: CLI for running a local devnet
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
 │   ├── <a href="./contrib/promexporter">promexporter</a>: Multi-service prometheus exporter
 │   ├── <a href="./contrib/release-copier-action">release-copier-action</a>: Github action for copying releases from one repo to another
