@@ -177,33 +177,6 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 	return nil
 }
 
-// ensureAgentActive checks if the given agent is in a slashable status (Active or Unstaking),
-// and relays the agent status from Summit to the given chain if necessary.
-func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
-	agentStatus, err := g.getAgentStatus(ctx, chainID, agent)
-	if err != nil {
-		return false, fmt.Errorf("could not get agent status: %w", err)
-	}
-
-	//nolint:exhaustive
-	switch agentStatus.Flag() {
-	case types.AgentFlagUnknown:
-		if chainID == g.summitDomainID {
-			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
-		}
-		// Update the agent status to active using the last known root on remote chain.
-		err = g.relayActiveAgentStatus(ctx, agent, chainID)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	case types.AgentFlagActive, types.AgentFlagUnstaking:
-		return true, nil
-	default:
-		return false, nil
-	}
-}
-
 // relayActiveAgentStatus relays an Active agent status from Summit to a remote
 // chain where the agent is unknown.
 func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address, chainID uint32) error {
