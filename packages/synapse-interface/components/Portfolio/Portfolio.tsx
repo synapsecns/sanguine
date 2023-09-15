@@ -46,6 +46,18 @@ export const Portfolio = () => {
 
   const searchInputActive: boolean = searchInput.length > 0
 
+  const flattenedPortfolioData = useMemo(() => {
+    const flattened: TokenWithBalanceAndAllowances[] = []
+    Object.entries(filteredPortfolioDataForBalances).forEach(
+      ([chainId, tokens]) => {
+        tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+          flattened.push({ ...token })
+        })
+      }
+    )
+    return flattened
+  }, [filteredPortfolioDataForBalances])
+
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
@@ -54,32 +66,21 @@ export const Portfolio = () => {
         threshold: 0.0,
         keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
+      const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
 
-      if (filteredPortfolioDataForBalances) {
-        const flattened: TokenWithBalanceAndAllowances[] = []
-        Object.entries(filteredPortfolioDataForBalances).forEach(
-          ([chainId, tokens]) => {
-            tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-              flattened.push({ ...token })
-            })
-          }
-        )
-        const fuse = new Fuse(flattened, fuseOptions)
-
-        if (searchInput.length > 0) {
-          const results = fuse
-            .search(searchInput)
-            .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
-            .forEach((item: TokenWithBalanceAndAllowances) => {
-              const chainId: number = item.queriedChain.id
-              searchFiltered[chainId] = searchFiltered[chainId]
-                ? [...searchFiltered[chainId], item]
-                : [item]
-            })
-        }
+      if (searchInput.length > 0) {
+        const results = fuse
+          .search(searchInput)
+          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
+          .forEach((item: TokenWithBalanceAndAllowances) => {
+            const chainId: number = item.queriedChain.id
+            searchFiltered[chainId] = searchFiltered[chainId]
+              ? [...searchFiltered[chainId], item]
+              : [item]
+          })
       }
       return searchFiltered
-    }, [searchInput, filteredPortfolioDataForBalances])
+    }, [searchInput, flattenedPortfolioData])
 
   useEffect(() => {
     dispatch(resetPortfolioState())
