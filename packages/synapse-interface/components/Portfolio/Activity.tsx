@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import Fuse from 'fuse.js'
 import { useAccount, Address } from 'wagmi'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
@@ -63,7 +64,16 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     const fuseOptions = {
       includeScore: true,
       threshold: 0.0,
-      keys: [''],
+      keys: [
+        'originChain.name',
+        'originChain.nativeCurrency.symbol',
+        'originToken.symbol',
+        'originToken.name',
+        'destinationChain.name',
+        'destinationChain.nativeCurrency.symbol',
+        'destinationToken.symbol',
+        'destinationToken.name',
+      ],
     }
 
     if (
@@ -89,10 +99,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           }
         }
       )
-      console.log('formatted:', formatted)
+
+      const fuse = new Fuse(formatted, fuseOptions)
+
+      if (searchInputActive) {
+      }
     }
   }, [
     searchInput,
+    searchInputActive,
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
   ])
