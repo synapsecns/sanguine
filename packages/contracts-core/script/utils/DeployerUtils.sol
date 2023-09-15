@@ -7,8 +7,11 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {CREATE3Factory} from "../../contracts/create3/CREATE3Factory.sol";
 
-import {ICREATE3Factory} from "../../contracts/create3/ICREATE3Factory.sol";
+interface ICreate3Factory {
+    function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
 
+    function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
+}
 
 // solhint-disable no-console
 // solhint-disable no-empty-blocks
@@ -37,7 +40,7 @@ contract DeployerUtils is Script {
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
 
-    ICREATE3Factory private factory = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+    ICreate3Factory private factory = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     bytes32 internal deploymentSalt;
 
