@@ -195,38 +195,8 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 
 // ensureAgentActive checks if the given agent is in a slashable status (Active or Unstaking),
 // and relays the agent status from Summit to the given chain if necessary.
-//
-//nolint:cyclop
 func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chainID uint32) (ok bool, err error) {
-	var agentStatus types.AgentStatus
-	//nolint:nestif
-	if chainID == g.summitDomainID {
-		contractCall := func(ctx context.Context) error {
-			agentStatus, err = g.domains[chainID].BondingManager().GetAgentStatus(ctx, agent)
-			if err != nil {
-				return fmt.Errorf("could not get agent status: %w", err)
-			}
-
-			return nil
-		}
-		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
-		if err != nil {
-			return false, fmt.Errorf("could not get agent status: %w", err)
-		}
-	} else {
-		contractCall := func(ctx context.Context) error {
-			agentStatus, err = g.domains[chainID].LightManager().GetAgentStatus(ctx, agent)
-			if err != nil {
-				return fmt.Errorf("could not get agent status: %w", err)
-			}
-
-			return nil
-		}
-		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
-		if err != nil {
-			return false, fmt.Errorf("could not get agent status: %w", err)
-		}
-	}
+	agentStatus, err := g.getAgentStatus(ctx, chainID, agent)
 	if err != nil {
 		return false, fmt.Errorf("could not get agent status: %w", err)
 	}
@@ -484,7 +454,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not get proof: %w", err)
 		}
 
-		var remoteStatus types.AgentStatus
 		if chainID == g.summitDomainID {
 			err = g.guardDB.StoreAgentTree(
 				ctx,
@@ -508,16 +477,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 		}
 
 		if statusUpdated.Domain != 0 {
-			// Fetch the current remote status and check whether the status is synced.
-			contractCall := func(ctx context.Context) error {
-				remoteStatus, err = g.domains[statusUpdated.Domain].LightManager().GetAgentStatus(ctx, statusUpdated.Agent)
-				if err != nil {
-					return fmt.Errorf("could not get agent status: %w", err)
-				}
-
-				return nil
-			}
-			err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+			remoteStatus, err := g.getAgentStatus(ctx, statusUpdated.Domain, statusUpdated.Agent)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
@@ -626,16 +586,7 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		if localRootBlockNumber >= treeBlockNumber {
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.
-			var agentStatus types.AgentStatus
-			contractCall := func(ctx context.Context) error {
-				agentStatus, err = g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
-				if err != nil {
-					return fmt.Errorf("could not get agent status: %w", err)
-				}
-
-				return nil
-			}
-			err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+			agentStatus, err := g.getAgentStatus(ctx, g.summitDomainID, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
