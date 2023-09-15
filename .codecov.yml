@@ -22,10 +22,6 @@ flags:
     paths:
       - agents/
     carryforward: true
-  devnet:
-    paths:
-      - contrib/devnet/
-    carryforward: true
   git-changes-action:
     paths:
       - contrib/git-changes-action/

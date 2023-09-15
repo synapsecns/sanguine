@@ -29,8 +29,8 @@ chains:
 
 # The `unbonded_signer` field specifies the path to the file containing the private key of the signer
 unbonded_signer:
-  type: "File"
-  file: "/config/executor-signer.txt"
+  type: 'File'
+  file: '/config/executor-signer.txt'
 
 submitter_config:
   chains:
