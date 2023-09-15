@@ -17,10 +17,14 @@ type StateValidationData interface {
 	AgentDomain() uint32
 }
 
+func HasAttestation(data StateValidationData) bool {
+	return data.AttestationPayload() != nil
+}
+
 // FraudAttestation is an attestation that was submitted by a Notary and was deemed fraudulent.
 type FraudAttestation struct {
 	// Attestation is the underlying attestation.
-	attestation Attestation
+	Attestation Attestation
 	// AgentDomain is the domain of the Notary who signed the attestation.
 	agentDomain uint32
 	// Notary is the Notary who signed and submitted the attestation.
@@ -41,7 +45,7 @@ func NewFraudAttestationFromPayload(attestationPayload []byte, agentDomain uint3
 	}
 
 	return &FraudAttestation{
-		attestation: decodedAttestation,
+		Attestation: decodedAttestation,
 		agentDomain: agentDomain,
 		notary:      notary,
 		payload:     attestationPayload,
@@ -80,7 +84,7 @@ func (f FraudAttestation) AttestationSignature() []byte {
 // FraudSnapshot is a snapshot type with additional metadata for fraud handling.
 type FraudSnapshot struct {
 	// Snapshot is the underlying snapshot.
-	snapshot Snapshot
+	Snapshot Snapshot
 	// AgentDomain is the domain of the agent that submitted the snapshot.
 	agentDomain uint32
 	// Agent is the agent that signed the snapshot.
@@ -99,7 +103,7 @@ func NewFraudSnapshotFromPayload(snapshotPayload []byte, agentDomain uint32, age
 	}
 
 	return &FraudSnapshot{
-		snapshot:    decodedSnapshot,
+		Snapshot:    decodedSnapshot,
 		agentDomain: agentDomain,
 		agent:       agent,
 		payload:     snapshotPayload,

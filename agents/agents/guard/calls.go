@@ -39,41 +39,38 @@ func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.
 	return agentStatus, err
 }
 
-func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex int, data interface{}) (err error) {
-	var agent common.Address
+func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex int, data types.StateValidationData) (err error) {
 	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
-	switch fraudData := data.(type) {
-	case *types.FraudSnapshot:
-		agent = fraudData.Agent
+	if types.HasAttestation(data) {
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				transactor,
 				int64(stateIndex),
-				fraudData.Payload,
-				fraudData.Signature,
+				data.SnapshotPayload(),
+				data.AttestationPayload(),
+				data.AttestationSignature(),
 			)
 			return
 		}
-	case *types.FraudAttestation:
-		agent = fraudData.Notary
+	} else {
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 				transactor,
 				int64(stateIndex),
-				fraudData.Payload,
-				fraudData.Signature,
+				data.SnapshotPayload(),
+				data.SnapshotSignature(),
 			)
 			return
 		}
 	}
 
 	// Ensure the agent that provided the snapshot is active on origin.
-	ok, err := g.ensureAgentActive(ctx, agent, state.Origin())
+	ok, err := g.ensureAgentActive(ctx, data.Agent(), state.Origin())
 	if err != nil {
 		return fmt.Errorf("could not ensure agent is active: %w", err)
 	}
 	if !ok {
-		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", agent.Hex(), state.Origin())
+		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", data.Agent().Hex(), state.Origin())
 		return nil
 	}
 
@@ -91,7 +88,7 @@ type stateReportContract interface {
 	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
-func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state types.State, stateIndex int, data interface{}) (err error) {
+func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state types.State, stateIndex int, data types.StateValidationData) (err error) {
 	var contract stateReportContract
 	if chainID == g.summitDomainID {
 		contract = g.domains[chainID].Inbox()
@@ -99,51 +96,43 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 		contract = g.domains[chainID].LightInbox()
 	}
 
-	var agent common.Address
 	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
-	switch fraudData := data.(type) {
-	case *types.FraudSnapshot:
-		agent = fraudData.Agent
-		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
-		if err != nil {
-			return fmt.Errorf("could not sign state: %w", err)
-		}
-		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = contract.SubmitStateReportWithSnapshot(
-				transactor,
-				int64(stateIndex),
-				srSignature,
-				fraudData.Payload,
-				fraudData.Signature,
-			)
-			return
-		}
-	case *types.FraudAttestation:
-		agent = fraudData.Notary
-		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
-		if err != nil {
-			return fmt.Errorf("could not sign state: %w", err)
-		}
+	srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+	if err != nil {
+		return fmt.Errorf("could not sign state: %w", err)
+	}
+	if types.HasAttestation(data) {
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = contract.SubmitStateReportWithAttestation(
 				transactor,
 				int64(stateIndex),
 				srSignature,
-				fraudData.SnapshotPayload,
-				fraudData.Payload,
-				fraudData.Signature,
+				data.SnapshotPayload(),
+				data.AttestationPayload(),
+				data.AttestationSignature(),
+			)
+			return
+		}
+	} else {
+		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = contract.SubmitStateReportWithSnapshot(
+				transactor,
+				int64(stateIndex),
+				srSignature,
+				data.SnapshotPayload(),
+				data.SnapshotSignature(),
 			)
 			return
 		}
 	}
 
 	// Ensure the agent that provided the snapshot is active on the agent's respective domain.
-	ok, err := g.ensureAgentActive(ctx, agent, chainID)
+	ok, err := g.ensureAgentActive(ctx, data.Agent(), chainID)
 	if err != nil {
 		return fmt.Errorf("could not ensure agent is active: %w", err)
 	}
 	if !ok {
-		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", agent.Hex(), chainID)
+		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", data.Agent().Hex(), chainID)
 		return nil
 	}
 

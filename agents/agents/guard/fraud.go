@@ -99,7 +99,7 @@ func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) 
 
 	var isValid bool
 	contractCall := func(ctx context.Context) error {
-		isValid, err = g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.Payload)
+		isValid, err = g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.AttestationPayload())
 		if err != nil {
 			return fmt.Errorf("could not check validity of attestation: %w", err)
 		}
@@ -127,7 +127,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	var snapshot types.Snapshot
 	var err error
 	contractCall := func(ctx context.Context) error {
-		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
+		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.AttestationPayload())
 		if err != nil {
 			return fmt.Errorf("could not get snapshot: %w", err)
 		}
@@ -140,10 +140,11 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 	}
 
 	// Set the SnapshotPayload so that it can be passed to contract calls.
-	fraudAttestation.SnapshotPayload, err = snapshot.Encode()
+	snapshotPayload, err := snapshot.Encode()
 	if err != nil {
 		return fmt.Errorf("could not encode snapshot: %w", err)
 	}
+	fraudAttestation.SetSnapshotPayload(snapshotPayload)
 
 	err = g.handleSnapshot(ctx, snapshot, fraudAttestation)
 	if err != nil {
@@ -155,18 +156,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 // handleSnapshot handles a snapshot by validating each state in the snapshot.
 // If an invalid state is found, initiate slashing and submit state reports on eligible chains.
-func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data interface{}) error {
-	var agentDomain uint32
-	var agent common.Address
-	switch fraudData := data.(type) {
-	case *types.FraudSnapshot:
-		agentDomain = fraudData.AgentDomain
-		agent = fraudData.Agent
-	case *types.FraudAttestation:
-		agentDomain = fraudData.AgentDomain
-		agent = fraudData.Notary
-	}
-
+func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data types.StateValidationData) error {
 	// Process each state in the snapshot.
 	for si, s := range snapshot.States() {
 		stateIndex, state := si, s
@@ -185,7 +175,7 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		}
 
 		// Evaluate which chains need a state report.
-		stateReportChains, err := g.getStateReportChains(ctx, agentDomain, agent)
+		stateReportChains, err := g.getStateReportChains(ctx, data.AgentDomain(), data.Agent())
 		if err != nil {
 			return fmt.Errorf("could not get state report chains: %w", err)
 		}
@@ -289,8 +279,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 			transactor,
-			fraudAttestation.Payload,
-			fraudAttestation.Signature,
+			fraudAttestation.AttestationPayload(),
+			fraudAttestation.AttestationSignature(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not verify attestation: %w", err)
@@ -311,12 +301,12 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
-	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudAttestation.AgentDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		tx, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitAttestationReport(
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(fraudAttestation.AgentDomain())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = g.domains[fraudAttestation.AgentDomain()].LightInbox().SubmitAttestationReport(
 			transactor,
-			fraudAttestation.Payload,
+			fraudAttestation.AttestationPayload(),
 			arSignatureEncoded,
-			fraudAttestation.Signature,
+			fraudAttestation.AttestationSignature(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not submit attestation report: %w", err)
