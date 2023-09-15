@@ -1,21 +1,13 @@
-import { useSelector } from 'react-redux'
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '@/store/store'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { EMPTY_SWAP_QUOTE, EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useSwapState } from '@/slices/swap/hooks'
+import { SWAP_CHAIN_IDS } from '@/constants/existingSwapRoutes'
 
 export const SwapTransactionButton = ({
   approveTxn,
@@ -26,9 +18,9 @@ export const SwapTransactionButton = ({
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
+  const { chains, switchNetwork } = useSwitchNetwork()
 
-  const { address, isConnected: isConnectedInit } = useAccount({
+  const { isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -39,78 +31,63 @@ export const SwapTransactionButton = ({
   }, [isConnectedInit])
 
   const {
-    destinationAddress,
-    fromToken,
-    fromValue,
-    toToken,
-    fromChainId,
-    toChainId,
+    swapChainId,
+    swapFromToken,
+    swapToToken,
+    swapFromValue,
     isLoading,
-    bridgeQuote,
-  } = useBridgeState()
-
-  const { showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
+    swapQuote,
+  } = useSwapState()
 
   const balances = usePortfolioBalances()
-  const balancesForChain = balances[fromChainId]
+  const balancesForChain = balances[swapChainId]
   const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
+    (t) => t.tokenAddress === swapFromToken?.addresses[swapChainId]
   )?.balance
 
   const sufficientBalance = useMemo(() => {
-    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
+    if (!swapChainId || !swapFromToken || !swapToToken) return false
     return (
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
+      stringToBigInt(swapFromValue, swapFromToken?.decimals[swapChainId]) <=
       balanceForToken
     )
-  }, [balanceForToken, fromValue])
+  }, [balanceForToken, swapFromValue])
 
   const isButtonDisabled =
     isLoading ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
-    (destinationAddress && !isAddress(destinationAddress)) ||
-    (showDestinationAddress && !destinationAddress) ||
+    swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
+    swapQuote === EMPTY_SWAP_QUOTE ||
     (isConnected && !sufficientBalance)
 
   let buttonProperties
 
   const fromTokenDecimals: number | undefined =
-    fromToken && fromToken.decimals[fromChainId]
+    swapFromToken && swapFromToken.decimals[swapChainId]
 
   const fromValueBigInt = useMemo(() => {
-    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  }, [fromValue, fromTokenDecimals])
+    return fromTokenDecimals
+      ? stringToBigInt(swapFromValue, fromTokenDecimals)
+      : 0
+  }, [swapFromValue, fromTokenDecimals])
 
-  if (!fromChainId) {
+  if (!swapChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
       onClick: null,
     }
-  } else if (!toChainId) {
+  } else if (!SWAP_CHAIN_IDS.includes(swapChainId)) {
     buttonProperties = {
-      label: 'Please select Destination network',
+      label: 'Swaps are not available on this network',
       onClick: null,
     }
-  } else if (!fromToken) {
+  } else if (!swapFromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
       onClick: null,
     }
-  } else if (
-    !isLoading &&
-    bridgeQuote?.feeAmount === 0n &&
-    fromValueBigInt > 0
-  ) {
-    buttonProperties = {
-      label: `Amount must be greater than fee`,
-      onClick: null,
-    }
   } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
+      label: `Connect Wallet to Swap`,
       onClick: openConnectModal,
     }
   } else if (isConnected && !sufficientBalance) {
@@ -118,31 +95,23 @@ export const SwapTransactionButton = ({
       label: 'Insufficient balance',
       onClick: null,
     }
-  } else if (showDestinationAddress && !destinationAddress) {
+  } else if (chain?.id != swapChainId && fromValueBigInt > 0) {
     buttonProperties = {
-      label: 'Please add valid destination address',
-    }
-  } else if (destinationAddress && !isAddress(destinationAddress)) {
-    buttonProperties = {
-      label: 'Invalid destination address',
-    }
-  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
-    buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
-      onClick: () => switchNetwork(fromChainId),
+      label: `Switch to ${chains.find((c) => c.id === swapChainId).name}`,
+      onClick: () => switchNetwork(swapChainId),
       pendingLabel: 'Switching chains',
     }
   } else if (!isApproved) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken?.symbol}`,
+      label: `Approve ${swapFromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
       onClick: executeSwap,
-      label: `Bridge ${fromToken?.symbol}`,
-      pendingLabel: 'Bridging',
+      label: `Swap ${swapFromToken?.symbol} for ${swapToToken?.symbol}`,
+      pendingLabel: 'Swapping',
     }
   }
 
@@ -151,7 +120,7 @@ export const SwapTransactionButton = ({
       <TransactionButton
         {...buttonProperties}
         disabled={isButtonDisabled}
-        chainId={fromChainId}
+        chainId={swapChainId}
       />
     )
   )
