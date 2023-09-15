@@ -35,26 +35,3 @@ Guard
 │   └── <a href="db/sql">sql</a>: Database writer, reader, and migrations
 ├── <a href="./main">main</a>: CLI entrypoint
 </pre>
-
-# Testing Suite
-
-Tests for `agents` have setup hooks defined in `testutil/simulated_backends_suite.go`. Any suite that embeds `SimulatedBackendsTestSuite` will have simulated backend and messaging contract scaffolding for Summit, Origin, and Desination chains. This includes `TestGuardSuite`, `TestGuardSuite`, `TestNotarySuite`, `ExampleAgentSuite`, and `AgentsIntegrationSuite`.
-
-To run all agent tests:
-
-```bash
-go test -v ./...
-```
-
-To run an individual suite (for example, `TestGuardSuite`):
-
-```bash
-cd executor
-go test -v
-```
-
-To run an individual test (for example, `TestVerifyState`):
-```bash
-cd executor
-go test -v -run TestGuardSuite/TestVerifyState
-```
