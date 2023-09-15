@@ -3,6 +3,7 @@ package indexer
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/logger"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
@@ -30,12 +31,14 @@ type LogFetcher struct {
 	backend backend.ScribeBackend
 	// indexerConfig holds the chain config (config data for the chain)
 	indexerConfig *scribeTypes.IndexerConfig
+	// topics is the list of topics to filter logs by.
+	topics [][]common.Hash
 	// bufferSize prevents from overloading the scribe indexer with too many logs as well as upstream RPCs with too many requests.
 	bufferSize int
 }
 
 // NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
+func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig, ascending bool) *LogFetcher {
 	// The ChunkIterator is inclusive of the start and ending block resulting in potentially confusing behavior when
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.
@@ -50,13 +53,14 @@ func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int,
 		bufferSize = 3 // default buffer size
 	}
 	return &LogFetcher{
-		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
+		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, ascending),
 		startBlock:      startBlock,
 		endBlock:        endBlock,
 		fetchedLogsChan: make(chan types.Log, bufferSize),
 		backend:         backend,
 		indexerConfig:   indexerConfig,
 		bufferSize:      bufferSize,
+		topics:          indexerConfig.Topics,
 	}
 }
 
@@ -108,7 +112,6 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
-
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
@@ -163,7 +166,7 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 }
 
 func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff) ([]types.Log, error) {
-	result, err := backend.GetLogsInRange(ctx, f.backend, f.indexerConfig.Addresses, uint64(f.indexerConfig.ChainID), chunks)
+	result, err := backend.GetLogsInRange(ctx, f.backend, f.indexerConfig.Addresses, uint64(f.indexerConfig.ChainID), chunks, f.indexerConfig.Topics)
 	if err != nil {
 		backoffConfig.Duration()
 		return nil, fmt.Errorf("could not get logs: %w", err)
