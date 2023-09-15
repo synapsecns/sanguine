@@ -34,6 +34,8 @@ type ConsumerDBReader interface {
 	GetUint64(ctx context.Context, query string) (uint64, error)
 	// GetFloat64 gets a float64 out of the database
 	GetFloat64(ctx context.Context, query string) (float64, error)
+	// GetString gets a string out of the database
+	GetString(ctx context.Context, query string) (string, error)
 	// GetStringArray gets an array of strings from a given query.
 	GetStringArray(ctx context.Context, query string) ([]string, error)
 	// GetTxCounts gets the counts for each of tx_hash from a given query.
@@ -44,6 +46,8 @@ type ConsumerDBReader interface {
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetBridgeEvents returns a bridge event.
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
+	// GetMVBridgeEvent returns a bridge event from the mv Table.
+	GetMVBridgeEvent(ctx context.Context, query string) (*sql.HybridBridgeEvent, error)
 	// GetAllBridgeEvents returns a bridge event.
 	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
 	// GetAllMessageBusEvents returns a bridge event.
