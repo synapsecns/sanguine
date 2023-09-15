@@ -48,14 +48,14 @@ domain_id: 43
 
 # The `unbonded_signer` field specifies the path to the file containing the private key of the signer
 unbonded_signer:
-  type: "File"
-  file: "/config/notary-bonded-signer.txt"
+  type: 'File'
+  file: '/config/notary-bonded-signer.txt'
 
 # The `bonded_signer` is the account that will post a bond to the Summit contract. Specify its path to
 # the file containing the private key of the signer
 bonded_signer:
-  type: "File"
-  file: "/config/notary-bonded-signer.txt"
+  type: 'File'
+  file: '/config/notary-bonded-signer.txt'
 
 # The `submitter_config` field specifies how the submitter should submit messages to the chains.
 submitter_config:

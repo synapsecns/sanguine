@@ -43,5 +43,5 @@ chains:
         start_block: 1
       - address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
         start_block: 1
-rpc_url: "http://omnirpc:9001/confirmations"
+rpc_url: 'http://omnirpc:9001/confirmations'
 refresh_rate: 0
