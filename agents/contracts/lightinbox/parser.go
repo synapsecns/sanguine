@@ -58,7 +58,7 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ *types.Attesta
 		lightInboxAttestationAccepted.AttSignature,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not create fraud attestation from payload: %w", err)
+		return nil, fmt.Errorf("could not create attestation with metadata from payload: %w", err)
 	}
 
 	return attestationData, nil
