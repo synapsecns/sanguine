@@ -189,3 +189,23 @@ func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chai
 		return false, nil
 	}
 }
+
+// relayActiveAgentStatus relays an Active agent status from Summit to a remote
+// chain where the agent is unknown.
+func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address, chainID uint32) error {
+	err := g.guardDB.StoreRelayableAgentStatus(
+		ctx,
+		agent,
+		types.AgentFlagUnknown,
+		types.AgentFlagActive,
+		chainID,
+	)
+	if err != nil {
+		return fmt.Errorf("could not store relayable agent status: %w", err)
+	}
+	err = g.updateAgentStatus(ctx, chainID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

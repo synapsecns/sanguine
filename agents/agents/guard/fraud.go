@@ -177,26 +177,6 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 	return nil
 }
 
-// relayActiveAgentStatus relays an Active agent status from Summit to a remote
-// chain where the agent is unknown.
-func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address, chainID uint32) error {
-	err := g.guardDB.StoreRelayableAgentStatus(
-		ctx,
-		agent,
-		types.AgentFlagUnknown,
-		types.AgentFlagActive,
-		chainID,
-	)
-	if err != nil {
-		return fmt.Errorf("could not store relayable agent status: %w", err)
-	}
-	err = g.updateAgentStatus(ctx, chainID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
 // then submitting an attestation fraud report on the accused agent's Domain.
 func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
