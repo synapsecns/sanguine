@@ -59,65 +59,68 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
   const searchInputActive: boolean = searchInput.length > 0
 
-  const filteredHistoricalTransactionsBySearchInput = useMemo(() => {
-    let searchFiltered: BridgeTransaction[] = []
-    const fuseOptions = {
-      includeScore: true,
-      threshold: 0.0,
-      keys: [
-        'originChain.name',
-        'originChain.nativeCurrency.symbol',
-        'originToken.symbol',
-        'originToken.name',
-        'destinationChain.name',
-        'destinationChain.nativeCurrency.symbol',
-        'destinationToken.symbol',
-        'destinationToken.name',
-      ],
-    }
-
-    if (
-      !isUserHistoricalTransactionsLoading &&
-      checkTransactionsExist(userHistoricalTransactions)
-    ) {
-      const formatted = userHistoricalTransactions.map(
-        (transaction: BridgeTransaction) => {
-          return {
-            ...transaction,
-            originChain: CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain,
-            originToken: tokenAddressToToken(
-              transaction?.fromInfo?.chainID,
-              transaction?.fromInfo?.tokenAddress
-            ) as Token,
-            destinationChain: CHAINS_BY_ID[
-              transaction?.toInfo?.chainID
-            ] as Chain,
-            destinationToken: tokenAddressToToken(
-              transaction?.toInfo?.chainID,
-              transaction?.toInfo?.tokenAddress
-            ) as Token,
-          }
-        }
-      )
-
-      const fuse = new Fuse(formatted, fuseOptions)
-
-      if (searchInputActive) {
-        searchFiltered = fuse
-          .search(searchInput)
-          .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
+  const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
+    useMemo(() => {
+      let searchFiltered: BridgeTransaction[] = []
+      const fuseOptions = {
+        includeScore: true,
+        threshold: 0.0,
+        keys: [
+          'originChain.name',
+          'originChain.nativeCurrency.symbol',
+          'originToken.symbol',
+          'originToken.name',
+          'destinationChain.name',
+          'destinationChain.nativeCurrency.symbol',
+          'destinationToken.symbol',
+          'destinationToken.name',
+        ],
       }
 
-      return searchFiltered.length > 0
-        ? searchFiltered
-        : userHistoricalTransactions
-    }
-  }, [
-    searchInput,
-    searchInputActive,
-    userHistoricalTransactions,
-    isUserHistoricalTransactionsLoading,
-  ])
+      if (
+        !isUserHistoricalTransactionsLoading &&
+        checkTransactionsExist(userHistoricalTransactions)
+      ) {
+        const formatted: BridgeTransaction[] = userHistoricalTransactions.map(
+          (transaction: BridgeTransaction) => {
+            return {
+              ...transaction,
+              originChain: CHAINS_BY_ID[
+                transaction?.fromInfo?.chainID
+              ] as Chain,
+              originToken: tokenAddressToToken(
+                transaction?.fromInfo?.chainID,
+                transaction?.fromInfo?.tokenAddress
+              ) as Token,
+              destinationChain: CHAINS_BY_ID[
+                transaction?.toInfo?.chainID
+              ] as Chain,
+              destinationToken: tokenAddressToToken(
+                transaction?.toInfo?.chainID,
+                transaction?.toInfo?.tokenAddress
+              ) as Token,
+            }
+          }
+        )
+
+        const fuse = new Fuse(formatted, fuseOptions)
+
+        if (searchInputActive) {
+          searchFiltered = fuse
+            .search(searchInput)
+            .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
+        }
+
+        return searchFiltered.length > 0
+          ? searchFiltered
+          : userHistoricalTransactions
+      }
+    }, [
+      searchInput,
+      searchInputActive,
+      userHistoricalTransactions,
+      isUserHistoricalTransactionsLoading,
+    ])
 
   return (
     <div
