@@ -19,7 +19,8 @@ RUN --mount=type=cache,target=/root/go/pkg/mod  --mount=type=cache,target=/root/
 
 FROM ubuntu:20.04
 
-RUN apt update && apt install -y bash sqlite3 htop
+RUN apt update && apt install -y bash sqlite3 ca-certificates htop
+RUN update-ca-certificates
 COPY --from=builder /app/bin/scribe /usr/local/bin
 
 CMD ["scribe"]
