@@ -22,42 +22,10 @@ func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) err
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
 	}
 
-	// Verify each state in the snapshot.
-	for si, s := range fraudSnapshot.Snapshot.States() {
-		stateIndex, state := si, s
-		isSlashable, err := g.isStateSlashable(ctx, state)
-		if err != nil {
-			return fmt.Errorf("could not handle state: %w", err)
-		}
-		if !isSlashable {
-			continue
-		}
-
-		// Initiate slashing on origin.
-		err = g.verifyState(ctx, state, stateIndex, fraudSnapshot)
-		if err != nil {
-			return fmt.Errorf("could not verify state: %w", err)
-		}
-
-		// Evaluate which chains need a state report.
-		stateReportChains, err := g.getStateReportChains(ctx, fraudSnapshot.AgentDomain, fraudSnapshot.Agent)
-		if err != nil {
-			return fmt.Errorf("could not get state report chains: %w", err)
-		}
-		fmt.Printf("stateReportChains: %v\n", stateReportChains)
-
-		// Submit the state report on each eligible chain.
-		// If a notary has not been reported anywhere,
-		// report should be submitted on both summit and remote.
-		for _, chainID := range stateReportChains {
-			err = g.submitStateReport(ctx, chainID, state, stateIndex, fraudSnapshot)
-			if err != nil {
-				fmt.Printf("state report err: %v\n", err)
-				return fmt.Errorf("could not submit state report: %w", err)
-			}
-		}
+	err = g.handleSnapshot(ctx, fraudSnapshot.Snapshot, fraudSnapshot)
+	if err != nil {
+		return fmt.Errorf("could not handle snapshot: %w", err)
 	}
-
 	return nil
 }
 
@@ -177,40 +145,63 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 		return fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	// Verify each state in the snapshot.
+	err = g.handleSnapshot(ctx, snapshot, fraudAttestation)
+	if err != nil {
+		return fmt.Errorf("could not handle snapshot: %w", err)
+	}
+
+	return nil
+}
+
+// handleSnapshot handles a snapshot by validating each state in the snapshot.
+// If an invalid state is found, initiate slashing and submit state reports on eligible chains.
+func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data interface{}) error {
+	var agentDomain uint32
+	var agent common.Address
+	switch fraudData := data.(type) {
+	case *types.FraudSnapshot:
+		agentDomain = fraudData.AgentDomain
+		agent = fraudData.Agent
+	case *types.FraudAttestation:
+		agentDomain = fraudData.AgentDomain
+		agent = fraudData.Notary
+	}
+
+	// Process each state in the snapshot.
 	for si, s := range snapshot.States() {
 		stateIndex, state := si, s
 		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
-			return fmt.Errorf("could not check if state is slashable: %w", err)
+			return fmt.Errorf("could not handle state: %w", err)
 		}
 		if !isSlashable {
 			continue
 		}
 
 		// Initiate slashing on origin.
-		err = g.verifyState(ctx, state, stateIndex, fraudAttestation)
+		err = g.verifyState(ctx, state, stateIndex, data)
 		if err != nil {
 			return fmt.Errorf("could not verify state: %w", err)
 		}
 
 		// Evaluate which chains need a state report.
-		stateReportChains, err := g.getStateReportChains(ctx, fraudAttestation.AgentDomain, fraudAttestation.Notary)
+		stateReportChains, err := g.getStateReportChains(ctx, agentDomain, agent)
 		if err != nil {
 			return fmt.Errorf("could not get state report chains: %w", err)
 		}
+		fmt.Printf("stateReportChains: %v\n", stateReportChains)
 
 		// Submit the state report on each eligible chain.
 		// If a notary has not been reported anywhere,
 		// report should be submitted on both summit and remote.
 		for _, chainID := range stateReportChains {
-			err = g.submitStateReport(ctx, chainID, state, stateIndex, fraudAttestation)
+			err = g.submitStateReport(ctx, chainID, state, stateIndex, data)
 			if err != nil {
+				fmt.Printf("state report err: %v\n", err)
 				return fmt.Errorf("could not submit state report: %w", err)
 			}
 		}
 	}
-
 	return nil
 }
 
