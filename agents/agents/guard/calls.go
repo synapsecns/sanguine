@@ -176,8 +176,16 @@ func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chai
 		if chainID == g.summitDomainID {
 			return false, fmt.Errorf("cannot submit state report for Unknown agent on summit")
 		}
-		// Update the agent status to active using the last known root on remote chain.
-		err = g.relayActiveAgentStatus(ctx, agent, chainID)
+		// Fetch the agent status from Summit.
+		agentStatusSummit, err := g.getAgentStatus(ctx, g.summitDomainID, agent)
+		if err != nil {
+			return false, fmt.Errorf("could not get agent status: %w", err)
+		}
+		if agentStatusSummit.Flag() != types.AgentFlagActive && agentStatusSummit.Flag() != types.AgentFlagUnstaking {
+			return false, fmt.Errorf("agent is not active or unstaking on summit: %s [status=%s]", agent.Hex(), agentStatusSummit.Flag().String())
+		}
+		// Update the agent status using the last known root on remote chain.
+		err = g.relayAgentStatus(ctx, agent, chainID, agentStatusSummit.Flag())
 		if err != nil {
 			return false, err
 		}
@@ -189,14 +197,14 @@ func (g Guard) ensureAgentActive(ctx context.Context, agent common.Address, chai
 	}
 }
 
-// relayActiveAgentStatus relays an Active agent status from Summit to a remote
+// relayAgentStatus relays an Active agent status from Summit to a remote
 // chain where the agent is unknown.
-func (g Guard) relayActiveAgentStatus(ctx context.Context, agent common.Address, chainID uint32) error {
+func (g Guard) relayAgentStatus(ctx context.Context, agent common.Address, chainID uint32, flag types.AgentFlagType) error {
 	err := g.guardDB.StoreRelayableAgentStatus(
 		ctx,
 		agent,
 		types.AgentFlagUnknown,
-		types.AgentFlagActive,
+		flag,
 		chainID,
 	)
 	if err != nil {
