@@ -23,7 +23,7 @@ export const PUBLIC_PROVIDER_URLS: { [chainId: number]: string } = {
   [SupportedChainId.HARMONY]: 'https://api.s0.t.hmny.io',
 }
 
-// Token addresses on Ehtereum mainnet
+// Token addresses on Ethereum mainnet
 export const ETH_DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 export const ETH_NUSD = '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F'
 export const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
