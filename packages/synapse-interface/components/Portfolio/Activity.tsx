@@ -103,10 +103,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       const fuse = new Fuse(formatted, fuseOptions)
 
       if (searchInputActive) {
-        searchFiltered = fuse.search(searchInput).map((i) => i.item)
+        searchFiltered = fuse
+          .search(searchInput)
+          .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
       }
 
-      return searchFiltered
+      return searchFiltered.length > 0
+        ? searchFiltered
+        : userHistoricalTransactions
     }
   }, [
     searchInput,
@@ -186,7 +190,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {address && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
-            userHistoricalTransactions
+            filteredHistoricalTransactionsBySearchInput
               .slice(0, 6) //temporarily only show recent 6
               .map((transaction: BridgeTransaction) => (
                 <Transaction
