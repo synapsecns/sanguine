@@ -34,15 +34,15 @@ func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) err
 // That is, a dispute has not yet been opened with this notary on that chain.
 func (g Guard) getStateReportChains(ctx context.Context, chainID uint32, agent common.Address) ([]uint32, error) {
 	stateReportChains := []uint32{}
-	for _, chainID := range []uint32{g.summitDomainID, chainID} {
+	for _, reportChainID := range []uint32{g.summitDomainID, chainID} {
 		status, err := g.getDisputeStatus(ctx, agent)
 		if err != nil {
 			return []uint32{}, err
 		}
-		isNotary := chainID != 0
+		isNotary := reportChainID != 0
 		isNotInDispute := status.Flag() == types.DisputeFlagNone
 		if isNotary && isNotInDispute {
-			stateReportChains = append(stateReportChains, chainID)
+			stateReportChains = append(stateReportChains, reportChainID)
 		}
 	}
 	return stateReportChains, nil
