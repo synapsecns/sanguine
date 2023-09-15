@@ -7,7 +7,6 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {CREATE3Factory} from "../../contracts/create3/CREATE3Factory.sol";
 
-
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
 
@@ -73,7 +72,7 @@ contract DeployerUtils is Script {
 
         address factoryDeployment = tryLoadDeployment("Create3Factory");
         if (factoryDeployment == address(0)) {
-            if (broadcasterPK == 0){
+            if (broadcasterPK == 0) {
                 console.log("please setup a private key before calling this function");
             }
 
@@ -81,7 +80,6 @@ contract DeployerUtils is Script {
             CREATE3Factory NewFactory = new CREATE3Factory();
             saveDeployment("Create3Factory", "Create3Factory", address(NewFactory), "0x");
             factoryDeployment = address(NewFactory);
-
         }
         factory = ICreate3Factory(factoryDeployment);
         return factory;
@@ -149,7 +147,7 @@ contract DeployerUtils is Script {
 
     /// @notice Predicts the deployment address for a contract.
     function predictFactoryDeployment(string memory contractName) internal returns (address) {
-        ICreate3Factory _factory  = getFactory();
+        ICreate3Factory _factory = getFactory();
         require(Address.isContract(address(_factory)), "Factory not deployed");
         return _factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
