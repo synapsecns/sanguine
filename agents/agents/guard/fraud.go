@@ -33,32 +33,10 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			continue
 		}
 
-		// Ensure the agent that provided the snapshot is active on origin.
-		ok, err := g.ensureAgentActive(ctx, fraudSnapshot.Agent, state.Origin())
-		if err != nil {
-			return fmt.Errorf("could not ensure agent is active: %w", err)
-		}
-		if !ok {
-			logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", fraudSnapshot.Agent.Hex(), state.Origin())
-			continue
-		}
-
 		// Initiate slashing on origin.
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
-				transactor,
-				int64(stateIndex),
-				fraudSnapshot.Payload,
-				fraudSnapshot.Signature,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("could not verify state with snapshot: %w", err)
-			}
-
-			return
-		})
+		err = g.verifyState(ctx, state, stateIndex, fraudSnapshot)
 		if err != nil {
-			return fmt.Errorf("could not submit VerifyStateWithSnapshot tx: %w", err)
+			return fmt.Errorf("could not verify state: %w", err)
 		}
 
 		// Evaluate which chains need a state report.
@@ -210,33 +188,10 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 			continue
 		}
 
-		// Ensure the agent that provided the snapshot is active on origin.
-		ok, err := g.ensureAgentActive(ctx, fraudAttestation.Notary, state.Origin())
-		if err != nil {
-			return fmt.Errorf("could not ensure agent is active: %w", err)
-		}
-		if !ok {
-			logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", fraudAttestation.Notary.Hex(), state.Origin())
-			continue
-		}
-
 		// Initiate slashing on origin.
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
-				transactor,
-				int64(stateIndex),
-				fraudAttestation.SnapshotPayload,
-				fraudAttestation.Payload,
-				fraudAttestation.Signature,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("could not verify state with attestation: %w", err)
-			}
-
-			return
-		})
+		err = g.verifyState(ctx, state, stateIndex, fraudAttestation)
 		if err != nil {
-			return fmt.Errorf("could not submit VerifyStateWithAttestation tx: %w", err)
+			return fmt.Errorf("could not verify state: %w", err)
 		}
 
 		// Evaluate which chains need a state report.

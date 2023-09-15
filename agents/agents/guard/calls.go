@@ -39,6 +39,51 @@ func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.
 	return agentStatus, err
 }
 
+func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex int, data interface{}) (err error) {
+	var agent common.Address
+	var submitFunc func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
+	switch fraudData := data.(type) {
+	case *types.FraudSnapshot:
+		agent = fraudData.Agent
+		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+				transactor,
+				int64(stateIndex),
+				fraudData.Payload,
+				fraudData.Signature,
+			)
+			return
+		}
+	case *types.FraudAttestation:
+		agent = fraudData.Notary
+		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+				transactor,
+				int64(stateIndex),
+				fraudData.Payload,
+				fraudData.Signature,
+			)
+			return
+		}
+	}
+
+	// Ensure the agent that provided the snapshot is active on origin.
+	ok, err := g.ensureAgentActive(ctx, agent, state.Origin())
+	if err != nil {
+		return fmt.Errorf("could not ensure agent is active: %w", err)
+	}
+	if !ok {
+		logger.Infof("Agent %s is not active on chain %d; not verifying snapshot state", agent.Hex(), state.Origin())
+		return nil
+	}
+
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(state.Origin())), submitFunc)
+	if err != nil {
+		return fmt.Errorf("could not verify state on chain %d: %w", state.Origin(), err)
+	}
+	return nil
+}
+
 type stateReportContract interface {
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
 	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
