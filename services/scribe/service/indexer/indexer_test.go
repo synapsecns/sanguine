@@ -154,7 +154,7 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
 	indexerConfig := contractIndexer.GetIndexerConfig()
-	logFetcher := indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(contractConfig.StartBlock)), big.NewInt(int64(txBlockNumberA)), &indexerConfig)
+	logFetcher := indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(contractConfig.StartBlock)), big.NewInt(int64(txBlockNumberA)), &indexerConfig, true)
 	logsChan := logFetcher.GetFetchedLogsChan()
 
 	fetchingContext, cancelFetching := context.WithTimeout(x.GetTestContext(), 10*time.Second)
@@ -180,7 +180,7 @@ Done:
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logFetcher = indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(txBlockNumberA+1)), big.NewInt(int64(txBlockNumberB)), &indexerConfig)
+	logFetcher = indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(txBlockNumberA+1)), big.NewInt(int64(txBlockNumberB)), &indexerConfig, true)
 	logsChan = logFetcher.GetFetchedLogsChan()
 
 	fetchingContext, cancelFetching = context.WithTimeout(x.GetTestContext(), 10*time.Second)

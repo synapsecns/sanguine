@@ -233,7 +233,6 @@ func (s Store) retrieveLogsInRangeQuery(ctx context.Context, logFilter db.LogFil
 	}
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
-	// TODO DELETE
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
