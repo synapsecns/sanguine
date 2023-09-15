@@ -60,7 +60,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const searchInputActive: boolean = searchInput.length > 0
 
   const filteredHistoricalTransactionsBySearchInput = useMemo(() => {
-    const searchFiltered: BridgeTransaction[] = []
+    let searchFiltered: BridgeTransaction[] = []
     const fuseOptions = {
       includeScore: true,
       threshold: 0.0,
@@ -103,7 +103,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       const fuse = new Fuse(formatted, fuseOptions)
 
       if (searchInputActive) {
+        searchFiltered = fuse.search(searchInput).map((i) => i.item)
       }
+
+      return searchFiltered
     }
   }, [
     searchInput,
