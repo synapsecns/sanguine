@@ -36,8 +36,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 				},
 			},
 		},
-		RefreshRate: uint(gofakeit.Uint8()),
-		RPCURL:      gofakeit.URL(),
+		RPCURL: gofakeit.URL(),
 	}
 
 	encodedConfig, err := testConfig.Encode()
