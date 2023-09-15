@@ -28,6 +28,62 @@ func HasAttestation(data StateValidationData) bool {
 	return data.AttestationPayload() != nil
 }
 
+// SnapshotWithMetadata is a snapshot type with additional metadata for fraud handling.
+type SnapshotWithMetadata struct {
+	// Snapshot is the underlying snapshot.
+	Snapshot          Snapshot
+	agentDomain       uint32
+	agent             common.Address
+	snapshotPayload   []byte
+	snapshotSignature []byte
+}
+
+// NewSnapshotWithMetadata returns a new SnapshotWithMetadata from a Snapshot payload and other metadata.
+func NewSnapshotWithMetadata(snapshotPayload []byte, agentDomain uint32, agent common.Address, snapshotSignature []byte) (*SnapshotWithMetadata, error) {
+	decodedSnapshot, err := DecodeSnapshot(snapshotPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode snapshot: %w", err)
+	}
+
+	return &SnapshotWithMetadata{
+		Snapshot:          decodedSnapshot,
+		agentDomain:       agentDomain,
+		agent:             agent,
+		snapshotPayload:   snapshotPayload,
+		snapshotSignature: snapshotSignature,
+	}, nil
+}
+
+// Agent returns the agent that submitted the snapshot.
+func (s *SnapshotWithMetadata) Agent() common.Address {
+	return s.agent
+}
+
+// AgentDomain returns the domain of the agent that submitted the snapshot.
+func (s *SnapshotWithMetadata) AgentDomain() uint32 {
+	return s.agentDomain
+}
+
+// SnapshotPayload returns the snapshot payload.
+func (s *SnapshotWithMetadata) SnapshotPayload() []byte {
+	return s.snapshotPayload
+}
+
+// SnapshotSignature returns the snapshot signature.
+func (s *SnapshotWithMetadata) SnapshotSignature() []byte {
+	return s.snapshotSignature
+}
+
+// AttestationPayload returns nil, since the data corresponds to a snapshot.
+func (s *SnapshotWithMetadata) AttestationPayload() []byte {
+	return nil
+}
+
+// AttestationSignature returns nil, since the data corresponds to a snapshot.
+func (s *SnapshotWithMetadata) AttestationSignature() []byte {
+	return nil
+}
+
 // AttestationWithMetadata is an attestation that was submitted by a Notary and was deemed fraudulent.
 type AttestationWithMetadata struct {
 	// Attestation is the underlying attestation.
@@ -88,60 +144,4 @@ func (a *AttestationWithMetadata) AttestationPayload() []byte {
 // AttestationSignature returns the attestation signature.
 func (a *AttestationWithMetadata) AttestationSignature() []byte {
 	return a.attestationSignature
-}
-
-// SnapshotWithMetadata is a snapshot type with additional metadata for fraud handling.
-type SnapshotWithMetadata struct {
-	// Snapshot is the underlying snapshot.
-	Snapshot          Snapshot
-	agentDomain       uint32
-	agent             common.Address
-	snapshotPayload   []byte
-	snapshotSignature []byte
-}
-
-// NewSnapshotWithMetadata returns a new SnapshotWithMetadata from a Snapshot payload and other metadata.
-func NewSnapshotWithMetadata(snapshotPayload []byte, agentDomain uint32, agent common.Address, snapshotSignature []byte) (*SnapshotWithMetadata, error) {
-	decodedSnapshot, err := DecodeSnapshot(snapshotPayload)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode snapshot: %w", err)
-	}
-
-	return &SnapshotWithMetadata{
-		Snapshot:          decodedSnapshot,
-		agentDomain:       agentDomain,
-		agent:             agent,
-		snapshotPayload:   snapshotPayload,
-		snapshotSignature: snapshotSignature,
-	}, nil
-}
-
-// Agent returns the agent that submitted the snapshot.
-func (s *SnapshotWithMetadata) Agent() common.Address {
-	return s.agent
-}
-
-// AgentDomain returns the domain of the agent that submitted the snapshot.
-func (s *SnapshotWithMetadata) AgentDomain() uint32 {
-	return s.agentDomain
-}
-
-// SnapshotPayload returns the snapshot payload.
-func (s *SnapshotWithMetadata) SnapshotPayload() []byte {
-	return s.snapshotPayload
-}
-
-// SnapshotSignature returns the snapshot signature.
-func (s *SnapshotWithMetadata) SnapshotSignature() []byte {
-	return s.snapshotSignature
-}
-
-// AttestationPayload returns nil, since the data corresponds to a snapshot.
-func (s *SnapshotWithMetadata) AttestationPayload() []byte {
-	return nil
-}
-
-// AttestationSignature returns nil, since the data corresponds to a snapshot.
-func (s *SnapshotWithMetadata) AttestationSignature() []byte {
-	return nil
 }
