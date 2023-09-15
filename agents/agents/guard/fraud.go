@@ -35,7 +35,7 @@ func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) err
 func (g Guard) getStateReportChains(ctx context.Context, chainID uint32, agent common.Address) ([]uint32, error) {
 	stateReportChains := []uint32{}
 	for _, chainID := range []uint32{g.summitDomainID, chainID} {
-		status, err := g.getDisputeStatus(ctx, chainID, agent)
+		status, err := g.getDisputeStatus(ctx, agent)
 		if err != nil {
 			return []uint32{}, err
 		}
@@ -48,13 +48,12 @@ func (g Guard) getStateReportChains(ctx context.Context, chainID uint32, agent c
 	return stateReportChains, nil
 }
 
-func (g Guard) getDisputeStatus(ctx context.Context, chainID uint32, agent common.Address) (status types.DisputeStatus, err error) {
+func (g Guard) getDisputeStatus(ctx context.Context, agent common.Address) (status types.DisputeStatus, err error) {
 	contractCall := func(ctx context.Context) error {
 		status, err = g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, agent)
 		if err != nil {
 			return fmt.Errorf("could not get dispute status: %w", err)
 		}
-
 		return nil
 	}
 	err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
