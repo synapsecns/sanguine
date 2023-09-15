@@ -255,11 +255,11 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	switch {
 	case isSnapshotAcceptedEvent(g.inboxParser, log):
-		return g.handleSnapshot(ctx, log)
+		return g.handleSnapshotAccepted(ctx, log)
 	case isAttestationAcceptedEvent(g.lightInboxParser, log):
-		return g.handleAttestation(ctx, log)
+		return g.handleAttestationAccepted(ctx, log)
 	case isReceiptAcceptedEvent(g.inboxParser, log):
-		return g.handleReceipt(ctx, log)
+		return g.handleReceiptAccepted(ctx, log)
 	case isStatusUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleStatusUpdated(ctx, log, chainID)
 	case isRootUpdatedEvent(g.bondingManagerParser, log):

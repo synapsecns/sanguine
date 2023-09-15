@@ -12,11 +12,11 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 )
 
-// handleSnapshot checks a snapshot for invalid states.
+// handleSnapshotAccepted checks a snapshot for invalid states.
 // If an invalid state is found, initiate slashing and submit a state report.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
@@ -121,9 +121,9 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, e
 	return !isValid, nil
 }
 
-// handleAttestation checks whether an attestation is valid.
+// handleAttestationAccepted checks whether an attestation is valid.
 // If invalid, initiate slashing and/or submit a fraud report.
-func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) error {
 	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
@@ -341,7 +341,7 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, fraudAttestation *t
 }
 
 //nolint:cyclop
-func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) error {
 	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
