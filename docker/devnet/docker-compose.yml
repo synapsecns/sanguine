@@ -83,27 +83,27 @@ services:
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
-#  executor:
-#    entrypoint: agents
-#    restart: unless-stopped
-#    depends_on:
-#      - omnirpc
-#    build:
-#      context: ../../
-#      dockerfile: docker/devnet/agents.Dockerfile
-#    volumes:
-#      - '${PWD}/config/notary44-config.yml:/config/notary-config.yml'
-#      - '${PWD}/config/executor-signer.txt:/config/executor-signer.txt'
-#      - executor_data:/config/synapse.db
-#    command:
-#      - 'notary-run'
-#      - '--config'
-#      - '/config/notary-config.yml'
-#      - '--debug'
-#    environment:
-#      METRICS_HANDLER: jaeger
-#      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-#      GOLOG_LOG_LEVEL: debug
+  executor:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/executor-config.yml:/config/executor-config.yml'
+      - '${PWD}/config/executor-signer.txt:/config/executor-signer.txt'
+      - executor_data:/config/synapse.db
+    command:
+      - 'executor-run'
+      - '--config'
+      - '/config/executor-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
 
 
   scribe-indexer:

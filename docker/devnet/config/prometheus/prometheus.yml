@@ -11,4 +11,7 @@ scrape_configs:
           - 'scribe-indexer:8080'
           - 'scribe:8080'
           - 'omnirpc:8080'
+          - 'notary-43:8080'
+          - 'notary-44:8080'
+          - 'executor:8080'
 
