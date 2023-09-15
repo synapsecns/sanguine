@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"os"
+	"strings"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -28,12 +35,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
-	"math"
-	"math/big"
-	"os"
-	"strings"
-	"sync"
-	"testing"
 )
 
 const gasLimit = 10000000
@@ -121,7 +122,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	// to prevent old containers from piling up, we set a timeout to remove the container.
 	require.Nil(t, resource.Expire(args.expirySeconds))
 
-	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
+	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
 	var chainID *big.Int
 	if err := pool.Retry(func() error {
@@ -177,7 +178,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Cleanup(func() {
 		select {
 		case <-ctx.Done():
-			_ = pool.Purge(resource)
+			err = pool.Purge(resource)
+			logger.Errorf("error purging anvil container: %w", err)
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
@@ -193,7 +195,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 		Repository: "otterscan/otterscan",
 		Tag:        "latest",
 		Env: []string{
-			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", dockerutil.GetPort(anvilResource, "8545/tcp")),
 		},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
@@ -240,7 +242,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 	case logInfo := <-logInfoChan:
 		// debug level stuff
 		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
-		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+		return fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp"))
 	}
 	return ""
 }

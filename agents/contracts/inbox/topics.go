@@ -19,8 +19,13 @@ func init() {
 
 	SnapshotAcceptedTopic = parsedInbox.Events["SnapshotAccepted"].ID
 
+	ReceiptAcceptedTopic = parsedInbox.Events["ReceiptAccepted"].ID
+
 	if SnapshotAcceptedTopic == (common.Hash{}) {
 		panic("SnapshotAcceptedTopic is nil")
+	}
+	if ReceiptAcceptedTopic == (common.Hash{}) {
+		panic("ReceiptAcceptedTopic is nil")
 	}
 }
 
@@ -28,11 +33,16 @@ func init() {
 // when the SnapshotAccepted event is called.
 var SnapshotAcceptedTopic common.Hash
 
+// ReceiptAcceptedTopic is the topic that gets emitted
+// when the ReceiptAccepted event is called.
+var ReceiptAcceptedTopic common.Hash
+
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		SnapshotAcceptedEvent: SnapshotAcceptedTopic,
+		ReceiptAcceptedEvent:  ReceiptAcceptedTopic,
 	}
 }
 

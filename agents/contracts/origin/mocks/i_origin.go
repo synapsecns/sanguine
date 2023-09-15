@@ -82,29 +82,6 @@ func (_m *IOrigin) AgentStatus(opts *bind.CallOpts, agent common.Address) (origi
 	return r0, r1
 }
 
-// FilterDispatched provides a mock function with given fields: opts, messageHash, nonce, destination
-func (_m *IOrigin) FilterDispatched(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*origin.OriginDispatchedIterator, error) {
-	ret := _m.Called(opts, messageHash, nonce, destination)
-
-	var r0 *origin.OriginDispatchedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) *origin.OriginDispatchedIterator); ok {
-		r0 = rf(opts, messageHash, nonce, destination)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginDispatchedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) error); ok {
-		r1 = rf(opts, messageHash, nonce, destination)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterInitialized provides a mock function with given fields: opts
 func (_m *IOrigin) FilterInitialized(opts *bind.FilterOpts) (*origin.OriginInitializedIterator, error) {
 	ret := _m.Called(opts)
@@ -426,29 +403,6 @@ func (_m *IOrigin) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseDispatched provides a mock function with given fields: log
-func (_m *IOrigin) ParseDispatched(log types.Log) (*origin.OriginDispatched, error) {
-	ret := _m.Called(log)
-
-	var r0 *origin.OriginDispatched
-	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginDispatched); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginDispatched)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -783,29 +737,6 @@ func (_m *IOrigin) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchDispatched provides a mock function with given fields: opts, sink, messageHash, nonce, destination
-func (_m *IOrigin) WatchDispatched(opts *bind.WatchOpts, sink chan<- *origin.OriginDispatched, messageHash [][32]byte, nonce []uint32, destination []uint32) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, messageHash, nonce, destination)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginDispatched, [][32]byte, []uint32, []uint32) event.Subscription); ok {
-		r0 = rf(opts, sink, messageHash, nonce, destination)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginDispatched, [][32]byte, []uint32, []uint32) error); ok {
-		r1 = rf(opts, sink, messageHash, nonce, destination)
 	} else {
 		r1 = ret.Error(1)
 	}

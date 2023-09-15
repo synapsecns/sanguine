@@ -328,6 +328,29 @@ func (_m *ConsumerDB) GetLeaderboard(ctx context.Context, query string) ([]*mode
 	return r0, r1
 }
 
+// GetMVBridgeEvent provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetMVBridgeEvent(ctx context.Context, query string) (*sql.HybridBridgeEvent, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 *sql.HybridBridgeEvent
+	if rf, ok := ret.Get(0).(func(context.Context, string) *sql.HybridBridgeEvent); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*sql.HybridBridgeEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetPendingByChain provides a mock function with given fields: ctx
 func (_m *ConsumerDB) GetPendingByChain(ctx context.Context) (*immutable.Map[int, int], error) {
 	ret := _m.Called(ctx)
@@ -362,6 +385,27 @@ func (_m *ConsumerDB) GetRankedChainsByVolume(ctx context.Context, query string)
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.VolumeByChainID)
 		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetString provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetString(ctx context.Context, query string) (string, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
