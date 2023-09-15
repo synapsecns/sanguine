@@ -36,7 +36,7 @@ func (g Guard) getAgentStatus(ctx context.Context, chainID uint32, agent common.
 	if err != nil {
 		return nil, fmt.Errorf("could not get agent status: %w", err)
 	}
-	return agentStatus, err
+	return agentStatus, nil
 }
 
 func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex int, data types.StateValidationData) (err error) {
