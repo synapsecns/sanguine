@@ -20,6 +20,8 @@ abstract contract MessagingBase is MultiCallable, Versioned, OwnableUpgradeable 
     uint32 public immutable localDomain;
     // @notice Domain of the Synapse chain, set once upon contract creation
     uint32 public immutable synapseDomain;
+    // @notice deploy block of the contract
+    uint32 public immutable deployBlock;
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -30,6 +32,11 @@ abstract contract MessagingBase is MultiCallable, Versioned, OwnableUpgradeable 
         // TODO: do we want to/need to check for overflow?
         localDomain = uint32(block.chainid);
         synapseDomain = synapseDomain_;
+        deployBlock = block.number;
+    }
+
+    function deployBlock() external returns (uint32) {
+        return deployBlock;
     }
 
     // TODO: Implement pausing
