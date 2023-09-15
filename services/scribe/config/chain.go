@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/richardwilkes/toolbox/collection"
@@ -40,7 +39,7 @@ type ChainConfigs []ChainConfig
 
 // IsValid validates the chain config by asserting no two chains appear twice.
 // It also calls IsValid on each individual ContractConfig.
-func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ChainConfigs) IsValid() (ok bool, err error) {
 	intSet := collection.Set[uint32]{}
 
 	for _, cfg := range c {
@@ -48,7 +47,7 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 			return false, fmt.Errorf("chain id %d appears twice: %w", cfg.ChainID, ErrDuplicateChainID)
 		}
 
-		ok, err = cfg.IsValid(ctx)
+		ok, err = cfg.IsValid()
 		if !ok {
 			return false, err
 		}
@@ -60,11 +59,11 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 }
 
 // IsValid validates the chain config.
-func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ChainConfig) IsValid() (ok bool, err error) {
 	if c.ChainID == 0 {
 		return false, fmt.Errorf("%w: chain ID cannot be 0", ErrInvalidChainID)
 	}
-	if ok, err = c.Contracts.IsValid(ctx); !ok {
+	if ok, err = c.Contracts.IsValid(); !ok {
 		return false, err
 	}
 

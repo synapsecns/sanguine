@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,8 +25,8 @@ type Config struct {
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
-func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
-	if ok, err = c.Chains.IsValid(ctx); !ok {
+func (c *Config) IsValid() (ok bool, err error) {
+	if ok, err = c.Chains.IsValid(); !ok {
 		return false, err
 	}
 	if c.RPCURL == "" {

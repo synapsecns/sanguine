@@ -47,7 +47,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 	decodedConfig, err := config.DecodeConfig(file.Name())
 	Nil(c.T(), err)
 
-	ok, err := decodedConfig.IsValid(c.GetTestContext())
+	ok, err := decodedConfig.IsValid()
 	True(c.T(), ok)
 	Nil(c.T(), err)
 }
