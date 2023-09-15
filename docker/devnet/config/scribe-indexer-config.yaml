@@ -1,8 +1,6 @@
 chains:
   - chain_id: 42
-    required_confirmations: 0
-    contract_sub_chunk_size: 512
-    contract_chunk_size: 512
+    livefill_threshold: 0
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
@@ -18,9 +16,7 @@ chains:
       - address: 0x521F44132489CDD54c9ceC8167CfC377CbAEa351
         start_block: 1
   - chain_id: 43
-    required_confirmations: 0
-    contract_sub_chunk_size: 512
-    contract_chunk_size: 512
+    livefill_threshold: 0
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
@@ -35,8 +31,7 @@ chains:
         start_block: 1
   - chain_id: 44
     required_confirmations: 0
-    contract_sub_chunk_size: 512
-    contract_chunk_size: 512
+    livefill_threshold: 0
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
