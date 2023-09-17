@@ -153,7 +153,8 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
-	for _, state := range snapshot.States() {
+	for _, s := range snapshot.States() {
+		state := s
 		statePayload, err := state.Encode()
 		if err != nil {
 			return fmt.Errorf("could not encode state: %w", err)

@@ -535,7 +535,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
-	fmt.Printf("handleStatusUpdated: %v on %d\n", types.AgentFlagType(statusUpdated.Flag).String(), chainID)
 
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
@@ -709,7 +708,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
-	fmt.Printf("got eligible agent trees: %v\n", eligibleAgentTrees)
 
 	var localRoot [32]byte
 	contractCall := func(ctx context.Context) error {
@@ -729,7 +727,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	if err != nil {
 		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
-	fmt.Printf("got localRootBlockNumber %d for agent root %s on chain %d\n", localRootBlockNumber, common.BytesToHash(localRoot[:]).String(), chainID)
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, t := range eligibleAgentTrees {
@@ -740,7 +737,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 			return fmt.Errorf("could not get block number for local root: %w", err)
 		}
 		//nolint:nestif
-		fmt.Printf("comparing localRootBlockNumber %d with treeBlockNumber %d\n", localRootBlockNumber, treeBlockNumber)
 		if localRootBlockNumber >= treeBlockNumber {
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.

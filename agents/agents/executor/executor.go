@@ -101,7 +101,6 @@ type logOrderInfo struct {
 
 const (
 	logChanSize          = 1000
-	rpcRetry             = 7
 	scribeConnectTimeout = 30 * time.Second
 )
 
