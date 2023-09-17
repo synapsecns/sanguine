@@ -997,6 +997,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     last_indexed: Int!
     page: Int!
   ): [Transaction]
+
+
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON

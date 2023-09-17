@@ -6,7 +6,7 @@ import (
 )
 
 // GetPort returns the port of a container.
-// We intentionally get the last port due to quirky behaviuor of docker-for-mac,
+// We intentionally get the last port due to quirky behavior of docker-for-mac,
 // which does not enforce uniqueness on 0.0.0.0:xxx ports. Not entirely sure why
 // docker-for-mac behaves this way.
 func GetPort(resource *dockertest.Resource, port string) string {

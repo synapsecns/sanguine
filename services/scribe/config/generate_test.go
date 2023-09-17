@@ -57,14 +57,12 @@ func (c *ConfigSuite) TestGenerateConfig() {
 
 	repoRoot, err := find.Repo()
 	Nil(c.T(), err)
-
-	requiredConfs := gofakeit.Uint32()
 	omnirpcURL := gofakeit.URL()
 	outputPath := filepath.Join(filet.TmpDir(c.T(), ""), "test.yaml")
 
 	deploymentsFolder := filepath.Join(repoRoot.Path, "ethergo", "internal", "test-data", "deployments")
 
-	err = config.GenerateConfig(c.GetTestContext(), omnirpcURL, deploymentsFolder, requiredConfs, outputPath, []int{5, 335, 43113, 1666700000}, testGenerator)
+	err = config.GenerateConfig(c.GetTestContext(), omnirpcURL, deploymentsFolder, outputPath, []int{5, 335, 43113, 1666700000}, testGenerator)
 	Nil(c.T(), err)
 
 	parsedDeployments, err := hardhat.GetDeployments(deploymentsFolder)

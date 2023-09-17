@@ -1,0 +1,178 @@
+rpc_url: 'https://rpc.interoperability.institute/confirmations/1/rpc/'
+scribe_url: 'https://scribe.interoperability.institute/graphql'
+db_address: 'clickhouse://default:nBVRppceWx@clickhouse.clickhouse:9000/explorer_prod'
+hydrate_cache: true
+bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'
+http_port: 5080
+bridge_config_chain_id: 1
+swap_topic_hash: '0xc6c1e0630dbe9130cc068028486c0d118ddcea348550819defd5cb8c257f8a38'
+chains:
+  1:
+    chain_id: 1
+    avg_block_time: 13
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8'
+    contracts:
+      bridge: '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
+      cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+  42161:
+    chain_id: 42161
+    avg_block_time: 1
+    get_logs_range: 1000
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40'
+      - '0xa067668661C84476aFcDc6fA5D758C4c01C34352'
+    contracts:
+      bridge: '0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9'
+      cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+  1313161554:
+    chain_id: 1313161554
+    avg_block_time: 1
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0xCCd87854f58773fe75CdDa542457aC48E46c2D65'
+    contracts:
+      bridge: '0xaeD5b25BE1c3163c907a471082640450F928DDFE'
+  43114:
+    chain_id: 43114
+    avg_block_time: 3
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x77a7e60555bC18B4Be44C181b2575eee46212d44'
+      - '0xED2a7edd7413021d440b09D654f3b87712abAB66'
+    contracts:
+      bridge: '0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE'
+      cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+  288:
+    chain_id: 288
+    avg_block_time: 40
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x75FF037256b36F15919369AC58695550bE72fead'
+      - '0x753bb855c8fe814233d26Bb23aF61cb3d2022bE5'
+    contracts:
+      bridge: '0x432036208d2717394d2614d6697c46DF3Ed69540'
+  56:
+    chain_id: 56
+    avg_block_time: 3
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13'
+    contracts:
+      bridge: '0xd123f70AE324d34A9E76b67a27bf77593bA8749f'
+  250:
+    chain_id: 250
+    avg_block_time: 3
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1'
+    contracts:
+      bridge: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
+  1666600000:
+    chain_id: 1666600000
+    avg_block_time: 2
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e'
+    contracts:
+      bridge: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
+  137:
+    chain_id: 137
+    avg_block_time: 2
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5'
+    contracts:
+      bridge: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280'
+  10:
+    chain_id: 10
+    avg_block_time: 2
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0xF44938b0125A6662f9536281aD2CD6c499F22004'
+      - '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
+    contracts:
+      bridge: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
+  1284:
+    chain_id: 1284
+    avg_block_time: 12
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    contracts:
+      bridge: '0x84A420459cd31C3c34583F67E0f0fB191067D32f'
+  1285:
+    chain_id: 1285
+    avg_block_time: 12
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    contracts:
+      bridge: '0xaeD5b25BE1c3163c907a471082640450F928DDFE'
+  53935:
+    chain_id: 53935
+    avg_block_time: 2
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    contracts:
+      bridge: '0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A'
+  25:
+    chain_id: 25
+    avg_block_time: 6
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0xCb6674548586F20ca39C97A52A0ded86f48814De'
+    contracts:
+      bridge: '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
+  1088:
+    chain_id: 1088
+    avg_block_time: 3
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x555982d2E211745b96736665e19D9308B615F78e'
+      - '0x09fEC30669d63A13c666d2129230dD5588E2e240'
+    contracts:
+      bridge: '0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c'
+  8217:
+    chain_id: 8217
+    avg_block_time: 1
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    contracts:
+      bridge: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
+  7700:
+    chain_id: 7700
+    avg_block_time: 5
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c'
+    contracts:
+      bridge: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0'
+  2000:
+    chain_id: 2000
+    avg_block_time: 65
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    contracts:
+      bridge: '0x9508BF380c1e6f751D97604732eF1Bae6673f299'
+  8453:
+    chain_id: 8453
+    avg_block_time: 2
+    get_logs_range: 256
+    get_logs_batch_amount: 1
+    swaps:
+      - '0x6223bD82010E2fB69F329933De20897e7a4C225f'
+    contracts:
+      bridge: '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089'

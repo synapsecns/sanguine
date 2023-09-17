@@ -1,3 +1,2 @@
-// Package consumer provides a consumer for the database. It deals with querying,
-// parsing, and storing logs.
+// Package consumer deals with consuming logs from scribe and then parsing and storing events.
 package consumer

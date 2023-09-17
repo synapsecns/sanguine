@@ -81,10 +81,11 @@ type ComplexityRoot struct {
 	}
 
 	BridgeWatcherTx struct {
-		BridgeTx func(childComplexity int) int
-		Kappa    func(childComplexity int) int
-		Pending  func(childComplexity int) int
-		Type     func(childComplexity int) int
+		BridgeTx    func(childComplexity int) int
+		Kappa       func(childComplexity int) int
+		KappaStatus func(childComplexity int) int
+		Pending     func(childComplexity int) int
+		Type        func(childComplexity int) int
 	}
 
 	DateResult struct {
@@ -96,6 +97,7 @@ type ComplexityRoot struct {
 		Arbitrum  func(childComplexity int) int
 		Aurora    func(childComplexity int) int
 		Avalanche func(childComplexity int) int
+		Base      func(childComplexity int) int
 		Boba      func(childComplexity int) int
 		Bsc       func(childComplexity int) int
 		Canto     func(childComplexity int) int
@@ -147,6 +149,8 @@ type ComplexityRoot struct {
 		BlockNumber        func(childComplexity int) int
 		ChainID            func(childComplexity int) int
 		DestinationChainID func(childComplexity int) int
+		EventType          func(childComplexity int) int
+		FormattedEventType func(childComplexity int) int
 		FormattedTime      func(childComplexity int) int
 		FormattedValue     func(childComplexity int) int
 		Time               func(childComplexity int) int
@@ -182,12 +186,12 @@ type ComplexityRoot struct {
 		AddressData            func(childComplexity int, address string) int
 		AddressRanking         func(childComplexity int, hours *int) int
 		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) int
-		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) int
+		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) int
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
-		GetDestinationBridgeTx func(childComplexity int, chainID *int, address *string, kappa *string, timestamp *int) int
-		GetOriginBridgeTx      func(childComplexity int, chainID *int, txnHash *string) int
+		GetDestinationBridgeTx func(childComplexity int, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) int
+		GetOriginBridgeTx      func(childComplexity int, chainID int, txnHash string, bridgeType model.BridgeType) int
 		Leaderboard            func(childComplexity int, duration *model.Duration, chainID *int, useMv *bool, page *int) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
 		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration, useCache *bool) int
@@ -224,7 +228,7 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error)
+	BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) ([]*model.BridgeTransaction, error)
 	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -234,8 +238,8 @@ type QueryResolver interface {
 	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error)
 	AddressData(ctx context.Context, address string) (*model.AddressData, error)
 	Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error)
-	GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string) (*model.BridgeWatcherTx, error)
-	GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int) (*model.BridgeWatcherTx, error)
+	GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error)
+	GetDestinationBridgeTx(ctx context.Context, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error)
 }
 
 type executableSchema struct {
@@ -421,6 +425,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BridgeWatcherTx.Kappa(childComplexity), true
 
+	case "BridgeWatcherTx.kappaStatus":
+		if e.complexity.BridgeWatcherTx.KappaStatus == nil {
+			break
+		}
+
+		return e.complexity.BridgeWatcherTx.KappaStatus(childComplexity), true
+
 	case "BridgeWatcherTx.pending":
 		if e.complexity.BridgeWatcherTx.Pending == nil {
 			break
@@ -469,6 +480,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Avalanche(childComplexity), true
+
+	case "DateResultByChain.base":
+		if e.complexity.DateResultByChain.Base == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Base(childComplexity), true
 
 	case "DateResultByChain.boba":
 		if e.complexity.DateResultByChain.Boba == nil {
@@ -722,6 +740,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialInfo.DestinationChainID(childComplexity), true
 
+	case "PartialInfo.eventType":
+		if e.complexity.PartialInfo.EventType == nil {
+			break
+		}
+
+		return e.complexity.PartialInfo.EventType(childComplexity), true
+
+	case "PartialInfo.formattedEventType":
+		if e.complexity.PartialInfo.FormattedEventType == nil {
+			break
+		}
+
+		return e.complexity.PartialInfo.FormattedEventType(childComplexity), true
+
 	case "PartialInfo.formattedTime":
 		if e.complexity.PartialInfo.FormattedTime == nil {
 			break
@@ -929,7 +961,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainIDFrom"].([]*int), args["chainIDTo"].([]*int), args["addressFrom"].(*string), args["addressTo"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["maxAmountUsd"].(*int), args["minAmountUsd"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["useMv"].(*bool), args["page"].(*int), args["tokenAddressFrom"].([]*string), args["tokenAddressTo"].([]*string)), true
+		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainIDFrom"].([]*int), args["chainIDTo"].([]*int), args["addressFrom"].(*string), args["addressTo"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["maxAmountUsd"].(*int), args["minAmountUsd"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["useMv"].(*bool), args["page"].(*int), args["tokenAddressFrom"].([]*string), args["tokenAddressTo"].([]*string), args["onlyCCTP"].(*bool)), true
 
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
@@ -977,7 +1009,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(*int), args["address"].(*string), args["kappa"].(*string), args["timestamp"].(*int)), true
+		return e.complexity.Query.GetDestinationBridgeTx(childComplexity, args["chainID"].(int), args["address"].(string), args["kappa"].(string), args["timestamp"].(int), args["bridgeType"].(model.BridgeType), args["historical"].(*bool)), true
 
 	case "Query.getOriginBridgeTx":
 		if e.complexity.Query.GetOriginBridgeTx == nil {
@@ -989,7 +1021,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOriginBridgeTx(childComplexity, args["chainID"].(*int), args["txnHash"].(*string)), true
+		return e.complexity.Query.GetOriginBridgeTx(childComplexity, args["chainID"].(int), args["txnHash"].(string), args["bridgeType"].(model.BridgeType)), true
 
 	case "Query.leaderboard":
 		if e.complexity.Query.Leaderboard == nil {
@@ -1248,6 +1280,7 @@ type UnknownType {
     page:           Int = 1
     tokenAddressFrom:   [String]
     tokenAddressTo:   [String]
+    onlyCCTP:           Boolean = false
   ): [BridgeTransaction]
 
   """
@@ -1264,6 +1297,7 @@ type UnknownType {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
+
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -1352,8 +1386,9 @@ Ranked chainIDs by volume
   GetOriginBridgeTx is the bridge watcher endpoint for getting an origin bridge tx (BETA).
   """
   getOriginBridgeTx(
-    chainID:      Int
-    txnHash:       String
+    chainID:      Int!
+    txnHash:       String!
+    bridgeType:   BridgeType!
   ): BridgeWatcherTx
 
 
@@ -1361,10 +1396,12 @@ Ranked chainIDs by volume
   GetDestinationBridgeTx is the bridge watcher endpoint for getting an destination bridge tx (BETA).
   """
   getDestinationBridgeTx(
-    chainID:      Int
-    address:     String
-    kappa:      String
-    timestamp:   Int
+    chainID:      Int!
+    address:     String!
+    kappa:      String!
+    timestamp:   Int!
+    bridgeType:   BridgeType!
+    historical:  Boolean = false
   ): BridgeWatcherTx
 
 }
@@ -1399,6 +1436,8 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  formattedEventType: String
+  eventType: Int
 }
 
 enum BridgeTxType {
@@ -1413,6 +1452,7 @@ type BridgeWatcherTx {
   pending:      Boolean
   type:  BridgeTxType
   kappa:        String
+  kappaStatus: KappaStatus
 }
 """
 DateResult is a given statistic for a given date.
@@ -1546,6 +1586,7 @@ type DateResultByChain {
   harmony: Float
   canto: Float
   dogechain: Float
+  base: Float
   total:  Float
 }
 
@@ -1582,6 +1623,17 @@ type Leaderboard {
   txs: Int
   rank: Int
   avgVolumeUSD: Float
+}
+
+enum BridgeType{
+  BRIDGE
+  CCTP
+}
+
+enum KappaStatus{
+  EXISTS
+  PENDING
+  UNKNOWN
 }
 `, BuiltIn: false},
 }
@@ -1870,6 +1922,15 @@ func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Cont
 		}
 	}
 	args["tokenAddressTo"] = arg16
+	var arg17 *bool
+	if tmp, ok := rawArgs["onlyCCTP"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("onlyCCTP"))
+		arg17, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["onlyCCTP"] = arg17
 	return args, nil
 }
 
@@ -2020,66 +2081,93 @@ func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.
 func (ec *executionContext) field_Query_getDestinationBridgeTx_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
+	var arg0 int
 	if tmp, ok := rawArgs["chainID"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["chainID"] = arg0
-	var arg1 *string
+	var arg1 string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["address"] = arg1
-	var arg2 *string
+	var arg2 string
 	if tmp, ok := rawArgs["kappa"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kappa"))
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["kappa"] = arg2
-	var arg3 *int
+	var arg3 int
 	if tmp, ok := rawArgs["timestamp"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["timestamp"] = arg3
+	var arg4 model.BridgeType
+	if tmp, ok := rawArgs["bridgeType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bridgeType"))
+		arg4, err = ec.unmarshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["bridgeType"] = arg4
+	var arg5 *bool
+	if tmp, ok := rawArgs["historical"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("historical"))
+		arg5, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["historical"] = arg5
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_getOriginBridgeTx_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
+	var arg0 int
 	if tmp, ok := rawArgs["chainID"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["chainID"] = arg0
-	var arg1 *string
+	var arg1 string
 	if tmp, ok := rawArgs["txnHash"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["txnHash"] = arg1
+	var arg2 model.BridgeType
+	if tmp, ok := rawArgs["bridgeType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bridgeType"))
+		arg2, err = ec.unmarshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["bridgeType"] = arg2
 	return args, nil
 }
 
@@ -3045,6 +3133,10 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
+			case "formattedEventType":
+				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
+			case "eventType":
+				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -3112,6 +3204,10 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
+			case "formattedEventType":
+				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
+			case "eventType":
+				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -3302,6 +3398,10 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_bridgeTx(ctx context.Co
 				return ec.fieldContext_PartialInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
+			case "formattedEventType":
+				return ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
+			case "eventType":
+				return ec.fieldContext_PartialInfo_eventType(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -3427,6 +3527,47 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_kappa(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BridgeWatcherTx_kappaStatus(ctx context.Context, field graphql.CollectedField, obj *model.BridgeWatcherTx) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KappaStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.KappaStatus)
+	fc.Result = res
+	return ec.marshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeWatcherTx_kappaStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeWatcherTx",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type KappaStatus does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4281,6 +4422,47 @@ func (ec *executionContext) _DateResultByChain_dogechain(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_DateResultByChain_dogechain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_base(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_base(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Base, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_base(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DateResultByChain",
 		Field:      field,
@@ -5505,6 +5687,88 @@ func (ec *executionContext) fieldContext_PartialInfo_formattedTime(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialInfo_formattedEventType(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_formattedEventType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FormattedEventType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialInfo_formattedEventType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialInfo_eventType(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_eventType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialInfo_eventType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartialMessageBusInfo_chainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
 	if err != nil {
@@ -6143,7 +6407,7 @@ func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainIDFrom"].([]*int), fc.Args["chainIDTo"].([]*int), fc.Args["addressFrom"].(*string), fc.Args["addressTo"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["maxAmountUsd"].(*int), fc.Args["minAmountUsd"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["useMv"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddressFrom"].([]*string), fc.Args["tokenAddressTo"].([]*string))
+		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainIDFrom"].([]*int), fc.Args["chainIDTo"].([]*int), fc.Args["addressFrom"].(*string), fc.Args["addressTo"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["maxAmountUsd"].(*int), fc.Args["minAmountUsd"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["useMv"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddressFrom"].([]*string), fc.Args["tokenAddressTo"].([]*string), fc.Args["onlyCCTP"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6561,6 +6825,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_canto(ctx, field)
 			case "dogechain":
 				return ec.fieldContext_DateResultByChain_dogechain(ctx, field)
+			case "base":
+				return ec.fieldContext_DateResultByChain_base(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -6793,7 +7059,7 @@ func (ec *executionContext) _Query_getOriginBridgeTx(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOriginBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["txnHash"].(*string))
+		return ec.resolvers.Query().GetOriginBridgeTx(rctx, fc.Args["chainID"].(int), fc.Args["txnHash"].(string), fc.Args["bridgeType"].(model.BridgeType))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6823,6 +7089,8 @@ func (ec *executionContext) fieldContext_Query_getOriginBridgeTx(ctx context.Con
 				return ec.fieldContext_BridgeWatcherTx_type(ctx, field)
 			case "kappa":
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
+			case "kappaStatus":
+				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -6855,7 +7123,7 @@ func (ec *executionContext) _Query_getDestinationBridgeTx(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["kappa"].(*string), fc.Args["timestamp"].(*int))
+		return ec.resolvers.Query().GetDestinationBridgeTx(rctx, fc.Args["chainID"].(int), fc.Args["address"].(string), fc.Args["kappa"].(string), fc.Args["timestamp"].(int), fc.Args["bridgeType"].(model.BridgeType), fc.Args["historical"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6885,6 +7153,8 @@ func (ec *executionContext) fieldContext_Query_getDestinationBridgeTx(ctx contex
 				return ec.fieldContext_BridgeWatcherTx_type(ctx, field)
 			case "kappa":
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
+			case "kappaStatus":
+				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -9543,6 +9813,8 @@ func (ec *executionContext) _BridgeWatcherTx(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._BridgeWatcherTx_type(ctx, field, obj)
 		case "kappa":
 			out.Values[i] = ec._BridgeWatcherTx_kappa(ctx, field, obj)
+		case "kappaStatus":
+			out.Values[i] = ec._BridgeWatcherTx_kappaStatus(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9653,6 +9925,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_canto(ctx, field, obj)
 		case "dogechain":
 			out.Values[i] = ec._DateResultByChain_dogechain(ctx, field, obj)
+		case "base":
+			out.Values[i] = ec._DateResultByChain_base(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:
@@ -9885,6 +10159,10 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = ec._PartialInfo_time(ctx, field, obj)
 		case "formattedTime":
 			out.Values[i] = ec._PartialInfo_formattedTime(ctx, field, obj)
+		case "formattedEventType":
+			out.Values[i] = ec._PartialInfo_formattedEventType(ctx, field, obj)
+		case "eventType":
+			out.Values[i] = ec._PartialInfo_eventType(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10869,6 +11147,31 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx context.Context, v interface{}) (model.BridgeType, error) {
+	var res model.BridgeType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx context.Context, sel ast.SelectionSet, v model.BridgeType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNStatisticType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐStatisticType(ctx context.Context, v interface{}) (model.StatisticType, error) {
 	var res model.StatisticType
 	err := res.UnmarshalGQL(v)
@@ -11617,6 +11920,22 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx context.Context, v interface{}) (*model.KappaStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.KappaStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOKappaStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐKappaStatus(ctx context.Context, sel ast.SelectionSet, v *model.KappaStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOLeaderboard2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx context.Context, sel ast.SelectionSet, v []*model.Leaderboard) graphql.Marshaler {
