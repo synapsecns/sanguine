@@ -38,8 +38,6 @@ export const PortfolioAccordion = ({
   return (
     <div
       data-test-id="portfolio-accordion"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       className={
         isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
       }
@@ -60,6 +58,8 @@ export const PortfolioAccordion = ({
         <div onClick={handleToggle} className="flex-1 mr-3">
           <div
             data-test-id="portfolio-accordion-clickable"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className="flex flex-row justify-between"
           >
             {header}

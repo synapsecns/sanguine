@@ -36,6 +36,7 @@ const ConnectedButton = () => {
         text-base text-white px-3 py-1 rounded-lg
         text-center transform-gpu transition-all duration-75
         border border-solid border-transparent
+        hover:border-[#D747FF] hover:cursor-default
       `}
     >
       <div className="flex flex-row text-sm">
