@@ -9,7 +9,7 @@ import { TokenAndBalance } from './actions/fetchPortfolioBalances'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
-  if (tokens === undefined) {
+  if (!tokens) {
     return []
   }
 
