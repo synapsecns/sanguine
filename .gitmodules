@@ -11,3 +11,6 @@
 [submodule "services/cctp-relayer/external/synapse-contracts"]
 	path = services/cctp-relayer/external/synapse-contracts
 	url = https://github.com/synapsecns/synapse-contracts
+[submodule "packages/contracts-core/lib/create3-factory"]
+	path = packages/contracts-core/lib/create3-factory
+	url = https://github.com/zeframlou/create3-factory
