@@ -6,6 +6,7 @@ import { setSwapChainId } from '@/slices/swap/reducer'
 
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
+import { resetPortfolioState } from '@/slices/portfolio/actions'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -65,6 +66,10 @@ export const UserProvider = ({ children }) => {
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }
+      }
+
+      if (!address) {
+        dispatch(resetPortfolioState())
       }
     })()
   }, [chain, address])

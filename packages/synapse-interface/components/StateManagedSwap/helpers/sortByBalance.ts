@@ -18,6 +18,7 @@ export const hasBalance = (
   const token = _(pb)
     .pickBy((value, _key) => value.token === t)
     .value()
+
   const tokenWithPb = Object.values(token)[0]
 
   return tokenWithPb && tokenWithPb.balance !== 0n

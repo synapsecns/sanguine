@@ -51,7 +51,7 @@ export const SwapTransactionButton = ({
       stringToBigInt(swapFromValue, swapFromToken?.decimals[swapChainId]) <=
       balanceForToken
     )
-  }, [balanceForToken, swapFromValue])
+  }, [balanceForToken, swapFromValue, swapChainId, swapFromToken, swapToToken])
 
   const isButtonDisabled =
     isLoading ||
@@ -68,7 +68,7 @@ export const SwapTransactionButton = ({
     return fromTokenDecimals
       ? stringToBigInt(swapFromValue, fromTokenDecimals)
       : 0
-  }, [swapFromValue, fromTokenDecimals])
+  }, [swapFromValue, fromTokenDecimals, swapChainId, swapFromToken])
 
   if (!swapChainId) {
     buttonProperties = {
@@ -82,7 +82,7 @@ export const SwapTransactionButton = ({
     }
   } else if (!swapFromToken) {
     buttonProperties = {
-      label: `Unsupported Network`,
+      label: `Please select token`,
       onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {

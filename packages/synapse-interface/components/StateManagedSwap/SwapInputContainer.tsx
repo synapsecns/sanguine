@@ -17,7 +17,7 @@ import { updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 
 export const SwapInputContainer = () => {
-  const inputRef = React.createRef<HTMLInputElement>()
+  const inputRef = useRef<HTMLInputElement>(null)
   const { swapChainId, swapFromToken, swapToToken, swapFromValue } =
     useSwapState()
   const [showValue, setShowValue] = useState('')
@@ -35,13 +35,13 @@ export const SwapInputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const parsedBalance = balancesAndAllowances[swapChainId]?.find(
+  const tokenData = balancesAndAllowances[swapChainId]?.find(
     (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
-  )?.parsedBalance
+  )
 
-  const balance = balancesAndAllowances[swapChainId]?.find(
-    (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
-  )?.balance
+  const parsedBalance = tokenData?.parsedBalance
+
+  const balance = tokenData?.balance
 
   useEffect(() => {
     if (
@@ -51,7 +51,7 @@ export const SwapInputContainer = () => {
     ) {
       setShowValue(swapFromValue)
     }
-  }, [swapFromValue, inputRef, swapChainId, swapFromToken])
+  }, [swapFromValue, swapChainId, swapFromToken])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -159,7 +159,7 @@ export const SwapInputContainer = () => {
             {hasMounted && isConnected && (
               <div className="m">
                 <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
+                  disabled={!balance || balance === 0n}
                   onClickBalance={onMaxBalance}
                 />
               </div>
