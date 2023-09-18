@@ -45,7 +45,7 @@ export default function FilterInput({
       className={`
         flex-grow py-2 p-2
         font-normal text-sm text-primaryTextColor
-        border h-full min-w-[70%] rounded bg-[#252226] custom-shadow
+        border h-full w-6/12 rounded bg-[#252226] custom-shadow
         focus:border-[#D747FF] focus:outline-none focus:ring-0
         placeholder-white placeholder-opacity-40
         ${isActive ? 'border-[#D747FF]' : 'border-transparent'}
@@ -71,7 +71,7 @@ export const ClearSearchButton = ({
         flex w-6 h-6 right-2
         items-center justify-center
         border border-separator rounded-full
-        hover:cursor-pointer hover:border-0
+        hover:cursor-pointer hover:border-secondary
       `}
       onClick={onClick}
     >
