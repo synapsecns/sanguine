@@ -60,7 +60,11 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     ;(async () => {
       if (address && chain?.id) {
-        await dispatch(fetchAndStorePortfolioBalances(address))
+        try {
+          await dispatch(fetchAndStorePortfolioBalances(address))
+        } catch (error) {
+          console.error('Failed to fetch and store portfolio balances:', error)
+        }
       }
     })()
   }, [chain, address])

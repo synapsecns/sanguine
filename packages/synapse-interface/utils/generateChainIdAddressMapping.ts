@@ -2,6 +2,7 @@ import { zeroAddress } from 'viem'
 import _ from 'lodash'
 import * as BRIDGEABLE from '@constants/tokens/bridgeable'
 import { BRIDGE_MAP } from '@constants/bridgeMap'
+import { ETHEREUM_ADDRESS } from '@/constants'
 
 export const generateChainIdAddressMapping = (routeSymbol: string) => {
   const result: { [key: number]: string } = {}
@@ -10,9 +11,7 @@ export const generateChainIdAddressMapping = (routeSymbol: string) => {
     Object.entries(tokens).forEach(([address, token]) => {
       if (token.symbol === routeSymbol) {
         result[Number(chainId)] =
-          address === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-            ? zeroAddress
-            : address
+          address === ETHEREUM_ADDRESS ? zeroAddress : address
       }
     })
   })

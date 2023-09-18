@@ -17,36 +17,30 @@ export const SwapChainSelector = () => {
   const { swapChainId } = useSwapState()
   const chain = CHAINS_BY_ID[swapChainId]
 
-  let buttonContent
-
-  if (swapChainId) {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div>
-          <img
-            src={chain.chainImg.src}
-            alt={chain.name}
-            className="w-6 h-6 rounded-sm"
-          />
-        </div>
-        <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">{chain.name}</div>
-        </div>
-        <DropDownArrowSvg />
+  const buttonContent = swapChainId ? (
+    <div className="flex items-center space-x-3">
+      <div>
+        <img
+          src={chain?.chainImg?.src}
+          alt={chain?.name}
+          className="w-6 h-6 rounded-sm"
+        />
       </div>
-    )
-  } else {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">Network</div>
-        </div>
-        <DropDownArrowSvg />
+      <div className="text-left">
+        <div className="text-xs text-secondaryTextColor">From</div>
+        <div className="text-md text-primaryTextColor">{chain.name}</div>
       </div>
-    )
-  }
+      <DropDownArrowSvg />
+    </div>
+  ) : (
+    <div className="flex items-center space-x-3">
+      <div className="text-left">
+        <div className="text-xs text-secondaryTextColor">From</div>
+        <div className="text-md text-primaryTextColor">Network</div>
+      </div>
+      <DropDownArrowSvg />
+    </div>
+  )
 
   return (
     <button

@@ -18,8 +18,8 @@ export const SwapToTokenSelector = () => {
     <div className="flex items-center space-x-2">
       <div className="flex-none hidden md:inline-block">
         <img
-          src={swapToToken?.icon?.src}
-          alt={swapToToken?.symbol}
+          src={swapToToken?.icon?.src ?? ''}
+          alt={swapToToken?.symbol ?? ''}
           className="w-6 h-6"
         />
       </div>

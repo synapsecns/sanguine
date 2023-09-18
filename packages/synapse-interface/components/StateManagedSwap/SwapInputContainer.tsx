@@ -16,9 +16,8 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 
-const inputRef = React.createRef<HTMLInputElement>()
-
 export const SwapInputContainer = () => {
+  const inputRef = React.createRef<HTMLInputElement>()
   const { swapChainId, swapFromToken, swapToToken, swapFromValue } =
     useSwapState()
   const [showValue, setShowValue] = useState('')
