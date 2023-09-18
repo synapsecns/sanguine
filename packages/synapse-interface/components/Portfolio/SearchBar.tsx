@@ -5,6 +5,7 @@ import {
 } from '@/slices/portfolio/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { XIcon } from '@heroicons/react/outline'
+import { initialState as portfolioInitialState } from '@/slices/portfolio/reducer'
 
 export const SearchBar = () => {
   const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
@@ -36,16 +37,18 @@ export default function FilterInput({
   onSearch: (str: string) => void
   placeholder: string
 }) {
+  const isActive: boolean = searchStr !== portfolioInitialState.searchInput
+
   return (
     <input
       data-test-id="filter-input"
       className={`
         flex-grow py-2 p-2
         font-normal text-sm text-primaryTextColor
-        border border-transparent h-full min-w-[70%]
-        rounded bg-[#252226] custom-shadow
+        border h-full min-w-[70%] rounded bg-[#252226] custom-shadow
         focus:border-[#D747FF] focus:outline-none focus:ring-0
-      placeholder-white placeholder-opacity-40
+        placeholder-white placeholder-opacity-40
+        ${isActive ? 'border-[#D747FF]' : 'border-transparent'}
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
