@@ -25,6 +25,7 @@ export const PortfolioAccordion = ({
   connectedChainId,
   selectedFromChainId,
 }: PortfolioAccordionProps) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
@@ -37,6 +38,8 @@ export const PortfolioAccordion = ({
   return (
     <div
       data-test-id="portfolio-accordion"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={
         isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
       }
