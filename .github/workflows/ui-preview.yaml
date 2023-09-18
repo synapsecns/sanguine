@@ -4,6 +4,10 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'packages/explorer-ui/**'
+      - 'packages/docs/**'
+      - 'packages/synapse-interface/**'
 jobs:
   changes:
     runs-on: ubuntu-latest
