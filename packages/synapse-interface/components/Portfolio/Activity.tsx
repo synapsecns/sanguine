@@ -67,11 +67,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         threshold: 0.0,
         keys: [
           'originChain.name',
-          'originChain.nativeCurrency.symbol',
           'originToken.symbol',
           'originToken.name',
           'destinationChain.name',
-          'destinationChain.nativeCurrency.symbol',
           'destinationToken.symbol',
           'destinationToken.name',
         ],
@@ -121,6 +119,11 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       userHistoricalTransactions,
       isUserHistoricalTransactionsLoading,
     ])
+
+  console.log(
+    'filteredHistoricalTransactionsBySearchInput:',
+    filteredHistoricalTransactionsBySearchInput
+  )
 
   return (
     <div

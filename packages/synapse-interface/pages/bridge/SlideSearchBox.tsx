@@ -4,24 +4,16 @@ export default function SlideSearchBox({
   searchStr,
   onSearch,
   placeholder,
-  focusOnMount = true,
 }: {
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
-  focusOnMount?: boolean
 }) {
   const inputRef = useRef<any>(null)
-
-  useEffect(() => {
-    if (focusOnMount) {
-      inputRef.current?.focus()
-    }
-  }, [focusOnMount])
+  useEffect(() => inputRef.current?.focus(), [])
 
   return (
     <input
-      data-test-id="slide-search-box"
       ref={inputRef}
       className={`
         text-primaryTextColor

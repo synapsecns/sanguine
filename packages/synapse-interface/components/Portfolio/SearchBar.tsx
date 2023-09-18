@@ -1,4 +1,4 @@
-import SlideSearchBox from '@/pages/bridge/SlideSearchBox'
+import { useEffect, useRef } from 'react'
 import {
   usePortfolioActionHandlers,
   usePortfolioState,
@@ -17,14 +17,40 @@ export const SearchBar = () => {
       data-test-id="portfolio-search-bar"
       className="relative flex items-center ml-auto"
     >
-      <SlideSearchBox
+      <FilterInput
         placeholder="Filter"
         searchStr={searchInput}
         onSearch={onSearchInput}
-        focusOnMount={false}
       />
       <ClearSearchButton show={isSearchActive} onClick={clearSearchInput} />
     </div>
+  )
+}
+
+export default function FilterInput({
+  searchStr,
+  onSearch,
+  placeholder,
+}: {
+  searchStr: string
+  onSearch: (str: string) => void
+  placeholder: string
+}) {
+  return (
+    <input
+      data-test-id="filter-input"
+      className={`
+        flex-grow py-2 p-2
+        font-normal text-sm text-primaryTextColor
+        border border-transparent h-full min-w-[70%]
+        rounded bg-[#252226] custom-shadow
+        focus:border-[#D747FF] focus:outline-none focus:ring-0
+      placeholder-white placeholder-opacity-40
+      `}
+      placeholder={placeholder}
+      onChange={(e) => onSearch(e.target.value)}
+      value={searchStr}
+    />
   )
 }
 
@@ -39,7 +65,7 @@ export const ClearSearchButton = ({
     <button
       className={`
         ${show ? 'absolute' : 'hidden'}
-        flex w-6 h-6 right-1
+        flex w-6 h-6 right-2
         items-center justify-center
         border border-separator rounded-full
         hover:cursor-pointer hover:border-0
