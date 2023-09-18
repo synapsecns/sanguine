@@ -14,12 +14,8 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
-	// RefreshRate is the rate at which the scribe will refresh the last block height in seconds.
-	RefreshRate uint `yaml:"refresh_rate"`
 	// RPCURL is the url of the omnirpc.
 	RPCURL string `yaml:"rpc_url"`
-	// ConfirmationRefreshRate is the rate at which the scribe will refresh the last confirmed block height in seconds.
-	ConfirmationRefreshRate int64 `yaml:"confirmation_refresh_rate"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
