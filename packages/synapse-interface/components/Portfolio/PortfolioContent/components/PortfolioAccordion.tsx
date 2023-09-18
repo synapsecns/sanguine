@@ -55,11 +55,14 @@ export const PortfolioAccordion = ({
           }
         `}
       >
-        <div onClick={handleToggle} className="flex-1 mr-3">
+        <div
+          onClick={handleToggle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="flex-1 pr-3"
+        >
           <div
             data-test-id="portfolio-accordion-clickable"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             className="flex flex-row justify-between"
           >
             {header}
