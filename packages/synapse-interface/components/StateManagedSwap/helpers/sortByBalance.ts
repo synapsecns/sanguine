@@ -19,5 +19,5 @@ export const hasBalance = (
     .value()
   const tokenWithPb = Object.values(token)[0]
 
-  return tokenWithPb?.balance !== 0n
+  return tokenWithPb && tokenWithPb.balance !== 0n
 }

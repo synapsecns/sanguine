@@ -4,18 +4,17 @@ import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
 import { setSwapChainId } from '@/slices/swap/reducer'
 
-import { useDispatch } from 'react-redux'
+import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useAppDispatch } from '@/store/hooks'
 
 const WalletStatusContext = createContext(undefined)
 
-// Refactor as User Provider
-
-export const WalletAnalyticsProvider = ({ children }) => {
-  const dispatch = useDispatch()
+export const UserProvider = ({ children }) => {
+  const dispatch = useAppDispatch()
   const { chain } = useNetwork()
   const router = useRouter()
   const { query, pathname } = router
-  const { connector } = useAccount({
+  const { address, connector } = useAccount({
     onConnect() {
       segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
         walletId: connector?.id,
@@ -58,6 +57,14 @@ export const WalletAnalyticsProvider = ({ children }) => {
     }
   }, [chain])
 
+  useEffect(() => {
+    ;(async () => {
+      if (address && chain?.id) {
+        await dispatch(fetchAndStorePortfolioBalances(address))
+      }
+    })()
+  }, [chain, address])
+
   return (
     <WalletStatusContext.Provider value={null}>
       {children}
@@ -65,4 +72,4 @@ export const WalletAnalyticsProvider = ({ children }) => {
   )
 }
 
-export const useWalletStatus = () => useContext(WalletStatusContext)
+export const useUserStatus = () => useContext(WalletStatusContext)

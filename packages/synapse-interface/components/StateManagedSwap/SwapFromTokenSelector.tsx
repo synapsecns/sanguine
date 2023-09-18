@@ -14,33 +14,30 @@ export const SwapFromTokenSelector = () => {
 
   const { swapFromToken } = useSwapState()
 
-  let buttonContent
-
-  if (swapFromToken) {
-    const src = swapFromToken.icon.src
-    const symbol = swapFromToken.symbol
-
-    buttonContent = (
-      <div className="flex items-center space-x-2">
-        <div className="flex-none hidden md:inline-block">
-          <img src={src} alt={`Icon for ${symbol} token`} className="w-6 h-6" />
-        </div>
-        <div className="text-left">
-          <div className="text-lg text-primaryTextColor">{symbol}</div>
-        </div>
-        <DropDownArrowSvg className="flex-none" />
+  const buttonContent = swapFromToken ? (
+    <div className="flex items-center space-x-2">
+      <div className="flex-none hidden md:inline-block">
+        <img
+          src={swapFromToken?.icon?.src}
+          alt={`Icon for ${swapFromToken?.symbol} token`}
+          className="w-6 h-6"
+        />
       </div>
-    )
-  } else {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div className="text-left">
-          <div className="text-lg text-primaryTextColor">In</div>
+      <div className="text-left">
+        <div className="text-lg text-primaryTextColor">
+          {swapFromToken?.symbol}
         </div>
-        <DropDownArrowSvg className="flex-none" />
       </div>
-    )
-  }
+      <DropDownArrowSvg className="flex-none" />
+    </div>
+  ) : (
+    <div className="flex items-center space-x-3">
+      <div className="text-left">
+        <div className="text-lg text-primaryTextColor">In</div>
+      </div>
+      <DropDownArrowSvg className="flex-none" />
+    </div>
+  )
 
   return (
     <button

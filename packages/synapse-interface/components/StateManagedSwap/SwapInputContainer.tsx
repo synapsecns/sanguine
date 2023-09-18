@@ -82,12 +82,14 @@ export const SwapInputContainer = () => {
   }, [balance, swapChainId, swapFromToken])
 
   const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
+    if (hasMounted && isConnected) {
+      if (swapChainId === chain.id) {
+        return <ConnectedIndicator />
+      } else if (swapChainId !== chain.id) {
+        return <ConnectToNetworkButton chainId={swapChainId} />
+      }
+    } else if (hasMounted && !isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && swapChainId === chain.id) {
-      return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && swapChainId !== chain.id) {
-      return <ConnectToNetworkButton chainId={swapChainId} />
     }
   }, [chain, swapChainId, isConnected, hasMounted])
 

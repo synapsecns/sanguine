@@ -46,7 +46,7 @@ import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 import { Provider } from 'react-redux'
 import { store } from '@/store/store'
-import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
+import { UserProvider } from '@/contexts/UserProvider'
 
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
@@ -148,12 +148,12 @@ const App = ({ Component, pageProps }: AppProps) => {
           <SynapseProvider chains={chains}>
             <Provider store={store}>
               <SegmentAnalyticsProvider>
-                <WalletAnalyticsProvider>
+                <UserProvider>
                   <Updaters />
                   <Component {...pageProps} />
                   <Analytics />
                   <CustomToaster />
-                </WalletAnalyticsProvider>
+                </UserProvider>
               </SegmentAnalyticsProvider>
             </Provider>
           </SynapseProvider>
