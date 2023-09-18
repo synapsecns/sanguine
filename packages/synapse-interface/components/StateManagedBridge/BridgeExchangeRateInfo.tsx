@@ -1,28 +1,27 @@
 import { useState, useMemo, useEffect } from 'react'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
+import { LoaderIcon } from 'react-hot-toast'
 import Image from 'next/image'
+
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import * as CHAINS from '@/constants/chains/master'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { Token } from '@/utils/types'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
 
-  const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
-  const toToken = useSelector((state: RootState) => state.bridge.toToken)
-  const exchangeRate = useSelector(
-    (state: RootState) => state.bridge.bridgeQuote.exchangeRate
-  )
-  const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
+  const { excludeCCTP, isLoading, bridgeQuote, fromValue, toToken, toChainId } =
+    useBridgeState()
+
+  const exchangeRate = bridgeQuote.exchangeRate
+
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
   const safeExchangeRate = exchangeRate ?? 0n
-  const safeFromAmount = fromAmount ?? '0'
+  const safeFromAmount = fromValue ?? '0'
 
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
@@ -79,7 +78,9 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
-          {safeFromAmount != '0' ? (
+          {isLoading ? (
+            <LoaderIcon />
+          ) : safeFromAmount != '0' ? (
             <>
               {formattedExchangeRate}{' '}
               <span className="text-white">{toToken?.symbol}</span>
@@ -89,9 +90,21 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
           )}
         </span>
       </div>
+      <div className="flex justify-between text-[#88818C]">
+        <p className="text-[#88818C] ">Estimated time</p>
+        {isLoading ? (
+          <LoaderIcon />
+        ) : excludeCCTP ? (
+          '<5 minutes'
+        ) : (
+          '~15-25 minutes'
+        )}
+      </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {safeFromAmount != '0' && !underFee ? (
+        {isLoading ? (
+          <LoaderIcon />
+        ) : safeFromAmount != '0' && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>

@@ -74,6 +74,7 @@ import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainL
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
+import { UseCCTP } from '@/components/UseCCTP'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -95,6 +96,7 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     destinationAddress,
+    excludeCCTP,
 
     fromChainIds,
     toChainIds,
@@ -147,6 +149,7 @@ const StateManagedBridge = () => {
     fromValue,
     address,
     portfolioBalances,
+    excludeCCTP,
   ])
 
   // don't like this, rewrite: could be custom hook
@@ -182,8 +185,13 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          stringToBigInt(fromValue, fromToken.decimals[fromChainId])
+          stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+          undefined,
+          excludeCCTP
         )
+
+      console.log(`excludeCCTP`, excludeCCTP)
+      console.log('routerAddress`', routerAddress)
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
@@ -537,6 +545,7 @@ const StateManagedBridge = () => {
             </Transition>
             <InputContainer />
             <OutputContainer />
+            <UseCCTP />
             <Warning />
             <Transition
               appear={true}

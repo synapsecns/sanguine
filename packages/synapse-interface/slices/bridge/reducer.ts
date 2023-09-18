@@ -39,6 +39,7 @@ export interface BridgeState {
   destinationAddress: Address | null
   bridgeTxHashes: string[] | null
   pendingBridgeTransactions: PendingBridgeTransaction[]
+  excludeCCTP: boolean
 }
 
 const {
@@ -74,6 +75,7 @@ export const initialState: BridgeState = {
   destinationAddress: null,
   bridgeTxHashes: [],
   pendingBridgeTransactions: [],
+  excludeCCTP: false,
 }
 
 export const bridgeSlice = createSlice({
@@ -454,6 +456,9 @@ export const bridgeSlice = createSlice({
     addBridgeTxHash: (state, action: PayloadAction<string>) => {
       state.bridgeTxHashes = [...state.bridgeTxHashes, action.payload]
     },
+    setExcludeCCTP: (state, action: PayloadAction<boolean>) => {
+      state.excludeCCTP = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -522,6 +527,7 @@ export const {
   setDestinationAddress,
   setIsLoading,
   addBridgeTxHash,
+  setExcludeCCTP,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
