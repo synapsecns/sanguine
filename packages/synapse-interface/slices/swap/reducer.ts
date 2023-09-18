@@ -181,7 +181,7 @@ export const swapSlice = createSlice({
       } = getSwapPossibilities({
         fromChainId: validFromChainId,
         fromToken: incomingFromToken,
-        toChainId: validToChainId,
+        toChainId: validFromChainId,
         toToken: validToToken,
       })
 
@@ -246,7 +246,7 @@ export const swapSlice = createSlice({
       } = getSwapPossibilities({
         fromChainId: validFromChainId,
         fromToken: validFromToken,
-        toChainId: validToChainId,
+        toChainId: validFromChainId,
         toToken: incomingToToken,
       })
 

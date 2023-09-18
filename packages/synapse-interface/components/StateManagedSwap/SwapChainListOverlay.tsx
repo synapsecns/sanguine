@@ -31,12 +31,14 @@ export const SwapChainListOverlay = () => {
 
   possibleChains = sortChains(possibleChains)
 
-  let remainingChains = sortChains(
-    _.difference(
-      Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-      swapFromChainIds.map((id) => CHAINS_BY_ID[id])
-    )
-  )
+  let remainingChains = swapFromChainIds
+    ? sortChains(
+        _.difference(
+          Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+          swapFromChainIds.map((id) => CHAINS_BY_ID[id])
+        )
+      )
+    : []
 
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
