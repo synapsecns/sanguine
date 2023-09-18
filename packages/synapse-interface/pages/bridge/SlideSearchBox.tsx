@@ -4,13 +4,20 @@ export default function SlideSearchBox({
   searchStr,
   onSearch,
   placeholder,
+  focusOnMount = true,
 }: {
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
+  focusOnMount?: boolean
 }) {
   const inputRef = useRef<any>(null)
-  useEffect(() => inputRef.current?.focus(), [])
+
+  useEffect(() => {
+    if (focusOnMount) {
+      inputRef.current?.focus()
+    }
+  }, [focusOnMount])
 
   return (
     <input

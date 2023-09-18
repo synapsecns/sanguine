@@ -21,6 +21,7 @@ export const SearchBar = () => {
         placeholder="Filter"
         searchStr={searchInput}
         onSearch={onSearchInput}
+        focusOnMount={false}
       />
       <ClearSearchButton show={isSearchActive} onClick={clearSearchInput} />
     </div>
