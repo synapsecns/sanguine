@@ -17,8 +17,8 @@ export const SwapToTokenSelector = () => {
   let buttonContent
 
   if (swapToToken) {
-    const src = swapToToken.icon.src
-    const symbol = swapToToken.symbol
+    const src = swapToToken?.icon?.src
+    const symbol = swapToToken?.symbol
 
     buttonContent = (
       <div className="flex items-center space-x-2">

@@ -17,9 +17,7 @@ export const SwapOutputContainer = ({}) => {
 
   return (
     <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
-      <div className="flex items-center justify-between mb-3"></div>
-
-      <div className="flex h-16 mb-2 space-x-2">
+      <div className="flex h-16 mt-2 mb-2 space-x-2">
         <div
           className={`
             flex flex-grow items-center

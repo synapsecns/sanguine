@@ -10,6 +10,7 @@ import { getSymbol } from '@/utils/getSymbol'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { getSwapToTokens } from '@/utils/swapFinder/getSwapToTokens'
 import { getSwapFromChainIds } from '@/utils/swapFinder/getSwapFromChainIds'
+import { findValidToken } from '@/utils/findValidToken'
 
 export interface SwapState {
   swapChainId: number
@@ -274,14 +275,3 @@ export const {
 } = swapSlice.actions
 
 export default swapSlice.reducer
-
-const findValidToken = (
-  tokens: Token[],
-  routeSymbol: string,
-  swapableType: string
-) => {
-  const matchingToken = tokens?.find((t) => t.routeSymbol === routeSymbol)
-  const swapableToken = tokens?.find((t) => t.swapableType === swapableType)
-
-  return matchingToken ? matchingToken : swapableToken ? swapableToken : null
-}

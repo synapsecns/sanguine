@@ -24,12 +24,12 @@ export const SwapChainListOverlay = () => {
   const dataId = 'swap-origin-chain-list'
   const overlayRef = useRef(null)
 
-  let possibleChains = _(ALL_CHAINS)
-    .pickBy((value) => _.includes(swapFromChainIds, value.id))
-    .values()
-    .value()
-
-  possibleChains = sortChains(possibleChains)
+  let possibleChains = sortChains(
+    _(ALL_CHAINS)
+      .pickBy((value) => _.includes(swapFromChainIds, value.id))
+      .values()
+      .value()
+  )
 
   let remainingChains = swapFromChainIds
     ? sortChains(
@@ -84,7 +84,7 @@ export const SwapChainListOverlay = () => {
     setCurrentIdx(-1)
     setSearchStr('')
     dispatch(setShowSwapChainListOverlay(false))
-  }, [setShowFromChainListOverlay])
+  }, [dispatch])
 
   const escFunc = () => {
     if (escPressed) {

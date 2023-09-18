@@ -23,7 +23,7 @@ export const SwapFromTokenSelector = () => {
     buttonContent = (
       <div className="flex items-center space-x-2">
         <div className="flex-none hidden md:inline-block">
-          <img src={src} alt={symbol} className="w-6 h-6" />
+          <img src={src} alt={`Icon for ${symbol} token`} className="w-6 h-6" />
         </div>
         <div className="text-left">
           <div className="text-lg text-primaryTextColor">{symbol}</div>

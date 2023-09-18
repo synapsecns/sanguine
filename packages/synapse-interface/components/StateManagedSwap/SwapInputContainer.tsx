@@ -16,7 +16,7 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 
-export const inputRef = React.createRef<HTMLInputElement>()
+const inputRef = React.createRef<HTMLInputElement>()
 
 export const SwapInputContainer = () => {
   const { swapChainId, swapFromToken, swapToToken, swapFromValue } =
@@ -67,7 +67,7 @@ export const SwapInputContainer = () => {
       const regex = /^[0-9]*[.,]?[0-9]*$/
 
       if (regex.test(inputValue) || inputValue === '') {
-        dispatch(updateSwapFromValue(inputValue))
+        dispatch(updateSwapFromValue(''))
         setShowValue(inputValue)
       }
     }
