@@ -5,7 +5,7 @@ import {console, Script, stdJson} from "forge-std/Script.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {CREATE3Factory} from "create3/Create3Factory.sol";
+import {CREATE3Factory} from "create3/CREATE3Factory.sol";
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
