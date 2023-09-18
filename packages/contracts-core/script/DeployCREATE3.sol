@@ -7,10 +7,10 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {DeployerUtils} from "./utils/DeployerUtils.sol";
 
-import {CREATE3Factory} from "create3/CREATE3Factory.sol";
+import {CREATE3Factory} from "../contracts/create3/CREATE3Factory.sol";
 
-// TODO: move this to a common deployer-utils package, as this is not specific to SIN
-contract DeployCREATE3Factory is DeployerUtils {
+// TODO: remove this script, I don't think we need it since we handle the devnet create3 deploy in setupDevnetIfEnabled();
+contract DeployCREATE3 is DeployerUtils {
     using stdJson for string;
     using Strings for uint256;
 
