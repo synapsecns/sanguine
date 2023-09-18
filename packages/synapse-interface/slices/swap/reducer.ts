@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { DAI, USDC } from '@/constants/tokens/bridgeable'
@@ -11,6 +12,7 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { getSwapToTokens } from '@/utils/swapFinder/getSwapToTokens'
 import { getSwapFromChainIds } from '@/utils/swapFinder/getSwapFromChainIds'
 import { findValidToken } from '@/utils/findValidToken'
+import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
 
 export interface SwapState {
   swapChainId: number
@@ -56,25 +58,33 @@ export const swapSlice = createSlice({
     setSwapChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
 
-      const validFromTokens = getSwapFromTokens({
-        fromChainId: incomingFromChainId ?? null,
-        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
-        toChainId: incomingFromChainId ?? null,
-        toTokenRouteSymbol: null,
-      })
+      const validFromTokens = _(
+        getSwapFromTokens({
+          fromChainId: incomingFromChainId ?? null,
+          fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+          toChainId: incomingFromChainId ?? null,
+          toTokenRouteSymbol: null,
+        })
+      )
+        .difference(flattenPausedTokens())
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
         .filter(Boolean)
+        .value()
 
-      const validToTokens = getSwapToTokens({
-        fromChainId: incomingFromChainId ?? null,
-        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
-        toChainId: incomingFromChainId ?? null,
-        toTokenRouteSymbol: null,
-      })
+      const validToTokens = _(
+        getSwapToTokens({
+          fromChainId: incomingFromChainId ?? null,
+          fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+          toChainId: incomingFromChainId ?? null,
+          toTokenRouteSymbol: null,
+        })
+      )
+        .difference(flattenPausedTokens())
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
         .filter(Boolean)
+        .value()
 
       let validFromToken
       let validToToken
@@ -138,15 +148,19 @@ export const swapSlice = createSlice({
         toTokenRouteSymbol: null,
       })
 
-      const validToTokens = getSwapToTokens({
-        fromChainId: state.swapChainId ?? null,
-        fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
-        toChainId: state.swapChainId ?? null,
-        toTokenRouteSymbol: null,
-      })
+      const validToTokens = _(
+        getSwapToTokens({
+          fromChainId: state.swapChainId ?? null,
+          fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
+          toChainId: state.swapChainId ?? null,
+          toTokenRouteSymbol: null,
+        })
+      )
+        .difference(flattenPausedTokens())
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
         .filter(Boolean)
+        .value()
 
       let validFromChainId
       let validToToken
@@ -202,15 +216,19 @@ export const swapSlice = createSlice({
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })
 
-      const validFromTokens = getSwapFromTokens({
-        fromChainId: state.swapChainId ?? null,
-        fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
-        toChainId: state.swapChainId ?? null,
-        toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
-      })
+      const validFromTokens = _(
+        getSwapFromTokens({
+          fromChainId: state.swapChainId ?? null,
+          fromTokenRouteSymbol: state.swapFromToken?.routeSymbol ?? null,
+          toChainId: state.swapChainId ?? null,
+          toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
+        })
+      )
+        .difference(flattenPausedTokens())
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
         .filter(Boolean)
+        .value()
 
       let validFromChainId
       let validFromToken
