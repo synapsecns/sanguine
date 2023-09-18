@@ -67,7 +67,11 @@ export const PortfolioAccordion = ({
           </div>
         </div>
         {isExpanded && expandedProps}
-        <AccordionIcon isExpanded={isExpanded} onClick={handleToggle} />
+        <AccordionIcon
+          isExpanded={isExpanded}
+          onClick={handleToggle}
+          isHovered={isHovered}
+        />
       </div>
       <div
         data-test-id="portfolio-accordion-contents"
@@ -82,9 +86,11 @@ export const PortfolioAccordion = ({
 export const AccordionIcon = ({
   isExpanded,
   onClick,
+  isHovered,
 }: {
   isExpanded: boolean
   onClick: () => void
+  isHovered: boolean
 }) => {
   return (
     <div
@@ -93,6 +99,7 @@ export const AccordionIcon = ({
       className={`
         p-1 mx-2 border border-surface rounded-full
         cursor-pointer hover:border-transparent active:border-transparent
+        ${isHovered ? 'border-transparent' : 'border-surface'}
       `}
     >
       {isExpanded ? (
