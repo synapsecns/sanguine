@@ -148,7 +148,6 @@ export const swapSlice = createSlice({
         .filter(Boolean)
 
       let validFromChainId
-      let validToChainId
       let validToToken
 
       if (validFromChainIds?.includes(state.swapChainId)) {
@@ -214,7 +213,6 @@ export const swapSlice = createSlice({
 
       let validFromChainId
       let validFromToken
-      let validToChainId
 
       if (validFromChainIds?.includes(state.swapChainId)) {
         validFromChainId = state.swapChainId
