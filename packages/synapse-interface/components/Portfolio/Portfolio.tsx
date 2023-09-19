@@ -50,11 +50,6 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  console.log(
-    'filteredPortfolioDataForBalances:',
-    filteredPortfolioDataForBalances
-  )
-
   const searchInputActive: boolean = searchInput.length > 0
 
   const searchInputIsAddress: boolean = useMemo(() => {
@@ -74,8 +69,6 @@ export const Portfolio = () => {
         return {}
       }
     }, [searchedBalancesAndAllowances, searchInput, searchInputIsAddress])
-
-  console.log('filteredSearchedPortfolioData:', filteredSearchedPortfolioData)
 
   const flattenedPortfolioData = useMemo(() => {
     const flattened: TokenWithBalanceAndAllowances[] = []
