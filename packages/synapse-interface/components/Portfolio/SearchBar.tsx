@@ -1,7 +1,11 @@
 import { useEffect, useRef, useMemo } from 'react'
+import { Address } from 'viem'
+
+import { useAppDispatch } from '@/store/hooks'
 import {
   usePortfolioActionHandlers,
   usePortfolioState,
+  fetchAndStoreSearchInputPortfolioBalances,
 } from '@/slices/portfolio/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { XIcon } from '@heroicons/react/outline'
@@ -9,6 +13,7 @@ import { initialState as portfolioInitialState } from '@/slices/portfolio/reduce
 import { isValidAddress } from '@/utils/isValidAddress'
 
 export const SearchBar = () => {
+  const dispatch = useAppDispatch()
   const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
   const { searchInput }: PortfolioState = usePortfolioState()
 
@@ -19,6 +24,15 @@ export const SearchBar = () => {
   }, [searchInput])
 
   console.log('inputIsAddress:', inputIsAddress)
+
+  useEffect(() => {
+    if (inputIsAddress) {
+      console.log('fetching address: ', searchInput)
+      dispatch(
+        fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
+      )
+    }
+  }, [inputIsAddress])
 
   return (
     <div
