@@ -8,6 +8,7 @@ import {
   updateSingleTokenAllowance,
   resetPortfolioState,
   typeSearchInput,
+  resetSearchState,
 } from './actions'
 import {
   fetchAndStorePortfolioBalances,
@@ -141,6 +142,12 @@ export const portfolioSlice = createSlice({
           )
         }
       )
+      .addCase(resetSearchState, (state) => {
+        state.searchInput = initialState.searchInput
+        state.searchedBalancesAndAllowances =
+          initialState.searchedBalancesAndAllowances
+        state.searchStatus = initialState.searchStatus
+      })
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
         state.balancesAndAllowances = initialState.balancesAndAllowances

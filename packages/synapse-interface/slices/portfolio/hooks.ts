@@ -4,7 +4,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount, Address } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
-import { FetchState, typeSearchInput } from './actions'
+import { FetchState, typeSearchInput, resetSearchState } from './actions'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchPortfolioBalances,
@@ -40,8 +40,6 @@ export const usePortfolioActionHandlers = (): {
   const clearSearchInput = useCallback(() => {
     dispatch(typeSearchInput({ searchInput: initialState.searchInput }))
   }, [dispatch])
-
-  // const resetSearchState = useCallback(() => {}, [dispatch])
 
   return {
     onSearchInput,
