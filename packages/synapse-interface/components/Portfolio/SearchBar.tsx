@@ -73,9 +73,9 @@ export default function FilterInput({
         flex-grow py-2 p-2
         font-normal text-sm text-primaryTextColor
         border h-full w-6/12 rounded bg-[#252226] custom-shadow
-        focus:border-[#D747FF] focus:outline-none focus:ring-0
+        focus:border-synapsePurple focus:outline-none focus:ring-0
         placeholder-white placeholder-opacity-40
-        ${isActive ? 'border-[#D747FF]' : 'border-transparent'}
+        ${isActive ? 'border-synapsePurple' : 'border-transparent'}
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}

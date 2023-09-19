@@ -65,22 +65,22 @@ export const Portfolio = () => {
         return filterPortfolioBalancesWithBalances(
           searchedBalancesAndAllowances[searchInput as Address]
         )
-      } else {
-        return {}
       }
+      return {}
     }, [searchedBalancesAndAllowances, searchInput, searchInputIsAddress])
 
-  const flattenedPortfolioData = useMemo(() => {
-    const flattened: TokenWithBalanceAndAllowances[] = []
-    Object.entries(filteredPortfolioDataForBalances).forEach(
-      ([chainId, tokens]) => {
-        tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-          flattened.push({ ...token })
-        })
-      }
-    )
-    return flattened
-  }, [filteredPortfolioDataForBalances])
+  const flattenedPortfolioData: TokenWithBalanceAndAllowances[] =
+    useMemo(() => {
+      const flattened: TokenWithBalanceAndAllowances[] = []
+      Object.entries(filteredPortfolioDataForBalances).forEach(
+        ([chainId, tokens]) => {
+          tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+            flattened.push({ ...token })
+          })
+        }
+      )
+      return flattened
+    }, [filteredPortfolioDataForBalances])
 
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
