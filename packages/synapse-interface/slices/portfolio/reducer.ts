@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Address } from 'viem'
 
 import {
   PortfolioTabs,
@@ -22,17 +23,23 @@ import {
 export interface PortfolioState {
   activeTab: PortfolioTabs
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  searchInput: string
   status: FetchState
   error?: string
+  searchInput: string
+  searchedBalancesAndAllowances: {
+    [index: Address]: NetworkTokenBalancesAndAllowances
+  }
+  searchStatus: FetchState
 }
 
 export const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
   balancesAndAllowances: {},
-  searchInput: '',
   status: FetchState.IDLE,
   error: null,
+  searchInput: '',
+  searchedBalancesAndAllowances: {},
+  searchStatus: FetchState.IDLE,
 }
 
 export const portfolioSlice = createSlice({
