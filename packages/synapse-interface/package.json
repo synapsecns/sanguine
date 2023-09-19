@@ -63,7 +63,7 @@
     "eslint": "^8.37.0",
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
-    "graphql": "^16.7.1",
+    "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
     "keccak": "^3.0.3",
     "lodash": "^4.17.21",
