@@ -132,27 +132,15 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
-	for _, domain := range n.domains {
+	for _, d := range n.domains {
+		domain := d
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
 
-		// var guardLatestState types.State
-		// contractCall := func(ctx context.Context) (err error) {
-		// 	guardLatestState, err = n.summitDomain.Summit().GetLatestState(ctx, originID)
-		// 	if err != nil {
-		// 		return fmt.Errorf("could not get latest state: %w", err)
-		// 	}
-		//
-		// 	return nil
-		// }
-		// err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
-		// if err == nil && guardLatestState.Nonce() > uint32(0) {
-		// 	n.summitGuardLatestStates[originID] = guardLatestState
-		// }
-
+		// TODO: Wrap this with a retry loop if we deviate from the current `Start` behavior.
 		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil

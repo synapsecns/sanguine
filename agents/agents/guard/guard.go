@@ -180,7 +180,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, guardDB.SubmitterDB(), &cfg.SubmitterConfig)
 
 	if cfg.MaxRetrySeconds == 0 {
-		cfg.MaxRetrySeconds = 30
+		cfg.MaxRetrySeconds = 60
 	}
 
 	guard.retryConfig = []retry.WithBackoffConfigurator{
@@ -311,29 +311,7 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 
 		originID := domain.Config().DomainID
 
-		// var latestState types.State
-		// var err error
-		// contractCall := func(ctx context.Context) error {
-		// 	latestState, err = domain.Origin().SuggestLatestState(ctx)
-		// 	if err != nil {
-		// 		latestState = nil
-		// 		return fmt.Errorf("failed calling SuggestLatestState for originID %d on the Origin contract: %w", originID, err)
-		// 	}
-		//
-		// 	return nil
-		// }
-		// err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
-		// if latestState == nil || latestState.Nonce() == uint32(0) {
-		// 	logger.Errorf("No latest state found for origin id %d", originID)
-		// 	span.AddEvent("No latest state found for origin id", trace.WithAttributes(
-		// 		attribute.Int("originID", int(originID)),
-		// 	))
-		// }
-		//
-		// if err == nil {
-		// 	g.originLatestStates[originID] = latestState
-		// }
-
+		// TODO: Wrap this with a retry if `Start` behavior changes.
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
 		if err != nil {
 			latestState = nil
