@@ -12,6 +12,7 @@
 
 # Agents
 
+
 The Agents are the off-chain components of Synapse Interchain Network. They are responsible for signing, reporting, verifying, and executing messages across chains.
 
 ## Use
