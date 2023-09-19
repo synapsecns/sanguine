@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import {
   usePortfolioActionHandlers,
   usePortfolioState,
@@ -6,12 +6,19 @@ import {
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { XIcon } from '@heroicons/react/outline'
 import { initialState as portfolioInitialState } from '@/slices/portfolio/reducer'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 export const SearchBar = () => {
   const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
   const { searchInput }: PortfolioState = usePortfolioState()
 
   const isSearchActive: boolean = searchInput.length > 0
+
+  const inputIsAddress: boolean = useMemo(() => {
+    return isValidAddress(searchInput)
+  }, [searchInput])
+
+  console.log('inputIsAddress:', inputIsAddress)
 
   return (
     <div
