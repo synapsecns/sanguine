@@ -111,12 +111,12 @@ export const ClearSearchButton = ({
   )
 }
 
-export const ViewSearchBanner = ({
+export const ViewSearchAddressBanner = ({
   viewingAddress,
 }: {
   viewingAddress: Address
 }) => {
   const shortened: string = shortenAddress(viewingAddress, 3)
 
-  return <div data-test-id="view-search-banner"></div>
+  return <div data-test-id="view-search-address-banner"></div>
 }
