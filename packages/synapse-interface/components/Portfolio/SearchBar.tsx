@@ -21,7 +21,7 @@ export const SearchBar = () => {
 
   const isSearchActive: boolean = searchInput.length > 0
 
-  const inputIsAddress: boolean = useMemo(() => {
+  const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
   }, [searchInput])
 
@@ -29,16 +29,16 @@ export const SearchBar = () => {
     const searchResultsExist: boolean =
       Object.keys(searchedBalancesAndAllowances).length !== 0
 
-    if (inputIsAddress) {
+    if (searchInputIsAddress) {
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )
     }
 
-    if (!inputIsAddress && searchResultsExist) {
+    if (!searchInputIsAddress && searchResultsExist) {
       clearSearchResults()
     }
-  }, [inputIsAddress])
+  }, [searchInputIsAddress])
 
   return (
     <div

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import Fuse from 'fuse.js'
-import { useAccount, useNetwork } from 'wagmi'
+import { Address, useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './PortfolioTabManager'
@@ -25,11 +25,17 @@ import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
   const { fromChainId }: BridgeState = useBridgeState()
-  const { activeTab, searchInput }: PortfolioState = usePortfolioState()
+  const {
+    activeTab,
+    searchInput,
+    searchStatus,
+    searchedBalancesAndAllowances,
+  }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
     onDisconnect() {
@@ -44,7 +50,32 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
+  console.log(
+    'filteredPortfolioDataForBalances:',
+    filteredPortfolioDataForBalances
+  )
+
   const searchInputActive: boolean = searchInput.length > 0
+
+  const searchInputIsAddress: boolean = useMemo(() => {
+    return isValidAddress(searchInput)
+  }, [searchInput])
+
+  const filteredSearchedPortfolioData: NetworkTokenBalancesAndAllowances =
+    useMemo(() => {
+      const searchResultsExist: boolean =
+        Object.keys(searchedBalancesAndAllowances).length !== 0
+
+      if (searchInputIsAddress && searchResultsExist) {
+        return filterPortfolioBalancesWithBalances(
+          searchedBalancesAndAllowances[searchInput as Address]
+        )
+      } else {
+        return {}
+      }
+    }, [searchedBalancesAndAllowances, searchInput, searchInputIsAddress])
+
+  console.log('filteredSearchedPortfolioData:', filteredSearchedPortfolioData)
 
   const flattenedPortfolioData = useMemo(() => {
     const flattened: TokenWithBalanceAndAllowances[] = []
@@ -107,18 +138,29 @@ export const Portfolio = () => {
       <div className="mt-3">
         {mounted && (
           <>
-            <PortfolioContent
-              connectedAddress={address}
-              connectedChainId={chain?.id}
-              selectedFromChainId={fromChainId}
-              networkPortfolioWithBalances={
-                searchInputActive
-                  ? filteredBySearchInput
-                  : filteredPortfolioDataForBalances
-              }
-              fetchState={fetchState}
-              visibility={activeTab === PortfolioTabs.PORTFOLIO}
-            />
+            {searchInputIsAddress ? (
+              <PortfolioContent
+                connectedAddress={searchInput as Address}
+                connectedChainId={chain?.id}
+                selectedFromChainId={fromChainId}
+                networkPortfolioWithBalances={filteredSearchedPortfolioData}
+                fetchState={searchStatus}
+                visibility={activeTab === PortfolioTabs.PORTFOLIO}
+              />
+            ) : (
+              <PortfolioContent
+                connectedAddress={address}
+                connectedChainId={chain?.id}
+                selectedFromChainId={fromChainId}
+                networkPortfolioWithBalances={
+                  searchInputActive
+                    ? filteredBySearchInput
+                    : filteredPortfolioDataForBalances
+                }
+                fetchState={fetchState}
+                visibility={activeTab === PortfolioTabs.PORTFOLIO}
+              />
+            )}
             <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
           </>
         )}

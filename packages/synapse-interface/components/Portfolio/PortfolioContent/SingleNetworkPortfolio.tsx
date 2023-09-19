@@ -35,6 +35,8 @@ export const SingleNetworkPortfolio = ({
   initializeExpanded = false,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
+  console.log('portfolioTokens:', portfolioTokens)
+
   const dispatch = useDispatch()
 
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
