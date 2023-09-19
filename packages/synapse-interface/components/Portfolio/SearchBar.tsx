@@ -45,7 +45,7 @@ export const SearchBar = () => {
       data-test-id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
-        border border-transparent bg-[#252226]
+        border border-transparent bg-[#252226] rounded-sm
         ${isActive ? 'border-synapsePurple' : 'border-transparent'}
       `}
     >

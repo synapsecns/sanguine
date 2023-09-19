@@ -119,23 +119,6 @@ const LoadingPortfolioContent = () => {
   )
 }
 
-const UnconnectedPortfolioContent = () => {
-  return (
-    <>
-      <p
-        data-test-id="unconnected-portfolio-content"
-        className={`
-        text-[#C2C2D6] mt-6 mb-4 pb-6 pl-2
-          border-b border-solid border-[#3D3D5C]
-        `}
-      >
-        Your bridgable assets appear here when your wallet is connected.
-      </p>
-      <ConnectWalletButton />
-    </>
-  )
-}
-
 export const EmptyPortfolioContent = ({
   connectedAddress,
   connectedChain,

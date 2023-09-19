@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Address } from 'viem'
 import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -112,7 +113,6 @@ export const SingleNetworkPortfolio = ({
             }
           />
         )}
-        {/* <PortfolioHeader /> */}
         {!isLoading && hasNoTokenBalance && (
           <EmptyPortfolioContent
             connectedAddress={connectedAddress}
@@ -249,21 +249,6 @@ const PortfolioTokenVisualizer = ({
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-export const PortfolioHeader = () => {
-  return (
-    <div
-      data-test-id="portfolio-asset-header"
-      className="flex text-[#CCCAD3BF] my-2 pl-2"
-    >
-      <div className="flex flex-row justify-between w-2/3 text-left">
-        <div className="pl-4">Token</div>
-        <div className="pr-2">Amount</div>
-      </div>
-      <div className="w-1/3 text-left" />
     </div>
   )
 }
