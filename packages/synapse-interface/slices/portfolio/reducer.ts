@@ -144,9 +144,12 @@ export const portfolioSlice = createSlice({
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
         state.balancesAndAllowances = initialState.balancesAndAllowances
-        state.searchInput = initialState.searchInput
         state.status = initialState.status
         state.error = initialState.error
+        state.searchInput = initialState.searchInput
+        state.searchedBalancesAndAllowances =
+          initialState.searchedBalancesAndAllowances
+        state.searchStatus = initialState.searchStatus
       })
   },
 })
