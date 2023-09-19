@@ -57,6 +57,7 @@ export const PortfolioContent = ({
         selectedFromChainId &&
         !isInitialFetchLoading && (
           <SingleNetworkPortfolio
+            connectedAddress={connectedAddress}
             portfolioChainId={selectedFromChainId}
             connectedChainId={connectedChainId}
             selectedFromChainId={selectedFromChainId}
@@ -73,6 +74,7 @@ export const PortfolioContent = ({
             return (
               <SingleNetworkPortfolio
                 key={chainId}
+                connectedAddress={connectedAddress}
                 portfolioChainId={Number(chainId)}
                 connectedChainId={connectedChainId}
                 selectedFromChainId={selectedFromChainId}
@@ -141,13 +143,12 @@ export const EmptyPortfolioContent = ({
   connectedAddress: Address
   connectedChain: Chain
 }) => {
-  const { chain } = useNetwork()
   const shortened = shortenAddress(connectedAddress, 3)
   return (
     <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
         No bridgeable assets found {connectedAddress && `for ${shortened}`} on{' '}
-        {chain?.name}.
+        {connectedChain?.name}.
       </p>
       <p className="text-[#C2C2D6] mb-4">
         Don't see a chain or token you want to bridge?

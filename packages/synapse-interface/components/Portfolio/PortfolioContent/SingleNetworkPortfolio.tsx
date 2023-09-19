@@ -19,6 +19,7 @@ import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
+  connectedAddress: Address
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
@@ -28,6 +29,7 @@ type SingleNetworkPortfolioProps = {
 }
 
 export const SingleNetworkPortfolio = ({
+  connectedAddress,
   portfolioChainId,
   connectedChainId,
   selectedFromChainId,
