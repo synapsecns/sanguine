@@ -7,22 +7,22 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
-	"github.com/synapsecns/sanguine/core/metrics"
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"github.com/synapsecns/sanguine/ethergo/submitter"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -42,6 +42,7 @@ type Notary struct {
 	summitParser                       summit.Parser
 	lastSummitBlock                    uint64
 	handler                            metrics.Handler
+	retryConfig                        []retry.WithBackoffConfigurator
 	txSubmitter                        submitter.TransactionSubmitter
 }
 
@@ -90,6 +91,13 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 	}
 
 	notary.handler = handler
+	if cfg.MaxRetrySeconds == 0 {
+		cfg.MaxRetrySeconds = 30
+	}
+
+	notary.retryConfig = []retry.WithBackoffConfigurator{
+		retry.WithMaxAttemptTime(time.Second * time.Duration(cfg.MaxRetrySeconds)),
+	}
 
 	notary.txSubmitter = submitter.NewTransactionSubmitter(handler, notary.unbondedSigner, omniRPCClient, txDB.SubmitterDB(), &cfg.SubmitterConfig)
 
@@ -131,6 +139,20 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 
 		originID := domain.Config().DomainID
 
+		// var guardLatestState types.State
+		// contractCall := func(ctx context.Context) (err error) {
+		// 	guardLatestState, err = n.summitDomain.Summit().GetLatestState(ctx, originID)
+		// 	if err != nil {
+		// 		return fmt.Errorf("could not get latest state: %w", err)
+		// 	}
+		//
+		// 	return nil
+		// }
+		// err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+		// if err == nil && guardLatestState.Nonce() > uint32(0) {
+		// 	n.summitGuardLatestStates[originID] = guardLatestState
+		// }
+
 		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil
@@ -153,12 +175,22 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	))
 	defer span.End()
 
-	latestNotaryAttestation, err := n.summitDomain.Summit().GetLatestNotaryAttestation(ctx, n.bondedSigner)
+	var latestNotaryAttestation types.NotaryAttestation
+	contractCall := func(ctx context.Context) (err error) {
+		latestNotaryAttestation, err = n.summitDomain.Summit().GetLatestNotaryAttestation(ctx, n.bondedSigner)
+		if err != nil {
+			return fmt.Errorf("could not get latest notary attestation: %w", err)
+		}
+
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("GetLatestNotaryAttestation failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 	}
+
 	if latestNotaryAttestation != nil {
 		if n.myLatestNotaryAttestation == nil ||
 			latestNotaryAttestation.Attestation().SnapshotRoot() != n.myLatestNotaryAttestation.Attestation().SnapshotRoot() {
@@ -173,20 +205,39 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
+	var bondingManagerAgentRoot [32]byte
+	contractCall := func(ctx context.Context) (err error) {
+		bondingManagerAgentRoot, err = n.summitDomain.BondingManager().GetAgentRoot(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get agent root: %w", err)
+		}
 
-	bondingManagerAgentRoot, err := n.summitDomain.BondingManager().GetAgentRoot(ctx)
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("GetAgentRoot failed on bonding manager", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
+
 		return false, false
 	}
 
-	destinationLightManagerAgentRoot, err := n.destinationDomain.LightManager().GetAgentRoot(ctx)
+	var destinationLightManagerAgentRoot [32]byte
+	contractCall = func(ctx context.Context) (err error) {
+		destinationLightManagerAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get agent root: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("GetAgentRoot failed on destination light manager", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
+
 		return false, false
 	}
 
@@ -195,13 +246,24 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 		return false, false
 	}
 
-	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+	var agentStatus types.AgentStatus
+	contractCall = func(ctx context.Context) (err error) {
+		agentStatus, err = n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
+
 		return false, false
 	}
+
 	if agentStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
 		return true, true
@@ -227,12 +289,22 @@ func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context
 		return
 	}
 
-	attNonce, err := n.destinationDomain.Destination().GetAttestationNonce(ctx, n.myLatestNotaryAttestation.Attestation().SnapshotRoot())
+	var attNonce uint32
+	contractCall := func(ctx context.Context) (err error) {
+		attNonce, err = n.destinationDomain.Destination().GetAttestationNonce(ctx, n.myLatestNotaryAttestation.Attestation().SnapshotRoot())
+		if err != nil {
+			return fmt.Errorf("could not get attestation nonce: %w", err)
+		}
+
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("checkDidSubmitNotaryLatestAttestation failed", trace.WithAttributes(
+		span.AddEvent("GetAttestationNonce failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 	}
+
 	if attNonce > 0 {
 		n.didSubmitMyLatestNotaryAttestation = true
 	}
@@ -253,7 +325,16 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 
 	defer span.End()
 
-	stateOnOrigin, err := domain.Origin().SuggestState(ctx, state.Nonce())
+	var stateOnOrigin types.State
+	contractCall := func(ctx context.Context) (err error) {
+		stateOnOrigin, err = domain.Origin().SuggestState(ctx, state.Nonce())
+		if err != nil {
+			return fmt.Errorf("could not suggest state: %w", err)
+		}
+
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("SuggestState failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
@@ -412,28 +493,47 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	}
 }
 
-// codebeat:disable[CYCLO,DEPTH,LOC]
-//
 //nolint:cyclop
 func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
 	defer span.End()
 
-	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
+	var agentProof [][32]byte
+	contractCall := func(ctx context.Context) (err error) {
+		agentProof, err = n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent proof: %w", err)
+		}
+
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		logger.Errorf("Error getting agent proof: %v", err)
-		span.AddEvent("Error getting agent proof", trace.WithAttributes(
+		span.AddEvent("GetProof on bonding manager failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
+
 		return false
 	}
-	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+
+	var agentStatus types.AgentStatus
+	contractCall = func(ctx context.Context) (err error) {
+		agentStatus, err = n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
 		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
+
 		return false
 	}
+
 	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
 			transactor,
@@ -499,8 +599,6 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 }
 
 // Start starts the notary.
-//
-// codebeat:disable[CYCLO,DEPTH]
 //
 //nolint:cyclop
 func (n *Notary) Start(parentCtx context.Context) error {

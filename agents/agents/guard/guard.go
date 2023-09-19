@@ -178,6 +178,11 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.handler = handler
 	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, guardDB.SubmitterDB(), &cfg.SubmitterConfig)
+
+	if cfg.MaxRetrySeconds == 0 {
+		cfg.MaxRetrySeconds = 30
+	}
+
 	guard.retryConfig = []retry.WithBackoffConfigurator{
 		retry.WithMaxAttemptTime(time.Second * time.Duration(cfg.MaxRetrySeconds)),
 	}
@@ -276,16 +281,19 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 		))
 
 		originID := domain.Config().DomainID
-		latestState, err := g.domains[g.summitDomainID].Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
-		if err != nil {
-			latestState = nil
-			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
-			span.AddEvent("Failed calling GetLatestAgentState for originID on the Summit contract", trace.WithAttributes(
-				attribute.Int("originID", int(originID)),
-				attribute.String("err", err.Error()),
-			))
+
+		var latestState types.State
+		var err error
+		contractCall := func(ctx context.Context) error {
+			latestState, err = g.domains[g.summitDomainID].Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
+			if err != nil {
+				return fmt.Errorf("failed calling GetLatestAgentState for originID %d on the Summit contract: err = %w", originID, err)
+			}
+
+			return nil
 		}
-		if latestState != nil && latestState.Nonce() > uint32(0) {
+		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+		if err == nil && latestState.Nonce() > uint32(0) {
 			g.summitLatestStates[originID] = latestState
 		}
 
@@ -295,12 +303,37 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
-	for _, domain := range g.domains {
+	for _, d := range g.domains {
+		domain := d
 		ctx, span := g.handler.Tracer().Start(parentCtx, "loadOriginLatestStates", trace.WithAttributes(
 			attribute.Int("domain", int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
+
+		// var latestState types.State
+		// var err error
+		// contractCall := func(ctx context.Context) error {
+		// 	latestState, err = domain.Origin().SuggestLatestState(ctx)
+		// 	if err != nil {
+		// 		latestState = nil
+		// 		return fmt.Errorf("failed calling SuggestLatestState for originID %d on the Origin contract: %w", originID, err)
+		// 	}
+		//
+		// 	return nil
+		// }
+		// err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+		// if latestState == nil || latestState.Nonce() == uint32(0) {
+		// 	logger.Errorf("No latest state found for origin id %d", originID)
+		// 	span.AddEvent("No latest state found for origin id", trace.WithAttributes(
+		// 		attribute.Int("originID", int(originID)),
+		// 	))
+		// }
+		//
+		// if err == nil {
+		// 	g.originLatestStates[originID] = latestState
+		// }
+
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
 		if err != nil {
 			latestState = nil
