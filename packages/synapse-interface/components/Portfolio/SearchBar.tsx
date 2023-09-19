@@ -14,8 +14,10 @@ import { isValidAddress } from '@/utils/isValidAddress'
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
-  const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
-  const { searchInput }: PortfolioState = usePortfolioState()
+  const { onSearchInput, clearSearchInput, clearSearchResults } =
+    usePortfolioActionHandlers()
+  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
+    usePortfolioState()
 
   const isSearchActive: boolean = searchInput.length > 0
 
@@ -24,10 +26,17 @@ export const SearchBar = () => {
   }, [searchInput])
 
   useEffect(() => {
+    const searchResultsExist: boolean =
+      Object.keys(searchedBalancesAndAllowances).length !== 0
+
     if (inputIsAddress) {
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )
+    }
+
+    if (!inputIsAddress && searchResultsExist) {
+      clearSearchResults()
     }
   }, [inputIsAddress])
 
