@@ -111,7 +111,12 @@ export const SingleNetworkPortfolio = ({
           />
         )}
         {/* <PortfolioHeader /> */}
-        {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
+        {!isLoading && hasNoTokenBalance && (
+          <EmptyPortfolioContent
+            connectedAddress={connectedAddress}
+            connectedChain={currentChain}
+          />
+        )}
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
