@@ -120,11 +120,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
-  console.log(
-    'filteredHistoricalTransactionsBySearchInput:',
-    filteredHistoricalTransactionsBySearchInput
-  )
-
   return (
     <div
       data-test-id="activity"
