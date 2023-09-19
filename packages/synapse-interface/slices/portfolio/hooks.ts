@@ -27,6 +27,7 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
 export const usePortfolioActionHandlers = (): {
   onSearchInput: (searchInput: string) => void
   clearSearchInput: () => void
+  clearSearchResults: () => void
 } => {
   const dispatch = useAppDispatch()
 
@@ -41,9 +42,14 @@ export const usePortfolioActionHandlers = (): {
     dispatch(typeSearchInput({ searchInput: initialState.searchInput }))
   }, [dispatch])
 
+  const clearSearchResults = useCallback(() => {
+    dispatch(resetSearchState())
+  }, [dispatch])
+
   return {
     onSearchInput,
     clearSearchInput,
+    clearSearchResults
   }
 }
 
