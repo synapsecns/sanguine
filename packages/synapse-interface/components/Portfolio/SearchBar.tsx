@@ -23,11 +23,8 @@ export const SearchBar = () => {
     return isValidAddress(searchInput)
   }, [searchInput])
 
-  console.log('inputIsAddress:', inputIsAddress)
-
   useEffect(() => {
     if (inputIsAddress) {
-      console.log('fetching address: ', searchInput)
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )

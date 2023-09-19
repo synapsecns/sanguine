@@ -41,6 +41,8 @@ export const usePortfolioActionHandlers = (): {
     dispatch(typeSearchInput({ searchInput: initialState.searchInput }))
   }, [dispatch])
 
+  // const resetSearchState = useCallback(() => {}, [dispatch])
+
   return {
     onSearchInput,
     clearSearchInput,
