@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { Address, useAccount, useNetwork } from 'wagmi'
+import React from 'react'
+import { Address } from 'wagmi'
 import Link from 'next/link'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
-  SingleNetworkPortfolio,
-  PortfolioHeader,
-} from './SingleNetworkPortfolio'
+  NetworkTokenBalancesAndAllowances,
+  TokenWithBalanceAndAllowances,
+} from '@/utils/actions/fetchPortfolioBalances'
+import { SingleNetworkPortfolio } from './SingleNetworkPortfolio'
 import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './components/ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -57,13 +57,13 @@ export const PortfolioContent = ({
         selectedFromChainId &&
         !isInitialFetchLoading && (
           <SingleNetworkPortfolio
-            connectedAddress={connectedAddress}
-            portfolioChainId={selectedFromChainId}
-            connectedChainId={connectedChainId}
-            selectedFromChainId={selectedFromChainId}
+            connectedAddress={connectedAddress as Address}
+            portfolioChainId={selectedFromChainId as number}
+            connectedChainId={connectedChainId as number}
+            selectedFromChainId={selectedFromChainId as number}
             portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
             initializeExpanded={true}
-            fetchState={fetchState}
+            fetchState={fetchState as FetchState}
           />
         )}
       {connectedAddress &&
@@ -74,13 +74,13 @@ export const PortfolioContent = ({
             return (
               <SingleNetworkPortfolio
                 key={chainId}
-                connectedAddress={connectedAddress}
-                portfolioChainId={Number(chainId)}
-                connectedChainId={connectedChainId}
-                selectedFromChainId={selectedFromChainId}
-                portfolioTokens={tokens}
+                connectedAddress={connectedAddress as Address}
+                portfolioChainId={Number(chainId) as number}
+                connectedChainId={connectedChainId as number}
+                selectedFromChainId={selectedFromChainId as number}
+                portfolioTokens={tokens as TokenWithBalanceAndAllowances[]}
                 initializeExpanded={false}
-                fetchState={fetchState}
+                fetchState={fetchState as FetchState}
               />
             )
           }
@@ -126,7 +126,7 @@ export const EmptyPortfolioContent = ({
   connectedAddress: Address
   connectedChain: Chain
 }) => {
-  const shortened = shortenAddress(connectedAddress, 3)
+  const shortened: string = shortenAddress(connectedAddress, 3)
   return (
     <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
