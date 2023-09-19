@@ -19,8 +19,6 @@ export const SearchBar = () => {
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
 
-  // const isSearchActive: boolean = searchInput.length > 0
-
   const isActive: boolean = searchInput !== portfolioInitialState.searchInput
 
   const searchInputIsAddress: boolean = useMemo(() => {
@@ -47,7 +45,7 @@ export const SearchBar = () => {
       data-test-id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
-        border border-transparent
+        border border-transparent bg-[#252226]
         ${isActive ? 'border-synapsePurple' : 'border-transparent'}
       `}
     >
@@ -70,8 +68,6 @@ export default function FilterInput({
   onSearch: (str: string) => void
   placeholder: string
 }) {
-  const isActive: boolean = searchStr !== portfolioInitialState.searchInput
-
   return (
     <input
       data-test-id="filter-input"
@@ -80,7 +76,8 @@ export default function FilterInput({
         font-normal text-sm text-primaryTextColor
         border h-full w-6/12 rounded bg-[#252226] custom-shadow
         placeholder-white placeholder-opacity-40
-        outline-none ring-0 focus:outline-none focus:ring-0 border-transparent focus:border-transparent
+        border-transparent outline-none ring-0
+        focus:outline-none focus:ring-0 focus:border-transparent
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
@@ -88,9 +85,6 @@ export default function FilterInput({
     />
   )
 }
-
-// focus:border-synapsePurple focus:outline-none focus:ring-0
-// ${isActive ? 'border-synapsePurple' : 'border-transparent'}
 
 export const ClearSearchButton = ({
   show,
@@ -102,8 +96,8 @@ export const ClearSearchButton = ({
   return (
     <button
       className={`
-        ${show ? 'block' : 'hidden'}
-        flex w-6 h-6 right-2
+        ${show ? 'z-10' : 'z-[-10]'}
+        flex w-6 h-6 mr-1
         items-center justify-center
         border border-separator rounded-full
         hover:cursor-pointer hover:border-secondary
