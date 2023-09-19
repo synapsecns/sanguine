@@ -59,7 +59,7 @@ export const fetchAndStoreSearchInputPortfolioBalances = createAsyncThunk(
   'portfolio/fetchAndStoreSearchInputPortfolioBalances',
   async (address: string) => {
     const portfolioData = await fetchPortfolioBalances(address)
-    return portfolioData
+    return { ...portfolioData, address }
   }
 )
 

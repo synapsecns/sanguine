@@ -14,6 +14,7 @@ import {
   fetchAndStoreSingleNetworkPortfolioBalances,
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
+  fetchAndStoreSearchInputPortfolioBalances,
 } from './hooks'
 import {
   NetworkTokenBalancesAndAllowances,
@@ -51,6 +52,9 @@ export const portfolioSlice = createSlice({
       .addCase(setActiveTab, (state, action: PayloadAction<PortfolioTabs>) => {
         state.activeTab = action.payload
       })
+      .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
+        state.searchInput = searchInput
+      })
       .addCase(updateSingleTokenAllowance, (state, action) => {
         const { chainId, allowance, spender, token } = action.payload
 
@@ -62,31 +66,6 @@ export const portfolioSlice = createSlice({
           }
         )
       })
-      .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
-        state.status = FetchState.LOADING
-      })
-      .addCase(fetchAndStorePortfolioBalances.fulfilled, (state, action) => {
-        state.status = FetchState.VALID
-        state.balancesAndAllowances = action.payload.balancesAndAllowances
-      })
-      .addCase(fetchAndStorePortfolioBalances.rejected, (state, action) => {
-        state.status = FetchState.INVALID
-        state.error = action.error.message
-      })
-      .addCase(
-        fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
-        (state, action) => {
-          const { balancesAndAllowances } = action.payload
-
-          Object.entries(balancesAndAllowances).forEach(
-            ([chainId, mergedBalancesAndAllowances]) => {
-              state.balancesAndAllowances[chainId] = [
-                ...mergedBalancesAndAllowances,
-              ]
-            }
-          )
-        }
-      )
       .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
         const { routerAddress, chainId, tokenAddress, allowance } =
           action.payload
@@ -119,9 +98,49 @@ export const portfolioSlice = createSlice({
           }
         )
       })
-      .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
-        state.searchInput = searchInput
+      .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
+        state.status = FetchState.LOADING
       })
+      .addCase(fetchAndStorePortfolioBalances.fulfilled, (state, action) => {
+        state.status = FetchState.VALID
+        state.balancesAndAllowances = action.payload.balancesAndAllowances
+      })
+      .addCase(fetchAndStorePortfolioBalances.rejected, (state, action) => {
+        state.status = FetchState.INVALID
+        state.error = action.error.message
+      })
+      .addCase(fetchAndStoreSearchInputPortfolioBalances.pending, (state) => {
+        state.searchStatus = FetchState.LOADING
+      })
+      .addCase(
+        fetchAndStoreSearchInputPortfolioBalances.fulfilled,
+        (state, action) => {
+          const { balancesAndAllowances, address } = action.payload
+          state.searchStatus = FetchState.VALID
+          state.searchedBalancesAndAllowances[address] = balancesAndAllowances
+        }
+      )
+      .addCase(
+        fetchAndStoreSearchInputPortfolioBalances.rejected,
+        (state, action) => {
+          state.searchStatus = FetchState.INVALID
+          state.error = action.error.message
+        }
+      )
+      .addCase(
+        fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
+        (state, action) => {
+          const { balancesAndAllowances } = action.payload
+
+          Object.entries(balancesAndAllowances).forEach(
+            ([chainId, mergedBalancesAndAllowances]) => {
+              state.balancesAndAllowances[chainId] = [
+                ...mergedBalancesAndAllowances,
+              ]
+            }
+          )
+        }
+      )
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
         state.balancesAndAllowances = initialState.balancesAndAllowances
