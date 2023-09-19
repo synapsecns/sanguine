@@ -11,6 +11,7 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { XIcon } from '@heroicons/react/outline'
 import { initialState as portfolioInitialState } from '@/slices/portfolio/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
@@ -95,6 +96,7 @@ export const ClearSearchButton = ({
 }) => {
   return (
     <button
+      data-test-id="clear-search-button"
       className={`
         ${show ? 'z-10' : 'z-[-10]'}
         flex w-6 h-6 mr-1
@@ -107,4 +109,14 @@ export const ClearSearchButton = ({
       <XIcon strokeWidth={3} className="inline w-4 text-secondary" />
     </button>
   )
+}
+
+export const ViewSearchBanner = ({
+  viewingAddress,
+}: {
+  viewingAddress: Address
+}) => {
+  const shortened: string = shortenAddress(viewingAddress, 3)
+
+  return <div data-test-id="view-search-banner"></div>
 }
