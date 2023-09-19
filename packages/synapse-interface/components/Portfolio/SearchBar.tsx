@@ -19,7 +19,9 @@ export const SearchBar = () => {
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
 
-  const isSearchActive: boolean = searchInput.length > 0
+  // const isSearchActive: boolean = searchInput.length > 0
+
+  const isActive: boolean = searchInput !== portfolioInitialState.searchInput
 
   const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
@@ -43,14 +45,18 @@ export const SearchBar = () => {
   return (
     <div
       data-test-id="portfolio-search-bar"
-      className="relative flex items-center ml-auto"
+      className={`
+        relative flex items-center ml-auto
+        border border-transparent
+        ${isActive ? 'border-synapsePurple' : 'border-transparent'}
+      `}
     >
       <FilterInput
         placeholder="Filter"
         searchStr={searchInput}
         onSearch={onSearchInput}
       />
-      <ClearSearchButton show={isSearchActive} onClick={clearSearchInput} />
+      <ClearSearchButton show={isActive} onClick={clearSearchInput} />
     </div>
   )
 }
@@ -73,9 +79,8 @@ export default function FilterInput({
         flex-grow py-2 p-2
         font-normal text-sm text-primaryTextColor
         border h-full w-6/12 rounded bg-[#252226] custom-shadow
-        focus:border-synapsePurple focus:outline-none focus:ring-0
         placeholder-white placeholder-opacity-40
-        ${isActive ? 'border-synapsePurple' : 'border-transparent'}
+        outline-none ring-0 focus:outline-none focus:ring-0 border-transparent focus:border-transparent
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
@@ -83,6 +88,9 @@ export default function FilterInput({
     />
   )
 }
+
+// focus:border-synapsePurple focus:outline-none focus:ring-0
+// ${isActive ? 'border-synapsePurple' : 'border-transparent'}
 
 export const ClearSearchButton = ({
   show,
@@ -94,7 +102,7 @@ export const ClearSearchButton = ({
   return (
     <button
       className={`
-        ${show ? 'absolute' : 'hidden'}
+        ${show ? 'block' : 'hidden'}
         flex w-6 h-6 right-2
         items-center justify-center
         border border-separator rounded-full

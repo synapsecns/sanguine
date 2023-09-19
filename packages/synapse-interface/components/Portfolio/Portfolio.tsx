@@ -15,17 +15,13 @@ import {
   fetchAndStorePortfolioBalances,
   usePortfolioState,
 } from '@/slices/portfolio/hooks'
-import {
-  PortfolioTabs,
-  resetPortfolioState,
-  setActiveTab,
-} from '@/slices/portfolio/actions'
+import { PortfolioTabs, resetPortfolioState } from '@/slices/portfolio/actions'
 import { resetTransactionsState } from '@/slices/transactions/actions'
-import { Activity } from './Activity'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
+import { Activity } from './Activity'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
