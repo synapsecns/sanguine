@@ -49,7 +49,7 @@ export const usePortfolioActionHandlers = (): {
   return {
     onSearchInput,
     clearSearchInput,
-    clearSearchResults
+    clearSearchResults,
   }
 }
 
