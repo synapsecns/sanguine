@@ -100,18 +100,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             }
           }
         )
-
         const fuse = new Fuse(formatted, fuseOptions)
-
         if (searchInputActive) {
           searchFiltered = fuse
             .search(searchInput)
             .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
         }
 
-        return searchFiltered.length > 0
-          ? searchFiltered
-          : userHistoricalTransactions
+        return searchInputActive ? searchFiltered : userHistoricalTransactions
       }
     }, [
       searchInput,
