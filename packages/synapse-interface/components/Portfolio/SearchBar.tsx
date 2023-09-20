@@ -52,10 +52,6 @@ export const SearchBar = () => {
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )
     }
-
-    if (!searchInputIsAddress && searchResultsExist) {
-      clearSearchResults()
-    }
   }, [searchInputIsAddress])
 
   return (
@@ -133,7 +129,7 @@ export const ViewSearchAddressBanner = ({
 }: {
   viewingAddress: Address
 }) => {
-  const { clearSearchInput } = usePortfolioActionHandlers()
+  const { clearSearchResults } = usePortfolioActionHandlers()
   const shortened: string = shortenAddress(viewingAddress, 4)
   return (
     <div
@@ -151,7 +147,7 @@ export const ViewSearchAddressBanner = ({
         <div className="text-secondary ">Viewing</div>
         <div className="font-bold text-primary">{shortened}</div>
       </div>
-      <ClearSearchButton onClick={clearSearchInput} show={true} />
+      <ClearSearchButton onClick={clearSearchResults} show={true} />
     </div>
   )
 }

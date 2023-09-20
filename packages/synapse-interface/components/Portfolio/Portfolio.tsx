@@ -55,27 +55,23 @@ export const Portfolio = () => {
     return queriedAddressPortfolioDataExists
   }, [searchedBalancesAndAllowances])
 
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
-  const filteredSearchedPortfolioData: NetworkTokenBalancesAndAllowances =
-    useMemo(() => {
-      if (masqueradeActive) {
-        const queriedAddress: Address = Object.keys(
-          searchedBalancesAndAllowances
-        )[0] as Address
-        return filterPortfolioBalancesWithBalances(
+  const filteredSearchedPortfolioData = useMemo(() => {
+    if (masqueradeActive) {
+      const queriedAddress: Address = Object.keys(
+        searchedBalancesAndAllowances
+      )[0] as Address
+      return {
+        balances: filterPortfolioBalancesWithBalances(
           searchedBalancesAndAllowances[queriedAddress]
-        )
+        ),
+        address: queriedAddress,
       }
-      return {}
-    }, [
-      searchedBalancesAndAllowances,
-      searchInput,
-      searchInputIsAddress,
-      masqueradeActive,
-    ])
+    }
+    return {
+      balances: {},
+      address: '',
+    }
+  }, [searchedBalancesAndAllowances, masqueradeActive])
 
   const flattenedPortfolioData: TokenWithBalanceAndAllowances[] =
     useMemo(() => {
@@ -139,16 +135,22 @@ export const Portfolio = () => {
       <div className="mt-3">
         {mounted && (
           <>
-            {searchInputIsAddress ? (
+            {masqueradeActive ? (
               <>
                 <ViewSearchAddressBanner
-                  viewingAddress={searchInput as Address}
+                  viewingAddress={
+                    filteredSearchedPortfolioData.address as Address
+                  }
                 />
                 <PortfolioContent
-                  connectedAddress={searchInput as Address}
+                  connectedAddress={
+                    filteredSearchedPortfolioData.address as Address
+                  }
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
-                  networkPortfolioWithBalances={filteredSearchedPortfolioData}
+                  networkPortfolioWithBalances={
+                    filteredSearchedPortfolioData.balances
+                  }
                   fetchState={searchStatus}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
                 />
