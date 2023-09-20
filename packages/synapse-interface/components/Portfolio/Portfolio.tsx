@@ -49,13 +49,17 @@ export const Portfolio = () => {
 
   const searchInputActive: boolean = searchInput.length > 0
 
+  const searchInputIsAddress: boolean = useMemo(() => {
+    return isValidAddress(searchInput)
+  }, [searchInput])
+
   const masqueradeActive: boolean = useMemo(() => {
     const queriedAddressPortfolioDataExists: boolean =
       Object.keys(searchedBalancesAndAllowances).length !== 0
     return queriedAddressPortfolioDataExists
   }, [searchedBalancesAndAllowances])
 
-  const filteredSearchedPortfolioData = useMemo(() => {
+  const filteredSearchedPortfolioDataForBalances = useMemo(() => {
     if (masqueradeActive) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
@@ -71,20 +75,25 @@ export const Portfolio = () => {
       balances: {},
       address: '',
     }
-  }, [searchedBalancesAndAllowances, masqueradeActive])
+  }, [searchedBalancesAndAllowances, masqueradeActive, searchInput])
 
   const flattenedPortfolioData: TokenWithBalanceAndAllowances[] =
     useMemo(() => {
       const flattened: TokenWithBalanceAndAllowances[] = []
-      Object.entries(filteredPortfolioDataForBalances).forEach(
-        ([chainId, tokens]) => {
-          tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-            flattened.push({ ...token })
-          })
-        }
-      )
+      const portfolio: NetworkTokenBalancesAndAllowances = masqueradeActive
+        ? filteredSearchedPortfolioDataForBalances.balances
+        : filteredPortfolioDataForBalances
+      Object.entries(portfolio).forEach(([chainId, tokens]) => {
+        tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+          flattened.push({ ...token })
+        })
+      })
       return flattened
-    }, [filteredPortfolioDataForBalances])
+    }, [
+      masqueradeActive,
+      filteredPortfolioDataForBalances,
+      filteredSearchedPortfolioDataForBalances,
+    ])
 
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
@@ -139,17 +148,19 @@ export const Portfolio = () => {
               <>
                 <ViewSearchAddressBanner
                   viewingAddress={
-                    filteredSearchedPortfolioData.address as Address
+                    filteredSearchedPortfolioDataForBalances.address as Address
                   }
                 />
                 <PortfolioContent
                   connectedAddress={
-                    filteredSearchedPortfolioData.address as Address
+                    filteredSearchedPortfolioDataForBalances.address as Address
                   }
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
                   networkPortfolioWithBalances={
-                    filteredSearchedPortfolioData.balances
+                    searchInputActive && !searchInputIsAddress
+                      ? filteredBySearchInput
+                      : filteredSearchedPortfolioDataForBalances.balances
                   }
                   fetchState={searchStatus}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
