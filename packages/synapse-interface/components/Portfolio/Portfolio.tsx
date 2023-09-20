@@ -49,22 +49,33 @@ export const Portfolio = () => {
 
   const searchInputActive: boolean = searchInput.length > 0
 
+  const masqueradeActive: boolean = useMemo(() => {
+    const queriedAddressPortfolioDataExists: boolean =
+      Object.keys(searchedBalancesAndAllowances).length !== 0
+    return queriedAddressPortfolioDataExists
+  }, [searchedBalancesAndAllowances])
+
   const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
   }, [searchInput])
 
   const filteredSearchedPortfolioData: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
-      const searchResultsExist: boolean =
-        Object.keys(searchedBalancesAndAllowances).length !== 0
-
-      if (searchInputIsAddress && searchResultsExist) {
+      if (masqueradeActive) {
+        const queriedAddress: Address = Object.keys(
+          searchedBalancesAndAllowances
+        )[0] as Address
         return filterPortfolioBalancesWithBalances(
-          searchedBalancesAndAllowances[searchInput as Address]
+          searchedBalancesAndAllowances[queriedAddress]
         )
       }
       return {}
-    }, [searchedBalancesAndAllowances, searchInput, searchInputIsAddress])
+    }, [
+      searchedBalancesAndAllowances,
+      searchInput,
+      searchInputIsAddress,
+      masqueradeActive,
+    ])
 
   const flattenedPortfolioData: TokenWithBalanceAndAllowances[] =
     useMemo(() => {
