@@ -44,15 +44,14 @@ export const SearchBar = () => {
   }, [searchInput])
 
   useEffect(() => {
-    const searchResultsExist: boolean =
-      Object.keys(searchedBalancesAndAllowances).length !== 0
-
-    if (searchInputIsAddress) {
+    const masqueradeActive: boolean =
+      Object.keys(searchedBalancesAndAllowances).length > 0
+    if (searchInputIsAddress && !masqueradeActive) {
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )
     }
-  }, [searchInputIsAddress])
+  }, [searchInputIsAddress, searchedBalancesAndAllowances])
 
   return (
     <div

@@ -98,6 +98,8 @@ export const Portfolio = () => {
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
+      console.log('flattenedPortfolioData:', flattenedPortfolioData)
+
       const fuseOptions = {
         includeScore: true,
         threshold: 0.0,

@@ -100,6 +100,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             }
           }
         )
+        console.log('formatted:', formatted)
         const fuse = new Fuse(formatted, fuseOptions)
         if (searchInputActive) {
           searchFiltered = fuse
