@@ -123,8 +123,12 @@ export const ViewSearchAddressBanner = ({
       data-test-id="view-search-address-banner"
       className={`
         flex justify-between p-3 mb-3
-        border border-synapsePurple
+        border border-synapsePurple rounded-sm
       `}
+      style={{
+        background:
+          'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
+      }}
     >
       <div className="flex space-x-1">
         <div className="text-secondary ">Viewing</div>
