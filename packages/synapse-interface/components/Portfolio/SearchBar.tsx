@@ -117,14 +117,19 @@ export const ViewSearchAddressBanner = ({
   viewingAddress: Address
 }) => {
   const { clearSearchInput } = usePortfolioActionHandlers()
-  const shortened: string = shortenAddress(viewingAddress, 3)
+  const shortened: string = shortenAddress(viewingAddress, 4)
   return (
     <div
       data-test-id="view-search-address-banner"
-      className={`flex border border-synapsePurple`}
+      className={`
+        flex justify-between p-3 mb-3
+        border border-synapsePurple
+      `}
     >
-      <div className="text-secondary">Viewing</div>
-      <div className="font-bold text-primary">{shortened}</div>
+      <div className="flex space-x-1">
+        <div className="text-secondary ">Viewing</div>
+        <div className="font-bold text-primary">{shortened}</div>
+      </div>
       <ClearSearchButton onClick={clearSearchInput} show={true} />
     </div>
   )
