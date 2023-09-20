@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo } from 'react'
 import { Address } from 'viem'
+import { XIcon } from '@heroicons/react/outline'
 
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -7,9 +8,11 @@ import {
   usePortfolioState,
   fetchAndStoreSearchInputPortfolioBalances,
 } from '@/slices/portfolio/hooks'
-import { PortfolioState } from '@/slices/portfolio/reducer'
-import { XIcon } from '@heroicons/react/outline'
-import { initialState as portfolioInitialState } from '@/slices/portfolio/reducer'
+import { PortfolioTabs } from '@/slices/portfolio/actions'
+import {
+  initialState as portfolioInitialState,
+  PortfolioState,
+} from '@/slices/portfolio/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 
@@ -17,10 +20,24 @@ export const SearchBar = () => {
   const dispatch = useAppDispatch()
   const { onSearchInput, clearSearchInput, clearSearchResults } =
     usePortfolioActionHandlers()
-  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
-    usePortfolioState()
+  const {
+    activeTab,
+    searchInput,
+    searchedBalancesAndAllowances,
+  }: PortfolioState = usePortfolioState()
 
   const isActive: boolean = searchInput !== portfolioInitialState.searchInput
+
+  const placeholder: string = useMemo(() => {
+    switch (activeTab) {
+      case PortfolioTabs.PORTFOLIO:
+        return 'Search tokens & chains'
+      case PortfolioTabs.ACTIVITY:
+        return 'Search transactions'
+      default:
+        return 'Filter'
+    }
+  }, [activeTab])
 
   const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
@@ -51,7 +68,7 @@ export const SearchBar = () => {
       `}
     >
       <FilterInput
-        placeholder="Filter"
+        placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
       />
