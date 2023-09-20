@@ -116,7 +116,7 @@ export const ViewSearchAddressBanner = ({
 }: {
   viewingAddress: Address
 }) => {
-  const { clearSearchResults } = usePortfolioActionHandlers()
+  const { clearSearchInput } = usePortfolioActionHandlers()
   const shortened: string = shortenAddress(viewingAddress, 3)
   return (
     <div
@@ -125,7 +125,7 @@ export const ViewSearchAddressBanner = ({
     >
       <div className="text-secondary">Viewing</div>
       <div className="font-bold text-primary">{shortened}</div>
-      <ClearSearchButton onClick={clearSearchResults} show={true} />
+      <ClearSearchButton onClick={clearSearchInput} show={true} />
     </div>
   )
 }

@@ -22,6 +22,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { Activity } from './Activity'
+import { ViewSearchAddressBanner } from './SearchBar'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
@@ -128,14 +129,19 @@ export const Portfolio = () => {
         {mounted && (
           <>
             {searchInputIsAddress ? (
-              <PortfolioContent
-                connectedAddress={searchInput as Address}
-                connectedChainId={chain?.id}
-                selectedFromChainId={fromChainId}
-                networkPortfolioWithBalances={filteredSearchedPortfolioData}
-                fetchState={searchStatus}
-                visibility={activeTab === PortfolioTabs.PORTFOLIO}
-              />
+              <>
+                <ViewSearchAddressBanner
+                  viewingAddress={searchInput as Address}
+                />
+                <PortfolioContent
+                  connectedAddress={searchInput as Address}
+                  connectedChainId={chain?.id}
+                  selectedFromChainId={fromChainId}
+                  networkPortfolioWithBalances={filteredSearchedPortfolioData}
+                  fetchState={searchStatus}
+                  visibility={activeTab === PortfolioTabs.PORTFOLIO}
+                />
+              </>
             ) : (
               <PortfolioContent
                 connectedAddress={address}
