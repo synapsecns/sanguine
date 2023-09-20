@@ -116,7 +116,16 @@ export const ViewSearchAddressBanner = ({
 }: {
   viewingAddress: Address
 }) => {
+  const { clearSearchResults } = usePortfolioActionHandlers()
   const shortened: string = shortenAddress(viewingAddress, 3)
-
-  return <div data-test-id="view-search-address-banner"></div>
+  return (
+    <div
+      data-test-id="view-search-address-banner"
+      className={`flex border border-synapsePurple`}
+    >
+      <div className="text-secondary">Viewing</div>
+      <div className="font-bold text-primary">{shortened}</div>
+      <ClearSearchButton onClick={clearSearchResults} show={true} />
+    </div>
+  )
 }
