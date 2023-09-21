@@ -70,7 +70,7 @@ contract DeployerUtils is Script {
             return factory;
         }
 
-        address factoryDeployment = tryLoadDeployment("Create3Factory");
+        address factoryDeployment = tryLoadDeployment("CREATE3Factory");
         if (factoryDeployment == address(0)) {
             if (broadcasterPK == 0) {
                 console.log("please setup a private key before calling this function");
