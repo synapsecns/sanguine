@@ -54,9 +54,7 @@ export const Portfolio = () => {
   }, [searchInput])
 
   const masqueradeActive: boolean = useMemo(() => {
-    const queriedAddressPortfolioDataExists: boolean =
-      Object.keys(searchedBalancesAndAllowances).length !== 0
-    return queriedAddressPortfolioDataExists
+    return Object.keys(searchedBalancesAndAllowances).length > 0
   }, [searchedBalancesAndAllowances])
 
   const filteredSearchedPortfolioDataForBalances = useMemo(() => {
@@ -98,8 +96,6 @@ export const Portfolio = () => {
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
-      console.log('flattenedPortfolioData:', flattenedPortfolioData)
-
       const fuseOptions = {
         includeScore: true,
         threshold: 0.5,

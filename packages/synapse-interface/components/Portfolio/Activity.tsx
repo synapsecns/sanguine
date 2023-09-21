@@ -33,7 +33,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
-  const { searchInput }: PortfolioState = usePortfolioState()
+  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
+    usePortfolioState()
 
   const hasPendingTransactions: boolean = useMemo(() => {
     if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
@@ -58,6 +59,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
 
   const searchInputActive: boolean = searchInput.length > 0
+
+  const masqueradeActive: boolean = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances).length > 0
+  }, [searchedBalancesAndAllowances])
+
+  const masqueradeAddress: Address = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances)[0]
+  }, [searchedBalancesAndAllowances])
 
   const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
     useMemo(() => {
@@ -110,15 +119,18 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             }
           }
         )
-        console.log('formatted:', formatted)
         const fuse = new Fuse(formatted, fuseOptions)
         if (searchInputActive) {
           searchFiltered = fuse
             .search(searchInput)
             .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
         }
+        const inputIsMasqueradeAddress: boolean =
+          searchInput === masqueradeAddress
 
-        return searchInputActive ? searchFiltered : userHistoricalTransactions
+        return searchInputActive && !inputIsMasqueradeAddress
+          ? searchFiltered
+          : userHistoricalTransactions
       }
     }, [
       searchInput,
