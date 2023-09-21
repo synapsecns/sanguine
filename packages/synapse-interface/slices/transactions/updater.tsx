@@ -79,15 +79,38 @@ export default function Updater(): null {
   // Start fetch when connected address exists
   // Unsubscribe when address is unconnected
   useEffect(() => {
-    fetchUserHistoricalActivity({
-      address: address,
-      startTime: queryHistoricalTime,
-    })
-    fetchUserPendingActivity({
-      address: address,
-      startTime: queryPendingTime,
-    })
-  }, [address])
+    if (address && !masqueradeActive) {
+      fetchUserHistoricalActivity({
+        address: address,
+        startTime: queryHistoricalTime,
+      })
+      fetchUserPendingActivity({
+        address: address,
+        startTime: queryPendingTime,
+      })
+    } else if (masqueradeActive) {
+      const queriedAddress: Address = Object.keys(
+        searchedBalancesAndAllowances
+      )[0] as Address
+      fetchUserHistoricalActivity({
+        address: queriedAddress,
+        startTime: queryHistoricalTime,
+      })
+      fetchUserPendingActivity({
+        address: queriedAddress,
+        startTime: queryPendingTime,
+      })
+    } else {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+    }
+  }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
   useEffect(() => {
     const {
