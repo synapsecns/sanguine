@@ -88,10 +88,13 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (masqueradeActive) {
+    }
+
+    if (masqueradeActive) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
+      console.log('queriedAddress:', queriedAddress)
       fetchUserHistoricalActivity({
         address: queriedAddress,
         startTime: queryHistoricalTime,
@@ -100,15 +103,6 @@ export default function Updater(): null {
         address: queriedAddress,
         startTime: queryPendingTime,
       })
-    } else {
-      fetchUserHistoricalActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
-      fetchUserPendingActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
     }
   }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
@@ -120,18 +114,23 @@ export default function Updater(): null {
       data: historicalData,
     } = fetchedHistoricalActivity
 
-    if (address && isUserHistoricalTransactionsLoading) {
+    if ((masqueradeActive || address) && isUserHistoricalTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserHistoricalTransactionsLoading(false))
     }
 
-    if (address && isSuccess) {
+    if ((masqueradeActive || address) && isSuccess) {
       dispatch(
         updateUserHistoricalTransactions(historicalData?.bridgeTransactions)
       )
     }
-  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
+  }, [
+    fetchedHistoricalActivity,
+    isUserHistoricalTransactionsLoading,
+    address,
+    masqueradeActive,
+  ])
 
   useEffect(() => {
     const {
@@ -141,16 +140,21 @@ export default function Updater(): null {
       data: pendingData,
     } = fetchedPendingActivity
 
-    if (address && isUserPendingTransactionsLoading) {
+    if ((masqueradeActive || address) && isUserPendingTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserPendingTransactionsLoading(false))
     }
 
-    if (address && isSuccess) {
+    if ((masqueradeActive || address) && isSuccess) {
       dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
     }
-  }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
+  }, [
+    fetchedPendingActivity,
+    isUserPendingTransactionsLoading,
+    address,
+    masqueradeActive,
+  ])
 
   // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
   useEffect(() => {
