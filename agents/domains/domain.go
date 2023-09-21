@@ -177,7 +177,7 @@ type TestClientContract interface {
 // PingPongClientContract contains the interface for the ping pong test client.
 type PingPongClientContract interface {
 	// DoPing sends a ping message through the PingPongClient.
-	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) error
+	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) (*ethTypes.Transaction, error)
 	WatchPingSent(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPingSent) (event.Subscription, error)
 	WatchPongReceived(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPongReceived) (event.Subscription, error)
 }

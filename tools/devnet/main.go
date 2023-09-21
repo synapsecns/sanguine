@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -22,9 +25,9 @@ import (
 )
 
 type chainConfig struct {
-	Name        string `yaml:"name"`
-	ChainID     uint32 `yaml:"chain-id"`
-	Port        int    `yaml:"port"`
+	Command     interface{} `yaml:"command"`
+	Name        string
+	ChainID     uint32
 	Deployments map[string]deploymentConfig
 }
 
@@ -61,6 +64,7 @@ func (d *deploymentConfig) loadContract(chainClient chain.Chain) (err error) {
 func getChainConfigs(dockerPath string) (chainConfigs map[uint32]chainConfig, err error) {
 	// Read the Docker Compose YAML file.
 	dockerComposePath := fmt.Sprintf("%s/%s", dockerPath, dockerComposeFile)
+	fmt.Printf("dockerComposePath: %v\n", dockerComposePath)
 	data, err := os.ReadFile(dockerComposePath)
 	if err != nil {
 		return chainConfigs, err
@@ -72,14 +76,32 @@ func getChainConfigs(dockerPath string) (chainConfigs map[uint32]chainConfig, er
 	if err != nil {
 		return chainConfigs, err
 	}
+	fmt.Printf("unmarshalled: %v\n", dockerComposeConfig)
 
 	chainConfigs = map[uint32]chainConfig{}
-	for _, chainConfig := range dockerComposeConfig.Services {
-		if chainConfig.ChainID > 0 {
-			chainConfigs[chainConfig.ChainID] = chainConfig
+	for name, chainCfg := range dockerComposeConfig.Services {
+		commandStr, ok := chainCfg.Command.(string)
+		if !ok {
+			continue
+		}
+		chainCfg.ChainID = extractChainID(commandStr)
+		if chainCfg.ChainID > 0 {
+			chainCfg.Name = name
+			chainConfigs[chainCfg.ChainID] = chainCfg
+			chainCfg.Deployments = map[string]deploymentConfig{}
 		}
 	}
 	return chainConfigs, err
+}
+
+func extractChainID(command string) (chainID uint32) {
+	re := regexp.MustCompile(`--chain-id=(\d+)`)
+	matches := re.FindStringSubmatch(command)
+	if len(matches) == 2 {
+		chainID, _ := strconv.Atoi(matches[1])
+		return uint32(chainID)
+	}
+	return 0
 }
 
 func loadOmniRPCConfig(dockerPath string) (omniRPCConfig omniConfig.Config, err error) {
@@ -92,8 +114,10 @@ func loadOmniRPCConfig(dockerPath string) (omniRPCConfig omniConfig.Config, err 
 }
 
 func loadDeployments(contractName, deploymentPath string, chainConfigs map[uint32]chainConfig, omniRPCConfig omniConfig.Config) (err error) {
+	fmt.Printf("loadDeployments onto configs: %v\n", chainConfigs)
 	for chainID, chainConfig := range chainConfigs {
-		contractABIPath := fmt.Sprintf("%s/%s/%s", deploymentPath, chainConfig.Name, contractName)
+		fmt.Printf("loading deployment for chain %d: %v\n", chainID, chainConfig.Name)
+		contractABIPath := fmt.Sprintf("%s/%s/%s.json", deploymentPath, chainConfig.Name, contractName)
 		abiFile, err := os.Open(contractABIPath)
 		if err != nil {
 			return err
@@ -127,6 +151,9 @@ func loadDeployments(contractName, deploymentPath string, chainConfigs map[uint3
 			return err
 		}
 
+		if chainConfig.Deployments == nil {
+			chainConfig.Deployments = map[string]deploymentConfig{}
+		}
 		chainConfig.Deployments[contractName] = deployment
 		chainConfigs[chainID] = chainConfig
 	}
@@ -159,8 +186,10 @@ func getMessageRoutes(chainConfigs map[uint32]chainConfig, summitChainID uint32,
 		}
 		chainIDs = append(chainIDs, chainID)
 	}
+	fmt.Printf("got chain IDs: %v\n", chainIDs)
+	routes = [][2]uint32{}
 	for i, chainID := range chainIDs {
-		if len(chainIDs) >= numRoutes {
+		if len(routes) >= numRoutes {
 			return routes, nil
 		}
 		origin := chainID
@@ -174,6 +203,7 @@ func getMessageRoutes(chainConfigs map[uint32]chainConfig, summitChainID uint32,
 }
 
 func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string) (err error) {
+	fmt.Printf("Watching events for %s on chain %d\n", contractName, chainCfg.ChainID)
 	subs := []event.Subscription{}
 
 	switch contractName {
@@ -226,7 +256,7 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 		go func() {
 			subErr := <-sub.Err()
 			if subErr != nil {
-				fmt.Printf("Error in subscription: %w", subErr)
+				fmt.Printf("Error in subscription: %v", subErr)
 			}
 		}()
 	}
@@ -266,6 +296,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("Got chain configs: %v\n", chainConfigs)
 
 	// Load the omnirpc config.
 	omniRPCConfig, err := loadOmniRPCConfig(dockerPath)
@@ -284,6 +315,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("summitChainID: %v\n", summitChainID)
 
 	// Load the private key.
 	signer, err := getSigner(privateKey)
@@ -296,6 +328,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("routes: %v\n", routes)
 
 	// Listen for messages.
 	contractName := "PingPongClient"
@@ -305,14 +338,20 @@ func main() {
 
 	// Send messages.
 	for _, route := range routes {
+		fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
 		contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
 		if !ok {
 			panic("could not cast contract")
 		}
 		destPingPongAddr := common.HexToAddress(chainConfigs[route[1]].Deployments[contractName].ContractAddress)
-		err = contract.DoPing(ctx, signer, route[1], destPingPongAddr, 0)
+		tx, err := contract.DoPing(ctx, signer, route[1], destPingPongAddr, 0)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
+	}
+
+	for {
+		time.Sleep(10 * time.Second)
 	}
 }

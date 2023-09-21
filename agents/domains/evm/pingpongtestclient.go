@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -41,18 +42,18 @@ type pingPongClientContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a pingPongClientContract) DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) error {
+func (a pingPongClientContract) DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) (tx *ethTypes.Transaction, err error) {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
+		return tx, fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
-	_, err = a.contract.DoPing(transactOpts, destination, recipient, pings)
+	tx, err = a.contract.DoPing(transactOpts, destination, recipient, pings)
 	if err != nil {
-		return fmt.Errorf("could not send ping: %w", err)
+		return tx, fmt.Errorf("could not send ping: %w", err)
 	}
 
-	return nil
+	return tx, nil
 }
 
 func (a pingPongClientContract) WatchPingSent(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPingSent) (event.Subscription, error) {
