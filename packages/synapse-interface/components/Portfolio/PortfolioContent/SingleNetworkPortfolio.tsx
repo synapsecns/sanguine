@@ -211,30 +211,30 @@ const PortfolioTokenVisualizer = ({
     <div
       data-test-id="portfolio-token-visualizer"
       className="flex flex-row items-center cursor-pointer hover-trigger"
-      // onMouseEnter={() => setIsHovered(true)}
-      // onMouseLeave={() => setIsHovered(false)}
     >
       {hasOneToken && (
-        <Image
-          loading="lazy"
-          className="w-6 h-6 rounded-md"
-          alt={`${portfolioTokens[0].token.symbol} img`}
-          src={portfolioTokens[0].token.icon}
-          onMouseEnter={() => setIsT1Hovered(true)}
-          onMouseLeave={() => setIsT1Hovered(false)}
-        />
-      )}
-      {hasOnlyOneToken && (
         <div>
-          <div className="ml-1.5 text-white whitespace-nowrap">
-            {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
-          </div>
-          <div className="relative inline-block">
+          <Image
+            loading="lazy"
+            className="w-6 h-6 rounded-md"
+            alt={`${portfolioTokens[0].token.symbol} img`}
+            src={portfolioTokens[0].token.icon}
+            onMouseEnter={() => setIsT1Hovered(true)}
+            onMouseLeave={() => setIsT1Hovered(false)}
+          />
+          <div className="relative">
             <HoverContent isHovered={isT1Hovered}>
-              {portfolioTokens[0]?.parsedBalance}{' '}
-              {portfolioTokens[0]?.token.symbol}
+              <div className="whitespace-nowrap">
+                {portfolioTokens[0]?.parsedBalance}{' '}
+                {portfolioTokens[0]?.token.symbol}
+              </div>
             </HoverContent>
           </div>
+        </div>
+      )}
+      {hasOnlyOneToken && (
+        <div className="ml-1.5 text-white whitespace-nowrap">
+          {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
         </div>
       )}
       {hasTwoTokens && (
