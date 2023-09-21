@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { useAccount } from 'wagmi'
+import { useAccount, Address } from 'wagmi'
 import {
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
@@ -38,6 +38,7 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -53,7 +54,11 @@ export default function Updater(): null {
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
-  const { activeTab }: PortfolioState = usePortfolioState()
+  const {
+    activeTab,
+    searchInput,
+    searchedBalancesAndAllowances,
+  }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
@@ -67,8 +72,13 @@ export default function Updater(): null {
     },
   })
 
+  const masqueradeActive: boolean = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances).length > 0
+  }, [searchInput])
+
   useEffect(() => {
-    if (address) {
+    if (address && !masqueradeActive) {
+      console.log('hi')
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -77,8 +87,21 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
+    } else if (masqueradeActive) {
+      console.log('bye')
+      const queriedAddress: Address = Object.keys(
+        searchedBalancesAndAllowances
+      )[0] as Address
+      fetchUserHistoricalActivity({
+        address: queriedAddress,
+        startTime: queryHistoricalTime,
+      })
+      fetchUserPendingActivity({
+        address: queriedAddress,
+        startTime: queryPendingTime,
+      })
     }
-  }, [address])
+  }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
   useEffect(() => {
     const {
