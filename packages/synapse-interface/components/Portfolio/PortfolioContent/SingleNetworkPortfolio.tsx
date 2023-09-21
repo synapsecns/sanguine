@@ -192,13 +192,15 @@ const PortfolioTokenVisualizer = ({
 }: {
   portfolioTokens: TokenWithBalanceAndAllowances[]
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const hasOneToken = portfolioTokens && portfolioTokens.length > 0
-  const hasTwoTokens = portfolioTokens && portfolioTokens.length > 1
-  const numOverTwoTokens =
+  const [isHovered, setIsHovered] = useState<boolean>(false)
+  const hasOneToken: boolean = portfolioTokens && portfolioTokens.length > 0
+  const hasTwoTokens: boolean = portfolioTokens && portfolioTokens.length > 1
+  const numOverTwoTokens: number =
     portfolioTokens && portfolioTokens.length - 2 > 0
       ? portfolioTokens.length - 2
       : 0
+  const hasOnlyOneToken: boolean =
+    portfolioTokens && portfolioTokens.length === 1
 
   return (
     <div
@@ -214,6 +216,11 @@ const PortfolioTokenVisualizer = ({
           alt={`${portfolioTokens[0].token.symbol} img`}
           src={portfolioTokens[0].token.icon}
         />
+      )}
+      {hasOnlyOneToken && (
+        <div className="ml-1.5 text-white whitespace-nowrap">
+          {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
+        </div>
       )}
       {hasTwoTokens && (
         <Image
