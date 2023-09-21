@@ -9,7 +9,9 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/event"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/ethergo/chain"
@@ -80,9 +82,9 @@ func getChainConfigs(dockerPath string) (chainConfigs map[uint32]chainConfig, er
 	return chainConfigs, err
 }
 
-func loadOmniRpcConfig(dockerPath string) (omniRPCConfig omniConfig.Config, err error) {
-	omniRpcPath := fmt.Sprintf("%s/config/%s", dockerPath, omnirpcConfig)
-	data, err := os.ReadFile(omniRpcPath)
+func loadOmniRPCConfig(dockerPath string) (omniRPCConfig omniConfig.Config, err error) {
+	omniRPCPath := fmt.Sprintf("%s/config/%s", dockerPath, omnirpcConfig)
+	data, err := os.ReadFile(omniRPCPath)
 	if err != nil {
 		return
 	}
@@ -171,9 +173,70 @@ func getMessageRoutes(chainConfigs map[uint32]chainConfig, summitChainID uint32,
 	return routes, nil
 }
 
+func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string) (err error) {
+	subs := []event.Subscription{}
+
+	switch contractName {
+	case "PingPongClient":
+		contract, ok := chainCfg.Deployments[contractName].Contract.(domains.PingPongClientContract)
+		if !ok {
+			return fmt.Errorf("could not cast contract")
+		}
+
+		// Watch sent events.
+		pingSentChan := make(chan *pingpongclient.PingPongClientPingSent, eventBufferSize)
+		sentSub, err := contract.WatchPingSent(ctx, pingSentChan)
+		if err != nil {
+			return err
+		}
+		defer sentSub.Unsubscribe()
+		subs = append(subs, sentSub)
+		go func() {
+			for {
+				select {
+				case event := <-pingSentChan:
+					fmt.Printf("Ping sent: %+v\n", event)
+				}
+			}
+		}()
+
+		// Watch received events.
+		pongReceivedChan := make(chan *pingpongclient.PingPongClientPongReceived, eventBufferSize)
+		receivedSub, err := contract.WatchPongReceived(ctx, pongReceivedChan)
+		if err != nil {
+			return err
+		}
+		defer receivedSub.Unsubscribe()
+		subs = append(subs, receivedSub)
+		go func() {
+			for {
+				select {
+				case event := <-pingSentChan:
+					fmt.Printf("Pong received: %+v\n", event)
+				}
+			}
+		}()
+	default:
+		return fmt.Errorf("unknown contract %s", contractName)
+	}
+
+	// Listen for subscription errors.
+	for _, sub := range subs {
+		go func() {
+			subErr := <-sub.Err()
+			if subErr != nil {
+				fmt.Printf("Error in subscription: %w", subErr)
+			}
+		}()
+	}
+	return nil
+}
+
 var dockerComposeFile = "docker-compose.yml"
 var omnirpcConfig = "omnirpc.yaml"
 var executorConfig = "executor-config.yml"
+
+const eventBufferSize = 1000
 
 func main() {
 	var dockerPath string
@@ -193,6 +256,10 @@ func main() {
 		panic("expected private key to be set (use -p flag)")
 	}
 
+	// TODO: respect context
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Load the chain configs.
 	chainConfigs, err := getChainConfigs(dockerPath)
 	if err != nil {
@@ -200,7 +267,7 @@ func main() {
 	}
 
 	// Load the omnirpc config.
-	omniRPCConfig, err := loadOmniRpcConfig(dockerPath)
+	omniRPCConfig, err := loadOmniRPCConfig(dockerPath)
 	if err != nil {
 		panic(err)
 	}
@@ -229,10 +296,13 @@ func main() {
 		panic(err)
 	}
 
-	// Send messages.
+	// Listen for messages.
 	contractName := "PingPongClient"
-	// TODO: respect context
-	ctx := context.Background()
+	for _, chainCfg := range chainConfigs {
+		watchEvents(ctx, chainCfg, contractName)
+	}
+
+	// Send messages.
 	for _, route := range routes {
 		contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
 		if !ok {
