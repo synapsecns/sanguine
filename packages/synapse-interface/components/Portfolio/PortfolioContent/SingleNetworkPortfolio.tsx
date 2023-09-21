@@ -201,6 +201,8 @@ const PortfolioTokenVisualizer = ({
       : 0
   const hasOnlyOneToken: boolean =
     portfolioTokens && portfolioTokens.length === 1
+  const hasOnlyTwoTokens: boolean =
+    portfolioTokens && portfolioTokens.length === 2
 
   return (
     <div
@@ -234,7 +236,7 @@ const PortfolioTokenVisualizer = ({
         <div className="ml-1.5 text-white">+ {numOverTwoTokens}</div>
       )}
       <div className="relative inline-block">
-        {isHovered && (
+        {/* {isHovered && (
           <div
             className={`
               absolute z-50 hover-content p-2 text-white
@@ -242,20 +244,44 @@ const PortfolioTokenVisualizer = ({
               bg-[#101018] rounded-md
             `}
           >
-            {portfolioTokens.map(
-              (token: TokenWithBalanceAndAllowances, key: number) => {
-                const tokenSymbol = token.token.symbol
-                const balance = token.parsedBalance
-                return (
-                  <div className="whitespace-nowrap" key={key}>
-                    {balance} {tokenSymbol}
-                  </div>
-                )
-              }
-            )}
           </div>
-        )}
+        )} */}
+        <HoverContent isHovered={isHovered}>
+          {portfolioTokens?.map(
+            (token: TokenWithBalanceAndAllowances, key: number) => {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap" key={key}>
+                  {balance} {tokenSymbol}
+                </div>
+              )
+            }
+          )}
+        </HoverContent>
       </div>
     </div>
   )
+}
+
+export const HoverContent = ({
+  isHovered,
+  children,
+}: {
+  isHovered: boolean
+  children: React.ReactNode
+}) => {
+  if (isHovered) {
+    return (
+      <div
+        className={`
+      absolute z-50 hover-content p-2 text-white
+      border border-solid border-[#252537]
+      bg-[#101018] rounded-md
+    `}
+      >
+        {children}
+      </div>
+    )
+  }
 }
