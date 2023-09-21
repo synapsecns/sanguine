@@ -31,6 +31,7 @@ export const SearchBar = () => {
   }: PortfolioState = usePortfolioState()
 
   const [isFocused, setIsFocused] = useState<boolean>(false)
+  const isActive: boolean = searchInput !== portfolioInitialState.searchInput
 
   useEffect(() => {
     const handleFocus = () => setIsFocused(true)
@@ -47,16 +48,14 @@ export const SearchBar = () => {
     }
   }, [inputRef])
 
-  const isActive: boolean = searchInput !== portfolioInitialState.searchInput
-
   const placeholder: string = useMemo(() => {
     switch (activeTab) {
       case PortfolioTabs.PORTFOLIO:
-        return 'Search tokens & chains'
+        return 'Tokens, chains...'
       case PortfolioTabs.ACTIVITY:
-        return 'Search transactions'
+        return 'Bridge txs...'
       default:
-        return 'Filter'
+        return 'Search...'
     }
   }, [activeTab])
 
@@ -97,7 +96,7 @@ export const SearchBar = () => {
       `}
     >
       <FilterInput
-        placeholder={placeholder}
+        placeholder={isFocused ? placeholder : 'Search...'}
         searchStr={searchInput}
         onSearch={onSearchInput}
       />
