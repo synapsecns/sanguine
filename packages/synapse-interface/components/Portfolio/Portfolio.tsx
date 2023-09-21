@@ -15,7 +15,11 @@ import {
   fetchAndStorePortfolioBalances,
   usePortfolioState,
 } from '@/slices/portfolio/hooks'
-import { PortfolioTabs, resetPortfolioState } from '@/slices/portfolio/actions'
+import {
+  PortfolioTabs,
+  resetPortfolioState,
+  FetchState,
+} from '@/slices/portfolio/actions'
 import { resetTransactionsState } from '@/slices/transactions/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -142,6 +146,9 @@ export const Portfolio = () => {
       <div className="mt-6">
         {mounted && (
           <>
+            {searchStatus === FetchState.LOADING && (
+              <div className="pb-3 text-secondary">Loading new address...</div>
+            )}
             {masqueradeActive ? (
               <>
                 <ViewSearchAddressBanner
@@ -165,18 +172,26 @@ export const Portfolio = () => {
                 />
               </>
             ) : (
-              <PortfolioContent
-                connectedAddress={address}
-                connectedChainId={chain?.id}
-                selectedFromChainId={fromChainId}
-                networkPortfolioWithBalances={
-                  searchInputActive
-                    ? filteredBySearchInput
-                    : filteredPortfolioDataForBalances
+              <div
+                className={
+                  searchStatus === FetchState.LOADING
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'opacity-100'
                 }
-                fetchState={fetchState}
-                visibility={activeTab === PortfolioTabs.PORTFOLIO}
-              />
+              >
+                <PortfolioContent
+                  connectedAddress={address}
+                  connectedChainId={chain?.id}
+                  selectedFromChainId={fromChainId}
+                  networkPortfolioWithBalances={
+                    searchInputActive
+                      ? filteredBySearchInput
+                      : filteredPortfolioDataForBalances
+                  }
+                  fetchState={fetchState}
+                  visibility={activeTab === PortfolioTabs.PORTFOLIO}
+                />
+              </div>
             )}
             <Activity visibility={activeTab === PortfolioTabs.ACTIVITY} />
           </>
