@@ -65,7 +65,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }, [searchedBalancesAndAllowances])
 
   const masqueradeAddress: Address = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances)[0]
+    return Object.keys(searchedBalancesAndAllowances)[0] as Address
   }, [searchedBalancesAndAllowances])
 
   const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
@@ -134,6 +134,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       }
     }, [
       searchInput,
+      masqueradeAddress,
       searchInputActive,
       userHistoricalTransactions,
       isUserHistoricalTransactionsLoading,

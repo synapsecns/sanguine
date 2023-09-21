@@ -139,7 +139,7 @@ export const Portfolio = () => {
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
     >
       <PortfolioTabManager />
-      <div className="mt-3">
+      <div className="mt-9">
         {mounted && (
           <>
             {masqueradeActive ? (
