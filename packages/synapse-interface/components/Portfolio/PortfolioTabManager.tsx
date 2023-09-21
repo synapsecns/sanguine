@@ -14,7 +14,7 @@ export const PortfolioTabManager = () => {
 
   return (
     <div data-test-id="portfolio-tab-manager" className="flex flex-col">
-      <div className="flex">
+      <div className="flex items-center">
         <Tab
           display="Portfolio"
           activeTab={activeTab}
