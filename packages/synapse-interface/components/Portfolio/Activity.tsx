@@ -74,6 +74,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           'destinationToken.name',
           'originTokenAddresses',
           'destinationTokenAddresses',
+          'fromInfo.txnHash',
+          'toInfo.txnHash',
         ],
       }
 
