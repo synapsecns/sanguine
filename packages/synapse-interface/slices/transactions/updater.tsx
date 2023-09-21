@@ -68,14 +68,16 @@ export default function Updater(): null {
   })
 
   useEffect(() => {
-    fetchUserHistoricalActivity({
-      address: address,
-      startTime: queryHistoricalTime,
-    })
-    fetchUserPendingActivity({
-      address: address,
-      startTime: queryPendingTime,
-    })
+    if (address) {
+      fetchUserHistoricalActivity({
+        address: address,
+        startTime: queryHistoricalTime,
+      })
+      fetchUserPendingActivity({
+        address: address,
+        startTime: queryPendingTime,
+      })
+    }
   }, [address])
 
   useEffect(() => {
