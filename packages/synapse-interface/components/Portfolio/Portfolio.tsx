@@ -102,7 +102,7 @@ export const Portfolio = () => {
 
       const fuseOptions = {
         includeScore: true,
-        threshold: 0.0,
+        threshold: 0.5,
         keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
       const fuse = new Fuse(flattenedPortfolioData, fuseOptions)

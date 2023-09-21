@@ -64,7 +64,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       let searchFiltered: BridgeTransaction[] = []
       const fuseOptions = {
         includeScore: true,
-        threshold: 0.0,
+        threshold: 0.5,
         keys: [
           'originChain.name',
           'originToken.symbol',
