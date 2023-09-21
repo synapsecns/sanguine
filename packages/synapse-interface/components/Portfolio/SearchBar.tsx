@@ -120,7 +120,7 @@ export default function FilterInput({
       tabIndex={0}
       data-test-id="filter-input"
       className={`
-        flex-grow py-2 px-4
+        flex-grow py-2.5 px-4
         font-normal text-sm text-primaryTextColor
         border h-full w-6/12 rounded-xl bg-[#252226] custom-shadow
         placeholder-white placeholder-opacity-40

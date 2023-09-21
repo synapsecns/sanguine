@@ -14,7 +14,7 @@ export const PortfolioTabManager = () => {
 
   return (
     <div data-test-id="portfolio-tab-manager" className="flex flex-col">
-      <div className="flex">
+      <div className="flex items-center">
         <Tab
           display="Portfolio"
           activeTab={activeTab}
@@ -49,10 +49,11 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
   const isCurrentlyActive: boolean = activeTab === tabType
   return (
     <button
+      data-test-id="tab"
       onClick={() => handleTabChange(tabType)}
       className={`
         font-medium text-2xl text-gray-500
-        border-b-2 border-transparent mr-2 pb-2
+        border-b-2 border-transparent mr-2 py-2
         focus:outline-none focus:ring-0 active:outline-none active:ring:0 outline-none
         hover:text-white transform-gpu transition-all duration-75
         ${isCurrentlyActive && 'text-white'}
