@@ -74,7 +74,9 @@ export default function Updater(): null {
 
   const masqueradeActive: boolean = useMemo(() => {
     return Object.keys(searchedBalancesAndAllowances).length > 0
-  }, [searchInput])
+  }, [searchedBalancesAndAllowances])
+
+  console.log('masqueradeActive:', masqueradeActive)
 
   useEffect(() => {
     if (address && !masqueradeActive) {
