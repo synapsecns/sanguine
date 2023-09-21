@@ -3,6 +3,8 @@ import { useAccount, Address } from 'wagmi'
 import { Chain, Token } from '@/utils/types'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useTransactionsState } from '@/slices/transactions/hooks'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { PortfolioState } from '@/slices/portfolio/reducer'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
@@ -23,6 +25,8 @@ export const MostRecentTransaction = () => {
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
+  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
+    usePortfolioState()
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesBeforeNow(0)
@@ -35,6 +39,10 @@ export const MostRecentTransaction = () => {
 
     return () => clearInterval(interval)
   }, [])
+
+  const masqueradeActive: boolean = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances).length > 0
+  }, [searchedBalancesAndAllowances])
 
   const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
     return pendingBridgeTransactions?.[0]
@@ -74,7 +82,7 @@ export const MostRecentTransaction = () => {
     return null
   }
 
-  if (lastPendingBridgeTransaction) {
+  if (!masqueradeActive && lastPendingBridgeTransaction) {
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
     return (
       <div data-test-id="most-recent-transaction" className="mt-6">
@@ -94,7 +102,7 @@ export const MostRecentTransaction = () => {
     )
   }
 
-  if (lastPendingTransaction) {
+  if (!masqueradeActive && lastPendingTransaction) {
     transaction = lastPendingTransaction as BridgeTransaction
     return (
       <div data-test-id="most-recent-transaction" className="mt-6">
@@ -130,6 +138,7 @@ export const MostRecentTransaction = () => {
   }
 
   if (
+    !masqueradeActive &&
     lastHistoricalTransaction &&
     isLastHistoricalTransactionRecent &&
     !seenLastHistoricalTransaction
