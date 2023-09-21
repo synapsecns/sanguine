@@ -72,6 +72,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           'destinationChain.name',
           'destinationToken.symbol',
           'destinationToken.name',
+          'originTokenAddresses',
+          'destinationTokenAddresses',
         ],
       }
 
@@ -81,22 +83,28 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       ) {
         const formatted: BridgeTransaction[] = userHistoricalTransactions.map(
           (transaction: BridgeTransaction) => {
+            const originToken: Token = tokenAddressToToken(
+              transaction?.fromInfo?.chainID,
+              transaction?.fromInfo?.tokenAddress
+            )
+            const destinationToken: Token = tokenAddressToToken(
+              transaction?.toInfo?.chainID,
+              transaction?.toInfo?.tokenAddress
+            )
             return {
               ...transaction,
               originChain: CHAINS_BY_ID[
                 transaction?.fromInfo?.chainID
               ] as Chain,
-              originToken: tokenAddressToToken(
-                transaction?.fromInfo?.chainID,
-                transaction?.fromInfo?.tokenAddress
-              ) as Token,
+              originToken: originToken,
+              originTokenAddresses: Object.values(originToken?.addresses),
               destinationChain: CHAINS_BY_ID[
                 transaction?.toInfo?.chainID
               ] as Chain,
-              destinationToken: tokenAddressToToken(
-                transaction?.toInfo?.chainID,
-                transaction?.toInfo?.tokenAddress
-              ) as Token,
+              destinationToken: destinationToken,
+              destinationTokenAddresses: Object.values(
+                destinationToken?.addresses
+              ),
             }
           }
         )
