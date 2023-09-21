@@ -178,7 +178,7 @@ func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe
 	return &pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING}, nil
 }
 
-func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
+func (s *server) Watch(_ *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
 	for {
 		select {
 		case <-res.Context().Done():

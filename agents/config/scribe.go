@@ -1,9 +1,9 @@
-package executor
+package config
 
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/config"
+
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 )
 
@@ -13,7 +13,7 @@ type ScribeConfig struct {
 	Type string `yaml:"type"`
 
 	// EmbeddedDBConfig is the database configuration for an embedded scribe.
-	EmbeddedDBConfig config.DBConfig `yaml:"embedded_db_config,omitempty"`
+	EmbeddedDBConfig scribeConfig.DBConfig `yaml:"embedded_db_config,omitempty"`
 	// EmbeddedScribeConfig is the config for the embedded scribe.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config,omitempty"`
 
@@ -27,7 +27,7 @@ type ScribeConfig struct {
 // submodule. If any method returns an error that is returned here and the entirety
 // of IsValid returns false. Any warnings are logged by the submodules respective loggers.
 func (c *ScribeConfig) IsValid(ctx context.Context) (ok bool, err error) {
-	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
+	if ok, err = c.EmbeddedScribeConfig.IsValid(); !ok {
 		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 

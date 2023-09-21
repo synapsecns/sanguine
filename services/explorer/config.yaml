@@ -210,6 +210,9 @@ chains:
       - contract_type: swap #nUSDNOTEPool
         address: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c'
         start_block: -1
+      - contract_type: swap #ETH Pool
+        address: '0xF60F88bA0CB381b8D8A662744fF93486273c22F9'
+        start_block: 2823794
   - chain_id: 2000
     fetch_block_increment: 10000
     max_goroutines: 2

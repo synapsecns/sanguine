@@ -4,15 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	etherClient "github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
+	"github.com/synapsecns/sanguine/services/explorer/static"
+	"github.com/synapsecns/sanguine/services/explorer/types"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"net"
 	"time"
 
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -20,8 +32,9 @@ import (
 	"net/http"
 
 	baseServer "github.com/synapsecns/sanguine/core/server"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/graphql/client"
@@ -30,31 +43,107 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Config contains the config for the api.
-type Config struct {
-	// HTTPPort is the http port for the api
-	HTTPPort uint16
-	// Address is the address of the database
-	Address string
-	// ScribeURL is the url of the scribe service
-	ScribeURL string
-	// HydrateCache is whether or not to hydrate the cache
-	HydrateCache bool
-}
-
 const cacheRehydrationInterval = 1800
 
 var logger = log.Logger("explorer-api")
 
+// nolint:gocognit,cyclop
+func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.ScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[string]*swap.SwapFlashLoanFilterer, error) {
+	ethClient, err := ethclient.DialContext(ctx, config.RPCURL+fmt.Sprintf("%d", 1))
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not create client: %w", err)
+	}
+
+	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), ethClient)
+	if err != nil || bridgeConfigRef == nil {
+		return nil, nil, nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)
+	}
+	priceDataService, err := tokenprice.NewPriceDataService()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not create price data service: %w", err)
+	}
+	newConfigFetcher, err := fetcherpkg.NewBridgeConfigFetcher(common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
+	if err != nil || newConfigFetcher == nil {
+		return nil, nil, nil, fmt.Errorf("could not get bridge abi: %w", err)
+	}
+	tokenSymbolToIDs, err := parser.ParseYaml(static.GetTokenSymbolToTokenIDConfig())
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not open yaml file: %w", err)
+	}
+	tokenDataService, err := tokendata.NewTokenDataService(newConfigFetcher, tokenSymbolToIDs)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not create token data service: %w", err)
+	}
+
+	cctpParsers := make(map[uint32]*parser.CCTPParser)
+	bridgeParsers := make(map[uint32]*parser.BridgeParser)
+	bridgeRefs := make(map[uint32]*bridge.BridgeRef)
+	cctpRefs := make(map[uint32]*cctp.CCTPRef)
+	swapFilterers := make(map[string]*swap.SwapFlashLoanFilterer)
+
+	for _, chain := range config.Chains {
+		if chain.Contracts.CCTP != "" {
+			cctpService, err := fetcherpkg.NewCCTPFetcher(common.HexToAddress(chain.Contracts.CCTP), clients[chain.ChainID])
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create cctp fetcher: %w", err)
+			}
+
+			cctpRef, err := cctp.NewCCTPRef(common.HexToAddress(chain.Contracts.CCTP), clients[chain.ChainID])
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create cctp ref: %w", err)
+			}
+			cctpRefs[chain.ChainID] = cctpRef
+			cctpParser, err := parser.NewCCTPParser(db, common.HexToAddress(chain.Contracts.CCTP), fetcher, cctpService, tokenDataService, priceDataService, true)
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create cctp parser: %w", err)
+			}
+			cctpParsers[chain.ChainID] = cctpParser
+		}
+		if chain.Contracts.Bridge != "" {
+			bridgeRef, err := bridge.NewBridgeRef(common.HexToAddress(chain.Contracts.Bridge), clients[chain.ChainID])
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create bridge ref: %w", err)
+			}
+			bridgeRefs[chain.ChainID] = bridgeRef
+			bridgeParser, err := parser.NewBridgeParser(db, common.HexToAddress(chain.Contracts.Bridge), tokenDataService, fetcher, priceDataService, true)
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create bridge parser: %w", err)
+			}
+			bridgeParsers[chain.ChainID] = bridgeParser
+		}
+		if len(chain.Swaps) > 0 {
+			for _, swapAddr := range chain.Swaps {
+				swapFilterer, err := swap.NewSwapFlashLoanFilterer(common.HexToAddress(swapAddr), clients[chain.ChainID])
+				if err != nil {
+					return nil, nil, nil, fmt.Errorf("could not create swap filterer: %w", err)
+				}
+				key := fmt.Sprintf("%d_%s", chain.ChainID, swapAddr)
+
+				swapFilterers[key] = swapFilterer
+			}
+		}
+	}
+	serverParser := types.ServerParsers{
+		BridgeParsers: bridgeParsers,
+		CCTParsers:    cctpParsers,
+	}
+
+	serverRefs := types.ServerRefs{
+		BridgeRefs: bridgeRefs,
+		CCTPRefs:   cctpRefs,
+	}
+	return &serverParser, &serverRefs, swapFilterers, nil
+}
+
 // Start starts the api server.
 //
 // nolint:cyclop
-func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
+func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
 	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
 	// initialize the database
-	consumerDB, err := InitDB(ctx, cfg.Address, true, handler)
+	consumerDB, err := InitDB(ctx, cfg.DBAddress, true, handler)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -66,7 +155,7 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	handler.ConfigureHTTPClient(httpClient)
 
 	//  get the fetcher
-	fetcher := fetcher.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
+	fetcher := fetcherpkg.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
 
 	// response cache
 	responseCache, err := cache.NewAPICacheService()
@@ -74,7 +163,19 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 		return fmt.Errorf("error creating api cache service, %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
+	clients := make(map[uint32]etherClient.EVM)
+	for _, chain := range cfg.Chains {
+		backendClient, err := etherClient.DialBackend(ctx, cfg.RPCURL+fmt.Sprintf("%d", chain.ChainID), handler)
+		if err != nil {
+			return fmt.Errorf("could not start client for %s", cfg.RPCURL)
+		}
+		clients[chain.ChainID] = backendClient
+	}
+	serverParsers, serverRefs, swapFilters, err := createParsers(ctx, consumerDB, fetcher, clients, cfg)
+	if err != nil {
+		return fmt.Errorf("could not create parsers: %w", err)
+	}
+	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, clients, serverParsers, serverRefs, swapFilters, cfg, handler)
 
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 

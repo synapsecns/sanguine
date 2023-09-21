@@ -119,8 +119,8 @@ var ExecutorRunCommand = &cli.Command{
 		case "embedded":
 			eventDB, err := scribeAPI.InitDB(
 				ctx,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Type,
+				executorConfig.DBConfig.Source,
 				handler,
 				false,
 			)
@@ -157,7 +157,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			embedded := client.NewEmbeddedScribe(
 				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Source,
 				handler,
 			)
 

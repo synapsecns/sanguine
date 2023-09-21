@@ -1,11 +1,13 @@
 package backend_test
 
 import (
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -50,10 +52,19 @@ func (b *BackendSuite) SetupTest() {
 
 func (b *BackendSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(b.T(), err)
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.130",
+  "version": "0.1.132",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -19,6 +19,7 @@
     "build:go": " ",
     "build:slither": " ",
     "graphql:generate": "graphql-codegen --config codegen.ts",
+    "maps:generate": "node scripts/generateMaps.js",
     "test": "jest --watch"
   },
   "dependencies": {

@@ -1,6 +1,8 @@
 package anvil_test
 
 import (
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -10,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"testing"
 )
 
 var vitalik = common.HexToAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
@@ -35,7 +36,7 @@ func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 func (a *AnvilSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 
-	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
+	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://1rpc.io/eth")
 	options := anvil.NewAnvilOptionBuilder()
 	err := options.SetForkURL(a.forkAddress)
 	Nil(a.T(), err)
