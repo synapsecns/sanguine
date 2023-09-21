@@ -91,8 +91,12 @@ export const SearchBar = () => {
       data-test-id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
-        border bg-[#252226] rounded-xl
-        ${isFocused || isActive ? 'border-synapsePurple' : 'border-transparent'}
+        border rounded-xl
+        ${
+          isFocused || isActive
+            ? 'border-synapsePurple bg-tint'
+            : 'border-separator bg-transparent'
+        }
       `}
     >
       <FilterInput
@@ -120,9 +124,9 @@ export default function FilterInput({
       tabIndex={0}
       data-test-id="filter-input"
       className={`
-        flex-grow py-2.5 px-4
+        flex-grow py-2.5 pl-4 pr-1
         font-normal text-sm text-primaryTextColor
-        border h-full w-6/12 rounded-xl bg-[#252226] custom-shadow
+        border h-full w-6/12 rounded-xl bg-transparent custom-shadow
         placeholder-white placeholder-opacity-40
         border-transparent outline-none ring-0
         focus:outline-none focus:ring-0 focus:border-transparent
@@ -145,7 +149,7 @@ export const ClearSearchButton = ({
     <button
       data-test-id="clear-search-button"
       className={`
-        ${show ? 'z-10' : 'z-[-10]'}
+        ${show ? 'visible' : 'invisible'}
         flex w-6 h-6 mr-2
         items-center justify-center
         border border-separator rounded-full
