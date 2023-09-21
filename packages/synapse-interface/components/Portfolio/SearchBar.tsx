@@ -15,6 +15,7 @@ import {
 } from '@/slices/portfolio/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
+import { isTransactionHash } from '@/utils/validators'
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
@@ -42,6 +43,12 @@ export const SearchBar = () => {
   const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
   }, [searchInput])
+
+  const searchInputIsTransactionHash: boolean = useMemo(() => {
+    return isTransactionHash(searchInput)
+  }, [searchInput])
+
+  console.log('searchInputIsTransactionHash:', searchInputIsTransactionHash)
 
   useEffect(() => {
     const masqueradeActive: boolean =
