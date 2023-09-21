@@ -192,7 +192,10 @@ const PortfolioTokenVisualizer = ({
 }: {
   portfolioTokens: TokenWithBalanceAndAllowances[]
 }) => {
-  const [isHovered, setIsHovered] = useState<boolean>(false)
+  const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
+  const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
+  const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
+
   const hasOneToken: boolean = portfolioTokens && portfolioTokens.length > 0
   const hasTwoTokens: boolean = portfolioTokens && portfolioTokens.length > 1
   const numOverTwoTokens: number =
@@ -208,8 +211,8 @@ const PortfolioTokenVisualizer = ({
     <div
       data-test-id="portfolio-token-visualizer"
       className="flex flex-row items-center cursor-pointer hover-trigger"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      // onMouseEnter={() => setIsHovered(true)}
+      // onMouseLeave={() => setIsHovered(false)}
     >
       {hasOneToken && (
         <Image
@@ -217,11 +220,21 @@ const PortfolioTokenVisualizer = ({
           className="w-6 h-6 rounded-md"
           alt={`${portfolioTokens[0].token.symbol} img`}
           src={portfolioTokens[0].token.icon}
+          onMouseEnter={() => setIsT1Hovered(true)}
+          onMouseLeave={() => setIsT1Hovered(false)}
         />
       )}
       {hasOnlyOneToken && (
-        <div className="ml-1.5 text-white whitespace-nowrap">
-          {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
+        <div>
+          <div className="ml-1.5 text-white whitespace-nowrap">
+            {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
+          </div>
+          <div className="relative inline-block">
+            <HoverContent isHovered={isT1Hovered}>
+              {portfolioTokens[0]?.parsedBalance}{' '}
+              {portfolioTokens[0]?.token.symbol}
+            </HoverContent>
+          </div>
         </div>
       )}
       {hasTwoTokens && (
@@ -230,32 +243,32 @@ const PortfolioTokenVisualizer = ({
           className="w-6 h-6 ml-1.5 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
+          onMouseEnter={() => setIsT2Hovered(true)}
+          onMouseLeave={() => setIsT2Hovered(false)}
         />
       )}
       {numOverTwoTokens > 0 && (
-        <div className="ml-1.5 text-white">+ {numOverTwoTokens}</div>
+        <div
+          className="ml-1.5 text-white"
+          onMouseEnter={() => setIsT3Hovered(true)}
+          onMouseLeave={() => setIsT3Hovered(false)}
+        >
+          + {numOverTwoTokens}
+        </div>
       )}
       <div className="relative inline-block">
-        {/* {isHovered && (
-          <div
-            className={`
-              absolute z-50 hover-content p-2 text-white
-              border border-solid border-[#252537]
-              bg-[#101018] rounded-md
-            `}
-          >
-          </div>
-        )} */}
-        <HoverContent isHovered={isHovered}>
+        <HoverContent isHovered={isT3Hovered}>
           {portfolioTokens?.map(
             (token: TokenWithBalanceAndAllowances, key: number) => {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap" key={key}>
-                  {balance} {tokenSymbol}
-                </div>
-              )
+              if (key === 1 || key === 2) {
+                const tokenSymbol = token.token.symbol
+                const balance = token.parsedBalance
+                return (
+                  <div className="whitespace-nowrap" key={key}>
+                    {balance} {tokenSymbol}
+                  </div>
+                )
+              }
             }
           )}
         </HoverContent>
@@ -275,10 +288,10 @@ export const HoverContent = ({
     return (
       <div
         className={`
-      absolute z-50 hover-content p-2 text-white
-      border border-solid border-[#252537]
-      bg-[#101018] rounded-md
-    `}
+          absolute z-50 hover-content p-2 text-white
+          border border-solid border-[#252537]
+          bg-[#101018] rounded-md
+        `}
       >
         {children}
       </div>
