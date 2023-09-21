@@ -238,14 +238,24 @@ const PortfolioTokenVisualizer = ({
         </div>
       )}
       {hasTwoTokens && (
-        <Image
-          loading="lazy"
-          className="w-6 h-6 ml-1.5 rounded-md"
-          alt={`${portfolioTokens[1].token.symbol} img`}
-          src={portfolioTokens[1].token.icon}
-          onMouseEnter={() => setIsT2Hovered(true)}
-          onMouseLeave={() => setIsT2Hovered(false)}
-        />
+        <div>
+          <Image
+            loading="lazy"
+            className="w-6 h-6 ml-1.5 rounded-md"
+            alt={`${portfolioTokens[1].token.symbol} img`}
+            src={portfolioTokens[1].token.icon}
+            onMouseEnter={() => setIsT2Hovered(true)}
+            onMouseLeave={() => setIsT2Hovered(false)}
+          />
+          <div className="relative">
+            <HoverContent isHovered={isT2Hovered}>
+              <div className="whitespace-nowrap">
+                {portfolioTokens[1]?.parsedBalance}{' '}
+                {portfolioTokens[1]?.token.symbol}
+              </div>
+            </HoverContent>
+          </div>
+        </div>
       )}
       {numOverTwoTokens > 0 && (
         <div
@@ -260,7 +270,7 @@ const PortfolioTokenVisualizer = ({
         <HoverContent isHovered={isT3Hovered}>
           {portfolioTokens?.map(
             (token: TokenWithBalanceAndAllowances, key: number) => {
-              if (key === 1 || key === 2) {
+              if (key > 1) {
                 const tokenSymbol = token.token.symbol
                 const balance = token.parsedBalance
                 return (
