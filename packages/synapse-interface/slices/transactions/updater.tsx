@@ -88,13 +88,10 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    }
-
-    if (masqueradeActive) {
+    } else if (masqueradeActive) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
-      console.log('queriedAddress:', queriedAddress)
       fetchUserHistoricalActivity({
         address: queriedAddress,
         startTime: queryHistoricalTime,
@@ -103,6 +100,15 @@ export default function Updater(): null {
         address: queriedAddress,
         startTime: queryPendingTime,
       })
+    } else {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
     }
   }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
