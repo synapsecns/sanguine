@@ -48,8 +48,6 @@ export const SearchBar = () => {
     return isTransactionHash(searchInput)
   }, [searchInput])
 
-  console.log('searchInputIsTransactionHash:', searchInputIsTransactionHash)
-
   useEffect(() => {
     const masqueradeActive: boolean =
       Object.keys(searchedBalancesAndAllowances).length > 0
