@@ -151,7 +151,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(agentManager.code.length > 0, "Agent Manager not deployed");
-        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(synapseDomain, agentManager, statementInbox);
         deployment = factoryDeploy(DESTINATION, type(Destination).creationCode, constructorArgs);
     }
 

@@ -171,7 +171,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	// Update the agent status on Origin.
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
-	// Verify that the agent is marked as Active
+	// Verify that the agent is marked as Active.
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
@@ -198,7 +198,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 	NotNil(g.T(), err)
 
-	// Create a fraudulent snapshot
+	// Create a fraudulent snapshot.
 	getState := func(nonce uint32) types.State {
 		gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
 		state := types.NewState(
@@ -214,7 +214,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	}
 	fraudulentSnapshot := types.NewSnapshot([]types.State{getState(1), getState(2)})
 
-	// Submit the snapshot with a guard then notary
+	// Submit the snapshot with a guard then notary.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
@@ -230,7 +230,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Fraudulent on Origin
+	// Verify that the guard eventually marks the accused agent as Fraudulent on Origin.
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -311,7 +311,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
 	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
 
-	// Verify that the agent is marked as Active
+	// Verify that the agent is marked as Active.
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
@@ -323,7 +323,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	chainGasBytes, err := types.EncodeChainGas(chainGas)
 	Nil(g.T(), err)
 
-	// Build and sign a fraudulent attestation
+	// Build and sign a fraudulent attestation.
 	// TODO: Change from using a harness to using the Go code.
 	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
 	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
@@ -348,7 +348,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.GuardBondedSigner, g.GuardUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 
-	// Submit the attestation
+	// Submit the attestation.
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
 		attEncoded,
@@ -360,7 +360,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Slashed
+	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -368,7 +368,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 			return true
 		}
 
-		// Make sure that scribe keeps producing new blocks
+		// Make sure that scribe keeps producing new blocks.
 		g.bumpBackends()
 		return false
 	})
@@ -425,13 +425,13 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		}
 	}()
 
-	// Verify that the agent is marked as Active
+	// Verify that the agent is marked as Active.
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
-	// Create a fraudulent snapshot
+	// Create a fraudulent snapshot.
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
 	fraudulentState := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
@@ -452,7 +452,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
-	// Submit the snapshot with a guard
+	// Submit the snapshot with a guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
 	transactOptsSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
@@ -461,7 +461,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Submit the snapshot with a notary
+	// Submit the snapshot with a notary.
 	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(transactOptsSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
@@ -469,7 +469,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Submit the attestation
+	// Submit the attestation.
 	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
 	Nil(g.T(), err)
 	attSignature, attEncoded, _, err := notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
@@ -485,7 +485,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Fraudulent
+	// Verify that the guard eventually marks the accused agent as Fraudulent.
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -626,7 +626,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	Nil(g.T(), err)
 	g.TestBackendOrigin.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Submit the snapshot with a guard
+	// Submit the snapshot with a guard.
 	latestOriginState, err := g.OriginDomainClient.Origin().SuggestLatestState(g.GetTestContext())
 	Nil(g.T(), err)
 	snapshot := types.NewSnapshot([]types.State{latestOriginState})
@@ -638,7 +638,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Submit the snapshot with a notary
+	// Submit the snapshot with a notary.
 	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
@@ -646,7 +646,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Build and sign a receipt
+	// Build and sign a receipt.
 	snapshotRoot, _, err := snapshot.SnapshotRootAndProofs()
 	Nil(g.T(), err)
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendDestination.GetChainID()))
@@ -665,7 +665,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	rcptSignature, rcptPayload, _, err := receipt.SignReceipt(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 
-	// Submit the receipt
+	// Submit the receipt.
 	bodyHash, err := baseMessage.BodyLeaf()
 	Nil(g.T(), err)
 	var bodyHashB32 [32]byte
@@ -688,7 +688,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Fraudulent
+	// Verify that the guard eventually marks the accused agent as Fraudulent.
 	g.Eventually(func() bool {
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -851,13 +851,13 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		}
 	}()
 
-	// Verify that the agent is marked as Active
+	// Verify that the agent is marked as Active.
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
-	// Create a fraudulent snapshot
+	// Create a fraudulent snapshot.
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
 	fraudulentState := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
@@ -880,7 +880,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
-	// Submit the snapshot with a guard
+	// Submit the snapshot with a guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.InboxMetadataOnSummit.OwnerPtr())
@@ -890,7 +890,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// Submit the snapshot with a notary
+	// Submit the snapshot with a notary.
 	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, encodedSnapshot, notarySnapshotSignature)
@@ -899,7 +899,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// Submit the attestation
+	// Submit the attestation.
 	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
 	Nil(g.T(), err)
 	attSignature, attEncoded, _, err := notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
@@ -916,7 +916,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 	g.bumpBackends()
 
-	// Verify that the guard eventually marks the accused agent as Fraudulent
+	// Verify that the guard eventually marks the accused agent as Fraudulent.
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
