@@ -16,6 +16,7 @@ import {
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { isTransactionHash } from '@/utils/validators'
+import { getTransactionHashExplorerLink } from './Transaction/components/TransactionExplorerLink'
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
@@ -57,6 +58,15 @@ export const SearchBar = () => {
       )
     }
   }, [searchInputIsAddress, searchedBalancesAndAllowances])
+
+  useEffect(() => {
+    if (searchInputIsTransactionHash) {
+      const explorerLink: string = getTransactionHashExplorerLink({
+        transactionHash: searchInput,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [searchInputIsTransactionHash])
 
   return (
     <div
