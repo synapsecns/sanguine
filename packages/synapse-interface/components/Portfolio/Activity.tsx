@@ -165,7 +165,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && hasNoTransactions && (
         <div className="text-secondary">
-          Your pending and recent transactions will appear here.
+          No transactions in last 30 days.
           <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
       )}
@@ -258,9 +258,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-          {searchInputActive && (
-            <div className="text-secondary">All results from last 30 days.</div>
-          )}
           <UserExplorerLink connectedAddress={viewingAddress} />
         </ActivitySection>
       )}
