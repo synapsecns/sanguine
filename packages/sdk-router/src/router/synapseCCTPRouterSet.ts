@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { CCTP_ROUTER_ADDRESS_MAP } from '../constants'
@@ -14,8 +16,14 @@ export class SynapseCCTPRouterSet extends RouterSet {
 
   /**
    * Returns the existing SynapseCCTPRouter instance for the given chain.
+   *
+   * @throws Will throw an error if SynapseCCTPRouter is not deployed on the given chain.
    */
   public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
+    invariant(
+      this.routers[chainId],
+      `No SynapseCCTPRouter deployed on chain ${chainId}`
+    )
     return this.routers[chainId] as SynapseCCTPRouter
   }
 }

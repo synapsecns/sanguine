@@ -10,6 +10,7 @@ import { SynapseSDK } from '../sdk'
  * @param chainId The chain ID
  * @param poolAddress The pool address
  * @returns The pool tokens
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getPoolTokens(
   this: SynapseSDK,
@@ -27,6 +28,7 @@ export async function getPoolTokens(
  * @param chainId The chain ID
  * @param poolAddress The pool address
  * @returns The pool info (number of tokens and LP token)
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getPoolInfo(
   this: SynapseSDK,
@@ -43,6 +45,7 @@ export async function getPoolInfo(
  *
  * @param chainId The chain ID
  * @returns An array of all pools (address, tokens, LP token)
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getAllPools(
   this: SynapseSDK,
@@ -58,6 +61,7 @@ export async function getAllPools(
  * @param poolAddress The pool address
  * @param amounts The amounts of each token to add
  * @returns The amount of LP tokens needed and router address
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function calculateAddLiquidity(
   this: SynapseSDK,
@@ -94,6 +98,7 @@ export async function calculateAddLiquidity(
  * @param poolAddress The pool address
  * @param amount The amount of LP tokens to remove
  * @returns The amounts of each token received and router address
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function calculateRemoveLiquidity(
   this: SynapseSDK,
@@ -120,6 +125,7 @@ export async function calculateRemoveLiquidity(
  * @param amount The amount of LP tokens to remove
  * @param poolIndex The index of the token to receive
  * @returns The amount received and router address
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function calculateRemoveLiquidityOne(
   this: SynapseSDK,

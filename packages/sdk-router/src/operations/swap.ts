@@ -16,6 +16,7 @@ import { getOriginDeadline } from '../utils/deadlines'
  * @param amount The swap amount
  * @param query The swap quote query
  * @returns A populated transaction to perform the swap
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function swap(
   this: SynapseSDK,
@@ -40,6 +41,7 @@ export async function swap(
  * @param amountIn The input amount
  * @param deadline The deadline to use for the swap. Optional, will default to 10 minutes from now.
  * @returns The swap quote (query, max amount out, and router address)
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function swapQuote(
   this: SynapseSDK,

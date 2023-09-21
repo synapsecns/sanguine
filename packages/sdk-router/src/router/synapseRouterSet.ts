@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import { SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { ROUTER_ADDRESS_MAP } from '../constants'
@@ -14,8 +16,14 @@ export class SynapseRouterSet extends RouterSet {
 
   /**
    * Returns the existing SynapseRouter instance for the given chain.
+   *
+   * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
    */
   public getSynapseRouter(chainId: number): SynapseRouter {
+    invariant(
+      this.routers[chainId],
+      `No SynapseRouter deployed on chain ${chainId}`
+    )
     return this.routers[chainId] as SynapseRouter
   }
 }

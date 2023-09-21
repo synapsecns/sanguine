@@ -122,6 +122,7 @@ export async function bridgeQuote(
  *
  * @param chainId The chain ID
  * @returns The chain gas amount
+ * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getBridgeGas(
   this: SynapseSDK,
