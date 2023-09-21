@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from 'react'
+import React, { useEffect, useRef, useMemo, useState } from 'react'
 import { Address } from 'viem'
 import { XIcon } from '@heroicons/react/outline'
 
@@ -18,6 +18,8 @@ import { shortenAddress } from '@/utils/shortenAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from './Transaction/components/TransactionExplorerLink'
 
+export const inputRef = React.createRef<HTMLInputElement>()
+
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
   const { onSearchInput, clearSearchInput, clearSearchResults } =
@@ -28,34 +30,22 @@ export const SearchBar = () => {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
-  const searchBarRef = useRef(null)
-
   const [isFocused, setIsFocused] = useState(false)
 
-  console.log('isFocused:', isFocused)
-
   useEffect(() => {
-    const handleFocus = () => {
-      setIsFocused(true)
-    }
+    const handleFocus = () => setIsFocused(true)
+    const handleBlur = () => setIsFocused(false)
+    const input = inputRef.current
 
-    const handleBlur = () => {
-      setIsFocused(false)
-    }
-
-    const searchBar = searchBarRef.current
-
-    if (searchBar) {
-      searchBar.addEventListener('focus', handleFocus)
-      searchBar.addEventListener('blur', handleBlur)
-
-      // Clean up the event listeners when the component unmounts
+    if (input) {
+      input.addEventListener('focus', handleFocus)
+      input.addEventListener('blur', handleBlur)
       return () => {
-        searchBar.removeEventListener('focus', handleFocus)
-        searchBar.removeEventListener('blur', handleBlur)
+        input.removeEventListener('focus', handleFocus)
+        input.removeEventListener('blur', handleBlur)
       }
     }
-  }, [searchBarRef])
+  }, [inputRef])
 
   const isActive: boolean = searchInput !== portfolioInitialState.searchInput
 
@@ -99,8 +89,6 @@ export const SearchBar = () => {
 
   return (
     <div
-      ref={searchBarRef}
-      tabIndex={0}
       data-test-id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
@@ -129,6 +117,8 @@ export default function FilterInput({
 }) {
   return (
     <input
+      ref={inputRef}
+      tabIndex={0}
       data-test-id="filter-input"
       className={`
         flex-grow py-2 px-4
