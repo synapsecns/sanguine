@@ -150,17 +150,17 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       className={`${visibility ? 'block' : 'hidden'}`}
     >
       {!address && (
-        <div className="text-[#C2C2D6]">
+        <div className="text-secondary">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
       {address && isLoading && (
-        <div className="text-[#C2C2D6]">Loading activity...</div>
+        <div className="text-secondary">Loading activity...</div>
       )}
 
       {address && !isLoading && hasNoTransactions && (
-        <div className="text-[#C2C2D6]">
+        <div className="text-secondary">
           Your pending and recent transactions will appear here.
           <UserExplorerLink connectedAddress={explorerAddress} />
         </div>
@@ -254,6 +254,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
+          {searchInputActive && (
+            <div className="text-secondary">All results from last 30 days.</div>
+          )}
           <UserExplorerLink connectedAddress={explorerAddress} />
         </ActivitySection>
       )}
