@@ -9,6 +9,7 @@ import {
 } from '../constants'
 import { ChainProvider } from './routerSet'
 import { SynapseCCTPRouterSet } from './synapseCCTPRouterSet'
+import { SynapseCCTPRouter } from './synapseCCTPRouter'
 
 describe('SynapseCCTPRouterSet', () => {
   const ethProvider: Provider = new providers.JsonRpcProvider(
@@ -100,6 +101,20 @@ describe('SynapseCCTPRouterSet', () => {
           CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
       ).toBeUndefined()
+    })
+  })
+
+  describe('getSynapseCCTPRouter', () => {
+    it('Returns the correct router for supported chain', () => {
+      const router = routerSet.getSynapseCCTPRouter(SupportedChainId.ETH)
+      expect(router).toEqual(routerSet.routers[SupportedChainId.ETH])
+      expect(router).toBeInstanceOf(SynapseCCTPRouter)
+    })
+
+    it('Throws error for unsupported chain', () => {
+      expect(() =>
+        routerSet.getSynapseCCTPRouter(SupportedChainId.AVALANCHE)
+      ).toThrow('No SynapseCCTPRouter deployed on chain 43114')
     })
   })
 

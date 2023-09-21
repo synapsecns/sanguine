@@ -9,6 +9,7 @@ import {
 } from '../constants'
 import { ChainProvider } from './routerSet'
 import { SynapseRouterSet } from './synapseRouterSet'
+import { SynapseRouter } from './synapseRouter'
 
 describe('SynapseRouterSet', () => {
   const ethProvider: Provider = new providers.JsonRpcProvider(
@@ -78,6 +79,20 @@ describe('SynapseRouterSet', () => {
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
       ).toBeUndefined()
+    })
+  })
+
+  describe('getSynapseRouter', () => {
+    it('Returns the correct router for supported chain', () => {
+      const router = routerSet.getSynapseRouter(SupportedChainId.ETH)
+      expect(router).toEqual(routerSet.routers[SupportedChainId.ETH])
+      expect(router).toBeInstanceOf(SynapseRouter)
+    })
+
+    it('Throws error for unsupported chain', () => {
+      expect(() =>
+        routerSet.getSynapseRouter(SupportedChainId.AVALANCHE)
+      ).toThrow('No SynapseRouter deployed on chain 43114')
     })
   })
 
