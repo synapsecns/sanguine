@@ -221,7 +221,8 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 	}
 
 	// Listen for subscription errors.
-	for _, sub := range subs {
+	for _, s := range subs {
+		sub := s
 		go func() {
 			subErr := <-sub.Err()
 			if subErr != nil {
