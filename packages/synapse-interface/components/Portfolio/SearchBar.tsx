@@ -30,7 +30,7 @@ export const SearchBar = () => {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
-  const [isFocused, setIsFocused] = useState(false)
+  const [isFocused, setIsFocused] = useState<boolean>(false)
 
   useEffect(() => {
     const handleFocus = () => setIsFocused(true)
@@ -93,7 +93,7 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border bg-[#252226] rounded-xl
-        ${isActive ? 'border-synapsePurple' : 'border-transparent'}
+        ${isFocused || isActive ? 'border-synapsePurple' : 'border-transparent'}
       `}
     >
       <FilterInput
