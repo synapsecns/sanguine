@@ -144,29 +144,33 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return masqueradeActive ? masqueradeAddress : address
   }, [masqueradeActive, masqueradeAddress, address])
 
+  const hasViewableAddress: boolean = useMemo(() => {
+    return Boolean(masqueradeActive || address)
+  }, [masqueradeActive, address])
+
   return (
     <div
       data-test-id="activity"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
-      {!address && (
+      {!hasViewableAddress && (
         <div className="text-secondary">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
-      {address && isLoading && (
+      {hasViewableAddress && isLoading && (
         <div className="text-secondary">Loading activity...</div>
       )}
 
-      {address && !isLoading && hasNoTransactions && (
+      {hasViewableAddress && !isLoading && hasNoTransactions && (
         <div className="text-secondary">
           Your pending and recent transactions will appear here.
           <UserExplorerLink connectedAddress={explorerAddress} />
         </div>
       )}
 
-      {address && !isLoading && hasPendingTransactions && (
+      {hasViewableAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactions &&
             pendingAwaitingCompletionTransactions.map(
@@ -212,7 +216,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
 
-      {address && !isLoading && hasHistoricalTransactions && (
+      {hasViewableAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
             filteredHistoricalTransactionsBySearchInput
