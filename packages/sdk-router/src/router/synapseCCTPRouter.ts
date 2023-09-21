@@ -29,6 +29,7 @@ export class SynapseCCTPRouter extends Router {
   private readonly routerContract: SynapseCCTPRouterContract
 
   constructor(chainId: number, provider: Provider, address: string) {
+    // Parent constructor throws if chainId or provider are undefined
     super(chainId, provider)
     invariant(address, 'ADDRESS_UNDEFINED')
     invariant(SynapseCCTPRouter.routerInterface, 'INTERFACE_UNDEFINED')

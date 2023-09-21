@@ -60,6 +60,7 @@ export class SynapseRouter extends Router {
   private bridgeContractCache: Contract | undefined
 
   constructor(chainId: number, provider: Provider, address: string) {
+    // Parent constructor throws if chainId or provider are undefined
     super(chainId, provider)
     invariant(address, 'ADDRESS_UNDEFINED')
     invariant(SynapseRouter.routerInterface, 'INTERFACE_UNDEFINED')

@@ -80,6 +80,7 @@ describe('SynapseRouter', () => {
           emptyQuery,
           emptyQuery
         )
+        // TODO: check data correctness
         expect(data?.length).toBeGreaterThan(0)
       })
     })

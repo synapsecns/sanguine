@@ -74,20 +74,19 @@ export async function calculateAddLiquidity(
   const routerAddress = router.address
   const poolTokens = await router.getPoolTokens(poolAddress)
   // Create a map that uses lowercase token addresses as keys
-  const amountsMap: Record<string, BigNumber> = {}
-  Object.entries(amounts).map(([token, tokenAmount]) => {
-    amountsMap[token.toLowerCase()] = tokenAmount
+  const lowerCaseAmounts: Record<string, BigNumber> = {}
+  Object.keys(amounts).forEach((key) => {
+    lowerCaseAmounts[key.toLowerCase()] = amounts[key]
   })
   // Populate amounts array by combining amounts map and pool tokens, preserving tokens order
   // and adding 0 for tokens not in the map
-  const amountsArr: BigNumber[] = []
-  poolTokens.map((poolToken) => {
-    amountsArr.push(amountsMap[poolToken.token.toLowerCase()] ?? Zero)
-  })
+  const amountsArray: BigNumber[] = poolTokens.map(
+    (poolToken) => lowerCaseAmounts[poolToken.token.toLowerCase()] ?? Zero
+  )
   // Don't do a contract call if all amounts are 0
-  const amount = amountsArr.every((value) => value.isZero())
+  const amount = amountsArray.every((value) => value.isZero())
     ? Zero
-    : await router.calculateAddLiquidity(poolAddress, amountsArr)
+    : await router.calculateAddLiquidity(poolAddress, amountsArray)
   return { amount, routerAddress }
 }
 
