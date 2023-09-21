@@ -140,37 +140,37 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
-  const explorerAddress: Address = useMemo(() => {
-    return masqueradeActive ? masqueradeAddress : address
+  const viewingAddress: string | null = useMemo(() => {
+    if (masqueradeActive) {
+      return masqueradeAddress
+    } else if (address) {
+      return address
+    } else return null
   }, [masqueradeActive, masqueradeAddress, address])
-
-  const hasViewableAddress: boolean = useMemo(() => {
-    return Boolean(masqueradeActive || address)
-  }, [masqueradeActive, address])
 
   return (
     <div
       data-test-id="activity"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
-      {!hasViewableAddress && (
+      {!viewingAddress && (
         <div className="text-secondary">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
-      {hasViewableAddress && isLoading && (
+      {viewingAddress && isLoading && (
         <div className="text-secondary">Loading activity...</div>
       )}
 
-      {hasViewableAddress && !isLoading && hasNoTransactions && (
+      {viewingAddress && !isLoading && hasNoTransactions && (
         <div className="text-secondary">
           Your pending and recent transactions will appear here.
-          <UserExplorerLink connectedAddress={explorerAddress} />
+          <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
       )}
 
-      {hasViewableAddress && !isLoading && hasPendingTransactions && (
+      {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactions &&
             pendingAwaitingCompletionTransactions.map(
@@ -216,7 +216,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
 
-      {hasViewableAddress && !isLoading && hasHistoricalTransactions && (
+      {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
             filteredHistoricalTransactionsBySearchInput
@@ -261,7 +261,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           {searchInputActive && (
             <div className="text-secondary">All results from last 30 days.</div>
           )}
-          <UserExplorerLink connectedAddress={explorerAddress} />
+          <UserExplorerLink connectedAddress={viewingAddress} />
         </ActivitySection>
       )}
     </div>
