@@ -76,11 +76,8 @@ export default function Updater(): null {
     return Object.keys(searchedBalancesAndAllowances).length > 0
   }, [searchedBalancesAndAllowances])
 
-  console.log('masqueradeActive:', masqueradeActive)
-
   useEffect(() => {
     if (address && !masqueradeActive) {
-      console.log('hi')
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -90,7 +87,6 @@ export default function Updater(): null {
         startTime: queryPendingTime,
       })
     } else if (masqueradeActive) {
-      console.log('bye')
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address

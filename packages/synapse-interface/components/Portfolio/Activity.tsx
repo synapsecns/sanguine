@@ -140,6 +140,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
+  const explorerAddress: Address = useMemo(() => {
+    return masqueradeActive ? masqueradeAddress : address
+  }, [masqueradeActive, masqueradeAddress, address])
+
   return (
     <div
       data-test-id="activity"
@@ -158,7 +162,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {address && !isLoading && hasNoTransactions && (
         <div className="text-[#C2C2D6]">
           Your pending and recent transactions will appear here.
-          <UserExplorerLink connectedAddress={address} />
+          <UserExplorerLink connectedAddress={explorerAddress} />
         </div>
       )}
 
@@ -212,7 +216,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
             filteredHistoricalTransactionsBySearchInput
-              .slice(0, 6) //temporarily only show recent 6
+              .slice(0, searchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
@@ -250,7 +254,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-          <UserExplorerLink connectedAddress={address} />
+          <UserExplorerLink connectedAddress={explorerAddress} />
         </ActivitySection>
       )}
     </div>
