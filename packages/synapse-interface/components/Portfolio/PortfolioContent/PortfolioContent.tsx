@@ -214,7 +214,7 @@ export const NoSearchResultsContent = ({
       data-test-id="portfolio-no-search-results-content"
       className="text-white"
     >
-      <p className="mb-3">No results found for '{searchStr}'.</p>
+      <p className="mb-3 break-words">No results found for '{searchStr}'.</p>
     </div>
   )
 }
