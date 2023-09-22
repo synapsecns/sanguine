@@ -126,7 +126,7 @@ export const EmptyPortfolioContent = ({
   connectedAddress: Address
   connectedChain: Chain
 }) => {
-  const shortened: string = shortenAddress(connectedAddress, 3)
+  const shortened: string = shortenAddress(connectedAddress)
   return (
     <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
