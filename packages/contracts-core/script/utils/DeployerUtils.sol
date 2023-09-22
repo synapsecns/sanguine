@@ -5,7 +5,7 @@ import {console, Script, stdJson} from "forge-std/Script.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {CREATE3Factory} from "../../contracts/create3/CREATE3Factory.sol";
+import {CREATE3Factory} from "create3/CREATE3Factory.sol";
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
@@ -70,7 +70,7 @@ contract DeployerUtils is Script {
             return factory;
         }
 
-        address factoryDeployment = tryLoadDeployment("Create3Factory");
+        address factoryDeployment = tryLoadDeployment("CREATE3Factory");
         if (factoryDeployment == address(0)) {
             if (broadcasterPK == 0) {
                 console.log("please setup a private key before calling this function");

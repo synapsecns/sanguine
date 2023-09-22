@@ -186,7 +186,6 @@ func (s *ScribeSuite) TestLivefillParity() {
 		maticID: "https://api.polygonscan.com/api",
 	}
 	scribeConfig := config.Config{
-		RefreshRate: 1,
 		Chains: []config.ChainConfig{
 			{
 				ChainID:              ethID,

@@ -8,7 +8,7 @@ Contributions should roughly follow the [uber style guide](https://github.com/ub
 
 If you need to make a new go module, here are the steps to follow:
 
-1. Create a new directory in the right sub-directory. If the fiel tree already has a `go.mod` or a `go.sum` file, you don't need a new module, you're just creating a package. *Note: the `packages` directory is for javascript and should not be used.
+1. Create a new directory in the right sub-directory. If the file tree already has a `go.mod` or a `go.sum` file, you don't need a new module, you're just creating a package. *Note: the `packages` directory is for javascript and should not be used.
 2. Create a `go.mod` file in the new directory. You'll want the module name to match the directory path and the package name to be part of go.mod file. The go version should match the version in the root [go.work](go.work) file unless there's a good reaon for it no to.
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
