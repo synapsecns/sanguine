@@ -197,6 +197,8 @@ const PortfolioTokenVisualizer = ({
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
   const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
 
+  const hasNoTokens: boolean =
+    !portfolioTokens || (portfolioTokens && portfolioTokens.length === 0)
   const hasOneToken: boolean = portfolioTokens && portfolioTokens.length > 0
   const hasTwoTokens: boolean = portfolioTokens && portfolioTokens.length > 1
   const numOverTwoTokens: number =
@@ -208,10 +210,20 @@ const PortfolioTokenVisualizer = ({
   const hasOnlyTwoTokens: boolean =
     portfolioTokens && portfolioTokens.length === 2
 
+  if (hasNoTokens) {
+    return (
+      <div
+        data-test-id="portfolio-token-visualizer"
+        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
+      >
+        -
+      </div>
+    )
+  }
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center cursor-pointer hover-trigger"
+      className="flex flex-row items-center space-x-2 cursor-pointer hover-trigger"
     >
       {hasOneToken && (
         <div>
@@ -234,7 +246,7 @@ const PortfolioTokenVisualizer = ({
         </div>
       )}
       {hasOnlyOneToken && (
-        <div className="ml-1.5 text-white whitespace-nowrap">
+        <div className="text-white whitespace-nowrap">
           {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
         </div>
       )}
@@ -242,7 +254,7 @@ const PortfolioTokenVisualizer = ({
         <div>
           <Image
             loading="lazy"
-            className="w-6 h-6 ml-1.5 rounded-md"
+            className="w-6 h-6 rounded-md"
             alt={`${portfolioTokens[1].token.symbol} img`}
             src={portfolioTokens[1].token.icon}
             onMouseEnter={() => setIsT2Hovered(true)}
@@ -260,7 +272,7 @@ const PortfolioTokenVisualizer = ({
       )}
       {numOverTwoTokens > 0 && (
         <div
-          className="ml-1.5 text-white"
+          className="text-white"
           onMouseEnter={() => setIsT3Hovered(true)}
           onMouseLeave={() => setIsT3Hovered(false)}
         >
