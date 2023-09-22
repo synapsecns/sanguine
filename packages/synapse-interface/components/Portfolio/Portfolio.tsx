@@ -102,7 +102,7 @@ export const Portfolio = () => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
       const fuseOptions = {
         includeScore: true,
-        threshold: 0.4,
+        threshold: 0.33,
         distance: 20,
         keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
