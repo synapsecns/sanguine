@@ -108,14 +108,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 transaction?.fromInfo?.chainID
               ] as Chain,
               originToken: originToken,
-              originTokenAddresses: Object.values(originToken?.addresses),
+              originTokenAddresses:
+                originToken && Object.values(originToken?.addresses),
               destinationChain: CHAINS_BY_ID[
                 transaction?.toInfo?.chainID
               ] as Chain,
               destinationToken: destinationToken,
-              destinationTokenAddresses: Object.values(
-                destinationToken?.addresses
-              ),
+              destinationTokenAddresses:
+                destinationToken && Object.values(destinationToken?.addresses),
             }
           }
         )
