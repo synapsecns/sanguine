@@ -15,6 +15,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
+import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
 
 function checkTransactionsExist(
   transactions: any[] | undefined | null
@@ -139,6 +140,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
+  const hasFilteredSearchResults: boolean = useMemo(() => {
+    if (filteredHistoricalTransactionsBySearchInput) {
+      return filteredHistoricalTransactionsBySearchInput.length > 0
+    } else {
+      return false
+    }
+  }, [filteredHistoricalTransactionsBySearchInput])
+
   const viewingAddress: string | null = useMemo(() => {
     if (masqueradeActive) {
       return masqueradeAddress
@@ -257,6 +266,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
+          {searchInputActive && !hasFilteredSearchResults && (
+            <NoSearchResultsContent searchStr={searchInput} />
+          )}
           <UserExplorerLink connectedAddress={viewingAddress} />
         </ActivitySection>
       )}
