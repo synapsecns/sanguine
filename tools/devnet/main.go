@@ -17,10 +17,15 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omniConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
+	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v2"
 )
 
@@ -223,10 +228,8 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 		subs = append(subs, sentSub)
 		go func() {
 			for {
-				select {
-				case event := <-pingSentChan:
-					fmt.Printf("Ping sent: %+v\n", event)
-				}
+				event := <-pingSentChan
+				fmt.Printf("Ping sent: %+v\n", event)
 			}
 		}()
 
@@ -240,10 +243,8 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 		subs = append(subs, receivedSub)
 		go func() {
 			for {
-				select {
-				case event := <-pingSentChan:
-					fmt.Printf("Pong received: %+v\n", event)
-				}
+				event := <-pongReceivedChan
+				fmt.Printf("Pong received: %+v\n", event)
 			}
 		}()
 	default:
@@ -261,6 +262,35 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 		}()
 	}
 	return nil
+}
+
+const scribeConnectTimeout = 30 * time.Second
+
+func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not dial grpc: %w", err)
+	}
+
+	scribeClient := pbscribe.NewScribeServiceClient(conn)
+
+	// Ensure that gRPC is up and running.
+	healthCheck, err := scribeClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return nil, nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
+
+	return conn, scribeClient, nil
 }
 
 var dockerComposeFile = "docker-compose.yml"
