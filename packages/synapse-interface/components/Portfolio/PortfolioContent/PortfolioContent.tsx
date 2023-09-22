@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Address } from 'wagmi'
 import Link from 'next/link'
 import {
@@ -46,17 +46,15 @@ export const PortfolioContent = ({
 
   const showCurrentNetworkPortfolio: boolean = useMemo(() => {
     if (searchInputActive && currentNetworkPortfolio) {
-      return Boolean(currentNetworkPortfolio[connectedChainId])
-    } else if (currentNetworkPortfolio) {
-      return true
+      return Boolean(currentNetworkPortfolio[selectedFromChainId])
     } else {
-      return false
+      return Boolean(currentNetworkPortfolio)
     }
   }, [
     searchInputActive,
     currentNetworkPortfolio,
     networkPortfolioWithBalances,
-    connectedChainId,
+    selectedFromChainId,
   ])
 
   return (
@@ -68,7 +66,6 @@ export const PortfolioContent = ({
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
       {showCurrentNetworkPortfolio &&
         connectedAddress &&
-        connectedChainId &&
         selectedFromChainId &&
         !isInitialFetchLoading && (
           <SingleNetworkPortfolio

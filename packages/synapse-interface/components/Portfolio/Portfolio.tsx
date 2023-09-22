@@ -97,6 +97,8 @@ export const Portfolio = () => {
       filteredSearchedPortfolioDataForBalances,
     ])
 
+  console.log('flattenedPortfolioData: ', flattenedPortfolioData)
+
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
