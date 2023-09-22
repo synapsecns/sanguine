@@ -77,10 +77,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         keys: [
           'originChain.name',
           'originToken.symbol',
-          'originToken.name',
           'destinationChain.name',
           'destinationToken.symbol',
-          'destinationToken.name',
           'originTokenAddresses',
           'destinationTokenAddresses',
           'fromInfo.txnHash',
