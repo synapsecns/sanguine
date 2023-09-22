@@ -57,12 +57,21 @@ export const PortfolioContent = ({
     selectedFromChainId,
   ])
 
+  const hasFilteredSearchResults: boolean = useMemo(() => {
+    if (networkPortfolioWithBalances) {
+      return Object.values(networkPortfolioWithBalances).length > 0
+    } else {
+      return false
+    }
+  }, [networkPortfolioWithBalances])
+
   return (
     <div
       data-test-id="portfolio-content"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
       {!connectedAddress && <HomeContent />}
+      {/* {searchInputActive && !hasFilteredSearchResults && (<)} */}
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
       {showCurrentNetworkPortfolio &&
         connectedAddress &&
@@ -183,6 +192,21 @@ export const HomeContent = () => {
         are ready to submit a transaction.
       </p>
       <ConnectWalletButton />
+    </div>
+  )
+}
+
+export const NoSearchResultsContent = ({
+  searchStr,
+}: {
+  searchStr: string
+}) => {
+  return (
+    <div
+      data-test-id="portfolio-no-search-results-content"
+      className="text-white"
+    >
+      <p className="mb-3">No results found for {searchStr}.</p>
     </div>
   )
 }
