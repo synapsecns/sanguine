@@ -13,6 +13,7 @@ type PortfolioAccordionProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
+  hasNoTokenBalance: boolean
 }
 
 export const PortfolioAccordion = ({
@@ -24,16 +25,19 @@ export const PortfolioAccordion = ({
   portfolioChainId,
   connectedChainId,
   selectedFromChainId,
+  hasNoTokenBalance,
 }: PortfolioAccordionProps) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
-    portfolioChainId === selectedFromChainId
-      ? setIsExpanded(true)
-      : setIsExpanded(false)
-  }, [portfolioChainId, selectedFromChainId])
+    if (!hasNoTokenBalance) {
+      portfolioChainId === selectedFromChainId
+        ? setIsExpanded(true)
+        : setIsExpanded(false)
+    }
+  }, [portfolioChainId, selectedFromChainId, hasNoTokenBalance])
 
   return (
     <div

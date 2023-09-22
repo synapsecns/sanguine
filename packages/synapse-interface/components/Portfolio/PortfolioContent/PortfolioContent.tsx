@@ -44,6 +44,11 @@ export const PortfolioContent = ({
   const isInitialFetchLoading: boolean =
     !portfolioExists && fetchState === FetchState.LOADING
 
+  console.log(
+    'currentNetworkPortfolio:',
+    Boolean(currentNetworkPortfolio[connectedChainId])
+  )
+
   return (
     <div
       data-test-id="portfolio-content"
@@ -62,7 +67,7 @@ export const PortfolioContent = ({
             connectedChainId={connectedChainId as number}
             selectedFromChainId={selectedFromChainId as number}
             portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
-            initializeExpanded={true}
+            initializeExpanded={false}
             fetchState={fetchState as FetchState}
           />
         )}
