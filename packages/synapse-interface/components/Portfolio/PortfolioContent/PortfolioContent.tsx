@@ -72,7 +72,7 @@ export const PortfolioContent = ({
       data-test-id="portfolio-content"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
-      {!connectedAddress && <HomeContent />}
+      {!connectedAddress && !searchInputActive && <HomeContent />}
       {searchInputActive && !hasFilteredSearchResults && (
         <NoSearchResultsContent searchStr={searchInput} />
       )}
