@@ -75,6 +75,10 @@ export const SearchBar = () => {
         fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
       )
     }
+
+    if (masqueradeActive && searchInputIsAddress) {
+      clearSearchInput()
+    }
   }, [searchInputIsAddress, searchedBalancesAndAllowances])
 
   useEffect(() => {

@@ -80,6 +80,7 @@ export default function Updater(): null {
   // Unsubscribe when address is unconnected
   useEffect(() => {
     if (address && !masqueradeActive) {
+      console.log('1')
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -88,10 +89,12 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (masqueradeActive) {
+    } else if (masqueradeActive && searchedBalancesAndAllowances) {
+      console.log('2')
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
+      console.log('queriedAddress: ', queriedAddress)
       fetchUserHistoricalActivity({
         address: queriedAddress,
         startTime: queryHistoricalTime,
@@ -100,15 +103,6 @@ export default function Updater(): null {
         address: queriedAddress,
         startTime: queryPendingTime,
       })
-    } else {
-      fetchUserHistoricalActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
-      fetchUserPendingActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
     }
   }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
@@ -146,21 +140,16 @@ export default function Updater(): null {
       data: pendingData,
     } = fetchedPendingActivity
 
-    if ((masqueradeActive || address) && isUserPendingTransactionsLoading) {
+    if (address && isUserPendingTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserPendingTransactionsLoading(false))
     }
 
-    if ((masqueradeActive || address) && isSuccess) {
+    if (address && isSuccess) {
       dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
     }
-  }, [
-    fetchedPendingActivity,
-    isUserPendingTransactionsLoading,
-    address,
-    masqueradeActive,
-  ])
+  }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
 
   // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
   useEffect(() => {

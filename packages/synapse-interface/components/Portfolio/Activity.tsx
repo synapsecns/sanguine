@@ -108,14 +108,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 transaction?.fromInfo?.chainID
               ] as Chain,
               originToken: originToken,
-              originTokenAddresses:
-                originToken && Object.values(originToken?.addresses),
+              originTokenAddresses: Object.values(originToken?.addresses),
               destinationChain: CHAINS_BY_ID[
                 transaction?.toInfo?.chainID
               ] as Chain,
               destinationToken: destinationToken,
-              destinationTokenAddresses:
-                destinationToken && Object.values(destinationToken?.addresses),
+              destinationTokenAddresses: Object.values(
+                destinationToken?.addresses
+              ),
             }
           }
         )
@@ -181,7 +181,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             pendingAwaitingCompletionTransactions.map(
               (transaction: BridgeTransaction) => (
                 <PendingTransaction
-                  connectedAddress={address as Address}
+                  connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time as number}
                   transactionHash={transaction?.fromInfo?.txnHash as string}
@@ -229,7 +229,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
-                  connectedAddress={address as Address}
+                  connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time as number}
                   completedTimestamp={transaction?.toInfo?.time as number}
