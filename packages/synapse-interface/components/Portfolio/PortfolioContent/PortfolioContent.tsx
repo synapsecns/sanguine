@@ -21,6 +21,7 @@ type PortfolioContentProps = {
   fetchState: FetchState
   visibility: boolean
   searchInputActive: boolean
+  searchStatus: FetchState
   searchInput: string
 }
 
@@ -32,6 +33,7 @@ export const PortfolioContent = ({
   fetchState,
   visibility,
   searchInputActive,
+  searchStatus,
   searchInput,
 }: PortfolioContentProps) => {
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
@@ -73,9 +75,11 @@ export const PortfolioContent = ({
       className={`${visibility ? 'block' : 'hidden'}`}
     >
       {!connectedAddress && !searchInputActive && <HomeContent />}
-      {searchInputActive && !hasFilteredSearchResults && (
-        <NoSearchResultsContent searchStr={searchInput} />
-      )}
+      {searchInputActive &&
+        !hasFilteredSearchResults &&
+        searchStatus !== FetchState.LOADING && (
+          <NoSearchResultsContent searchStr={searchInput} />
+        )}
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
       {showCurrentNetworkPortfolio &&
         connectedAddress &&
