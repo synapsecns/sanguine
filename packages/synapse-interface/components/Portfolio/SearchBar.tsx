@@ -100,7 +100,7 @@ export const SearchBar = () => {
       `}
     >
       <FilterInput
-        placeholder={isFocused ? placeholder : 'Search...'}
+        placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
       />
