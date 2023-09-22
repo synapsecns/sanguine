@@ -97,14 +97,13 @@ export const Portfolio = () => {
       filteredSearchedPortfolioDataForBalances,
     ])
 
-  console.log('flattenedPortfolioData: ', flattenedPortfolioData)
-
   const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
     useMemo(() => {
       const searchFiltered: NetworkTokenBalancesAndAllowances = {}
       const fuseOptions = {
         includeScore: true,
-        threshold: 0.5,
+        threshold: 0.4,
+        distance: 20,
         keys: ['queriedChain.name', 'token.name', 'token.symbol'],
       }
       const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
