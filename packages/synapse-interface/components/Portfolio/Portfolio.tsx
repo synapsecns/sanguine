@@ -169,6 +169,7 @@ export const Portfolio = () => {
                   }
                   fetchState={searchStatus}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
+                  searchInputActive={searchInputActive}
                 />
               </>
             ) : (
@@ -190,6 +191,7 @@ export const Portfolio = () => {
                   }
                   fetchState={fetchState}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
+                  searchInputActive={searchInputActive}
                 />
               </div>
             )}

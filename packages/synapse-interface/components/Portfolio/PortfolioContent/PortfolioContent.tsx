@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Address } from 'wagmi'
 import Link from 'next/link'
 import {
@@ -20,6 +20,7 @@ type PortfolioContentProps = {
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchState: FetchState
   visibility: boolean
+  searchInputActive: boolean
 }
 
 export const PortfolioContent = ({
@@ -29,6 +30,7 @@ export const PortfolioContent = ({
   networkPortfolioWithBalances,
   fetchState,
   visibility,
+  searchInputActive,
 }: PortfolioContentProps) => {
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
     getCurrentNetworkPortfolio(
@@ -38,16 +40,24 @@ export const PortfolioContent = ({
 
   const portfolioExists: boolean =
     Object.keys(networkPortfolioWithBalances).length > 0
-  const currentChain: Chain = CHAINS_BY_ID[selectedFromChainId]
-  const isUnsupportedChain: boolean = currentChain ? false : true
 
   const isInitialFetchLoading: boolean =
     !portfolioExists && fetchState === FetchState.LOADING
 
-  console.log(
-    'currentNetworkPortfolio:',
-    Boolean(currentNetworkPortfolio[connectedChainId])
-  )
+  const showCurrentNetworkPortfolio: boolean = useMemo(() => {
+    if (searchInputActive && currentNetworkPortfolio) {
+      return Boolean(currentNetworkPortfolio[connectedChainId])
+    } else if (currentNetworkPortfolio) {
+      return true
+    } else {
+      return false
+    }
+  }, [
+    searchInputActive,
+    currentNetworkPortfolio,
+    networkPortfolioWithBalances,
+    connectedChainId,
+  ])
 
   return (
     <div
@@ -56,7 +66,7 @@ export const PortfolioContent = ({
     >
       {!connectedAddress && <HomeContent />}
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
-      {currentNetworkPortfolio &&
+      {showCurrentNetworkPortfolio &&
         connectedAddress &&
         connectedChainId &&
         selectedFromChainId &&

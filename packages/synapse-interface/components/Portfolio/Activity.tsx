@@ -138,11 +138,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
-  console.log(
-    'filteredHistoricalTransactionsBySearchInput:',
-    filteredHistoricalTransactionsBySearchInput
-  )
-
   const viewingAddress: string | null = useMemo(() => {
     if (masqueradeActive) {
       return masqueradeAddress
