@@ -13,9 +13,6 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
       - name: Cleanup caches
         run: |
           gh extension install actions/gh-actions-cache
@@ -36,3 +33,9 @@ jobs:
           echo "Done"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete closed PR branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          numbers: ${{github.event.pull_request.number}}

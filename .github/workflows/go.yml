@@ -353,7 +353,7 @@ jobs:
     needs: cancel-outdated
     # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
     # change this to run on those pushes
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
       metadata: ${{ steps.metadata.outputs.METADATA }}
