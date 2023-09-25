@@ -261,7 +261,7 @@ jobs:
     name: Build
     needs: changes
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 && github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
