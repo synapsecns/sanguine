@@ -80,7 +80,6 @@ export default function Updater(): null {
   // Unsubscribe when address is unconnected
   useEffect(() => {
     if (address && !masqueradeActive) {
-      console.log('1')
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -90,11 +89,9 @@ export default function Updater(): null {
         startTime: queryPendingTime,
       })
     } else if (masqueradeActive && searchedBalancesAndAllowances) {
-      console.log('2')
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
-      console.log('queriedAddress: ', queriedAddress)
       fetchUserHistoricalActivity({
         address: queriedAddress,
         startTime: queryHistoricalTime,
