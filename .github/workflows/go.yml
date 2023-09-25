@@ -586,6 +586,7 @@ jobs:
         with:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
+      - name: setup env
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
           echo "::add-path::$(go env GOPATH)/bin"
