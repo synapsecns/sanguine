@@ -23,12 +23,15 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     outputs:
-      # Expose matched filters as job 'packages' output variable
+      # Expose matched filters as job 'packages' output variable with a trailing _deps for dependencies
       packages_deps: ${{ steps.filter_go.outputs.changed_modules_deps }}
-      unchanged_deps: ${{ steps.filter_go.outputs.changed_modules_deps }}
-      packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
       package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
+
+      unchanged_deps: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
       unchanged_package_count_deps: ${{ steps.length.outputs.FILTERED_PATHS_NODEPS }}
+
+      # These have no dependencies included in the change outputs
+      packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
