@@ -362,7 +362,7 @@ jobs:
           metadata="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER)"
 
           # Extract the labels in JSON format from the metadata
-          labels_json="$(echo "$metadata" | jq -r '[.labels[].name]')"
+          labels_json="$(echo "$metadata" | jq -r -c '[.labels[].name]')"
 
           # Set the full metadata including the labels as the GitHub Actions step output
           echo "::set-output name=METADATA::$metadata"
