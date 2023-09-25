@@ -17,14 +17,15 @@ import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
-import LoadingText from '@/components/loading/LoadingText'
 import Button from '@/components/ui/tailwind/Button'
-import Card from '@/components/ui/tailwind/Card'
 
-import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { stringToBigInt } from '@/utils/bigint/format'
+import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
+import Tabs from '@/components/ui/tailwind/Tabs'
+import TabItem from '@/components/ui/tailwind/TabItem'
+import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
 
 interface StakeCardProps {
   address: string
@@ -38,7 +39,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
 
-  const balance = useTokenBalance(pool)
+  const balance = useTokenBalance(pool, pool?.chainId)
 
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
 
@@ -58,8 +59,14 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const [tx, setTx] = useState(undefined)
 
   useEffect(() => {
-    if (!address || !chainId || stakingPoolId === null) return
-    getStakedBalance(address as Address, chainId, stakingPoolId)
+    if (!address || !chainId || stakingPoolId === null) {
+      setUserStakeData({
+        amount: 0n,
+        reward: 0n,
+      })
+      return
+    }
+    getStakedBalance(address as Address, pool.chainId, stakingPoolId)
       .then((data) => {
         setUserStakeData(data)
       })
@@ -69,6 +76,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   }, [address, chainId, stakingPoolId])
 
   useEffect(() => {
+    if (!address) {
+      setUserStakeData({
+        amount: 0n,
+        reward: 0n,
+      })
+      return
+    }
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
         MINICHEF_ADDRESSES[chainId],
@@ -77,7 +91,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         chainId
       )
       setAllowance(tkAllowance)
-      getStakedBalance(address as Address, chainId, stakingPoolId)
+      getStakedBalance(address as Address, pool.chainId, stakingPoolId)
         .then((data) => {
           setUserStakeData(data)
         })
@@ -88,6 +102,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   }, [lpTokenBalance])
 
   useEffect(() => {
+    if (!address) return
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
         MINICHEF_ADDRESSES[chainId],
@@ -110,219 +125,218 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         prices={prices}
         lpTokenBalance={lpTokenBalance}
       />
-      <Card
-        title="Your balances"
-        className="p-4 rounded-md bg-bgBase max-h-40"
-        titleClassName="text-base font-base text-secondaryTextColor text-opacity-50"
-        divider={false}
-      >
-        <InfoSection showDivider={true} showOutline={false}>
-          {' '}
-          <div>
-            <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
-              <div>Unstaked</div>
-              <div>
-                {lpTokenBalance === 0n
-                  ? '\u2212'
-                  : formatBigIntToString(
-                      lpTokenBalance,
-                      tokenInfo.decimals,
-                      4
-                    )}{' '}
-                <span className="text-[#88818C]">LP</span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
-              <div>Staked</div>
-              <div>
-                {formatBigIntToString(
-                  userStakeData.amount,
+      <InfoSectionCard title="Your balances">
+        <div className="flex items-center justify-between my-2">
+          <div className="text-[#EEEDEF]">Unstaked</div>
+          <div className="text-white ">
+            {lpTokenBalance === 0n
+              ? '\u2212'
+              : formatBigIntToString(
+                  lpTokenBalance,
                   tokenInfo.decimals,
-                  4
+                  5
                 )}{' '}
-                <span className="text-[#88818C]">LP</span>
-              </div>
-            </div>
+            <span className="text-base text-[#A9A5AD]">
+              {pool ? pool.symbol : ''}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
-              <div>SYN Earned</div>
-              <div
-                className={`${
-                  userStakeData.reward === 0n ? 'text-white' : 'text-green-400'
-                }`}
-              >
-                {userStakeData.reward === 0n
-                  ? '\u2212'
-                  : formatBigIntToString(userStakeData.reward, 18, 8)}{' '}
-                <span className="text-[#88818C]">SYN</span>
-              </div>
-            </div>
-          </div>
-        </InfoSection>
-      </Card>
-      {userStakeData.reward === 0n ? null : (
-        <Button
-          disabled={userStakeData.reward === 0n}
-          className={`
-            w-full  my-2 px-4 py-3 tracking-wide
-            hover:opacity-80 disabled:opacity-100
-            disabled:from-bgLight disabled:to-bgLight
-            bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-            ${isPending && 'from-[#622e71] to-[#564071]'}
-          `}
-          onClick={() =>
-            pendingTxWrapFunc(
-              claimStake(chainId, address as Address, stakingPoolId)
-            )
-          }
-        >
-          {isPending ? (
-            <div className="flex items-center justify-center space-x-5">
-              <ButtonLoadingDots className="mr-2" />
-              <span className="animate-pulse">Claiming SYN</span>{' '}
-            </div>
-          ) : (
-            <>Claim SYN</>
-          )}
-        </Button>
-      )}
-      <Card className="rounded-md bg-bgBase" divider={false}>
-        <div className="flex justify-center space-x-4">
-          <Button
-            className={`${
-              showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
-            }  w-full rounded-md h-[48px] text-white text-xl`}
-            onClick={() => setShowStake(true)}
-          >
-            Stake
-          </Button>
-          <Button
-            className={`${
-              !showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
-            }  w-full rounded-md h-[48px] text-white text-xl`}
-            onClick={() => setShowStake(false)}
-          >
-            Unstake
-          </Button>
         </div>
-        {showStake ? (
-          <InteractiveInputRow
-            showButton={true}
-            title={pool?.symbol}
-            buttonLabel={
-              lpTokenBalance === 0n
-                ? 'Insufficient Balance'
-                : allowance < deposit.bi
-                ? `Approve ${pool?.symbol}`
-                : 'Stake'
+        <div className="flex items-center justify-between my-2">
+          <div className="text-[#EEEDEF]">Staked</div>
+          <div className="text-white ">
+            {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 5)}{' '}
+            <span className="text-base text-[#A9A5AD]">
+              {pool ? pool.symbol : ''}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between my-2">
+          <div className="text-[#EEEDEF]">SYN Earned</div>
+          <div className="text-white ">
+            {userStakeData.reward === 0n
+              ? '\u2212'
+              : formatBigIntToString(userStakeData.reward, 18, 5)}{' '}
+            <span className="text-base text-[#A9A5AD]">SYN</span>
+          </div>
+        </div>
+        {userStakeData.reward === 0n ? null : (
+          <Button
+            disabled={userStakeData.reward === 0n}
+            className={`
+             bg-[#564f58]
+              w-full my-2 px-4 py-3 tracking-wide
+              rounded-sm
+              border border-transparent 
+              hover:border-[#AC8FFF] 
+              disabled:opacity-100
+              disabled:from-bgLight disabled:to-bgLight
+            `}
+            onClick={() =>
+              pendingTxWrapFunc(
+                claimStake(chainId, address as Address, stakingPoolId)
+              )
             }
-            buttonWidth="w-full"
-            loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
-            isConnected={Boolean(address)}
-            balanceStr={
-              lpTokenBalance === 0n
-                ? formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 4)
-                : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 8)
-            }
-            onClickBalance={() => {
-              setDeposit({
-                str:
-                  lpTokenBalance === 0n
-                    ? '0.0000'
-                    : formatBigIntToString(lpTokenBalance, tokenInfo.decimals),
-                bi: lpTokenBalance,
-              })
-            }}
-            value={deposit.str}
-            placeholder={'0.0000'}
-            onChange={async (e) => {
-              let val = cleanNumberInput(e.target.value)
-              setDeposit({
-                str: val,
-                bi: stringToBigInt(val, pool.decimals[chainId]),
-              })
-            }}
-            disabled={lpTokenBalance === 0n || deposit.str === ''}
-            isPending={isPendingStake || isPendingApprove}
-            onClickEnter={
-              allowance < deposit.bi
-                ? async (e) => {
-                    const tx = await pendingApproveTxWrapFunc(
-                      approve(pool, deposit.bi, chainId)
-                    )
-
-                    setTx(tx?.transactionHash)
-                  }
-                : async (e) => {
-                    const tx = await pendingStakeTxWrapFunc(
-                      stake(
-                        address as Address,
-                        chainId,
-                        stakingPoolId,
-                        deposit.bi
-                      )
-                    )
-                    if (tx?.status === 'success') {
-                      setDeposit({ bi: 0n, str: '' })
-                    }
-                    setTx(tx?.transactionHash)
-                  }
-            }
-            token={pool}
-            icon={pool?.icon?.src}
-          />
-        ) : (
-          <InteractiveInputRow
-            showButton={true}
-            title={pool?.symbol}
-            buttonLabel="Unstake"
-            buttonWidth="w-full"
-            loadingLabel="Unstaking"
-            isConnected={Boolean(address)}
-            balanceStr={formatBigIntToString(
-              userStakeData.amount,
-              tokenInfo.decimals,
-              8
+          >
+            {isPending ? (
+              <div className="flex items-center justify-center space-x-5">
+                <ButtonLoadingDots className="mr-3" />
+                <span className="animate-pulse">Claiming SYN</span>{' '}
+              </div>
+            ) : (
+              <div className="font-thin">Claim SYN</div>
             )}
-            onClickBalance={() => {
-              setWithdraw(
-                userStakeData.amount === 0n
-                  ? '0.0000'
-                  : formatBigIntToString(
-                      userStakeData.amount,
-                      tokenInfo.decimals
-                    )
-              )
-            }}
-            value={withdraw}
-            placeholder={'0.0000'}
-            onChange={(e) => {
-              let val = cleanNumberInput(e.target.value)
-              setWithdraw(val)
-            }}
-            disabled={userStakeData.amount === 0n || withdraw === ''}
-            isPending={isPendingUnstake}
-            onClickEnter={async () => {
-              const tx = await pendingUnstakeTxWrapFunc(
-                withdrawStake(
-                  address as Address,
-                  chainId,
-                  stakingPoolId,
-                  stringToBigInt(withdraw, 18)
-                )
-              )
-              if (tx?.status === 1) {
-                setWithdraw('')
-              }
-            }}
-            token={pool}
-            icon={pool?.icon?.src}
-          />
+          </Button>
         )}
-      </Card>
+      </InfoSectionCard>
+      <div className="p-0 rounded-md bg-bgBase">
+        <div className="mb-3">
+          <Tabs>
+            <TabItem
+              isActive={showStake}
+              onClick={() => {
+                setShowStake(true)
+              }}
+              className="rounded-tl-sm"
+            >
+              Stake
+            </TabItem>
+            <TabItem
+              isActive={!showStake}
+              onClick={() => {
+                setShowStake(false)
+              }}
+              className="rounded-tr-sm"
+            >
+              Unstake
+            </TabItem>
+          </Tabs>
+        </div>
+        <div className="p-lg">
+          {showStake ? (
+            <InteractiveInputRow
+              title={pool?.symbol}
+              isConnected={Boolean(address)}
+              balanceStr={
+                lpTokenBalance === 0n
+                  ? formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 5)
+                  : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 5)
+              }
+              onClickBalance={() => {
+                setDeposit({
+                  str:
+                    lpTokenBalance === 0n
+                      ? '0.0000'
+                      : formatBigIntToString(
+                          lpTokenBalance,
+                          tokenInfo.decimals
+                        ),
+                  bi: lpTokenBalance,
+                })
+              }}
+              value={deposit.str}
+              placeholder={'0.0000'}
+              onChange={async (e) => {
+                let val = cleanNumberInput(e.target.value)
+                setDeposit({
+                  str: val,
+                  bi: stringToBigInt(val, pool.decimals[chainId]),
+                })
+              }}
+              disabled={lpTokenBalance === 0n || deposit.str === ''}
+              icon={pool?.icon?.src}
+            />
+          ) : (
+            <InteractiveInputRow
+              title={pool?.symbol}
+              isConnected={Boolean(address)}
+              balanceStr={formatBigIntToString(
+                userStakeData.amount,
+                tokenInfo.decimals,
+                5
+              )}
+              onClickBalance={() => {
+                setWithdraw(
+                  userStakeData.amount === 0n
+                    ? '0.00000'
+                    : formatBigIntToString(
+                        userStakeData.amount,
+                        tokenInfo.decimals,
+                        5
+                      )
+                )
+              }}
+              value={withdraw}
+              placeholder={'0.0000'}
+              onChange={(e) => {
+                let val = cleanNumberInput(e.target.value)
+                setWithdraw(val)
+              }}
+              disabled={userStakeData.amount === 0n || withdraw === ''}
+              icon={pool?.icon?.src}
+            />
+          )}
+          {showStake ? (
+            <InteractiveInputRowButton
+              title={pool?.symbol}
+              buttonLabel={
+                lpTokenBalance === 0n
+                  ? 'Insufficient Balance'
+                  : allowance < deposit.bi
+                  ? `Approve ${pool?.symbol}`
+                  : 'Stake'
+              }
+              loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
+              disabled={lpTokenBalance === 0n || deposit.str === ''}
+              isPending={isPendingStake || isPendingApprove}
+              onClickEnter={
+                allowance < deposit.bi
+                  ? async (e) => {
+                      const tx = await pendingApproveTxWrapFunc(
+                        approve(pool, deposit.bi, chainId)
+                      )
+
+                      setTx(tx?.transactionHash)
+                    }
+                  : async (e) => {
+                      const tx = await pendingStakeTxWrapFunc(
+                        stake(
+                          address as Address,
+                          chainId,
+                          stakingPoolId,
+                          deposit.bi
+                        )
+                      )
+                      if (tx?.status === 'success') {
+                        setDeposit({ bi: 0n, str: '' })
+                      }
+                      setTx(tx?.transactionHash)
+                    }
+              }
+            />
+          ) : (
+            <InteractiveInputRowButton
+              title={pool?.symbol}
+              buttonLabel="Unstake"
+              loadingLabel="Unstaking"
+              disabled={userStakeData.amount === 0n || withdraw === ''}
+              isPending={isPendingUnstake}
+              onClickEnter={async () => {
+                const tx = await pendingUnstakeTxWrapFunc(
+                  withdrawStake(
+                    address as Address,
+                    chainId,
+                    stakingPoolId,
+                    stringToBigInt(withdraw, 18)
+                  )
+                )
+                if (tx?.status === 1) {
+                  setWithdraw('')
+                }
+              }}
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

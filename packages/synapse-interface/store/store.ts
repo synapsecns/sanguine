@@ -12,6 +12,7 @@ import portfolioReducer from '@/slices/portfolio/reducer'
 import swapReducer from '@/slices/swap/reducer'
 import swapDisplayReducer from '@/slices/swapDisplaySlice'
 import transactionsReducer from '@/slices/transactions/reducer'
+import priceDataReducer from '@/slices/priceDataSlice'
 import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -24,6 +25,7 @@ export const store = configureStore({
     poolDeposit: poolDepositReducer,
     poolWithdraw: poolWithdrawReducer,
     portfolio: portfolioReducer,
+    priceData: priceDataReducer,
     swap: swapReducer,
     swapDisplay: swapDisplayReducer,
     transactions: transactionsReducer,

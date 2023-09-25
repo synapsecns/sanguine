@@ -30,7 +30,7 @@ export const DepositTokenInput = ({
 
       const adjustedValue =
         rawBalance === 0n
-          ? formatBigIntToString(rawBalance, token.decimals[chainId], 4)
+          ? formatBigIntToString(rawBalance, token.decimals[chainId], 5)
           : formatBigIntToString(rawBalance, token.decimals[chainId])
 
       onChange(adjustedValue)
@@ -49,13 +49,8 @@ export const DepositTokenInput = ({
           value={inputValueStr}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
-          // disabled={inputValueStr == ''}
-          disabled={false}
-          showButton={false}
+          disabled={rawBalance === 0n}
           icon={token?.icon?.src}
-          token={token}
-          isPending={false}
-          onClickEnter={() => {}}
         />
       </div>
     </div>
@@ -77,9 +72,9 @@ export const WithdrawTokenInput = ({
       ? formatBigIntToString(
           poolUserData?.lpTokenBalance,
           pool.decimals[pool.chainId],
-          4
+          5
         )
-      : '0.0000'
+      : '0.00000'
   }, [inputValue])
 
   const onClickMax = useCallback(
@@ -106,12 +101,8 @@ export const WithdrawTokenInput = ({
           value={inputValue}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
-          disabled={false}
-          showButton={false}
+          disabled={poolUserData?.lpTokenBalance === 0n}
           icon={pool?.icon?.src}
-          token={pool}
-          isPending={false}
-          onClickEnter={() => {}}
         />
       </div>
     </div>
