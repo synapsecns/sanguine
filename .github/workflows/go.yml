@@ -311,6 +311,7 @@ jobs:
     if: ${{ needs.changes.outputs.package_count_nodeps > 0 }}
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
@@ -490,17 +491,11 @@ jobs:
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.unchanged_package_count_deps > 0 && contains(needs.pr_metadata.outputs.labels, 'needs-go-generate') }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
-      - name: Turnstyle
-        # no need for this if we're not goint to remove anyway
-        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
-        uses: softprops/turnstyle@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
         # labels can't be removed in parallel
