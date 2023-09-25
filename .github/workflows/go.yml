@@ -110,7 +110,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-test-${{ runner.os }}-${{ matrix.package }}
 
@@ -397,7 +397,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
@@ -518,7 +518,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
