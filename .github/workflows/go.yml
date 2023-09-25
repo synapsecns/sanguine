@@ -375,6 +375,7 @@ jobs:
 
         id: metadata
         shell: bash
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
