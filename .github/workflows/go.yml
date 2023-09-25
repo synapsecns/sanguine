@@ -23,29 +23,29 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     outputs:
-      # Expose matched filters as job 'packages' output variable
-      packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
-      packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
+      # Expose matched filters as job 'packages' output variable with a trailing _deps for dependencies
+      packages_deps: ${{ steps.filter_go.outputs.changed_modules_deps }}
       package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
+
+      unchanged_deps: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
+      unchanged_package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_UNCHANGED_DEPS }}
+
+      # These have no dependencies included in the change outputs
+      packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
+          # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
           fetch-depth: 0
+          # TODO: is this neccesary?
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go_deps
+      # note: after this action is pushed, whatever this ends up being should go back to latest.
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:e4c85e74bf0592c0efa71476c3246675ec77fc28
+        id: filter_go
         with:
-          include_deps: true
-          github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: '10m'
-
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go_nodeps
-        with:
-          include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
           timeout: '10m'
 
@@ -65,11 +65,15 @@ jobs:
           export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS_DEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_DEPS;]$(echo $FILTER_LENGTH_DEPS)"
 
+          export FILTER_LENGTH_UNCHANGED_DEPS=$(echo $UNCHANGED_DEPS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH_UNCHANGED_DEPS;]$(echo $FILTER_LENGTH_UNCHANGED_DEPS)"
+
           export FILTER_LENGTH_NODEPS=$(echo $FILTERED_PATHS_NODEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_NODEPS;]$(echo $FILTER_LENGTH_NODEPS)"
         env:
-          FILTERED_PATHS_DEPS: ${{ steps.filter_go_deps.outputs.changed_modules }}
-          FILTERED_PATHS_NODEPS: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
+          FILTERED_PATHS_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+          UNCHANGED_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
+          FILTERED_PATHS_NODEPS: ${{ steps.filter_go.outputs.changed_modules }}
 
   test:
     name: Go Coverage
@@ -106,7 +110,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-test-${{ runner.os }}-${{ matrix.package }}
 
@@ -114,6 +118,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -124,7 +129,7 @@ jobs:
             ${{ runner.os }}-test-${{matrix.package}}
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -259,7 +264,7 @@ jobs:
     name: Build
     needs: changes
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 && github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
@@ -272,7 +277,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -280,6 +285,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -305,12 +311,13 @@ jobs:
     if: ${{ needs.changes.outputs.package_count_nodeps > 0 }}
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
           # TODO: with this being 3 behind this should be done sooner rather than later.
@@ -338,26 +345,48 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: -1
 
-  issue_number:
+  pr_metadata:
     # this is needed to prevent us from hitting the github api rate limit
-    name: Get The Issue Number
-    needs: changes
+    name: Get PR Metadata
     runs-on: ubuntu-latest
+    # not stricly true, but this job is fast enough to not block and we want to prioritize canceling outdated because downstream jobs can use many workers
+    needs: cancel-outdated
     # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
     # change this to run on those pushes
-    if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs.solidity_changes == 'true' || needs.changes.outputs.package_count_deps > 0 ) }}
+    if: ${{ github.event_name != 'pull_request' }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
+      metadata: ${{ steps.metadata.outputs.METADATA }}
+      labels: ${{ steps.metadata.outputs.LABELS }}
     steps:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
+      # TODO: https://stackoverflow.com/a/75429845 consider splitting w/ gql to reduce limit hit
+      - run: |
+          # Fetch the metadata
+          metadata="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER)"
+
+          # Extract the labels in JSON format from the metadata
+          labels_json="$(echo "$metadata" | jq -r -c '[.labels[].name]')"
+
+          # Set the full metadata including the labels as the GitHub Actions step output
+          echo "::set-output name=METADATA::$metadata"
+          echo "::set-output name=LABELS::$labels_json"
+
+        id: metadata
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PULL_REQUEST_NUMBER: ${{ steps.find_pr.outputs.pr }}
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
   check-generation-solidity:
     name: Go Generate (Solidity Only)
     runs-on: ubuntu-latest
-    needs: [changes, issue_number]
+    needs: [changes, pr_metadata]
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes == 'true' }}
     strategy:
       fail-fast: false
@@ -371,7 +400,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
@@ -389,7 +418,7 @@ jobs:
         run: npx lerna exec npm run build:go --parallel
 
       # Setup Go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
 
@@ -397,6 +426,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -438,26 +468,50 @@ jobs:
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         # Fail if files need regeneration
+        # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ needs.issue_number.outputs.issue_number }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
 
       - name: Remove Label
-        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ needs.issue_number.outputs.issue_number }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
+
+  remove-label-generation:
+    name: Remove Generate Label From Unused Jobs
+    runs-on: ubuntu-latest
+    needs: [changes, pr_metadata]
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.unchanged_package_count_deps > 0 && contains(needs.pr_metadata.outputs.labels, 'needs-go-generate') }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
+    steps:
+      - name: Remove Label
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
+        # labels can't be removed in parallel
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
+
+
 
   check-generation:
     name: Go Generate (Module Changes)
     runs-on: ubuntu-latest
-    needs: [changes, issue_number]
+    needs: [changes, pr_metadata]
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       fail-fast: false
@@ -471,7 +525,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
@@ -495,7 +549,7 @@ jobs:
         if: ${{ contains(matrix.package, 'agents') }}
 
       # Setup Go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
 
@@ -504,6 +558,7 @@ jobs:
         if: ${{ !contains(matrix.package, 'services/cctp-relayer') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -576,18 +631,19 @@ jobs:
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         # Fail if files need regeneration
+        # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ needs.issue_number.outputs.issue_number }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
 
       - name: Remove Label
-        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ needs.issue_number.outputs.issue_number }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}

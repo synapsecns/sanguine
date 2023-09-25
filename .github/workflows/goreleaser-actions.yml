@@ -24,7 +24,7 @@ jobs:
 
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
@@ -87,7 +87,7 @@ jobs:
     if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changed_modules }}
+      packages: ${{ steps.filter_go.outputs.changed_modules_deps }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
       - uses: actions/checkout@v4
@@ -95,10 +95,9 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:e4c85e74bf0592c0efa71476c3246675ec77fc28
         id: filter_go
         with:
-          include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - id: length
@@ -106,7 +105,7 @@ jobs:
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
-          FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules }}
+          FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules_deps }}
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
@@ -168,7 +167,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: 1.20.x
 
