@@ -364,7 +364,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          PULL_REQUEST_NUMBER: ${{ steps.find_pr.outputs.pr }}
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
