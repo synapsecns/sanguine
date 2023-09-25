@@ -28,7 +28,7 @@ jobs:
       package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
 
       unchanged_deps: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
-      unchanged_package_count_deps: ${{ steps.length.outputs.FILTERED_PATHS_NODEPS }}
+      unchanged_package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_UNCHANGED_DEPS }}
 
       # These have no dependencies included in the change outputs
       packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
