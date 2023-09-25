@@ -126,7 +126,7 @@ jobs:
             ${{ runner.os }}-test-${{matrix.package}}
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -274,7 +274,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -312,7 +312,7 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
           # TODO: with this being 3 behind this should be done sooner rather than later.
@@ -391,7 +391,7 @@ jobs:
         run: npx lerna exec npm run build:go --parallel
 
       # Setup Go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
 
@@ -517,7 +517,7 @@ jobs:
         if: ${{ contains(matrix.package, 'agents') }}
 
       # Setup Go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.21.x
 
