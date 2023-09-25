@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
@@ -82,7 +83,6 @@ func getChainConfigs(dockerPath string) (chainConfigs map[uint32]chainConfig, er
 	if err != nil {
 		return chainConfigs, err
 	}
-	fmt.Printf("unmarshalled: %v\n", dockerComposeConfig)
 
 	chainConfigs = map[uint32]chainConfig{}
 	for name, chainCfg := range dockerComposeConfig.Services {
@@ -120,9 +120,8 @@ func loadOmniRPCConfig(dockerPath string) (omniRPCConfig omniConfig.Config, err 
 }
 
 func loadDeployments(contractName, deploymentPath string, chainConfigs map[uint32]chainConfig, omniRPCConfig omniConfig.Config) (err error) {
-	fmt.Printf("loadDeployments onto configs: %v\n", chainConfigs)
 	for chainID, chainConfig := range chainConfigs {
-		fmt.Printf("loading deployment for chain %d: %v\n", chainID, chainConfig.Name)
+		fmt.Printf("Loading deployment for chain %d: %v\n", chainID, chainConfig.Name)
 		contractABIPath := fmt.Sprintf("%s/%s/%s.json", deploymentPath, chainConfig.Name, contractName)
 		abiFile, err := os.Open(contractABIPath)
 		if err != nil {
@@ -164,6 +163,10 @@ func loadDeployments(contractName, deploymentPath string, chainConfigs map[uint3
 		chainConfigs[chainID] = chainConfig
 	}
 	return nil
+}
+
+func loadParser(addr common.Address) (parser *pingpongclient.PingPongClientFilterer, err error) {
+	return pingpongclient.NewPingPongClientFilterer(addr, nil)
 }
 
 func getSummitChainID(dockerPath string) (summitChainID uint32, err error) {
@@ -319,7 +322,6 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 		if err != nil {
 			return fmt.Errorf("could not receive: %w", err)
 		}
-		fmt.Printf("received resp: %v\n", response)
 
 		log := response.Log.ToLog()
 		if log == nil {
@@ -338,13 +340,38 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 			return fmt.Errorf("context done: %w", ctx.Err())
 		default:
 			fmt.Printf("Received log: %v\n", log)
+			err = handleLog(log)
+			if err != nil {
+				return err
+			}
 		}
 	}
+}
+
+func handleLog(log *ethTypes.Log) (err error) {
+	var event interface{}
+	if event, err = parser.ParsePingSent(*log); err == nil {
+		pingSentEvent, ok := event.(*pingpongclient.PingPongClientPingSent)
+		if !ok {
+			return fmt.Errorf("could not parse ping sent event")
+		}
+		fmt.Printf("Parsed ping sent with ID %d\n", pingSentEvent.PingId.Int64())
+	} else if event, err = parser.ParsePongReceived(*log); err == nil {
+		pongReceivedEvent, ok := event.(*pingpongclient.PingPongClientPongReceived)
+		if !ok {
+			return fmt.Errorf("could not parse ping received event")
+		}
+		fmt.Printf("Parsed pong received with ID %d\n", pongReceivedEvent.PingId.Int64())
+	} else {
+		return fmt.Errorf("could not parse log")
+	}
+	return nil
 }
 
 var dockerComposeFile = "docker-compose.yml"
 var omnirpcConfig = "omnirpc.yaml"
 var executorConfig = "executor-config.yml"
+var parser *pingpongclient.PingPongClientFilterer
 
 const eventBufferSize = 1000
 
@@ -375,7 +402,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Got chain configs: %v\n", chainConfigs)
 
 	// Load the omnirpc config.
 	omniRPCConfig, err := loadOmniRPCConfig(dockerPath)
@@ -395,6 +421,12 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("summitChainID: %v\n", summitChainID)
+
+	pingPongAddr := chainConfigs[summitChainID].Deployments["PingPongClient"].ContractAddress
+	parser, err = pingpongclient.NewPingPongClientFilterer(common.HexToAddress(pingPongAddr), nil)
+	if err != nil {
+		panic(err)
+	}
 
 	// Load the private key.
 	signer, err := getSigner(privateKey)
@@ -435,7 +467,7 @@ func main() {
 	// }
 
 	// Send messages.
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 		for _, route := range routes {
 			fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
 			contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
@@ -447,7 +479,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Sent ping from chain %d to contract %s: %s\n", routes[0], destPingPongAddr.String(), tx.Hash().String())
+			fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
 		}
 	}
 
