@@ -95,7 +95,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:e4c85e74bf0592c0efa71476c3246675ec77fc28
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT }}
