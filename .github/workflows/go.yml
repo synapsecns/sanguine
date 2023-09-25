@@ -484,7 +484,7 @@ jobs:
     name: Remove Generate Label From Unused Jobs
     runs-on: ubuntu-latest
     needs: [changes, pr_metadata]
-    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.unchanged_package_count_deps > 0 && contains(needs.pr_metadata.outputs.labels), 'needs-go-generate') }}
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.unchanged_package_count_deps > 0 && contains(needs.pr_metadata.outputs.labels, 'needs-go-generate') }}
     strategy:
       fail-fast: false
       matrix:
