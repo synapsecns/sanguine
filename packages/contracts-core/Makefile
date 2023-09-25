@@ -21,12 +21,18 @@ devnet-deploy: ## This should be run exactly once to deploy the contracts to the
 	cp devnet.env .env
 
 	forge script script/DeployMessaging003SynChain.s.sol  --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 	forge script script/DeployMessaging003LightChain.s.sol  --ffi -f chain_b --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 	forge script script/DeployMessaging003LightChain.s.sol  --ffi -f chain_c --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 
 	forge script script/DeployClients003.s.sol  --ffi -f chain_a --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 	forge script script/DeployClients003.s.sol  --ffi -f chain_b --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 	forge script script/DeployClients003.s.sol  --ffi -f chain_c --private-key 63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9   --broadcast
+	sleep 1
 
 devnet-logs:
 	cd ../../docker/devnet && docker-compose logs -f
