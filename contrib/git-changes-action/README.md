@@ -97,30 +97,31 @@ Each module in the `go.work` is visited. If any changes were detected by the pre
 
 ```mermaid
 sequenceDiagram
-    participant GW as go.work
-    participant M as Module
-    participant CML as Changed_Module_List
-    participant ID as include_dependencies
-    participant D as Dependency
+  participant GW as go.work
+  participant M as Module
+  participant CML as Changed_Module_List
+  participant UML as Unchanged_Module_List
+  participant D as Dependency
 
-    GW->>M: Visit Module
-    Note over M: Check for changes
-    M-->>GW: Changes Detected?
-    alt Changes Detected
-        GW->>CML: Add Module to Changed_Module_List
-    else No Changes Detected
-        GW-->>M: Skip Module
+  GW->>M: Visit Module
+  Note over M: Check for changes
+  M-->>GW: Changes Detected?
+  alt Changes Detected
+    GW->>CML: Add Module to Changed_Module_List
+    M->>D: Has Dependency in go.work?
+    alt Has Dependency
+      GW->>CML: Add Dependency to Changed_Module_List
+    else No Dependency
+      M-->>GW: No Dependency to Add
     end
-    GW->>ID: include_dependencies On?
-    alt include_dependencies On
-        M->>D: Has Dependency in go.work?
-        alt Has Dependency
-            GW->>CML: Add Dependency to Changed_Module_List
-        else No Dependency
-            M-->>GW: No Dependency to Add
-        end
-    else include_dependencies Off
-        GW-->>M: Skip Dependency Check
+  else No Changes Detected
+    GW->>UML: Add Module to Unchanged_Module_List
+    M->>D: Has Dependency in go.work?
+    alt Has Dependency
+      GW->>UML: Add Dependency to Unchanged_Module_List
+    else No Dependency
+      M-->>GW: No Dependency to Add
     end
-    GW->>GW: Continue Until All Modules Visited
+  end
+  GW->>GW: Continue Until All Modules Visited
 ```
