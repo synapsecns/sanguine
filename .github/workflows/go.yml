@@ -490,7 +490,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
       - name: Remove Label
-        if: contains(fromJson(needs.pr_metadata.outputs.labels), 'needs-go-generate-${{matrix.package}}')
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), 'needs-go-generate-${{matrix.package}}') }}
         uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
