@@ -118,6 +118,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -284,6 +285,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -423,6 +425,7 @@ jobs:
         uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
@@ -551,6 +554,7 @@ jobs:
         if: ${{ !contains(matrix.package, 'services/cctp-relayer') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
+          # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
