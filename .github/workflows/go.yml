@@ -24,9 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
+      packages_deps: ${{ steps.filter_go.outputs.changed_modules_deps }}
+      unchanged_deps: ${{ steps.filter_go.outputs.changed_modules_deps }}
       packages_nodeps: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
       package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
+      unchanged_package_count_deps: ${{ steps.length.outputs.FILTERED_PATHS_NODEPS }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
@@ -35,17 +37,10 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go_deps
+      # note: after this action is pushed, whatever this ends up being should go back to latest.
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:e4c85e74bf0592c0efa71476c3246675ec77fc28
+        id: filter_go
         with:
-          include_deps: true
-          github_token: ${{ secrets.WORKFLOW_PAT }}
-          timeout: '10m'
-
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go_nodeps
-        with:
-          include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
           timeout: '10m'
 
@@ -65,11 +60,15 @@ jobs:
           export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS_DEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_DEPS;]$(echo $FILTER_LENGTH_DEPS)"
 
+          export FILTER_LENGTH_UNCHANGED_DEPS=$(echo $UNCHANGED_DEPS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH_UNCHANGED_DEPS;]$(echo $FILTER_LENGTH_UNCHANGED_DEPS)"
+
           export FILTER_LENGTH_NODEPS=$(echo $FILTERED_PATHS_NODEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_NODEPS;]$(echo $FILTER_LENGTH_NODEPS)"
         env:
-          FILTERED_PATHS_DEPS: ${{ steps.filter_go_deps.outputs.changed_modules }}
-          FILTERED_PATHS_NODEPS: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
+          FILTERED_PATHS_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+          UNCHANGED_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
+          FILTERED_PATHS_NODEPS: ${{ steps.filter_go.outputs.changed_modules }}
 
   test:
     name: Go Coverage
@@ -453,6 +452,26 @@ jobs:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+  remove-label-generation:
+    name: Remove Generate Label
+    runs-on: ubuntu-latest
+    needs: [changes, issue_number]
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.unchanged_package_count_deps > 0 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # only do on agents for now. Anything that relies on solidity in a package should do this
+        package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
+    steps:
+      - name: Remove Label
+        if: contains( github.event.pull_request.labels.*.name, 'needs-go-generate-${{matrix.package}}')
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
 
   check-generation:
     name: Go Generate (Module Changes)

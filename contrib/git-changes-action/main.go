@@ -61,10 +61,10 @@ func main() {
 // outputModuleChanges outputs the changed modules.
 // this wraps detector.DetectChangedModules and handles the output formatting to be parsable by github actions.
 // the final output is a json array of strings.
-func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool) (changedJson string, unchangedJson string, err error) {
+func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool) (changedJSON string, unchangedJson string, err error) {
 	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps)
 	if err != nil {
-		return changedJson, unchangedJson, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJson, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	var changedModules, unchangedModules []string
@@ -83,12 +83,12 @@ func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool
 
 	marshalledChanged, err := json.Marshal(changedModules)
 	if err != nil {
-		return changedJson, unchangedJson, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	marshalledUnchanged, err := json.Marshal(unchangedModules)
 	if err != nil {
-		return changedJson, unchangedJson, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	return string(marshalledChanged), string(marshalledUnchanged), nil
