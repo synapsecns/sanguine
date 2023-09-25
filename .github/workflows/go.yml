@@ -311,6 +311,7 @@ jobs:
     if: ${{ needs.changes.outputs.package_count_nodeps > 0 }}
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
