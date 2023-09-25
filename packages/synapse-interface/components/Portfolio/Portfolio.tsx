@@ -51,7 +51,9 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const searchInputActive: boolean = searchInput.length > 0
+  const searchInputActive: boolean = useMemo(() => {
+    return searchInput.length > 0
+  }, [searchInput])
 
   const searchInputIsAddress: boolean = useMemo(() => {
     return isValidAddress(searchInput)
