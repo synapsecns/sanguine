@@ -477,6 +477,9 @@ jobs:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
+      - run: |
+          x=${{ toJson(github.event.pull_request.labels.*.name) }}
+          echo $x
 
 
   check-generation:
