@@ -24,6 +24,7 @@ import (
 	omniConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v2"
@@ -267,6 +268,7 @@ func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string)
 const scribeConnectTimeout = 30 * time.Second
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
+	fmt.Printf("make scribe client with url: %v\n", url)
 	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
 	defer cancel()
 
@@ -291,6 +293,53 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 	}
 
 	return conn, scribeClient, nil
+}
+
+// streamLogs uses the grpcConnection to Scribe, with a chainID and address to get all logs from that address.
+func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient) error {
+	fmt.Printf("streaming logs for chain %d on addr %s\n", chainID, address)
+	// TODO: Get last block number to define starting point for streamLogs.
+	fromBlock := strconv.FormatUint(0, 16)
+	toBlock := "latest"
+	stream, err := conn.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
+			ChainId:         chainID,
+		},
+		FromBlock: fromBlock,
+		ToBlock:   toBlock,
+	})
+	if err != nil {
+		fmt.Println("could not stream")
+		return fmt.Errorf("could not stream logs: %w", err)
+	}
+
+	for {
+		response, err := stream.Recv()
+		if err != nil {
+			return fmt.Errorf("could not receive: %w", err)
+		}
+		fmt.Printf("received resp: %v\n", response)
+
+		log := response.Log.ToLog()
+		if log == nil {
+			return fmt.Errorf("could not convert log")
+		}
+		fmt.Printf("log: %v\n", log)
+
+		select {
+		case <-ctx.Done():
+			fmt.Println("context done")
+			err := stream.CloseSend()
+			if err != nil {
+				return fmt.Errorf("could not close stream: %w", err)
+			}
+
+			return fmt.Errorf("context done: %w", ctx.Err())
+		default:
+			fmt.Printf("Received log: %v\n", log)
+		}
+	}
 }
 
 var dockerComposeFile = "docker-compose.yml"
@@ -360,28 +409,50 @@ func main() {
 	}
 	fmt.Printf("routes: %v\n", routes)
 
-	// Listen for messages.
-	contractName := "PingPongClient"
-	for _, chainCfg := range chainConfigs {
-		watchEvents(ctx, chainCfg, contractName)
+	// Connect to Scribe.
+	// omniRPCURL := fmt.Sprintf("localhost:%d", omniRPCConfig.Port)
+	omniRPCURL := "localhost:9002"
+	_, scribeClient, err := makeScribeClient(ctx, metrics.NewNullHandler(), omniRPCURL)
+	if err != nil {
+		panic(err)
 	}
+
+	// Listen for messages.
+	g, ctx := errgroup.WithContext(ctx)
+	contractName := "PingPongClient"
+	for _, c := range chainConfigs {
+		chainCfg := c
+		addr := chainCfg.Deployments[contractName].ContractAddress
+		g.Go(func() error {
+			return streamLogs(ctx, chainCfg.ChainID, addr, scribeClient)
+		})
+	}
+
+	// // Listen for messages.
+	// contractName := "PingPongClient"
+	// for _, chainCfg := range chainConfigs {
+	// 	watchEvents(ctx, chainCfg, contractName)
+	// }
 
 	// Send messages.
-	for _, route := range routes {
-		fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
-		contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
-		if !ok {
-			panic("could not cast contract")
+	for i := 0; i < 10; i++ {
+		for _, route := range routes {
+			fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
+			contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
+			if !ok {
+				panic("could not cast contract")
+			}
+			destPingPongAddr := common.HexToAddress(chainConfigs[route[1]].Deployments[contractName].ContractAddress)
+			tx, err := contract.DoPing(ctx, signer, route[1], destPingPongAddr, 0)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("Sent ping from chain %d to contract %s: %s\n", routes[0], destPingPongAddr.String(), tx.Hash().String())
 		}
-		destPingPongAddr := common.HexToAddress(chainConfigs[route[1]].Deployments[contractName].ContractAddress)
-		tx, err := contract.DoPing(ctx, signer, route[1], destPingPongAddr, 0)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
 	}
 
-	for {
-		time.Sleep(10 * time.Second)
+	err = g.Wait()
+	if err != nil {
+		panic(err)
 	}
 }
