@@ -355,13 +355,16 @@ jobs:
     steps:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
-      - uses: LucasRoesler/get-repo-owner-action@v1.0
-        id: get_owner
-      - name: Get PR labels
-        id: pr-labels
-        run: |
-          gh api -H "Accept: application/vnd.github+json" /repos/${{ steps.get_owner.outputs.owner }}/${{ github.event.repository.name }}/issues/${{ steps.find_pr.outputs.pr }}/labels | jq '[.[].name]' > /tmp/label_list
-          cat /tmp/label_list
+      # TODO: https://stackoverflow.com/a/75429845 consider splitting w/ gql to reduce limit hit
+      - run: |
+          labels="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER --jq '.labels.[].name')"
+          echo "$labels"
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
