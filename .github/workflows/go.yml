@@ -344,7 +344,7 @@ jobs:
 
   pr_metadata:
     # this is needed to prevent us from hitting the github api rate limit
-    name: Get The Issue Number
+    name: Get PR Metadata
     runs-on: ubuntu-latest
     # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
     # change this to run on those pushes
@@ -481,7 +481,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
       - run: |
-          x=${{ toJson(github.event.pull_request.labels.*.name) }}
+          x=${{ toJson(needs.pr_metadata.outputs.pr-labels) }}
           echo $x
 
 
