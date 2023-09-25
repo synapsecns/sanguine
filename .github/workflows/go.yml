@@ -359,9 +359,12 @@ jobs:
       # TODO: https://stackoverflow.com/a/75429845 consider splitting w/ gql to reduce limit hit
       - run: |
           metadata="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER)"
-          echo "##[set-output name=METADATA;]$(echo METADATA)"
 
+          # Extract the labels in JSON format from the metadata
           labels_json="$(echo "$metadata" | jq '.labels.[].name' | jq -s .)"
+
+          # Set the full metadata including the labels as the GitHub Actions step output
+          echo "::set-output name=METADATA::$metadata"
           echo "::set-output name=LABELS::$labels_json"
         id: metadata
         shell: bash
