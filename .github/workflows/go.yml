@@ -496,6 +496,13 @@ jobs:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
+      - name: Remove Label
+        if: contains(needs.pr_metadata.outputs.labels, 'needs-go-generate-${{matrix.package}}')
+        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        with:
+          remove-labels: 'needs-go-generate-${{matrix.package}}'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
 
 
 
