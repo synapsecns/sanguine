@@ -357,7 +357,7 @@ jobs:
         id: find_pr
       # TODO: https://stackoverflow.com/a/75429845 consider splitting w/ gql to reduce limit hit
       - run: |
-          labels="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER --jq '.labels.[].name')"
+          labels="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER)"
           echo "$labels"
         shell: bash
         env:
