@@ -355,7 +355,7 @@ jobs:
     steps:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
-      - uses: LucasRoesler/get-repo-owner-actions@v1.0
+      - uses: LucasRoesler/get-repo-owner-action@v1.0
         id: get_owner
       - name: Get PR labels
         id: pr-labels
