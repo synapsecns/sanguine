@@ -116,6 +116,10 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 		}
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
 			n.summitMyLatestStates[originID] = myLatestState
+			span.AddEvent("Got my summit latest state", trace.WithAttributes(
+				attribute.Int("nonce", int(myLatestState.Nonce())),
+				attribute.Int("originID", int(originID)),
+			))
 		}
 
 		span.End()
@@ -140,6 +144,10 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 		}
 		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
 			n.summitGuardLatestStates[originID] = guardLatestState
+			span.AddEvent("Got guard latest state", trace.WithAttributes(
+				attribute.Int("nonce", int(guardLatestState.Nonce())),
+				attribute.Int("originID", int(originID)),
+			))
 		}
 
 		span.End()
@@ -236,6 +244,10 @@ func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context
 	if attNonce > 0 {
 		n.didSubmitMyLatestNotaryAttestation = true
 	}
+	span.AddEvent("Set didSubmitMyLatestNotaryAttestation", trace.WithAttributes(
+		attribute.Bool("didSubmitMyLatestNotaryAttestation", n.didSubmitMyLatestNotaryAttestation),
+		attribute.Int("attNonce", int(attNonce)),
+	))
 }
 
 //nolint:cyclop
@@ -356,6 +368,10 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 			continue
 		}
 		statesToSubmit[originID] = summitGuardLatest
+		span.AddEvent("Registering guard's latest summit state", trace.WithAttributes(
+			attribute.Int("originID", int(originID)),
+			attribute.Int("nonce", int(summitGuardLatest.Nonce())),
+		))
 
 		span.End()
 	}
@@ -392,12 +408,17 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		))
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
+		span.AddEvent("Dispatching snapshot to submitter")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
-
+			if tx != nil {
+				span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
+					attribute.String("tx", tx.Hash().Hex()),
+				))
+			}
 			return
 		})
 		if err != nil {
@@ -434,6 +455,9 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		))
 		return false
 	}
+	span.AddEvent("Dispatching notary registration to submitter", trace.WithAttributes(
+		attribute.String("agentStatus", agentStatus.Flag().String()),
+	))
 	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
 			transactor,
@@ -443,6 +467,11 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not update agent status: %w", err)
+		}
+		if tx != nil {
+			span.AddEvent("Submitted notary registration tx", trace.WithAttributes(
+				attribute.String("tx", tx.Hash().Hex()),
+			))
 		}
 
 		return
@@ -476,6 +505,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
+		span.AddEvent("Dispatching attestation to submitter")
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
@@ -486,6 +516,11 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
+			}
+			if tx != nil {
+				span.AddEvent("Submitted transaction", trace.WithAttributes(
+					attribute.String("tx", tx.Hash().Hex()),
+				))
 			}
 
 			return
