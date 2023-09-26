@@ -156,6 +156,7 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
+	fmt.Println("loadNotaryLatestAttestation")
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
@@ -172,8 +173,12 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 			latestNotaryAttestation.Attestation().SnapshotRoot() != n.myLatestNotaryAttestation.Attestation().SnapshotRoot() {
 			n.myLatestNotaryAttestation = latestNotaryAttestation
 			n.didSubmitMyLatestNotaryAttestation = false
+			fmt.Printf("set myLatestNotaryAttestation: %v\n", n.myLatestNotaryAttestation.Attestation().SnapshotRoot())
 		}
+	} else {
+		fmt.Println("latestNotaryAttestation is nil")
 	}
+
 }
 
 func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) (bool, bool) {
@@ -341,6 +346,7 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 
 //nolint:cyclop
 func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
+	fmt.Printf("getLatestSnapshot")
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
@@ -372,6 +378,7 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 			attribute.Int("originID", int(originID)),
 			attribute.Int("nonce", int(summitGuardLatest.Nonce())),
 		))
+		fmt.Printf("Got state nonce %v for origin %v\n", summitGuardLatest.Nonce(), originID)
 
 		span.End()
 	}
@@ -382,6 +389,7 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		}
 		snapshotStates = append(snapshotStates, state)
 	}
+	fmt.Printf("Got snapshot states: %v\n", snapshotStates)
 	if len(snapshotStates) > 0 {
 		return types.NewSnapshot(snapshotStates), statesToSubmit
 	}
@@ -391,11 +399,13 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 
 //nolint:cyclop
 func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
+	fmt.Println("submitLatestSnapshot")
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot")
 	defer span.End()
 
 	snapshot, statesToSubmit := n.getLatestSnapshot(ctx)
 	if snapshot == nil {
+		fmt.Println("no snapshot to submit")
 		return
 	}
 
@@ -407,6 +417,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
+		fmt.Println("Notary submitting snapshot to summit")
 		logger.Infof("Notary submitting snapshot to summit")
 		span.AddEvent("Dispatching snapshot to submitter")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
@@ -418,6 +429,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 				span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
+				fmt.Printf("Submitted snapshot tx: %v\n", tx.Hash().Hex())
 			}
 			return
 		})
@@ -487,6 +499,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 
 //nolint:cyclop,unused
 func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
+	fmt.Printf("submitMyLatestAttestation with myLatestNotaryAttestation %v and didSubmitMyLatestNotaryAttestation %v\n", n.myLatestNotaryAttestation, n.didSubmitMyLatestNotaryAttestation)
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
 	defer span.End()
 
@@ -506,6 +519,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		))
 	} else {
 		span.AddEvent("Dispatching attestation to submitter")
+		fmt.Println("Submitting transaction")
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
@@ -518,6 +532,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
 			if tx != nil {
+				fmt.Printf("Submitted attestation: %v\n", tx.Hash().Hex())
 				span.AddEvent("Submitted transaction", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
