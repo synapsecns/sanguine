@@ -17,7 +17,7 @@ import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
 
-function checkTransactionsExist(
+export function checkTransactionsExist(
   transactions: any[] | undefined | null
 ): boolean {
   const exists: boolean =

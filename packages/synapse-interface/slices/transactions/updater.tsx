@@ -1,3 +1,4 @@
+import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
@@ -39,12 +40,14 @@ import {
   removePendingAwaitingCompletionTransaction,
 } from './actions'
 import { isValidAddress } from '@/utils/isValidAddress'
+import { checkTransactionsExist } from '@/components/Portfolio/Activity'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
+  const isWindowFocused: boolean = useWindowFocus()
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -77,9 +80,8 @@ export default function Updater(): null {
   }, [searchedBalancesAndAllowances])
 
   // Start fetch when connected address exists
-  // Unsubscribe when address is unconnected
   useEffect(() => {
-    if (address && !masqueradeActive) {
+    if (address && isWindowFocused && !masqueradeActive) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -88,7 +90,11 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (masqueradeActive && searchedBalancesAndAllowances) {
+    } else if (
+      masqueradeActive &&
+      isWindowFocused &&
+      searchedBalancesAndAllowances
+    ) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
@@ -102,6 +108,33 @@ export default function Updater(): null {
       })
     }
   }, [address, masqueradeActive, searchedBalancesAndAllowances])
+
+  // Unsubscribe when address is unconnected/disconnected
+  useEffect(() => {
+    const isLoading: boolean =
+      isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
+    const userTransactionsExist: boolean =
+      checkTransactionsExist(userPendingTransactions) ||
+      checkTransactionsExist(userHistoricalTransactions)
+
+    if (!isLoading && userTransactionsExist && !isWindowFocused) {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+    }
+  }, [
+    isWindowFocused,
+    userPendingTransactions,
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
+  ])
 
   useEffect(() => {
     const {
