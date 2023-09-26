@@ -21,6 +21,7 @@ import {
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
 } from './actions'
+import { findValidToken } from '@/utils/findValidToken'
 
 export interface BridgeState {
   fromChainId: number
@@ -525,14 +526,3 @@ export const {
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
-
-const findValidToken = (
-  tokens: Token[],
-  routeSymbol: string,
-  swapableType: string
-) => {
-  const matchingToken = tokens?.find((t) => t.routeSymbol === routeSymbol)
-  const swapableToken = tokens?.find((t) => t.swapableType === swapableType)
-
-  return matchingToken ? matchingToken : swapableToken ? swapableToken : null
-}
