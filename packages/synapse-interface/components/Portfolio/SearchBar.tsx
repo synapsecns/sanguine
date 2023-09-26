@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Address } from 'viem'
 import { XIcon } from '@heroicons/react/outline'
 
