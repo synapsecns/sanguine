@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -11,26 +10,19 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { FromChainSelector } from './FromChainSelector'
-import { FromTokenSelector } from './FromTokenSelector'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { SwapChainSelector } from './SwapChainSelector'
+import { SwapFromTokenSelector } from './SwapFromTokenSelector'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { updateSwapFromValue } from '@/slices/swap/reducer'
+import { useSwapState } from '@/slices/swap/hooks'
 
-export const inputRef = React.createRef<HTMLInputElement>()
-
-export const InputContainer = () => {
-  const {
-    fromChainId,
-    fromToken,
-    fromValue,
-    bridgeTxHashes,
-    toChainId,
-    toToken,
-  } = useBridgeState()
+export const SwapInputContainer = () => {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const { swapChainId, swapFromToken, swapToToken, swapFromValue } =
+    useSwapState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
-  const previousBridgeTxHashesRef = useRef<string[]>([])
 
   const { balancesAndAllowances } = usePortfolioState()
 
@@ -38,55 +30,43 @@ export const InputContainer = () => {
     setHasMounted(true)
   }, [])
 
-  useEffect(() => {
-    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
-
-    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
-      setShowValue('')
-    }
-
-    previousBridgeTxHashesRef.current = bridgeTxHashes
-  }, [bridgeTxHashes])
-
   const { isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const dispatch = useDispatch()
 
-  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
+  const tokenData = balancesAndAllowances[swapChainId]?.find(
+    (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
+  )
 
-  const balance = balancesAndAllowances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
+  const parsedBalance = tokenData?.parsedBalance
+
+  const balance = tokenData?.balance
 
   useEffect(() => {
     if (
-      fromToken &&
-      fromToken.decimals[fromChainId] &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n
-      // stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
-      //   fromTokenBalance
+      swapFromToken &&
+      swapFromToken.decimals[swapChainId] &&
+      stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]) !== 0n
     ) {
-      setShowValue(fromValue)
+      setShowValue(swapFromValue)
     }
-  }, [fromValue, inputRef, fromChainId, fromToken])
+  }, [swapFromValue, swapChainId, swapFromToken])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fromValueString: string = cleanNumberInput(event.target.value)
+    const swapFromValueString: string = cleanNumberInput(event.target.value)
     try {
-      dispatch(updateFromValue(fromValueString))
-      setShowValue(fromValueString)
+      dispatch(updateSwapFromValue(swapFromValueString))
+      setShowValue(swapFromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigInteger')
       const inputValue = event.target.value
       const regex = /^[0-9]*[.,]?[0-9]*$/
 
       if (regex.test(inputValue) || inputValue === '') {
-        dispatch(updateFromValue(inputValue))
+        dispatch(updateSwapFromValue(''))
         setShowValue(inputValue)
       }
     }
@@ -94,21 +74,23 @@ export const InputContainer = () => {
 
   const onMaxBalance = useCallback(() => {
     dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken.decimals[fromChainId])
+      updateSwapFromValue(
+        formatBigIntToString(balance, swapFromToken.decimals[swapChainId])
       )
     )
-  }, [balance, fromChainId, fromToken])
+  }, [balance, swapChainId, swapFromToken])
 
   const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
+    if (hasMounted && isConnected) {
+      if (swapChainId === chain.id) {
+        return <ConnectedIndicator />
+      } else if (swapChainId !== chain.id) {
+        return <ConnectToNetworkButton chainId={swapChainId} />
+      }
+    } else if (hasMounted && !isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
-      return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
-      return <ConnectToNetworkButton chainId={fromChainId} />
     }
-  }, [chain, fromChainId, isConnected, hasMounted])
+  }, [chain, swapChainId, isConnected, hasMounted])
 
   return (
     <div
@@ -116,7 +98,7 @@ export const InputContainer = () => {
       className="text-left rounded-md p-md bg-bgLight"
     >
       <div className="flex items-center justify-between mb-3">
-        <FromChainSelector />
+        <SwapChainSelector />
         {connectedStatus}
       </div>
       <div className="flex h-16 mb-2 space-x-2">
@@ -130,7 +112,7 @@ export const InputContainer = () => {
           `}
         >
           <div className="flex items-center">
-            <FromTokenSelector />
+            <SwapFromTokenSelector />
             <div className="flex flex-col justify-between ml-4">
               <div style={{ display: 'table' }}>
                 <input
@@ -177,7 +159,7 @@ export const InputContainer = () => {
             {hasMounted && isConnected && (
               <div className="m">
                 <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
+                  disabled={!balance || balance === 0n}
                   onClickBalance={onMaxBalance}
                 />
               </div>
