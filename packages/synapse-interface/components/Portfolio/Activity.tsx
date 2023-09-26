@@ -13,7 +13,7 @@ import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 
-function checkTransactionsExist(
+export function checkTransactionsExist(
   transactions: any[] | undefined | null
 ): boolean {
   const exists: boolean =

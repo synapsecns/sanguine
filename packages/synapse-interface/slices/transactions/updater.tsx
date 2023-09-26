@@ -1,3 +1,4 @@
+import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { skipToken } from '@reduxjs/toolkit/dist/query'
@@ -39,12 +40,14 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { checkTransactionsExist } from '@/components/Portfolio/Activity'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
+  const isWindowFocused: boolean = useWindowFocus()
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -69,9 +72,8 @@ export default function Updater(): null {
   })
 
   // Start fetch when connected address exists
-  // Unsubscribe when address is unconnected
   useEffect(() => {
-    if (address) {
+    if (address && isWindowFocused) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -80,7 +82,18 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else {
+    }
+  }, [address, isWindowFocused])
+
+  // Unsubscribe when address is unconnected/disconnected
+  useEffect(() => {
+    const isLoading: boolean =
+      isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
+    const userTransactionsExist: boolean =
+      checkTransactionsExist(userPendingTransactions) ||
+      checkTransactionsExist(userHistoricalTransactions)
+
+    if (!isLoading && userTransactionsExist && !isWindowFocused) {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
@@ -91,7 +104,13 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [address])
+  }, [
+    isWindowFocused,
+    userPendingTransactions,
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
+  ])
 
   useEffect(() => {
     const {
