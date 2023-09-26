@@ -12,10 +12,14 @@ export const hasBalance = (
     return false
   }
   const pb = portfolioBalances[chainId]
+  if (!pb) {
+    return false
+  }
   const token = _(pb)
     .pickBy((value, _key) => value.token === t)
     .value()
+
   const tokenWithPb = Object.values(token)[0]
 
-  return tokenWithPb?.balance !== 0n
+  return tokenWithPb && tokenWithPb.balance !== 0n
 }
