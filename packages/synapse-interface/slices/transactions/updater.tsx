@@ -113,11 +113,8 @@ export default function Updater(): null {
   useEffect(() => {
     const isLoading: boolean =
       isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
-    const userTransactionsExist: boolean =
-      checkTransactionsExist(userPendingTransactions) ||
-      checkTransactionsExist(userHistoricalTransactions)
 
-    if (!isLoading && userTransactionsExist && !isWindowFocused) {
+    if ((!isLoading || masqueradeActive) && !isWindowFocused) {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
@@ -130,8 +127,7 @@ export default function Updater(): null {
     }
   }, [
     isWindowFocused,
-    userPendingTransactions,
-    userHistoricalTransactions,
+    masqueradeActive,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   ])
