@@ -10,7 +10,7 @@ import {
   ConnectToNetworkButton,
   ConnectWalletButton,
   ConnectedIndicator,
-} from './ConnectionIndicators'
+} from '@/components/ConnectionIndicators'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
