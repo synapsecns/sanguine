@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
+import React, { useMemo, useState, useEffect } from 'react'
+import { Address } from 'wagmi'
 import Link from 'next/link'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
-  SingleNetworkPortfolio,
-  PortfolioHeader,
-} from './SingleNetworkPortfolio'
+  NetworkTokenBalancesAndAllowances,
+  TokenWithBalanceAndAllowances,
+} from '@/utils/actions/fetchPortfolioBalances'
+import { SingleNetworkPortfolio } from './SingleNetworkPortfolio'
 import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './components/ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -20,6 +20,9 @@ type PortfolioContentProps = {
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchState: FetchState
   visibility: boolean
+  searchInputActive: boolean
+  searchStatus: FetchState
+  searchInput: string
 }
 
 export const PortfolioContent = ({
@@ -29,6 +32,9 @@ export const PortfolioContent = ({
   networkPortfolioWithBalances,
   fetchState,
   visibility,
+  searchInputActive,
+  searchStatus,
+  searchInput,
 }: PortfolioContentProps) => {
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
     getCurrentNetworkPortfolio(
@@ -38,31 +44,55 @@ export const PortfolioContent = ({
 
   const portfolioExists: boolean =
     Object.keys(networkPortfolioWithBalances).length > 0
-  const currentChain: Chain = CHAINS_BY_ID[selectedFromChainId]
-  const isUnsupportedChain: boolean = currentChain ? false : true
 
   const isInitialFetchLoading: boolean =
     !portfolioExists && fetchState === FetchState.LOADING
+
+  const showCurrentNetworkPortfolio: boolean = useMemo(() => {
+    if (searchInputActive && currentNetworkPortfolio) {
+      return Boolean(currentNetworkPortfolio[selectedFromChainId])
+    } else {
+      return Boolean(currentNetworkPortfolio)
+    }
+  }, [
+    searchInputActive,
+    currentNetworkPortfolio,
+    networkPortfolioWithBalances,
+    selectedFromChainId,
+  ])
+
+  const hasFilteredSearchResults: boolean = useMemo(() => {
+    if (networkPortfolioWithBalances) {
+      return Object.values(networkPortfolioWithBalances).length > 0
+    } else {
+      return false
+    }
+  }, [networkPortfolioWithBalances])
 
   return (
     <div
       data-test-id="portfolio-content"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
-      {!connectedAddress && <HomeContent />}
+      {!connectedAddress && !searchInputActive && <HomeContent />}
+      {searchInputActive &&
+        !hasFilteredSearchResults &&
+        searchStatus !== FetchState.LOADING && (
+          <NoSearchResultsContent searchStr={searchInput} />
+        )}
       {connectedAddress && isInitialFetchLoading && <LoadingPortfolioContent />}
-      {currentNetworkPortfolio &&
+      {showCurrentNetworkPortfolio &&
         connectedAddress &&
-        connectedChainId &&
         selectedFromChainId &&
         !isInitialFetchLoading && (
           <SingleNetworkPortfolio
-            portfolioChainId={selectedFromChainId}
-            connectedChainId={connectedChainId}
-            selectedFromChainId={selectedFromChainId}
+            connectedAddress={connectedAddress as Address}
+            portfolioChainId={selectedFromChainId as number}
+            connectedChainId={connectedChainId as number}
+            selectedFromChainId={selectedFromChainId as number}
             portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
-            initializeExpanded={true}
-            fetchState={fetchState}
+            initializeExpanded={false}
+            fetchState={fetchState as FetchState}
           />
         )}
       {connectedAddress &&
@@ -73,12 +103,13 @@ export const PortfolioContent = ({
             return (
               <SingleNetworkPortfolio
                 key={chainId}
-                portfolioChainId={Number(chainId)}
-                connectedChainId={connectedChainId}
-                selectedFromChainId={selectedFromChainId}
-                portfolioTokens={tokens}
+                connectedAddress={connectedAddress as Address}
+                portfolioChainId={Number(chainId) as number}
+                connectedChainId={connectedChainId as number}
+                selectedFromChainId={selectedFromChainId as number}
+                portfolioTokens={tokens as TokenWithBalanceAndAllowances[]}
                 initializeExpanded={false}
-                fetchState={fetchState}
+                fetchState={fetchState as FetchState}
               />
             )
           }
@@ -117,30 +148,19 @@ const LoadingPortfolioContent = () => {
   )
 }
 
-const UnconnectedPortfolioContent = () => {
+export const EmptyPortfolioContent = ({
+  connectedAddress,
+  connectedChain,
+}: {
+  connectedAddress: Address
+  connectedChain: Chain
+}) => {
+  const shortened: string = shortenAddress(connectedAddress)
   return (
-    <>
-      <p
-        data-test-id="unconnected-portfolio-content"
-        className={`
-        text-[#C2C2D6] mt-6 mb-4 pb-6 pl-2
-          border-b border-solid border-[#3D3D5C]
-        `}
-      >
-        Your bridgable assets appear here when your wallet is connected.
-      </p>
-      <ConnectWalletButton />
-    </>
-  )
-}
-
-export const EmptyPortfolioContent = () => {
-  const { address } = useAccount()
-  const shortened = shortenAddress(address, 3)
-  return (
-    <div data-test-id="empty-portfolio-content" className="p-1">
+    <div data-test-id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
-        No supported assets found {address && `for ${shortened}`}.
+        No bridgeable assets found {connectedAddress && `for ${shortened}`} on{' '}
+        {connectedChain?.name}.
       </p>
       <p className="text-[#C2C2D6] mb-4">
         Don't see a chain or token you want to bridge?
@@ -180,6 +200,21 @@ export const HomeContent = () => {
         are ready to submit a transaction.
       </p>
       <ConnectWalletButton />
+    </div>
+  )
+}
+
+export const NoSearchResultsContent = ({
+  searchStr,
+}: {
+  searchStr: string
+}) => {
+  return (
+    <div
+      data-test-id="portfolio-no-search-results-content"
+      className="text-white"
+    >
+      <p className="mb-3 break-words">No results found for '{searchStr}'.</p>
     </div>
   )
 }

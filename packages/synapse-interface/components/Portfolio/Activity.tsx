@@ -1,17 +1,21 @@
 import React, { useMemo } from 'react'
+import Fuse from 'fuse.js'
 import { useAccount, Address } from 'wagmi'
 import { useTransactionsState } from '@/slices/transactions/hooks'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
+import { PortfolioState } from '@/slices/portfolio/reducer'
 import { PendingBridgeTransaction } from '@/slices/bridge/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
+import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
 
 export function checkTransactionsExist(
   transactions: any[] | undefined | null
@@ -30,6 +34,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
+  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
+    usePortfolioState()
 
   const hasPendingTransactions: boolean = useMemo(() => {
     if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
@@ -53,35 +59,132 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const isLoading: boolean =
     isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
 
+  const searchInputActive: boolean = searchInput.length > 0
+
+  const masqueradeActive: boolean = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances).length > 0
+  }, [searchedBalancesAndAllowances])
+
+  const masqueradeAddress: Address = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances)[0] as Address
+  }, [searchedBalancesAndAllowances])
+
+  const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
+    useMemo(() => {
+      let searchFiltered: BridgeTransaction[] = []
+      const fuseOptions = {
+        includeScore: true,
+        threshold: 0.33,
+        distance: 20,
+        keys: [
+          'originChain.name',
+          'originToken.symbol',
+          'destinationChain.name',
+          'destinationToken.symbol',
+          'originTokenAddresses',
+          'destinationTokenAddresses',
+          'fromInfo.txnHash',
+          'toInfo.txnHash',
+        ],
+      }
+
+      if (
+        !isUserHistoricalTransactionsLoading &&
+        checkTransactionsExist(userHistoricalTransactions)
+      ) {
+        const formatted: BridgeTransaction[] = userHistoricalTransactions.map(
+          (transaction: BridgeTransaction) => {
+            const originToken: Token = tokenAddressToToken(
+              transaction?.fromInfo?.chainID,
+              transaction?.fromInfo?.tokenAddress
+            )
+            const destinationToken: Token = tokenAddressToToken(
+              transaction?.toInfo?.chainID,
+              transaction?.toInfo?.tokenAddress
+            )
+            return {
+              ...transaction,
+              originChain: CHAINS_BY_ID[
+                transaction?.fromInfo?.chainID
+              ] as Chain,
+              originToken: originToken,
+              originTokenAddresses:
+                originToken && Object.values(originToken?.addresses),
+              destinationChain: CHAINS_BY_ID[
+                transaction?.toInfo?.chainID
+              ] as Chain,
+              destinationToken: destinationToken,
+              destinationTokenAddresses:
+                destinationToken && Object.values(destinationToken?.addresses),
+            }
+          }
+        )
+        const fuse = new Fuse(formatted, fuseOptions)
+        if (searchInputActive) {
+          searchFiltered = fuse
+            .search(searchInput)
+            .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
+        }
+        const inputIsMasqueradeAddress: boolean =
+          searchInput === masqueradeAddress
+
+        return searchInputActive && !inputIsMasqueradeAddress
+          ? searchFiltered
+          : userHistoricalTransactions
+      }
+    }, [
+      searchInput,
+      masqueradeAddress,
+      searchInputActive,
+      userHistoricalTransactions,
+      isUserHistoricalTransactionsLoading,
+    ])
+
+  const hasFilteredSearchResults: boolean = useMemo(() => {
+    if (filteredHistoricalTransactionsBySearchInput) {
+      return filteredHistoricalTransactionsBySearchInput.length > 0
+    } else {
+      return false
+    }
+  }, [filteredHistoricalTransactionsBySearchInput])
+
+  const viewingAddress: string | null = useMemo(() => {
+    if (masqueradeActive) {
+      return masqueradeAddress
+    } else if (address) {
+      return address
+    } else return null
+  }, [masqueradeActive, masqueradeAddress, address])
+
   return (
     <div
       data-test-id="activity"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
-      {!address && (
-        <div className="text-[#C2C2D6]">
+      {!viewingAddress && (
+        <div className="text-secondary">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
-      {address && isLoading && (
-        <div className="text-[#C2C2D6]">Loading activity...</div>
+      {viewingAddress && isLoading && (
+        <div className="text-secondary">Loading activity...</div>
       )}
 
-      {address && !isLoading && hasNoTransactions && (
-        <div className="text-[#C2C2D6]">
-          Your pending and recent transactions will appear here.
-          <UserExplorerLink connectedAddress={address} />
+      {viewingAddress && !isLoading && hasNoTransactions && (
+        <div className="text-secondary">
+          No transactions in last 30 days.
+          <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
       )}
 
-      {address && !isLoading && hasPendingTransactions && (
+      {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactions &&
             pendingAwaitingCompletionTransactions.map(
               (transaction: BridgeTransaction) => (
                 <PendingTransaction
-                  connectedAddress={address as Address}
+                  connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time as number}
                   transactionHash={transaction?.fromInfo?.txnHash as string}
@@ -121,15 +224,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
 
-      {address && !isLoading && hasHistoricalTransactions && (
+      {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
-            userHistoricalTransactions
-              .slice(0, 6) //temporarily only show recent 6
+            filteredHistoricalTransactionsBySearchInput
+              .slice(0, searchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
-                  connectedAddress={address as Address}
+                  connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time as number}
                   completedTimestamp={transaction?.toInfo?.time as number}
@@ -163,7 +266,10 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-          <UserExplorerLink connectedAddress={address} />
+          {searchInputActive && !hasFilteredSearchResults && (
+            <NoSearchResultsContent searchStr={searchInput} />
+          )}
+          <UserExplorerLink connectedAddress={viewingAddress} />
         </ActivitySection>
       )}
     </div>
