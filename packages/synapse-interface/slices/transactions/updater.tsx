@@ -1,8 +1,7 @@
 import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { skipToken } from '@reduxjs/toolkit/dist/query'
-import { useAccount } from 'wagmi'
+import { useAccount, Address } from 'wagmi'
 import {
   useLazyGetUserHistoricalActivityQuery,
   useLazyGetUserPendingTransactionsQuery,
@@ -40,6 +39,7 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { isValidAddress } from '@/utils/isValidAddress'
 import { checkTransactionsExist } from '@/components/Portfolio/Activity'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
@@ -57,7 +57,11 @@ export default function Updater(): null {
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
-  const { activeTab }: PortfolioState = usePortfolioState()
+  const {
+    activeTab,
+    searchInput,
+    searchedBalancesAndAllowances,
+  }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
@@ -71,9 +75,13 @@ export default function Updater(): null {
     },
   })
 
+  const masqueradeActive: boolean = useMemo(() => {
+    return Object.keys(searchedBalancesAndAllowances).length > 0
+  }, [searchedBalancesAndAllowances])
+
   // Start fetch when connected address exists
   useEffect(() => {
-    if (address && isWindowFocused) {
+    if (address && isWindowFocused && !masqueradeActive) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -82,18 +90,31 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
+    } else if (
+      masqueradeActive &&
+      isWindowFocused &&
+      searchedBalancesAndAllowances
+    ) {
+      const queriedAddress: Address = Object.keys(
+        searchedBalancesAndAllowances
+      )[0] as Address
+      fetchUserHistoricalActivity({
+        address: queriedAddress,
+        startTime: queryHistoricalTime,
+      })
+      fetchUserPendingActivity({
+        address: queriedAddress,
+        startTime: queryPendingTime,
+      })
     }
-  }, [address, isWindowFocused])
+  }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
   // Unsubscribe when address is unconnected/disconnected
   useEffect(() => {
     const isLoading: boolean =
       isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
-    const userTransactionsExist: boolean =
-      checkTransactionsExist(userPendingTransactions) ||
-      checkTransactionsExist(userHistoricalTransactions)
 
-    if (!isLoading && userTransactionsExist && !isWindowFocused) {
+    if ((!isLoading || masqueradeActive) && !isWindowFocused) {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
@@ -106,8 +127,7 @@ export default function Updater(): null {
     }
   }, [
     isWindowFocused,
-    userPendingTransactions,
-    userHistoricalTransactions,
+    masqueradeActive,
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
   ])
@@ -120,18 +140,23 @@ export default function Updater(): null {
       data: historicalData,
     } = fetchedHistoricalActivity
 
-    if (address && isUserHistoricalTransactionsLoading) {
+    if ((masqueradeActive || address) && isUserHistoricalTransactionsLoading) {
       !isLoading &&
         !isUninitialized &&
         dispatch(updateIsUserHistoricalTransactionsLoading(false))
     }
 
-    if (address && isSuccess) {
+    if ((masqueradeActive || address) && isSuccess) {
       dispatch(
         updateUserHistoricalTransactions(historicalData?.bridgeTransactions)
       )
     }
-  }, [fetchedHistoricalActivity, isUserHistoricalTransactionsLoading, address])
+  }, [
+    fetchedHistoricalActivity,
+    isUserHistoricalTransactionsLoading,
+    address,
+    masqueradeActive,
+  ])
 
   useEffect(() => {
     const {

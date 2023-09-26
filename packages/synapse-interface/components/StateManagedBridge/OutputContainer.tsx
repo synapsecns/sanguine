@@ -83,7 +83,7 @@ export const OutputContainer = ({}) => {
 const DisplayAddress = ({ address }) => {
   return (
     <div className="border-[0.5px] border-secondaryTextColor rounded-md pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
-      {shortenAddress(address, 3)}
+      {shortenAddress(address)}
     </div>
   )
 }
