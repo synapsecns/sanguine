@@ -18,7 +18,10 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
-import { fetchBridgeQuote } from '@/utils/actions/fetchBridgeQuotes'
+import {
+  fetchBridgeQuotes,
+  fetchBridgeQuote,
+} from '@/utils/actions/fetchBridgeQuotes'
 import { Address } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -157,18 +160,30 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  // console.log('possibleTokens: ', possibleTokens)
+  console.log('possibleTokens: ', possibleTokens)
+
   useEffect(() => {
     ;(async () => {
       console.log('hit here')
-      const results = await fetchBridgeQuote(
-        {
-          originChainId: fromChainId,
-          destinationChainId: toChainId,
-          originTokenAddress: fromToken?.addresses[fromChainId] as Address,
-          destinationTokenAddress: toToken?.addresses[toChainId] as Address,
-          amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
-        },
+      const results = await fetchBridgeQuotes(
+        [
+          {
+            originChainId: fromChainId,
+            destinationChainId: toChainId,
+            originTokenAddress: fromToken?.addresses[fromChainId] as Address,
+            destinationTokenAddress:
+              '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', //DAI
+            amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+          },
+          {
+            originChainId: fromChainId,
+            destinationChainId: toChainId,
+            originTokenAddress: fromToken?.addresses[fromChainId] as Address,
+            destinationTokenAddress:
+              '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', //USDC
+            amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+          },
+        ],
         synapseSDK
       )
 

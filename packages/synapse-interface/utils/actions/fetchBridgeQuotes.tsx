@@ -26,6 +26,26 @@ export async function fetchBridgeQuote(
   }
 }
 
+export async function fetchBridgeQuotes(
+  requests: BridgeQuoteRequest[],
+  synapseSDK: any
+) {
+  try {
+    const bridgeQuotesPromises = requests.map(
+      async (request: BridgeQuoteRequest) => {
+        const results = await Promise.all([
+          fetchBridgeQuote(request, synapseSDK),
+        ])
+        return results
+      }
+    )
+    const bridgeQuotes = await Promise.all(bridgeQuotesPromises)
+    return bridgeQuotes
+  } catch (e) {
+    console.error('error from fetchBridgeQuotes: ', e)
+  }
+}
+
 export function useBridgeQuote(request: BridgeQuoteRequest) {
   const [bridgeQuote, setBridgeQuote] = useState(null)
   const { synapseSDK } = useSynapseContext()
