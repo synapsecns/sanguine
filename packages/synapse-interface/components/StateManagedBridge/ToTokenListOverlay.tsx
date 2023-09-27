@@ -160,11 +160,10 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  console.log('possibleTokens: ', possibleTokens)
+  // console.log('possibleTokens: ', possibleTokens)
 
   useEffect(() => {
     ;(async () => {
-      console.log('hit here')
       const results = await fetchBridgeQuotes(
         [
           {

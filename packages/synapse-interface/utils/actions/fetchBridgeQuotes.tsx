@@ -3,7 +3,7 @@ import { Address } from 'viem'
 import { useSynapseContext } from '../providers/SynapseProvider'
 import { BridgeQuote } from '../types'
 
-interface BridgeQuoteRequest {
+export interface BridgeQuoteRequest {
   originChainId: number
   destinationChainId: number
   originTokenAddress: Address
@@ -29,11 +29,11 @@ export async function fetchBridgeQuote(
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
   synapseSDK: any
-) {
+): Promise<[BridgeQuote][]> {
   try {
-    const bridgeQuotesPromises = requests.map(
+    const bridgeQuotesPromises: Promise<[BridgeQuote]>[] = requests.map(
       async (request: BridgeQuoteRequest) => {
-        const results = await Promise.all([
+        const results: [BridgeQuote] = await Promise.all([
           fetchBridgeQuote(request, synapseSDK),
         ])
         return results
@@ -44,41 +44,4 @@ export async function fetchBridgeQuotes(
   } catch (e) {
     console.error('error from fetchBridgeQuotes: ', e)
   }
-}
-
-export function useBridgeQuote(request: BridgeQuoteRequest) {
-  const [bridgeQuote, setBridgeQuote] = useState(null)
-  const { synapseSDK } = useSynapseContext()
-
-  console.log('request:', request)
-
-  useEffect(() => {
-    ;(async () => {
-      if (request) {
-        const {
-          feeAmount,
-          routerAddress,
-          maxAmountOut,
-          originQuery,
-          destQuery,
-        } = await synapseSDK.bridgeQuote(
-          request.originChainId,
-          request.destinationChainId,
-          request.originTokenAddress,
-          request.destinationTokenAddress,
-          request.amount
-        )
-
-        setBridgeQuote({
-          feeAmount: feeAmount,
-          routerAddress: routerAddress,
-          maxAmountOut: maxAmountOut,
-          originQuery: originQuery,
-          destQuery: destQuery,
-        })
-      }
-    })()
-  }, [request])
-
-  return bridgeQuote
 }
