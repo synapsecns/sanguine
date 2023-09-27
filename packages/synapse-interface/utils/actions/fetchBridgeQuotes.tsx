@@ -10,6 +10,18 @@ interface BridgeQuoteRequest {
   amount: bigint
 }
 
+export async function fetchBridgeQuote(request: BridgeQuoteRequest) {
+  const { synapseSDK } = useSynapseContext()
+
+  return synapseSDK.bridgeQuote(
+    request.originChainId,
+    request.destinationChainId,
+    request.originTokenAddress,
+    request.destinationTokenAddress,
+    request.amount
+  )
+}
+
 export function useBridgeQuote(request: BridgeQuoteRequest) {
   const [bridgeQuote, setBridgeQuote] = useState(null)
   const { synapseSDK } = useSynapseContext()

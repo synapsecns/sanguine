@@ -157,13 +157,13 @@ export const ToTokenListOverlay = () => {
 
   console.log('possibleTokens: ', possibleTokens)
 
-  const fetchedBridgeQuote = useBridgeQuote({
-    originChainId: fromChainId,
-    destinationChainId: toChainId,
-    originTokenAddress: fromToken?.addresses[fromChainId] as Address,
-    destinationTokenAddress: toToken?.addresses[toChainId] as Address,
-    amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
-  })
+  // const fetchedBridgeQuote = useBridgeQuote({
+  //   originChainId: fromChainId,
+  //   destinationChainId: toChainId,
+  //   originTokenAddress: fromToken?.addresses[fromChainId] as Address,
+  //   destinationTokenAddress: toToken?.addresses[toChainId] as Address,
+  //   amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+  // })
 
   console.log('fetchedBridgeQuote:', fetchedBridgeQuote)
 
