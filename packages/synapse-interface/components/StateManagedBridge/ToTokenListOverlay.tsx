@@ -151,6 +151,8 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
+  console.log('possibleTokens: ', possibleTokens)
+
   return (
     <div
       ref={overlayRef}
