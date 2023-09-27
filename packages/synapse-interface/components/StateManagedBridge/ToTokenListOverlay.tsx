@@ -18,13 +18,15 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
-import { useBridgeQuote } from '@/utils/actions/fetchBridgeQuotes'
+import { fetchBridgeQuote } from '@/utils/actions/fetchBridgeQuotes'
 import { Address } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken, fromValue } =
     useBridgeState()
+  const { synapseSDK } = useSynapseContext()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -155,17 +157,24 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  console.log('possibleTokens: ', possibleTokens)
+  // console.log('possibleTokens: ', possibleTokens)
+  useEffect(() => {
+    ;(async () => {
+      console.log('hit here')
+      const results = await fetchBridgeQuote(
+        {
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          originTokenAddress: fromToken?.addresses[fromChainId] as Address,
+          destinationTokenAddress: toToken?.addresses[toChainId] as Address,
+          amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+        },
+        synapseSDK
+      )
 
-  // const fetchedBridgeQuote = useBridgeQuote({
-  //   originChainId: fromChainId,
-  //   destinationChainId: toChainId,
-  //   originTokenAddress: fromToken?.addresses[fromChainId] as Address,
-  //   destinationTokenAddress: toToken?.addresses[toChainId] as Address,
-  //   amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
-  // })
-
-  console.log('fetchedBridgeQuote:', fetchedBridgeQuote)
+      console.log('results:', results)
+    })()
+  }, [synapseSDK])
 
   return (
     <div

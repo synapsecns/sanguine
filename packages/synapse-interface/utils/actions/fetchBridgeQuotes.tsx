@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Address } from 'viem'
 import { useSynapseContext } from '../providers/SynapseProvider'
+import { BridgeQuote } from '../types'
 
 interface BridgeQuoteRequest {
   originChainId: number
@@ -10,16 +11,19 @@ interface BridgeQuoteRequest {
   amount: bigint
 }
 
-export async function fetchBridgeQuote(request: BridgeQuoteRequest) {
-  const { synapseSDK } = useSynapseContext()
-
-  return synapseSDK.bridgeQuote(
-    request.originChainId,
-    request.destinationChainId,
-    request.originTokenAddress,
-    request.destinationTokenAddress,
-    request.amount
-  )
+export async function fetchBridgeQuote(
+  request: BridgeQuoteRequest,
+  synapseSDK: any
+): Promise<BridgeQuote> {
+  if (request && synapseSDK) {
+    return synapseSDK.bridgeQuote(
+      request.originChainId,
+      request.destinationChainId,
+      request.originTokenAddress,
+      request.destinationTokenAddress,
+      request.amount
+    )
+  }
 }
 
 export function useBridgeQuote(request: BridgeQuoteRequest) {
