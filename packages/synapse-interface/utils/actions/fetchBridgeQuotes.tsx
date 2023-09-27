@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react'
 import { Address } from 'viem'
-import { useSynapseContext } from '../providers/SynapseProvider'
 import { BridgeQuote } from '../types'
 
 export interface BridgeQuoteRequest {

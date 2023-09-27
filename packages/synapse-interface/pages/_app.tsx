@@ -50,6 +50,7 @@ import { UserProvider } from '@/contexts/UserProvider'
 
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
+import BridgeUpdater from '@/slices/bridge/updater'
 
 const rawChains = [
   mainnet,
@@ -133,6 +134,7 @@ function Updaters() {
     <>
       <PortfolioUpdater />
       <TransactionsUpdater />
+      <BridgeUpdater />
     </>
   )
 }

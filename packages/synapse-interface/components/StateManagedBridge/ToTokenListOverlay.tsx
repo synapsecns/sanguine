@@ -188,7 +188,7 @@ export const ToTokenListOverlay = () => {
 
       console.log('results:', results)
     })()
-  }, [synapseSDK])
+  }, [synapseSDK, toTokens])
 
   return (
     <div
