@@ -1,5 +1,5 @@
 import { Address } from 'viem'
-import { BridgeQuote } from '../types'
+import { BridgeQuote, Token } from '@/utils/types'
 
 export interface BridgeQuoteRequest {
   originChainId: number
@@ -7,6 +7,7 @@ export interface BridgeQuoteRequest {
   originTokenAddress: Address
   destinationTokenAddress: Address
   amount: bigint
+  token: Token
 }
 
 export async function fetchBridgeQuote(
@@ -14,13 +15,18 @@ export async function fetchBridgeQuote(
   synapseSDK: any
 ): Promise<BridgeQuote> {
   if (request && synapseSDK) {
-    return synapseSDK.bridgeQuote(
+    const bridgeQuote = await synapseSDK.bridgeQuote(
       request.originChainId,
       request.destinationChainId,
       request.originTokenAddress,
       request.destinationTokenAddress,
       request.amount
     )
+
+    return {
+      ...bridgeQuote,
+      token: request.token,
+    }
   }
 }
 

@@ -27,7 +27,7 @@ export const ToTokenListOverlay = () => {
   const dispatch = useDispatch()
   const overlayRef = useRef(null)
 
-  let possibleTokens = sortByPriorityRank(toTokens)
+  let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
   const { toTokens: allToChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -151,7 +151,8 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  // console.log('possibleTokens: ', possibleTokens)
+  console.log('possibleTokens: ', possibleTokens)
+
   return (
     <div
       ref={overlayRef}
