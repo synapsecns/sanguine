@@ -35,7 +35,7 @@ export default function Updater(): null {
       )
 
       ;(async () => {
-        const bridgeQuotes = await fetchBridgeQuotes(
+        const bridgeQuotes: [BridgeQuote][] = await fetchBridgeQuotes(
           bridgeQuoteRequests,
           synapseSDK
         )
