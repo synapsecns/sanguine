@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from './reducer'
@@ -11,6 +12,7 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 export default function Updater(): null {
+  const dipatch = useAppDispatch()
   const { synapseSDK } = useSynapseContext()
   const {
     fromChainId,
