@@ -13,7 +13,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/event"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -22,6 +21,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omniConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -211,63 +211,6 @@ func getMessageRoutes(chainConfigs map[uint32]chainConfig, summitChainID uint32,
 	return routes, nil
 }
 
-func watchEvents(ctx context.Context, chainCfg chainConfig, contractName string) (err error) {
-	fmt.Printf("Watching events for %s on chain %d\n", contractName, chainCfg.ChainID)
-	subs := []event.Subscription{}
-
-	switch contractName {
-	case "PingPongClient":
-		contract, ok := chainCfg.Deployments[contractName].Contract.(domains.PingPongClientContract)
-		if !ok {
-			return fmt.Errorf("could not cast contract")
-		}
-
-		// Watch sent events.
-		pingSentChan := make(chan *pingpongclient.PingPongClientPingSent, eventBufferSize)
-		sentSub, err := contract.WatchPingSent(ctx, pingSentChan)
-		if err != nil {
-			return err
-		}
-		defer sentSub.Unsubscribe()
-		subs = append(subs, sentSub)
-		go func() {
-			for {
-				event := <-pingSentChan
-				fmt.Printf("Ping sent: %+v\n", event)
-			}
-		}()
-
-		// Watch received events.
-		pongReceivedChan := make(chan *pingpongclient.PingPongClientPongReceived, eventBufferSize)
-		receivedSub, err := contract.WatchPongReceived(ctx, pongReceivedChan)
-		if err != nil {
-			return err
-		}
-		defer receivedSub.Unsubscribe()
-		subs = append(subs, receivedSub)
-		go func() {
-			for {
-				event := <-pongReceivedChan
-				fmt.Printf("Pong received: %+v\n", event)
-			}
-		}()
-	default:
-		return fmt.Errorf("unknown contract %s", contractName)
-	}
-
-	// Listen for subscription errors.
-	for _, s := range subs {
-		sub := s
-		go func() {
-			subErr := <-sub.Err()
-			if subErr != nil {
-				fmt.Printf("Error in subscription: %v", subErr)
-			}
-		}()
-	}
-	return nil
-}
-
 const scribeConnectTimeout = 30 * time.Second
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
@@ -299,17 +242,25 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 }
 
 // streamLogs uses the grpcConnection to Scribe, with a chainID and address to get all logs from that address.
-func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient) error {
+func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient, omniRPCClient omniClient.RPCClient) error {
 	fmt.Printf("streaming logs for chain %d on addr %s\n", chainID, address)
-	// TODO: Get last block number to define starting point for streamLogs.
-	fromBlock := strconv.FormatUint(0, 16)
+	// chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
+	// if err != nil {
+	// 	return err
+	// }
+	// fromBlock, err := chainClient.BlockNumber(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	fromBlock := 0
+	fmt.Printf("Got current block number for chain %d: %d\n", chainID, fromBlock)
 	toBlock := "latest"
 	stream, err := conn.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
 			ChainId:         chainID,
 		},
-		FromBlock: fromBlock,
+		FromBlock: strconv.Itoa(int(fromBlock)),
 		ToBlock:   toBlock,
 	})
 	if err != nil {
@@ -327,7 +278,6 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 		if log == nil {
 			return fmt.Errorf("could not convert log")
 		}
-		fmt.Printf("log: %v\n", log)
 
 		select {
 		case <-ctx.Done():
@@ -339,8 +289,7 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 
 			return fmt.Errorf("context done: %w", ctx.Err())
 		default:
-			fmt.Printf("Received log: %v\n", log)
-			err = handleLog(log)
+			err = handleLog(log, chainID)
 			if err != nil {
 				return err
 			}
@@ -348,35 +297,34 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 	}
 }
 
-func handleLog(log *ethTypes.Log) (err error) {
+func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 	var event interface{}
 	if event, err = parser.ParsePingSent(*log); err == nil {
 		pingSentEvent, ok := event.(*pingpongclient.PingPongClientPingSent)
 		if !ok {
 			return fmt.Errorf("could not parse ping sent event")
 		}
-		fmt.Printf("Parsed ping sent with ID %d\n", pingSentEvent.PingId.Int64())
+		fmt.Printf("Parsed ping sent on chain %d [ID=%d]\n", chainID, pingSentEvent.PingId.Int64())
 	} else if event, err = parser.ParsePingReceived(*log); err == nil {
 		pingReceivedEvent, ok := event.(*pingpongclient.PingPongClientPingReceived)
 		if !ok {
 			return fmt.Errorf("could not parse ping received event")
 		}
-		fmt.Printf("Parsed ping received with ID %d\n", pingReceivedEvent.PingId.Int64())
+		fmt.Printf("Parsed ping received on chain %d [ID=%d]\n", chainID, pingReceivedEvent.PingId.Int64())
 	} else if event, err = parser.ParsePongSent(*log); err == nil {
 		pongSentEvent, ok := event.(*pingpongclient.PingPongClientPongSent)
 		if !ok {
 			return fmt.Errorf("could not parse pong sent event")
 		}
-		fmt.Printf("Parsed pong sent with ID %d\n", pongSentEvent.PingId.Int64())
+		fmt.Printf("Parsed pong sent on chain %d [ID=%d]\n", chainID, pongSentEvent.PingId.Int64())
 	} else if event, err = parser.ParsePongReceived(*log); err == nil {
 		pongReceivedEvent, ok := event.(*pingpongclient.PingPongClientPongReceived)
 		if !ok {
 			return fmt.Errorf("could not parse pong received event")
 		}
-		fmt.Printf("Parsed pong received with ID %d\n", pongReceivedEvent.PingId.Int64())
+		fmt.Printf("Parsed pong received on chain %d [ID=%d]\n", chainID, pongReceivedEvent.PingId.Int64())
 	} else {
-		fmt.Printf("could not parse log: %v\n", log)
-		// return fmt.Errorf("could not parse log")
+		return fmt.Errorf("could not parse log")
 	}
 	return nil
 }
@@ -392,9 +340,11 @@ func main() {
 	var dockerPath string
 	var deploymentPath string
 	var privateKey string
+	var numIters int
 	flag.StringVar(&dockerPath, "d", "", "path to devnet docker files")
 	flag.StringVar(&deploymentPath, "c", "", "path to contract deployments")
 	flag.StringVar(&privateKey, "p", "", "private key")
+	flag.IntVar(&numIters, "n", 1, "number of message route iterations")
 	flag.Parse()
 	if len(dockerPath) == 0 {
 		panic("expected docker path to be set (use -d flag)")
@@ -448,11 +398,11 @@ func main() {
 	}
 
 	// Get routes.
-	routes, err := getMessageRoutes(chainConfigs, summitChainID, 1)
+	routes, err := getMessageRoutes(chainConfigs, summitChainID, 2)
 	if err != nil {
 		panic(err)
 	}
-	routes = [][2]uint32{{43, 44}, {44, 43}}
+	// routes = [][2]uint32{{43, 44}, {44, 43}}
 	fmt.Printf("routes: %v\n", routes)
 
 	// Connect to Scribe.
@@ -463,6 +413,9 @@ func main() {
 		panic(err)
 	}
 
+	// Connect to OmniRPC.
+	omniRPCClient := omniClient.NewOmnirpcClient("http://localhost:9001", metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
+
 	// Listen for messages.
 	g, ctx := errgroup.WithContext(ctx)
 	contractName := "PingPongClient"
@@ -470,18 +423,13 @@ func main() {
 		chainCfg := c
 		addr := chainCfg.Deployments[contractName].ContractAddress
 		g.Go(func() error {
-			return streamLogs(ctx, chainCfg.ChainID, addr, scribeClient)
+			return streamLogs(ctx, chainCfg.ChainID, addr, scribeClient, omniRPCClient)
 		})
 	}
 
-	// // Listen for messages.
-	// contractName := "PingPongClient"
-	// for _, chainCfg := range chainConfigs {
-	// 	watchEvents(ctx, chainCfg, contractName)
-	// }
-
 	// Send messages.
-	for i := 0; i < 1; i++ {
+	fmt.Printf("Running %d iterations.\n", numIters)
+	for i := 0; i < numIters; i++ {
 		for _, route := range routes {
 			fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
 			contract, ok := chainConfigs[route[0]].Deployments[contractName].Contract.(domains.PingPongClientContract)
@@ -496,27 +444,6 @@ func main() {
 			fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
 		}
 	}
-
-	// time.Sleep(10 * time.Second)
-	// contract, ok := chainConfigs[43].Deployments[contractName].Contract.(domains.PingPongClientContract)
-	// if !ok {
-	// 	panic("could not cast contract")
-	// }
-	// destPingPongAddr := common.HexToAddress(chainConfigs[44].Deployments[contractName].ContractAddress)
-	// _, err = contract.DoPing(ctx, signer, 44, destPingPongAddr, 0)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// contract, ok = chainConfigs[44].Deployments[contractName].Contract.(domains.PingPongClientContract)
-	// if !ok {
-	// 	panic("could not cast contract")
-	// }
-	// destPingPongAddr = common.HexToAddress(chainConfigs[43].Deployments[contractName].ContractAddress)
-	// _, err = contract.DoPing(ctx, signer, 43, destPingPongAddr, 0)
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	err = g.Wait()
 	if err != nil {
