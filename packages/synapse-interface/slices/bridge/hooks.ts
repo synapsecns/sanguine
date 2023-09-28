@@ -4,6 +4,7 @@ import { RootState } from '@/store/store'
 import { useAppSelector } from '@/store/hooks'
 import {
   fetchBridgeQuote,
+  fetchBridgeQuotes,
   BridgeQuoteRequest,
 } from '@/utils/actions/fetchBridgeQuotes'
 
@@ -13,5 +14,8 @@ export const useBridgeState = (): RootState['bridge'] => {
 
 export const fetchAndStoreBridgeQuotes = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuotes',
-  async () => {}
+  async (requests: BridgeQuoteRequest[], synapseSDK: any) => {
+    const bridgeQuotes = await fetchBridgeQuotes(requests, synapseSDK)
+    return bridgeQuotes
+  }
 )
