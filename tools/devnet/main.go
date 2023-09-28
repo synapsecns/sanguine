@@ -356,14 +356,27 @@ func handleLog(log *ethTypes.Log) (err error) {
 			return fmt.Errorf("could not parse ping sent event")
 		}
 		fmt.Printf("Parsed ping sent with ID %d\n", pingSentEvent.PingId.Int64())
-	} else if event, err = parser.ParsePongReceived(*log); err == nil {
-		pongReceivedEvent, ok := event.(*pingpongclient.PingPongClientPongReceived)
+	} else if event, err = parser.ParsePingReceived(*log); err == nil {
+		pingReceivedEvent, ok := event.(*pingpongclient.PingPongClientPingReceived)
 		if !ok {
 			return fmt.Errorf("could not parse ping received event")
 		}
+		fmt.Printf("Parsed ping received with ID %d\n", pingReceivedEvent.PingId.Int64())
+	} else if event, err = parser.ParsePongSent(*log); err == nil {
+		pongSentEvent, ok := event.(*pingpongclient.PingPongClientPongSent)
+		if !ok {
+			return fmt.Errorf("could not parse pong sent event")
+		}
+		fmt.Printf("Parsed pong sent with ID %d\n", pongSentEvent.PingId.Int64())
+	} else if event, err = parser.ParsePongReceived(*log); err == nil {
+		pongReceivedEvent, ok := event.(*pingpongclient.PingPongClientPongReceived)
+		if !ok {
+			return fmt.Errorf("could not parse pong received event")
+		}
 		fmt.Printf("Parsed pong received with ID %d\n", pongReceivedEvent.PingId.Int64())
 	} else {
-		return fmt.Errorf("could not parse log")
+		fmt.Printf("could not parse log: %v\n", log)
+		// return fmt.Errorf("could not parse log")
 	}
 	return nil
 }

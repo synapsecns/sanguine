@@ -314,6 +314,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	fmt.Printf("execute msg: %v\n", message)
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -332,6 +333,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
+		fmt.Println("nonce is nil")
 		return false, nil
 	}
 
@@ -342,6 +344,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if state == nil {
+		fmt.Println("state is nil")
 		return false, nil
 	}
 
@@ -357,6 +360,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedMessageProof {
+		fmt.Println("message proof not verified")
 		return false, nil
 	}
 
@@ -366,6 +370,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedStateProof {
+		fmt.Println("state proof not verified")
 		return false, nil
 	}
 
@@ -385,6 +390,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if snapshotProof == nil || stateIndex == nil {
+		fmt.Printf("snapshot proof or state index is nil (%v, %v)", snapshotProof, snapshotProof)
 		return false, nil
 	}
 
@@ -406,7 +412,9 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
+	fmt.Println("EXECUTING")
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		fmt.Printf("submitting for execution on domain %d\n", destinationDomain)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -425,6 +433,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, fmt.Errorf("could not submit transaction: %w", err)
 	}
 
+	fmt.Println("execute success")
 	return true, nil
 }
 
@@ -672,8 +681,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
-	// toBlock := "latest"
-	toBlock := "1000"
+	toBlock := "latest"
 
 	fmt.Printf("stream from block %v to %v\n", fromBlock, toBlock)
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
@@ -815,6 +823,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
+				fmt.Printf("got executable messages: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -841,9 +850,11 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					if !messageExecuted {
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
+							fmt.Printf("execute err: %v\n", err)
 							logger.Errorf("could not execute message, retrying: %s", err)
 							continue
 						}
+						fmt.Printf("executed: %v\n", executed)
 
 						if !executed {
 							continue
