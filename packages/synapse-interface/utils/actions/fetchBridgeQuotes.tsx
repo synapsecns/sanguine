@@ -1,6 +1,13 @@
 import { Address } from 'viem'
 import { BridgeQuote, Token } from '@/utils/types'
-
+import {
+  stringToBigInt,
+  powBigInt,
+  formatBigIntToString,
+} from '../bigint/format'
+import { subtractSlippage } from '../slippage'
+import { commify } from '@ethersproject/units'
+import { calculateExchangeRate } from '../calculateExchangeRate'
 // Pass in Origin Token and Destination Token
 // To allow fetchBridgeQuote to calculate exchange rate
 export interface BridgeQuoteRequest {
@@ -17,17 +24,71 @@ export async function fetchBridgeQuote(
   synapseSDK: any
 ): Promise<BridgeQuote> {
   if (request && synapseSDK) {
-    const bridgeQuote = await synapseSDK.bridgeQuote(
-      request.originChainId,
-      request.destinationChainId,
-      request.originToken.addresses[request.originChainId],
-      request.destinationTokenAddress,
-      request.amount
+    const {
+      originChainId,
+      originToken,
+      destinationChainId,
+      destinationTokenAddress,
+      destinationToken,
+      amount,
+    }: BridgeQuoteRequest = request
+    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
+      await synapseSDK.bridgeQuote(
+        originChainId,
+        destinationChainId,
+        originToken.addresses[originChainId],
+        destinationTokenAddress,
+        amount
+      )
+
+    const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
+    const originTokenDecimals: number = originToken.decimals[originChainId]
+    const adjustedFeeAmount: bigint =
+      BigInt(feeAmount) < amount
+        ? BigInt(feeAmount)
+        : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+
+    const originMinWithSlippage = subtractSlippage(
+      originQuery?.minAmountOut ?? 0n,
+      'ONE_TENTH',
+      null
+    )
+    const destMinWithSlippage = subtractSlippage(
+      destQuery?.minAmountOut ?? 0n,
+      'ONE_TENTH',
+      null
     )
 
+    let newOriginQuery = { ...originQuery }
+    newOriginQuery.minAmountOut = originMinWithSlippage
+
+    let newDestQuery = { ...destQuery }
+    newDestQuery.minAmountOut = destMinWithSlippage
+
     return {
-      ...bridgeQuote,
-      destinationToken: request.destinationToken,
+      outputAmount: toValueBigInt,
+      outputAmountString: commify(
+        formatBigIntToString(
+          toValueBigInt,
+          destinationToken.decimals[destinationChainId],
+          8
+        )
+      ),
+      routerAddress,
+      allowance: null, // update for allowances
+      exchangeRate: calculateExchangeRate(
+        amount - adjustedFeeAmount,
+        originToken.decimals[originChainId],
+        toValueBigInt,
+        destinationToken.decimals[destinationChainId]
+      ),
+      feeAmount,
+      delta: BigInt(maxAmountOut.toString()),
+      quotes: {
+        originQuery: newOriginQuery,
+        destQuery: newDestQuery,
+      },
+      // destinationToken: request.destinationToken,
     }
   }
 }
