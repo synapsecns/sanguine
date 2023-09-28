@@ -6,7 +6,7 @@ import { BridgeQuote, Token } from '@/utils/types'
 export interface BridgeQuoteRequest {
   originChainId: number
   destinationChainId: number
-  originTokenAddress: Address
+  originToken: Token
   destinationTokenAddress: Address
   amount: bigint
   token: Token
@@ -20,7 +20,7 @@ export async function fetchBridgeQuote(
     const bridgeQuote = await synapseSDK.bridgeQuote(
       request.originChainId,
       request.destinationChainId,
-      request.originTokenAddress,
+      request.originToken.addresses[request.originChainId],
       request.destinationTokenAddress,
       request.amount
     )
