@@ -534,6 +534,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 
 	if messageMinimumTime == nil {
 		//nolint:nilnil
+		fmt.Println("messageMinimumTime is nil")
 		return nil, nil
 	}
 
@@ -572,6 +573,7 @@ retryLoop:
 	}
 
 	if *messageMinimumTime > currentTime {
+		fmt.Printf("message minimum time %v greater than current time %v\n", messageMinimumTime, currentTime)
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -886,6 +888,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
+	fmt.Printf("setMinimumTime on chain %d\n", chainID)
 	backoffInterval := time.Duration(0)
 
 	for {
@@ -908,6 +911,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
+				fmt.Printf("got unset min time msgs: %v\n", messages)
 
 				if len(messages) == 0 {
 					break
@@ -936,6 +940,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
+				fmt.Printf("got timestamp for message: %v, %v\n", minimumTimestamp, message)
 
 				if minimumTimestamp == nil {
 					continue
