@@ -5,11 +5,11 @@ import { BridgeQuote, Token } from '@/utils/types'
 // To allow fetchBridgeQuote to calculate exchange rate
 export interface BridgeQuoteRequest {
   originChainId: number
-  destinationChainId: number
   originToken: Token
+  destinationChainId: number
   destinationTokenAddress: Address
+  destinationToken: Token
   amount: bigint
-  token: Token
 }
 
 export async function fetchBridgeQuote(
@@ -27,7 +27,7 @@ export async function fetchBridgeQuote(
 
     return {
       ...bridgeQuote,
-      token: request.token,
+      destinationToken: request.destinationToken,
     }
   }
 }

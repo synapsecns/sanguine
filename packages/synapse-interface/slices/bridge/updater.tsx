@@ -26,11 +26,11 @@ export default function Updater(): null {
         (token: Token) => {
           return {
             originChainId: fromChainId,
+            originToken: fromToken as Token,
             destinationChainId: toChainId,
-            originTokenAddress: fromToken?.addresses[fromChainId] as Address,
             destinationTokenAddress: token?.addresses[toChainId] as Address,
+            destinationToken: token as Token,
             amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
-            token: token,
           }
         }
       )
