@@ -30,7 +30,7 @@ export const Completed = ({
       onClick={handleExplorerClick}
     >
       {!destinationIsSender && (
-        <div>to {shortenAddress(destinationAddress, 3)} </div>
+        <div>to {shortenAddress(destinationAddress)} </div>
       )}
       {isToday ? (
         <div className="text-[#3BDD77] hover:underline cursor-pointer">

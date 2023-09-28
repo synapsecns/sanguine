@@ -406,7 +406,7 @@ export const DOGE: Chain = {
 }
 
 export const BASE: Chain = {
-  priorityRank: 1,
+  priorityRank: 90,
   id: 8453,
   chainSymbol: 'ETH',
   name: 'Base',

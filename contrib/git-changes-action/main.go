@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"os"
 	"sort"
 	"strings"
@@ -32,8 +33,6 @@ func main() {
 		panic(fmt.Errorf("failed to parse timeout: %w", err))
 	}
 
-	includeDeps := getIncludeDeps()
-
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -42,44 +41,57 @@ func main() {
 		panic(err)
 	}
 
-	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps)
+	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false)
 	if err != nil {
 		panic(err)
 	}
 
-	var changedModules []string
-	for module, changed := range modules {
-		if !changed {
-			continue
-		}
+	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true)
+	if err != nil {
+		panic(err)
+	}
 
-		changedModules = append(changedModules, strings.TrimPrefix(module, "./"))
+	githubactions.SetOutput("changed_modules", noDepChanged)
+	githubactions.SetOutput("unchanged_modules", noDepUnchanged)
+
+	githubactions.SetOutput("changed_modules_deps", depChanged)
+	githubactions.SetOutput("unchanged_modules_deps", depUnchanged)
+}
+
+// outputModuleChanges outputs the changed modules.
+// this wraps detector.DetectChangedModules and handles the output formatting to be parsable by github actions.
+// the final output is a json array of strings.
+func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool) (changedJSON string, unchangedJson string, err error) {
+	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps)
+	if err != nil {
+		return changedJSON, unchangedJson, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
+	}
+
+	var changedModules, unchangedModules []string
+	for module, changed := range modules {
+		modName := strings.TrimPrefix(module, "./")
+
+		if changed {
+			changedModules = append(changedModules, modName)
+		} else {
+			unchangedModules = append(unchangedModules, modName)
+		}
 	}
 
 	sort.Strings(changedModules)
-	marshalledJSON, err := json.Marshal(changedModules)
+	sort.Strings(unchangedModules)
+
+	marshalledChanged, err := json.Marshal(changedModules)
 	if err != nil {
-		panic(err)
+		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
-	if len(changedModules) == 0 {
-		fmt.Println("no modules changed")
-	} else {
-		fmt.Printf("setting output to %s\n", marshalledJSON)
+	marshalledUnchanged, err := json.Marshal(unchangedModules)
+	if err != nil {
+		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
 	}
-	githubactions.SetOutput("changed_modules", string(marshalledJSON))
-}
 
-// getIncludeDeps gets the include deps setting.
-// If it is not set, it defaults to false.
-func getIncludeDeps() (includeDeps bool) {
-	rawIncludeDeps := githubactions.GetInput("include_deps")
-
-	includeDeps = false
-	if rawIncludeDeps == "true" {
-		includeDeps = true
-	}
-	return
+	return string(marshalledChanged), string(marshalledUnchanged), nil
 }
 
 // getTimeout gets the timeout setting. If it is not set, it defaults to 1 minute.
