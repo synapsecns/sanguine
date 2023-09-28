@@ -15,7 +15,13 @@ export const useBridgeState = (): RootState['bridge'] => {
 
 export const fetchAndStoreBridgeQuote = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuote',
-  async (request: BridgeQuoteRequest, synapseSDK: any) => {
+  async ({
+    request,
+    synapseSDK,
+  }: {
+    request: BridgeQuoteRequest
+    synapseSDK: any
+  }) => {
     const bridgeQuote: BridgeQuoteResponse = await fetchBridgeQuote(
       request,
       synapseSDK
@@ -26,7 +32,13 @@ export const fetchAndStoreBridgeQuote = createAsyncThunk(
 
 export const fetchAndStoreBridgeQuotes = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuotes',
-  async (requests: BridgeQuoteRequest[], synapseSDK: any) => {
+  async ({
+    requests,
+    synapseSDK,
+  }: {
+    requests: BridgeQuoteRequest[]
+    synapseSDK: any
+  }) => {
     const bridgeQuotes: [BridgeQuoteResponse][] = await fetchBridgeQuotes(
       requests,
       synapseSDK

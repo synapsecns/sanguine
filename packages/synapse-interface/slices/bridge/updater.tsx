@@ -7,12 +7,13 @@ import {
   BridgeQuoteRequest,
   fetchBridgeQuotes,
 } from '@/utils/actions/fetchBridgeQuotes'
+import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
 import { BridgeQuote, Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 export default function Updater(): null {
-  const dipatch = useAppDispatch()
+  const dispatch = useAppDispatch()
   const { synapseSDK } = useSynapseContext()
   const {
     fromChainId,
@@ -37,14 +38,12 @@ export default function Updater(): null {
         }
       )
 
-      ;(async () => {
-        const bridgeQuotes: [BridgeQuote][] = await fetchBridgeQuotes(
-          bridgeQuoteRequests,
-          synapseSDK
-        )
-
-        console.log('bridgeQuotes:', bridgeQuotes)
-      })()
+      dispatch(
+        fetchAndStoreBridgeQuotes({
+          requests: bridgeQuoteRequests,
+          synapseSDK,
+        })
+      )
     }
   }, [fromChainId, toChainId, fromToken, fromValue, toTokens, synapseSDK])
 
