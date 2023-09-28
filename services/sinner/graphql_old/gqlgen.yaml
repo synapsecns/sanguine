@@ -1,0 +1,36 @@
+# Where are all the schema files located? globs are supported eg  src/**/*.graphqls
+schema:
+  - server/graph/schema/*.graphql_old
+
+# Where should the generated server code go?
+exec:
+  filename: server/graph/resolver/server.go
+  package: resolvers
+
+model:
+  filename: server/graph/model/models_gen.go
+  package: model
+
+# Where should the resolver implementations go?
+resolver:
+  layout: follow-schema
+  dir: server/graph
+  package: graph
+
+struct_tag: json
+
+autobind:
+  - 'github.com/synapsecns/sanguine/services/sinner/graphql_old/server/graph/model'
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql_old.ID
+      - github.com/99designs/gqlgen/graphql_old.Int
+      - github.com/99designs/gqlgen/graphql_old.Int64
+      - github.com/99designs/gqlgen/graphql_old.Int32
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql_old.Int
+      - github.com/99designs/gqlgen/graphql_old.Int64
+      - github.com/99designs/gqlgen/graphql_old.Int32

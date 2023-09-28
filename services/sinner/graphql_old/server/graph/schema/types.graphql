@@ -1,0 +1,43 @@
+"""
+MessageStatus gives the status of a message.
+"""
+type MessageStatus {
+  lastSeen: MessageStateLastSeen
+  originTxHash: String
+  destinationTxHash: String
+  messageHash: String
+}
+
+"""
+MessageInfo provides granular information on a message.
+"""
+type MessageInfo {
+  messageHash: String
+  contractAddress: String
+  blockNumber: Int
+  originTxHash: String
+  destinationTxHash: String
+  sender: String
+  recipient: String
+  originChainID: String
+  destinationChainID: String
+  nonce: Int
+  message: String
+  optimisticSeconds: String
+  messageFlag: String
+  summitTip: String
+  attestationTip: String
+  executionTip: String
+  executionTip: String
+  deliveryTip: String
+  version: Int
+  gasLimit:Int
+  gasDrop: Int
+  gasDrop: String
+}
+
+enum MessageStateLastSeen{
+  ORIGIN
+  DESTINATION
+  UNKNOWN
+}

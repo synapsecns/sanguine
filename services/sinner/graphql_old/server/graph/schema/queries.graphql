@@ -1,0 +1,12 @@
+type Query {
+  getMessageStatus(
+    messageHash: String
+  ): [MessageStatus]
+
+  getMessageInfo(
+    messageHash: String
+  ): [MessageInfo]
+
+}
+
+

@@ -1,0 +1,41 @@
+
+query GetMessageStatus($messageHash: String) {
+  response: getMessageStatus(
+  messageHash: $messageHash
+  ) {
+    lastSeen
+    originTxHash
+    destinationTxHash
+    messageHash
+  }
+}
+
+
+query GetMessageInfo($messageHash: String) {
+  response: getMessageInfo(
+    messageHash: $messageHash
+  ) {
+    messageHash
+    contractAddress
+    blockNumber
+    originTxHash
+    destinationTxHash
+    sender
+    recipient
+    originChainID
+    destinationChainID
+    nonce
+    message
+    optimisticSeconds
+    messageFlag
+    summitTip
+    attestationTip
+    executionTip
+    executionTip
+    deliveryTip
+    version
+    gasLimit
+    gasDrop
+    gasDrop
+  }
+}
