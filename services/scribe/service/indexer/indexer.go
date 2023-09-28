@@ -232,7 +232,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					// Only update last indexed if all logs from the last block have been processed to prevent premature
 					// updates of last indexed. Prevents having to lag a block behind on downstream dependencies (agents).
 					if lastBlockSeen < log.BlockNumber {
-						err = x.saveLastIndexed(storeCtx, log.BlockNumber)
+						err = x.saveLastIndexed(storeCtx, lastBlockSeen)
 						if err != nil {
 							logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
 							return fmt.Errorf("could not store last indexed: %w", err)
