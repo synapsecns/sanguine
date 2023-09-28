@@ -12,8 +12,8 @@ import (
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	"github.com/synapsecns/sanguine/services/sinner/fetcher"
-	"github.com/synapsecns/sanguine/services/sinner/graphql_old/server/graph"
-	resolvers "github.com/synapsecns/sanguine/services/sinner/graphql_old/server/graph/resolver"
+	"github.com/synapsecns/sanguine/services/sinner/graphql/server/graph"
+	resolvers "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/resolver"
 	"time"
 )
 

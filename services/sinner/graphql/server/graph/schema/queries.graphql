@@ -1,10 +1,10 @@
 type Query {
   getMessageStatus(
-    messageHash: String
+    messageHash: String!
   ): [MessageStatus]
 
   getMessageInfo(
-    messageHash: String
+    messageHash: String!
   ): [MessageInfo]
 
 }

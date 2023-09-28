@@ -24,17 +24,17 @@ func main() {
 
 	log.SetOutput(io.Discard)
 
-	err = os.Chdir(filepath.Join(root.Path, "services/explorer/graphql_old/"))
+	err = os.Chdir(filepath.Join(root.Path, "services/sinner/graphql/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/explorer/graphql_old/gqlgen.yaml"))
+	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/sinner/graphql/gqlgen.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		os.Exit(2)
 	}
-	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/graphql_old/.gqlgenc.yaml"))
+	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/sinner/graphql/.gqlgenc.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load client config", err.Error())
 		os.Exit(2)

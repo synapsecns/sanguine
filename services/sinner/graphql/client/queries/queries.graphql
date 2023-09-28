@@ -1,5 +1,5 @@
 
-query GetMessageStatus($messageHash: String) {
+query GetMessageStatus($messageHash: String!) {
   response: getMessageStatus(
   messageHash: $messageHash
   ) {
@@ -11,7 +11,7 @@ query GetMessageStatus($messageHash: String) {
 }
 
 
-query GetMessageInfo($messageHash: String) {
+query GetMessageInfo($messageHash: String!) {
   response: getMessageInfo(
     messageHash: $messageHash
   ) {
@@ -31,11 +31,9 @@ query GetMessageInfo($messageHash: String) {
     summitTip
     attestationTip
     executionTip
-    executionTip
     deliveryTip
     version
     gasLimit
-    gasDrop
     gasDrop
   }
 }

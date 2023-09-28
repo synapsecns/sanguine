@@ -28,11 +28,9 @@ type MessageInfo {
   summitTip: String
   attestationTip: String
   executionTip: String
-  executionTip: String
   deliveryTip: String
   version: Int
   gasLimit:Int
-  gasDrop: Int
   gasDrop: String
 }
 
