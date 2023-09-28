@@ -12,6 +12,8 @@ const (
 	ContextCancelled ErrorType = iota
 	// ScribeFetchFailure is returned when a scribe related query fails.
 	ScribeFetchFailure
+	// SinnerIndexingFailure is for when the sinner indexer fails.
+	SinnerIndexingFailure
 )
 
 const (
