@@ -439,6 +439,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	routes = [][2]uint32{{43, 44}, {44, 43}}
 	fmt.Printf("routes: %v\n", routes)
 
 	// Connect to Scribe.
@@ -482,6 +483,27 @@ func main() {
 			fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
 		}
 	}
+
+	// time.Sleep(10 * time.Second)
+	// contract, ok := chainConfigs[43].Deployments[contractName].Contract.(domains.PingPongClientContract)
+	// if !ok {
+	// 	panic("could not cast contract")
+	// }
+	// destPingPongAddr := common.HexToAddress(chainConfigs[44].Deployments[contractName].ContractAddress)
+	// _, err = contract.DoPing(ctx, signer, 44, destPingPongAddr, 0)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// contract, ok = chainConfigs[44].Deployments[contractName].Contract.(domains.PingPongClientContract)
+	// if !ok {
+	// 	panic("could not cast contract")
+	// }
+	// destPingPongAddr = common.HexToAddress(chainConfigs[43].Deployments[contractName].ContractAddress)
+	// _, err = contract.DoPing(ctx, signer, 43, destPingPongAddr, 0)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	err = g.Wait()
 	if err != nil {

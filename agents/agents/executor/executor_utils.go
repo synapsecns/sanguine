@@ -33,6 +33,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 
 // logToAttestation converts the log to an attestation.
 func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttestation bool) (types.Attestation, error) {
+	fmt.Printf("logToAttestation on chain %d and log tx hash %s, summitAttestation %v\n", chainID, log.TxHash.Hex(), summitAttestation)
 	var attestation types.Attestation
 	var ok bool
 
@@ -84,6 +85,7 @@ func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) 
 	case e.isAttestationSavedEvent(log, chainID):
 		return e.logToAttestation(log, chainID, true)
 	default:
+		fmt.Printf("logToInterface: unknown event type on chain %d with log tx hash %s\n", chainID, log.TxHash.Hex())
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -108,11 +110,14 @@ func (e Executor) isSentEvent(log ethTypes.Log, chainID uint32) bool {
 }
 
 func (e Executor) isAttestationAcceptedEvent(log ethTypes.Log, chainID uint32) bool {
+	fmt.Printf("isAttestationAcceptedEvent on chain %d with log tx hash %s\n", chainID, log.TxHash.Hex())
+	fmt.Printf("lightinboxparser: %v\n", e.chainExecutors[chainID].lightInboxParser)
 	if e.chainExecutors[chainID].lightInboxParser == nil {
 		return false
 	}
 
 	lightManagerEvent, ok := e.chainExecutors[chainID].lightInboxParser.EventType(log)
+	fmt.Printf("ok: %v, lightManagerEvent: %v\n", ok, lightManagerEvent)
 	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
 }
 
@@ -127,6 +132,7 @@ func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool
 
 // processMessage processes and stores a message.
 func (e Executor) processMessage(ctx context.Context, message types.Message, logBlockNumber uint64) error {
+	fmt.Printf("processMessage: %v\n", message)
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	leaf, err := message.ToLeaf()
 	if err != nil {
@@ -154,6 +160,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
+	fmt.Printf("processSnapshot: %v\n", snapshot)
 	for _, state := range snapshot.States() {
 		statePayload, err := state.Encode()
 		if err != nil {
@@ -188,6 +195,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) error {
+	fmt.Printf("processAttestation on chain %d: %v\n", chainID, attestation)
 	// If the attestation is on the SynChain, we can directly use its block number and timestamp.
 	if chainID == e.config.SummitChainID {
 		err := e.executorDB.StoreAttestation(ctx, attestation, chainID, attestation.BlockNumber().Uint64(), attestation.Timestamp().Uint64())
@@ -231,6 +239,7 @@ retryLoop:
 		}
 	}
 
+	fmt.Printf("storing attestation: %v\n", attestation)
 	err = e.executorDB.StoreAttestation(ctx, attestation, chainID, logBlockNumber, logHeader.Time)
 	if err != nil {
 		return fmt.Errorf("could not store attestation: %w", err)

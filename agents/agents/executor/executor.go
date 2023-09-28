@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -276,6 +277,10 @@ func (e Executor) Run(parentCtx context.Context) error {
 		// Listen for attestationAccepted events on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
+		})
+
+		g.Go(func() error {
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, execTypes.DestinationContract)
 		})
 
 		g.Go(func() error {
@@ -659,6 +664,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 //
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
+	fmt.Printf("streamLogs on chain %d, address %s, contract type %s\n", chainID, address, contractType.String())
 	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -666,8 +672,10 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
-	toBlock := "latest"
+	// toBlock := "latest"
+	toBlock := "1000"
 
+	fmt.Printf("stream from block %v to %v\n", fromBlock, toBlock)
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -683,6 +691,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	for {
 		select {
 		case <-e.chainExecutors[chainID].closeConnection:
+			fmt.Println("close stream conn")
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -704,6 +713,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
+			fmt.Printf("received raw log on chain %d, addr %s with tx hash: %v\n", chainID, address, log.TxHash)
 
 			// We do not use a span context here because this is just meant to track transactions coming in.
 			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
@@ -729,6 +739,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
+	fmt.Printf("processLog on chain %d with hash %s [blockNumber=%d]\n", chainID, log.TxHash.Hex(), log.BlockNumber)
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
@@ -736,6 +747,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	if datatypeInterface == nil {
 		return nil
 	}
+	fmt.Printf("data type: %v\n", reflect.TypeOf(datatypeInterface))
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
