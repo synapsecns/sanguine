@@ -6,6 +6,8 @@ import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { BridgeState } from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -99,7 +101,7 @@ const StateManagedBridge = () => {
     toChainIds,
     fromTokens,
     toTokens,
-  } = useSelector((state: RootState) => state.bridge)
+  }: BridgeState = useBridgeState()
 
   const {
     showSettingsSlideOver,
