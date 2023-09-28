@@ -14,7 +14,6 @@ volumes:
   notary44_data:
   executor_data:
 
-
 services:
   guard:
     restart: unless-stopped
@@ -60,7 +59,6 @@ services:
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
-
   notary-44:
     entrypoint: agents
     restart: unless-stopped
@@ -105,20 +103,19 @@ services:
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
-
   scribe-indexer:
     depends_on:
-    - omnirpc
+      - omnirpc
     build:
       context: ../../
       dockerfile: docker/devnet/scribe.Dockerfile
     entrypoint: scribe
     restart: unless-stopped
     command: >
-        scribe
-        --config=/config/scribe.yaml
-        --db=sqlite
-        --path=/data
+      scribe
+      --config=/config/scribe.yaml
+      --db=sqlite
+      --path=/data
     volumes:
       - '${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml'
       - scribe_data:/data
@@ -150,7 +147,6 @@ services:
     ports:
       - '9002:9002'
 
-
   omnirpc:
     restart: unless-stopped
     depends_on:
@@ -172,13 +168,13 @@ services:
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-# TODO, consider re-enabling.
-#    healthcheck:
-#      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
-#      interval: 1s
-#      timeout: 20s
-#      retries: 10
-#      start_period: 5s
+  # TODO, consider re-enabling.
+  #    healthcheck:
+  #      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
+  #      interval: 1s
+  #      timeout: 20s
+  #      retries: 10
+  #      start_period: 5s
 
   chain_a:
     restart: unless-stopped
@@ -193,6 +189,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time=2
     ports:
       - '8042:8545'
     volumes:
@@ -211,6 +208,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time=2
     ports:
       - '8043:8545'
     volumes:
@@ -229,6 +227,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time=2
     ports:
       - '8044:8545'
     volumes:
