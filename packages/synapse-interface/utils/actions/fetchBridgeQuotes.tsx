@@ -8,8 +8,11 @@ import {
 import { subtractSlippage } from '../slippage'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'
-// Pass in Origin Token and Destination Token
-// To allow fetchBridgeQuote to calculate exchange rate
+
+export interface BridgeQuoteResponse extends BridgeQuote {
+  destinationToken: Token
+}
+
 export interface BridgeQuoteRequest {
   originChainId: number
   originToken: Token
@@ -22,7 +25,7 @@ export interface BridgeQuoteRequest {
 export async function fetchBridgeQuote(
   request: BridgeQuoteRequest,
   synapseSDK: any
-): Promise<BridgeQuote> {
+): Promise<BridgeQuoteResponse> {
   if (request && synapseSDK) {
     const {
       originChainId,
@@ -88,7 +91,7 @@ export async function fetchBridgeQuote(
         originQuery: newOriginQuery,
         destQuery: newDestQuery,
       },
-      // destinationToken: request.destinationToken,
+      destinationToken: request.destinationToken,
     }
   }
 }
@@ -96,11 +99,11 @@ export async function fetchBridgeQuote(
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
   synapseSDK: any
-): Promise<[BridgeQuote][]> {
+): Promise<[BridgeQuoteResponse][]> {
   try {
-    const bridgeQuotesPromises: Promise<[BridgeQuote]>[] = requests.map(
+    const bridgeQuotesPromises: Promise<[BridgeQuoteResponse]>[] = requests.map(
       async (request: BridgeQuoteRequest) => {
-        const results: [BridgeQuote] = await Promise.all([
+        const results: [BridgeQuoteResponse] = await Promise.all([
           fetchBridgeQuote(request, synapseSDK),
         ])
         return results
