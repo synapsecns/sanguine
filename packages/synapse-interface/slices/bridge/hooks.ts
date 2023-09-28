@@ -6,6 +6,7 @@ import {
   fetchBridgeQuote,
   fetchBridgeQuotes,
   BridgeQuoteRequest,
+  BridgeQuoteResponse,
 } from '@/utils/actions/fetchBridgeQuotes'
 
 export const useBridgeState = (): RootState['bridge'] => {
@@ -15,7 +16,10 @@ export const useBridgeState = (): RootState['bridge'] => {
 export const fetchAndStoreBridgeQuote = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuote',
   async (request: BridgeQuoteRequest, synapseSDK: any) => {
-    const bridgeQuote = await fetchBridgeQuote(request, synapseSDK)
+    const bridgeQuote: BridgeQuoteResponse = await fetchBridgeQuote(
+      request,
+      synapseSDK
+    )
     return bridgeQuote
   }
 )
@@ -23,7 +27,10 @@ export const fetchAndStoreBridgeQuote = createAsyncThunk(
 export const fetchAndStoreBridgeQuotes = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuotes',
   async (requests: BridgeQuoteRequest[], synapseSDK: any) => {
-    const bridgeQuotes = await fetchBridgeQuotes(requests, synapseSDK)
+    const bridgeQuotes: [BridgeQuoteResponse][] = await fetchBridgeQuotes(
+      requests,
+      synapseSDK
+    )
     return bridgeQuotes
   }
 )
