@@ -95,6 +95,10 @@ export const transactionsSlice = createSlice({
         state.isUserHistoricalTransactionsLoading =
           initialState.isUserHistoricalTransactionsLoading
         state.userPendingTransactions = initialState.userPendingTransactions
+        state.seenHistoricalTransactions =
+          initialState.seenHistoricalTransactions
+        state.pendingAwaitingCompletionTransactions =
+          initialState.pendingAwaitingCompletionTransactions
       })
   },
 })
