@@ -1,6 +1,8 @@
 import { Address } from 'viem'
 import { BridgeQuote, Token } from '@/utils/types'
 
+// Pass in Origin Token and Destination Token
+// To allow fetchBridgeQuote to calculate exchange rate
 export interface BridgeQuoteRequest {
   originChainId: number
   destinationChainId: number
