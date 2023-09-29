@@ -18,10 +18,12 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 export const ToTokenListOverlay = () => {
   const {
     fromChainId,
+    fromToken,
     toTokens,
     toChainId,
     toToken,
@@ -191,6 +193,10 @@ export const ToTokenListOverlay = () => {
                   selectedToken={toToken}
                   active={idx === currentIdx}
                   showAllChains={false}
+                  exchangeRate={formatBigIntToString(
+                    toTokensBridgeQuotes[idx]?.exchangeRate,
+                    fromToken?.decimals[fromChainId]
+                  )}
                   onClick={() => {
                     if (token === toToken) {
                       onClose()

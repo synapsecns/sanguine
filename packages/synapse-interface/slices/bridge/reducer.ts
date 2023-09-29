@@ -37,7 +37,7 @@ export interface BridgeState {
 
   fromValue: string
   bridgeQuote: BridgeQuote
-  toTokensBridgeQuotes: [BridgeQuoteResponse][]
+  toTokensBridgeQuotes: BridgeQuoteResponse[]
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
@@ -513,9 +513,12 @@ export const bridgeSlice = createSlice({
           state.pendingBridgeTransactions = action.payload
         }
       )
-      .addCase(fetchAndStoreBridgeQuotes.fulfilled, (state, action) => {
-        state.toTokensBridgeQuotes = action.payload
-      })
+      .addCase(
+        fetchAndStoreBridgeQuotes.fulfilled,
+        (state, action: PayloadAction<BridgeQuoteResponse[]>) => {
+          state.toTokensBridgeQuotes = action.payload
+        }
+      )
   },
 })
 
