@@ -36,13 +36,6 @@ const SelectSpecificTokenButton = ({
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
 }) => {
-  // isBestExchangeRate &&
-  //   console.log(
-  //     'isBestExchangeRate: ',
-  //     isBestExchangeRate,
-  //     ' at token: ',
-  //     token
-  //   )
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
@@ -92,6 +85,7 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
+      {isBestExchangeRate && <OptionTag type={BestOptionType.RATE} />}
       {exchangeRate && (
         <OptionDetails
           exchangeRate={exchangeRate}
@@ -102,9 +96,9 @@ const SelectSpecificTokenButton = ({
   )
 }
 
-export interface BestOptionType {
-  RATE: 'Best rate'
-  SPEED: 'Fastest'
+export enum BestOptionType {
+  RATE = 'Best rate',
+  SPEED = 'Fastest',
 }
 
 export const OptionTag = ({ type }: { type: BestOptionType }) => {
