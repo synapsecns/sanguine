@@ -24,6 +24,7 @@ import {
 import { fetchAndStoreBridgeQuotes } from './hooks'
 import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
 import { findValidToken } from '@/utils/findValidToken'
+import { FetchState } from '../portfolio/actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -38,6 +39,7 @@ export interface BridgeState {
   fromValue: string
   bridgeQuote: BridgeQuote
   toTokensBridgeQuotes: BridgeQuoteResponse[]
+  toTokensBridgeQuotesStatus: FetchState
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
@@ -74,6 +76,7 @@ export const initialState: BridgeState = {
   fromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   toTokensBridgeQuotes: [],
+  toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
@@ -513,12 +516,19 @@ export const bridgeSlice = createSlice({
           state.pendingBridgeTransactions = action.payload
         }
       )
+      .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
+        state.toTokensBridgeQuotesStatus = FetchState.LOADING
+      })
       .addCase(
         fetchAndStoreBridgeQuotes.fulfilled,
         (state, action: PayloadAction<BridgeQuoteResponse[]>) => {
           state.toTokensBridgeQuotes = action.payload
+          state.toTokensBridgeQuotesStatus = FetchState.VALID
         }
       )
+      .addCase(fetchAndStoreBridgeQuotes.rejected, (state) => {
+        state.toTokensBridgeQuotesStatus = FetchState.INVALID
+      })
   },
 })
 
