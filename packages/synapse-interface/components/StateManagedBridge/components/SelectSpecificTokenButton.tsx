@@ -22,7 +22,7 @@ const SelectSpecificTokenButton = ({
   onClick,
   alternateBackground = false,
   exchangeRate,
-  estimatedDuration,
+  estimatedDurationInSeconds,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -32,9 +32,8 @@ const SelectSpecificTokenButton = ({
   onClick: () => void
   alternateBackground?: boolean
   exchangeRate?: string
-  estimatedDuration?: number
+  estimatedDurationInSeconds?: number
 }) => {
-  estimatedDuration && console.log('estimatedDuration: ', estimatedDuration)
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
@@ -84,18 +83,39 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
-      {exchangeRate && <OptionDetails exchangeRate={exchangeRate} />}
+      {exchangeRate && (
+        <OptionDetails
+          exchangeRate={exchangeRate}
+          estimatedDurationInSeconds={estimatedDurationInSeconds}
+        />
+      )}
     </button>
   )
 }
 
-export const OptionDetails = ({ exchangeRate }: { exchangeRate: string }) => {
+export const OptionDetails = ({
+  exchangeRate,
+  estimatedDurationInSeconds,
+}: {
+  exchangeRate: string
+  estimatedDurationInSeconds: number
+}) => {
+  const estimatedDurationInMinutes: number = Math.floor(
+    estimatedDurationInSeconds / 60
+  )
+
   return (
-    <div data-test-id="exchange-rate" className="flex items-center font-normal">
-      <div className="flex text-sm text-secondary whitespace-nowrap">
-        1&nbsp;:&nbsp;
+    <div data-test-id="option-details" className="flex flex-col">
+      <div
+        data-test-id="exchange-rate"
+        className="flex items-center font-normal"
+      >
+        <div className="flex text-sm text-secondary whitespace-nowrap">
+          1&nbsp;:&nbsp;
+        </div>
+        <div className="mb-[1px] text-primary">{exchangeRate}</div>
       </div>
-      <div className="mb-[1px] text-primary">{exchangeRate}</div>
+      <div> ~ {estimatedDurationInMinutes} min</div>
     </div>
   )
 }

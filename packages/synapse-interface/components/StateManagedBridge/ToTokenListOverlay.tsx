@@ -205,7 +205,7 @@ export const ToTokenListOverlay = () => {
                       4
                     )
                   }
-                  estimatedDuration={
+                  estimatedDurationInSeconds={
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
                     calculateEstimatedTransactionTime({
                       originChainId: fromChainId,
