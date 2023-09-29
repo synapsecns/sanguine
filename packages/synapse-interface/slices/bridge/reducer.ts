@@ -18,6 +18,7 @@ import {
   PendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
+  resetFetchedBridgeQuotes,
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
 } from './actions'
@@ -528,6 +529,11 @@ export const bridgeSlice = createSlice({
       )
       .addCase(fetchAndStoreBridgeQuotes.rejected, (state) => {
         state.toTokensBridgeQuotesStatus = FetchState.INVALID
+      })
+      .addCase(resetFetchedBridgeQuotes, (state) => {
+        state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
+        state.toTokensBridgeQuotesStatus =
+          initialState.toTokensBridgeQuotesStatus
       })
   },
 })
