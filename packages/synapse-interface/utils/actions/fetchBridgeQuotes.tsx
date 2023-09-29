@@ -117,3 +117,18 @@ export async function fetchBridgeQuotes(
     console.error('error from fetchBridgeQuotes: ', e)
   }
 }
+
+function locateBestExchangeRateIndex(
+  quotes: BridgeQuoteResponse[]
+): number | null {
+  if (quotes.length === 0) {
+    return null
+  }
+
+  return quotes.reduce((indexOfHighest, currentQuote, currentIndex) => {
+    if (currentQuote.exchangeRate > quotes[indexOfHighest].exchangeRate) {
+      return currentIndex
+    }
+    return indexOfHighest
+  }, 0)
+}
