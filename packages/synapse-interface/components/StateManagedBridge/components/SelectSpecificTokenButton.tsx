@@ -32,6 +32,8 @@ const SelectSpecificTokenButton = ({
   alternateBackground?: boolean
   exchangeRate?: string
 }) => {
+  exchangeRate && console.log('exchangeRate:', exchangeRate)
+
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
@@ -58,6 +60,7 @@ const SelectSpecificTokenButton = ({
 
   return (
     <button
+      data-test-id="select-specific-token-button"
       ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
@@ -80,7 +83,19 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
+      {exchangeRate && <OptionDetails exchangeRate={exchangeRate} />}
     </button>
+  )
+}
+
+export const OptionDetails = ({ exchangeRate }: { exchangeRate: string }) => {
+  return (
+    <div data-test-id="exchange-rate" className="flex items-center font-normal">
+      <div className="flex text-sm text-secondary whitespace-nowrap">
+        1&nbsp;:&nbsp;
+      </div>
+      <div className="mb-[1px] text-primary">{exchangeRate}</div>
+    </div>
   )
 }
 
@@ -103,7 +118,7 @@ const ButtonContent = memo(
     )?.parsedBalance
 
     return (
-      <div className="flex items-center w-full">
+      <div data-test-id="button-content" className="flex items-center w-full">
         <img
           alt="token image"
           className="w-8 h-8 ml-2 mr-4 rounded-full"
