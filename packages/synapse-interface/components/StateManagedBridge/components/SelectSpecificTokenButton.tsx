@@ -102,7 +102,16 @@ export enum BestOptionType {
 }
 
 export const OptionTag = ({ type }: { type: BestOptionType }) => {
-  return <div data-test-id="option-tag">{`${type}`}</div>
+  return (
+    <div
+      data-test-id="option-tag"
+      className="flex text-sm whitespace-nowrap text-primary"
+      style={{
+        background:
+          'linear-gradient(to right, rgba(128, 0, 255, 1), rgba(255, 0, 191, 1))',
+      }}
+    >{`${type}`}</div>
+  )
 }
 
 export const OptionDetails = ({
