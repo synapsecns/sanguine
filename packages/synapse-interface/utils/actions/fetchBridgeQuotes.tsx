@@ -121,11 +121,11 @@ export async function fetchBridgeQuotes(
 export function locateBestExchangeRateIndex(
   quotes: BridgeQuoteResponse[]
 ): number | null {
-  if (quotes.length === 0) {
+  if (quotes?.length === 0) {
     return null
   }
 
-  return quotes.reduce((indexOfHighest, currentQuote, currentIndex) => {
+  return quotes?.reduce((indexOfHighest, currentQuote, currentIndex) => {
     if (currentQuote.exchangeRate > quotes[indexOfHighest].exchangeRate) {
       return currentIndex
     }

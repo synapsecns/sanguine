@@ -36,6 +36,13 @@ const SelectSpecificTokenButton = ({
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
 }) => {
+  isBestExchangeRate &&
+    console.log(
+      'isBestExchangeRate: ',
+      isBestExchangeRate,
+      ' at token: ',
+      token
+    )
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
