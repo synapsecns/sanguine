@@ -115,7 +115,9 @@ export const OptionDetails = ({
         </div>
         <div className="mb-[1px] text-primary">{exchangeRate}</div>
       </div>
-      <div> ~ {estimatedDurationInMinutes} min</div>
+      <div className="text-sm text-right text-secondary">
+        {estimatedDurationInMinutes} min
+      </div>
     </div>
   )
 }
