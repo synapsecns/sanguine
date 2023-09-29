@@ -19,6 +19,7 @@ import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { FetchState } from '@/slices/portfolio/actions'
 
 export const ToTokenListOverlay = () => {
   const {
@@ -28,6 +29,7 @@ export const ToTokenListOverlay = () => {
     toChainId,
     toToken,
     toTokensBridgeQuotes,
+    toTokensBridgeQuotesStatus,
   }: BridgeState = useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -193,11 +195,14 @@ export const ToTokenListOverlay = () => {
                   selectedToken={toToken}
                   active={idx === currentIdx}
                   showAllChains={false}
-                  exchangeRate={formatBigIntToString(
-                    toTokensBridgeQuotes?.[idx]?.exchangeRate,
-                    18, //manually set this for now
-                    4
-                  )}
+                  exchangeRate={
+                    toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    formatBigIntToString(
+                      toTokensBridgeQuotes?.[idx]?.exchangeRate,
+                      18, //manually set this for now
+                      4
+                    )
+                  }
                   onClick={() => {
                     if (token === toToken) {
                       onClose()
