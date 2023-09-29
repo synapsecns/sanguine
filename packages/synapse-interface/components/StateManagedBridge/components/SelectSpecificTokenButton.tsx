@@ -36,13 +36,13 @@ const SelectSpecificTokenButton = ({
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
 }) => {
-  isBestExchangeRate &&
-    console.log(
-      'isBestExchangeRate: ',
-      isBestExchangeRate,
-      ' at token: ',
-      token
-    )
+  // isBestExchangeRate &&
+  //   console.log(
+  //     'isBestExchangeRate: ',
+  //     isBestExchangeRate,
+  //     ' at token: ',
+  //     token
+  //   )
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
@@ -102,6 +102,15 @@ const SelectSpecificTokenButton = ({
   )
 }
 
+export interface BestOptionType {
+  RATE: 'Best rate'
+  SPEED: 'Fastest'
+}
+
+export const OptionTag = ({ type }: { type: BestOptionType }) => {
+  return <div data-test-id="option-tag">{`${type}`}</div>
+}
+
 export const OptionDetails = ({
   exchangeRate,
   estimatedDurationInSeconds,
@@ -115,10 +124,7 @@ export const OptionDetails = ({
 
   return (
     <div data-test-id="option-details" className="flex flex-col">
-      <div
-        data-test-id="exchange-rate"
-        className="flex items-center font-normal"
-      >
+      <div className="flex items-center font-normal">
         <div className="flex text-sm text-secondary whitespace-nowrap">
           1&nbsp;:&nbsp;
         </div>
