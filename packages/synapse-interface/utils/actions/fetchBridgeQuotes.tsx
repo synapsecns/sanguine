@@ -99,13 +99,15 @@ export async function fetchBridgeQuote(
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
   synapseSDK: any
-): Promise<[BridgeQuoteResponse][]> {
+): Promise<BridgeQuoteResponse[]> {
   try {
-    const bridgeQuotesPromises: Promise<[BridgeQuoteResponse]>[] = requests.map(
+    const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] = requests.map(
       async (request: BridgeQuoteRequest) => {
-        const results: [BridgeQuoteResponse] = await Promise.all([
-          fetchBridgeQuote(request, synapseSDK),
-        ])
+        const results: BridgeQuoteResponse = await fetchBridgeQuote(
+          request,
+          synapseSDK
+        )
+
         return results
       }
     )

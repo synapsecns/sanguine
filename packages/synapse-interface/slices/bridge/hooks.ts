@@ -39,7 +39,7 @@ export const fetchAndStoreBridgeQuotes = createAsyncThunk(
     requests: BridgeQuoteRequest[]
     synapseSDK: any
   }) => {
-    const bridgeQuotes: [BridgeQuoteResponse][] = await fetchBridgeQuotes(
+    const bridgeQuotes: BridgeQuoteResponse[] = await fetchBridgeQuotes(
       requests,
       synapseSDK
     )

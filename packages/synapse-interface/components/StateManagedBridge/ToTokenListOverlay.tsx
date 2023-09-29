@@ -6,7 +6,7 @@ import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
-import { setToToken } from '@/slices/bridge/reducer'
+import { BridgeState, setToToken } from '@/slices/bridge/reducer'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -20,7 +20,13 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 
 export const ToTokenListOverlay = () => {
-  const { fromChainId, toTokens, toChainId, toToken } = useBridgeState()
+  const {
+    fromChainId,
+    toTokens,
+    toChainId,
+    toToken,
+    toTokensBridgeQuotes,
+  }: BridgeState = useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -152,11 +158,12 @@ export const ToTokenListOverlay = () => {
   }
 
   console.log('possibleTokens: ', possibleTokens)
+  console.log('toTokensBridgeQuotes: ', toTokensBridgeQuotes)
 
   return (
     <div
       ref={overlayRef}
-      data-test-id="token-slide-over"
+      data-test-id="to-token-list-overlay"
       className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">
@@ -175,7 +182,7 @@ export const ToTokenListOverlay = () => {
             Receive…
           </div>
           <div className="px-2 pb-2 md:px-2">
-            {possibleTokens.map((token, idx) => {
+            {possibleTokens.map((token: Token, idx: number) => {
               return (
                 <SelectSpecificTokenButton
                   isOrigin={false}
