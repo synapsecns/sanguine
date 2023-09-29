@@ -32,7 +32,9 @@ export const calculateEstimatedTransactionTime = ({
     estimatedCompletionInSeconds =
       baseEstimatedCompletionInSeconds + attestationTime
 
-    return estimatedCompletionInSeconds
+    return isCCTP
+      ? estimatedCompletionInSeconds
+      : baseEstimatedCompletionInSeconds
   }
 
   return estimatedCompletionInSeconds

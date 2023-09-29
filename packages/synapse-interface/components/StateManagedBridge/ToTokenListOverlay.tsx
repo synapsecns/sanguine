@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -20,6 +21,7 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
+import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
 
 export const ToTokenListOverlay = () => {
   const {
@@ -202,6 +204,15 @@ export const ToTokenListOverlay = () => {
                       18, //manually set this for now
                       4
                     )
+                  }
+                  estimatedDuration={
+                    toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    calculateEstimatedTransactionTime({
+                      originChainId: fromChainId,
+                      originTokenAddress: fromToken.addresses[
+                        fromChainId
+                      ] as Address,
+                    })
                   }
                   onClick={() => {
                     if (token === toToken) {

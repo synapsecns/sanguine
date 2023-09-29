@@ -22,6 +22,7 @@ const SelectSpecificTokenButton = ({
   onClick,
   alternateBackground = false,
   exchangeRate,
+  estimatedDuration,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -31,6 +32,7 @@ const SelectSpecificTokenButton = ({
   onClick: () => void
   alternateBackground?: boolean
   exchangeRate?: string
+  estimatedDuration?: number
 }) => {
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
