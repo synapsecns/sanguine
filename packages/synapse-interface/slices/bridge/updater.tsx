@@ -8,6 +8,7 @@ import {
   fetchBridgeQuotes,
 } from '@/utils/actions/fetchBridgeQuotes'
 import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
+import { resetFetchedBridgeQuotes } from './actions'
 import { BridgeQuote, Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -48,6 +49,10 @@ export default function Updater(): null {
           synapseSDK,
         })
       )
+    }
+
+    if (!fromToken) {
+      dispatch(resetFetchedBridgeQuotes())
     }
   }, [fromChainId, toChainId, fromToken, fromValue, toTokens, synapseSDK])
 
