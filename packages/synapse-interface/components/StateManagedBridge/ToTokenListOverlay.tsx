@@ -194,7 +194,7 @@ export const ToTokenListOverlay = () => {
                   active={idx === currentIdx}
                   showAllChains={false}
                   exchangeRate={formatBigIntToString(
-                    toTokensBridgeQuotes[idx]?.exchangeRate,
+                    toTokensBridgeQuotes?.[idx]?.exchangeRate,
                     18, //manually set this for now
                     4
                   )}

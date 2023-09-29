@@ -24,7 +24,8 @@ export default function Updater(): null {
   }: BridgeState = useBridgeState()
 
   useEffect(() => {
-    if (fromChainId && toChainId && fromToken && fromValue && synapseSDK) {
+    if (fromChainId && toChainId && fromToken && synapseSDK) {
+      const hasFromValue: boolean = fromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
           return {
@@ -33,7 +34,10 @@ export default function Updater(): null {
             destinationChainId: toChainId,
             destinationTokenAddress: token?.addresses[toChainId] as Address,
             destinationToken: token as Token,
-            amount: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+            amount: stringToBigInt(
+              hasFromValue ? fromValue : '1',
+              fromToken.decimals[fromChainId]
+            ),
           }
         }
       )

@@ -32,8 +32,6 @@ const SelectSpecificTokenButton = ({
   alternateBackground?: boolean
   exchangeRate?: string
 }) => {
-  exchangeRate && console.log('exchangeRate:', exchangeRate)
-
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
