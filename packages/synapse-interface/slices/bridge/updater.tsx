@@ -51,7 +51,7 @@ export default function Updater(): null {
       )
     }
 
-    if (!fromToken) {
+    if (!fromToken && !toChainId) {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [fromChainId, toChainId, fromToken, fromValue, toTokens, synapseSDK])
