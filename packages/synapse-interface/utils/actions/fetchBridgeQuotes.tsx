@@ -118,7 +118,7 @@ export async function fetchBridgeQuotes(
   }
 }
 
-function locateBestExchangeRateIndex(
+export function locateBestExchangeRateIndex(
   quotes: BridgeQuoteResponse[]
 ): number | null {
   if (quotes.length === 0) {

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
@@ -22,6 +22,7 @@ import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
+import { locateBestExchangeRateIndex } from '@/utils/actions/fetchBridgeQuotes'
 
 export const ToTokenListOverlay = () => {
   const {
@@ -166,6 +167,10 @@ export const ToTokenListOverlay = () => {
   console.log('possibleTokens: ', possibleTokens)
   console.log('toTokensBridgeQuotes: ', toTokensBridgeQuotes)
 
+  const bestExchangeRateIndex: number = useMemo(() => {
+    return locateBestExchangeRateIndex(toTokensBridgeQuotes)
+  }, [toTokensBridgeQuotes])
+
   return (
     <div
       ref={overlayRef}
@@ -197,6 +202,7 @@ export const ToTokenListOverlay = () => {
                   selectedToken={toToken}
                   active={idx === currentIdx}
                   showAllChains={false}
+                  isBestExchangeRate={idx === bestExchangeRateIndex}
                   exchangeRate={
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
                     formatBigIntToString(

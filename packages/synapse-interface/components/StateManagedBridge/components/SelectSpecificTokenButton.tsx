@@ -22,6 +22,7 @@ const SelectSpecificTokenButton = ({
   onClick,
   alternateBackground = false,
   exchangeRate,
+  isBestExchangeRate = false,
   estimatedDurationInSeconds,
 }: {
   showAllChains?: boolean
@@ -32,6 +33,7 @@ const SelectSpecificTokenButton = ({
   onClick: () => void
   alternateBackground?: boolean
   exchangeRate?: string
+  isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
 }) => {
   const ref = useRef<any>(null)
