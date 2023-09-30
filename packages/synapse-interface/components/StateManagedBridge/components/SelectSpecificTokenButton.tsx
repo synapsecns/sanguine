@@ -105,7 +105,7 @@ export const OptionTag = ({ type }: { type: BestOptionType }) => {
   return (
     <div
       data-test-id="option-tag"
-      className="flex text-sm whitespace-nowrap text-primary"
+      className="flex px-2.5 mr-3 text-sm whitespace-nowrap text-primary rounded-xl"
       style={{
         background:
           'linear-gradient(to right, rgba(128, 0, 255, 1), rgba(255, 0, 191, 1))',
