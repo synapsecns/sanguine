@@ -85,7 +85,9 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
-      {isBestExchangeRate && <OptionTag type={BestOptionType.RATE} />}
+      {exchangeRate && isBestExchangeRate && (
+        <OptionTag type={BestOptionType.RATE} />
+      )}
       {exchangeRate && (
         <OptionDetails
           exchangeRate={exchangeRate}
