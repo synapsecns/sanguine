@@ -164,8 +164,12 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  console.log('possibleTokens: ', possibleTokens)
-  console.log('toTokensBridgeQuotes: ', toTokensBridgeQuotes)
+  const bridgeQuotesMatchDestination: boolean = useMemo(() => {
+    return (
+      Array.isArray(toTokensBridgeQuotes) &&
+      toTokensBridgeQuotes[0]?.destinationChainId === toChainId
+    )
+  }, [toTokensBridgeQuotes, toChainId])
 
   const bestExchangeRateIndex: number = useMemo(() => {
     return locateBestExchangeRateIndex(toTokensBridgeQuotes)
@@ -205,6 +209,7 @@ export const ToTokenListOverlay = () => {
                   isBestExchangeRate={idx === bestExchangeRateIndex}
                   exchangeRate={
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    bridgeQuotesMatchDestination &&
                     formatBigIntToString(
                       toTokensBridgeQuotes?.[idx]?.exchangeRate,
                       18, //manually set this for now
@@ -213,6 +218,7 @@ export const ToTokenListOverlay = () => {
                   }
                   estimatedDurationInSeconds={
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    bridgeQuotesMatchDestination &&
                     calculateEstimatedTransactionTime({
                       originChainId: fromChainId,
                       originTokenAddress: fromToken.addresses[
