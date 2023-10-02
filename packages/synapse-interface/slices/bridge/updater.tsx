@@ -36,7 +36,7 @@ export default function Updater(): null {
             destinationTokenAddress: token?.addresses[toChainId] as Address,
             destinationToken: token as Token,
             amount: stringToBigInt(
-              hasFromValue ? fromValue : '1',
+              hasFromValue ? fromValue : getDefaultBridgeAmount(fromToken),
               fromToken.decimals[fromChainId]
             ),
           }
@@ -71,11 +71,9 @@ enum DefaultBridgeAmount {
   BTC = '0.001',
 }
 
-export const getDefaultBridgeAmount = ({
-  originToken,
-}: {
+export const getDefaultBridgeAmount = (
   originToken: Token
-}): DefaultBridgeAmount => {
+): DefaultBridgeAmount => {
   const swappableType: string = originToken.swapableType
 
   switch (swappableType) {
