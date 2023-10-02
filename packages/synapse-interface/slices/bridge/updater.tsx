@@ -26,6 +26,7 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (fromChainId && toChainId && fromToken && synapseSDK) {
+      console.log('toChainId: ', toChainId)
       const hasFromValue: boolean = fromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
@@ -52,7 +53,6 @@ export default function Updater(): null {
     }
 
     if (!fromToken) {
-      console.log('hit')
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [fromChainId, toChainId, fromToken, fromValue, toTokens, synapseSDK])

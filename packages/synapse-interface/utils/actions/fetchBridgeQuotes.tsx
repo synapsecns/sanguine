@@ -11,6 +11,7 @@ import { calculateExchangeRate } from '../calculateExchangeRate'
 
 export interface BridgeQuoteResponse extends BridgeQuote {
   destinationToken: Token
+  destinationChainId: number
 }
 
 export interface BridgeQuoteRequest {
@@ -92,6 +93,7 @@ export async function fetchBridgeQuote(
         destQuery: newDestQuery,
       },
       destinationToken: request.destinationToken,
+      destinationChainId: destinationChainId,
     }
   }
 }
@@ -115,6 +117,7 @@ export async function fetchBridgeQuotes(
     return bridgeQuotes
   } catch (e) {
     console.error('error from fetchBridgeQuotes: ', e)
+    return []
   }
 }
 
