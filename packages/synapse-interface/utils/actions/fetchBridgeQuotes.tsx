@@ -121,17 +121,20 @@ export async function fetchBridgeQuotes(
   }
 }
 
-export function locateBestExchangeRateIndex(
+export function locateBestExchangeRateToken(
   quotes: BridgeQuoteResponse[]
-): number | null {
+): Token | null {
   if (quotes?.length === 0) {
     return null
   }
 
-  return quotes?.reduce((indexOfHighest, currentQuote, currentIndex) => {
-    if (currentQuote.exchangeRate > quotes[indexOfHighest].exchangeRate) {
-      return currentIndex
+  let bestQuote: BridgeQuoteResponse | null = null
+
+  quotes.forEach((quote) => {
+    if (!bestQuote || quote.exchangeRate > bestQuote.exchangeRate) {
+      bestQuote = quote
     }
-    return indexOfHighest
-  }, 0)
+  })
+
+  return bestQuote ? bestQuote.destinationToken : null
 }
