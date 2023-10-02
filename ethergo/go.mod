@@ -12,7 +12,7 @@ require (
 	github.com/aws/smithy-go v1.13.5
 	github.com/benbjohnson/immutable v0.4.3
 	github.com/brianvoe/gofakeit/v6 v6.20.1
-	github.com/btcsuite/btcd v0.22.1
+	github.com/btcsuite/btcd v0.23.2
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0
 	github.com/chzyer/test v1.0.0
 	github.com/davecgh/go-spew v1.1.1
