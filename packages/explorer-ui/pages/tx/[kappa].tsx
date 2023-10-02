@@ -43,7 +43,7 @@ export default function BridgeTransaction({ queryResult }) {
     if (eventType == 10 || eventType == 11) {
       return CHAIN_EXPLORER_URLS[chainID] + '/address/' + CCTP_CONTRACTS[chainID]
     }
-    return CHAIN_EXPLORER_URLS[chainId] + '/address/' + BRIDGE_CONTRACTS[fromInfo.chainID]
+    return CHAIN_EXPLORER_URLS[chainId] + '/address/' + BRIDGE_CONTRACTS[chainID]
   }
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
