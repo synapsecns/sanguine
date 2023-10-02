@@ -167,8 +167,6 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
-  console.log('toTokensBridgeQuotes: ', toTokensBridgeQuotes)
-
   const bridgeQuotesMatchDestination: boolean = useMemo(() => {
     return (
       Array.isArray(toTokensBridgeQuotes) &&
