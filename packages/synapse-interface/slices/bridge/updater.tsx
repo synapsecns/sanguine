@@ -59,6 +59,12 @@ export default function Updater(): null {
   return null
 }
 
+enum SwappableTypes {
+  STABLE = 'USD',
+  ETH = 'ETH',
+  BTC = 'WBTC',
+}
+
 enum DefaultBridgeAmount {
   STABLE = '50',
   ETH = '0.01',
@@ -69,4 +75,15 @@ export const getDefaultBridgeAmount = ({
   originToken,
 }: {
   originToken: Token
-}) => {}
+}): DefaultBridgeAmount => {
+  const swappableType: string = originToken.swapableType
+
+  switch (swappableType) {
+    case SwappableTypes.STABLE:
+      return DefaultBridgeAmount.STABLE
+    case SwappableTypes.ETH:
+      return DefaultBridgeAmount.ETH
+    case SwappableTypes.BTC:
+      return DefaultBridgeAmount.BTC
+  }
+}
