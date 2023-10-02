@@ -26,7 +26,6 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (fromChainId && toChainId && fromToken && synapseSDK) {
-      console.log('toChainId: ', toChainId)
       const hasFromValue: boolean = fromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
@@ -59,3 +58,15 @@ export default function Updater(): null {
 
   return null
 }
+
+enum DefaultBridgeAmount {
+  STABLE = '50',
+  ETH = '0.01',
+  BTC = '0.001',
+}
+
+export const getDefaultBridgeAmount = ({
+  originToken,
+}: {
+  originToken: Token
+}) => {}
