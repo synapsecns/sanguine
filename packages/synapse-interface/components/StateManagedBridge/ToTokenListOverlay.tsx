@@ -22,7 +22,10 @@ import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
-import { locateBestExchangeRateIndex } from '@/utils/actions/fetchBridgeQuotes'
+import {
+  locateBestExchangeRateIndex,
+  BridgeQuoteResponse,
+} from '@/utils/actions/fetchBridgeQuotes'
 
 export const ToTokenListOverlay = () => {
   const {
@@ -164,6 +167,8 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
+  console.log('toTokensBridgeQuotes: ', toTokensBridgeQuotes)
+
   const bridgeQuotesMatchDestination: boolean = useMemo(() => {
     return (
       Array.isArray(toTokensBridgeQuotes) &&
@@ -211,7 +216,10 @@ export const ToTokenListOverlay = () => {
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
                     bridgeQuotesMatchDestination &&
                     formatBigIntToString(
-                      toTokensBridgeQuotes?.[idx]?.exchangeRate,
+                      toTokensBridgeQuotes.filter(
+                        (bridgeQuotes: BridgeQuoteResponse) =>
+                          bridgeQuotes.destinationToken === token
+                      )?.[0]?.exchangeRate,
                       18, //manually set this for now
                       4
                     )
