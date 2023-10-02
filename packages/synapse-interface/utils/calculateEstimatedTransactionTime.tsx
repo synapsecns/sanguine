@@ -39,5 +39,5 @@ export const calculateEstimatedTransactionTime = ({
       : baseEstimatedCompletionInSeconds
   }
 
-  return estimatedCompletionInSeconds
+  return baseEstimatedCompletionInSeconds
 }

@@ -201,6 +201,15 @@ export const ToTokenListOverlay = () => {
           </div>
           <div className="px-2 pb-2 md:px-2">
             {possibleTokens.map((token: Token, idx: number) => {
+              console.log(
+                'expectedTime:',
+                calculateEstimatedTransactionTime({
+                  originChainId: fromChainId,
+                  originTokenAddress: fromToken.addresses[
+                    fromChainId
+                  ] as Address,
+                })
+              )
               return (
                 <SelectSpecificTokenButton
                   isOrigin={false}
