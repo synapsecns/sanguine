@@ -23,7 +23,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
 import {
-  locateBestExchangeRateIndex,
+  locateBestExchangeRateToken,
   BridgeQuoteResponse,
 } from '@/utils/actions/fetchBridgeQuotes'
 
@@ -176,8 +176,8 @@ export const ToTokenListOverlay = () => {
     )
   }, [toTokensBridgeQuotes, toChainId])
 
-  const bestExchangeRateIndex: number = useMemo(() => {
-    return locateBestExchangeRateIndex(toTokensBridgeQuotes)
+  const bestExchangeRateToken: Token = useMemo(() => {
+    return locateBestExchangeRateToken(toTokensBridgeQuotes)
   }, [toTokensBridgeQuotes])
 
   return (
@@ -211,7 +211,7 @@ export const ToTokenListOverlay = () => {
                   selectedToken={toToken}
                   active={idx === currentIdx}
                   showAllChains={false}
-                  isBestExchangeRate={idx === bestExchangeRateIndex}
+                  isBestExchangeRate={token === bestExchangeRateToken}
                   exchangeRate={
                     toTokensBridgeQuotesStatus === FetchState.VALID &&
                     bridgeQuotesMatchDestination &&
