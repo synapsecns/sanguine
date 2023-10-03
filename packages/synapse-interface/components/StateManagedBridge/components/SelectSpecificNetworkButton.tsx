@@ -15,7 +15,6 @@ import {
   TokenWithBalanceAndAllowances,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { PortfolioTokenVisualizer } from '@/components/Portfolio/PortfolioContent/SingleNetworkPortfolio'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
