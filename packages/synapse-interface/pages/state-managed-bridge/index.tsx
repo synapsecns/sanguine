@@ -95,6 +95,7 @@ const StateManagedBridge = () => {
     toToken,
     bridgeQuote,
     fromValue,
+    debouncedFromValue,
     destinationAddress,
 
     fromChainIds,
@@ -132,7 +133,7 @@ const StateManagedBridge = () => {
       fromToken &&
       toToken &&
       fromToken?.decimals[fromChainId] &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+      stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) > 0n
     ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
@@ -145,7 +146,7 @@ const StateManagedBridge = () => {
     toChainId,
     fromToken,
     toToken,
-    fromValue,
+    debouncedFromValue,
     address,
     portfolioBalances,
   ])
@@ -158,7 +159,7 @@ const StateManagedBridge = () => {
       if (
         fromToken &&
         bridgeQuote?.allowance &&
-        stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) <=
           bridgeQuote.allowance
       ) {
         setIsApproved(true)
@@ -166,7 +167,7 @@ const StateManagedBridge = () => {
         setIsApproved(false)
       }
     }
-  }, [bridgeQuote, fromToken, fromValue, fromChainId, toChainId])
+  }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
 
   let quoteToast
 
@@ -183,7 +184,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          stringToBigInt(fromValue, fromToken.decimals[fromChainId])
+          stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
         )
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -205,7 +206,7 @@ const StateManagedBridge = () => {
       const originTokenDecimals = fromToken.decimals[fromChainId]
       const adjustedFeeAmount =
         BigInt(feeAmount) <
-        stringToBigInt(`${fromValue}`, fromToken.decimals[fromChainId])
+        stringToBigInt(`${debouncedFromValue}`, fromToken.decimals[fromChainId])
           ? BigInt(feeAmount)
           : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
@@ -264,8 +265,10 @@ const StateManagedBridge = () => {
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              stringToBigInt(fromValue, fromToken.decimals[fromChainId]) -
-                BigInt(adjustedFeeAmount),
+              stringToBigInt(
+                debouncedFromValue,
+                fromToken.decimals[fromChainId]
+              ) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
               toValueBigInt,
               toToken.decimals[toChainId]
@@ -280,7 +283,7 @@ const StateManagedBridge = () => {
         )
 
         toast.dismiss(quoteToast)
-        const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `Route found for bridging ${debouncedFromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
       }
@@ -298,7 +301,7 @@ const StateManagedBridge = () => {
         } else if (!toToken) {
           message = 'Please select a destination token'
         } else {
-          message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+          message = `No route found for bridging ${debouncedFromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         }
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
@@ -346,7 +349,7 @@ const StateManagedBridge = () => {
       address,
       originChainId: fromChainId,
       destinationChainId: toChainId,
-      inputAmount: fromValue,
+      inputAmount: debouncedFromValue,
       expectedReceivedAmount: bridgeQuote.outputAmountString,
       slippage: bridgeQuote.exchangeRate,
     })
@@ -356,7 +359,7 @@ const StateManagedBridge = () => {
         id: currentTimestamp,
         originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
-        originValue: fromValue,
+        originValue: debouncedFromValue,
         destinationChain: CHAINS_BY_ID[toChainId],
         destinationToken: toToken,
         transactionHash: undefined,
@@ -379,7 +382,7 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
@@ -391,7 +394,10 @@ const StateManagedBridge = () => {
           ? {
               data: data.data,
               to: data.to,
-              value: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+              value: stringToBigInt(
+                debouncedFromValue,
+                fromToken.decimals[fromChainId]
+              ),
             }
           : data
 
@@ -409,7 +415,7 @@ const StateManagedBridge = () => {
           address,
           originChainId: fromChainId,
           destinationChainId: toChainId,
-          inputAmount: fromValue,
+          inputAmount: debouncedFromValue,
           expectedReceivedAmount: bridgeQuote.outputAmountString,
           slippage: bridgeQuote.exchangeRate,
         })
