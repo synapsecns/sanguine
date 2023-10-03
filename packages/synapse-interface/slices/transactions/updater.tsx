@@ -82,7 +82,6 @@ export default function Updater(): null {
   // Start fetch when connected address exists
   useEffect(() => {
     if (address && isWindowFocused && !masqueradeActive) {
-      console.log('got hit')
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
