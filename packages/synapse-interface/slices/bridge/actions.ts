@@ -31,3 +31,6 @@ export const updatePendingBridgeTransactions = createAction<
 export const resetFetchedBridgeQuotes = createAction<void>(
   'bridge/resetFetchedBridgeQuotes'
 )
+export const updateDebouncedFromValue = createAction<string>(
+  'bridge/updateDebouncedFromValue'
+)
