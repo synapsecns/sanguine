@@ -100,20 +100,34 @@ export async function fetchBridgeQuote(
 
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
-  synapseSDK: any
+  synapseSDK: any,
+  maxConcurrentRequests: number = 10, // Set the maximum number of concurrent requests
+  requestDelay: number = 1000 // Set the delay between requests in milliseconds (adjust as needed)
 ): Promise<BridgeQuoteResponse[]> {
   try {
-    const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] = requests.map(
-      async (request: BridgeQuoteRequest) => {
-        const results: BridgeQuoteResponse = await fetchBridgeQuote(
-          request,
-          synapseSDK
-        )
+    const bridgeQuotes: BridgeQuoteResponse[] = []
 
-        return results
+    for (let i = 0; i < requests.length; i += maxConcurrentRequests) {
+      const batchRequests = requests.slice(i, i + maxConcurrentRequests)
+      const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] =
+        batchRequests.map(async (request: BridgeQuoteRequest) => {
+          const results: BridgeQuoteResponse = await fetchBridgeQuote(
+            request,
+            synapseSDK
+          )
+
+          return results
+        })
+
+      const batchBridgeQuotes = await Promise.all(bridgeQuotesPromises)
+      bridgeQuotes.push(...batchBridgeQuotes)
+
+      // Add a delay between batches of requests to avoid overloading the server
+      if (i + maxConcurrentRequests < requests.length) {
+        await new Promise((resolve) => setTimeout(resolve, requestDelay))
       }
-    )
-    const bridgeQuotes = await Promise.all(bridgeQuotesPromises)
+    }
+
     return bridgeQuotes
   } catch (e) {
     console.error('error from fetchBridgeQuotes: ', e)
