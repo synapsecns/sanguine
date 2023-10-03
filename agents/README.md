@@ -1,9 +1,19 @@
-# Agents
+<br/>
+<p align="center">
+<a href="https://interchain.synapseprotocol.com/" target="_blank">
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/feat/readme-updates/assets/interchain-logo.svg" width="225" alt="Synapse Interchain logo">
+</a>
+</p>
+<br/>
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/agents.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/agents)
 [![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/agents)](https://goreportcard.com/report/github.com/synapsecns/sanguine/agents)
+[![Image](https://ghcr-badge.egpl.dev/synapsecns/sanguine%2Fagents/size?color=%2344cc11&tag=latest&label=image+size&trim=)](https://github.com/synapsecns/sanguine/pkgs/container/sanguine%2Fagents)
 
-The Agents are the off-chain components of Sanguine. They are responsible for signing, reporting, verifying, and executing messages across chains.
+# Agents
+
+
+The Agents are the off-chain components of Synapse Interchain Network. They are responsible for signing, reporting, verifying, and executing messages across chains.
 
 ## Use
 
@@ -28,3 +38,4 @@ root
 ├── <a href="./testutil">testutil</a>: Contains mock deployers for interacting with the mock backend
 └── <a href="./types">types</a>: Common agents types
 </pre>
+

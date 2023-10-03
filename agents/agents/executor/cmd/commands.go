@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
@@ -23,13 +24,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
+
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"os"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 //go:embed cmd.md
@@ -116,8 +119,8 @@ var ExecutorRunCommand = &cli.Command{
 		case "embedded":
 			eventDB, err := scribeAPI.InitDB(
 				ctx,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Type,
+				executorConfig.DBConfig.Source,
 				handler,
 				false,
 			)
@@ -129,9 +132,9 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.ScribeConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID), handler)
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.ScribeConfig.EmbeddedScribeConfig.RPCURL, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
@@ -154,7 +157,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			embedded := client.NewEmbeddedScribe(
 				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
-				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				executorConfig.DBConfig.Source,
 				handler,
 			)
 

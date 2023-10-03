@@ -3,10 +3,11 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -89,7 +90,18 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 		return 0, fmt.Errorf("could not get message status: %w", err)
 	}
 
-	fmt.Println("status: ", status)
-
 	return status, nil
+}
+
+//nolint:wrapcheck
+func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
+	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
+}
+
+func (a destinationContract) PassAgentRoot(transactor *bind.TransactOpts) (*ethTypes.Transaction, error) {
+	tx, err := a.contract.PassAgentRoot(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not pass agent root: %w", err)
+	}
+	return tx, nil
 }

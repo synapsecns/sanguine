@@ -3,6 +3,345 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.139](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.138...@synapsecns/synapse-interface@0.1.139) (2023-10-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.138](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.137...@synapsecns/synapse-interface@0.1.138) (2023-09-29)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.137](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.136...@synapsecns/synapse-interface@0.1.137) (2023-09-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.136](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.135...@synapsecns/synapse-interface@0.1.136) (2023-09-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.135](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.134...@synapsecns/synapse-interface@0.1.135) (2023-09-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.134](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.133...@synapsecns/synapse-interface@0.1.134) (2023-09-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.133](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.132...@synapsecns/synapse-interface@0.1.133) (2023-09-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.132](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.131...@synapsecns/synapse-interface@0.1.132) (2023-09-15)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.131](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.130...@synapsecns/synapse-interface@0.1.131) (2023-09-14)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.130](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.129...@synapsecns/synapse-interface@0.1.130) (2023-09-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.129](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.128...@synapsecns/synapse-interface@0.1.129) (2023-09-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.128](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.127...@synapsecns/synapse-interface@0.1.128) (2023-09-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.127](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.126...@synapsecns/synapse-interface@0.1.127) (2023-09-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.126](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.125...@synapsecns/synapse-interface@0.1.126) (2023-09-12)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.125](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.124...@synapsecns/synapse-interface@0.1.125) (2023-09-12)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.124](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.123...@synapsecns/synapse-interface@0.1.124) (2023-09-11)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.123](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.122...@synapsecns/synapse-interface@0.1.123) (2023-09-11)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.122](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.121...@synapsecns/synapse-interface@0.1.122) (2023-09-11)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.121](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.120...@synapsecns/synapse-interface@0.1.121) (2023-09-11)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.120](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.119...@synapsecns/synapse-interface@0.1.120) (2023-09-11)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.119](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.118...@synapsecns/synapse-interface@0.1.119) (2023-09-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.118](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.117...@synapsecns/synapse-interface@0.1.118) (2023-09-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.117](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.116...@synapsecns/synapse-interface@0.1.117) (2023-09-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.116](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.115...@synapsecns/synapse-interface@0.1.116) (2023-09-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.115](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.114...@synapsecns/synapse-interface@0.1.115) (2023-09-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.114](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.113...@synapsecns/synapse-interface@0.1.114) (2023-09-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.113](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.112...@synapsecns/synapse-interface@0.1.113) (2023-09-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.112](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.111...@synapsecns/synapse-interface@0.1.112) (2023-09-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.111](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.110...@synapsecns/synapse-interface@0.1.111) (2023-09-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.110](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.109...@synapsecns/synapse-interface@0.1.110) (2023-09-05)
+
+
+### Bug Fixes
+
+* packages/synapse-interface/package.json to reduce vulnerabilities ([#1292](https://github.com/synapsecns/sanguine/issues/1292)) ([24bc6b6](https://github.com/synapsecns/sanguine/commit/24bc6b6bc80d718fb9a40a8ae26bc4594c2915b9))
+
+
+
+
+
+## [0.1.109](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.108...@synapsecns/synapse-interface@0.1.109) (2023-09-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.108](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.107...@synapsecns/synapse-interface@0.1.108) (2023-09-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.107](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.106...@synapsecns/synapse-interface@0.1.107) (2023-09-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.106](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.105...@synapsecns/synapse-interface@0.1.106) (2023-09-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.105](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.104...@synapsecns/synapse-interface@0.1.105) (2023-09-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.104](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.103...@synapsecns/synapse-interface@0.1.104) (2023-08-31)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.103](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.102...@synapsecns/synapse-interface@0.1.103) (2023-08-31)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.102](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.101...@synapsecns/synapse-interface@0.1.102) (2023-08-28)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.101](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.100...@synapsecns/synapse-interface@0.1.101) (2023-08-28)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.100](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.99...@synapsecns/synapse-interface@0.1.100) (2023-08-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.99](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.98...@synapsecns/synapse-interface@0.1.99) (2023-08-22)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.98](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.97...@synapsecns/synapse-interface@0.1.98) (2023-08-21)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.1.97](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.96...@synapsecns/synapse-interface@0.1.97) (2023-08-18)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

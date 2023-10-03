@@ -8,7 +8,6 @@ Core contains common libraries used across the synapse Go repositories.
 
 ## Directory Structure
 
-
 <pre>
 root
 ├── <a href="./bytemap">bytemap</a>: Implements a map using `[]rune` or `[]byte` instead of `string`
@@ -27,7 +26,7 @@ root
 ├── <a href="./server">server</a>: Provides a context-safe server that can be used to start/stop a server.
 ├── <a href="./testsuite">testsuite</a>: Provides a wrapper around testify/suite.
 ├── <a href="./threaditer">threaditer</a>: Provides a thread-safe generic iterator for a slice.
-├── <a href="./toml">toml</a>: Toml marshalling/unmarshalling interfaces.
 ├── <a href="./tunnel">tunnel</a>: Reverse tunneling service for debugging services in ci.
 </pre>
+
 

@@ -102,11 +102,13 @@ contract SummitTipsTest is AgentSecuredTest {
         acceptSnapshot(snapshot1);
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
+        vm.chainId(DOMAIN_SYNAPSE);
         summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager), address(inbox)));
     }
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address caller = random.nextAddress();

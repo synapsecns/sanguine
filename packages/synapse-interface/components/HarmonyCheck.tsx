@@ -11,7 +11,7 @@ const HarmonyCheck = ({
       {(toChainId === CHAINS.HARMONY.id ||
         fromChainId === CHAINS.HARMONY.id) && (
         <div
-          className={`bg-gray-800 shadow-lg pt-3 px-6 pb-6 rounded-lg text-white`}
+          className={`bg-gray-800 shadow-lg pt-3 px-6 pb-6 rounded-md text-white`}
         >
           The native Harmony bridge has been exploited, which lead to a hard
           depeg of the following Harmony-specific tokens: 1DAI, 1USDC, 1USDT,

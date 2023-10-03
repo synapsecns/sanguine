@@ -61,7 +61,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
+    <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
       {showGasDrop && (
         <div
           className={
@@ -109,7 +109,7 @@ const GasDropLabel = ({
   toChainId: number
 }) => {
   let decimalsToDisplay
-  const symbol = CHAINS_BY_ID[toChainId].nativeCurrency.symbol
+  const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
     decimalsToDisplay = 2
@@ -151,11 +151,11 @@ const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
     <span className="flex items-center space-x-1">
       <Image
         alt="chain image"
-        src={chain.chainImg}
+        src={chain?.chainImg}
         className="w-4 h-4 rounded-full"
       />
       <span className="text-white">
-        {chain.name.length > 10 ? chain.chainSymbol : chain.name}
+        {chain?.name?.length > 10 ? chain?.chainSymbol : chain?.name}
       </span>
     </span>
   ) : null

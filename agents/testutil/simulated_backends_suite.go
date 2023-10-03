@@ -1,7 +1,15 @@
 package testutil
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+
+	"github.com/brianvoe/gofakeit"
+	"github.com/synapsecns/sanguine/core"
+
 	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
@@ -32,7 +40,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -41,9 +50,6 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -67,6 +73,8 @@ type SimulatedBackendsTestSuite struct {
 	TestContractMetadataOnOrigin        contracts.DeployedContract
 	TestContractOnSummit                *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnSummit        contracts.DeployedContract
+	DestinationContractOnSummit         *destinationharness.DestinationHarnessRef
+	DestinationContractMetadataOnSummit contracts.DeployedContract
 	TestContractOnDestination           *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnDestination   contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
@@ -96,14 +104,18 @@ type SimulatedBackendsTestSuite struct {
 	TestBackendSummit                   backends.SimulatedTestBackend
 	NotaryBondedWallet                  wallet.Wallet
 	NotaryOnOriginBondedWallet          wallet.Wallet
+	NotaryOnDestinationBondedWallet     wallet.Wallet
 	GuardBondedWallet                   wallet.Wallet
 	NotaryBondedSigner                  signer.Signer
 	NotaryOnOriginBondedSigner          signer.Signer
+	NotaryOnDestinationBondedSigner     signer.Signer
 	GuardBondedSigner                   signer.Signer
 	NotaryUnbondedWallet                wallet.Wallet
 	NotaryUnbondedSigner                signer.Signer
 	NotaryOnOriginUnbondedWallet        wallet.Wallet
 	NotaryOnOriginUnbondedSigner        signer.Signer
+	NotaryOnDestinationUnbondedWallet   wallet.Wallet
+	NotaryOnDestinationUnbondedSigner   signer.Signer
 	GuardUnbondedWallet                 wallet.Wallet
 	GuardUnbondedSigner                 signer.Signer
 	ExecutorUnbondedWallet              wallet.Wallet
@@ -138,23 +150,32 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
-	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
+
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metrics.Jaeger)
+	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metrics.Jaeger)
+	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
-	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metrics.Jaeger)
+	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metricsHandler)
 	a.Require().Nil(err)
 	a.ContractMetrics, err = metrics.NewByType(a.GetSuiteContext(), coreConfig.NewBuildInfo(
 		coreConfig.DefaultVersion,
 		coreConfig.DefaultCommit,
 		"contract",
 		coreConfig.DefaultDate,
-	), metrics.Jaeger)
+	), metricsHandler)
 	a.Require().Nil(err)
 }
 
@@ -185,6 +206,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -225,6 +247,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -235,6 +258,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.TestContractMetadataOnSummit, a.TestContractOnSummit = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendSummit)
+	a.DestinationContractMetadataOnSummit, a.DestinationContractOnSummit = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
@@ -243,6 +267,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
+		DestinationAddress:    a.DestinationContractOnSummit.Address().String(),
 	}, a.TestBackendSummit.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
@@ -250,6 +275,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -302,6 +328,22 @@ func (a *SimulatedBackendsTestSuite) SetupNotaryOnOrigin() {
 	a.NotaryOnOriginUnbondedSigner = localsigner.NewSigner(a.NotaryOnOriginUnbondedWallet.PrivateKey())
 }
 
+// SetupNotaryOnDestination sets up the Notary agent on the origin chain.
+func (a *SimulatedBackendsTestSuite) SetupNotaryOnDestination() {
+	var err error
+	a.NotaryOnDestinationBondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryOnDestinationBondedSigner = localsigner.NewSigner(a.NotaryOnDestinationBondedWallet.PrivateKey())
+
+	a.NotaryOnDestinationUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryOnDestinationUnbondedSigner = localsigner.NewSigner(a.NotaryOnDestinationUnbondedWallet.PrivateKey())
+}
+
 // SetupExecutor sets up the Executor agent.
 func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 	var err error
@@ -320,6 +362,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupGuard()
 	a.SetupNotary()
 	a.SetupNotaryOnOrigin()
+	a.SetupNotaryOnDestination()
 	a.SetupExecutor()
 
 	a.TestDeployManager = NewDeployManager(a.T())
@@ -328,15 +371,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
+		anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		anvilOptsDestination := anvil.NewAnvilOptionBuilder()
+		anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		anvilOptsSummit := anvil.NewAnvilOptionBuilder()
+		anvilOptsSummit.SetChainID(uint64(10))
+		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
 	}()
 	wg.Wait()
 
@@ -345,21 +394,6 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.TestBackendDestination,
 		a.TestBackendSummit,
 	}
-
-	/*
-		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
-			InboxType,
-			BondingManagerHarnessType,
-			SummitHarnessType,
-			AgentsTestContractType,
-			DestinationHarnessType,
-			OriginHarnessType,
-			TestClientType,
-			PingPongClientType,
-			LightInboxType,
-			LightManagerHarnessType,
-		)
-	*/
 
 	wg.Add(3)
 	go func() {
@@ -382,8 +416,8 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.GetTestContext(),
 		a.TestBackendSummit,
 		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address(), a.NotaryOnDestinationBondedSigner.Address()},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID()), uint32(a.TestBackendDestination.GetChainID())})
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -414,4 +448,19 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 // cleanAfterTestSuite does cleanup after test suite is finished.
 func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
+	// This shouldn't be necessary, but is added for a recurring flake
+	a.TestBackendSummit = nil
+	a.TestBackendOrigin = nil
+	a.TestBackendDestination = nil
+}
+
+// BumpBackend is a helper to get the test backend to emit expected events.
+// TODO: Look into using anvil EvmMine() instead of this.
+func (a *SimulatedBackendsTestSuite) BumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
+	// Call EmitAgentsEventA 3 times on the backend.
+	for i := 0; i < 3; i++ {
+		bumpTx, err := contract.EmitAgentsEventA(txOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		a.Nil(err)
+		backend.WaitForConfirmation(a.GetTestContext(), bumpTx)
+	}
 }

@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/gasoracle"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -20,6 +21,10 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
+
+// SynChainID the id of the SynChain.
+// TODO: no longer needs to be hardcoded: https://github.com/synapsecns/sanguine/pull/1280#discussion_r1320882617
+const SynChainID uint = 10
 
 // LightInboxDeployer deploys the light inbox contract.
 type LightInboxDeployer struct {
@@ -40,9 +45,13 @@ func (d LightInboxDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 	originAddress := originContract.Address()
 	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		if d.Backend().GetChainID() == SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on synchain", d.ContractType().ContractName())
+		}
+
 		// deploy the light inbox contract
 		var rawHandle *lightinbox.LightInbox
-		address, tx, rawHandle, err = lightinbox.DeployLightInbox(transactOps, backend, uint32(d.Backend().GetChainID()))
+		address, tx, rawHandle, err = lightinbox.DeployLightInbox(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -85,9 +94,13 @@ func (d LightManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 	originAddress := originContract.Address()
 	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		if d.Backend().GetChainID() == SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on synchain", d.ContractType().ContractName())
+		}
+
 		// deploy the light manager contract
 		var rawHandle *lightmanager.LightManager
-		address, tx, rawHandle, err = lightmanager.DeployLightManager(transactOps, backend, uint32(d.Backend().GetChainID()))
+		address, tx, rawHandle, err = lightmanager.DeployLightManager(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -129,9 +142,13 @@ func (d InboxDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, 
 	originAddress := originContract.Address()
 	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		if d.Backend().GetChainID() != SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on non-synchain", d.ContractType().ContractName())
+		}
+
 		// deploy the inbox contract
 		var rawHandle *inbox.Inbox
-		address, tx, rawHandle, err = inbox.DeployInbox(transactOps, backend, uint32(d.Backend().GetChainID()))
+		address, tx, rawHandle, err = inbox.DeployInbox(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -173,9 +190,13 @@ func (d BondingManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 	originAddress := originContract.Address()
 	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		if d.Backend().GetChainID() != SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on a chain that is not synchain", d.ContractType().ContractName())
+		}
+
 		// deploy the bonding manager contract
 		var rawHandle *bondingmanager.BondingManager
-		address, tx, rawHandle, err = bondingmanager.DeployBondingManager(transactOps, backend, uint32(d.Backend().GetChainID()))
+		address, tx, rawHandle, err = bondingmanager.DeployBondingManager(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -219,7 +240,7 @@ func (d GasOracleDeployer) Deploy(ctx context.Context) (contracts.DeployedContra
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the bonding manager contract
 		var rawHandle *gasoracle.GasOracle
-		address, tx, rawHandle, err = gasoracle.DeployGasOracle(transactOps, backend, uint32(d.Backend().GetChainID()), destinationAddress)
+		address, tx, rawHandle, err = gasoracle.DeployGasOracle(transactOps, backend, SynapseChainID, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -258,7 +279,7 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	var agentAddress common.Address
 	var inboxAddress common.Address
-	if d.Backend().GetChainID() == 10 {
+	if d.Backend().GetChainID() == SynChainID {
 		bondingManagerContract := d.Registry().Get(ctx, BondingManagerType)
 		agentAddress = bondingManagerContract.Address()
 
@@ -276,7 +297,7 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
 		var rawHandle *origin.Origin
-		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), agentAddress, inboxAddress, gasOracleAddress)
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, SynapseChainID, agentAddress, inboxAddress, gasOracleAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -318,7 +339,12 @@ func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 	bondingManagerAddress := bondingManagerContract.Address()
 	inboxContract := a.Registry().Get(ctx, InboxType)
 	inboxAddress := inboxContract.Address()
+
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		if a.Backend().GetChainID() != SynChainID {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s on nonsynchain", a.ContractType().ContractName())
+		}
+
 		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()), bondingManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy summit: %w", err)
@@ -367,7 +393,7 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 		inboxAddress = lightInboxContract.Address()
 	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress, inboxAddress)
+		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, SynapseChainID, agentManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy destination: %w", err)
 		}

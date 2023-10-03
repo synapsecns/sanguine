@@ -17,7 +17,7 @@ export function TopBarNavLink({
   const isInternal = to[0] === '/' || to[0] === '#'
   const linkContent = (
     <div className={`py-2 px-2 ${className}`}>
-      <span className="transition-all duration-75 transform-gpu">
+      <span className="transition-all duration-75 transform-gpu whitespace-nowrap">
         {labelText}
       </span>
     </div>

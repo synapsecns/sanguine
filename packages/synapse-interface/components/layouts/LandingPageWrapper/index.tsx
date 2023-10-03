@@ -63,7 +63,7 @@ export function LandingNav() {
             <Popover.Button
               data-test-id="mobile-navbar-button"
               className={`
-                  rounded-lg p-2 inline-flex items-center justify-center
+                  rounded-md p-2 inline-flex items-center justify-center
                   text-gray-400 hover:text-gray-400 hover:bg-gray-800
                   focus:outline-none
                 `}
@@ -130,7 +130,7 @@ export function LandingNav() {
                 <div className="-mr-2">
                   <Popover.Button
                     className={`
-                        rounded-lg p-2 inline-flex items-center justify-center
+                        rounded-md p-2 inline-flex items-center justify-center
                         text-gray-400 hover:text-gray-400 hover:bg-gray-900
                         focus:outline-none
                       `}
@@ -161,7 +161,7 @@ export function LandingNav() {
   )
 }
 
-function PopoverPanelContainer({
+export function PopoverPanelContainer({
   children,
   className,
 }: {
@@ -185,7 +185,7 @@ function PopoverPanelContainer({
           mt-3 w-screen max-w-xs sm:px-0
         `}
       >
-        <div className="overflow-hidden shadow-xl rounded-xl">
+        <div className="overflow-hidden shadow-xl rounded-md">
           <div className="relative grid gap-3 bg-bgLight px-2.5 py-3  sm:p-2">
             {children}
           </div>
@@ -279,7 +279,7 @@ function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
       target={isInternal ? undefined : '_blank'}
       className={`
         block
-        px-3 pt-2 pb-2 rounded-lg
+        px-3 pt-2 pb-2 rounded-md
         text-2xl font-semibold
         hover:text-opacity-100
       `}
@@ -309,7 +309,7 @@ function MoreInfoItem({
       key={labelText}
       href={to}
       target={to[0] === '/' ? undefined : '_blank'}
-      className={`block px-3 pt-2 pb-2 rounded-lg hover:bg-white hover:bg-opacity-10 ${className}`}
+      className={`block px-3 pt-2 pb-2 rounded-md hover:bg-white hover:bg-opacity-10 ${className}`}
     >
       <p className="text-base font-medium text-white">{labelText}</p>
       <p className="hidden mt-1 text-sm text-white text-opacity-60 md:block">
@@ -332,7 +332,7 @@ function MiniInfoItem({
     <a
       key={labelText}
       href={href}
-      className="block px-3 pt-1 pb-2 text-sm rounded-lg group"
+      className="block px-3 pt-1 pb-2 text-sm rounded-md group"
       target="_blank"
     >
       <div>

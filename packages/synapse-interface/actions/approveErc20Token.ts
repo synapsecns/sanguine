@@ -8,7 +8,7 @@ import {
 import { TransactionReceipt } from 'viem'
 
 import { MAX_UINT256 } from '@/constants'
-import { USDT } from '@/constants/tokens/master'
+import { USDT } from '@/constants/tokens/bridgeable'
 import { USDT_ABI } from '@/constants/abis/usdtAbi'
 import { ETH as Ethereum } from '@/constants/chains/master'
 

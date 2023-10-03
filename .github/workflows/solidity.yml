@@ -1,4 +1,4 @@
-name: Solidity Slither
+name: Solidity
 
 on:
   pull_request:
@@ -11,7 +11,61 @@ on:
       - '.github/workflows/solidity.yml'
 
 jobs:
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    env:
+      WORKING_DIRECTORY: 'packages/contracts-core'
+      VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
+      VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
+      NODE_ENV: 'production'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+        with:
+          cache: 'npm'
+          cache-path: ''
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Install Vercel CLI
+        run: npm install --global vercel@30.1.0
+      - name: Set Project Env
+        run: |
+          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID }}" >> $GITHUB_ENV
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Docs
+        working-directory: packages/contracts-core/
+        # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
+        run: |
+          forge doc
+          cp vercel.package.json docs/package.json
+      - name: Deploy (Prod)
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
+        run: |
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --prod
+      - name: Deploy
+        run: |
+          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+
+
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
   slither:
+    name: Slither
     # see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
     runs-on: ubuntu-latest
     permissions:
@@ -22,7 +76,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'

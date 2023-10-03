@@ -56,7 +56,8 @@ export const powBigInt = (base, exponent) => {
 export const formatBigIntToPercentString = (
   bn: bigint,
   nativePrecison: number,
-  decimalPlaces = 2
+  decimalPlaces = 2,
+  convert = true
 ) => {
   try {
     // Calculate the conversion factor based on the native precision and required decimal places
@@ -66,7 +67,8 @@ export const formatBigIntToPercentString = (
     )
 
     // Convert the bigint to a floating-point number, preserving the requested number of decimal places
-    const num = Number(bn) / Number(conversionFactor)
+    const percentConvert = convert ? 100 : 1
+    const num = (Number(bn) * percentConvert) / Number(conversionFactor)
 
     // Format the number as a percentage string
     return `${num.toFixed(decimalPlaces)}%`
@@ -144,6 +146,10 @@ export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
 }
 
 export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
+  if (typeof rawVal !== 'string' && !rawVal) {
+    return 0n
+  }
+
   try {
     let value = rawVal.replace(/[$,]/g, '')
     if (['.', '0.', '', '.0'].includes(value)) {
@@ -169,7 +175,7 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
 
     return wholeBigInt + fractionalBigInt
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     txErrorHandler(error)
   }
 }

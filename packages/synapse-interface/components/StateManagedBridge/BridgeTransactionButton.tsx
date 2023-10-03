@@ -14,14 +14,15 @@ import {
   useChainModal,
 } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
 }) => {
-  // TODO: This is only implemented this way to fix a Next Hydration Error
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
+  const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
@@ -37,26 +38,42 @@ export const BridgeTransactionButton = ({
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  // Get state from Redux store
   const {
     destinationAddress,
     fromToken,
     fromValue,
+    toToken,
     fromChainId,
+    toChainId,
     isLoading,
     bridgeQuote,
-  } = useSelector((state: RootState) => state.bridge)
+  } = useBridgeState()
 
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
+
+  const balances = usePortfolioBalances()
+  const balancesForChain = balances[fromChainId]
+  const balanceForToken = balancesForChain?.find(
+    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.balance
+
+  const sufficientBalance = useMemo(() => {
+    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
+    return (
+      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
+      balanceForToken
+    )
+  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
 
   const isButtonDisabled =
     isLoading ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
-    (showDestinationAddress && !destinationAddress)
+    (showDestinationAddress && !destinationAddress) ||
+    (isConnected && !sufficientBalance)
 
   let buttonProperties
 
@@ -67,7 +84,17 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!fromToken) {
+  if (!fromChainId) {
+    buttonProperties = {
+      label: 'Please select Origin network',
+      onClick: null,
+    }
+  } else if (!toChainId) {
+    buttonProperties = {
+      label: 'Please select Destination network',
+      onClick: null,
+    }
+  } else if (!fromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
       onClick: null,
@@ -86,6 +113,11 @@ export const BridgeTransactionButton = ({
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
     }
+  } else if (isConnected && !sufficientBalance) {
+    buttonProperties = {
+      label: 'Insufficient balance',
+      onClick: null,
+    }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
       label: 'Please add valid destination address',
@@ -96,7 +128,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
+      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchNetwork(fromChainId),
       pendingLabel: 'Switching chains',
     }

@@ -2,10 +2,12 @@ package backfill_test
 
 import (
 	"fmt"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -21,9 +23,10 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
-	"go.uber.org/atomic"
 	"math/big"
 	"testing"
+
+	"go.uber.org/atomic"
 )
 
 type BackfillSuite struct {
@@ -52,10 +55,18 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	b.Require().Nil(err)
 }
 

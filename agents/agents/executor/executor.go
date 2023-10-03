@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -14,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -32,9 +37,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"math/big"
-	"strconv"
-	"time"
 )
 
 // chainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -53,6 +55,8 @@ type chainExecutor struct {
 	lightInboxParser lightinbox.Parser
 	// inboxParser is the inbox parser.
 	inboxParser inbox.Parser
+	// summitParser is the summit parser.
+	summitParser summit.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTree is a merkle tree for a specific origin chain.
@@ -61,6 +65,8 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
+	// boundOrigin is a bound origin contract.
+	boundOrigin domains.OriginContract
 }
 
 // Executor is the executor agent.
@@ -69,8 +75,6 @@ type Executor struct {
 	config executor.Config
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
-	// scribeClient is the client to the Scribe gRPC server.
-	scribeClient client.ScribeClient
 	// grpcClient is the gRPC client.
 	grpcClient pbscribe.ScribeServiceClient
 	// grpcConn is the gRPC connection.
@@ -83,6 +87,8 @@ type Executor struct {
 	handler metrics.Handler
 	// txSubmitter is the transaction submitter.
 	txSubmitter submitter.TransactionSubmitter
+	// NowFunc returns the current time.
+	NowFunc func() time.Time
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -162,14 +168,21 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		}
 
 		var inboxParser inbox.Parser
+		var summitParser summit.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
+
+			summitParser, err = summit.NewParser(common.HexToAddress(config.SummitAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create summit parser: %w", err)
+			}
 		} else {
 			inboxParser = nil
+			summitParser = nil
 		}
 
 		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
@@ -185,6 +198,11 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
+		}
+
+		boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind origin contract: %w", err)
 		}
 
 		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
@@ -203,34 +221,31 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			originParser:     originParser,
 			lightInboxParser: lightInboxParser,
 			inboxParser:      inboxParser,
+			summitParser:     summitParser,
 			logChan:          make(chan *ethTypes.Log, logChanSize),
 			merkleTree:       tree,
 			rpcClient:        evmClient,
 			boundDestination: boundDestination,
+			boundOrigin:      boundOrigin,
 		}
 	}
 
 	return &Executor{
 		config:         config,
 		executorDB:     executorDB,
-		scribeClient:   scribeClient,
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 		handler:        handler,
 		txSubmitter:    txSubmitter,
+		NowFunc:        time.Now,
 	}, nil
 }
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
-
-	// Listen for snapshotAcceptedEvents on bonding manager.
-	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
-	})
 
 	g.Go(func() error {
 		err := e.txSubmitter.Start(ctx)
@@ -240,15 +255,25 @@ func (e Executor) Run(parentCtx context.Context) error {
 		return err
 	})
 
+	// Listen for snapshotAccepted events on the inbox.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
+	})
+
+	// Listen for attestationSaved events on the summit.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, execTypes.SummitContract)
+	})
+
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for sentEvents on origin.
+		// Listen for sent events on origins.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
-		// Listen for attestationAcceptedEvents on destination.
+		// Listen for attestationAccepted events on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})
@@ -767,7 +792,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			backoffInterval = time.Duration(e.config.ExecuteInterval) * time.Second
 
 			page := 1
-			currentTime := uint64(time.Now().Unix())
+			currentTime := uint64(e.NowFunc().Unix())
 
 			messageMask := db.DBMessage{
 				ChainID: &chainID,

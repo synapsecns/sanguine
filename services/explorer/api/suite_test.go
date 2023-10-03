@@ -12,6 +12,7 @@ import (
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/retry"
@@ -187,10 +188,18 @@ func NewTestSuite(tb testing.TB) *APISuite {
 
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metricsHandler)
 	g.Require().Nil(err)
 	// TODO: there may be an issue w/ syncer for local test nevs, investigate, but this probably comes from heavy load ending every span of every field synchronously
 	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
