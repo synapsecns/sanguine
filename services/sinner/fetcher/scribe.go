@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/sinner/types"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -24,6 +25,8 @@ type ScribeFetcher interface {
 	FetchBlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error)
 	// FetchTx fetches the transaction.
 	FetchTx(ctx context.Context, tx string, chainID int, blockNumber int) (*uint64, *string, error)
+	// FetchTxsInRange fetches transactions in a range.
+	FetchTxsInRange(ctx context.Context, chainID uint32, startBlock uint64, endBlock uint64) ([]types.TxSupplementalInfo, error)
 }
 
 type scribeFetcherImpl struct {
@@ -163,4 +166,41 @@ RETRY:
 		blocktime := uint64(resTx.Timestamp)
 		return &blocktime, &sender, nil
 	}
+}
+
+// FetchTxsInRange fetches tx in a range with the GQL client.
+func (s scribeFetcherImpl) FetchTxsInRange(ctx context.Context, chainID uint32, startBlock uint64, endBlock uint64) ([]types.TxSupplementalInfo, error) {
+	txs := &client.GetTransactionsRange{}
+	page := 1
+
+	for {
+		paginatedTxs, err := s.underlyingClient.GetTransactionsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
+		if err != nil {
+			return nil, fmt.Errorf("could not get txs: %w", err)
+		}
+		if len(paginatedTxs.Response) == 0 {
+			break
+		}
+
+		txs.Response = append(txs.Response, paginatedTxs.Response...)
+		page++
+	}
+
+	return parseTx(txs), nil
+}
+
+// parseTx converts a tx from GraphQL into a model log.
+func parseTx(txs *client.GetTransactionsRange) []types.TxSupplementalInfo {
+	var txSupplementalInfo []types.TxSupplementalInfo
+
+	for _, tx := range txs.Response {
+		newTx := types.TxSupplementalInfo{
+			TxHash:    tx.TxHash,
+			Sender:    tx.Sender,
+			Timestamp: tx.Timestamp,
+		}
+		txSupplementalInfo = append(txSupplementalInfo, newTx)
+	}
+
+	return txSupplementalInfo
 }

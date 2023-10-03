@@ -38,7 +38,7 @@ var configFlag = &cli.StringFlag{
 
 var serverCommand = &cli.Command{
 	Name:        "server",
-	Description: "starts a graphql_old server",
+	Description: "starts a graphql server",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))

@@ -18,13 +18,13 @@ import (
 )
 
 const (
-	// GraphqlEndpoint is the base endpoint for graphql_old and the endpoint for post requests to the graphql_old service.
-	GraphqlEndpoint string = "/graphql_old"
-	// GraphiqlEndpoint is the endpoint for the graphql_old user interface.
+	// GraphqlEndpoint is the base endpoint for graphql and the endpoint for post requests to the graphql service.
+	GraphqlEndpoint string = "/graphql"
+	// GraphiqlEndpoint is the endpoint for the graphql user interface.
 	GraphiqlEndpoint string = "/graphiql"
 )
 
-// EnableGraphql enables the sinner graphql_old service.
+// EnableGraphql enables the sinner graphql service.
 func EnableGraphql(engine *gin.Engine, consumerDB db.EventDB, fetcher fetcher.ScribeFetcher, config serverConfig.Config, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(

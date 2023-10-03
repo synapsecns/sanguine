@@ -13,8 +13,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/synapsecns/sanguine/services/sinner/fetcher/client/model"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/types"
+	"github.com/synapsecns/sanguine/services/sinner/fetcher/client/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -139,10 +139,10 @@ type LogResolver interface {
 type QueryResolver interface {
 	Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) ([]*model.Log, error)
 	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error)
+	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Transaction, error)
 	Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) ([]*model.Receipt, error)
 	ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error)
 	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) ([]*model.Transaction, error)
-	TransactionsRange(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Transaction, error)
 	BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error)
 	LastStoredBlockNumber(ctx context.Context, chainID int) (*int, error)
 	FirstStoredBlockNumber(ctx context.Context, chainID int) (*int, error)
@@ -837,7 +837,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema/directives.graphql_old", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
+	{Name: "../schema/directives.graphql", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
   | INPUT_OBJECT
   | SCALAR
   | ENUM
@@ -847,7 +847,7 @@ var sources = []*ast.Source{
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
   | FIELD_DEFINITION
 `, BuiltIn: false},
-	{Name: "../schema/queries.graphql_old", Input: `type Query {
+	{Name: "../schema/queries.graphql", Input: `type Query {
   # returns all logs that match the given filter
   logs(
     contract_address: String
@@ -874,6 +874,17 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     end_block: Int!
     page: Int!
   ): [Log]
+  # returns all transactions that match the given filter and range
+  transactionsRange(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    block_hash: String
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Transaction]
   # returns all receipts that match the given filter
   receipts(
     chain_id: Int!
@@ -907,17 +918,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     confirmed: Boolean
     page: Int!
   ): [Transaction]
-  # returns all transactions that match the given filter and range
-  transactionsRange(
-    tx_hash: String
-    chain_id: Int!
-    block_number: Int
-    block_hash: String
-    confirmed: Boolean
-    start_block: Int!
-    end_block: Int!
-    page: Int!
-  ): [Transaction]
+
   # returns the timestamp of a given block for a chain
   blockTime(
     chain_id: Int!
@@ -1001,7 +1002,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 
 }
 `, BuiltIn: false},
-	{Name: "../schema/types.graphql_old", Input: `scalar JSON
+	{Name: "../schema/types.graphql", Input: `scalar JSON
 
 type Receipt {
   chain_id: Int!
@@ -2733,7 +2734,7 @@ func (ec *executionContext) _Log_transaction(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*model.Transaction)
 	fc.Result = res
-	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
+	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Log_transaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2815,7 +2816,7 @@ func (ec *executionContext) _Log_receipt(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.Receipt)
 	fc.Result = res
-	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Log_receipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2932,7 +2933,7 @@ func (ec *executionContext) _Query_logs(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.([]*model.Log)
 	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_logs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3014,7 +3015,7 @@ func (ec *executionContext) _Query_logsRange(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*model.Log)
 	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_logsRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3071,6 +3072,96 @@ func (ec *executionContext) fieldContext_Query_logsRange(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_transactionsRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_transactionsRange(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TransactionsRange(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["block_hash"].(*string), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Transaction)
+	fc.Result = res
+	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_transactionsRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chain_id":
+				return ec.fieldContext_Transaction_chain_id(ctx, field)
+			case "tx_hash":
+				return ec.fieldContext_Transaction_tx_hash(ctx, field)
+			case "protected":
+				return ec.fieldContext_Transaction_protected(ctx, field)
+			case "type":
+				return ec.fieldContext_Transaction_type(ctx, field)
+			case "data":
+				return ec.fieldContext_Transaction_data(ctx, field)
+			case "gas":
+				return ec.fieldContext_Transaction_gas(ctx, field)
+			case "gas_price":
+				return ec.fieldContext_Transaction_gas_price(ctx, field)
+			case "gas_tip_cap":
+				return ec.fieldContext_Transaction_gas_tip_cap(ctx, field)
+			case "gas_fee_cap":
+				return ec.fieldContext_Transaction_gas_fee_cap(ctx, field)
+			case "value":
+				return ec.fieldContext_Transaction_value(ctx, field)
+			case "nonce":
+				return ec.fieldContext_Transaction_nonce(ctx, field)
+			case "to":
+				return ec.fieldContext_Transaction_to(ctx, field)
+			case "page":
+				return ec.fieldContext_Transaction_page(ctx, field)
+			case "sender":
+				return ec.fieldContext_Transaction_sender(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
+			case "logs":
+				return ec.fieldContext_Transaction_logs(ctx, field)
+			case "receipt":
+				return ec.fieldContext_Transaction_receipt(ctx, field)
+			case "json":
+				return ec.fieldContext_Transaction_json(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_transactionsRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_receipts(ctx, field)
 	if err != nil {
@@ -3096,7 +3187,7 @@ func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*model.Receipt)
 	fc.Result = res
-	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3180,7 +3271,7 @@ func (ec *executionContext) _Query_receiptsRange(ctx context.Context, field grap
 	}
 	res := resTmp.([]*model.Receipt)
 	fc.Result = res
-	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receiptsRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3264,7 +3355,7 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 	}
 	res := resTmp.([]*model.Transaction)
 	fc.Result = res
-	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
+	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3323,96 +3414,6 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_transactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_transactionsRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_transactionsRange(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TransactionsRange(rctx, fc.Args["tx_hash"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["block_hash"].(*string), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Transaction)
-	fc.Result = res
-	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_transactionsRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "chain_id":
-				return ec.fieldContext_Transaction_chain_id(ctx, field)
-			case "tx_hash":
-				return ec.fieldContext_Transaction_tx_hash(ctx, field)
-			case "protected":
-				return ec.fieldContext_Transaction_protected(ctx, field)
-			case "type":
-				return ec.fieldContext_Transaction_type(ctx, field)
-			case "data":
-				return ec.fieldContext_Transaction_data(ctx, field)
-			case "gas":
-				return ec.fieldContext_Transaction_gas(ctx, field)
-			case "gas_price":
-				return ec.fieldContext_Transaction_gas_price(ctx, field)
-			case "gas_tip_cap":
-				return ec.fieldContext_Transaction_gas_tip_cap(ctx, field)
-			case "gas_fee_cap":
-				return ec.fieldContext_Transaction_gas_fee_cap(ctx, field)
-			case "value":
-				return ec.fieldContext_Transaction_value(ctx, field)
-			case "nonce":
-				return ec.fieldContext_Transaction_nonce(ctx, field)
-			case "to":
-				return ec.fieldContext_Transaction_to(ctx, field)
-			case "page":
-				return ec.fieldContext_Transaction_page(ctx, field)
-			case "sender":
-				return ec.fieldContext_Transaction_sender(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_Transaction_timestamp(ctx, field)
-			case "logs":
-				return ec.fieldContext_Transaction_logs(ctx, field)
-			case "receipt":
-				return ec.fieldContext_Transaction_receipt(ctx, field)
-			case "json":
-				return ec.fieldContext_Transaction_json(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_transactionsRange_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3912,7 +3913,7 @@ func (ec *executionContext) _Query_logsAtHeadRange(ctx context.Context, field gr
 	}
 	res := resTmp.([]*model.Log)
 	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_logsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3994,7 +3995,7 @@ func (ec *executionContext) _Query_receiptsAtHeadRange(ctx context.Context, fiel
 	}
 	res := resTmp.([]*model.Receipt)
 	fc.Result = res
-	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receiptsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4078,7 +4079,7 @@ func (ec *executionContext) _Query_transactionsAtHeadRange(ctx context.Context, 
 	}
 	res := resTmp.([]*model.Transaction)
 	fc.Result = res
-	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
+	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_transactionsAtHeadRange(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4825,7 +4826,7 @@ func (ec *executionContext) _Receipt_logs(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*model.Log)
 	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLogᚄ(ctx, field.Selections, res)
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLogᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receipt_logs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4899,7 +4900,7 @@ func (ec *executionContext) _Receipt_transaction(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Transaction)
 	fc.Result = res
-	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
+	return ec.marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receipt_transaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5682,7 +5683,7 @@ func (ec *executionContext) _Transaction_logs(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*model.Log)
 	fc.Result = res
-	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLogᚄ(ctx, field.Selections, res)
+	return ec.marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLogᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Transaction_logs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5756,7 +5757,7 @@ func (ec *executionContext) _Transaction_receipt(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Receipt)
 	fc.Result = res
-	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Transaction_receipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7932,6 +7933,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "transactionsRange":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_transactionsRange(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "receipts":
 			field := field
 
@@ -7980,25 +8000,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_transactions(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "transactionsRange":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_transactionsRange(ctx, field)
 				return res
 			}
 
@@ -9057,7 +9058,7 @@ func (ec *executionContext) marshalNJSON2githubᚗcomᚋsynapsecnsᚋsanguineᚋ
 	return res
 }
 
-func (ec *executionContext) marshalNLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v *model.Log) graphql.Marshaler {
+func (ec *executionContext) marshalNLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v *model.Log) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9067,11 +9068,11 @@ func (ec *executionContext) marshalNLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguine�
 	return ec._Log(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNReceipt2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v model.Receipt) graphql.Marshaler {
+func (ec *executionContext) marshalNReceipt2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v model.Receipt) graphql.Marshaler {
 	return ec._Receipt(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
+func (ec *executionContext) marshalNReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9128,11 +9129,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNTransaction2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v model.Transaction) graphql.Marshaler {
+func (ec *executionContext) marshalNTransaction2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v model.Transaction) graphql.Marshaler {
 	return ec._Transaction(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *model.Transaction) graphql.Marshaler {
+func (ec *executionContext) marshalNTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *model.Transaction) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9437,7 +9438,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v []*model.Log) graphql.Marshaler {
+func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v []*model.Log) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9464,7 +9465,7 @@ func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsangui
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx, sel, v[i])
+			ret[i] = ec.marshalOLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9478,7 +9479,7 @@ func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsangui
 	return ret
 }
 
-func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Log) graphql.Marshaler {
+func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Log) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9505,7 +9506,7 @@ func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsangui
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx, sel, v[i])
+			ret[i] = ec.marshalNLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9525,14 +9526,14 @@ func (ec *executionContext) marshalOLog2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsangui
 	return ret
 }
 
-func (ec *executionContext) marshalOLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v *model.Log) graphql.Marshaler {
+func (ec *executionContext) marshalOLog2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐLog(ctx context.Context, sel ast.SelectionSet, v *model.Log) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Log(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v []*model.Receipt) graphql.Marshaler {
+func (ec *executionContext) marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v []*model.Receipt) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9559,7 +9560,7 @@ func (ec *executionContext) marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsa
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx, sel, v[i])
+			ret[i] = ec.marshalOReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9573,7 +9574,7 @@ func (ec *executionContext) marshalOReceipt2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsa
 	return ret
 }
 
-func (ec *executionContext) marshalOReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
+func (ec *executionContext) marshalOReceipt2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9634,7 +9635,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v []*model.Transaction) graphql.Marshaler {
+func (ec *executionContext) marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v []*model.Transaction) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9661,7 +9662,7 @@ func (ec *executionContext) marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecns�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx, sel, v[i])
+			ret[i] = ec.marshalOTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9675,7 +9676,7 @@ func (ec *executionContext) marshalOTransaction2ᚕᚖgithubᚗcomᚋsynapsecns�
 	return ret
 }
 
-func (ec *executionContext) marshalOTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋconsumerᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *model.Transaction) graphql.Marshaler {
+func (ec *executionContext) marshalOTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋfetcherᚋclientᚋmodelᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *model.Transaction) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

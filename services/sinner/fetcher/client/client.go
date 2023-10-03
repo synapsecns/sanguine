@@ -19,83 +19,101 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Logs                     []*model.Log         "json:\"logs\" graphql_old:\"logs\""
-	LogsRange                []*model.Log         "json:\"logsRange\" graphql_old:\"logsRange\""
-	Receipts                 []*model.Receipt     "json:\"receipts\" graphql_old:\"receipts\""
-	ReceiptsRange            []*model.Receipt     "json:\"receiptsRange\" graphql_old:\"receiptsRange\""
-	Transactions             []*model.Transaction "json:\"transactions\" graphql_old:\"transactions\""
-	TransactionsRange        []*model.Transaction "json:\"transactionsRange\" graphql_old:\"transactionsRange\""
-	BlockTime                *int                 "json:\"blockTime\" graphql_old:\"blockTime\""
-	LastStoredBlockNumber    *int                 "json:\"lastStoredBlockNumber\" graphql_old:\"lastStoredBlockNumber\""
-	FirstStoredBlockNumber   *int                 "json:\"firstStoredBlockNumber\" graphql_old:\"firstStoredBlockNumber\""
-	LastConfirmedBlockNumber *int                 "json:\"lastConfirmedBlockNumber\" graphql_old:\"lastConfirmedBlockNumber\""
-	TxSender                 *string              "json:\"txSender\" graphql_old:\"txSender\""
-	LastIndexed              *int                 "json:\"lastIndexed\" graphql_old:\"lastIndexed\""
-	LogCount                 *int                 "json:\"logCount\" graphql_old:\"logCount\""
-	ReceiptCount             *int                 "json:\"receiptCount\" graphql_old:\"receiptCount\""
-	BlockTimeCount           *int                 "json:\"blockTimeCount\" graphql_old:\"blockTimeCount\""
-	LogsAtHeadRange          []*model.Log         "json:\"logsAtHeadRange\" graphql_old:\"logsAtHeadRange\""
-	ReceiptsAtHeadRange      []*model.Receipt     "json:\"receiptsAtHeadRange\" graphql_old:\"receiptsAtHeadRange\""
-	TransactionsAtHeadRange  []*model.Transaction "json:\"transactionsAtHeadRange\" graphql_old:\"transactionsAtHeadRange\""
+	Logs                     []*model.Log         "json:\"logs\" graphql:\"logs\""
+	LogsRange                []*model.Log         "json:\"logsRange\" graphql:\"logsRange\""
+	TransactionsRange        []*model.Transaction "json:\"transactionsRange\" graphql:\"transactionsRange\""
+	Receipts                 []*model.Receipt     "json:\"receipts\" graphql:\"receipts\""
+	ReceiptsRange            []*model.Receipt     "json:\"receiptsRange\" graphql:\"receiptsRange\""
+	Transactions             []*model.Transaction "json:\"transactions\" graphql:\"transactions\""
+	BlockTime                *int                 "json:\"blockTime\" graphql:\"blockTime\""
+	LastStoredBlockNumber    *int                 "json:\"lastStoredBlockNumber\" graphql:\"lastStoredBlockNumber\""
+	FirstStoredBlockNumber   *int                 "json:\"firstStoredBlockNumber\" graphql:\"firstStoredBlockNumber\""
+	LastConfirmedBlockNumber *int                 "json:\"lastConfirmedBlockNumber\" graphql:\"lastConfirmedBlockNumber\""
+	TxSender                 *string              "json:\"txSender\" graphql:\"txSender\""
+	LastIndexed              *int                 "json:\"lastIndexed\" graphql:\"lastIndexed\""
+	LogCount                 *int                 "json:\"logCount\" graphql:\"logCount\""
+	ReceiptCount             *int                 "json:\"receiptCount\" graphql:\"receiptCount\""
+	BlockTimeCount           *int                 "json:\"blockTimeCount\" graphql:\"blockTimeCount\""
+	LogsAtHeadRange          []*model.Log         "json:\"logsAtHeadRange\" graphql:\"logsAtHeadRange\""
+	ReceiptsAtHeadRange      []*model.Receipt     "json:\"receiptsAtHeadRange\" graphql:\"receiptsAtHeadRange\""
+	TransactionsAtHeadRange  []*model.Transaction "json:\"transactionsAtHeadRange\" graphql:\"transactionsAtHeadRange\""
 }
 type GetLogsRange struct {
 	Response []*struct {
-		ContractAddress string   "json:\"contract_address\" graphql_old:\"contract_address\""
-		ChainID         int      "json:\"chain_id\" graphql_old:\"chain_id\""
-		Topics          []string "json:\"topics\" graphql_old:\"topics\""
-		Data            string   "json:\"data\" graphql_old:\"data\""
-		BlockNumber     int      "json:\"block_number\" graphql_old:\"block_number\""
-		TxHash          string   "json:\"tx_hash\" graphql_old:\"tx_hash\""
-		TxIndex         int      "json:\"tx_index\" graphql_old:\"tx_index\""
-		BlockHash       string   "json:\"block_hash\" graphql_old:\"block_hash\""
-		Index           int      "json:\"index\" graphql_old:\"index\""
-		Removed         bool     "json:\"removed\" graphql_old:\"removed\""
-	} "json:\"response\" graphql_old:\"response\""
+		ContractAddress string   "json:\"contract_address\" graphql:\"contract_address\""
+		ChainID         int      "json:\"chain_id\" graphql:\"chain_id\""
+		Topics          []string "json:\"topics\" graphql:\"topics\""
+		Data            string   "json:\"data\" graphql:\"data\""
+		BlockNumber     int      "json:\"block_number\" graphql:\"block_number\""
+		TxHash          string   "json:\"tx_hash\" graphql:\"tx_hash\""
+		TxIndex         int      "json:\"tx_index\" graphql:\"tx_index\""
+		BlockHash       string   "json:\"block_hash\" graphql:\"block_hash\""
+		Index           int      "json:\"index\" graphql:\"index\""
+		Removed         bool     "json:\"removed\" graphql:\"removed\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetTransactionsRange struct {
+	Response []*struct {
+		ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+		TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+		Protected bool   "json:\"protected\" graphql:\"protected\""
+		Type      int    "json:\"type\" graphql:\"type\""
+		Data      string "json:\"data\" graphql:\"data\""
+		Gas       int    "json:\"gas\" graphql:\"gas\""
+		GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+		GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+		GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+		Value     string "json:\"value\" graphql:\"value\""
+		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
+	} "json:\"response\" graphql:\"response\""
 }
 type GetTransactions struct {
 	Response []*struct {
-		ChainID   int    "json:\"chain_id\" graphql_old:\"chain_id\""
-		TxHash    string "json:\"tx_hash\" graphql_old:\"tx_hash\""
-		Protected bool   "json:\"protected\" graphql_old:\"protected\""
-		Type      int    "json:\"type\" graphql_old:\"type\""
-		Data      string "json:\"data\" graphql_old:\"data\""
-		Gas       int    "json:\"gas\" graphql_old:\"gas\""
-		GasPrice  int    "json:\"gas_price\" graphql_old:\"gas_price\""
-		GasTipCap string "json:\"gas_tip_cap\" graphql_old:\"gas_tip_cap\""
-		GasFeeCap string "json:\"gas_fee_cap\" graphql_old:\"gas_fee_cap\""
-		Value     string "json:\"value\" graphql_old:\"value\""
-		Nonce     int    "json:\"nonce\" graphql_old:\"nonce\""
-		To        string "json:\"to\" graphql_old:\"to\""
-		Timestamp int    "json:\"timestamp\" graphql_old:\"timestamp\""
-		Sender    string "json:\"sender\" graphql_old:\"sender\""
-	} "json:\"response\" graphql_old:\"response\""
+		ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+		TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+		Protected bool   "json:\"protected\" graphql:\"protected\""
+		Type      int    "json:\"type\" graphql:\"type\""
+		Data      string "json:\"data\" graphql:\"data\""
+		Gas       int    "json:\"gas\" graphql:\"gas\""
+		GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+		GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+		GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+		Value     string "json:\"value\" graphql:\"value\""
+		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
+	} "json:\"response\" graphql:\"response\""
 }
 type GetBlockTime struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetLastStoredBlockNumber struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetFirstStoredBlockNumber struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetTxSender struct {
-	Response *string "json:\"response\" graphql_old:\"response\""
+	Response *string "json:\"response\" graphql:\"response\""
 }
 type GetLastIndexed struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetLastConfirmedBlockNumber struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetLogCount struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetReceiptCount struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 type GetBlockTimeCount struct {
-	Response *int "json:\"response\" graphql_old:\"response\""
+	Response *int "json:\"response\" graphql:\"response\""
 }
 
 const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $contract_address: String) {
@@ -125,6 +143,42 @@ func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, 
 
 	var res GetLogsRange
 	if err := c.Client.Post(ctx, "GetLogsRange", GetLogsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: transactionsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+		chain_id
+		tx_hash
+		protected
+		type
+		data
+		gas
+		gas_price
+		gas_tip_cap
+		gas_fee_cap
+		value
+		nonce
+		to
+		timestamp
+		sender
+	}
+}
+`
+
+func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsRange, error) {
+	vars := map[string]interface{}{
+		"chain_id":    chainID,
+		"start_block": startBlock,
+		"end_block":   endBlock,
+		"page":        page,
+	}
+
+	var res GetTransactionsRange
+	if err := c.Client.Post(ctx, "GetTransactionsRange", GetTransactionsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

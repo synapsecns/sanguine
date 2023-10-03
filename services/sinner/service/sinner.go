@@ -77,11 +77,24 @@ func (e Sinner) Index(ctx context.Context) error {
 		chainConfig := e.config.Chains[i]
 		chainIndexer := e.indexers[chainConfig.ChainID]
 		g.Go(func() error {
-			err := chainIndexer.Index(groupCtx)
-			if err != nil {
-				return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
+			// generate new context
+			for {
+				chainContext := context.Background()
+				select {
+				case <-groupCtx.Done(): // global context cancelled
+					return fmt.Errorf("global context cancelled")
+				case <-chainContext.Done(): // local context cancelled, reset context
+					chainContext = context.Background()
+				default:
+					err := chainIndexer.Index(groupCtx)
+					if err != nil {
+						//return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
+						continue // continue trying
+					}
+					return nil
+				}
+
 			}
-			return nil
 		})
 	}
 	if err := g.Wait(); err != nil {

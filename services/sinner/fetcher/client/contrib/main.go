@@ -18,17 +18,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	err = os.Chdir(filepath.Join(root.Path, "services/explorer/consumer/client/"))
+	err = os.Chdir(filepath.Join(root.Path, "services/sinner/fetcher/client/"))
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
 
-	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/gqlgen.yaml"))
+	cfg, err := config.LoadConfig(filepath.Join(root.Path, "services/sinner/fetcher/client/gqlgen.yaml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		os.Exit(2)
 	}
-	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/explorer/consumer/client/.gqlgenc.yaml"))
+	gqlgencConfig, err := clientConfig.LoadConfig(filepath.Join(root.Path, "services/sinner/fetcher/client/.gqlgenc.yaml"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%+v", err.Error())
 		os.Exit(2)

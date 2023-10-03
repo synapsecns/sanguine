@@ -837,7 +837,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema/directives.graphql_old", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
+	{Name: "../schema/directives.graphql", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
   | INPUT_OBJECT
   | SCALAR
   | ENUM
@@ -847,7 +847,7 @@ var sources = []*ast.Source{
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
   | FIELD_DEFINITION
 `, BuiltIn: false},
-	{Name: "../schema/queries.graphql_old", Input: `type Query {
+	{Name: "../schema/queries.graphql", Input: `type Query {
   # returns all logs that match the given filter
   logs(
     contract_address: String
@@ -1001,7 +1001,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 
 }
 `, BuiltIn: false},
-	{Name: "../schema/types.graphql_old", Input: `scalar JSON
+	{Name: "../schema/types.graphql", Input: `scalar JSON
 
 type Receipt {
   chain_id: Int!

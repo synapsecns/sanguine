@@ -66,8 +66,10 @@ type ContractConfig struct {
 	ContractType string `yaml:"contract_type"`
 	// Addresses are the addresses of the contracts
 	Address string `yaml:"address"`
-	// StartBlock is where to start backfilling this address from.
-	StartBlock int64 `yaml:"start_block"`
+	// StartBlock is where to start indexing this address from.
+	StartBlock uint64 `yaml:"start_block"`
+	// EndBlock is where the end the indexing. This will only backfill a range and will not livefill.
+	EndBlock uint64 `yaml:"end_block"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

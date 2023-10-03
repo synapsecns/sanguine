@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"github.com/synapsecns/sanguine/services/sinner/types"
 )
 
 type ParserImpl struct {
@@ -18,6 +19,8 @@ type ParserImpl struct {
 	db db.EventDB
 	// chainID is the chain ID
 	chainID uint32
+	// txMap is a map of tx hashes to tx data
+	txMap map[string]types.TxSupplementalInfo
 }
 
 // NewParser creates a new parser for the origin contract.
@@ -43,6 +46,9 @@ func NewParser(destinationAddress common.Address, db db.EventDB, chainID uint32)
 	return parser, nil
 }
 
+func (p ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
+	p.txMap = txMap
+}
 func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	eventType, ok := p.parser.EventType(log)
 	if !ok {

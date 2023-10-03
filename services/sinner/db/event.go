@@ -24,6 +24,8 @@ type EventDBWriter interface {
 type EventDBReader interface {
 	// RetrieveMessageStatus gets status of a message.
 	RetrieveMessageStatus(ctx context.Context, txhash string) (response string, err error)
+	// GetLastStoredBlock gets the last block stored in sinner.
+	GetLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error)
 }
 
 // EventDB stores events.

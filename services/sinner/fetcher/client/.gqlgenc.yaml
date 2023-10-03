@@ -3,7 +3,7 @@ client:
   filename: ./client.go # Where should any generated client go?
 
 query:
-  - 'queries/*.graphql_old' # Where are all the query files located?
+  - 'queries/*.graphql' # Where are all the query files located?
 
 ####
 # Note: these are ignored and pulled from gqlgen.yml in our generator
@@ -11,4 +11,4 @@ query:
 # they are validated
 ###
 schema:
-  - 'schema/*.graphql_old' # Where are all the schema files located?
+  - 'schema/*.graphql' # Where are all the schema files located?

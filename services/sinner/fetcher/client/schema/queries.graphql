@@ -25,6 +25,17 @@ type Query {
     end_block: Int!
     page: Int!
   ): [Log]
+  # returns all transactions that match the given filter and range
+  transactionsRange(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    block_hash: String
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Transaction]
   # returns all receipts that match the given filter
   receipts(
     chain_id: Int!
@@ -58,17 +69,7 @@ type Query {
     confirmed: Boolean
     page: Int!
   ): [Transaction]
-  # returns all transactions that match the given filter and range
-  transactionsRange(
-    tx_hash: String
-    chain_id: Int!
-    block_number: Int
-    block_hash: String
-    confirmed: Boolean
-    start_block: Int!
-    end_block: Int!
-    page: Int!
-  ): [Transaction]
+
   # returns the timestamp of a given block for a chain
   blockTime(
     chain_id: Int!

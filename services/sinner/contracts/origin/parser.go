@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 )
 
 type ParserImpl struct {
@@ -17,6 +19,8 @@ type ParserImpl struct {
 	parser origin.Parser
 	// db is the database
 	db db.EventDB
+	// txMap is a map of tx hashes to tx data
+	txMap map[string]sinnerTypes.TxSupplementalInfo
 }
 
 // NewParser creates a new parser for the origin contract.
@@ -39,6 +43,10 @@ func NewParser(originAddress common.Address, db db.EventDB) (*ParserImpl, error)
 		db:       db,
 	}
 	return parser, nil
+}
+
+func (p ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
+	p.txMap = txMap
 }
 
 func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
