@@ -74,7 +74,7 @@ export const SelectSpecificNetworkButton = ({
       onClick={onClick}
       data-test-id={`${dataId}-item`}
     >
-      <ButtonContent chainId={itemChainId} />
+      <ButtonContent chainId={itemChainId} isOrigin={isOrigin} />
     </button>
   )
 }
@@ -108,7 +108,7 @@ function ButtonContent({
           <div className="text-lg font-normal text-white">{chain.name}</div>
         </div>
       </div>
-      {balanceTokens && balanceTokens.length > 0 ? (
+      {isOrigin && balanceTokens && balanceTokens.length > 0 ? (
         <ChainTokens balanceTokens={balanceTokens} />
       ) : null}
     </>
