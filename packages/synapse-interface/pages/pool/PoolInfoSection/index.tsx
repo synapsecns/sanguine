@@ -22,7 +22,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
           labelText="Trading Fee"
           content={
             poolData && poolData.swapFee ? (
-              formatBigIntToPercentString(poolData.swapFee, 8, 2)
+              formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
             ) : (
               <LoadingSpinner />
             )
