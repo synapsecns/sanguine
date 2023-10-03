@@ -197,6 +197,7 @@ const TransactionStatusDetails = ({
     'flex bg-tint border-t border-surface text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
+    console.log('1')
     return (
       <div
         data-test-id="pending-wallet-action-status"
@@ -209,6 +210,7 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
+    console.log('2')
     return (
       <div
         data-test-id="initializing-status"
@@ -229,6 +231,7 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.PENDING) {
+    console.log('3')
     const handleOriginExplorerClick = () => {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
