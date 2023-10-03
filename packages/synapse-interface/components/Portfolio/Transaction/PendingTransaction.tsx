@@ -197,7 +197,6 @@ const TransactionStatusDetails = ({
     'flex bg-tint border-t border-surface text-sm items-center'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
-    console.log('1')
     return (
       <div
         data-test-id="pending-wallet-action-status"
@@ -210,7 +209,6 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.INITIALIZING) {
-    console.log('2')
     return (
       <div
         data-test-id="initializing-status"
@@ -231,7 +229,6 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.PENDING) {
-    console.log('3')
     const handleOriginExplorerClick = () => {
       const explorerLink: string = getExplorerTxUrl({
         chainId: originChain.id,
@@ -248,14 +245,6 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
 
-    const handleSynapseExplorerTxClick = () => {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChain.id,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    }
-
     return (
       <div
         data-test-id="pending-status"
@@ -263,15 +252,7 @@ const TransactionStatusDetails = ({
       >
         {isDelayed ? (
           <>
-            <div
-              className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#FFDD33] hover:underline p-1 ml-1 items-center"
-              onClick={handleSynapseExplorerTxClick}
-            >
-              {/* <Image
-                className="w-4 h-4 ml-1 mr-1.5 my-auto rounded-full"
-                src={destinationChain.explorerImg}
-                alt={`${destinationChain.explorerName} logo`}
-              /> */}
+            <div className="flex items-center p-1 ml-1 rounded-sm cursor-pointer">
               <div className="text-[#FFDD33]">Taking longer than expected.</div>
             </div>
             <TransactionOptions

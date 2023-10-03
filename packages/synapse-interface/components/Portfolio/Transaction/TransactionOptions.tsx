@@ -35,7 +35,6 @@ export const TransactionOptions = ({
       originChain &&
       transactionStatus === TransactionStatus.COMPLETED
     ) {
-      console.log('a')
       const explorerLink: string = getTransactionExplorerLink({
         kappa,
         fromChainId: originChain.id,
@@ -43,21 +42,18 @@ export const TransactionOptions = ({
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else if (isDelayed) {
-      console.log('b')
       const explorerLink: string = getTransactionExplorerLink({
         kappa,
         fromChainId: originChain.id,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else if (transactionHash) {
-      console.log('c')
       const explorerLink: string = getExplorerAddressUrl({
         chainId: destinationChain.id,
         address: connectedAddress,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else {
-      console.log('d')
       const explorerLink: string = getExplorerAddressUrl({
         chainId: originChain.id,
         address: connectedAddress,
