@@ -252,7 +252,7 @@ const TransactionStatusDetails = ({
       >
         {isDelayed ? (
           <>
-            <div className="flex items-center p-1 ml-1 rounded-sm cursor-pointer">
+            <div className="flex items-center p-1 ml-1 rounded-sm cursor-default">
               <div className="text-[#FFDD33]">Taking longer than expected.</div>
             </div>
             <TransactionOptions
