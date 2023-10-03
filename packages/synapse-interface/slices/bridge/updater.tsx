@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -23,10 +23,24 @@ export default function Updater(): null {
     toTokens,
     fromValue,
   }: BridgeState = useBridgeState()
+  const [debouncedFromValue, setDebouncedFromValue] =
+    useState<string>(fromValue)
 
+  // Debounce user input to prevent unnecessary quote fetching
+  useEffect(() => {
+    const debounceDelay = 500
+
+    const debounceTimer = setTimeout(() => {
+      setDebouncedFromValue(fromValue)
+    }, debounceDelay)
+
+    return () => clearTimeout(debounceTimer)
+  }, [fromValue])
+
+  // Conditions for fetching alternative bridge quotes
   useEffect(() => {
     if (fromChainId && toChainId && fromToken && synapseSDK) {
-      const hasFromValue: boolean = fromValue !== ''
+      const hasFromValue: boolean = debouncedFromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
           return {
@@ -36,7 +50,9 @@ export default function Updater(): null {
             destinationTokenAddress: token?.addresses[toChainId] as Address,
             destinationToken: token as Token,
             amount: stringToBigInt(
-              hasFromValue ? fromValue : getDefaultBridgeAmount(fromToken),
+              hasFromValue
+                ? debouncedFromValue
+                : getDefaultBridgeAmount(fromToken),
               fromToken.decimals[fromChainId]
             ),
           }
@@ -54,7 +70,14 @@ export default function Updater(): null {
     if (!fromToken) {
       dispatch(resetFetchedBridgeQuotes())
     }
-  }, [fromChainId, toChainId, fromToken, fromValue, toTokens, synapseSDK])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    debouncedFromValue,
+    toTokens,
+    synapseSDK,
+  ])
 
   return null
 }
