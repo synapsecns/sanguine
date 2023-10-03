@@ -17,9 +17,14 @@ func (r *queryResolver) GetMessageStatus(ctx context.Context, messageHash string
 	panic(fmt.Errorf("not implemented: GetMessageStatus - getMessageStatus"))
 }
 
-// GetMessageInfo is the resolver for the getMessageInfo field.
-func (r *queryResolver) GetMessageInfo(ctx context.Context, messageHash string) ([]*model.MessageInfo, error) {
-	panic(fmt.Errorf("not implemented: GetMessageInfo - getMessageInfo"))
+// GetOriginInfo is the resolver for the getOriginInfo field.
+func (r *queryResolver) GetOriginInfo(ctx context.Context, messageHash string) ([]*model.OriginInfo, error) {
+	panic(fmt.Errorf("not implemented: GetOriginInfo - getOriginInfo"))
+}
+
+// GetDestinationInfo is the resolver for the getDestinationInfo field.
+func (r *queryResolver) GetDestinationInfo(ctx context.Context, messageHash string) ([]*model.DestinationInfo, error) {
+	panic(fmt.Errorf("not implemented: GetDestinationInfo - getDestinationInfo"))
 }
 
 // Query returns resolvers.QueryResolver implementation.

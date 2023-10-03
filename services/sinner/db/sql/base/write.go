@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"github.com/synapsecns/sanguine/services/sinner/types"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm/clause"
@@ -19,7 +20,7 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
 		dbTx = dbTx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: model.ContractAddressFieldName}, {Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName}, {Name: model.BlockNumberFieldName}, {Name: model.MessageHashFieldName},
+				{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName},
 			},
 			DoNothing: true,
 		}).CreateInBatches(originSent, 10)
@@ -30,7 +31,7 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 	}
 
 	if dbTx.Error != nil {
-		return fmt.Errorf("could not store log: %w", dbTx.Error)
+		return fmt.Errorf("could not store executed: %w", dbTx.Error)
 	}
 
 	return nil
@@ -38,12 +39,12 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 
 // StoreExecuted stores an origin event.
 func (s Store) StoreExecuted(ctx context.Context, executedEvent *model.Executed) error {
-
 	dbTx := s.DB().WithContext(ctx)
 	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
+
 		dbTx = dbTx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: model.ContractAddressFieldName}, {Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName}, {Name: model.BlockNumberFieldName},
+				{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName},
 			},
 			DoNothing: true,
 		}).CreateInBatches(executedEvent, 10)
@@ -100,7 +101,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 				},
 			},
 		}).
-		Create(&model.LastIndexedInfo{
+		Create(&model.LastIndexed{
 			ContractAddress: address,
 			ChainID:         chainID,
 			BlockNumber:     blockNumber,
@@ -108,5 +109,41 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not update last indexed info: %w", dbTx.Error)
 	}
+	return nil
+}
+
+func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, messageHash string, messageType types.MessageType) error {
+	dbTx := s.DB().WithContext(ctx)
+
+	switch messageType {
+	case types.Origin:
+		// If the record exists, it will be updated, otherwise, a new one will be created
+		dbTx = dbTx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "message_hash"}},
+			DoUpdates: clause.AssignmentColumns([]string{"origin_txhash"}),
+		}).Create(&model.MessageStatus{
+			MessageHash:       messageHash,
+			OriginTxHash:      txHash,
+			DestinationTxHash: "",
+		})
+
+	case types.Destination:
+		// If the record exists, it will be updated, otherwise, a new one will be created with empty OriginTxHash
+		dbTx = dbTx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "message_hash"}},
+			DoUpdates: clause.AssignmentColumns([]string{"destination_txhash"}),
+		}).Create(&model.MessageStatus{
+			MessageHash:       messageHash,
+			OriginTxHash:      "",
+			DestinationTxHash: txHash,
+		})
+	default:
+		return fmt.Errorf("unknown message type: %s", messageType)
+	}
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not store or update message status: %w", dbTx.Error)
+	}
+
 	return nil
 }

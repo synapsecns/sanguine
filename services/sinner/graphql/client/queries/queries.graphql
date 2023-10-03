@@ -11,8 +11,8 @@ query GetMessageStatus($messageHash: String!) {
 }
 
 
-query GetMessageInfo($messageHash: String!) {
-  response: getMessageInfo(
+query GetOriginInfo($messageHash: String!) {
+  response: getOriginInfo(
     messageHash: $messageHash
   ) {
     messageHash
@@ -35,5 +35,20 @@ query GetMessageInfo($messageHash: String!) {
     version
     gasLimit
     gasDrop
+  }
+}
+
+query GetDestinationInfo($messageHash: String!) {
+  response: getDestinationInfo(
+    messageHash: $messageHash
+  ) {
+    contractAddress
+    blockNumber
+    txHash
+    txIndex
+    messageHash
+    chainID
+    remoteDomain
+    success
   }
 }

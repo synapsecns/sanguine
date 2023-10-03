@@ -12,6 +12,13 @@ type Store struct {
 	metrics metrics.Handler
 }
 
+// UNSAFE_DB gets the underlying gorm db.
+//
+//nolint:golint,revive,stylecheck
+func (s Store) UNSAFE_DB() *gorm.DB {
+	return s.db
+}
+
 // NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	return &Store{db: db, metrics: metrics}

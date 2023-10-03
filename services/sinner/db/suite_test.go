@@ -14,14 +14,14 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"github.com/synapsecns/sanguine/services/sinner/db"
+	"github.com/synapsecns/sanguine/services/sinner/metadata"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/mysql"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/sqlite"
 	"gorm.io/gorm/schema"
 )
 
@@ -35,6 +35,7 @@ type DBSuite struct {
 // NewEventDBSuite creates a new EventDBSuite.
 func NewEventDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
+
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		dbs:       []db.EventDB{},
@@ -43,7 +44,6 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-	t.logIndex.Store(0)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
 	Nil(t.T(), err)
@@ -54,6 +54,7 @@ func (t *DBSuite) SetupTest() {
 
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
+	t.logIndex.Store(0)
 
 	// don't use metrics on ci for integration tests
 	isCI := core.GetEnvBool("CI", false)
@@ -64,7 +65,6 @@ func (t *DBSuite) SetupSuite() {
 		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 		metricsHandler = metrics.Jaeger
 	}
-
 	var err error
 	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	t.Require().Nil(err)
@@ -104,7 +104,6 @@ func (t *DBSuite) setupMysqlDB() {
 
 func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.EventDB)) {
 	t.T().Helper()
-
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)

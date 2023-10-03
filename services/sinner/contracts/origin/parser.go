@@ -61,6 +61,12 @@ func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
 		}
 
+		// TODO go func this
+		err = p.db.StoreOrUpdateMessageStatus(ctx, parsedEvent.TxHash, parsedEvent.MessageHash, sinnerTypes.Origin)
+		if err != nil {
+			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
+		}
+
 		err = p.db.StoreOriginSent(ctx, parsedEvent)
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
@@ -112,13 +118,13 @@ func (p ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 	messageRequest := messageBody.Request()
 	parsedEvent.Version = messageRequest.Version()
 	parsedEvent.GasLimit = messageRequest.GasLimit()
-	parsedEvent.GasDrop = messageRequest.GasDrop()
+	parsedEvent.GasDrop = messageRequest.GasDrop().String()
 
 	messageTips := messageBody.Tips()
-	parsedEvent.SummitTip = messageTips.SummitTip()
-	parsedEvent.AttestationTip = messageTips.AttestationTip()
-	parsedEvent.ExecutionTip = messageTips.ExecutionTip()
-	parsedEvent.DeliveryTip = messageTips.DeliveryTip()
+	parsedEvent.SummitTip = messageTips.SummitTip().String()
+	parsedEvent.AttestationTip = messageTips.AttestationTip().String()
+	parsedEvent.ExecutionTip = messageTips.ExecutionTip().String()
+	parsedEvent.DeliveryTip = messageTips.DeliveryTip().String()
 
 	return &parsedEvent, nil
 }

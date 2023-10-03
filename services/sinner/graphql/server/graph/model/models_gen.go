@@ -8,8 +8,27 @@ import (
 	"strconv"
 )
 
+type DestinationInfo struct {
+	ContractAddress *string `json:"contractAddress,omitempty"`
+	BlockNumber     *int    `json:"blockNumber,omitempty"`
+	TxHash          *string `json:"txHash,omitempty"`
+	TxIndex         *int    `json:"txIndex,omitempty"`
+	MessageHash     *string `json:"messageHash,omitempty"`
+	ChainID         *int    `json:"chainID,omitempty"`
+	RemoteDomain    *int    `json:"remoteDomain,omitempty"`
+	Success         *bool   `json:"success,omitempty"`
+}
+
+// MessageStatus gives the status of a message.
+type MessageStatus struct {
+	LastSeen          *MessageStateLastSeen `json:"lastSeen,omitempty"`
+	OriginTxHash      *string               `json:"originTxHash,omitempty"`
+	DestinationTxHash *string               `json:"destinationTxHash,omitempty"`
+	MessageHash       *string               `json:"messageHash,omitempty"`
+}
+
 // MessageInfo provides granular information on a message.
-type MessageInfo struct {
+type OriginInfo struct {
 	MessageHash        *string `json:"messageHash,omitempty"`
 	ContractAddress    *string `json:"contractAddress,omitempty"`
 	BlockNumber        *int    `json:"blockNumber,omitempty"`
@@ -30,14 +49,6 @@ type MessageInfo struct {
 	Version            *int    `json:"version,omitempty"`
 	GasLimit           *int    `json:"gasLimit,omitempty"`
 	GasDrop            *string `json:"gasDrop,omitempty"`
-}
-
-// MessageStatus gives the status of a message.
-type MessageStatus struct {
-	LastSeen          *MessageStateLastSeen `json:"lastSeen,omitempty"`
-	OriginTxHash      *string               `json:"originTxHash,omitempty"`
-	DestinationTxHash *string               `json:"destinationTxHash,omitempty"`
-	MessageHash       *string               `json:"messageHash,omitempty"`
 }
 
 type MessageStateLastSeen string

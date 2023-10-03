@@ -19,8 +19,9 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	GetMessageStatus []*model.MessageStatus "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
-	GetMessageInfo   []*model.MessageInfo   "json:\"getMessageInfo\" graphql:\"getMessageInfo\""
+	GetMessageStatus   []*model.MessageStatus   "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
+	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
 	Response []*struct {
@@ -30,7 +31,7 @@ type GetMessageStatus struct {
 		MessageHash       *string                     "json:\"messageHash\" graphql:\"messageHash\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetMessageInfo struct {
+type GetOriginInfo struct {
 	Response []*struct {
 		MessageHash        *string "json:\"messageHash\" graphql:\"messageHash\""
 		ContractAddress    *string "json:\"contractAddress\" graphql:\"contractAddress\""
@@ -52,6 +53,18 @@ type GetMessageInfo struct {
 		Version            *int    "json:\"version\" graphql:\"version\""
 		GasLimit           *int    "json:\"gasLimit\" graphql:\"gasLimit\""
 		GasDrop            *string "json:\"gasDrop\" graphql:\"gasDrop\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetDestinationInfo struct {
+	Response []*struct {
+		ContractAddress *string "json:\"contractAddress\" graphql:\"contractAddress\""
+		BlockNumber     *int    "json:\"blockNumber\" graphql:\"blockNumber\""
+		TxHash          *string "json:\"txHash\" graphql:\"txHash\""
+		TxIndex         *int    "json:\"txIndex\" graphql:\"txIndex\""
+		MessageHash     *string "json:\"messageHash\" graphql:\"messageHash\""
+		ChainID         *int    "json:\"chainID\" graphql:\"chainID\""
+		RemoteDomain    *int    "json:\"remoteDomain\" graphql:\"remoteDomain\""
+		Success         *bool   "json:\"success\" graphql:\"success\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -78,8 +91,8 @@ func (c *Client) GetMessageStatus(ctx context.Context, messageHash string, httpR
 	return &res, nil
 }
 
-const GetMessageInfoDocument = `query GetMessageInfo ($messageHash: String!) {
-	response: getMessageInfo(messageHash: $messageHash) {
+const GetOriginInfoDocument = `query GetOriginInfo ($messageHash: String!) {
+	response: getOriginInfo(messageHash: $messageHash) {
 		messageHash
 		contractAddress
 		blockNumber
@@ -104,13 +117,40 @@ const GetMessageInfoDocument = `query GetMessageInfo ($messageHash: String!) {
 }
 `
 
-func (c *Client) GetMessageInfo(ctx context.Context, messageHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetMessageInfo, error) {
+func (c *Client) GetOriginInfo(ctx context.Context, messageHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginInfo, error) {
 	vars := map[string]interface{}{
 		"messageHash": messageHash,
 	}
 
-	var res GetMessageInfo
-	if err := c.Client.Post(ctx, "GetMessageInfo", GetMessageInfoDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res GetOriginInfo
+	if err := c.Client.Post(ctx, "GetOriginInfo", GetOriginInfoDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDestinationInfoDocument = `query GetDestinationInfo ($messageHash: String!) {
+	response: getDestinationInfo(messageHash: $messageHash) {
+		contractAddress
+		blockNumber
+		txHash
+		txIndex
+		messageHash
+		chainID
+		remoteDomain
+		success
+	}
+}
+`
+
+func (c *Client) GetDestinationInfo(ctx context.Context, messageHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationInfo, error) {
+	vars := map[string]interface{}{
+		"messageHash": messageHash,
+	}
+
+	var res GetDestinationInfo
+	if err := c.Client.Post(ctx, "GetDestinationInfo", GetDestinationInfoDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

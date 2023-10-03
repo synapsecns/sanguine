@@ -22,14 +22,14 @@ type ChainIndexer struct {
 	// consumerDB is the database to store consumer data in.
 	eventDB db.EventDB
 	// parsers are the parsers for this chain.
-	parsers types.Parsers
+	parsers Parsers
 	// fetcher is the scribe fetcher.
 	fetcher fetcher.ScribeFetcher
 	// config is the config for the backfiller.
 	config indexerConfig.ChainConfig
 }
 
-func NewChainIndexer(eventDB db.EventDB, parsers types.Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
+func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
 	if config.MaxGoroutines < 1 {
 		config.MaxGoroutines = 1
 	}
@@ -115,7 +115,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 					// If the end block is not specified in the config (livefill) the last block stored will be used.
 					if endHeight == 0 {
-						startHeight, err = c.eventDB.GetLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
+						startHeight, err = c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
 						if err != nil {
 							return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
 						}

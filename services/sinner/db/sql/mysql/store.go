@@ -3,9 +3,10 @@ package mysql
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/base"
 	"gorm.io/gorm/schema"
 	"time"
 
@@ -19,25 +20,28 @@ type Store struct {
 }
 
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
-var MaxIdleConns = 10
+var MaxIdleConns = 1048
 
 // NamingStrategy is for table prefixes.
 var NamingStrategy = schema.NamingStrategy{}
 
+// MaxOpenConns is exported here for testing. Tests execute too slowly with a reconnect each time.
+var MaxOpenConns = 1048
+
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debug("creating mysql store")
-
 	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:               common_base.GetGormLogger(logger),
-		FullSaveAssociations: true,
-		NamingStrategy:       NamingStrategy,
-		NowFunc:              time.Now,
+		Logger:                 common_base.GetGormLogger(logger),
+		FullSaveAssociations:   true,
+		NamingStrategy:         NamingStrategy,
+		NowFunc:                time.Now,
+		SkipDefaultTransaction: true,
 	})
 
 	if err != nil {
@@ -52,6 +56,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetMaxOpenConns(MaxOpenConns)
 
 	handler.AddGormCallbacks(gdb)
 
@@ -59,7 +64,8 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 		// migrate in a transaction since we skip this by default
 		err = gdb.Transaction(func(tx *gorm.DB) error {
 			//nolint: wrapcheck
-			return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+			fmt.Println("EEE5", model.GetAllModels())
+			return gdb.WithContext(ctx).AutoMigrate(model.GetAllModels()...)
 		})
 	}
 	if err != nil {

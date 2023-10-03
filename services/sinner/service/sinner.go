@@ -7,7 +7,6 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/origin"
 	"github.com/synapsecns/sanguine/services/sinner/logger"
-	"github.com/synapsecns/sanguine/services/sinner/types"
 	"net/http"
 	"time"
 
@@ -28,6 +27,16 @@ type Sinner struct {
 	indexers map[uint32]*ChainIndexer
 	// config is the config for the indexer.
 	config indexerConfig.Config
+}
+
+// Parsers holds all the parsers for a given chain
+type Parsers struct {
+	// ChainID is the chain these parsers are for.
+	ChainID uint32
+	// OriginParser parses logs from the origin contract.
+	OriginParser *origin.ParserImpl
+	// DestinationParser parses logs from the execution hub contract.
+	DestinationParser *destination.ParserImpl
 }
 
 // NewSinner creates a new sinner indexer service.
@@ -107,7 +116,7 @@ func (e Sinner) Index(ctx context.Context) error {
 
 // nolint gocognit,cyclop
 func getChainIndexer(eventDB db.EventDB, chainID uint32, fetcher fetcherpkg.ScribeFetcher, chainConfig indexerConfig.ChainConfig) (*ChainIndexer, error) {
-	parsers := types.Parsers{
+	parsers := Parsers{
 		ChainID: chainID,
 	}
 	for i := range chainConfig.Contracts {

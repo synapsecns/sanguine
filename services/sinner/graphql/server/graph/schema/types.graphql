@@ -11,7 +11,7 @@ type MessageStatus {
 """
 MessageInfo provides granular information on a message.
 """
-type MessageInfo {
+type OriginInfo {
   messageHash: String
   contractAddress: String
   blockNumber: Int
@@ -32,6 +32,17 @@ type MessageInfo {
   version: Int
   gasLimit:Int
   gasDrop: String
+}
+
+type DestinationInfo {
+  contractAddress: String
+  blockNumber: Int
+  txHash: String
+  txIndex: Int
+  messageHash:String
+  chainID: Int
+  remoteDomain: Int
+  success: Boolean
 }
 
 enum MessageStateLastSeen{

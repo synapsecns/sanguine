@@ -3,9 +3,10 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/base"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"os"
@@ -36,7 +37,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger:                                   common_base.GetGormLogger(logger),
-		FullSaveAssociations:                     true,
+		//FullSaveAssociations:                     true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
@@ -45,7 +46,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	handler.AddGormCallbacks(gdb)
 
 	if !skipMigrations {
-		err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+		err = gdb.WithContext(ctx).AutoMigrate(model.GetAllModels()...)
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate models: %w", err)
 		}

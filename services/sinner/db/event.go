@@ -4,6 +4,9 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+	"github.com/synapsecns/sanguine/services/sinner/types"
+	"gorm.io/gorm"
 )
 
 // EventDBWriter is an interface for writing events to a database.
@@ -16,16 +19,26 @@ type EventDBWriter interface {
 	StoreExecuted(ctx context.Context, executed *model.Executed) error
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
+	// StoreOrUpdateMessageStatus stores/updates the status of a message.
+	StoreOrUpdateMessageStatus(ctx context.Context, txHash string, messageID string, messageType types.MessageType) error
+	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
+	//
+	//nolint:golint
+	UNSAFE_DB() *gorm.DB
 }
 
 // EventDBReader is an interface for reading events from a database.
 //
 //nolint:interfacebloat
 type EventDBReader interface {
+	// RetrieveOriginSent gets the OriginSent record.
+	RetrieveOriginSent(ctx context.Context, chainID uint32, txHash string) (model.OriginSent, error)
 	// RetrieveMessageStatus gets status of a message.
-	RetrieveMessageStatus(ctx context.Context, txhash string) (response string, err error)
-	// GetLastStoredBlock gets the last block stored in sinner.
-	GetLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error)
+	RetrieveMessageStatus(ctx context.Context, messageHash string) (graphqlModel.MessageStatus, error)
+	// RetrieveLastStoredBlock gets the last block stored in sinner.
+	RetrieveLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error)
+	// RetrieveExecuted gets the Executed record.
+	RetrieveExecuted(ctx context.Context, chainID uint32, txHash string) (model.Executed, error)
 }
 
 // EventDB stores events.

@@ -3,9 +3,13 @@ type Query {
     messageHash: String!
   ): [MessageStatus]
 
-  getMessageInfo(
+  getOriginInfo(
     messageHash: String!
-  ): [MessageInfo]
+  ): [OriginInfo]
+
+  getDestinationInfo(
+    messageHash: String!
+  ): [DestinationInfo]
 
 }
 

@@ -17,6 +17,27 @@ type EventDB struct {
 	mock.Mock
 }
 
+// GetLastStoredBlock provides a mock function with given fields: ctx, chainID, address
+func (_m *EventDB) GetLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error) {
+	ret := _m.Called(ctx, chainID, address)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Address) uint64); ok {
+		r0 = rf(ctx, chainID, address)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, common.Address) error); ok {
+		r1 = rf(ctx, chainID, address)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveMessageStatus provides a mock function with given fields: ctx, txhash
 func (_m *EventDB) RetrieveMessageStatus(ctx context.Context, txhash string) (string, error) {
 	ret := _m.Called(ctx, txhash)
