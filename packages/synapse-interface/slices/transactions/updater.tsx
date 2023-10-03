@@ -107,7 +107,12 @@ export default function Updater(): null {
         startTime: queryPendingTime,
       })
     }
-  }, [address, masqueradeActive, searchedBalancesAndAllowances])
+  }, [
+    address,
+    masqueradeActive,
+    searchedBalancesAndAllowances,
+    isWindowFocused,
+  ])
 
   // Unsubscribe when address is unconnected/disconnected
   useEffect(() => {
