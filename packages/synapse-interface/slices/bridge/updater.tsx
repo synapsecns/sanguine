@@ -8,7 +8,7 @@ import {
   fetchBridgeQuotes,
 } from '@/utils/actions/fetchBridgeQuotes'
 import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
-import { resetFetchedBridgeQuotes } from './actions'
+import { resetFetchedBridgeQuotes, updateDebouncedFromValue } from './actions'
 import { BridgeQuote, Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -22,16 +22,15 @@ export default function Updater(): null {
     fromToken,
     toTokens,
     fromValue,
+    debouncedFromValue,
   }: BridgeState = useBridgeState()
-  const [debouncedFromValue, setDebouncedFromValue] =
-    useState<string>(fromValue)
 
   // Debounce user input to prevent unnecessary quote fetching
   useEffect(() => {
     const debounceDelay = 500
 
     const debounceTimer = setTimeout(() => {
-      setDebouncedFromValue(fromValue)
+      dispatch(updateDebouncedFromValue(fromValue))
     }, debounceDelay)
 
     return () => clearTimeout(debounceTimer)
