@@ -98,6 +98,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 
 //nolint:cyclop
 func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
+	fmt.Println("loadSummitMyLatestStates")
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
@@ -124,6 +125,7 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 
 		span.End()
 	}
+	fmt.Printf("got summitMyLatestStates: %v\n", n.summitMyLatestStates)
 }
 
 //nolint:cyclop
@@ -346,7 +348,7 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 
 //nolint:cyclop
 func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
-	fmt.Printf("getLatestSnapshot")
+	fmt.Println("getLatestSnapshot")
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
@@ -417,7 +419,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		fmt.Println("Notary submitting snapshot to summit")
+		fmt.Printf("Notary submitting snapshot to summit with states: %v\n", statesToSubmit)
 		logger.Infof("Notary submitting snapshot to summit")
 		span.AddEvent("Dispatching snapshot to submitter")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
