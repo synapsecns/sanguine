@@ -39,6 +39,7 @@ export interface BridgeState {
   toTokens: Token[]
 
   fromValue: string
+  debouncedFromValue: string
   bridgeQuote: BridgeQuote
   toTokensBridgeQuotes: BridgeQuoteResponse[]
   toTokensBridgeQuotesStatus: FetchState
@@ -76,6 +77,7 @@ export const initialState: BridgeState = {
   toTokens,
 
   fromValue: '',
+  debouncedFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   toTokensBridgeQuotes: [],
   toTokensBridgeQuotesStatus: FetchState.IDLE,
@@ -467,6 +469,12 @@ export const bridgeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(
+        updateDebouncedFromValue,
+        (state, action: PayloadAction<string>) => {
+          state.debouncedFromValue = action.payload
+        }
+      )
       .addCase(
         addPendingBridgeTransaction,
         (state, action: PayloadAction<PendingBridgeTransaction>) => {
