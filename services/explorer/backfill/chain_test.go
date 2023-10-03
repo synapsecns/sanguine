@@ -3,6 +3,7 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
@@ -12,10 +13,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
@@ -330,7 +329,7 @@ func (b *BackfillSuite) TestBackfill() {
 		Nil(b.T(), err)
 	}
 
-	// Set up a ChainBackfiller
+	// Set up a ChainIndexer
 	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 
@@ -381,12 +380,12 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, f, chainConfigsV1[0])
+	chainIndexer := backfill.NewChainIndexer(b.db, bp, spMap, mbp, cp, f, chainConfigs[0])
+	chainIndexerV1 := backfill.NewChainIndexer(b.db, bpv1, spMap, mbp, cp, f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	var count int64
-	err = chainBackfiller.Backfill(b.GetTestContext(), false, 1)
+	err = chainIndexer.Backfill(b.GetTestContext(), false, 1)
 
 	Nil(b.T(), err)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
@@ -468,7 +467,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test bridge v1 parity
-	err = chainBackfillerV1.Backfill(b.GetTestContext(), false, 1)
+	err = chainIndexerV1.Backfill(b.GetTestContext(), false, 1)
 	Nil(b.T(), err)
 
 	err = b.depositParity(depositV1Log, bpv1, uint32(testChainID.Uint64()), true)
