@@ -22,6 +22,7 @@ export const SelectSpecificNetworkButton = ({
   active,
   onClick,
   dataId,
+  isOrigin,
   alternateBackground = false,
 }: {
   itemChainId: number
@@ -29,6 +30,7 @@ export const SelectSpecificNetworkButton = ({
   active: boolean
   onClick: () => void
   dataId: string
+  isOrigin: boolean
   alternateBackground?: boolean
 }) => {
   const ref = useRef<any>(null)
@@ -57,7 +59,7 @@ export const SelectSpecificNetworkButton = ({
       className={`
         flex items-center justify-between
         transition-all duration-75
-        w-full 
+        w-full
         px-2 py-4
         cursor-pointer
         border-[1px] border-[#423F44]
@@ -77,7 +79,13 @@ export const SelectSpecificNetworkButton = ({
   )
 }
 
-function ButtonContent({ chainId }: { chainId: number }) {
+function ButtonContent({
+  chainId,
+  isOrigin,
+}: {
+  chainId: number
+  isOrigin: boolean
+}) {
   const chain = CHAINS_BY_ID[chainId]
   const { balancesAndAllowances } = usePortfolioState()
 
