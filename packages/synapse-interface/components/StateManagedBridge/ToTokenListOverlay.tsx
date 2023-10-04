@@ -27,6 +27,10 @@ import {
   BridgeQuoteResponse,
 } from '@/utils/actions/fetchBridgeQuotes'
 
+interface TokenWithExchangeRate extends Token {
+  exchangeRate: bigint
+}
+
 export const ToTokenListOverlay = () => {
   const {
     fromChainId,
@@ -178,6 +182,46 @@ export const ToTokenListOverlay = () => {
     return locateBestExchangeRateToken(toTokensBridgeQuotes)
   }, [toTokensBridgeQuotes])
 
+  const orderedPossibleTokens: TokenWithExchangeRate[] | Token[] =
+    useMemo(() => {
+      if (
+        toTokensBridgeQuotesStatus === FetchState.VALID &&
+        bridgeQuotesMatchDestination &&
+        possibleTokens &&
+        possibleTokens.length > 0
+      ) {
+        const bridgeQuotesMap = new Map(
+          toTokensBridgeQuotes.map((quote) => [quote.destinationToken, quote])
+        )
+
+        const tokensWithExchangeRates: TokenWithExchangeRate[] =
+          possibleTokens.map((token) => {
+            const bridgeQuote = bridgeQuotesMap.get(token)
+            if (bridgeQuote) {
+              return {
+                ...token,
+                exchangeRate: bridgeQuote.exchangeRate,
+              }
+            } else {
+              return token as TokenWithExchangeRate
+            }
+          })
+
+        const sortedTokens = tokensWithExchangeRates.sort(
+          (a, b) => Number(b.exchangeRate) - Number(a.exchangeRate)
+        )
+
+        return sortedTokens
+      }
+      return possibleTokens
+    }, [
+      possibleTokens,
+      toTokensBridgeQuotes,
+      toTokensBridgeQuotesStatus,
+      bridgeQuotesMatchDestination,
+    ])
+
+  console.log('orderedPossibleTokens: ', orderedPossibleTokens)
   return (
     <div
       ref={overlayRef}
