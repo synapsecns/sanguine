@@ -49,7 +49,7 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://eth.llamarpc.com',
+    primary: 'https://rpc.ankr.com/eth',
     fallback: 'https://1rpc.io/eth',
   },
   explorerUrl: 'https://etherscan.com',
