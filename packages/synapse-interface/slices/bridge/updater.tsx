@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from './reducer'
+import { BridgeState, setIsLoading } from './reducer'
 import {
   BridgeQuoteRequest,
   fetchBridgeQuotes,
@@ -28,12 +28,16 @@ export default function Updater(): null {
   // Debounce user input to prevent unnecessary quote fetching
   useEffect(() => {
     const debounceDelay = 400
+    dispatch(setIsLoading(true))
 
     const debounceTimer = setTimeout(() => {
       dispatch(updateDebouncedFromValue(fromValue))
     }, debounceDelay)
 
-    return () => clearTimeout(debounceTimer)
+    return () => {
+      clearTimeout(debounceTimer)
+      dispatch(setIsLoading(false))
+    }
   }, [fromValue])
 
   // Conditions for fetching alternative bridge quotes
