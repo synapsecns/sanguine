@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState, setIsLoading } from './reducer'
+import { BridgeState, setIsLoading, initialState } from './reducer'
 import {
   BridgeQuoteRequest,
   fetchBridgeQuotes,
