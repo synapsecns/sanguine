@@ -221,7 +221,6 @@ export const ToTokenListOverlay = () => {
       bridgeQuotesMatchDestination,
     ])
 
-  console.log('orderedPossibleTokens: ', orderedPossibleTokens)
   return (
     <div
       ref={overlayRef}
@@ -246,7 +245,6 @@ export const ToTokenListOverlay = () => {
           <div className="px-2 pb-2 md:px-2">
             {orderedPossibleTokens.map(
               (token: TokenWithExchangeRate, idx: number) => {
-                console.log('token: ', token)
                 return (
                   <SelectSpecificTokenButton
                     isOrigin={false}
