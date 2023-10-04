@@ -117,6 +117,53 @@ const getTokensAllowances = async (
  * If specifying chainId parameter, function will only fetch from single network
  * If chainId is undefined, function will fetch from all supported networks
  */
+// export const fetchPortfolioBalances = async (
+//   address: string,
+//   chainId?: number | undefined | null
+// ): Promise<{
+//   balancesAndAllowances: NetworkTokenBalancesAndAllowances
+//   status: FetchState
+//   error?: any | undefined
+// }> => {
+//   const balanceRecord = {}
+//   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
+//   const isSingleNetworkCall: boolean = typeof chainId === 'number'
+
+//   const filteredChains: string[] = availableChains.filter((chain: string) => {
+//     return isSingleNetworkCall ? Number(chain) === chainId : chain !== '2000' // need to figure out whats wrong with Dogechain
+//   })
+
+//   try {
+//     const balancePromises = filteredChains.map(async (chainId) => {
+//       const currentChainId = Number(chainId)
+//       const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+//       const [tokenBalances, tokenAllowances] = await Promise.all([
+//         getTokenBalances(address, currentChainTokens, currentChainId),
+//         getTokensAllowances(
+//           address,
+//           ROUTER_ADDRESS,
+//           currentChainTokens,
+//           currentChainId
+//         ),
+//       ])
+//       const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+//         tokenBalances,
+//         tokenAllowances
+//       )
+//       return { currentChainId, mergedBalancesAndAllowances }
+//     })
+//     const balances = await Promise.all(balancePromises)
+//     balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
+//       balanceRecord[currentChainId] = mergedBalancesAndAllowances
+//     })
+
+//     return { balancesAndAllowances: balanceRecord, status: FetchState.VALID }
+//   } catch (error) {
+//     console.error('error from fetch:', error)
+//     return { balancesAndAllowances: {}, status: FetchState.INVALID, error }
+//   }
+// }
+
 export const fetchPortfolioBalances = async (
   address: string,
   chainId?: number | undefined | null
@@ -130,36 +177,50 @@ export const fetchPortfolioBalances = async (
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 
   const filteredChains: string[] = availableChains.filter((chain: string) => {
-    return isSingleNetworkCall ? Number(chain) === chainId : chain !== '2000' // need to figure out whats wrong with Dogechain
+    return isSingleNetworkCall ? Number(chain) === chainId : chain !== '2000' // need to figure out what's wrong with Dogechain
   })
 
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
       const currentChainId = Number(chainId)
       const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-      const [tokenBalances, tokenAllowances] = await Promise.all([
-        getTokenBalances(address, currentChainTokens, currentChainId),
-        getTokensAllowances(
-          address,
-          ROUTER_ADDRESS,
-          currentChainTokens,
-          currentChainId
-        ),
-      ])
-      const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
-        tokenBalances,
-        tokenAllowances
-      )
-      return { currentChainId, mergedBalancesAndAllowances }
+      try {
+        const [tokenBalances, tokenAllowances] = await Promise.all([
+          getTokenBalances(address, currentChainTokens, currentChainId),
+          getTokensAllowances(
+            address,
+            ROUTER_ADDRESS,
+            currentChainTokens,
+            currentChainId
+          ),
+        ])
+        const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+          tokenBalances,
+          tokenAllowances
+        )
+        return { currentChainId, mergedBalancesAndAllowances, error: undefined }
+      } catch (error) {
+        // Handle the error for this specific chain if needed
+        console.error(`Error for chain ${currentChainId}:`, error)
+        return { currentChainId, error, mergedBalancesAndAllowances: undefined }
+      }
     })
-    const balances = await Promise.all(balancePromises)
-    balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
-      balanceRecord[currentChainId] = mergedBalancesAndAllowances
+    const results = await Promise.allSettled(balancePromises)
+
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        const { currentChainId, mergedBalancesAndAllowances } = result.value
+        balanceRecord[currentChainId] = mergedBalancesAndAllowances
+      } else {
+        // Handle the error for this specific chain if needed
+        const { currentChainId, error } = result.reason
+        console.error(`Error for chain ${currentChainId}:`, error)
+      }
     })
 
     return { balancesAndAllowances: balanceRecord, status: FetchState.VALID }
   } catch (error) {
-    console.error('error from fetch:', error)
+    console.error('Error from fetch:', error)
     return { balancesAndAllowances: {}, status: FetchState.INVALID, error }
   }
 }

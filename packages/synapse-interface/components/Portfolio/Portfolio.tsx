@@ -218,10 +218,10 @@ export function filterPortfolioBalancesWithBalances(
       filteredBalances: NetworkTokenBalancesAndAllowances,
       [key, tokenWithBalances]
     ) => {
-      const filtered = tokenWithBalances.filter(
+      const filtered = tokenWithBalances?.filter(
         (token: TokenWithBalanceAndAllowance) => token.balance > 0n
       )
-      if (filtered.length > 0) {
+      if (filtered?.length > 0) {
         filteredBalances[key] = filtered
       }
       return filteredBalances
