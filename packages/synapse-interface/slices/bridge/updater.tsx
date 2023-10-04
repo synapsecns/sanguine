@@ -32,7 +32,9 @@ export default function Updater(): null {
     // dispatch(setIsLoading(true))
 
     const animationTimer = setTimeout(() => {
-      dispatch(setIsLoading(true))
+      if (debouncedFromValue !== initialState.debouncedFromValue) {
+        dispatch(setIsLoading(true))
+      }
     }, animationDelay)
 
     const debounceTimer = setTimeout(() => {
