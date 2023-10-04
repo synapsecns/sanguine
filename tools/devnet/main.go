@@ -323,6 +323,7 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 			return fmt.Errorf("could not parse pong received event")
 		}
 		fmt.Printf("Parsed pong received on chain %d [ID=%d]\n", chainID, pongReceivedEvent.PingId.Int64())
+		itersProcessed++
 	} else {
 		return fmt.Errorf("could not parse log")
 	}
@@ -333,6 +334,8 @@ var dockerComposeFile = "docker-compose.yml"
 var omnirpcConfig = "omnirpc.yaml"
 var executorConfig = "executor-config.yml"
 var parser *pingpongclient.PingPongClientFilterer
+var numIters, itersProcessed int
+var numRoutes = 2
 
 const eventBufferSize = 1000
 
@@ -340,7 +343,6 @@ func main() {
 	var dockerPath string
 	var deploymentPath string
 	var privateKey string
-	var numIters int
 	flag.StringVar(&dockerPath, "d", "", "path to devnet docker files")
 	flag.StringVar(&deploymentPath, "c", "", "path to contract deployments")
 	flag.StringVar(&privateKey, "p", "", "private key")
@@ -398,7 +400,7 @@ func main() {
 	}
 
 	// Get routes.
-	routes, err := getMessageRoutes(chainConfigs, summitChainID, 2)
+	routes, err := getMessageRoutes(chainConfigs, summitChainID, numRoutes)
 	if err != nil {
 		panic(err)
 	}
@@ -445,8 +447,19 @@ func main() {
 		}
 	}
 
+	g.Go(func() error {
+		for {
+			if itersProcessed >= numRoutes*numIters {
+				fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutes)
+				cancel()
+				return nil
+			}
+			time.Sleep(200 * time.Millisecond)
+		}
+	})
+
 	err = g.Wait()
 	if err != nil {
-		panic(err)
+		fmt.Printf("%v\n", err)
 	}
 }
