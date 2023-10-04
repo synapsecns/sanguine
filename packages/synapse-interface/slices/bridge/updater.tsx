@@ -115,5 +115,7 @@ export const getDefaultBridgeAmount = (
       return DefaultBridgeAmount.ETH
     case SwappableTypes.BTC:
       return DefaultBridgeAmount.BTC
+    default:
+      return DefaultBridgeAmount.STABLE
   }
 }
