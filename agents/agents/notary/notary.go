@@ -547,7 +547,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		))
 	} else {
 		span.AddEvent("Dispatching attestation to submitter")
-		fmt.Println("Submitting transaction")
+		fmt.Printf("Submitting transaction for attestation: %v\n", n.myLatestNotaryAttestation.Attestation())
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
