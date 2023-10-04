@@ -238,54 +238,63 @@ export const ToTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {possibleTokens && possibleTokens.length > 0 && (
+      {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
         <>
           <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
             Receive…
           </div>
           <div className="px-2 pb-2 md:px-2">
-            {possibleTokens.map((token: Token, idx: number) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  isBestExchangeRate={token === bestExchangeRateToken}
-                  exchangeRate={
-                    toTokensBridgeQuotesStatus === FetchState.VALID &&
-                    bridgeQuotesMatchDestination &&
-                    formatBigIntToString(
-                      toTokensBridgeQuotes.filter(
-                        (bridgeQuotes: BridgeQuoteResponse) =>
-                          bridgeQuotes.destinationToken === token
-                      )?.[0]?.exchangeRate,
-                      18, //manually set this for now
+            {orderedPossibleTokens.map(
+              (token: TokenWithExchangeRate, idx: number) => {
+                console.log('token: ', token)
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={false}
+                    key={idx}
+                    token={token}
+                    selectedToken={toToken}
+                    active={idx === currentIdx}
+                    showAllChains={false}
+                    // isBestExchangeRate={token === bestExchangeRateToken}
+                    // exchangeRate={
+                    //   toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    //   bridgeQuotesMatchDestination &&
+                    //   formatBigIntToString(
+                    //     toTokensBridgeQuotes.filter(
+                    //       (bridgeQuotes: BridgeQuoteResponse) =>
+                    //         bridgeQuotes.destinationToken == token
+                    //     )?.[0]?.exchangeRate,
+                    //     18, //manually set this for now
+                    //     4
+                    //   )
+                    // }
+                    isBestExchangeRate={idx === 0}
+                    exchangeRate={formatBigIntToString(
+                      token?.exchangeRate,
+                      18,
                       4
-                    )
-                  }
-                  estimatedDurationInSeconds={
-                    toTokensBridgeQuotesStatus === FetchState.VALID &&
-                    bridgeQuotesMatchDestination &&
-                    calculateEstimatedTransactionTime({
-                      originChainId: fromChainId,
-                      originTokenAddress: fromToken.addresses[
-                        fromChainId
-                      ] as Address,
-                    })
-                  }
-                  onClick={() => {
-                    if (token === toToken) {
-                      onClose()
-                    } else {
-                      handleSetToToken(toToken, token)
+                    )}
+                    estimatedDurationInSeconds={
+                      toTokensBridgeQuotesStatus === FetchState.VALID &&
+                      bridgeQuotesMatchDestination &&
+                      calculateEstimatedTransactionTime({
+                        originChainId: fromChainId,
+                        originTokenAddress: fromToken.addresses[
+                          fromChainId
+                        ] as Address,
+                      })
                     }
-                  }}
-                />
-              )
-            })}
+                    onClick={() => {
+                      if (token === toToken) {
+                        onClose()
+                      } else {
+                        handleSetToToken(toToken, token)
+                      }
+                    }}
+                  />
+                )
+              }
+            )}
           </div>
         </>
       )}
