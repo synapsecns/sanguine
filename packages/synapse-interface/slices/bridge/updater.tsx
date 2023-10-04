@@ -27,7 +27,7 @@ export default function Updater(): null {
 
   // Debounce user input to prevent unnecessary quote fetching
   useEffect(() => {
-    const debounceDelay = 300
+    const debounceDelay = 400
 
     const debounceTimer = setTimeout(() => {
       dispatch(updateDebouncedFromValue(fromValue))
