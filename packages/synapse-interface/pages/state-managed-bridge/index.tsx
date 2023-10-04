@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
 import { animated } from 'react-spring'
-import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -562,14 +561,6 @@ const StateManagedBridge = () => {
           </div>
         </Card>
       </div>
-      {/* <div className="mt-8">
-        <BridgeWatcher
-          fromChainId={fromChainId}
-          toChainId={toChainId}
-          address={address}
-          destinationAddress={destinationAddress}
-        />
-      </div> */}
     </div>
   )
 }

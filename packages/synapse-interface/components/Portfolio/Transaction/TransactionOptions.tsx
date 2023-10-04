@@ -48,9 +48,9 @@ export const TransactionOptions = ({
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else if (transactionHash) {
-      const explorerLink: string = getExplorerTxUrl({
-        chainId: originChain.id,
-        hash: transactionHash,
+      const explorerLink: string = getExplorerAddressUrl({
+        chainId: destinationChain.id,
+        address: connectedAddress,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else {

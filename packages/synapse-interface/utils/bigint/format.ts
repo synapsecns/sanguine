@@ -56,7 +56,8 @@ export const powBigInt = (base, exponent) => {
 export const formatBigIntToPercentString = (
   bn: bigint,
   nativePrecison: number,
-  decimalPlaces = 2
+  decimalPlaces = 2,
+  convert = true
 ) => {
   try {
     // Calculate the conversion factor based on the native precision and required decimal places
@@ -66,7 +67,8 @@ export const formatBigIntToPercentString = (
     )
 
     // Convert the bigint to a floating-point number, preserving the requested number of decimal places
-    const num = (Number(bn) * 100) / Number(conversionFactor)
+    const percentConvert = convert ? 100 : 1
+    const num = (Number(bn) * percentConvert) / Number(conversionFactor)
 
     // Format the number as a percentage string
     return `${num.toFixed(decimalPlaces)}%`

@@ -29348,6 +29348,11 @@ use-sync-external-store@1.2.0, use-sync-external-store@^1.0.0, use-sync-external
   resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz#7dbefd6ef3fe4e767a0cf5d7287aacfb5846928a"
   integrity sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==
 
+use-window-focus@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/use-window-focus/-/use-window-focus-1.4.2.tgz#18cd99d14b9f75b7b1d08ea6e1832762731f5510"
+  integrity sha512-6aLzUtgcph92IoT+ZmEPpkdLW3O5frL7sNIpbt/2pBh6HwHZTRagsIxILrLTfrguzEDQqy5FM76K4wqIj4V6mw==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"

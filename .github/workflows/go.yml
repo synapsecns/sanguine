@@ -43,7 +43,7 @@ jobs:
           submodules: 'recursive'
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:e4c85e74bf0592c0efa71476c3246675ec77fc28
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT }}
@@ -353,7 +353,7 @@ jobs:
     needs: cancel-outdated
     # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
     # change this to run on those pushes
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
       metadata: ${{ steps.metadata.outputs.METADATA }}
@@ -375,6 +375,7 @@ jobs:
 
         id: metadata
         shell: bash
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}

@@ -328,7 +328,7 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border border-[#D747FF] mr-1
+            border border-synapsePurple mr-1
             hover:bg-tint active:opacity-[67%]
           `}
           onClick={selectCallback}
