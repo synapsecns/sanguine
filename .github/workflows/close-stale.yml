@@ -23,7 +23,4 @@ jobs:
     name: Remove Stale Branches
     runs-on: ubuntu-latest
     steps:
-      # TODO: enable
       - uses: fpicalausa/remove-stale-branches@v1
-        with:
-          dry-run: true # Check out the console output before setting this to false
