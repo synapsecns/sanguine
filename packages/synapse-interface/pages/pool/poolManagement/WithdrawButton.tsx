@@ -5,7 +5,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
@@ -59,7 +59,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     buttonProperties = {
       label: (
         <div className="flex items-center justify-center h-[24px]">
-          <LoadingSpinner />
+          <LoadingDots />
         </div>
       ),
       onClick: null,

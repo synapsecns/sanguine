@@ -1,9 +1,9 @@
-import LoadingSpinner from '@tw/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 export default function ButtonLoadingSpinner({
   className,
 }: {
   className?: string
 }) {
-  return <LoadingSpinner className={`opacity-50 ${className}`} />
+  return <LoadingDots className={`opacity-50 ${className}`} />
 }

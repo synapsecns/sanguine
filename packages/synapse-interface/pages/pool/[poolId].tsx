@@ -12,7 +12,7 @@ import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingSpinner from '@/components/ui/tailwind/LoadingDots'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const PoolPage = () => {

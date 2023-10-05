@@ -12,7 +12,7 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -89,7 +89,7 @@ const SelectSpecificTokenButton = ({
         showAllChains={showAllChains}
       />
       {isLoadingExchangeRate ? (
-        <LoadingSpinner className="mr-8 opacity-50" />
+        <LoadingDots className="mr-8 opacity-50" />
       ) : (
         <>
           {exchangeRate && isBestExchangeRate && (

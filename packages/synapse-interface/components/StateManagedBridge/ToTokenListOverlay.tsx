@@ -253,26 +253,13 @@ export const ToTokenListOverlay = () => {
                     selectedToken={toToken}
                     active={idx === currentIdx}
                     showAllChains={false}
-                    // isBestExchangeRate={token === bestExchangeRateToken}
-                    // exchangeRate={
-                    //   toTokensBridgeQuotesStatus === FetchState.VALID &&
-                    //   bridgeQuotesMatchDestination &&
-                    //   formatBigIntToString(
-                    //     toTokensBridgeQuotes.filter(
-                    //       (bridgeQuotes: BridgeQuoteResponse) =>
-                    //         bridgeQuotes.destinationToken == token
-                    //     )?.[0]?.exchangeRate,
-                    //     18, //manually set this for now
-                    //     4
-                    //   )
-                    // }
                     isLoadingExchangeRate={
                       toTokensBridgeQuotesStatus === FetchState.LOADING
                     }
                     isBestExchangeRate={idx === 0}
                     exchangeRate={formatBigIntToString(
                       token?.exchangeRate,
-                      18,
+                      18, //manually set this for now
                       4
                     )}
                     estimatedDurationInSeconds={
