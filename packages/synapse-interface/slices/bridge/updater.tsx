@@ -8,7 +8,11 @@ import {
   fetchBridgeQuotes,
 } from '@/utils/actions/fetchBridgeQuotes'
 import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
-import { resetFetchedBridgeQuotes, updateDebouncedFromValue } from './actions'
+import {
+  resetFetchedBridgeQuotes,
+  updateDebouncedFromValue,
+  updateDebouncedToTokensFromValue,
+} from './actions'
 import { BridgeQuote, Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -28,6 +32,7 @@ export default function Updater(): null {
   // Debounce user input to prevent unnecessary quote fetching
   useEffect(() => {
     const debounceDelay = 400
+    const alternativeDebounceDelay = 500
     const animationDelay = 200
     // dispatch(setIsLoading(true))
 
@@ -41,9 +46,14 @@ export default function Updater(): null {
       dispatch(updateDebouncedFromValue(fromValue))
     }, debounceDelay)
 
+    const alternativeDebounceTimer = setTimeout(() => {
+      dispatch(updateDebouncedToTokensFromValue(fromValue))
+    }, alternativeDebounceDelay)
+
     return () => {
       clearTimeout(debounceTimer)
       clearTimeout(animationTimer)
+      clearTimeout(alternativeDebounceDelay)
       dispatch(setIsLoading(false))
     }
   }, [fromValue])
