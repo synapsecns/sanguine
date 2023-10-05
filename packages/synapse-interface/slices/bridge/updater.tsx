@@ -59,13 +59,13 @@ export default function Updater(): null {
     const alternativeOptionsDebounceDelay = 1000
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
-      dispatch(updateDebouncedToTokensFromValue(fromValue))
+      dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
     }, alternativeOptionsDebounceDelay)
 
     return () => {
       clearTimeout(alternativeOptionsDebounceTimer)
     }
-  }, [fromValue])
+  }, [debouncedFromValue])
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
