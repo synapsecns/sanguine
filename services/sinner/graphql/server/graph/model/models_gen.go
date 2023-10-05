@@ -33,7 +33,6 @@ type OriginInfo struct {
 	ContractAddress    *string `json:"contractAddress,omitempty"`
 	BlockNumber        *int    `json:"blockNumber,omitempty"`
 	OriginTxHash       *string `json:"originTxHash,omitempty"`
-	DestinationTxHash  *string `json:"destinationTxHash,omitempty"`
 	Sender             *string `json:"sender,omitempty"`
 	Recipient          *string `json:"recipient,omitempty"`
 	OriginChainID      *string `json:"originChainID,omitempty"`

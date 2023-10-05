@@ -7,6 +7,13 @@ import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/sinner/api"
+	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
+	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
+	"github.com/synapsecns/sanguine/services/sinner/service"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,15 +49,15 @@ var serverCommand = &cli.Command{
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
-		//decodeConfig, err := serverconfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
-		//if err != nil {
-		//	return fmt.Errorf("could not decode config: %w", err)
-		//}
+		decodeConfig, err := serverConfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+		}
 
-		//err = api.Start(c.Context, decodeConfig, metrics.Get())
-		//if err != nil {
-		//	return fmt.Errorf("could not start server: %w", err)
-		//}
+		err = api.Start(c.Context, decodeConfig, metrics.Get())
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
 
 		return nil
 	},
@@ -62,31 +69,24 @@ var livefillCommand = &cli.Command{
 	Description: "indexs contracts from config",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
-		//decodeConfig, err := indexerconfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
-		//if err != nil {
-		//	return fmt.Errorf("could not decode config: %w", err)
-		//
-		//}
-		//db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false, metrics.Get())
-		//if err != nil {
-		//	return fmt.Errorf("could not initialize database: %w", err)
-		//}
-		//clients := make(map[uint32]bind.ContractBackend)
-		//for _, client := range decodeConfig.Chains {
-		//	backendClient, err := ethclient.DialContext(c.Context, decodeConfig.RPCURL+fmt.Sprintf("%d", client.ChainID))
-		//	if err != nil {
-		//		return fmt.Errorf("could not start client for %s", client.RPCURL)
-		//	}
-		//	clients[client.ChainID] = backendClient
-		//}
-		//explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients, metrics.Get())
-		//if err != nil {
-		//	return fmt.Errorf("could not create explorer backfiller: %w", err)
-		//}
-		//err = explorerBackfiller.Backfill(c.Context, true)
-		//if err != nil {
-		//	return fmt.Errorf("could not backfill backfiller: %w", err)
-		//}
+		decodeConfig, err := indexerConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+
+		}
+		db, err := api.InitDB(c.Context, decodeConfig.DBFlag, decodeConfig.DBPath, metrics.Get(), decodeConfig.SkipMigrations)
+		if err != nil {
+			return fmt.Errorf("could not initialize database: %w", err)
+		}
+
+		sinnerService, err := service.NewSinner(db, decodeConfig, metrics.Get())
+		if err != nil {
+			return fmt.Errorf("could not create explorer backfiller: %w", err)
+		}
+		err = sinnerService.Index(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not backfill backfiller: %w", err)
+		}
 		return nil
 	},
 }

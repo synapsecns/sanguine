@@ -19,12 +19,12 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	GetMessageStatus   []*model.MessageStatus   "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
-	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
-	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
+	GetMessageStatus   *model.MessageStatus   "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetOriginInfo      *model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
+	GetDestinationInfo *model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
-	Response []*struct {
+	Response *struct {
 		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
 		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
 		DestinationTxHash *string                     "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
@@ -32,12 +32,11 @@ type GetMessageStatus struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetOriginInfo struct {
-	Response []*struct {
+	Response *struct {
 		MessageHash        *string "json:\"messageHash\" graphql:\"messageHash\""
 		ContractAddress    *string "json:\"contractAddress\" graphql:\"contractAddress\""
 		BlockNumber        *int    "json:\"blockNumber\" graphql:\"blockNumber\""
 		OriginTxHash       *string "json:\"originTxHash\" graphql:\"originTxHash\""
-		DestinationTxHash  *string "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
 		Sender             *string "json:\"sender\" graphql:\"sender\""
 		Recipient          *string "json:\"recipient\" graphql:\"recipient\""
 		OriginChainID      *string "json:\"originChainID\" graphql:\"originChainID\""
@@ -56,7 +55,7 @@ type GetOriginInfo struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDestinationInfo struct {
-	Response []*struct {
+	Response *struct {
 		ContractAddress *string "json:\"contractAddress\" graphql:\"contractAddress\""
 		BlockNumber     *int    "json:\"blockNumber\" graphql:\"blockNumber\""
 		TxHash          *string "json:\"txHash\" graphql:\"txHash\""
@@ -91,13 +90,12 @@ func (c *Client) GetMessageStatus(ctx context.Context, messageHash string, httpR
 	return &res, nil
 }
 
-const GetOriginInfoDocument = `query GetOriginInfo ($messageHash: String!) {
-	response: getOriginInfo(messageHash: $messageHash) {
+const GetOriginInfoDocument = `query GetOriginInfo ($txHash: String!, $chainID: Int!) {
+	response: getOriginInfo(txHash: $txHash, chainID: $chainID) {
 		messageHash
 		contractAddress
 		blockNumber
 		originTxHash
-		destinationTxHash
 		sender
 		recipient
 		originChainID
@@ -117,9 +115,10 @@ const GetOriginInfoDocument = `query GetOriginInfo ($messageHash: String!) {
 }
 `
 
-func (c *Client) GetOriginInfo(ctx context.Context, messageHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginInfo, error) {
+func (c *Client) GetOriginInfo(ctx context.Context, txHash string, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginInfo, error) {
 	vars := map[string]interface{}{
-		"messageHash": messageHash,
+		"txHash":  txHash,
+		"chainID": chainID,
 	}
 
 	var res GetOriginInfo
@@ -130,8 +129,8 @@ func (c *Client) GetOriginInfo(ctx context.Context, messageHash string, httpRequ
 	return &res, nil
 }
 
-const GetDestinationInfoDocument = `query GetDestinationInfo ($messageHash: String!) {
-	response: getDestinationInfo(messageHash: $messageHash) {
+const GetDestinationInfoDocument = `query GetDestinationInfo ($txHash: String!, $chainID: Int!) {
+	response: getDestinationInfo(txHash: $txHash, chainID: $chainID) {
 		contractAddress
 		blockNumber
 		txHash
@@ -144,9 +143,10 @@ const GetDestinationInfoDocument = `query GetDestinationInfo ($messageHash: Stri
 }
 `
 
-func (c *Client) GetDestinationInfo(ctx context.Context, messageHash string, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationInfo, error) {
+func (c *Client) GetDestinationInfo(ctx context.Context, txHash string, chainID int, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationInfo, error) {
 	vars := map[string]interface{}{
-		"messageHash": messageHash,
+		"txHash":  txHash,
+		"chainID": chainID,
 	}
 
 	var res GetDestinationInfo

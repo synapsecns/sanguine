@@ -1,0 +1,119 @@
+package api
+
+import (
+	"context"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/ipfs/go-log"
+	"github.com/soheilhy/cmux"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
+	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
+	"github.com/synapsecns/sanguine/services/sinner/db"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/mysql"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/sqlite"
+	gqlServer "github.com/synapsecns/sanguine/services/sinner/graphql/server"
+	"golang.org/x/sync/errgroup"
+	"net"
+	"net/http"
+	"os"
+)
+
+var logger = log.Logger("sinner-api")
+
+// Start starts the api server.
+func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler) error {
+	logger.Warnf("starting api server")
+	router := ginhelper.New(logger)
+	// wrap gin with metrics
+	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
+
+	eventDB, err := InitDB(ctx, cfg.DBFlag, cfg.DBPath, handler, cfg.SkipMigrations)
+	if err != nil {
+		return fmt.Errorf("could not initialize database: %w", err)
+	}
+
+	router.Use(handler.Gin())
+	gqlServer.EnableGraphql(router, eventDB, cfg, handler)
+	if err != nil {
+		return fmt.Errorf("could not create grpc server: %w", err)
+	}
+	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
+	g, ctx := errgroup.WithContext(ctx)
+
+	var lc net.ListenConfig
+	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.HTTPPort))
+	if err != nil {
+		return fmt.Errorf("could not listen on port %d", cfg.HTTPPort)
+	}
+
+	m := cmux.New(listener)
+	httpListener := m.Match(cmux.HTTP1Fast())
+
+	g.Go(func() error {
+		//nolint: gosec
+		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
+		err := http.Serve(httpListener, router)
+		if err != nil {
+			return fmt.Errorf("could not serve http: %w", err)
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		err := m.Serve()
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+		return nil
+	})
+	
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("server error: %w", err)
+	}
+
+	return nil
+}
+
+// InitDB initializes a database given a database type and path.
+// TODO: use enum for database type.
+func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
+	logger.Warnf("Starting database connection from api")
+
+	switch {
+	case databaseType == "sqlite":
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
+		}
+
+		metrics.AddGormCallbacks(sqliteStore.DB())
+
+		return sqliteStore, nil
+	case databaseType == "mysql":
+		if os.Getenv("OVERRIDE_MYSQL") != "" {
+			dbname := os.Getenv("MYSQL_DATABASE")
+			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics, skipMigrations)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create mysql store: %w", err)
+			}
+
+			metrics.AddGormCallbacks(mysqlStore.DB())
+
+			return mysqlStore, nil
+		}
+
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics, skipMigrations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create mysql store: %w", err)
+		}
+
+		return mysqlStore, nil
+	default:
+		return nil, fmt.Errorf("invalid databaseType type: %s", databaseType)
+	}
+}

@@ -16,7 +16,6 @@ type OriginInfo {
   contractAddress: String
   blockNumber: Int
   originTxHash: String
-  destinationTxHash: String
   sender: String
   recipient: String
   originChainID: String

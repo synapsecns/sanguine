@@ -1,15 +1,17 @@
 type Query {
   getMessageStatus(
     messageHash: String!
-  ): [MessageStatus]
+  ): MessageStatus
 
   getOriginInfo(
-    messageHash: String!
-  ): [OriginInfo]
+    txHash: String!
+    chainID: Int!
+  ): OriginInfo
 
   getDestinationInfo(
-    messageHash: String!
-  ): [DestinationInfo]
+    txHash: String!
+    chainID: Int!
+  ): DestinationInfo
 
 }
 

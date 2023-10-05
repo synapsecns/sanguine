@@ -67,7 +67,6 @@ type ComplexityRoot struct {
 		ContractAddress    func(childComplexity int) int
 		DeliveryTip        func(childComplexity int) int
 		DestinationChainID func(childComplexity int) int
-		DestinationTxHash  func(childComplexity int) int
 		ExecutionTip       func(childComplexity int) int
 		GasDrop            func(childComplexity int) int
 		GasLimit           func(childComplexity int) int
@@ -85,16 +84,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetDestinationInfo func(childComplexity int, messageHash string) int
+		GetDestinationInfo func(childComplexity int, txHash string, chainID int) int
 		GetMessageStatus   func(childComplexity int, messageHash string) int
-		GetOriginInfo      func(childComplexity int, messageHash string) int
+		GetOriginInfo      func(childComplexity int, txHash string, chainID int) int
 	}
 }
 
 type QueryResolver interface {
-	GetMessageStatus(ctx context.Context, messageHash string) ([]*model.MessageStatus, error)
-	GetOriginInfo(ctx context.Context, messageHash string) ([]*model.OriginInfo, error)
-	GetDestinationInfo(ctx context.Context, messageHash string) ([]*model.DestinationInfo, error)
+	GetMessageStatus(ctx context.Context, messageHash string) (*model.MessageStatus, error)
+	GetOriginInfo(ctx context.Context, txHash string, chainID int) (*model.OriginInfo, error)
+	GetDestinationInfo(ctx context.Context, txHash string, chainID int) (*model.DestinationInfo, error)
 }
 
 type executableSchema struct {
@@ -231,13 +230,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OriginInfo.DestinationChainID(childComplexity), true
 
-	case "OriginInfo.destinationTxHash":
-		if e.complexity.OriginInfo.DestinationTxHash == nil {
-			break
-		}
-
-		return e.complexity.OriginInfo.DestinationTxHash(childComplexity), true
-
 	case "OriginInfo.executionTip":
 		if e.complexity.OriginInfo.ExecutionTip == nil {
 			break
@@ -346,7 +338,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDestinationInfo(childComplexity, args["messageHash"].(string)), true
+		return e.complexity.Query.GetDestinationInfo(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
 
 	case "Query.getMessageStatus":
 		if e.complexity.Query.GetMessageStatus == nil {
@@ -370,7 +362,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOriginInfo(childComplexity, args["messageHash"].(string)), true
+		return e.complexity.Query.GetOriginInfo(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
 
 	}
 	return 0, false
@@ -474,15 +466,17 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 	{Name: "../schema/queries.graphql", Input: `type Query {
   getMessageStatus(
     messageHash: String!
-  ): [MessageStatus]
+  ): MessageStatus
 
   getOriginInfo(
-    messageHash: String!
-  ): [OriginInfo]
+    txHash: String!
+    chainID: Int!
+  ): OriginInfo
 
   getDestinationInfo(
-    messageHash: String!
-  ): [DestinationInfo]
+    txHash: String!
+    chainID: Int!
+  ): DestinationInfo
 
 }
 
@@ -506,7 +500,6 @@ type OriginInfo {
   contractAddress: String
   blockNumber: Int
   originTxHash: String
-  destinationTxHash: String
   sender: String
   recipient: String
   originChainID: String
@@ -567,14 +560,23 @@ func (ec *executionContext) field_Query_getDestinationInfo_args(ctx context.Cont
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["messageHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageHash"))
+	if tmp, ok := rawArgs["txHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txHash"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["messageHash"] = arg0
+	args["txHash"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainID"] = arg1
 	return args, nil
 }
 
@@ -597,14 +599,23 @@ func (ec *executionContext) field_Query_getOriginInfo_args(ctx context.Context, 
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["messageHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageHash"))
+	if tmp, ok := rawArgs["txHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txHash"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["messageHash"] = arg0
+	args["txHash"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainID"] = arg1
 	return args, nil
 }
 
@@ -1302,47 +1313,6 @@ func (ec *executionContext) fieldContext_OriginInfo_originTxHash(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _OriginInfo_destinationTxHash(ctx context.Context, field graphql.CollectedField, obj *model.OriginInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_OriginInfo_destinationTxHash(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DestinationTxHash, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_OriginInfo_destinationTxHash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "OriginInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _OriginInfo_sender(ctx context.Context, field graphql.CollectedField, obj *model.OriginInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OriginInfo_sender(ctx, field)
 	if err != nil {
@@ -1981,9 +1951,9 @@ func (ec *executionContext) _Query_getMessageStatus(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.MessageStatus)
+	res := resTmp.(*model.MessageStatus)
 	fc.Result = res
-	return ec.marshalOMessageStatus2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, field.Selections, res)
+	return ec.marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getMessageStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2034,7 +2004,7 @@ func (ec *executionContext) _Query_getOriginInfo(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOriginInfo(rctx, fc.Args["messageHash"].(string))
+		return ec.resolvers.Query().GetOriginInfo(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2043,9 +2013,9 @@ func (ec *executionContext) _Query_getOriginInfo(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.OriginInfo)
+	res := resTmp.(*model.OriginInfo)
 	fc.Result = res
-	return ec.marshalOOriginInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, field.Selections, res)
+	return ec.marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getOriginInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2064,8 +2034,6 @@ func (ec *executionContext) fieldContext_Query_getOriginInfo(ctx context.Context
 				return ec.fieldContext_OriginInfo_blockNumber(ctx, field)
 			case "originTxHash":
 				return ec.fieldContext_OriginInfo_originTxHash(ctx, field)
-			case "destinationTxHash":
-				return ec.fieldContext_OriginInfo_destinationTxHash(ctx, field)
 			case "sender":
 				return ec.fieldContext_OriginInfo_sender(ctx, field)
 			case "recipient":
@@ -2128,7 +2096,7 @@ func (ec *executionContext) _Query_getDestinationInfo(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDestinationInfo(rctx, fc.Args["messageHash"].(string))
+		return ec.resolvers.Query().GetDestinationInfo(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2137,9 +2105,9 @@ func (ec *executionContext) _Query_getDestinationInfo(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.DestinationInfo)
+	res := resTmp.(*model.DestinationInfo)
 	fc.Result = res
-	return ec.marshalODestinationInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, field.Selections, res)
+	return ec.marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getDestinationInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4205,8 +4173,6 @@ func (ec *executionContext) _OriginInfo(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._OriginInfo_blockNumber(ctx, field, obj)
 		case "originTxHash":
 			out.Values[i] = ec._OriginInfo_originTxHash(ctx, field, obj)
-		case "destinationTxHash":
-			out.Values[i] = ec._OriginInfo_destinationTxHash(ctx, field, obj)
 		case "sender":
 			out.Values[i] = ec._OriginInfo_sender(ctx, field, obj)
 		case "recipient":
@@ -4708,6 +4674,21 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5002,47 +4983,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalODestinationInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx context.Context, sel ast.SelectionSet, v []*model.DestinationInfo) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx context.Context, sel ast.SelectionSet, v *model.DestinationInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5082,93 +5022,11 @@ func (ec *executionContext) marshalOMessageStateLastSeen2ᚖgithubᚗcomᚋsynap
 	return v
 }
 
-func (ec *executionContext) marshalOMessageStatus2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx context.Context, sel ast.SelectionSet, v []*model.MessageStatus) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx context.Context, sel ast.SelectionSet, v *model.MessageStatus) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._MessageStatus(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOOriginInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx context.Context, sel ast.SelectionSet, v []*model.OriginInfo) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
 }
 
 func (ec *executionContext) marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx context.Context, sel ast.SelectionSet, v *model.OriginInfo) graphql.Marshaler {

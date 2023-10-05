@@ -13,18 +13,65 @@ import (
 )
 
 // GetMessageStatus is the resolver for the getMessageStatus field.
-func (r *queryResolver) GetMessageStatus(ctx context.Context, messageHash string) ([]*model.MessageStatus, error) {
-	panic(fmt.Errorf("not implemented: GetMessageStatus - getMessageStatus"))
+func (r *queryResolver) GetMessageStatus(ctx context.Context, messageHash string) (*model.MessageStatus, error) {
+	messageStatus, err := r.DB.RetrieveMessageStatus(ctx, messageHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving message status: %w", err)
+	}
+	convertedMessageStatus := &model.MessageStatus{
+		MessageHash:       messageStatus.MessageHash,
+		OriginTxHash:      messageStatus.OriginTxHash,
+		DestinationTxHash: messageStatus.DestinationTxHash}
+
+	return convertedMessageStatus, nil
 }
 
 // GetOriginInfo is the resolver for the getOriginInfo field.
-func (r *queryResolver) GetOriginInfo(ctx context.Context, messageHash string) ([]*model.OriginInfo, error) {
-	panic(fmt.Errorf("not implemented: GetOriginInfo - getOriginInfo"))
+func (r *queryResolver) GetOriginInfo(ctx context.Context, txHash string, chainID int) (*model.OriginInfo, error) {
+	originSent, err := r.DB.RetrieveOriginSent(ctx, uint32(chainID), txHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving origin sent data: %w", err)
+	}
+	return &model.OriginInfo{
+		MessageHash:        &originSent.MessageHash,
+		ContractAddress:    &originSent.ContractAddress,
+		BlockNumber:        intPtr(int(originSent.BlockNumber)),
+		OriginTxHash:       &originSent.TxHash,
+		Sender:             &originSent.Sender,
+		Recipient:          &originSent.Recipient,
+		OriginChainID:      strPtr(fmt.Sprintf("%d", originSent.ChainID)),
+		DestinationChainID: strPtr(fmt.Sprintf("%d", originSent.DestinationChainID)),
+		Nonce:              intPtr(int(originSent.Nonce)),
+		Message:            strPtr(string(originSent.Message)),
+		OptimisticSeconds:  strPtr(fmt.Sprintf("%d", originSent.OptimisticSeconds)),
+		MessageFlag:        strPtr(fmt.Sprintf("%d", originSent.MessageFlag)),
+		SummitTip:          &originSent.SummitTip,
+		AttestationTip:     &originSent.AttestationTip,
+		ExecutionTip:       &originSent.ExecutionTip,
+		DeliveryTip:        &originSent.DeliveryTip,
+		Version:            intPtr(int(originSent.Version)),
+		GasLimit:           intPtr(int(originSent.GasLimit)),
+		GasDrop:            &originSent.GasDrop,
+	}, nil
 }
 
 // GetDestinationInfo is the resolver for the getDestinationInfo field.
-func (r *queryResolver) GetDestinationInfo(ctx context.Context, messageHash string) ([]*model.DestinationInfo, error) {
-	panic(fmt.Errorf("not implemented: GetDestinationInfo - getDestinationInfo"))
+func (r *queryResolver) GetDestinationInfo(ctx context.Context, txHash string, chainID int) (*model.DestinationInfo, error) {
+	// Call the database function to retrieve the executed data
+	executed, err := r.DB.RetrieveExecuted(ctx, uint32(chainID), txHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving destination info: %w", err)
+	}
+	return &model.DestinationInfo{
+		ContractAddress: &executed.ContractAddress,
+		BlockNumber:     intPtr(int(executed.BlockNumber)),
+		TxHash:          &executed.TxHash,
+		TxIndex:         intPtr(int(executed.TxIndex)),
+		MessageHash:     &executed.MessageHash,
+		ChainID:         intPtr(int(executed.ChainID)),
+		RemoteDomain:    intPtr(int(executed.RemoteDomain)),
+		Success:         &executed.Success,
+	}, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

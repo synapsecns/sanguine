@@ -11,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
 	"github.com/synapsecns/sanguine/services/sinner/db"
-	"github.com/synapsecns/sanguine/services/sinner/fetcher"
 	"github.com/synapsecns/sanguine/services/sinner/graphql/server/graph"
 	resolvers "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/resolver"
 	"time"
@@ -25,13 +24,12 @@ const (
 )
 
 // EnableGraphql enables the sinner graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.EventDB, fetcher fetcher.ScribeFetcher, config serverConfig.Config, handler metrics.Handler) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.EventDB, config serverConfig.Config, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB:      consumerDB,
-				Fetcher: fetcher,
-				Config:  config,
+				DB:     consumerDB,
+				Config: config,
 			}},
 		),
 	)

@@ -16,8 +16,12 @@ import (
 type Config struct {
 	// HTTPPort is the http port for the api
 	HTTPPort uint16 `yaml:"http_port"`
-	// DBAddress is the address of the database
-	DBAddress string `yaml:"db_address"`
+	// DBPath is the address of the database
+	DBPath string `yaml:"db_path"`
+	// DBFlag is the address of the database
+	DBFlag string `yaml:"db_flag"`
+	// SkipMigrations skips the database migrations.
+	SkipMigrations bool `yaml:"skip_migrations"`
 	// HydrateCache is a flag for enabling cache hydration.
 	HydrateCache bool `yaml:"hydrate_cache"`
 	// ScribeURL is the URL of the Scribe server.
@@ -69,7 +73,7 @@ func (c *Config) IsValid() error {
 		return fmt.Errorf("bridge_config_address, %w", config.ErrRequiredGlobalField)
 	case c.BridgeConfigChainID == 0:
 		return fmt.Errorf("bridge_config_chain_id, %w", config.ErrRequiredGlobalField)
-	case c.DBAddress == "":
+	case c.DBPath == "":
 		return fmt.Errorf("db_address, %w", config.ErrRequiredGlobalField)
 	}
 	intSet := collection.Set[uint32]{}

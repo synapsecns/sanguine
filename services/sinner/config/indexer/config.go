@@ -46,6 +46,12 @@ type Config struct {
 	ScribeURL string `yaml:"scribe_url"`
 	// Chains stores the chain configurations.
 	Chains []ChainConfig `yaml:"chains"`
+	// DBPath is the path to the database.
+	DBPath string `yaml:"db_path"`
+	// DBFlag is the flag of the database.
+	DBFlag string `yaml:"db_flag"`
+	// SkipMigrations skips db migrations.
+	SkipMigrations bool `yaml:"skip_migrations"`
 }
 
 // ChainConfig is the configuration for a chain.

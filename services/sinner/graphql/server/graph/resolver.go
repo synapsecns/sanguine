@@ -3,7 +3,6 @@ package graph
 import (
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
 	"github.com/synapsecns/sanguine/services/sinner/db"
-	"github.com/synapsecns/sanguine/services/sinner/fetcher"
 )
 
 // This file will not be regenerated automatically.
@@ -14,7 +13,6 @@ import (
 //
 //go:generate go run github.com/synapsecns/sanguine/services/sinner/graphql/contrib/client
 type Resolver struct {
-	DB      db.EventDB
-	Fetcher fetcher.ScribeFetcher
-	Config  serverConfig.Config
+	DB     db.EventDB
+	Config serverConfig.Config
 }

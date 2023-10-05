@@ -11,15 +11,15 @@ query GetMessageStatus($messageHash: String!) {
 }
 
 
-query GetOriginInfo($messageHash: String!) {
+query GetOriginInfo($txHash: String!, $chainID: Int!) {
   response: getOriginInfo(
-    messageHash: $messageHash
+    txHash: $txHash,
+    chainID: $chainID
   ) {
     messageHash
     contractAddress
     blockNumber
     originTxHash
-    destinationTxHash
     sender
     recipient
     originChainID
@@ -38,10 +38,10 @@ query GetOriginInfo($messageHash: String!) {
   }
 }
 
-query GetDestinationInfo($messageHash: String!) {
+query GetDestinationInfo($txHash: String!, $chainID: Int!) {
   response: getDestinationInfo(
-    messageHash: $messageHash
-  ) {
+    txHash: $txHash,
+    chainID: $chainID  ) {
     contractAddress
     blockNumber
     txHash
