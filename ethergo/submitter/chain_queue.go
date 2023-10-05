@@ -3,6 +3,11 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3/module/eth"
@@ -14,10 +19,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"sort"
-	"sync"
-	"time"
 )
 
 // chainQueue is a single use queue for a single chain.
@@ -109,6 +110,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
 func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
+	fmt.Printf("storeAndSubmit: %v\n", calls)
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -123,14 +125,19 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 	}()
 
 	go func() {
+		fmt.Println("SUBMITTING")
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
+		fmt.Printf("batch err: %v\n", err)
+		fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
 		cancelStore()
 		for i := range c.reprocessQueue {
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
+				fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
+				fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
 			}
 		}
 

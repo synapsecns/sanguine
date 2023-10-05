@@ -401,12 +401,19 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	return nil
 }
 
+var cachedGasBlock *types.Header
+
 // getGasBlock gets the gas block for the given chain.
 func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM) (gasBlock *types.Header, err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasBlock")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if cachedGasBlock != nil {
+		fmt.Printf("returning cached gas block: %v with fee %v\n", cachedGasBlock.Hash(), cachedGasBlock.BaseFee)
+		return cachedGasBlock, nil
+	}
 
 	err = retry.WithBackoff(ctx, func(ctx context.Context) (err error) {
 		gasBlock, err = chainClient.HeaderByNumber(ctx, nil)
