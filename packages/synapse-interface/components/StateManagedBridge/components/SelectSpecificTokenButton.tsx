@@ -88,13 +88,14 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
-      {!isLoadingExchangeRate ? (
+      {isLoadingExchangeRate ? (
         <LoadingSpinner className="mr-8 opacity-50" />
       ) : (
         <>
           {exchangeRate && isBestExchangeRate && (
             <OptionTag type={BestOptionType.RATE} />
           )}
+
           {exchangeRate && (
             <OptionDetails
               exchangeRate={exchangeRate}
