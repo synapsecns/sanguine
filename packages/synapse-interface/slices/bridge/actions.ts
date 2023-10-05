@@ -34,3 +34,6 @@ export const resetFetchedBridgeQuotes = createAction<void>(
 export const updateDebouncedFromValue = createAction<string>(
   'bridge/updateDebouncedFromValue'
 )
+export const updateDebouncedToTokensFromValue = createAction<string>(
+  'bridge/updateDebouncedToTokensFromValue'
+)

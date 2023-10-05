@@ -22,6 +22,7 @@ import {
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
   updateDebouncedFromValue,
+  updateDebouncedToTokensFromValue,
 } from './actions'
 import { fetchAndStoreBridgeQuotes } from './hooks'
 import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
@@ -40,6 +41,7 @@ export interface BridgeState {
 
   fromValue: string
   debouncedFromValue: string
+  debouncedToTokensFromValue: string
   bridgeQuote: BridgeQuote
   toTokensBridgeQuotes: BridgeQuoteResponse[]
   toTokensBridgeQuotesStatus: FetchState
@@ -78,6 +80,7 @@ export const initialState: BridgeState = {
 
   fromValue: '',
   debouncedFromValue: '',
+  debouncedToTokensFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   toTokensBridgeQuotes: [],
   toTokensBridgeQuotesStatus: FetchState.IDLE,
@@ -473,6 +476,12 @@ export const bridgeSlice = createSlice({
         updateDebouncedFromValue,
         (state, action: PayloadAction<string>) => {
           state.debouncedFromValue = action.payload
+        }
+      )
+      .addCase(
+        updateDebouncedToTokensFromValue,
+        (state, action: PayloadAction<string>) => {
+          state.debouncedToTokensFromValue = action.payload
         }
       )
       .addCase(
