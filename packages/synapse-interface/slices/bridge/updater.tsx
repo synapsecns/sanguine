@@ -54,15 +54,16 @@ export default function Updater(): null {
     }
   }, [fromValue])
 
+  // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const alternativeDebounceDelay = 500
+    const alternativeOptionsDebounceDelay = 500
 
-    const alternativeDebounceTimer = setTimeout(() => {
-      dispatch(updateDebouncedToTokensFromValue(fromValue))
-    }, alternativeDebounceDelay)
+    const alternativeOptionsDebounceTimer = setTimeout(() => {
+      dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
+    }, alternativeOptionsDebounceDelay)
 
     return () => {
-      clearTimeout(alternativeDebounceTimer)
+      clearTimeout(alternativeOptionsDebounceTimer)
     }
   }, [debouncedFromValue])
 
@@ -103,7 +104,6 @@ export default function Updater(): null {
     fromChainId,
     toChainId,
     fromToken,
-    // debouncedFromValue,
     debouncedToTokensFromValue,
     toTokens,
     synapseSDK,
