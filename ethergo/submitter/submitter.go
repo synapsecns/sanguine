@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,12 +28,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
-	"math/big"
-	"reflect"
-	"runtime"
-	"sync"
-	"time"
 )
 
 var logger = log.Logger("ethergo-submitter")
@@ -373,10 +374,17 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		// TODO: cache
 		gasBlock, err := t.getGasBlock(ctx, client)
 		if err != nil {
+			fmt.Printf("could not get gas block: %v\n", err)
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
 		}
 
 		// if the prev tx was greater than this one, we should bump the gas price from that point
+
+		if gasBlock == nil {
+			fmt.Println("gasBlock is nil")
+		} else {
+			fmt.Printf("comparing gas with prevTx %v, transactor %v, gasBlock.BaseFee %v\n", prevTx, transactor, gasBlock.BaseFee)
+		}
 		comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
 		if comparison > 0 {
 			if prevTx.Type() == types.LegacyTxType {
@@ -386,6 +394,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
 			}
 		}
+		fmt.Printf("new GasTipCap: %v, gasPrice: %v, GasFeeCap: %v\n", transactor.GasTipCap, transactor.GasPrice, transactor.GasFeeCap)
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
 	return nil
