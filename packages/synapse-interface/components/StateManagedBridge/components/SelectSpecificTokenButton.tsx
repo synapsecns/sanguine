@@ -21,6 +21,7 @@ const SelectSpecificTokenButton = ({
   selectedToken,
   onClick,
   alternateBackground = false,
+  isLoadingExchangeRate = false,
   exchangeRate,
   isBestExchangeRate = false,
   estimatedDurationInSeconds,
@@ -32,6 +33,7 @@ const SelectSpecificTokenButton = ({
   selectedToken: Token
   onClick: () => void
   alternateBackground?: boolean
+  isLoadingExchangeRate?: boolean
   exchangeRate?: string
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number

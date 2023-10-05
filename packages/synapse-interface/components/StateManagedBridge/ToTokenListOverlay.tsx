@@ -266,6 +266,9 @@ export const ToTokenListOverlay = () => {
                     //     4
                     //   )
                     // }
+                    isLoadingExchangeRate={
+                      toTokensBridgeQuotesStatus === FetchState.LOADING
+                    }
                     isBestExchangeRate={idx === 0}
                     exchangeRate={formatBigIntToString(
                       token?.exchangeRate,
