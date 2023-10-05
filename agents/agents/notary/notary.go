@@ -167,15 +167,11 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 
 	// Fetch the attestation nonce corresponding to the current snapRoot.
 	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
-	fmt.Printf("got attNonce: %v\n", attNonce)
+	fmt.Printf("got attNonce: %v with err: %v\n", attNonce, err)
 	if err != nil {
 		span.AddEvent("GetLatestNotaryAttestation failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
-		return
-	}
-	if attNonce == 0 {
-		fmt.Println("attNonce is 0, not fetching attestation")
 		return
 	}
 
