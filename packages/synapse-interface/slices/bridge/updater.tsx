@@ -27,11 +27,12 @@ export default function Updater(): null {
     toTokens,
     fromValue,
     debouncedFromValue,
+    debouncedToTokensFromValue,
   }: BridgeState = useBridgeState()
 
   // Debounce user input to prevent unnecessary quote fetching
   useEffect(() => {
-    const debounceDelay = 400
+    const debounceDelay = 200
     const alternativeDebounceDelay = 500
     const animationDelay = 200
     // dispatch(setIsLoading(true))
@@ -53,7 +54,7 @@ export default function Updater(): null {
     return () => {
       clearTimeout(debounceTimer)
       clearTimeout(animationTimer)
-      clearTimeout(alternativeDebounceDelay)
+      clearTimeout(alternativeDebounceTimer)
       dispatch(setIsLoading(false))
     }
   }, [fromValue])
@@ -61,7 +62,7 @@ export default function Updater(): null {
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
     if (fromChainId && toChainId && fromToken && synapseSDK) {
-      const hasFromValue: boolean = debouncedFromValue !== ''
+      const hasFromValue: boolean = debouncedToTokensFromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
           return {
@@ -72,7 +73,7 @@ export default function Updater(): null {
             destinationToken: token as Token,
             amount: stringToBigInt(
               hasFromValue
-                ? debouncedFromValue
+                ? debouncedToTokensFromValue
                 : getDefaultBridgeAmount(fromToken),
               fromToken.decimals[fromChainId]
             ),
@@ -95,7 +96,8 @@ export default function Updater(): null {
     fromChainId,
     toChainId,
     fromToken,
-    debouncedFromValue,
+    // debouncedFromValue,
+    debouncedToTokensFromValue,
     toTokens,
     synapseSDK,
   ])
