@@ -30,12 +30,13 @@ export default function Updater(): null {
     debouncedToTokensFromValue,
   }: BridgeState = useBridgeState()
 
-  // Debounce user input to prevent unnecessary quote fetching
+  /**
+   * Debounce user input to fetch primary bridge quote
+   * Delay loading animation when user input updates
+   */
   useEffect(() => {
     const debounceDelay = 200
-    const alternativeDebounceDelay = 500
     const animationDelay = 200
-    // dispatch(setIsLoading(true))
 
     const animationTimer = setTimeout(() => {
       if (debouncedFromValue !== initialState.debouncedFromValue) {
@@ -47,17 +48,23 @@ export default function Updater(): null {
       dispatch(updateDebouncedFromValue(fromValue))
     }, debounceDelay)
 
+    return () => {
+      clearTimeout(debounceTimer)
+      clearTimeout(animationTimer)
+    }
+  }, [fromValue])
+
+  useEffect(() => {
+    const alternativeDebounceDelay = 500
+
     const alternativeDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(fromValue))
     }, alternativeDebounceDelay)
 
     return () => {
-      clearTimeout(debounceTimer)
-      clearTimeout(animationTimer)
       clearTimeout(alternativeDebounceTimer)
-      dispatch(setIsLoading(false))
     }
-  }, [fromValue])
+  }, [debouncedFromValue])
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
