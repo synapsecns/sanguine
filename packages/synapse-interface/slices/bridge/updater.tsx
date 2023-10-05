@@ -35,7 +35,7 @@ export default function Updater(): null {
    * Delay loading animation when user input updates
    */
   useEffect(() => {
-    const debounceDelay = 200
+    const debounceDelay = 300
     const animationDelay = 200
 
     const animationTimer = setTimeout(() => {
@@ -56,16 +56,16 @@ export default function Updater(): null {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const alternativeOptionsDebounceDelay = 500
+    const alternativeOptionsDebounceDelay = 1000
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
-      dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
+      dispatch(updateDebouncedToTokensFromValue(fromValue))
     }, alternativeOptionsDebounceDelay)
 
     return () => {
       clearTimeout(alternativeOptionsDebounceTimer)
     }
-  }, [debouncedFromValue])
+  }, [fromValue])
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
