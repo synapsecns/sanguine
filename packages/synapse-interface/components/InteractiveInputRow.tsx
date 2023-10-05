@@ -1,6 +1,6 @@
 import React from 'react'
 import Button from '@tw/Button'
-import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import { getMenuItemBgForCoin } from '@styles/tokens'
 import { Token } from '@types'
 
@@ -155,11 +155,11 @@ const InteractiveInputRow = ({
               <>
                 {loadingLabel ? (
                   <div className="flex items-center justify-center space-x-5 animate-pulse">
-                    <ButtonLoadingSpinner className="mr-2" />
+                    <ButtonLoadingDots className="mr-2" />
                     <span>{loadingLabel}</span>
                   </div>
                 ) : (
-                  <ButtonLoadingSpinner />
+                  <ButtonLoadingDots />
                 )}
               </>
             ) : (

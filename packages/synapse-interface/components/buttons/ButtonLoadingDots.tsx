@@ -1,6 +1,6 @@
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
-export default function ButtonLoadingSpinner({
+export default function ButtonLoadingDots({
   className,
 }: {
   className?: string
