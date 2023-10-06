@@ -53,7 +53,7 @@ const {
   toTokens,
 } = getRoutePossibilities({
   fromChainId: ETHEREUM.id,
-  fromToken: ETH,
+  fromToken: null,
   toChainId: null,
   toToken: null,
 })
