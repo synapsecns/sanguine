@@ -115,13 +115,17 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 			span.AddEvent("GetLatestAgentState failed", trace.WithAttributes(
 				attribute.String("err", err.Error()),
 			))
+			fmt.Printf("error getting myLatestState: %v\n", err)
+			continue
 		}
+		fmt.Printf("got myLatestState: %v with nonce %v\n", myLatestState, myLatestState.Nonce())
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
 			n.summitMyLatestStates[originID] = myLatestState
 			span.AddEvent("Got my summit latest state", trace.WithAttributes(
 				attribute.Int("nonce", int(myLatestState.Nonce())),
 				attribute.Int("originID", int(originID)),
 			))
+			fmt.Printf("Set summitMyLatestStates for origin %d with nonce %v\n", originID, myLatestState.Nonce())
 		}
 
 		span.End()
