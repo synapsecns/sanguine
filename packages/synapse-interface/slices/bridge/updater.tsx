@@ -32,7 +32,7 @@ export default function Updater(): null {
   }: BridgeState = useBridgeState()
 
   /**
-   * Debounce user input to fetch primary bridge quote
+   * Debounce user input to fetch primary bridge quote (in ms)
    * Delay loading animation when user input updates
    */
   useEffect(() => {
@@ -90,25 +90,21 @@ export default function Updater(): null {
         }
       )
 
-      dispatch(
-        fetchAndStoreBridgeQuotes({
-          requests: bridgeQuoteRequests,
-          synapseSDK,
-        })
-      )
+      if (hasFromValue) {
+        console.log('fetching')
+        dispatch(
+          fetchAndStoreBridgeQuotes({
+            requests: bridgeQuoteRequests,
+            synapseSDK,
+          })
+        )
+      }
     }
 
     if (!fromToken) {
       dispatch(resetFetchedBridgeQuotes())
     }
-  }, [
-    // fromChainId,
-    // toChainId,
-    // fromToken,
-    // synapseSDK,
-    debouncedToTokensFromValue,
-    toTokens,
-  ])
+  }, [debouncedToTokensFromValue, toTokens])
 
   return null
 }
