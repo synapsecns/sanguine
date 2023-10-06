@@ -109,7 +109,7 @@ clickhouse:
         storage: "30Gi"
 
 indexer:
-  enabled: true
+  enabled: false
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -220,6 +220,9 @@ files:
     chains:
       1:
         chain_id: 1
+        avg_block_time: 13
+        get_logs_range: 256
+        get_logs_batch_amount: 1
         fetch_block_increment: 1000
         max_goroutines: 10
         contracts:
