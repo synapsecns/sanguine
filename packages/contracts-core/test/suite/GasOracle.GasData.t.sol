@@ -17,6 +17,13 @@ contract GasOracleGasDataTest is GasOracleTest {
         GasOracle(gasOracle).setGasData(0, 0, 0, 0, 0, 0, 0);
     }
 
+    function test_setSummitTip_revert_notOwner(address caller) public {
+        vm.assume(caller != GasOracle(gasOracle).owner());
+        expectRevertNotOwner();
+        vm.prank(caller);
+        GasOracle(gasOracle).setSummitTip(0);
+    }
+
     function test_getGasData(RawGasData256 memory rgd256) public {
         setGasData(localDomain(), rgd256);
         RawGasData memory rgd = rgd256.compress();
