@@ -24,6 +24,7 @@ export default function Updater(): null {
     fromChainId,
     toChainId,
     fromToken,
+    toToken,
     toTokens,
     fromValue,
     debouncedFromValue,
@@ -56,7 +57,7 @@ export default function Updater(): null {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const alternativeOptionsDebounceDelay = 1000
+    const alternativeOptionsDebounceDelay = 500
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
@@ -69,7 +70,7 @@ export default function Updater(): null {
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
-    if (fromChainId && toChainId && fromToken && synapseSDK) {
+    if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
       const hasFromValue: boolean = debouncedToTokensFromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
@@ -101,12 +102,12 @@ export default function Updater(): null {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [
-    fromChainId,
-    toChainId,
-    fromToken,
+    // fromChainId,
+    // toChainId,
+    // fromToken,
+    // synapseSDK,
     debouncedToTokensFromValue,
     toTokens,
-    synapseSDK,
   ])
 
   return null

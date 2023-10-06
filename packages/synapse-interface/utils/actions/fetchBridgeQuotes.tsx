@@ -101,7 +101,7 @@ export async function fetchBridgeQuote(
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
   synapseSDK: any,
-  maxConcurrentRequests: number = 10, // Set the maximum number of concurrent requests
+  maxConcurrentRequests: number = 3, // Set the maximum number of concurrent requests
   requestDelay: number = 1000 // Set the delay between requests in milliseconds (adjust as needed)
 ): Promise<BridgeQuoteResponse[]> {
   try {
