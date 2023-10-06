@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import {
   setFromChainId,

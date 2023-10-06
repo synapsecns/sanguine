@@ -1,19 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, setIsLoading, initialState } from './reducer'
-import {
-  BridgeQuoteRequest,
-  fetchBridgeQuotes,
-} from '@/utils/actions/fetchBridgeQuotes'
+import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
 import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
 import {
   resetFetchedBridgeQuotes,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from './actions'
-import { BridgeQuote, Token } from '@/utils/types'
+import { Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
@@ -37,18 +34,18 @@ export default function Updater(): null {
    * Delay loading animation when user input updates
    */
   useEffect(() => {
-    const debounceDelay = 300
-    const animationDelay = 200
+    const DEBOUNCE_DELAY = 300
+    const ANIMATION_DELAY = 200
 
     const animationTimer = setTimeout(() => {
       if (debouncedFromValue !== initialState.debouncedFromValue) {
         dispatch(setIsLoading(true))
       }
-    }, animationDelay)
+    }, ANIMATION_DELAY)
 
     const debounceTimer = setTimeout(() => {
       dispatch(updateDebouncedFromValue(fromValue))
-    }, debounceDelay)
+    }, DEBOUNCE_DELAY)
 
     return () => {
       clearTimeout(debounceTimer)
