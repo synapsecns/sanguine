@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "./libs/Errors.sol";
+import {MAX_SUMMIT_TIP} from "./libs/Constants.sol";
+import {
+    IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet, SummitTipTooHigh
+} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {Number, NumberLib} from "./libs/stack/Number.sol";
 import {Request, RequestLib} from "./libs/stack/Request.sol";
@@ -85,6 +88,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
 
     /// @notice MVP function to set the summit tip.
     function setSummitTip(uint256 summitTipWei) external onlyOwner {
+        if (summitTipWei > MAX_SUMMIT_TIP) revert SummitTipTooHigh();
         _summitTipWei = summitTipWei;
     }
 
