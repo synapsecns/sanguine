@@ -23,43 +23,53 @@ contract SafeCallTest is SynapseLibraryTest {
         vm.label(address(calleeReturnData), "calleeReturnData");
     }
 
-    function test_safeCall_callsRecipient() public {
+    function test_safeCall() public {
         bytes memory payload = abi.encodeCall(CalleeMock.setSecret, (42));
+        // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
+        vm.expectCall(address(callee), 0, 100_000, payload);
         // 100k gas should be enough for a simple call
         bool success = libHarness.safeCall(address(callee), 100_000, 0, payload);
         assertTrue(success);
         assertEq(callee.secret(), 42);
     }
 
-    function test_safeCall_callsRecipient_withReturnData() public {
+    function test_safeCall_withReturnData() public {
         bytes memory payload = abi.encodeCall(CalleeReturnDataMock.setSecret, (42));
+        // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
+        vm.expectCall(address(calleeReturnData), 0, 100_000, payload);
         // 100k gas should be enough for a simple call
         bool success = libHarness.safeCall(address(calleeReturnData), 100_000, 0, payload);
         assertTrue(success);
         assertEq(calleeReturnData.secret(), 42);
     }
 
-    function test_safeCall_forwardsMsgValue() public {
+    function test_safeCall_withMsgValue() public {
         uint256 msgValue = 1337;
         deal(address(libHarness), msgValue);
         bytes memory payload = abi.encodeCall(CalleeMock.setSecret, (42));
+        // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
+        vm.expectCall(address(callee), msgValue, 100_000, payload);
         // 100k gas should be enough for a simple call
         bool success = libHarness.safeCall(address(callee), 100_000, msgValue, payload);
         assertTrue(success);
+        assertEq(callee.secret(), 42);
         assertEq(address(callee).balance, msgValue);
     }
 
-    function test_safeCall_forwardsMsgValue_withReturnData() public {
+    function test_safeCall_withMsgValueAndReturnData() public {
         uint256 msgValue = 1337;
         deal(address(libHarness), msgValue);
         bytes memory payload = abi.encodeCall(CalleeReturnDataMock.setSecret, (42));
+        // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
+        vm.expectCall(address(calleeReturnData), msgValue, 100_000, payload);
         // 100k gas should be enough for a simple call
         bool success = libHarness.safeCall(address(calleeReturnData), 100_000, msgValue, payload);
         assertTrue(success);
+        assertEq(calleeReturnData.secret(), 42);
         assertEq(address(calleeReturnData).balance, msgValue);
     }
 
-    function test_safeCall_setsGasLimit() public {
+    function test_safeCall_returnsFalse_onRecipientOutOfGas() public {
         bytes memory payload = abi.encodeCall(CalleeMock.setSecret, (42));
         // 10k gas should not be enough for a storage write
         bool success = libHarness.safeCall(address(callee), 10_000, 0, payload);
