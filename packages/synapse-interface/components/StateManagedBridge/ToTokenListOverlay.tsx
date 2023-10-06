@@ -228,6 +228,10 @@ export const ToTokenListOverlay = () => {
       bridgeQuotesMatchDestination,
     ])
 
+  const totalPossibleTokens: number = useMemo(() => {
+    return Array.isArray(totalPossibleTokens) ? orderedPossibleTokens.length : 0
+  }, [orderedPossibleTokens])
+
   return (
     <div
       ref={overlayRef}
@@ -261,10 +265,10 @@ export const ToTokenListOverlay = () => {
                     active={idx === currentIdx}
                     showAllChains={false}
                     isLoadingExchangeRate={isLoadingExchangeRate}
-                    isBestExchangeRate={idx === 0}
+                    isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
                     exchangeRate={formatBigIntToString(
                       token?.exchangeRate,
-                      18, //manually set this for now
+                      18,
                       4
                     )}
                     estimatedDurationInSeconds={
