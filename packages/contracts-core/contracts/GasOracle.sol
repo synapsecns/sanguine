@@ -48,7 +48,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     mapping(uint32 => GasData) internal _gasData;
 
     // Fixed value for the summit tip, denominated in Ethereum Mainnet Wei.
-    uint256 internal _summitTipWei;
+    uint256 public summitTipWei;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -87,9 +87,9 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     }
 
     /// @notice MVP function to set the summit tip.
-    function setSummitTip(uint256 summitTipWei) external onlyOwner {
-        if (summitTipWei > MAX_SUMMIT_TIP) revert SummitTipTooHigh();
-        _summitTipWei = summitTipWei;
+    function setSummitTip(uint256 summitTipWei_) external onlyOwner {
+        if (summitTipWei_ > MAX_SUMMIT_TIP) revert SummitTipTooHigh();
+        summitTipWei = summitTipWei_;
     }
 
     /// @inheritdoc InterfaceGasOracle
@@ -144,7 +144,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         // TODO: figure out unchecked math
         // We store the fixed value of the summit tip in Ethereum Mainnet Wei already.
         // To convert it to local Ether, we need to divide by the local Ether price (using BWAD math).
-        uint256 summitTip = (_summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
+        uint256 summitTip = (summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
         // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
         uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
         // Total cost for Executor to execute a message on the remote chain has three components:
