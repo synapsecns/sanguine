@@ -71,7 +71,7 @@ export default function Updater(): null {
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
     if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
-      const hasFromValue: boolean = debouncedToTokensFromValue !== ''
+      const userInputExists: boolean = debouncedToTokensFromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
           return {
@@ -81,7 +81,7 @@ export default function Updater(): null {
             destinationTokenAddress: token?.addresses[toChainId] as Address,
             destinationToken: token as Token,
             amount: stringToBigInt(
-              hasFromValue
+              userInputExists
                 ? debouncedToTokensFromValue
                 : getDefaultBridgeAmount(fromToken),
               fromToken.decimals[fromChainId]
@@ -90,7 +90,7 @@ export default function Updater(): null {
         }
       )
 
-      if (hasFromValue) {
+      if (userInputExists) {
         console.log('fetching')
         dispatch(
           fetchAndStoreBridgeQuotes({
