@@ -57,7 +57,7 @@ export default function Updater(): null {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const alternativeOptionsDebounceDelay = 500
+    const alternativeOptionsDebounceDelay = 1000
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
@@ -70,27 +70,29 @@ export default function Updater(): null {
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
-    const userInputExists: boolean = debouncedToTokensFromValue !== ''
-    if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
-      const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
-        (token: Token) => {
-          return {
-            originChainId: fromChainId,
-            originToken: fromToken as Token,
-            destinationChainId: toChainId,
-            destinationTokenAddress: token?.addresses[toChainId] as Address,
-            destinationToken: token as Token,
-            amount: stringToBigInt(
-              userInputExists
-                ? debouncedToTokensFromValue
-                : getDefaultBridgeAmount(fromToken),
-              fromToken.decimals[fromChainId]
-            ),
+    const userInputExists: boolean =
+      debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
+    const userInputIsZero: boolean = hasOnlyZeros(debouncedFromValue)
+
+    if (userInputExists && !userInputIsZero) {
+      if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
+        const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
+          (token: Token) => {
+            return {
+              originChainId: fromChainId,
+              originToken: fromToken as Token,
+              destinationChainId: toChainId,
+              destinationTokenAddress: token?.addresses[toChainId] as Address,
+              destinationToken: token as Token,
+              amount: stringToBigInt(
+                userInputExists
+                  ? debouncedToTokensFromValue
+                  : getDefaultBridgeAmount(fromToken),
+                fromToken.decimals[fromChainId]
+              ),
+            }
           }
-        }
-      )
-      if (userInputExists) {
-        console.log('fetching')
+        )
         dispatch(
           fetchAndStoreBridgeQuotes({
             requests: bridgeQuoteRequests,
@@ -99,12 +101,17 @@ export default function Updater(): null {
         )
       }
     }
+
     if (!fromToken || !userInputExists) {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [debouncedToTokensFromValue, toTokens])
 
   return null
+}
+
+function hasOnlyZeros(input: string): boolean {
+  return /^0+(\.0+)?$/.test(input)
 }
 
 enum SwappableTypes {
