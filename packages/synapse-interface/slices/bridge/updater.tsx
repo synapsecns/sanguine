@@ -16,6 +16,7 @@ import {
 import { BridgeQuote, Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
@@ -72,7 +73,7 @@ export default function Updater(): null {
   useEffect(() => {
     const userInputExists: boolean =
       debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
-    const userInputIsZero: boolean = hasOnlyZeros(debouncedFromValue)
+    const userInputIsZero: boolean = hasOnlyZeroes(debouncedFromValue)
 
     if (userInputExists && !userInputIsZero) {
       if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
@@ -108,10 +109,6 @@ export default function Updater(): null {
   }, [debouncedToTokensFromValue, toTokens])
 
   return null
-}
-
-function hasOnlyZeros(input: string): boolean {
-  return /^0+(\.0+)?$/.test(input)
 }
 
 enum SwappableTypes {
