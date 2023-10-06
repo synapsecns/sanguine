@@ -171,16 +171,23 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
+  const isLoadingExchangeRate = useMemo(() => {
+    const hasRequiredUserInput: boolean = Boolean(
+      fromChainId && toChainId && fromToken && toToken
+    )
+    const isFetchLoading: boolean =
+      toTokensBridgeQuotesStatus === FetchState.IDLE ||
+      toTokensBridgeQuotesStatus === FetchState.LOADING
+
+    return hasRequiredUserInput && isFetchLoading
+  }, [fromChainId, toChainId, fromToken, toToken, toTokensBridgeQuotesStatus])
+
   const bridgeQuotesMatchDestination: boolean = useMemo(() => {
     return (
       Array.isArray(toTokensBridgeQuotes) &&
       toTokensBridgeQuotes[0]?.destinationChainId === toChainId
     )
   }, [toTokensBridgeQuotes, toChainId])
-
-  const bestExchangeRateToken: Token = useMemo(() => {
-    return locateBestExchangeRateToken(toTokensBridgeQuotes)
-  }, [toTokensBridgeQuotes])
 
   const orderedPossibleTokens: TokenWithExchangeRate[] | Token[] =
     useMemo(() => {
@@ -253,9 +260,7 @@ export const ToTokenListOverlay = () => {
                     selectedToken={toToken}
                     active={idx === currentIdx}
                     showAllChains={false}
-                    isLoadingExchangeRate={
-                      toTokensBridgeQuotesStatus === FetchState.LOADING
-                    }
+                    isLoadingExchangeRate={isLoadingExchangeRate}
                     isBestExchangeRate={idx === 0}
                     exchangeRate={formatBigIntToString(
                       token?.exchangeRate,
