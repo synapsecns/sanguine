@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {SummitTipTooHigh} from "../../contracts/libs/Errors.sol";
 
 import {RawGasData, RawGasData256} from "../utils/libs/SynapseStructs.t.sol";
 import {Random, GasOracle, GasOracleTest} from "./GasOracle.t.sol";
@@ -22,6 +23,16 @@ contract GasOracleGasDataTest is GasOracleTest {
         expectRevertNotOwner();
         vm.prank(caller);
         GasOracle(gasOracle).setSummitTip(0);
+    }
+
+    function test_setSummitTip_allowsUpperBound() public {
+        GasOracle(gasOracle).setSummitTip(0.01 ether);
+        assertEq(GasOracle(gasOracle).summitTipWei(), 0.01 ether);
+    }
+
+    function test_setSummitTip_revert_higherThanUpperBound() public {
+        vm.expectRevert(SummitTipTooHigh.selector);
+        GasOracle(gasOracle).setSummitTip(0.01 ether + 1 wei);
     }
 
     function test_getGasData(RawGasData256 memory rgd256) public {
