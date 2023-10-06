@@ -28,72 +28,77 @@ export async function fetchBridgeQuote(
   synapseSDK: any
 ): Promise<BridgeQuoteResponse> {
   if (request && synapseSDK) {
-    const {
-      originChainId,
-      originToken,
-      destinationChainId,
-      destinationTokenAddress,
-      destinationToken,
-      amount,
-    }: BridgeQuoteRequest = request
-    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-      await synapseSDK.bridgeQuote(
+    try {
+      const {
         originChainId,
+        originToken,
         destinationChainId,
-        originToken.addresses[originChainId],
         destinationTokenAddress,
-        amount
+        destinationToken,
+        amount,
+      }: BridgeQuoteRequest = request
+      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
+        await synapseSDK.bridgeQuote(
+          originChainId,
+          destinationChainId,
+          originToken.addresses[originChainId],
+          destinationTokenAddress,
+          amount
+        )
+
+      const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
+      const originTokenDecimals: number = originToken.decimals[originChainId]
+      const adjustedFeeAmount: bigint =
+        BigInt(feeAmount) < amount
+          ? BigInt(feeAmount)
+          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+
+      const originMinWithSlippage = subtractSlippage(
+        originQuery?.minAmountOut ?? 0n,
+        'ONE_TENTH',
+        null
+      )
+      const destMinWithSlippage = subtractSlippage(
+        destQuery?.minAmountOut ?? 0n,
+        'ONE_TENTH',
+        null
       )
 
-    const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
-    const originTokenDecimals: number = originToken.decimals[originChainId]
-    const adjustedFeeAmount: bigint =
-      BigInt(feeAmount) < amount
-        ? BigInt(feeAmount)
-        : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+      let newOriginQuery = { ...originQuery }
+      newOriginQuery.minAmountOut = originMinWithSlippage
 
-    const originMinWithSlippage = subtractSlippage(
-      originQuery?.minAmountOut ?? 0n,
-      'ONE_TENTH',
-      null
-    )
-    const destMinWithSlippage = subtractSlippage(
-      destQuery?.minAmountOut ?? 0n,
-      'ONE_TENTH',
-      null
-    )
+      let newDestQuery = { ...destQuery }
+      newDestQuery.minAmountOut = destMinWithSlippage
 
-    let newOriginQuery = { ...originQuery }
-    newOriginQuery.minAmountOut = originMinWithSlippage
-
-    let newDestQuery = { ...destQuery }
-    newDestQuery.minAmountOut = destMinWithSlippage
-
-    return {
-      outputAmount: toValueBigInt,
-      outputAmountString: commify(
-        formatBigIntToString(
+      return {
+        outputAmount: toValueBigInt,
+        outputAmountString: commify(
+          formatBigIntToString(
+            toValueBigInt,
+            destinationToken.decimals[destinationChainId],
+            8
+          )
+        ),
+        routerAddress,
+        allowance: null, // update for allowances
+        exchangeRate: calculateExchangeRate(
+          amount - adjustedFeeAmount,
+          originToken.decimals[originChainId],
           toValueBigInt,
-          destinationToken.decimals[destinationChainId],
-          8
-        )
-      ),
-      routerAddress,
-      allowance: null, // update for allowances
-      exchangeRate: calculateExchangeRate(
-        amount - adjustedFeeAmount,
-        originToken.decimals[originChainId],
-        toValueBigInt,
-        destinationToken.decimals[destinationChainId]
-      ),
-      feeAmount,
-      delta: BigInt(maxAmountOut.toString()),
-      quotes: {
-        originQuery: newOriginQuery,
-        destQuery: newDestQuery,
-      },
-      destinationToken: request.destinationToken,
-      destinationChainId: destinationChainId,
+          destinationToken.decimals[destinationChainId]
+        ),
+        feeAmount,
+        delta: BigInt(maxAmountOut.toString()),
+        quotes: {
+          originQuery: newOriginQuery,
+          destQuery: newDestQuery,
+        },
+        destinationToken: request.destinationToken,
+        destinationChainId: destinationChainId,
+      }
+    } catch (error) {
+      console.error('Error fetching bridge quote:', error)
+      throw error
     }
   }
 }
@@ -129,8 +134,8 @@ export async function fetchBridgeQuotes(
     }
 
     return bridgeQuotes
-  } catch (e) {
-    console.error('error from fetchBridgeQuotes: ', e)
+  } catch (error) {
+    console.error('Error fetching bridge quotes: ', error)
     return []
   }
 }
