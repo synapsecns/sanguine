@@ -63,9 +63,9 @@ const {
   toTokens,
 } = getRoutePossibilities({
   fromChainId: ETHEREUM.id,
-  fromToken: ETH,
-  toChainId: ARBITRUM.id,
-  toToken: ETH,
+  fromToken: null,
+  toChainId: null,
+  toToken: null,
 })
 
 export const initialState: BridgeState = {

@@ -72,7 +72,7 @@ export default function Updater(): null {
       debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
     const userInputIsZero: boolean = hasOnlyZeroes(debouncedFromValue)
 
-    if (userInputExists && !userInputIsZero) {
+    if (!userInputIsZero) {
       if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
         const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
           (token: Token) => {
