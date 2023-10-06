@@ -70,8 +70,8 @@ export default function Updater(): null {
 
   // Conditions for fetching alternative bridge quotes
   useEffect(() => {
+    const userInputExists: boolean = debouncedToTokensFromValue !== ''
     if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
-      const userInputExists: boolean = debouncedToTokensFromValue !== ''
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => {
           return {
@@ -89,7 +89,6 @@ export default function Updater(): null {
           }
         }
       )
-
       if (userInputExists) {
         console.log('fetching')
         dispatch(
@@ -100,8 +99,7 @@ export default function Updater(): null {
         )
       }
     }
-
-    if (!fromToken) {
+    if (!fromToken || !userInputExists) {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [debouncedToTokensFromValue, toTokens])
