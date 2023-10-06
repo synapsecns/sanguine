@@ -55,11 +55,11 @@ export default function Updater(): null {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const alternativeOptionsDebounceDelay = 1000
+    const ALTERNATE_OPTIONS_DEBOUNCE_DELAY = 1000
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
-    }, alternativeOptionsDebounceDelay)
+    }, ALTERNATE_OPTIONS_DEBOUNCE_DELAY)
 
     return () => {
       clearTimeout(alternativeOptionsDebounceTimer)
