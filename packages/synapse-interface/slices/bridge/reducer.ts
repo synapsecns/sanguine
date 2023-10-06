@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
-import { ETH } from '@/constants/tokens/bridgeable'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
+import { ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import {
   getRoutePossibilities,

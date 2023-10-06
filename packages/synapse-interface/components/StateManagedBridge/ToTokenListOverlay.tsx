@@ -22,10 +22,6 @@ import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
-import {
-  locateBestExchangeRateToken,
-  BridgeQuoteResponse,
-} from '@/utils/actions/fetchBridgeQuotes'
 
 interface TokenWithExchangeRate extends Token {
   exchangeRate: bigint
