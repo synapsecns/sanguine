@@ -72,33 +72,33 @@ export default function Updater(): null {
       debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
     const userInputIsZero: boolean = hasOnlyZeroes(debouncedFromValue)
 
-    // if (userInputExists && !userInputIsZero) {
-    if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
-      const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
-        (token: Token) => {
-          return {
-            originChainId: fromChainId,
-            originToken: fromToken as Token,
-            destinationChainId: toChainId,
-            destinationTokenAddress: token?.addresses[toChainId] as Address,
-            destinationToken: token as Token,
-            amount: stringToBigInt(
-              userInputExists
-                ? debouncedToTokensFromValue
-                : getDefaultBridgeAmount(fromToken),
-              fromToken.decimals[fromChainId]
-            ),
+    if (userInputExists && !userInputIsZero) {
+      if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
+        const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
+          (token: Token) => {
+            return {
+              originChainId: fromChainId,
+              originToken: fromToken as Token,
+              destinationChainId: toChainId,
+              destinationTokenAddress: token?.addresses[toChainId] as Address,
+              destinationToken: token as Token,
+              amount: stringToBigInt(
+                userInputExists
+                  ? debouncedToTokensFromValue
+                  : getDefaultBridgeAmount(fromToken),
+                fromToken.decimals[fromChainId]
+              ),
+            }
           }
-        }
-      )
-      dispatch(
-        fetchAndStoreBridgeQuotes({
-          requests: bridgeQuoteRequests,
-          synapseSDK,
-        })
-      )
+        )
+        dispatch(
+          fetchAndStoreBridgeQuotes({
+            requests: bridgeQuoteRequests,
+            synapseSDK,
+          })
+        )
+      }
     }
-    // }
 
     if (!fromToken || !userInputExists) {
       dispatch(resetFetchedBridgeQuotes())
