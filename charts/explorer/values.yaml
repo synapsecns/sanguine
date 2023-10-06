@@ -214,6 +214,7 @@ files:
     refresh_rate: 1
     scribe_url: https://scribe.interoperability.institute/graphql
     rpc_url: https://rpc.interoperability.institute/confirmations/1/rpc/
+    http_port: 5080
     db_address: tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000
     bridge_config_address: 0x5217c83ca75559B1f8a8803824E5b7ac233A12a1
     bridge_config_chain_id: 1
