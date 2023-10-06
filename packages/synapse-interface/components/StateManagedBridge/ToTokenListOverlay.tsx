@@ -225,7 +225,7 @@ export const ToTokenListOverlay = () => {
     ])
 
   const totalPossibleTokens: number = useMemo(() => {
-    return Array.isArray(totalPossibleTokens) ? orderedPossibleTokens.length : 0
+    return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
 
   return (
