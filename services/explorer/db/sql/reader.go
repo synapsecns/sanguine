@@ -34,6 +34,17 @@ func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	return res, nil
 }
 
+// GetString gets a string from a given query.
+func (s *Store) GetString(ctx context.Context, query string) (string, error) {
+	var res string
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return "", fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
 // GetStringArray returns a string array for a given query.
 func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, error) {
 	var res []string
@@ -49,6 +60,18 @@ func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, err
 // GetBridgeEvent returns a bridge event.
 func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent, error) {
 	var res BridgeEvent
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return &res, nil
+}
+
+// GetMVBridgeEvent gets a bridge event from the materialized view table.
+func (s *Store) GetMVBridgeEvent(ctx context.Context, query string) (*HybridBridgeEvent, error) {
+	var res HybridBridgeEvent
 
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {

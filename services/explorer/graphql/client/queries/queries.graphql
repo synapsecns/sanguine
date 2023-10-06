@@ -140,6 +140,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     harmony
     canto
     dogechain
+    base
     total
   }
 }
@@ -263,10 +264,11 @@ query GetLeaderboard($duration: Duration, $chainID: Int, $useMv: Boolean, $page:
 }
 
 
-query GetOriginBridgeTx($chainID: Int, $txnHash: String) {
+query GetOriginBridgeTx($chainID: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
   response: getOriginBridgeTx(
     chainID: $chainID
     txnHash: $txnHash
+    bridgeType: $bridgeType
   ) {
     bridgeTx {
       chainID
@@ -285,15 +287,17 @@ query GetOriginBridgeTx($chainID: Int, $txnHash: String) {
     pending
     type
     kappa
+    kappaStatus
   }
 }
-query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int) {
+query GetDestinationBridgeTx($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
   response: getDestinationBridgeTx(
     chainID: $chainID
     address: $address
     kappa: $kappa
     timestamp: $timestamp
-
+    bridgeType: $bridgeType
+    historical: $historical
   ) {
     bridgeTx {
       chainID
@@ -312,5 +316,6 @@ query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $t
     pending
     type
     kappa
+    kappaStatus
   }
 }

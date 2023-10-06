@@ -4,8 +4,8 @@ import { createAction } from '@reduxjs/toolkit'
 import { Token } from '@/utils/types'
 
 export enum PortfolioTabs {
-  HOME = 'home',
   PORTFOLIO = 'portfolio',
+  ACTIVITY = 'activity',
 }
 
 export enum FetchState {
@@ -18,6 +18,10 @@ export enum FetchState {
 export const setActiveTab = createAction<PortfolioTabs>(
   'portfolio/setActiveTab'
 )
+export const typeSearchInput = createAction<{ searchInput: string }>(
+  'portfolio/typeSearchInput'
+)
+
 export const updateSingleTokenAllowance = createAction<{
   chainId: number
   allowance: bigint
@@ -27,3 +31,4 @@ export const updateSingleTokenAllowance = createAction<{
 export const resetPortfolioState = createAction<void>(
   'portfolio/resetPortfolioState'
 )
+export const resetSearchState = createAction<void>('portfolio/resetSearchState')

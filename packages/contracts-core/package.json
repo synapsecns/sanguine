@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -34,6 +34,10 @@
     "solhint-plugin-prettier": "0.0.5",
     "typechain": "8.0.0",
     "typescript": "4.7.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
   },
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",

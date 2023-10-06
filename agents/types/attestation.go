@@ -2,12 +2,11 @@ package types
 
 import (
 	"context"
-	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 const (
@@ -21,6 +20,7 @@ const (
 
 // Attestation is the attestation interface.
 type Attestation interface {
+	Encoder
 	// SnapshotRoot is the root of the Snapshot Merkle Tree.
 	SnapshotRoot() [32]byte
 	// DataHash is the agent root and SnapGasHash combined into a single hash.
@@ -32,7 +32,7 @@ type Attestation interface {
 	// Timestamp is the timestamp when the attestation was created in Summit.
 	Timestamp() *big.Int
 	// SignAttestation signs the attestation
-	SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
+	SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error)
 }
 
 type attestation struct {
@@ -74,25 +74,23 @@ func (a attestation) Timestamp() *big.Int {
 	return a.timestamp
 }
 
-func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	encodedAttestation, err := EncodeAttestation(a)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
+func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
+	var attestationSalt string
+	if valid {
+		attestationSalt = AttestationValidSalt
+	} else {
+		attestationSalt = AttestationInvalidSalt
 	}
+	return signEncoder(ctx, signer, a, attestationSalt)
+}
 
-	attestationSalt := crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
+// GetAttestationDataHash generates the data hash from the agent root and SnapGasHash.
+func GetAttestationDataHash(agentRoot [32]byte, snapGasHash [32]byte) [32]byte {
+	concatenatedBytes := append(agentRoot[:], snapGasHash[:]...)
+	dataHash := crypto.Keccak256(concatenatedBytes)
 
-	hashedEncodedAttestation := crypto.Keccak256Hash(encodedAttestation).Bytes()
-	toSign := append(attestationSalt.Bytes(), hashedEncodedAttestation...)
+	var dataHashB32 [32]byte
+	copy(dataHashB32[:], dataHash)
 
-	hashedAttestation, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash attestation: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
-	}
-	return signature, encodedAttestation, hashedAttestation, nil
+	return dataHashB32
 }

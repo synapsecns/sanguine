@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
 import { animated } from 'react-spring'
-import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -29,7 +28,7 @@ import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
@@ -60,11 +59,14 @@ import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfoli
 import {
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
-} from '@/slices/portfolio/hooks'
-import {
-  usePortfolioBalances,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
+import {
+  updatePendingBridgeTransaction,
+  addPendingBridgeTransaction,
+  removePendingBridgeTransaction,
+} from '@/slices/bridge/actions'
+import { getTimeMinutesFromNow } from '@/utils/time'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
@@ -346,11 +348,24 @@ const StateManagedBridge = () => {
       expectedReceivedAmount: bridgeQuote.outputAmountString,
       slippage: bridgeQuote.exchangeRate,
     })
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    dispatch(
+      addPendingBridgeTransaction({
+        id: currentTimestamp,
+        originChain: CHAINS_BY_ID[fromChainId],
+        originToken: fromToken,
+        originValue: fromValue,
+        destinationChain: CHAINS_BY_ID[toChainId],
+        destinationToken: toToken,
+        transactionHash: undefined,
+        timestamp: undefined,
+        isSubmitted: false,
+      })
+    )
     try {
       const wallet = await getWalletClient({
         chainId: fromChainId,
       })
-
       const toAddress =
         destinationAddress && isAddress(destinationAddress)
           ? destinationAddress
@@ -396,6 +411,14 @@ const StateManagedBridge = () => {
           expectedReceivedAmount: bridgeQuote.outputAmountString,
           slippage: bridgeQuote.exchangeRate,
         })
+        dispatch(
+          updatePendingBridgeTransaction({
+            id: currentTimestamp,
+            timestamp: undefined,
+            transactionHash: tx,
+            isSubmitted: false,
+          })
+        )
         dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
@@ -422,23 +445,13 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
-        setTimeout(async () => {
-          await dispatch(
-            fetchAndStoreSingleTokenBalance({
-              token: fromToken,
-              routerAddress: bridgeQuote?.routerAddress as Address,
-              address: address,
-              chainId: fromChainId,
-            })
-          )
-        }, 2000)
-
         return tx
       } catch (error) {
         segmentAnalyticsEvent(`[Bridge] error bridging`, {
           address,
           errorCode: error.code,
         })
+        dispatch(removePendingBridgeTransaction(currentTimestamp))
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
@@ -447,6 +460,7 @@ const StateManagedBridge = () => {
         address,
         errorCode: error.code,
       })
+      dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
@@ -546,14 +560,6 @@ const StateManagedBridge = () => {
             </div>
           </div>
         </Card>
-      </div>
-      <div className="mt-8">
-        <BridgeWatcher
-          fromChainId={fromChainId}
-          toChainId={toChainId}
-          address={address}
-          destinationAddress={destinationAddress}
-        />
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { DropDownArrowSvg } from './components/DropDownArrowSvg'
+import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getNetworkButtonBgClassNameActive,
   getNetworkButtonBorderActive,
@@ -24,14 +24,14 @@ export const FromChainSelector = () => {
       <div className="flex items-center space-x-3">
         <div>
           <img
-            src={fromChain.chainImg.src}
-            alt={fromChain.name}
+            src={fromChain?.chainImg?.src}
+            alt={fromChain?.name}
             className="w-6 h-6 rounded-sm"
           />
         </div>
         <div className="text-left">
           <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">{fromChain.name}</div>
+          <div className="text-md text-primaryTextColor">{fromChain?.name}</div>
         </div>
         <DropDownArrowSvg />
       </div>

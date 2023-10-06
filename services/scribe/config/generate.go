@@ -54,7 +54,7 @@ func (c configList) ContractsForChain(chainID int) (configs []ContractConfig) {
 // this requires scribe to be live.
 //
 //nolint:cyclop
-func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
+func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
 	contracts, err := hardhat.GetDeployments(deployPath)
 	if err != nil {
 		return fmt.Errorf("could not get deployments: %w", err)
@@ -136,12 +136,10 @@ OUTER:
 			if attempt < 20 {
 				_ = awsTime.SleepWithContext(ctx, time.Second*2)
 				continue
-			} else {
-				return block, fmt.Errorf("could not get tx receipt: %w", err)
 			}
-		} else {
-			break OUTER
+			return block, fmt.Errorf("could not get tx receipt: %w", err)
 		}
+		break OUTER
 	}
 
 	return txReceipt.BlockNumber.Uint64(), nil

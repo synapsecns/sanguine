@@ -117,6 +117,7 @@ type GetDailyStatisticsByChain struct {
 		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
 		Canto     *float64 "json:\"canto\" graphql:\"canto\""
 		Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
+		Base      *float64 "json:\"base\" graphql:\"base\""
 		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
@@ -232,9 +233,10 @@ type GetOriginBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending *bool               "json:\"pending\" graphql:\"pending\""
-		Type    *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa   *string             "json:\"kappa\" graphql:\"kappa\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDestinationBridgeTx struct {
@@ -253,9 +255,10 @@ type GetDestinationBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending *bool               "json:\"pending\" graphql:\"pending\""
-		Type    *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa   *string             "json:\"kappa\" graphql:\"kappa\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -462,6 +465,7 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		harmony
 		canto
 		dogechain
+		base
 		total
 	}
 }
@@ -636,8 +640,8 @@ func (c *Client) GetLeaderboard(ctx context.Context, duration *model.Duration, c
 	return &res, nil
 }
 
-const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int, $txnHash: String) {
-	response: getOriginBridgeTx(chainID: $chainID, txnHash: $txnHash) {
+const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
+	response: getOriginBridgeTx(chainID: $chainID, txnHash: $txnHash, bridgeType: $bridgeType) {
 		bridgeTx {
 			chainID
 			destinationChainID
@@ -655,14 +659,16 @@ const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int, $txnH
 		pending
 		type
 		kappa
+		kappaStatus
 	}
 }
 `
 
-func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginBridgeTx, error) {
+func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginBridgeTx, error) {
 	vars := map[string]interface{}{
-		"chainID": chainID,
-		"txnHash": txnHash,
+		"chainID":    chainID,
+		"txnHash":    txnHash,
+		"bridgeType": bridgeType,
 	}
 
 	var res GetOriginBridgeTx
@@ -673,8 +679,8 @@ func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *s
 	return &res, nil
 }
 
-const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int, $kappa: String, $address: String, $timestamp: Int) {
-	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp) {
+const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
+	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp, bridgeType: $bridgeType, historical: $historical) {
 		bridgeTx {
 			chainID
 			destinationChainID
@@ -692,16 +698,19 @@ const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: 
 		pending
 		type
 		kappa
+		kappaStatus
 	}
 }
 `
 
-func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID *int, kappa *string, address *string, timestamp *int, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
+func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID int, kappa string, address string, timestamp int, bridgeType model.BridgeType, historical *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
 	vars := map[string]interface{}{
-		"chainID":   chainID,
-		"kappa":     kappa,
-		"address":   address,
-		"timestamp": timestamp,
+		"chainID":    chainID,
+		"kappa":      kappa,
+		"address":    address,
+		"timestamp":  timestamp,
+		"bridgeType": bridgeType,
+		"historical": historical,
 	}
 
 	var res GetDestinationBridgeTx

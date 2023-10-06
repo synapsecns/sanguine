@@ -128,7 +128,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
+      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchNetwork(fromChainId),
       pendingLabel: 'Switching chains',
     }

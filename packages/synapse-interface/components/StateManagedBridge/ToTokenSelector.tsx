@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { DropDownArrowSvg } from './components/DropDownArrowSvg'
+import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
@@ -17,8 +17,8 @@ export const ToTokenSelector = () => {
   let buttonContent
 
   if (toToken) {
-    const src = toToken.icon.src
-    const symbol = toToken.symbol
+    const src = toToken?.icon?.src
+    const symbol = toToken?.symbol
 
     buttonContent = (
       <div className="flex items-center space-x-2">

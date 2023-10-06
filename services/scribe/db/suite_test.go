@@ -3,17 +3,19 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"os"
-	"sync"
-	"sync/atomic"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -54,9 +56,18 @@ func (t *DBSuite) SetupTest() {
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
+
 	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	t.Require().Nil(err)
 }
 

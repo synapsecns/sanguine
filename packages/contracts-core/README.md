@@ -1,6 +1,25 @@
-# @synapsecns/contracts-core
+<br/>
+<p align="center">
+<a href="https://interchain.synapseprotocol.com/" target="_blank">
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/assets/interchain-logo.svg" width="225" alt="Synapse Interchain logo">
+</a>
+</p>
+<br/>
 
-`@synapsecns/contracts-core` contain the Solidity contracts used within the Synapse Optimistic messaging system
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/synapsecns/sanguine/foundry-tests.yml?style=flat-square&label=Forge%20Tests)](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml)
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/synapsecns/sanguine/solidity.yml?style=flat-square&label=Slither)](https://github.com/synapsecns/sanguine/actions/workflows/solidity.yml)
+[![Static Badge](https://img.shields.io/badge/Forge-Docs-f?style=flat-square&logo=gitbook)](https://interchain-contracts.synapseprotocol.com/)
+[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fcontracts-core?style=flat-square)](https://www.npmjs.com/package/@synapsecns/contracts-core)
+
+
+`@synapsecns/contracts-core` contain the Solidity contracts used within the Synapse Interchain Network messaging system.
+
+# Usage
+These contracts can be installed with:
+
+`npm i @synapsecns/contracts-core`
+
+Please refer to our [usage guide](https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network) or [examples](contracts/client/TestClient.sol)
 
 ## Directory Structure
 
