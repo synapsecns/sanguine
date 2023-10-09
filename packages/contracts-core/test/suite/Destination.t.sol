@@ -225,6 +225,20 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(lightManager.agentRoot(), ra._agentRoot);
     }
 
+    function test_passAgentRoot_whenNotaryInDispute(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra._agentRoot != agentRootLM);
+        // Submit attestation that updates `nextAgentRoot`
+        test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        // Open dispute
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_LOCAL].agent});
+        // This should remove the pending root
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
+        assertFalse(rootPending);
+        assertEq(lightManager.agentRoot(), agentRootLM);
+    }
+
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
 
     function test_getGasData(Random memory random) public {
