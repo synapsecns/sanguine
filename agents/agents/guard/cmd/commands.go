@@ -146,7 +146,7 @@ var GuardRunCommand = &cli.Command{
 
 				for _, client := range guardConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 					for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-						backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", guardConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+						backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/confirmations/%d/rpc/%d", guardConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 						if err != nil {
 							return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", guardConfig.BaseOmnirpcURL, client.ChainID))
 						}
