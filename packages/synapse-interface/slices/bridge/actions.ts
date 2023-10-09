@@ -28,3 +28,4 @@ export const removePendingBridgeTransaction = createAction<number>(
 export const updatePendingBridgeTransactions = createAction<
   PendingBridgeTransaction[]
 >('bridge/updatePendingBridgeTransactions')
+export const resetBridgeInputs = createAction<void>('bridge/resetBridgeInputs')
