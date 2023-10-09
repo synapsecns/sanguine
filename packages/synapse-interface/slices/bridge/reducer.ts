@@ -2,7 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import {
   getRoutePossibilities,
@@ -19,6 +18,7 @@ import {
   removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
+  resetBridgeInputs,
 } from './actions'
 import { findValidToken } from '@/utils/findValidToken'
 
@@ -508,6 +508,12 @@ export const bridgeSlice = createSlice({
           state.pendingBridgeTransactions = action.payload
         }
       )
+      .addCase(resetBridgeInputs, (state) => {
+        state.fromChainId = initialState.fromChainId
+        state.fromToken = initialState.fromToken
+        state.toChainId = initialState.toChainId
+        state.toToken = initialState.toToken
+      })
   },
 })
 
