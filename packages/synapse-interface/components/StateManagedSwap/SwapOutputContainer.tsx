@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount } from 'wagmi'
 
-import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
+import LoadingDots from '../ui/tailwind/LoadingDots'
 import { SwapToTokenSelector } from './SwapToTokenSelector'
 import { useSwapState } from '@/slices/swap/hooks'
 
@@ -30,7 +30,7 @@ export const SwapOutputContainer = ({}) => {
           <SwapToTokenSelector />
           <div className="flex ml-4">
             {isLoading ? (
-              <LoadingSpinner className="opacity-50" />
+              <LoadingDots className="opacity-50" />
             ) : (
               <input
                 pattern="[0-9.]+"
