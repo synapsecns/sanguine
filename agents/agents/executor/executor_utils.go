@@ -144,6 +144,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	case merkleIndex+1 > message.Nonce():
 		return nil
 	case merkleIndex+1 < message.Nonce():
+		logger.Warnf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, message.Nonce())
 		return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, message.Nonce())
 	default:
 	}
