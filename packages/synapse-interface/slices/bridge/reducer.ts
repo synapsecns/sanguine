@@ -16,11 +16,17 @@ import {
   PendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
+  resetFetchedBridgeQuotes,
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
   resetBridgeInputs,
+  updateDebouncedFromValue,
+  updateDebouncedToTokensFromValue,
 } from './actions'
+import { fetchAndStoreBridgeQuotes } from './hooks'
+import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
 import { findValidToken } from '@/utils/findValidToken'
+import { FetchState } from '../portfolio/actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -33,7 +39,11 @@ export interface BridgeState {
   toTokens: Token[]
 
   fromValue: string
+  debouncedFromValue: string
+  debouncedToTokensFromValue: string
   bridgeQuote: BridgeQuote
+  toTokensBridgeQuotes: BridgeQuoteResponse[]
+  toTokensBridgeQuotesStatus: FetchState
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
@@ -68,7 +78,11 @@ export const initialState: BridgeState = {
   toTokens,
 
   fromValue: '',
+  debouncedFromValue: '',
+  debouncedToTokensFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
+  toTokensBridgeQuotes: [],
+  toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
@@ -458,6 +472,18 @@ export const bridgeSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(
+        updateDebouncedFromValue,
+        (state, action: PayloadAction<string>) => {
+          state.debouncedFromValue = action.payload
+        }
+      )
+      .addCase(
+        updateDebouncedToTokensFromValue,
+        (state, action: PayloadAction<string>) => {
+          state.debouncedToTokensFromValue = action.payload
+        }
+      )
+      .addCase(
         addPendingBridgeTransaction,
         (state, action: PayloadAction<PendingBridgeTransaction>) => {
           state.pendingBridgeTransactions = [
@@ -513,6 +539,24 @@ export const bridgeSlice = createSlice({
         state.fromToken = initialState.fromToken
         state.toChainId = initialState.toChainId
         state.toToken = initialState.toToken
+      })
+      .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
+        state.toTokensBridgeQuotesStatus = FetchState.LOADING
+      })
+      .addCase(
+        fetchAndStoreBridgeQuotes.fulfilled,
+        (state, action: PayloadAction<BridgeQuoteResponse[]>) => {
+          state.toTokensBridgeQuotes = action.payload
+          state.toTokensBridgeQuotesStatus = FetchState.VALID
+        }
+      )
+      .addCase(fetchAndStoreBridgeQuotes.rejected, (state) => {
+        state.toTokensBridgeQuotesStatus = FetchState.INVALID
+      })
+      .addCase(resetFetchedBridgeQuotes, (state) => {
+        state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
+        state.toTokensBridgeQuotesStatus =
+          initialState.toTokensBridgeQuotesStatus
       })
   },
 })

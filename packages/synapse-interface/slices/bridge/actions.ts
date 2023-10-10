@@ -29,3 +29,12 @@ export const updatePendingBridgeTransactions = createAction<
   PendingBridgeTransaction[]
 >('bridge/updatePendingBridgeTransactions')
 export const resetBridgeInputs = createAction<void>('bridge/resetBridgeInputs')
+export const resetFetchedBridgeQuotes = createAction<void>(
+  'bridge/resetFetchedBridgeQuotes'
+)
+export const updateDebouncedFromValue = createAction<string>(
+  'bridge/updateDebouncedFromValue'
+)
+export const updateDebouncedToTokensFromValue = createAction<string>(
+  'bridge/updateDebouncedToTokensFromValue'
+)

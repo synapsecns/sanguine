@@ -1,7 +1,7 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
-import LoadingSpinner from '@tw/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import {
   commify,
   formatBigIntToPercentString,
@@ -24,7 +24,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
             poolData && poolData.swapFee ? (
               formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -37,7 +37,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -59,7 +59,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -78,7 +78,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
                 )
               )}`
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
