@@ -49,7 +49,7 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://eth.llamarpc.com',
+    primary: 'https://rpc.ankr.com/eth',
     fallback: 'https://1rpc.io/eth',
   },
   explorerUrl: 'https://etherscan.com',
@@ -406,7 +406,7 @@ export const DOGE: Chain = {
 }
 
 export const BASE: Chain = {
-  priorityRank: 1,
+  priorityRank: 90,
   id: 8453,
   chainSymbol: 'ETH',
   name: 'Base',

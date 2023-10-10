@@ -13,6 +13,7 @@ type PortfolioAccordionProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
+  hasNoTokenBalance: boolean
 }
 
 export const PortfolioAccordion = ({
@@ -24,15 +25,19 @@ export const PortfolioAccordion = ({
   portfolioChainId,
   connectedChainId,
   selectedFromChainId,
+  hasNoTokenBalance,
 }: PortfolioAccordionProps) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
-    portfolioChainId === selectedFromChainId
-      ? setIsExpanded(true)
-      : setIsExpanded(false)
-  }, [portfolioChainId, selectedFromChainId])
+    if (!hasNoTokenBalance) {
+      portfolioChainId === selectedFromChainId
+        ? setIsExpanded(true)
+        : setIsExpanded(false)
+    }
+  }, [portfolioChainId, selectedFromChainId, hasNoTokenBalance])
 
   return (
     <div
@@ -54,7 +59,12 @@ export const PortfolioAccordion = ({
           }
         `}
       >
-        <div onClick={handleToggle} className="flex-1 mr-3">
+        <div
+          onClick={handleToggle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="flex-1"
+        >
           <div
             data-test-id="portfolio-accordion-clickable"
             className="flex flex-row justify-between"
@@ -64,7 +74,11 @@ export const PortfolioAccordion = ({
           </div>
         </div>
         {isExpanded && expandedProps}
-        <AccordionIcon isExpanded={isExpanded} onClick={handleToggle} />
+        <AccordionIcon
+          isExpanded={isExpanded}
+          onClick={handleToggle}
+          isHovered={isHovered}
+        />
       </div>
       <div
         data-test-id="portfolio-accordion-contents"
@@ -79,9 +93,11 @@ export const PortfolioAccordion = ({
 export const AccordionIcon = ({
   isExpanded,
   onClick,
+  isHovered,
 }: {
   isExpanded: boolean
   onClick: () => void
+  isHovered: boolean
 }) => {
   return (
     <div
@@ -90,6 +106,7 @@ export const AccordionIcon = ({
       className={`
         p-1 mx-2 border border-surface rounded-full
         cursor-pointer hover:border-transparent active:border-transparent
+        ${isHovered ? 'border-transparent' : 'border-surface'}
       `}
     >
       {isExpanded ? (

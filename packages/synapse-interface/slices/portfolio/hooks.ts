@@ -1,18 +1,20 @@
+import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount, Address } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
-import { FetchState } from './actions'
-import { useAppSelector } from '@/store/hooks'
+import { FetchState, typeSearchInput, resetSearchState } from './actions'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
   getTokenBalances,
+  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { getTokenAllowance } from './../../utils/actions/getTokenAllowance'
-import { TokenAndBalance } from '@/utils/sortTokens'
 import { Token } from '@/utils/types'
+import { initialState } from './reducer'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
@@ -22,11 +24,48 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
 }
 
+export const usePortfolioActionHandlers = (): {
+  onSearchInput: (searchInput: string) => void
+  clearSearchInput: () => void
+  clearSearchResults: () => void
+} => {
+  const dispatch = useAppDispatch()
+
+  const onSearchInput = useCallback(
+    (searchInput: string) => {
+      dispatch(typeSearchInput({ searchInput }))
+    },
+    [dispatch]
+  )
+
+  const clearSearchInput = useCallback(() => {
+    dispatch(typeSearchInput({ searchInput: initialState.searchInput }))
+  }, [dispatch])
+
+  const clearSearchResults = useCallback(() => {
+    dispatch(resetSearchState())
+  }, [dispatch])
+
+  return {
+    onSearchInput,
+    clearSearchInput,
+    clearSearchResults,
+  }
+}
+
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
   'portfolio/fetchAndStorePortfolioBalances',
   async (address: string) => {
     const portfolioData = await fetchPortfolioBalances(address)
     return portfolioData
+  }
+)
+
+export const fetchAndStoreSearchInputPortfolioBalances = createAsyncThunk(
+  'portfolio/fetchAndStoreSearchInputPortfolioBalances',
+  async (address: string) => {
+    const portfolioData = await fetchPortfolioBalances(address)
+    return { ...portfolioData, address }
   }
 )
 

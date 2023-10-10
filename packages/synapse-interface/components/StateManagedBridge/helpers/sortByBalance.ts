@@ -1,11 +1,12 @@
 import _ from 'lodash'
 
 import { Token } from '@/utils/types'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 
 export const hasBalance = (
   t: Token,
   chainId: number,
-  portfolioBalances: any
+  portfolioBalances: NetworkTokenBalancesAndAllowances
 ) => {
   if (!chainId) {
     return false

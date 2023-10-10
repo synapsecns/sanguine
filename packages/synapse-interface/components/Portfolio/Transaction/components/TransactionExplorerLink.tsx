@@ -34,3 +34,11 @@ export const UserExplorerLink = ({
     </div>
   )
 }
+
+export const getTransactionHashExplorerLink = ({
+  transactionHash,
+}: {
+  transactionHash: string
+}) => {
+  return `${EXPLORER_PATH}txs?hash=${transactionHash}`
+}
