@@ -16,6 +16,8 @@ type Config struct {
 	Chains ChainConfigs `yaml:"chains"`
 	// RPCURL is the url of the omnirpc.
 	RPCURL string `yaml:"rpc_url"`
+	// Verbose is used to enable verbose logging.
+	Verbose bool `yaml:"verbose"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
