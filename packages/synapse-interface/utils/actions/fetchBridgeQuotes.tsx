@@ -100,6 +100,8 @@ export async function fetchBridgeQuote(
       console.error('Error fetching bridge quote:', error)
       throw error
     }
+  } else {
+    console.error('Missing request or synapse SDK')
   }
 }
 
