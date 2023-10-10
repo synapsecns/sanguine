@@ -109,7 +109,7 @@ clickhouse:
         storage: "30Gi"
 
 indexer:
-  enabled: true
+  enabled: false
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -176,9 +176,7 @@ server:
   tolerations: []
   args:
     - server
-    - '--port=5080'
-    - '--scribe-url=https://scribe.interoperability.institute/graphql'
-    - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
+    - --config=/config/config.yaml
   ports:
     - name: http
       containerPort: 5080
@@ -216,13 +214,17 @@ files:
     refresh_rate: 1
     scribe_url: https://scribe.interoperability.institute/graphql
     rpc_url: https://rpc.interoperability.institute/confirmations/1/rpc/
+    http_port: 5080
+    db_address: tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000
     bridge_config_address: 0x5217c83ca75559B1f8a8803824E5b7ac233A12a1
     bridge_config_chain_id: 1
     chains:
-    - chain_id: 1
-      fetch_block_increment: 1000
-      max_goroutines: 10
-      contracts:
-        - contract_type: bridge
-          address: 0x2796317b0fF8538F253012862c06787Adfb8cEb6
-          start_block: 15930000
+      1:
+        chain_id: 1
+        avg_block_time: 13
+        get_logs_range: 256
+        get_logs_batch_amount: 1
+        fetch_block_increment: 1000
+        max_goroutines: 10
+        contracts:
+          bridge: 0x2796317b0fF8538F253012862c06787Adfb8cEb6
