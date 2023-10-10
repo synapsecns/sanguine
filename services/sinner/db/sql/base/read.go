@@ -45,9 +45,14 @@ func (s Store) RetrieveLastStoredBlock(ctx context.Context, chainID uint32, addr
 		Where("contract_address = ? AND chain_id = ?", address.String(), chainID).
 		Order("block_number DESC").First(&lastIndexed).Error
 
+	if err.Error() == "record not found" {
+		return 0, nil
+	}
+
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve last stored block: %w", err)
 	}
+
 	return lastIndexed.BlockNumber, nil
 }
 

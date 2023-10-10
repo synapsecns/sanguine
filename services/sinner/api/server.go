@@ -22,7 +22,7 @@ import (
 
 var logger = log.Logger("sinner-api")
 
-// Start starts the api server.
+// Start starts the api server for sinner.
 func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler) error {
 	logger.Warnf("starting api server")
 	router := ginhelper.New(logger)
@@ -69,7 +69,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 		}
 		return nil
 	})
-	
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)
@@ -82,7 +82,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 // TODO: use enum for database type.
 func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
 	logger.Warnf("Starting database connection from api")
-
+	fmt.Println("here", databaseType, path, skipMigrations, metrics)
 	switch {
 	case databaseType == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)

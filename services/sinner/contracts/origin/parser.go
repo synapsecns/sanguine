@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/services/sinner/logger"
 
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -21,10 +22,12 @@ type ParserImpl struct {
 	db db.EventDB
 	// txMap is a map of tx hashes to tx data
 	txMap map[string]sinnerTypes.TxSupplementalInfo
+	// chainID is the chainID of the underlying chain
+	chainID uint32
 }
 
 // NewParser creates a new parser for the origin contract.
-func NewParser(originAddress common.Address, db db.EventDB) (*ParserImpl, error) {
+func NewParser(originAddress common.Address, db db.EventDB, chainID uint32) (*ParserImpl, error) {
 	// Get agents parser to utilize event type parsing.
 	agentsParser, err := origin.NewParser(originAddress)
 	if err != nil {
@@ -41,6 +44,7 @@ func NewParser(originAddress common.Address, db db.EventDB) (*ParserImpl, error)
 		filterer: filter,
 		parser:   agentsParser,
 		db:       db,
+		chainID:  chainID,
 	}
 	return parser, nil
 }
@@ -50,24 +54,36 @@ func (p ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo)
 }
 
 func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
+	fmt.Println("here000", log.Topics, log.TxHash)
+
 	eventType, ok := p.parser.EventType(log)
+	fmt.Println("here", eventType, ok)
+
 	if !ok {
-		return fmt.Errorf("could not parse log event type. Topics: %v", log.Topics)
+		logger.ReportSinnerError(fmt.Errorf("unknown origin log topic"), 0, logger.UnknownTopic)
+		return nil
 	}
 	switch eventType {
 	case origin.SentEvent:
+		fmt.Println("here3")
+
 		parsedEvent, err := p.ParseSent(log)
 		if err != nil {
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
 		}
+		fmt.Println("hererr", parsedEvent.TxHash)
 
 		// TODO go func this
 		err = p.db.StoreOrUpdateMessageStatus(ctx, parsedEvent.TxHash, parsedEvent.MessageHash, sinnerTypes.Origin)
+		fmt.Println("hererr err", err)
+
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}
 
 		err = p.db.StoreOriginSent(ctx, parsedEvent)
+		fmt.Println("hererr err", err)
+
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}
@@ -92,6 +108,9 @@ func (p ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		Nonce:              iFace.Nonce,
 		MessageHash:        string(iFace.MessageHash[:]),
 	}
+
+	parsedEvent.ChainID = p.chainID
+
 	parsedMessage, err := types.DecodeMessage(iFace.Message)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode message. err: %w", err)

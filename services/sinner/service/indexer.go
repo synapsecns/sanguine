@@ -76,7 +76,7 @@ func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64
 				continue
 			}
 
-			var txMap map[string]types.TxSupplementalInfo
+			txMap := make(map[string]types.TxSupplementalInfo)
 			for _, tx := range txs {
 				txMap[tx.TxHash] = tx
 			}
@@ -115,10 +115,14 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 					// If the end block is not specified in the config (livefill) the last block stored will be used.
 					if endHeight == 0 {
-						startHeight, err = c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
+						storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
 						if err != nil {
 							return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
 						}
+						if storedStartHeight > startHeight {
+							startHeight = storedStartHeight
+						}
+
 						err = retry.WithBackoff(contractCtx, func(ctx context.Context) error {
 							endHeight, err = c.fetcher.FetchLastIndexed(contractCtx, c.config.ChainID, contract.Address)
 							if err != nil {
@@ -126,6 +130,11 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 							}
 							return nil
 						})
+
+						if err != nil {
+							return fmt.Errorf("could not get last indexed height, %w", err)
+						}
+
 					}
 
 					sem := make(chan struct{}, c.config.MaxGoroutines) // semaphore to limit the number of goroutines
@@ -134,6 +143,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						if currentHeight > endHeight {
 							currentHeight = endHeight
 						}
+
 						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, currentHeight+c.config.FetchBlockIncrement, common.HexToAddress(contract.Address))
 						if contractErr != nil {
 							return fmt.Errorf("error getting scribe data: %v", contractErr)
@@ -143,12 +153,16 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 						for _, log := range logs {
 							sem <- struct{}{}
+
 							currentLog := log
 							logGroup.Go(func() error {
 								defer func() { <-sem }() // empty the chan by one semaphore
+
 								contractErr = retry.WithBackoff(logCtx, func(parentCtx context.Context) error {
+
 									return eventParser.ParseAndStore(parentCtx, currentLog)
 								})
+
 								if contractErr != nil {
 									return fmt.Errorf("error parsing and storing event: %v", contractErr)
 								}

@@ -122,7 +122,7 @@ func getChainIndexer(eventDB db.EventDB, chainID uint32, fetcher fetcherpkg.Scri
 	for i := range chainConfig.Contracts {
 		switch chainConfig.Contracts[i].ContractType {
 		case "origin":
-			originParser, err := origin.NewParser(common.HexToAddress(chainConfig.Contracts[i].Address), eventDB)
+			originParser, err := origin.NewParser(common.HexToAddress(chainConfig.Contracts[i].Address), eventDB, chainID)
 			if err != nil {
 				return nil, fmt.Errorf("could not create origin parser: %w", err)
 			}

@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"github.com/synapsecns/sanguine/services/sinner/logger"
 	"github.com/synapsecns/sanguine/services/sinner/types"
 )
 
@@ -52,7 +53,7 @@ func (p ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
 func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	eventType, ok := p.parser.EventType(log)
 	if !ok {
-		return fmt.Errorf("could not parse log event type. Topics: %v", log.Topics)
+		logger.ReportSinnerError(fmt.Errorf("unknown destination log topic"), 0, logger.UnknownTopic)
 	}
 	switch eventType {
 	case destination.ExecutedEvent:

@@ -27,9 +27,9 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs           []db.EventDB
-	logIndex      atomic.Int64
-	scribeMetrics metrics.Handler
+	dbs      []db.EventDB
+	logIndex atomic.Int64
+	metrics  metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -45,7 +45,7 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.EventDB{sqliteStore}
@@ -66,7 +66,7 @@ func (t *DBSuite) SetupSuite() {
 		metricsHandler = metrics.Jaeger
 	}
 	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	t.Require().Nil(err)
 }
 
@@ -96,7 +96,7 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxOpenConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.scribeMetrics, false)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
