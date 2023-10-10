@@ -65,7 +65,7 @@ func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (types.Snapsho
 		return nil, fmt.Errorf("could not parse snapshot: %w", err)
 	}
 
-	if snapshotMetadata.Snapshot == nil || snapshotMetadata.AgentDomain == 0 {
+	if snapshotMetadata.Snapshot == nil || snapshotMetadata.AgentDomain() == 0 {
 		//nolint:nilnil
 		return nil, nil
 	}
