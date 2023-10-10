@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.21](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.20...@synapsecns/explorer-ui@0.1.21) (2023-10-10)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
 ## [0.1.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.19...@synapsecns/explorer-ui@0.1.20) (2023-10-02)
 
 **Note:** Version bump only for package @synapsecns/explorer-ui
