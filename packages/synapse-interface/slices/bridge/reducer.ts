@@ -254,8 +254,8 @@ export const bridgeSlice = createSlice({
 
       state.fromChainId = fromChainId
       state.fromToken = fromToken
+      state.toToken = state.toChainId ? toToken : null
       state.toChainId = toChainId
-      state.toToken = toToken
       state.fromChainIds = fromChainIds
       state.fromTokens = fromTokens
       state.toChainIds = toChainIds
