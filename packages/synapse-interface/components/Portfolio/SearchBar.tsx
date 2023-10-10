@@ -101,6 +101,7 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border rounded-xl
+        ${!mounted && 'border-opacity-30'}
         ${
           isFocused || isActive
             ? 'border-synapsePurple bg-tint'
