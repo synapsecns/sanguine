@@ -50,6 +50,7 @@ export default function Updater(): null {
     return () => {
       clearTimeout(debounceTimer)
       clearTimeout(animationTimer)
+      dispatch(setIsLoading(false))
     }
   }, [fromValue])
 
