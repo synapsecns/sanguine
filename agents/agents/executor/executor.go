@@ -25,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -89,7 +90,8 @@ type Executor struct {
 	// txSubmitter is the transaction submitter.
 	txSubmitter submitter.TransactionSubmitter
 	// NowFunc returns the current time.
-	NowFunc func() time.Time
+	NowFunc     func() time.Time
+	retryConfig []retry.WithBackoffConfigurator
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -148,6 +150,9 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	}
 
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
+	retryConfig := []retry.WithBackoffConfigurator{
+		retry.WithMaxAttemptTime(time.Second * time.Duration(5*time.Second)),
+	}
 
 	if config.ExecuteInterval == 0 {
 		config.ExecuteInterval = 2
@@ -157,81 +162,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		config.SetMinimumTimeInterval = 2
 	}
 
-	for _, chain := range config.Chains {
-		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not create origin parser: %w", err)
-		}
-
-		lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not create destination parser: %w", err)
-		}
-
-		var inboxParser inbox.Parser
-		var summitParser summit.Parser
-
-		if config.SummitChainID == chain.ChainID {
-			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create inbox parser: %w", err)
-			}
-
-			summitParser, err = summit.NewParser(common.HexToAddress(config.SummitAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create summit parser: %w", err)
-			}
-		} else {
-			inboxParser = nil
-			summitParser = nil
-		}
-
-		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
-		if err != nil {
-			return nil, fmt.Errorf("could not get evm client: %w", err)
-		}
-
-		chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
-		if err != nil {
-			return nil, fmt.Errorf("could not create chain client: %w", err)
-		}
-
-		boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not bind destination contract: %w", err)
-		}
-
-		boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not bind origin contract: %w", err)
-		}
-
-		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
-		if err != nil {
-			return nil, fmt.Errorf("could not get tree from db: %w", err)
-		}
-
-		chainExecutors[chain.ChainID] = &chainExecutor{
-			chainID: chain.ChainID,
-			lastLog: &logOrderInfo{
-				blockNumber: 0,
-				blockIndex:  0,
-			},
-			closeConnection:  make(chan bool, 1),
-			stopListenChan:   make(chan bool, 1),
-			originParser:     originParser,
-			lightInboxParser: lightInboxParser,
-			inboxParser:      inboxParser,
-			summitParser:     summitParser,
-			logChan:          make(chan *ethTypes.Log, logChanSize),
-			merkleTree:       tree,
-			rpcClient:        evmClient,
-			boundDestination: boundDestination,
-			boundOrigin:      boundOrigin,
-		}
-	}
-
-	return &Executor{
+	exec := &Executor{
 		config:         config,
 		executorDB:     executorDB,
 		grpcConn:       conn,
@@ -240,8 +171,96 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		chainExecutors: chainExecutors,
 		handler:        handler,
 		txSubmitter:    txSubmitter,
+		retryConfig:    retryConfig,
 		NowFunc:        time.Now,
-	}, nil
+	}
+
+	for _, chain := range config.Chains {
+		err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+			return exec.setupChain(ctx, exec, chain, omniRPCClient)
+		}, exec.retryConfig...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return exec, nil
+}
+
+func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor.ChainConfig, omniRPCClient omnirpcClient.RPCClient) error {
+	originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
+	if err != nil {
+		return fmt.Errorf("could not create origin parser: %w", err)
+	}
+
+	lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
+	if err != nil {
+		return fmt.Errorf("could not create destination parser: %w", err)
+	}
+
+	var inboxParser inbox.Parser
+	var summitParser summit.Parser
+
+	if exec.config.SummitChainID == chain.ChainID {
+		inboxParser, err = inbox.NewParser(common.HexToAddress(exec.config.InboxAddress))
+		if err != nil {
+			return fmt.Errorf("could not create inbox parser: %w", err)
+		}
+
+		summitParser, err = summit.NewParser(common.HexToAddress(exec.config.SummitAddress))
+		if err != nil {
+			return fmt.Errorf("could not create summit parser: %w", err)
+		}
+	} else {
+		inboxParser = nil
+		summitParser = nil
+	}
+
+	evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
+	if err != nil {
+		return fmt.Errorf("could not get evm client: %w", err)
+	}
+
+	chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
+	if err != nil {
+		return fmt.Errorf("could not create chain client: %w", err)
+	}
+
+	boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
+	if err != nil {
+		return fmt.Errorf("could not bind destination contract: %w", err)
+	}
+
+	boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
+	if err != nil {
+		return fmt.Errorf("could not bind origin contract: %w", err)
+	}
+
+	tree, err := newTreeFromDB(ctx, chain.ChainID, exec.executorDB)
+	if err != nil {
+		return fmt.Errorf("could not get tree from db: %w", err)
+	}
+
+	exec.chainExecutors[chain.ChainID] = &chainExecutor{
+		chainID: chain.ChainID,
+		lastLog: &logOrderInfo{
+			blockNumber: 0,
+			blockIndex:  0,
+		},
+		closeConnection:  make(chan bool, 1),
+		stopListenChan:   make(chan bool, 1),
+		originParser:     originParser,
+		lightInboxParser: lightInboxParser,
+		inboxParser:      inboxParser,
+		summitParser:     summitParser,
+		logChan:          make(chan *ethTypes.Log, logChanSize),
+		merkleTree:       tree,
+		rpcClient:        evmClient,
+		boundDestination: boundDestination,
+		boundOrigin:      boundOrigin,
+	}
+
+	return nil
 }
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
