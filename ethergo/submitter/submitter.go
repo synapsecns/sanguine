@@ -376,27 +376,26 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		if err != nil {
 			fmt.Printf("could not get gas block: %v\n", err)
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
-			gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), prevTx.Cost(), maxPrice)
-		} else {
-			// if the prev tx was greater than this one, we should bump the gas price from that point
-
-			if gasBlock == nil {
-				fmt.Println("gasBlock is nil")
-			} else {
-				fmt.Printf("comparing gas with prevTx %v, transactor %v, gasBlock.BaseFee %v\n", prevTx, transactor, gasBlock.BaseFee)
-			}
-			comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
-			if comparison > 0 {
-				if prevTx.Type() == types.LegacyTxType {
-					transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
-				} else {
-					transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
-					transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
-				}
-			}
-			fmt.Printf("new GasTipCap: %v, gasPrice: %v, GasFeeCap: %v\n", transactor.GasTipCap, transactor.GasPrice, transactor.GasFeeCap)
-			gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 		}
+
+		// if the prev tx was greater than this one, we should bump the gas price from that point
+
+		if gasBlock == nil {
+			fmt.Println("gasBlock is nil")
+		} else {
+			fmt.Printf("comparing gas with prevTx %v, transactor %v, gasBlock.BaseFee %v\n", prevTx, transactor, gasBlock.BaseFee)
+		}
+		comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
+		if comparison > 0 {
+			if prevTx.Type() == types.LegacyTxType {
+				transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
+			} else {
+				transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
+				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
+			}
+		}
+		fmt.Printf("new GasTipCap: %v, gasPrice: %v, GasFeeCap: %v\n", transactor.GasTipCap, transactor.GasPrice, transactor.GasFeeCap)
+		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
 	return nil
 }
@@ -418,7 +417,6 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 	err = retry.WithBackoff(ctx, func(ctx context.Context) (err error) {
 		gasBlock, err = chainClient.HeaderByNumber(ctx, nil)
 		if err != nil {
-			fmt.Printf("could not get gas block %v\n", err)
 			return fmt.Errorf("could not get gas block: %w", err)
 		}
 
@@ -429,7 +427,6 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		return nil, fmt.Errorf("could not get gas block: %w", err)
 	}
 
-	fmt.Printf("got gas block: %v with fee %v\n", gasBlock.Hash(), gasBlock.BaseFee)
 	return gasBlock, nil
 }
 
