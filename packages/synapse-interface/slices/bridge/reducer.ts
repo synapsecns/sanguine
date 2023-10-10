@@ -2,7 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import {
   getRoutePossibilities,
@@ -20,6 +19,7 @@ import {
   resetFetchedBridgeQuotes,
   updatePendingBridgeTransaction,
   updatePendingBridgeTransactions,
+  resetBridgeInputs,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from './actions'
@@ -61,7 +61,7 @@ const {
   toChainIds,
   toTokens,
 } = getRoutePossibilities({
-  fromChainId: ETHEREUM.id,
+  fromChainId: null,
   fromToken: null,
   toChainId: null,
   toToken: null,
@@ -268,8 +268,8 @@ export const bridgeSlice = createSlice({
 
       state.fromChainId = fromChainId
       state.fromToken = fromToken
+      state.toToken = state.toChainId ? toToken : null
       state.toChainId = toChainId
-      state.toToken = toToken
       state.fromChainIds = fromChainIds
       state.fromTokens = fromTokens
       state.toChainIds = toChainIds
@@ -534,6 +534,12 @@ export const bridgeSlice = createSlice({
           state.pendingBridgeTransactions = action.payload
         }
       )
+      .addCase(resetBridgeInputs, (state) => {
+        state.fromChainId = initialState.fromChainId
+        state.fromToken = initialState.fromToken
+        state.toChainId = initialState.toChainId
+        state.toToken = initialState.toToken
+      })
       .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
         state.toTokensBridgeQuotesStatus = FetchState.LOADING
       })
