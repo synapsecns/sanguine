@@ -82,14 +82,14 @@ func (s Scribe) Start(ctx context.Context) error {
 					cancelChain() // redundant, but clean.
 					return fmt.Errorf("global scribe context cancel %w", groupCtx.Err())
 				case <-chainCtx.Done(): // Chain level context cancel, retry and recreate context.
-					logger.ReportScribeError(fmt.Errorf("chain level scribe context cancel"), chainID, logger.ContextCancelled)
+					logger.ReportScribeError(fmt.Errorf("chain level scribe context cancel, %w", chainCtx.Err()), chainID, logger.ContextCancelled)
 					chainCtx, cancelChain = context.WithCancel(ctx)
 					retryRate = b.Duration()
 					continue
 				case <-time.After(retryRate):
 					err := s.chainIndexers[chainID].Index(groupCtx)
 					if err != nil {
-						logger.ReportScribeError(fmt.Errorf("error running chain indexer"), chainID, logger.FatalScribeError)
+						logger.ReportScribeError(fmt.Errorf("error running chain indexer %w", err), chainID, logger.FatalScribeError)
 						retryRate = b.Duration()
 						continue
 					}
