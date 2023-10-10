@@ -117,13 +117,16 @@ export default function FilterInput({
   searchStr,
   onSearch,
   placeholder,
+  disabled = false,
 }: {
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
+  disabled: boolean
 }) {
   return (
     <input
+      disabled={disabled}
       ref={inputRef}
       tabIndex={0}
       data-test-id="filter-input"
