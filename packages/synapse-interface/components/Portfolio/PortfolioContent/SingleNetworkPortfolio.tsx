@@ -188,7 +188,7 @@ const PortfolioNetwork = ({
   )
 }
 
-const PortfolioTokenVisualizer = ({
+export const PortfolioTokenVisualizer = ({
   portfolioTokens,
 }: {
   portfolioTokens: TokenWithBalanceAndAllowances[]
@@ -313,7 +313,7 @@ export const HoverContent = ({
         className={`
           absolute z-50 hover-content p-2 text-white
           border border-solid border-[#252537]
-          bg-[#101018] rounded-md
+          bg-[#101018] rounded-md text-left
         `}
       >
         {children}

@@ -156,6 +156,7 @@ export const ToChainListOverlay = () => {
                   key={idx}
                   itemChainId={mapChainId}
                   isCurrentChain={toChainId === mapChainId}
+                  isOrigin={false}
                   active={idx === currentIdx}
                   onClick={() => {
                     if (toChainId === mapChainId) {
@@ -181,6 +182,7 @@ export const ToChainListOverlay = () => {
                   key={idx}
                   itemChainId={mapChainId}
                   isCurrentChain={toChainId === mapChainId}
+                  isOrigin={false}
                   active={idx + possibleChains.length === currentIdx}
                   onClick={() => handleSetToChainId(mapChainId)}
                   dataId={dataId}

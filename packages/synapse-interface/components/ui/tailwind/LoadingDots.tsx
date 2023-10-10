@@ -1,4 +1,4 @@
-export default function LoadingSpinner({
+export default function LoadingDots({
   className,
   shift = false,
 }: {
@@ -6,7 +6,10 @@ export default function LoadingSpinner({
   shift?: boolean
 }) {
   return (
-    <div className={`flex relative left-[12px] ${className}`}>
+    <div
+      data-test-id="loading-dots"
+      className={`flex relative left-[12px] ${className}`}
+    >
       <div className={`dot-flashing ${shift ? 'left-[12px]' : ''}`}></div>
     </div>
   )

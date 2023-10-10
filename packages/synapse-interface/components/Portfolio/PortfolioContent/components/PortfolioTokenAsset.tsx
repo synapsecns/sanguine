@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import {
   setFromChainId,
@@ -24,10 +23,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
-
-function hasOnlyZeros(input: string): boolean {
-  return /^0+(\.0+)?$/.test(input)
-}
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 
 const handleFocusOnInput = () => {
   inputRef.current.focus()
@@ -97,7 +93,7 @@ export const PortfolioTokenAsset = ({
       decimals[portfolioChainId],
       3
     )
-    return balance > 0n && hasOnlyZeros(formattedBalance)
+    return balance > 0n && hasOnlyZeroes(formattedBalance)
       ? '< 0.001'
       : formattedBalance
   }, [balance, portfolioChainId])
