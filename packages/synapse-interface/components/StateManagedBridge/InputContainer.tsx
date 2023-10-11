@@ -13,12 +13,15 @@ import {
 } from '@/components/ConnectionIndicators'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
+  const dispatch = useDispatch()
+  const { chain } = useNetwork()
   const {
     fromChainId,
     fromToken,
@@ -27,12 +30,18 @@ export const InputContainer = () => {
     toChainId,
     toToken,
   } = useBridgeState()
-  const [showValue, setShowValue] = useState('')
+  const {
+    hasValidSelections,
+    hasValidRoute,
+    isConnected,
+    hasEnoughBalance,
+    hasInputAmount,
+  } = useBridgeStatus()
+  const { balancesAndAllowances } = usePortfolioState()
 
+  const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
   const previousBridgeTxHashesRef = useRef<string[]>([])
-
-  const { balancesAndAllowances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
@@ -48,27 +57,20 @@ export const InputContainer = () => {
     previousBridgeTxHashesRef.current = bridgeTxHashes
   }, [bridgeTxHashes])
 
-  const { isConnected } = useAccount()
-  const { chain } = useNetwork()
-
-  const dispatch = useDispatch()
-
-  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
+  const parsedBalance: string = balancesAndAllowances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.parsedBalance
+
+  const parsedAllowance = balancesAndAllowances[fromChainId]?.find(
+    (token: TokenWithBalanceAndAllowances) => token.token === fromToken
+  )?.allowances
 
   const balance = balancesAndAllowances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
   useEffect(() => {
-    if (
-      fromToken &&
-      fromToken.decimals[fromChainId]
-      // && stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n
-      // stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
-      //   fromTokenBalance
-    ) {
+    if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
     }
   }, [fromValue, inputRef, fromChainId, fromToken])
@@ -95,20 +97,29 @@ export const InputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(balance, fromToken.decimals[fromChainId])
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
       )
     )
   }, [balance, fromChainId, fromToken])
 
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
-      return <ConnectWalletButton />
+      return (
+        <ConnectWalletButton highlight={hasValidSelections && hasValidRoute} />
+      )
     } else if (hasMounted && isConnected && fromChainId === chain.id) {
       return <ConnectedIndicator />
     } else if (hasMounted && isConnected && fromChainId !== chain.id) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
-  }, [chain, fromChainId, isConnected, hasMounted])
+  }, [
+    chain,
+    fromChainId,
+    isConnected,
+    hasMounted,
+    hasValidSelections,
+    hasValidRoute,
+  ])
 
   return (
     <div
@@ -123,9 +134,7 @@ export const InputContainer = () => {
         <div
           className={`
             flex flex-grow items-center justify-between
-            pl-md
-            w-full h-16
-            rounded-md
+            pl-md w-full h-16 rounded-md
             border border-white border-opacity-20
           `}
         >
@@ -138,15 +147,10 @@ export const InputContainer = () => {
                   pattern="^[0-9]*[.,]?[0-9]*$"
                   disabled={false}
                   className={`
-                    focus:outline-none
-                    focus:ring-0
-                    focus:border-none
-                    border-none
-                    bg-transparent
-                    max-w-[190px]
-                    p-0
-                    placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
+                  text-white text-opacity-80 text-xl font-medium
+                    p-0 border-none bg-transparent max-w-[190px]
+                    md:text-2xl placeholder:text-[#88818C]
+                    focus:outline-none focus:ring-0 focus:border-none
                   `}
                   placeholder="0.0000"
                   onChange={handleFromValueChange}
@@ -161,14 +165,19 @@ export const InputContainer = () => {
               {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onMaxBalance}
+                  className={`
+                    text-xs transition-all duration-150 transform-gpu
+                    hover:text-opacity-70 hover:cursor-pointer
+                    ${
+                      fromToken && hasInputAmount && !hasEnoughBalance
+                        ? 'text-synapseYellow'
+                        : 'text-secondary'
+                    }
+                  `}
                 >
                   {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
+                  <span> available</span>
                 </label>
               )}
             </div>
