@@ -8,6 +8,103 @@ import (
 	"strconv"
 )
 
+type Accessory struct {
+	ID                    *string  `json:"id,omitempty"`
+	NormalizedID          int64    `json:"normalizedId"`
+	Owner                 *Profile `json:"owner,omitempty"`
+	EquippableAt          int64    `json:"equippableAt"`
+	EquippedTo            *Hero    `json:"equippedTo,omitempty"`
+	CurrentRealm          *string  `json:"currentRealm,omitempty"`
+	OriginRealm           *string  `json:"originRealm,omitempty"`
+	CreatedAt             int64    `json:"createdAt"`
+	CraftedBy             *Hero    `json:"craftedBy,omitempty"`
+	SalePrice             *string  `json:"salePrice,omitempty"`
+	PrivateAuctionProfile *Profile `json:"privateAuctionProfile,omitempty"`
+	DisplayID             *int64   `json:"displayId,omitempty"`
+	Rarity                *int64   `json:"rarity,omitempty"`
+	Dye1                  *int64   `json:"dye1,omitempty"`
+	Dye2                  *int64   `json:"dye2,omitempty"`
+	MaxDurability         *int64   `json:"maxDurability,omitempty"`
+	Durability            *int64   `json:"durability,omitempty"`
+	MaxRepairs            *int64   `json:"maxRepairs,omitempty"`
+	RemainingRepairs      *int64   `json:"remainingRepairs,omitempty"`
+	Bonus1                *int64   `json:"bonus1,omitempty"`
+	Bonus2                *int64   `json:"bonus2,omitempty"`
+	Bonus3                *int64   `json:"bonus3,omitempty"`
+	Bonus4                *int64   `json:"bonus4,omitempty"`
+	Bonus5                *int64   `json:"bonus5,omitempty"`
+	BonusScalar1          *int64   `json:"bonusScalar1,omitempty"`
+	BonusScalar2          *int64   `json:"bonusScalar2,omitempty"`
+	BonusScalar3          *int64   `json:"bonusScalar3,omitempty"`
+	BonusScalar4          *int64   `json:"bonusScalar4,omitempty"`
+	BonusScalar5          *int64   `json:"bonusScalar5,omitempty"`
+	EnchantmentScalar1    *int64   `json:"enchantmentScalar1,omitempty"`
+	EnchantmentScalar2    *int64   `json:"enchantmentScalar2,omitempty"`
+	EnchantmentScalar3    *int64   `json:"enchantmentScalar3,omitempty"`
+	EnchantmentType1      *int64   `json:"enchantmentType1,omitempty"`
+	EnchantmentType2      *int64   `json:"enchantmentType2,omitempty"`
+	EnchantmentType3      *int64   `json:"enchantmentType3,omitempty"`
+	EquipRequirement      *int64   `json:"equipRequirement,omitempty"`
+	EquipmentType         *int64   `json:"equipmentType,omitempty"`
+	UniqueSettings        *int64   `json:"uniqueSettings,omitempty"`
+	RestorationCount      *int64   `json:"restorationCount,omitempty"`
+}
+
+type Armor struct {
+	ID                    *string  `json:"id,omitempty"`
+	NormalizedID          int64    `json:"normalizedId"`
+	Owner                 *Profile `json:"owner,omitempty"`
+	EquippableAt          int64    `json:"equippableAt"`
+	EquippedTo            *Hero    `json:"equippedTo,omitempty"`
+	CurrentRealm          *string  `json:"currentRealm,omitempty"`
+	OriginRealm           *string  `json:"originRealm,omitempty"`
+	CreatedAt             int64    `json:"createdAt"`
+	CraftedBy             *Hero    `json:"craftedBy,omitempty"`
+	SalePrice             *string  `json:"salePrice,omitempty"`
+	PrivateAuctionProfile *Profile `json:"privateAuctionProfile,omitempty"`
+	DisplayID             *int64   `json:"displayId,omitempty"`
+	Rarity                *int64   `json:"rarity,omitempty"`
+	Dye1                  *int64   `json:"dye1,omitempty"`
+	Dye2                  *int64   `json:"dye2,omitempty"`
+	MaxDurability         *int64   `json:"maxDurability,omitempty"`
+	Durability            *int64   `json:"durability,omitempty"`
+	MaxRepairs            *int64   `json:"maxRepairs,omitempty"`
+	RemainingRepairs      *int64   `json:"remainingRepairs,omitempty"`
+	Bonus1                *int64   `json:"bonus1,omitempty"`
+	Bonus2                *int64   `json:"bonus2,omitempty"`
+	Bonus3                *int64   `json:"bonus3,omitempty"`
+	Bonus4                *int64   `json:"bonus4,omitempty"`
+	Bonus5                *int64   `json:"bonus5,omitempty"`
+	BonusScalar1          *int64   `json:"bonusScalar1,omitempty"`
+	BonusScalar2          *int64   `json:"bonusScalar2,omitempty"`
+	BonusScalar3          *int64   `json:"bonusScalar3,omitempty"`
+	BonusScalar4          *int64   `json:"bonusScalar4,omitempty"`
+	BonusScalar5          *int64   `json:"bonusScalar5,omitempty"`
+	EnchantmentScalar1    *int64   `json:"enchantmentScalar1,omitempty"`
+	EnchantmentScalar2    *int64   `json:"enchantmentScalar2,omitempty"`
+	EnchantmentScalar3    *int64   `json:"enchantmentScalar3,omitempty"`
+	EnchantmentType1      *int64   `json:"enchantmentType1,omitempty"`
+	EnchantmentType2      *int64   `json:"enchantmentType2,omitempty"`
+	EnchantmentType3      *int64   `json:"enchantmentType3,omitempty"`
+	EquipRequirement      *int64   `json:"equipRequirement,omitempty"`
+	ArmorType             *int64   `json:"armorType,omitempty"`
+	RawPhysDefense        *int64   `json:"rawPhysDefense,omitempty"`
+	PhysDefScalar         *int64   `json:"physDefScalar,omitempty"`
+	PDefScalarMax         *int64   `json:"pDefScalarMax,omitempty"`
+	RawMagicDefense       *int64   `json:"rawMagicDefense,omitempty"`
+	MagicDefScalar        *int64   `json:"magicDefScalar,omitempty"`
+	MDefScalarMax         *int64   `json:"mDefScalarMax,omitempty"`
+	Evasion               *int64   `json:"evasion,omitempty"`
+	UniqueSettings        *int64   `json:"uniqueSettings,omitempty"`
+	Spare1                *int64   `json:"spare1,omitempty"`
+	Spare2                *int64   `json:"spare2,omitempty"`
+	RestorationCount      *int64   `json:"restorationCount,omitempty"`
+	Misc1                 *int64   `json:"misc1,omitempty"`
+	Misc2                 *int64   `json:"misc2,omitempty"`
+	Misc3                 *int64   `json:"misc3,omitempty"`
+	Misc4                 *int64   `json:"misc4,omitempty"`
+}
+
 type Auction struct {
 	ID            *string  `json:"id,omitempty"`
 	Seller        *Profile `json:"seller,omitempty"`
@@ -301,115 +398,121 @@ type BazaarTransactionFilter struct {
 }
 
 type Hero struct {
-	ID                    *string  `json:"id,omitempty"`
-	NumberID              *string  `json:"numberId,omitempty"`
-	NormalizedID          *string  `json:"normalizedId,omitempty"`
-	Owner                 *Profile `json:"owner,omitempty"`
-	PreviousOwner         *Profile `json:"previousOwner,omitempty"`
-	Creator               *Profile `json:"creator,omitempty"`
-	StatGenes             string   `json:"statGenes"`
-	VisualGenes           string   `json:"visualGenes"`
-	Rarity                int64    `json:"rarity"`
-	Shiny                 bool     `json:"shiny"`
-	Generation            int64    `json:"generation"`
-	FirstName             int64    `json:"firstName"`
-	LastName              int64    `json:"lastName"`
-	ShinyStyle            int64    `json:"shinyStyle"`
-	SummonedTime          int64    `json:"summonedTime"`
-	NextSummonTime        int64    `json:"nextSummonTime"`
-	SummonerID            *Hero    `json:"summonerId,omitempty"`
-	AssistantID           *Hero    `json:"assistantId,omitempty"`
-	Summons               int64    `json:"summons"`
-	MaxSummons            int64    `json:"maxSummons"`
-	StaminaFullAt         int64    `json:"staminaFullAt"`
-	HpFullAt              int64    `json:"hpFullAt"`
-	MpFullAt              int64    `json:"mpFullAt"`
-	Level                 int64    `json:"level"`
-	Xp                    int64    `json:"xp"`
-	CurrentQuest          string   `json:"currentQuest"`
-	Sp                    int64    `json:"sp"`
-	Status                string   `json:"status"`
-	Strength              int64    `json:"strength"`
-	Intelligence          int64    `json:"intelligence"`
-	Wisdom                int64    `json:"wisdom"`
-	Luck                  int64    `json:"luck"`
-	Agility               int64    `json:"agility"`
-	Vitality              int64    `json:"vitality"`
-	Endurance             int64    `json:"endurance"`
-	Dexterity             int64    `json:"dexterity"`
-	Hp                    int64    `json:"hp"`
-	Mp                    int64    `json:"mp"`
-	Stamina               int64    `json:"stamina"`
-	StrengthGrowthP       int64    `json:"strengthGrowthP"`
-	IntelligenceGrowthP   int64    `json:"intelligenceGrowthP"`
-	WisdomGrowthP         int64    `json:"wisdomGrowthP"`
-	LuckGrowthP           int64    `json:"luckGrowthP"`
-	AgilityGrowthP        int64    `json:"agilityGrowthP"`
-	VitalityGrowthP       int64    `json:"vitalityGrowthP"`
-	EnduranceGrowthP      int64    `json:"enduranceGrowthP"`
-	DexterityGrowthP      int64    `json:"dexterityGrowthP"`
-	StrengthGrowthS       int64    `json:"strengthGrowthS"`
-	IntelligenceGrowthS   int64    `json:"intelligenceGrowthS"`
-	WisdomGrowthS         int64    `json:"wisdomGrowthS"`
-	LuckGrowthS           int64    `json:"luckGrowthS"`
-	AgilityGrowthS        int64    `json:"agilityGrowthS"`
-	VitalityGrowthS       int64    `json:"vitalityGrowthS"`
-	EnduranceGrowthS      int64    `json:"enduranceGrowthS"`
-	DexterityGrowthS      int64    `json:"dexterityGrowthS"`
-	HpSmGrowth            int64    `json:"hpSmGrowth"`
-	HpRgGrowth            int64    `json:"hpRgGrowth"`
-	HpLgGrowth            int64    `json:"hpLgGrowth"`
-	MpSmGrowth            int64    `json:"mpSmGrowth"`
-	MpRgGrowth            int64    `json:"mpRgGrowth"`
-	MpLgGrowth            int64    `json:"mpLgGrowth"`
-	Mining                int64    `json:"mining"`
-	Gardening             int64    `json:"gardening"`
-	Foraging              int64    `json:"foraging"`
-	Fishing               int64    `json:"fishing"`
-	MainClass             *int64   `json:"mainClass,omitempty"`
-	SubClass              int64    `json:"subClass"`
-	Class                 int64    `json:"class"`
-	Profession            int64    `json:"profession"`
-	Passive1              int64    `json:"passive1"`
-	Passive2              int64    `json:"passive2"`
-	Active1               int64    `json:"active1"`
-	Active2               int64    `json:"active2"`
-	StatBoost1            int64    `json:"statBoost1"`
-	StatBoost2            int64    `json:"statBoost2"`
-	StatsUnknown1         int64    `json:"statsUnknown1"`
-	Element               int64    `json:"element"`
-	StatsUnknown2         int64    `json:"statsUnknown2"`
-	Gender                int64    `json:"gender"`
-	HeadAppendage         int64    `json:"headAppendage"`
-	BackAppendage         int64    `json:"backAppendage"`
-	Background            int64    `json:"background"`
-	HairStyle             int64    `json:"hairStyle"`
-	HairColor             int64    `json:"hairColor"`
-	VisualUnknown1        int64    `json:"visualUnknown1"`
-	EyeColor              int64    `json:"eyeColor"`
-	SkinColor             int64    `json:"skinColor"`
-	AppendageColor        int64    `json:"appendageColor"`
-	BackAppendageColor    int64    `json:"backAppendageColor"`
-	VisualUnknown2        int64    `json:"visualUnknown2"`
-	AssistingAuction      *Auction `json:"assistingAuction,omitempty"`
-	AssistingPrice        *string  `json:"assistingPrice,omitempty"`
-	SaleAuction           *Auction `json:"saleAuction,omitempty"`
-	SalePrice             *string  `json:"salePrice,omitempty"`
-	PrivateAuctionProfile *Profile `json:"privateAuctionProfile,omitempty"`
-	SummonsRemaining      int64    `json:"summonsRemaining"`
-	PjStatus              *string  `json:"pjStatus,omitempty"`
-	PjLevel               *int64   `json:"pjLevel,omitempty"`
-	PjOwner               *Profile `json:"pjOwner,omitempty"`
-	PjClaimStamp          *int64   `json:"pjClaimStamp,omitempty"`
-	Network               *string  `json:"network,omitempty"`
-	OriginRealm           *string  `json:"originRealm,omitempty"`
-	DarkSummoned          *bool    `json:"darkSummoned,omitempty"`
-	DarkSummonLevels      *int64   `json:"darkSummonLevels,omitempty"`
-	HasValidCraftingGenes *bool    `json:"hasValidCraftingGenes,omitempty"`
-	MainClassStr          string   `json:"mainClassStr"`
-	SubClassStr           string   `json:"subClassStr"`
-	ProfessionStr         string   `json:"professionStr"`
-	Pet                   *Pet     `json:"pet,omitempty"`
+	ID                    *string    `json:"id,omitempty"`
+	NumberID              *string    `json:"numberId,omitempty"`
+	NormalizedID          *string    `json:"normalizedId,omitempty"`
+	Owner                 *Profile   `json:"owner,omitempty"`
+	PreviousOwner         *Profile   `json:"previousOwner,omitempty"`
+	Creator               *Profile   `json:"creator,omitempty"`
+	StatGenes             string     `json:"statGenes"`
+	VisualGenes           string     `json:"visualGenes"`
+	Rarity                int64      `json:"rarity"`
+	Shiny                 bool       `json:"shiny"`
+	Generation            int64      `json:"generation"`
+	FirstName             int64      `json:"firstName"`
+	LastName              int64      `json:"lastName"`
+	ShinyStyle            int64      `json:"shinyStyle"`
+	SummonedTime          int64      `json:"summonedTime"`
+	NextSummonTime        int64      `json:"nextSummonTime"`
+	SummonerID            *Hero      `json:"summonerId,omitempty"`
+	AssistantID           *Hero      `json:"assistantId,omitempty"`
+	Summons               int64      `json:"summons"`
+	MaxSummons            int64      `json:"maxSummons"`
+	StaminaFullAt         int64      `json:"staminaFullAt"`
+	HpFullAt              int64      `json:"hpFullAt"`
+	MpFullAt              int64      `json:"mpFullAt"`
+	Level                 int64      `json:"level"`
+	Xp                    int64      `json:"xp"`
+	CurrentQuest          string     `json:"currentQuest"`
+	Sp                    int64      `json:"sp"`
+	Status                string     `json:"status"`
+	Strength              int64      `json:"strength"`
+	Intelligence          int64      `json:"intelligence"`
+	Wisdom                int64      `json:"wisdom"`
+	Luck                  int64      `json:"luck"`
+	Agility               int64      `json:"agility"`
+	Vitality              int64      `json:"vitality"`
+	Endurance             int64      `json:"endurance"`
+	Dexterity             int64      `json:"dexterity"`
+	Hp                    int64      `json:"hp"`
+	Mp                    int64      `json:"mp"`
+	Stamina               int64      `json:"stamina"`
+	StrengthGrowthP       int64      `json:"strengthGrowthP"`
+	IntelligenceGrowthP   int64      `json:"intelligenceGrowthP"`
+	WisdomGrowthP         int64      `json:"wisdomGrowthP"`
+	LuckGrowthP           int64      `json:"luckGrowthP"`
+	AgilityGrowthP        int64      `json:"agilityGrowthP"`
+	VitalityGrowthP       int64      `json:"vitalityGrowthP"`
+	EnduranceGrowthP      int64      `json:"enduranceGrowthP"`
+	DexterityGrowthP      int64      `json:"dexterityGrowthP"`
+	StrengthGrowthS       int64      `json:"strengthGrowthS"`
+	IntelligenceGrowthS   int64      `json:"intelligenceGrowthS"`
+	WisdomGrowthS         int64      `json:"wisdomGrowthS"`
+	LuckGrowthS           int64      `json:"luckGrowthS"`
+	AgilityGrowthS        int64      `json:"agilityGrowthS"`
+	VitalityGrowthS       int64      `json:"vitalityGrowthS"`
+	EnduranceGrowthS      int64      `json:"enduranceGrowthS"`
+	DexterityGrowthS      int64      `json:"dexterityGrowthS"`
+	HpSmGrowth            int64      `json:"hpSmGrowth"`
+	HpRgGrowth            int64      `json:"hpRgGrowth"`
+	HpLgGrowth            int64      `json:"hpLgGrowth"`
+	MpSmGrowth            int64      `json:"mpSmGrowth"`
+	MpRgGrowth            int64      `json:"mpRgGrowth"`
+	MpLgGrowth            int64      `json:"mpLgGrowth"`
+	Mining                int64      `json:"mining"`
+	Gardening             int64      `json:"gardening"`
+	Foraging              int64      `json:"foraging"`
+	Fishing               int64      `json:"fishing"`
+	MainClass             *int64     `json:"mainClass,omitempty"`
+	SubClass              int64      `json:"subClass"`
+	Class                 int64      `json:"class"`
+	Profession            int64      `json:"profession"`
+	Passive1              int64      `json:"passive1"`
+	Passive2              int64      `json:"passive2"`
+	Active1               int64      `json:"active1"`
+	Active2               int64      `json:"active2"`
+	StatBoost1            int64      `json:"statBoost1"`
+	StatBoost2            int64      `json:"statBoost2"`
+	StatsUnknown1         int64      `json:"statsUnknown1"`
+	Element               int64      `json:"element"`
+	StatsUnknown2         int64      `json:"statsUnknown2"`
+	Gender                int64      `json:"gender"`
+	HeadAppendage         int64      `json:"headAppendage"`
+	BackAppendage         int64      `json:"backAppendage"`
+	Background            int64      `json:"background"`
+	HairStyle             int64      `json:"hairStyle"`
+	HairColor             int64      `json:"hairColor"`
+	VisualUnknown1        int64      `json:"visualUnknown1"`
+	EyeColor              int64      `json:"eyeColor"`
+	SkinColor             int64      `json:"skinColor"`
+	AppendageColor        int64      `json:"appendageColor"`
+	BackAppendageColor    int64      `json:"backAppendageColor"`
+	VisualUnknown2        int64      `json:"visualUnknown2"`
+	AssistingAuction      *Auction   `json:"assistingAuction,omitempty"`
+	AssistingPrice        *string    `json:"assistingPrice,omitempty"`
+	SaleAuction           *Auction   `json:"saleAuction,omitempty"`
+	SalePrice             *string    `json:"salePrice,omitempty"`
+	PrivateAuctionProfile *Profile   `json:"privateAuctionProfile,omitempty"`
+	SummonsRemaining      int64      `json:"summonsRemaining"`
+	PjStatus              *string    `json:"pjStatus,omitempty"`
+	PjLevel               *int64     `json:"pjLevel,omitempty"`
+	PjOwner               *Profile   `json:"pjOwner,omitempty"`
+	PjClaimStamp          *int64     `json:"pjClaimStamp,omitempty"`
+	Network               *string    `json:"network,omitempty"`
+	OriginRealm           *string    `json:"originRealm,omitempty"`
+	DarkSummoned          *bool      `json:"darkSummoned,omitempty"`
+	DarkSummonLevels      *int64     `json:"darkSummonLevels,omitempty"`
+	HasValidCraftingGenes *bool      `json:"hasValidCraftingGenes,omitempty"`
+	MainClassStr          string     `json:"mainClassStr"`
+	SubClassStr           string     `json:"subClassStr"`
+	ProfessionStr         string     `json:"professionStr"`
+	Pet                   *Pet       `json:"pet,omitempty"`
+	Weapon1               *Weapon    `json:"weapon1,omitempty"`
+	Weapon2               *Weapon    `json:"weapon2,omitempty"`
+	Offhand1              *Accessory `json:"offhand1,omitempty"`
+	Offhand2              *Accessory `json:"offhand2,omitempty"`
+	Armor                 *Armor     `json:"armor,omitempty"`
+	Accessory             *Accessory `json:"accessory,omitempty"`
 }
 
 type HeroFilter struct {
@@ -1929,6 +2032,558 @@ type ProfileFilter struct {
 	HeroIDNotIn       []*string `json:"heroId_not_in,omitempty"`
 }
 
+type Weapon struct {
+	ID                     *string  `json:"id,omitempty"`
+	NormalizedID           int64    `json:"normalizedId"`
+	Owner                  *Profile `json:"owner,omitempty"`
+	EquippableAt           int64    `json:"equippableAt"`
+	EquippedTo             *Hero    `json:"equippedTo,omitempty"`
+	CurrentRealm           *string  `json:"currentRealm,omitempty"`
+	OriginRealm            *string  `json:"originRealm,omitempty"`
+	CreatedAt              int64    `json:"createdAt"`
+	CraftedBy              *Hero    `json:"craftedBy,omitempty"`
+	SalePrice              *string  `json:"salePrice,omitempty"`
+	PrivateAuctionProfile  *Profile `json:"privateAuctionProfile,omitempty"`
+	DisplayID              *int64   `json:"displayId,omitempty"`
+	Rarity                 *int64   `json:"rarity,omitempty"`
+	Dye1                   *int64   `json:"dye1,omitempty"`
+	Dye2                   *int64   `json:"dye2,omitempty"`
+	MaxDurability          *int64   `json:"maxDurability,omitempty"`
+	Durability             *int64   `json:"durability,omitempty"`
+	MaxRepairs             *int64   `json:"maxRepairs,omitempty"`
+	RemainingRepairs       *int64   `json:"remainingRepairs,omitempty"`
+	Bonus1                 *int64   `json:"bonus1,omitempty"`
+	Bonus2                 *int64   `json:"bonus2,omitempty"`
+	Bonus3                 *int64   `json:"bonus3,omitempty"`
+	Bonus4                 *int64   `json:"bonus4,omitempty"`
+	BonusScalar1           *int64   `json:"bonusScalar1,omitempty"`
+	BonusScalar2           *int64   `json:"bonusScalar2,omitempty"`
+	BonusScalar3           *int64   `json:"bonusScalar3,omitempty"`
+	BonusScalar4           *int64   `json:"bonusScalar4,omitempty"`
+	EnchantmentScalar1     *int64   `json:"enchantmentScalar1,omitempty"`
+	EnchantmentScalar2     *int64   `json:"enchantmentScalar2,omitempty"`
+	EnchantmentScalar3     *int64   `json:"enchantmentScalar3,omitempty"`
+	EnchantmentType1       *int64   `json:"enchantmentType1,omitempty"`
+	EnchantmentType2       *int64   `json:"enchantmentType2,omitempty"`
+	EnchantmentType3       *int64   `json:"enchantmentType3,omitempty"`
+	EquipRequirement       *int64   `json:"equipRequirement,omitempty"`
+	WeaponType             *int64   `json:"weaponType,omitempty"`
+	BasePotency            *int64   `json:"basePotency,omitempty"`
+	FocusRequirement       *int64   `json:"focusRequirement,omitempty"`
+	MAccuracyAtRequirement *int64   `json:"mAccuracyAtRequirement,omitempty"`
+	MScalarStat1           *int64   `json:"mScalarStat1,omitempty"`
+	MScalarStat2           *int64   `json:"mScalarStat2,omitempty"`
+	MScalarStat3           *int64   `json:"mScalarStat3,omitempty"`
+	MScalarValue1          *int64   `json:"mScalarValue1,omitempty"`
+	MScalarValue2          *int64   `json:"mScalarValue2,omitempty"`
+	MScalarValue3          *int64   `json:"mScalarValue3,omitempty"`
+	MScalarMax1            *int64   `json:"mScalarMax1,omitempty"`
+	MScalarMax2            *int64   `json:"mScalarMax2,omitempty"`
+	MScalarMax3            *int64   `json:"mScalarMax3,omitempty"`
+	RestorationCount       *int64   `json:"restorationCount,omitempty"`
+	BaseDamage             *int64   `json:"baseDamage,omitempty"`
+	AccuracyRequirement    *int64   `json:"accuracyRequirement,omitempty"`
+	PAccuracyAtRequirement *int64   `json:"pAccuracyAtRequirement,omitempty"`
+	PScalarStat1           *int64   `json:"pScalarStat1,omitempty"`
+	PScalarStat2           *int64   `json:"pScalarStat2,omitempty"`
+	PScalarStat3           *int64   `json:"pScalarStat3,omitempty"`
+	PScalarValue1          *int64   `json:"pScalarValue1,omitempty"`
+	PScalarValue2          *int64   `json:"pScalarValue2,omitempty"`
+	PScalarValue3          *int64   `json:"pScalarValue3,omitempty"`
+	PScalarMax1            *int64   `json:"pScalarMax1,omitempty"`
+	PScalarMax2            *int64   `json:"pScalarMax2,omitempty"`
+	PScalarMax3            *int64   `json:"pScalarMax3,omitempty"`
+}
+
+type WeaponFilter struct {
+	ID                                 *string   `json:"id,omitempty"`
+	IDNot                              *string   `json:"id_not,omitempty"`
+	IDGt                               *string   `json:"id_gt,omitempty"`
+	IDLt                               *string   `json:"id_lt,omitempty"`
+	IDGte                              *string   `json:"id_gte,omitempty"`
+	IDLte                              *string   `json:"id_lte,omitempty"`
+	IDIn                               []*string `json:"id_in,omitempty"`
+	IDNotIn                            []*string `json:"id_not_in,omitempty"`
+	NormalizedID                       *string   `json:"normalizedId,omitempty"`
+	NormalizedIDNot                    *string   `json:"normalizedId_not,omitempty"`
+	NormalizedIDGt                     *string   `json:"normalizedId_gt,omitempty"`
+	NormalizedIDLt                     *string   `json:"normalizedId_lt,omitempty"`
+	NormalizedIDGte                    *string   `json:"normalizedId_gte,omitempty"`
+	NormalizedIDLte                    *string   `json:"normalizedId_lte,omitempty"`
+	NormalizedIDIn                     []*string `json:"normalizedId_in,omitempty"`
+	NormalizedIDNotIn                  []*string `json:"normalizedId_not_in,omitempty"`
+	Owner                              *string   `json:"owner,omitempty"`
+	OwnerNot                           *string   `json:"owner_not,omitempty"`
+	OwnerIn                            []*string `json:"owner_in,omitempty"`
+	OwnerNotIn                         []*string `json:"owner_not_in,omitempty"`
+	OwnerContains                      *string   `json:"owner_contains,omitempty"`
+	OwnerNotContains                   *string   `json:"owner_not_contains,omitempty"`
+	OwnerStartsWith                    *string   `json:"owner_starts_with,omitempty"`
+	OwnerNotStartsWith                 *string   `json:"owner_not_starts_with,omitempty"`
+	OwnerEndsWith                      *string   `json:"owner_ends_with,omitempty"`
+	OwnerNotEndsWith                   *string   `json:"owner_not_ends_with,omitempty"`
+	EquippableAt                       *int64    `json:"equippableAt,omitempty"`
+	EquippableAtNot                    *int64    `json:"equippableAt_not,omitempty"`
+	EquippableAtGt                     *int64    `json:"equippableAt_gt,omitempty"`
+	EquippableAtLt                     *int64    `json:"equippableAt_lt,omitempty"`
+	EquippableAtGte                    *int64    `json:"equippableAt_gte,omitempty"`
+	EquippableAtLte                    *int64    `json:"equippableAt_lte,omitempty"`
+	EquippableAtIn                     []*int64  `json:"equippableAt_in,omitempty"`
+	EquippableAtNotIn                  []*int64  `json:"equippableAt_not_in,omitempty"`
+	EquippedTo                         *int64    `json:"equippedTo,omitempty"`
+	EquippedToNot                      *int64    `json:"equippedTo_not,omitempty"`
+	EquippedToGt                       *int64    `json:"equippedTo_gt,omitempty"`
+	EquippedToLt                       *int64    `json:"equippedTo_lt,omitempty"`
+	EquippedToGte                      *int64    `json:"equippedTo_gte,omitempty"`
+	EquippedToLte                      *int64    `json:"equippedTo_lte,omitempty"`
+	EquippedToIn                       []*int64  `json:"equippedTo_in,omitempty"`
+	EquippedToNotIn                    []*int64  `json:"equippedTo_not_in,omitempty"`
+	CurrentRealm                       *string   `json:"currentRealm,omitempty"`
+	CurrentRealmNot                    *string   `json:"currentRealm_not,omitempty"`
+	CurrentRealmIn                     []*string `json:"currentRealm_in,omitempty"`
+	CurrentRealmNotIn                  []*string `json:"currentRealm_not_in,omitempty"`
+	CurrentRealmContains               *string   `json:"currentRealm_contains,omitempty"`
+	CurrentRealmNotContains            *string   `json:"currentRealm_not_contains,omitempty"`
+	CurrentRealmStartsWith             *string   `json:"currentRealm_starts_with,omitempty"`
+	CurrentRealmNotStartsWith          *string   `json:"currentRealm_not_starts_with,omitempty"`
+	CurrentRealmEndsWith               *string   `json:"currentRealm_ends_with,omitempty"`
+	CurrentRealmNotEndsWith            *string   `json:"currentRealm_not_ends_with,omitempty"`
+	OriginRealm                        *string   `json:"originRealm,omitempty"`
+	OriginRealmNot                     *string   `json:"originRealm_not,omitempty"`
+	OriginRealmIn                      []*string `json:"originRealm_in,omitempty"`
+	OriginRealmNotIn                   []*string `json:"originRealm_not_in,omitempty"`
+	OriginRealmContains                *string   `json:"originRealm_contains,omitempty"`
+	OriginRealmNotContains             *string   `json:"originRealm_not_contains,omitempty"`
+	OriginRealmStartsWith              *string   `json:"originRealm_starts_with,omitempty"`
+	OriginRealmNotStartsWith           *string   `json:"originRealm_not_starts_with,omitempty"`
+	OriginRealmEndsWith                *string   `json:"originRealm_ends_with,omitempty"`
+	OriginRealmNotEndsWith             *string   `json:"originRealm_not_ends_with,omitempty"`
+	CreatedAt                          *int64    `json:"createdAt,omitempty"`
+	CreatedAtNot                       *int64    `json:"createdAt_not,omitempty"`
+	CreatedAtGt                        *int64    `json:"createdAt_gt,omitempty"`
+	CreatedAtLt                        *int64    `json:"createdAt_lt,omitempty"`
+	CreatedAtGte                       *int64    `json:"createdAt_gte,omitempty"`
+	CreatedAtLte                       *int64    `json:"createdAt_lte,omitempty"`
+	CreatedAtIn                        []*int64  `json:"createdAt_in,omitempty"`
+	CreatedAtNotIn                     []*int64  `json:"createdAt_not_in,omitempty"`
+	CraftedBy                          *int64    `json:"craftedBy,omitempty"`
+	CraftedByNot                       *int64    `json:"craftedBy_not,omitempty"`
+	CraftedByGt                        *int64    `json:"craftedBy_gt,omitempty"`
+	CraftedByLt                        *int64    `json:"craftedBy_lt,omitempty"`
+	CraftedByIn                        []*int64  `json:"craftedBy_in,omitempty"`
+	CraftedByNotIn                     []*int64  `json:"craftedBy_not_in,omitempty"`
+	SalePrice                          *string   `json:"salePrice,omitempty"`
+	SalePriceNot                       *string   `json:"salePrice_not,omitempty"`
+	SalePriceGt                        *string   `json:"salePrice_gt,omitempty"`
+	SalePriceLt                        *string   `json:"salePrice_lt,omitempty"`
+	SalePriceGte                       *string   `json:"salePrice_gte,omitempty"`
+	SalePriceLte                       *string   `json:"salePrice_lte,omitempty"`
+	SalePriceIn                        []*string `json:"salePrice_in,omitempty"`
+	SalePriceNotIn                     []*string `json:"salePrice_not_in,omitempty"`
+	PrivateAuctionProfile              *string   `json:"privateAuctionProfile,omitempty"`
+	PrivateAuctionProfileNot           *string   `json:"privateAuctionProfile_not,omitempty"`
+	PrivateAuctionProfileIn            []*string `json:"privateAuctionProfile_in,omitempty"`
+	PrivateAuctionProfileNotIn         []*string `json:"privateAuctionProfile_not_in,omitempty"`
+	PrivateAuctionProfileContains      *string   `json:"privateAuctionProfile_contains,omitempty"`
+	PrivateAuctionProfileNotContains   *string   `json:"privateAuctionProfile_not_contains,omitempty"`
+	PrivateAuctionProfileStartsWith    *string   `json:"privateAuctionProfile_starts_with,omitempty"`
+	PrivateAuctionProfileNotStartsWith *string   `json:"privateAuctionProfile_not_starts_with,omitempty"`
+	PrivateAuctionProfileEndsWith      *string   `json:"privateAuctionProfile_ends_with,omitempty"`
+	PrivateAuctionProfileNotEndsWith   *string   `json:"privateAuctionProfile_not_ends_with,omitempty"`
+	DisplayID                          *int64    `json:"displayId,omitempty"`
+	DisplayIDNot                       *int64    `json:"displayId_not,omitempty"`
+	DisplayIDGt                        *int64    `json:"displayId_gt,omitempty"`
+	DisplayIDLt                        *int64    `json:"displayId_lt,omitempty"`
+	DisplayIDGte                       *int64    `json:"displayId_gte,omitempty"`
+	DisplayIDLte                       *int64    `json:"displayId_lte,omitempty"`
+	DisplayIDIn                        []*int64  `json:"displayId_in,omitempty"`
+	DisplayIDNotIn                     []*int64  `json:"displayId_not_in,omitempty"`
+	Rarity                             *int64    `json:"rarity,omitempty"`
+	RarityNot                          *int64    `json:"rarity_not,omitempty"`
+	RarityGt                           *int64    `json:"rarity_gt,omitempty"`
+	RarityLt                           *int64    `json:"rarity_lt,omitempty"`
+	RarityGte                          *int64    `json:"rarity_gte,omitempty"`
+	RarityLte                          *int64    `json:"rarity_lte,omitempty"`
+	RarityIn                           []*int64  `json:"rarity_in,omitempty"`
+	RarityNotIn                        []*int64  `json:"rarity_not_in,omitempty"`
+	Dye1                               *int64    `json:"dye1,omitempty"`
+	Dye1Not                            *int64    `json:"dye1_not,omitempty"`
+	Dye1Gt                             *int64    `json:"dye1_gt,omitempty"`
+	Dye1Lt                             *int64    `json:"dye1_lt,omitempty"`
+	Dye1Gte                            *int64    `json:"dye1_gte,omitempty"`
+	Dye1Lte                            *int64    `json:"dye1_lte,omitempty"`
+	Dye1In                             []*int64  `json:"dye1_in,omitempty"`
+	Dye1NotIn                          []*int64  `json:"dye1_not_in,omitempty"`
+	Dye2                               *int64    `json:"dye2,omitempty"`
+	Dye2Not                            *int64    `json:"dye2_not,omitempty"`
+	Dye2Gt                             *int64    `json:"dye2_gt,omitempty"`
+	Dye2Lt                             *int64    `json:"dye2_lt,omitempty"`
+	Dye2Gte                            *int64    `json:"dye2_gte,omitempty"`
+	Dye2Lte                            *int64    `json:"dye2_lte,omitempty"`
+	Dye2In                             []*int64  `json:"dye2_in,omitempty"`
+	Dye2NotIn                          []*int64  `json:"dye2_not_in,omitempty"`
+	MaxDurability                      *int64    `json:"maxDurability,omitempty"`
+	MaxDurabilityNot                   *int64    `json:"maxDurability_not,omitempty"`
+	MaxDurabilityGt                    *int64    `json:"maxDurability_gt,omitempty"`
+	MaxDurabilityLt                    *int64    `json:"maxDurability_lt,omitempty"`
+	MaxDurabilityGte                   *int64    `json:"maxDurability_gte,omitempty"`
+	MaxDurabilityLte                   *int64    `json:"maxDurability_lte,omitempty"`
+	MaxDurabilityIn                    []*int64  `json:"maxDurability_in,omitempty"`
+	MaxDurabilityNotIn                 []*int64  `json:"maxDurability_not_in,omitempty"`
+	Durability                         *int64    `json:"durability,omitempty"`
+	DurabilityNot                      *int64    `json:"durability_not,omitempty"`
+	DurabilityGt                       *int64    `json:"durability_gt,omitempty"`
+	DurabilityLt                       *int64    `json:"durability_lt,omitempty"`
+	DurabilityGte                      *int64    `json:"durability_gte,omitempty"`
+	DurabilityLte                      *int64    `json:"durability_lte,omitempty"`
+	DurabilityIn                       []*int64  `json:"durability_in,omitempty"`
+	DurabilityNotIn                    []*int64  `json:"durability_not_in,omitempty"`
+	MaxRepairs                         *int64    `json:"maxRepairs,omitempty"`
+	MaxRepairsNot                      *int64    `json:"maxRepairs_not,omitempty"`
+	MaxRepairsGt                       *int64    `json:"maxRepairs_gt,omitempty"`
+	MaxRepairsLt                       *int64    `json:"maxRepairs_lt,omitempty"`
+	MaxRepairsGte                      *int64    `json:"maxRepairs_gte,omitempty"`
+	MaxRepairsLte                      *int64    `json:"maxRepairs_lte,omitempty"`
+	MaxRepairsIn                       []*int64  `json:"maxRepairs_in,omitempty"`
+	MaxRepairsNotIn                    []*int64  `json:"maxRepairs_not_in,omitempty"`
+	RemainingRepairs                   *int64    `json:"remainingRepairs,omitempty"`
+	RemainingRepairsNot                *int64    `json:"remainingRepairs_not,omitempty"`
+	RemainingRepairsGt                 *int64    `json:"remainingRepairs_gt,omitempty"`
+	RemainingRepairsLt                 *int64    `json:"remainingRepairs_lt,omitempty"`
+	RemainingRepairsGte                *int64    `json:"remainingRepairs_gte,omitempty"`
+	RemainingRepairsLte                *int64    `json:"remainingRepairs_lte,omitempty"`
+	RemainingRepairsIn                 []*int64  `json:"remainingRepairs_in,omitempty"`
+	RemainingRepairsNotIn              []*int64  `json:"remainingRepairs_not_in,omitempty"`
+	Bonus1                             *int64    `json:"bonus1,omitempty"`
+	Bonus1Not                          *int64    `json:"bonus1_not,omitempty"`
+	Bonus1Gt                           *int64    `json:"bonus1_gt,omitempty"`
+	Bonus1Lt                           *int64    `json:"bonus1_lt,omitempty"`
+	Bonus1Gte                          *int64    `json:"bonus1_gte,omitempty"`
+	Bonus1Lte                          *int64    `json:"bonus1_lte,omitempty"`
+	Bonus1In                           []*int64  `json:"bonus1_in,omitempty"`
+	Bonus1NotIn                        []*int64  `json:"bonus1_not_in,omitempty"`
+	Bonus2                             *int64    `json:"bonus2,omitempty"`
+	Bonus2Not                          *int64    `json:"bonus2_not,omitempty"`
+	Bonus2Gt                           *int64    `json:"bonus2_gt,omitempty"`
+	Bonus2Lt                           *int64    `json:"bonus2_lt,omitempty"`
+	Bonus2Gte                          *int64    `json:"bonus2_gte,omitempty"`
+	Bonus2Lte                          *int64    `json:"bonus2_lte,omitempty"`
+	Bonus2In                           []*int64  `json:"bonus2_in,omitempty"`
+	Bonus2NotIn                        []*int64  `json:"bonus2_not_in,omitempty"`
+	Bonus3                             *int64    `json:"bonus3,omitempty"`
+	Bonus3Not                          *int64    `json:"bonus3_not,omitempty"`
+	Bonus3Gt                           *int64    `json:"bonus3_gt,omitempty"`
+	Bonus3Lt                           *int64    `json:"bonus3_lt,omitempty"`
+	Bonus3Gte                          *int64    `json:"bonus3_gte,omitempty"`
+	Bonus3Lte                          *int64    `json:"bonus3_lte,omitempty"`
+	Bonus3In                           []*int64  `json:"bonus3_in,omitempty"`
+	Bonus3NotIn                        []*int64  `json:"bonus3_not_in,omitempty"`
+	Bonus4                             *int64    `json:"bonus4,omitempty"`
+	Bonus4Not                          *int64    `json:"bonus4_not,omitempty"`
+	Bonus4Gt                           *int64    `json:"bonus4_gt,omitempty"`
+	Bonus4Lt                           *int64    `json:"bonus4_lt,omitempty"`
+	Bonus4Gte                          *int64    `json:"bonus4_gte,omitempty"`
+	Bonus4Lte                          *int64    `json:"bonus4_lte,omitempty"`
+	Bonus4In                           []*int64  `json:"bonus4_in,omitempty"`
+	Bonus4NotIn                        []*int64  `json:"bonus4_not_in,omitempty"`
+	BonusScalar1                       *int64    `json:"bonusScalar1,omitempty"`
+	BonusScalar1Not                    *int64    `json:"bonusScalar1_not,omitempty"`
+	BonusScalar1Gt                     *int64    `json:"bonusScalar1_gt,omitempty"`
+	BonusScalar1Lt                     *int64    `json:"bonusScalar1_lt,omitempty"`
+	BonusScalar1Gte                    *int64    `json:"bonusScalar1_gte,omitempty"`
+	BonusScalar1Lte                    *int64    `json:"bonusScalar1_lte,omitempty"`
+	BonusScalar1In                     []*int64  `json:"bonusScalar1_in,omitempty"`
+	BonusScalar1NotIn                  []*int64  `json:"bonusScalar1_not_in,omitempty"`
+	BonusScalar2                       *int64    `json:"bonusScalar2,omitempty"`
+	BonusScalar2Not                    *int64    `json:"bonusScalar2_not,omitempty"`
+	BonusScalar2Gt                     *int64    `json:"bonusScalar2_gt,omitempty"`
+	BonusScalar2Lt                     *int64    `json:"bonusScalar2_lt,omitempty"`
+	BonusScalar2Gte                    *int64    `json:"bonusScalar2_gte,omitempty"`
+	BonusScalar2Lte                    *int64    `json:"bonusScalar2_lte,omitempty"`
+	BonusScalar2In                     []*int64  `json:"bonusScalar2_in,omitempty"`
+	BonusScalar2NotIn                  []*int64  `json:"bonusScalar2_not_in,omitempty"`
+	BonusScalar3                       *int64    `json:"bonusScalar3,omitempty"`
+	BonusScalar3Not                    *int64    `json:"bonusScalar3_not,omitempty"`
+	BonusScalar3Gt                     *int64    `json:"bonusScalar3_gt,omitempty"`
+	BonusScalar3Lt                     *int64    `json:"bonusScalar3_lt,omitempty"`
+	BonusScalar3Gte                    *int64    `json:"bonusScalar3_gte,omitempty"`
+	BonusScalar3Lte                    *int64    `json:"bonusScalar3_lte,omitempty"`
+	BonusScalar3In                     []*int64  `json:"bonusScalar3_in,omitempty"`
+	BonusScalar3NotIn                  []*int64  `json:"bonusScalar3_not_in,omitempty"`
+	BonusScalar4                       *int64    `json:"bonusScalar4,omitempty"`
+	BonusScalar4Not                    *int64    `json:"bonusScalar4_not,omitempty"`
+	BonusScalar4Gt                     *int64    `json:"bonusScalar4_gt,omitempty"`
+	BonusScalar4Lt                     *int64    `json:"bonusScalar4_lt,omitempty"`
+	BonusScalar4Gte                    *int64    `json:"bonusScalar4_gte,omitempty"`
+	BonusScalar4Lte                    *int64    `json:"bonusScalar4_lte,omitempty"`
+	BonusScalar4In                     []*int64  `json:"bonusScalar4_in,omitempty"`
+	BonusScalar4NotIn                  []*int64  `json:"bonusScalar4_not_in,omitempty"`
+	EnchantmentScalar1                 *int64    `json:"enchantmentScalar1,omitempty"`
+	EnchantmentScalar1Not              *int64    `json:"enchantmentScalar1_not,omitempty"`
+	EnchantmentScalar1Gt               *int64    `json:"enchantmentScalar1_gt,omitempty"`
+	EnchantmentScalar1Lt               *int64    `json:"enchantmentScalar1_lt,omitempty"`
+	EnchantmentScalar1Gte              *int64    `json:"enchantmentScalar1_gte,omitempty"`
+	EnchantmentScalar1Lte              *int64    `json:"enchantmentScalar1_lte,omitempty"`
+	EnchantmentScalar1In               []*int64  `json:"enchantmentScalar1_in,omitempty"`
+	EnchantmentScalar1NotIn            []*int64  `json:"enchantmentScalar1_not_in,omitempty"`
+	EnchantmentScalar2                 *int64    `json:"enchantmentScalar2,omitempty"`
+	EnchantmentScalar2Not              *int64    `json:"enchantmentScalar2_not,omitempty"`
+	EnchantmentScalar2Gt               *int64    `json:"enchantmentScalar2_gt,omitempty"`
+	EnchantmentScalar2Lt               *int64    `json:"enchantmentScalar2_lt,omitempty"`
+	EnchantmentScalar2Gte              *int64    `json:"enchantmentScalar2_gte,omitempty"`
+	EnchantmentScalar2Lte              *int64    `json:"enchantmentScalar2_lte,omitempty"`
+	EnchantmentScalar2In               []*int64  `json:"enchantmentScalar2_in,omitempty"`
+	EnchantmentScalar2NotIn            []*int64  `json:"enchantmentScalar2_not_in,omitempty"`
+	EnchantmentScalar3                 *int64    `json:"enchantmentScalar3,omitempty"`
+	EnchantmentScalar3Not              *int64    `json:"enchantmentScalar3_not,omitempty"`
+	EnchantmentScalar3Gt               *int64    `json:"enchantmentScalar3_gt,omitempty"`
+	EnchantmentScalar3Lt               *int64    `json:"enchantmentScalar3_lt,omitempty"`
+	EnchantmentScalar3Gte              *int64    `json:"enchantmentScalar3_gte,omitempty"`
+	EnchantmentScalar3Lte              *int64    `json:"enchantmentScalar3_lte,omitempty"`
+	EnchantmentScalar3In               []*int64  `json:"enchantmentScalar3_in,omitempty"`
+	EnchantmentScalar3NotIn            []*int64  `json:"enchantmentScalar3_not_in,omitempty"`
+	EnchantmentType1                   *int64    `json:"enchantmentType1,omitempty"`
+	EnchantmentType1Not                *int64    `json:"enchantmentType1_not,omitempty"`
+	EnchantmentType1Gt                 *int64    `json:"enchantmentType1_gt,omitempty"`
+	EnchantmentType1Lt                 *int64    `json:"enchantmentType1_lt,omitempty"`
+	EnchantmentType1Gte                *int64    `json:"enchantmentType1_gte,omitempty"`
+	EnchantmentType1Lte                *int64    `json:"enchantmentType1_lte,omitempty"`
+	EnchantmentType1In                 []*int64  `json:"enchantmentType1_in,omitempty"`
+	EnchantmentType1NotIn              []*int64  `json:"enchantmentType1_not_in,omitempty"`
+	EnchantmentType2                   *int64    `json:"enchantmentType2,omitempty"`
+	EnchantmentType2Not                *int64    `json:"enchantmentType2_not,omitempty"`
+	EnchantmentType2Gt                 *int64    `json:"enchantmentType2_gt,omitempty"`
+	EnchantmentType2Lt                 *int64    `json:"enchantmentType2_lt,omitempty"`
+	EnchantmentType2Gte                *int64    `json:"enchantmentType2_gte,omitempty"`
+	EnchantmentType2Lte                *int64    `json:"enchantmentType2_lte,omitempty"`
+	EnchantmentType2In                 []*int64  `json:"enchantmentType2_in,omitempty"`
+	EnchantmentType2NotIn              []*int64  `json:"enchantmentType2_not_in,omitempty"`
+	EnchantmentType3                   *int64    `json:"enchantmentType3,omitempty"`
+	EnchantmentType3Not                *int64    `json:"enchantmentType3_not,omitempty"`
+	EnchantmentType3Gt                 *int64    `json:"enchantmentType3_gt,omitempty"`
+	EnchantmentType3Lt                 *int64    `json:"enchantmentType3_lt,omitempty"`
+	EnchantmentType3Gte                *int64    `json:"enchantmentType3_gte,omitempty"`
+	EnchantmentType3Lte                *int64    `json:"enchantmentType3_lte,omitempty"`
+	EnchantmentType3In                 []*int64  `json:"enchantmentType3_in,omitempty"`
+	EnchantmentType3NotIn              []*int64  `json:"enchantmentType3_not_in,omitempty"`
+	EquipRequirement                   *int64    `json:"equipRequirement,omitempty"`
+	EquipRequirementNot                *int64    `json:"equipRequirement_not,omitempty"`
+	EquipRequirementGt                 *int64    `json:"equipRequirement_gt,omitempty"`
+	EquipRequirementLt                 *int64    `json:"equipRequirement_lt,omitempty"`
+	EquipRequirementGte                *int64    `json:"equipRequirement_gte,omitempty"`
+	EquipRequirementLte                *int64    `json:"equipRequirement_lte,omitempty"`
+	EquipRequirementIn                 []*int64  `json:"equipRequirement_in,omitempty"`
+	EquipRequirementNotIn              []*int64  `json:"equipRequirement_not_in,omitempty"`
+	WeaponType                         *int64    `json:"weaponType,omitempty"`
+	WeaponTypeNot                      *int64    `json:"weaponType_not,omitempty"`
+	WeaponTypeGt                       *int64    `json:"weaponType_gt,omitempty"`
+	WeaponTypeLt                       *int64    `json:"weaponType_lt,omitempty"`
+	WeaponTypeGte                      *int64    `json:"weaponType_gte,omitempty"`
+	WeaponTypeLte                      *int64    `json:"weaponType_lte,omitempty"`
+	WeaponTypeIn                       []*int64  `json:"weaponType_in,omitempty"`
+	WeaponTypeNotIn                    []*int64  `json:"weaponType_not_in,omitempty"`
+	BasePotency                        *int64    `json:"basePotency,omitempty"`
+	BasePotencyNot                     *int64    `json:"basePotency_not,omitempty"`
+	BasePotencyGt                      *int64    `json:"basePotency_gt,omitempty"`
+	BasePotencyLt                      *int64    `json:"basePotency_lt,omitempty"`
+	BasePotencyGte                     *int64    `json:"basePotency_gte,omitempty"`
+	BasePotencyLte                     *int64    `json:"basePotency_lte,omitempty"`
+	BasePotencyIn                      []*int64  `json:"basePotency_in,omitempty"`
+	BasePotencyNotIn                   []*int64  `json:"basePotency_not_in,omitempty"`
+	FocusRequirement                   *int64    `json:"focusRequirement,omitempty"`
+	FocusRequirementNot                *int64    `json:"focusRequirement_not,omitempty"`
+	FocusRequirementGt                 *int64    `json:"focusRequirement_gt,omitempty"`
+	FocusRequirementLt                 *int64    `json:"focusRequirement_lt,omitempty"`
+	FocusRequirementGte                *int64    `json:"focusRequirement_gte,omitempty"`
+	FocusRequirementLte                *int64    `json:"focusRequirement_lte,omitempty"`
+	FocusRequirementIn                 []*int64  `json:"focusRequirement_in,omitempty"`
+	FocusRequirementNotIn              []*int64  `json:"focusRequirement_not_in,omitempty"`
+	MAccuracyAtRequirement             *int64    `json:"mAccuracyAtRequirement,omitempty"`
+	MAccuracyAtRequirementNot          *int64    `json:"mAccuracyAtRequirement_not,omitempty"`
+	MAccuracyAtRequirementGt           *int64    `json:"mAccuracyAtRequirement_gt,omitempty"`
+	MAccuracyAtRequirementLt           *int64    `json:"mAccuracyAtRequirement_lt,omitempty"`
+	MAccuracyAtRequirementGte          *int64    `json:"mAccuracyAtRequirement_gte,omitempty"`
+	MAccuracyAtRequirementLte          *int64    `json:"mAccuracyAtRequirement_lte,omitempty"`
+	MAccuracyAtRequirementIn           []*int64  `json:"mAccuracyAtRequirement_in,omitempty"`
+	MAccuracyAtRequirementNotIn        []*int64  `json:"mAccuracyAtRequirement_not_in,omitempty"`
+	MScalarStat1                       *int64    `json:"mScalarStat1,omitempty"`
+	MScalarStat1Not                    *int64    `json:"mScalarStat1_not,omitempty"`
+	MScalarStat1Gt                     *int64    `json:"mScalarStat1_gt,omitempty"`
+	MScalarStat1Lt                     *int64    `json:"mScalarStat1_lt,omitempty"`
+	MScalarStat1Gte                    *int64    `json:"mScalarStat1_gte,omitempty"`
+	MScalarStat1Lte                    *int64    `json:"mScalarStat1_lte,omitempty"`
+	MScalarStat1In                     []*int64  `json:"mScalarStat1_in,omitempty"`
+	MScalarStat1NotIn                  []*int64  `json:"mScalarStat1_not_in,omitempty"`
+	MScalarStat2                       *int64    `json:"mScalarStat2,omitempty"`
+	MScalarStat2Not                    *int64    `json:"mScalarStat2_not,omitempty"`
+	MScalarStat2Gt                     *int64    `json:"mScalarStat2_gt,omitempty"`
+	MScalarStat2Lt                     *int64    `json:"mScalarStat2_lt,omitempty"`
+	MScalarStat2Gte                    *int64    `json:"mScalarStat2_gte,omitempty"`
+	MScalarStat2Lte                    *int64    `json:"mScalarStat2_lte,omitempty"`
+	MScalarStat2In                     []*int64  `json:"mScalarStat2_in,omitempty"`
+	MScalarStat2NotIn                  []*int64  `json:"mScalarStat2_not_in,omitempty"`
+	MScalarStat3                       *int64    `json:"mScalarStat3,omitempty"`
+	MScalarStat3Not                    *int64    `json:"mScalarStat3_not,omitempty"`
+	MScalarStat3Gt                     *int64    `json:"mScalarStat3_gt,omitempty"`
+	MScalarStat3Lt                     *int64    `json:"mScalarStat3_lt,omitempty"`
+	MScalarStat3Gte                    *int64    `json:"mScalarStat3_gte,omitempty"`
+	MScalarStat3Lte                    *int64    `json:"mScalarStat3_lte,omitempty"`
+	MScalarStat3In                     []*int64  `json:"mScalarStat3_in,omitempty"`
+	MScalarStat3NotIn                  []*int64  `json:"mScalarStat3_not_in,omitempty"`
+	MScalarValue1                      *int64    `json:"mScalarValue1,omitempty"`
+	MScalarValue1Not                   *int64    `json:"mScalarValue1_not,omitempty"`
+	MScalarValue1Gt                    *int64    `json:"mScalarValue1_gt,omitempty"`
+	MScalarValue1Lt                    *int64    `json:"mScalarValue1_lt,omitempty"`
+	MScalarValue1Gte                   *int64    `json:"mScalarValue1_gte,omitempty"`
+	MScalarValue1Lte                   *int64    `json:"mScalarValue1_lte,omitempty"`
+	MScalarValue1In                    []*int64  `json:"mScalarValue1_in,omitempty"`
+	MScalarValue1NotIn                 []*int64  `json:"mScalarValue1_not_in,omitempty"`
+	MScalarValue2                      *int64    `json:"mScalarValue2,omitempty"`
+	MScalarValue2Not                   *int64    `json:"mScalarValue2_not,omitempty"`
+	MScalarValue2Gt                    *int64    `json:"mScalarValue2_gt,omitempty"`
+	MScalarValue2Lt                    *int64    `json:"mScalarValue2_lt,omitempty"`
+	MScalarValue2Gte                   *int64    `json:"mScalarValue2_gte,omitempty"`
+	MScalarValue2Lte                   *int64    `json:"mScalarValue2_lte,omitempty"`
+	MScalarValue2In                    []*int64  `json:"mScalarValue2_in,omitempty"`
+	MScalarValue2NotIn                 []*int64  `json:"mScalarValue2_not_in,omitempty"`
+	MScalarValue3                      *int64    `json:"mScalarValue3,omitempty"`
+	MScalarValue3Not                   *int64    `json:"mScalarValue3_not,omitempty"`
+	MScalarValue3Gt                    *int64    `json:"mScalarValue3_gt,omitempty"`
+	MScalarValue3Lt                    *int64    `json:"mScalarValue3_lt,omitempty"`
+	MScalarValue3Gte                   *int64    `json:"mScalarValue3_gte,omitempty"`
+	MScalarValue3Lte                   *int64    `json:"mScalarValue3_lte,omitempty"`
+	MScalarValue3In                    []*int64  `json:"mScalarValue3_in,omitempty"`
+	MScalarValue3NotIn                 []*int64  `json:"mScalarValue3_not_in,omitempty"`
+	MScalarMax1                        *int64    `json:"mScalarMax1,omitempty"`
+	MScalarMax1Not                     *int64    `json:"mScalarMax1_not,omitempty"`
+	MScalarMax1Gt                      *int64    `json:"mScalarMax1_gt,omitempty"`
+	MScalarMax1Lt                      *int64    `json:"mScalarMax1_lt,omitempty"`
+	MScalarMax1Gte                     *int64    `json:"mScalarMax1_gte,omitempty"`
+	MScalarMax1Lte                     *int64    `json:"mScalarMax1_lte,omitempty"`
+	MScalarMax1In                      []*int64  `json:"mScalarMax1_in,omitempty"`
+	MScalarMax1NotIn                   []*int64  `json:"mScalarMax1_not_in,omitempty"`
+	MScalarMax2                        *int64    `json:"mScalarMax2,omitempty"`
+	MScalarMax2Not                     *int64    `json:"mScalarMax2_not,omitempty"`
+	MScalarMax2Gt                      *int64    `json:"mScalarMax2_gt,omitempty"`
+	MScalarMax2Lt                      *int64    `json:"mScalarMax2_lt,omitempty"`
+	MScalarMax2Gte                     *int64    `json:"mScalarMax2_gte,omitempty"`
+	MScalarMax2Lte                     *int64    `json:"mScalarMax2_lte,omitempty"`
+	MScalarMax2In                      []*int64  `json:"mScalarMax2_in,omitempty"`
+	MScalarMax2NotIn                   []*int64  `json:"mScalarMax2_not_in,omitempty"`
+	MScalarMax3                        *int64    `json:"mScalarMax3,omitempty"`
+	MScalarMax3Not                     *int64    `json:"mScalarMax3_not,omitempty"`
+	MScalarMax3Gt                      *int64    `json:"mScalarMax3_gt,omitempty"`
+	MScalarMax3Lt                      *int64    `json:"mScalarMax3_lt,omitempty"`
+	MScalarMax3Gte                     *int64    `json:"mScalarMax3_gte,omitempty"`
+	MScalarMax3Lte                     *int64    `json:"mScalarMax3_lte,omitempty"`
+	MScalarMax3In                      []*int64  `json:"mScalarMax3_in,omitempty"`
+	MScalarMax3NotIn                   []*int64  `json:"mScalarMax3_not_in,omitempty"`
+	RestorationCount                   *int64    `json:"restorationCount,omitempty"`
+	RestorationCountNot                *int64    `json:"restorationCount_not,omitempty"`
+	RestorationCountGt                 *int64    `json:"restorationCount_gt,omitempty"`
+	RestorationCountLt                 *int64    `json:"restorationCount_lt,omitempty"`
+	RestorationCountGte                *int64    `json:"restorationCount_gte,omitempty"`
+	RestorationCountLte                *int64    `json:"restorationCount_lte,omitempty"`
+	RestorationCountIn                 []*int64  `json:"restorationCount_in,omitempty"`
+	RestorationCountNotIn              []*int64  `json:"restorationCount_not_in,omitempty"`
+	BaseDamage                         *int64    `json:"baseDamage,omitempty"`
+	BaseDamageNot                      *int64    `json:"baseDamage_not,omitempty"`
+	BaseDamageGt                       *int64    `json:"baseDamage_gt,omitempty"`
+	BaseDamageLt                       *int64    `json:"baseDamage_lt,omitempty"`
+	BaseDamageGte                      *int64    `json:"baseDamage_gte,omitempty"`
+	BaseDamageLte                      *int64    `json:"baseDamage_lte,omitempty"`
+	BaseDamageIn                       []*int64  `json:"baseDamage_in,omitempty"`
+	BaseDamageNotIn                    []*int64  `json:"baseDamage_not_in,omitempty"`
+	AccuracyRequirement                *int64    `json:"accuracyRequirement,omitempty"`
+	AccuracyRequirementNot             *int64    `json:"accuracyRequirement_not,omitempty"`
+	AccuracyRequirementGt              *int64    `json:"accuracyRequirement_gt,omitempty"`
+	AccuracyRequirementLt              *int64    `json:"accuracyRequirement_lt,omitempty"`
+	AccuracyRequirementGte             *int64    `json:"accuracyRequirement_gte,omitempty"`
+	AccuracyRequirementLte             *int64    `json:"accuracyRequirement_lte,omitempty"`
+	AccuracyRequirementIn              []*int64  `json:"accuracyRequirement_in,omitempty"`
+	AccuracyRequirementNotIn           []*int64  `json:"accuracyRequirement_not_in,omitempty"`
+	PAccuracyAtRequirement             *int64    `json:"pAccuracyAtRequirement,omitempty"`
+	PAccuracyAtRequirementNot          *int64    `json:"pAccuracyAtRequirement_not,omitempty"`
+	PAccuracyAtRequirementGt           *int64    `json:"pAccuracyAtRequirement_gt,omitempty"`
+	PAccuracyAtRequirementLt           *int64    `json:"pAccuracyAtRequirement_lt,omitempty"`
+	PAccuracyAtRequirementGte          *int64    `json:"pAccuracyAtRequirement_gte,omitempty"`
+	PAccuracyAtRequirementLte          *int64    `json:"pAccuracyAtRequirement_lte,omitempty"`
+	PAccuracyAtRequirementIn           []*int64  `json:"pAccuracyAtRequirement_in,omitempty"`
+	PAccuracyAtRequirementNotIn        []*int64  `json:"pAccuracyAtRequirement_not_in,omitempty"`
+	PScalarStat1                       *int64    `json:"pScalarStat1,omitempty"`
+	PScalarStat1Not                    *int64    `json:"pScalarStat1_not,omitempty"`
+	PScalarStat1Gt                     *int64    `json:"pScalarStat1_gt,omitempty"`
+	PScalarStat1Lt                     *int64    `json:"pScalarStat1_lt,omitempty"`
+	PScalarStat1Gte                    *int64    `json:"pScalarStat1_gte,omitempty"`
+	PScalarStat1Lte                    *int64    `json:"pScalarStat1_lte,omitempty"`
+	PScalarStat1In                     []*int64  `json:"pScalarStat1_in,omitempty"`
+	PScalarStat1NotIn                  []*int64  `json:"pScalarStat1_not_in,omitempty"`
+	PScalarStat2                       *int64    `json:"pScalarStat2,omitempty"`
+	PScalarStat2Not                    *int64    `json:"pScalarStat2_not,omitempty"`
+	PScalarStat2Gt                     *int64    `json:"pScalarStat2_gt,omitempty"`
+	PScalarStat2Lt                     *int64    `json:"pScalarStat2_lt,omitempty"`
+	PScalarStat2Gte                    *int64    `json:"pScalarStat2_gte,omitempty"`
+	PScalarStat2Lte                    *int64    `json:"pScalarStat2_lte,omitempty"`
+	PScalarStat2In                     []*int64  `json:"pScalarStat2_in,omitempty"`
+	PScalarStat2NotIn                  []*int64  `json:"pScalarStat2_not_in,omitempty"`
+	PScalarStat3                       *int64    `json:"pScalarStat3,omitempty"`
+	PScalarStat3Not                    *int64    `json:"pScalarStat3_not,omitempty"`
+	PScalarStat3Gt                     *int64    `json:"pScalarStat3_gt,omitempty"`
+	PScalarStat3Lt                     *int64    `json:"pScalarStat3_lt,omitempty"`
+	PScalarStat3Gte                    *int64    `json:"pScalarStat3_gte,omitempty"`
+	PScalarStat3Lte                    *int64    `json:"pScalarStat3_lte,omitempty"`
+	PScalarStat3In                     []*int64  `json:"pScalarStat3_in,omitempty"`
+	PScalarStat3NotIn                  []*int64  `json:"pScalarStat3_not_in,omitempty"`
+	PScalarValue1                      *int64    `json:"pScalarValue1,omitempty"`
+	PScalarValue1Not                   *int64    `json:"pScalarValue1_not,omitempty"`
+	PScalarValue1Gt                    *int64    `json:"pScalarValue1_gt,omitempty"`
+	PScalarValue1Lt                    *int64    `json:"pScalarValue1_lt,omitempty"`
+	PScalarValue1Gte                   *int64    `json:"pScalarValue1_gte,omitempty"`
+	PScalarValue1Lte                   *int64    `json:"pScalarValue1_lte,omitempty"`
+	PScalarValue1In                    []*int64  `json:"pScalarValue1_in,omitempty"`
+	PScalarValue1NotIn                 []*int64  `json:"pScalarValue1_not_in,omitempty"`
+	PScalarValue2                      *int64    `json:"pScalarValue2,omitempty"`
+	PScalarValue2Not                   *int64    `json:"pScalarValue2_not,omitempty"`
+	PScalarValue2Gt                    *int64    `json:"pScalarValue2_gt,omitempty"`
+	PScalarValue2Lt                    *int64    `json:"pScalarValue2_lt,omitempty"`
+	PScalarValue2Gte                   *int64    `json:"pScalarValue2_gte,omitempty"`
+	PScalarValue2Lte                   *int64    `json:"pScalarValue2_lte,omitempty"`
+	PScalarValue2In                    []*int64  `json:"pScalarValue2_in,omitempty"`
+	PScalarValue2NotIn                 []*int64  `json:"pScalarValue2_not_in,omitempty"`
+	PScalarValue3                      *int64    `json:"pScalarValue3,omitempty"`
+	PScalarValue3Not                   *int64    `json:"pScalarValue3_not,omitempty"`
+	PScalarValue3Gt                    *int64    `json:"pScalarValue3_gt,omitempty"`
+	PScalarValue3Lt                    *int64    `json:"pScalarValue3_lt,omitempty"`
+	PScalarValue3Gte                   *int64    `json:"pScalarValue3_gte,omitempty"`
+	PScalarValue3Lte                   *int64    `json:"pScalarValue3_lte,omitempty"`
+	PScalarValue3In                    []*int64  `json:"pScalarValue3_in,omitempty"`
+	PScalarValue3NotIn                 []*int64  `json:"pScalarValue3_not_in,omitempty"`
+	PScalarMax1                        *int64    `json:"pScalarMax1,omitempty"`
+	PScalarMax1Not                     *int64    `json:"pScalarMax1_not,omitempty"`
+	PScalarMax1Gt                      *int64    `json:"pScalarMax1_gt,omitempty"`
+	PScalarMax1Lt                      *int64    `json:"pScalarMax1_lt,omitempty"`
+	PScalarMax1Gte                     *int64    `json:"pScalarMax1_gte,omitempty"`
+	PScalarMax1Lte                     *int64    `json:"pScalarMax1_lte,omitempty"`
+	PScalarMax1In                      []*int64  `json:"pScalarMax1_in,omitempty"`
+	PScalarMax1NotIn                   []*int64  `json:"pScalarMax1_not_in,omitempty"`
+	PScalarMax2                        *int64    `json:"pScalarMax2,omitempty"`
+	PScalarMax2Not                     *int64    `json:"pScalarMax2_not,omitempty"`
+	PScalarMax2Gt                      *int64    `json:"pScalarMax2_gt,omitempty"`
+	PScalarMax2Lt                      *int64    `json:"pScalarMax2_lt,omitempty"`
+	PScalarMax2Gte                     *int64    `json:"pScalarMax2_gte,omitempty"`
+	PScalarMax2Lte                     *int64    `json:"pScalarMax2_lte,omitempty"`
+	PScalarMax2In                      []*int64  `json:"pScalarMax2_in,omitempty"`
+	PScalarMax2NotIn                   []*int64  `json:"pScalarMax2_not_in,omitempty"`
+	PScalarMax3                        *int64    `json:"pScalarMax3,omitempty"`
+	PScalarMax3Not                     *int64    `json:"pScalarMax3_not,omitempty"`
+	PScalarMax3Gt                      *int64    `json:"pScalarMax3_gt,omitempty"`
+	PScalarMax3Lt                      *int64    `json:"pScalarMax3_lt,omitempty"`
+	PScalarMax3Gte                     *int64    `json:"pScalarMax3_gte,omitempty"`
+	PScalarMax3Lte                     *int64    `json:"pScalarMax3_lte,omitempty"`
+	PScalarMax3In                      []*int64  `json:"pScalarMax3_in,omitempty"`
+	PScalarMax3NotIn                   []*int64  `json:"pScalarMax3_not_in,omitempty"`
+}
+
 type AuctionOrderBy string
 
 const (
@@ -2537,5 +3192,162 @@ func (e *ProfileOrderBy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ProfileOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type WeaponOrderBy string
+
+const (
+	WeaponOrderByID                     WeaponOrderBy = "id"
+	WeaponOrderByNormalizedID           WeaponOrderBy = "normalizedId"
+	WeaponOrderByOwner                  WeaponOrderBy = "owner"
+	WeaponOrderByEquippableAt           WeaponOrderBy = "equippableAt"
+	WeaponOrderByEquippedTo             WeaponOrderBy = "equippedTo"
+	WeaponOrderByCurrentRealm           WeaponOrderBy = "currentRealm"
+	WeaponOrderByOriginRealm            WeaponOrderBy = "originRealm"
+	WeaponOrderByCreatedAt              WeaponOrderBy = "createdAt"
+	WeaponOrderByCraftedBy              WeaponOrderBy = "craftedBy"
+	WeaponOrderBySalePrice              WeaponOrderBy = "salePrice"
+	WeaponOrderByPrivateAuctionProfile  WeaponOrderBy = "privateAuctionProfile"
+	WeaponOrderByDisplayID              WeaponOrderBy = "displayId"
+	WeaponOrderByRarity                 WeaponOrderBy = "rarity"
+	WeaponOrderByDye1                   WeaponOrderBy = "dye1"
+	WeaponOrderByDye2                   WeaponOrderBy = "dye2"
+	WeaponOrderByMaxDurability          WeaponOrderBy = "maxDurability"
+	WeaponOrderByDurability             WeaponOrderBy = "durability"
+	WeaponOrderByMaxRepairs             WeaponOrderBy = "maxRepairs"
+	WeaponOrderByRemainingRepairs       WeaponOrderBy = "remainingRepairs"
+	WeaponOrderByBonus1                 WeaponOrderBy = "bonus1"
+	WeaponOrderByBonus2                 WeaponOrderBy = "bonus2"
+	WeaponOrderByBonus3                 WeaponOrderBy = "bonus3"
+	WeaponOrderByBonus4                 WeaponOrderBy = "bonus4"
+	WeaponOrderByBonusScalar1           WeaponOrderBy = "bonusScalar1"
+	WeaponOrderByBonusScalar2           WeaponOrderBy = "bonusScalar2"
+	WeaponOrderByBonusScalar3           WeaponOrderBy = "bonusScalar3"
+	WeaponOrderByBonusScalar4           WeaponOrderBy = "bonusScalar4"
+	WeaponOrderByEnchantmentScalar1     WeaponOrderBy = "enchantmentScalar1"
+	WeaponOrderByEnchantmentScalar2     WeaponOrderBy = "enchantmentScalar2"
+	WeaponOrderByEnchantmentScalar3     WeaponOrderBy = "enchantmentScalar3"
+	WeaponOrderByEnchantmentType1       WeaponOrderBy = "enchantmentType1"
+	WeaponOrderByEnchantmentType2       WeaponOrderBy = "enchantmentType2"
+	WeaponOrderByEnchantmentType3       WeaponOrderBy = "enchantmentType3"
+	WeaponOrderByEquipRequirement       WeaponOrderBy = "equipRequirement"
+	WeaponOrderByWeaponType             WeaponOrderBy = "weaponType"
+	WeaponOrderByBasePotency            WeaponOrderBy = "basePotency"
+	WeaponOrderByFocusRequirement       WeaponOrderBy = "focusRequirement"
+	WeaponOrderByMAccuracyAtRequirement WeaponOrderBy = "mAccuracyAtRequirement"
+	WeaponOrderByMScalarStat1           WeaponOrderBy = "mScalarStat1"
+	WeaponOrderByMScalarStat2           WeaponOrderBy = "mScalarStat2"
+	WeaponOrderByMScalarStat3           WeaponOrderBy = "mScalarStat3"
+	WeaponOrderByMScalarValue1          WeaponOrderBy = "mScalarValue1"
+	WeaponOrderByMScalarValue2          WeaponOrderBy = "mScalarValue2"
+	WeaponOrderByMScalarValue3          WeaponOrderBy = "mScalarValue3"
+	WeaponOrderByMScalarMax1            WeaponOrderBy = "mScalarMax1"
+	WeaponOrderByMScalarMax2            WeaponOrderBy = "mScalarMax2"
+	WeaponOrderByMScalarMax3            WeaponOrderBy = "mScalarMax3"
+	WeaponOrderByMisc                   WeaponOrderBy = "misc"
+	WeaponOrderByBaseDamage             WeaponOrderBy = "baseDamage"
+	WeaponOrderByAccuracyRequirement    WeaponOrderBy = "accuracyRequirement"
+	WeaponOrderByPAccuracyAtRequirement WeaponOrderBy = "pAccuracyAtRequirement"
+	WeaponOrderByPScalarStat1           WeaponOrderBy = "pScalarStat1"
+	WeaponOrderByPScalarStat2           WeaponOrderBy = "pScalarStat2"
+	WeaponOrderByPScalarStat3           WeaponOrderBy = "pScalarStat3"
+	WeaponOrderByPScalarValue1          WeaponOrderBy = "pScalarValue1"
+	WeaponOrderByPScalarValue2          WeaponOrderBy = "pScalarValue2"
+	WeaponOrderByPScalarValue3          WeaponOrderBy = "pScalarValue3"
+	WeaponOrderByPScalarMax1            WeaponOrderBy = "pScalarMax1"
+	WeaponOrderByPScalarMax2            WeaponOrderBy = "pScalarMax2"
+	WeaponOrderByPScalarMax3            WeaponOrderBy = "pScalarMax3"
+)
+
+var AllWeaponOrderBy = []WeaponOrderBy{
+	WeaponOrderByID,
+	WeaponOrderByNormalizedID,
+	WeaponOrderByOwner,
+	WeaponOrderByEquippableAt,
+	WeaponOrderByEquippedTo,
+	WeaponOrderByCurrentRealm,
+	WeaponOrderByOriginRealm,
+	WeaponOrderByCreatedAt,
+	WeaponOrderByCraftedBy,
+	WeaponOrderBySalePrice,
+	WeaponOrderByPrivateAuctionProfile,
+	WeaponOrderByDisplayID,
+	WeaponOrderByRarity,
+	WeaponOrderByDye1,
+	WeaponOrderByDye2,
+	WeaponOrderByMaxDurability,
+	WeaponOrderByDurability,
+	WeaponOrderByMaxRepairs,
+	WeaponOrderByRemainingRepairs,
+	WeaponOrderByBonus1,
+	WeaponOrderByBonus2,
+	WeaponOrderByBonus3,
+	WeaponOrderByBonus4,
+	WeaponOrderByBonusScalar1,
+	WeaponOrderByBonusScalar2,
+	WeaponOrderByBonusScalar3,
+	WeaponOrderByBonusScalar4,
+	WeaponOrderByEnchantmentScalar1,
+	WeaponOrderByEnchantmentScalar2,
+	WeaponOrderByEnchantmentScalar3,
+	WeaponOrderByEnchantmentType1,
+	WeaponOrderByEnchantmentType2,
+	WeaponOrderByEnchantmentType3,
+	WeaponOrderByEquipRequirement,
+	WeaponOrderByWeaponType,
+	WeaponOrderByBasePotency,
+	WeaponOrderByFocusRequirement,
+	WeaponOrderByMAccuracyAtRequirement,
+	WeaponOrderByMScalarStat1,
+	WeaponOrderByMScalarStat2,
+	WeaponOrderByMScalarStat3,
+	WeaponOrderByMScalarValue1,
+	WeaponOrderByMScalarValue2,
+	WeaponOrderByMScalarValue3,
+	WeaponOrderByMScalarMax1,
+	WeaponOrderByMScalarMax2,
+	WeaponOrderByMScalarMax3,
+	WeaponOrderByMisc,
+	WeaponOrderByBaseDamage,
+	WeaponOrderByAccuracyRequirement,
+	WeaponOrderByPAccuracyAtRequirement,
+	WeaponOrderByPScalarStat1,
+	WeaponOrderByPScalarStat2,
+	WeaponOrderByPScalarStat3,
+	WeaponOrderByPScalarValue1,
+	WeaponOrderByPScalarValue2,
+	WeaponOrderByPScalarValue3,
+	WeaponOrderByPScalarMax1,
+	WeaponOrderByPScalarMax2,
+	WeaponOrderByPScalarMax3,
+}
+
+func (e WeaponOrderBy) IsValid() bool {
+	switch e {
+	case WeaponOrderByID, WeaponOrderByNormalizedID, WeaponOrderByOwner, WeaponOrderByEquippableAt, WeaponOrderByEquippedTo, WeaponOrderByCurrentRealm, WeaponOrderByOriginRealm, WeaponOrderByCreatedAt, WeaponOrderByCraftedBy, WeaponOrderBySalePrice, WeaponOrderByPrivateAuctionProfile, WeaponOrderByDisplayID, WeaponOrderByRarity, WeaponOrderByDye1, WeaponOrderByDye2, WeaponOrderByMaxDurability, WeaponOrderByDurability, WeaponOrderByMaxRepairs, WeaponOrderByRemainingRepairs, WeaponOrderByBonus1, WeaponOrderByBonus2, WeaponOrderByBonus3, WeaponOrderByBonus4, WeaponOrderByBonusScalar1, WeaponOrderByBonusScalar2, WeaponOrderByBonusScalar3, WeaponOrderByBonusScalar4, WeaponOrderByEnchantmentScalar1, WeaponOrderByEnchantmentScalar2, WeaponOrderByEnchantmentScalar3, WeaponOrderByEnchantmentType1, WeaponOrderByEnchantmentType2, WeaponOrderByEnchantmentType3, WeaponOrderByEquipRequirement, WeaponOrderByWeaponType, WeaponOrderByBasePotency, WeaponOrderByFocusRequirement, WeaponOrderByMAccuracyAtRequirement, WeaponOrderByMScalarStat1, WeaponOrderByMScalarStat2, WeaponOrderByMScalarStat3, WeaponOrderByMScalarValue1, WeaponOrderByMScalarValue2, WeaponOrderByMScalarValue3, WeaponOrderByMScalarMax1, WeaponOrderByMScalarMax2, WeaponOrderByMScalarMax3, WeaponOrderByMisc, WeaponOrderByBaseDamage, WeaponOrderByAccuracyRequirement, WeaponOrderByPAccuracyAtRequirement, WeaponOrderByPScalarStat1, WeaponOrderByPScalarStat2, WeaponOrderByPScalarStat3, WeaponOrderByPScalarValue1, WeaponOrderByPScalarValue2, WeaponOrderByPScalarValue3, WeaponOrderByPScalarMax1, WeaponOrderByPScalarMax2, WeaponOrderByPScalarMax3:
+		return true
+	}
+	return false
+}
+
+func (e WeaponOrderBy) String() string {
+	return string(e)
+}
+
+func (e *WeaponOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = WeaponOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid WeaponOrderBy", str)
+	}
+	return nil
+}
+
+func (e WeaponOrderBy) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

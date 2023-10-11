@@ -26,14 +26,14 @@ resolver:
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
 
-# Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
+# Optional: turn on use ` + '`' + `gqlgen:'fieldName'` + '`' + ` tags in your models
 struct_tag: json
 
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+  - 'github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model'
 
 # This section declares type mapping between the GraphQL and go type systems
 #
