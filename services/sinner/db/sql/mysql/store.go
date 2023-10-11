@@ -64,7 +64,6 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 		// migrate in a transaction since we skip this by default
 		err = gdb.Transaction(func(tx *gorm.DB) error {
 			//nolint: wrapcheck
-			fmt.Println("EEE5", model.GetAllModels())
 			return gdb.WithContext(ctx).AutoMigrate(model.GetAllModels()...)
 		})
 	}

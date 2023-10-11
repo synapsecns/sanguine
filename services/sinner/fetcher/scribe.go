@@ -1,3 +1,4 @@
+// Package fetcher gets data from scribe.
 package fetcher
 
 import (
@@ -110,7 +111,7 @@ RETRY:
 		timeStamp, err := s.underlyingClient.GetBlockTime(ctx, chainID, blockNumber)
 
 		if err != nil {
-			logger.ReportSinnerError(fmt.Errorf("could not get timestamp for block, trying again %d: %v", blockNumber, err), uint32(chainID), logger.ScribeFetchFailure)
+			logger.ReportSinnerError(fmt.Errorf("could not get timestamp for block, trying again %d: %w", blockNumber, err), uint32(chainID), logger.ScribeFetchFailure)
 			timeout = b.Duration()
 			goto RETRY
 		}

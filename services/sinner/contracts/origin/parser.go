@@ -1,3 +1,4 @@
+// Package origin is the origin contract parser.
 package origin
 
 import (
@@ -14,6 +15,7 @@ import (
 	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 )
 
+// ParserImpl is the parser for the origin contract.
 type ParserImpl struct {
 	filterer *origin.OriginFilterer
 	// parser is the parser interface.
@@ -49,41 +51,32 @@ func NewParser(originAddress common.Address, db db.EventDB, chainID uint32) (*Pa
 	return parser, nil
 }
 
-func (p ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
+// UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
+func (p *ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
 	p.txMap = txMap
 }
 
-func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
-	fmt.Println("here000", log.Topics, log.TxHash)
-
+// ParseAndStore parses and stores the log.
+func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	eventType, ok := p.parser.EventType(log)
-	fmt.Println("here", eventType, ok)
 
 	if !ok {
 		logger.ReportSinnerError(fmt.Errorf("unknown origin log topic"), 0, logger.UnknownTopic)
 		return nil
 	}
-	switch eventType {
-	case origin.SentEvent:
-		fmt.Println("here3")
-
+	if eventType == origin.SentEvent {
 		parsedEvent, err := p.ParseSent(log)
 		if err != nil {
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
 		}
-		fmt.Println("hererr", parsedEvent.TxHash)
 
 		// TODO go func this
 		err = p.db.StoreOrUpdateMessageStatus(ctx, parsedEvent.TxHash, parsedEvent.MessageHash, sinnerTypes.Origin)
-		fmt.Println("hererr err", err)
-
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}
 
 		err = p.db.StoreOriginSent(ctx, parsedEvent)
-		fmt.Println("hererr err", err)
-
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}
@@ -91,7 +84,8 @@ func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
-func (p ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
+// ParseSent parses the sent event.
+func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 	iFace, err := p.filterer.ParseSent(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)

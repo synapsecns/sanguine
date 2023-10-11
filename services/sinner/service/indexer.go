@@ -29,6 +29,7 @@ type ChainIndexer struct {
 	config indexerConfig.ChainConfig
 }
 
+// NewChainIndexer creates a new chain indexer.
 func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
 	if config.MaxGoroutines < 1 {
 		config.MaxGoroutines = 1
@@ -54,24 +55,25 @@ func getBackoffConfig() *backoff.Backoff {
 		Max:    3 * time.Second,
 	}
 }
+
 func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, map[string]types.TxSupplementalInfo, error) {
 	b := getBackoffConfig()
 	timeout := time.Duration(0)
 	for {
 		select {
 		case <-parentCtx.Done():
-			return nil, nil, fmt.Errorf("could not get scribe data from block %d and %d. Error: %v", startBlock, endBlock, parentCtx.Err())
+			return nil, nil, fmt.Errorf("could not get scribe data from block %d and %d. Error: %w", startBlock, endBlock, parentCtx.Err())
 		case <-time.After(timeout):
 			logs, err := c.fetcher.FetchLogsInRange(parentCtx, c.config.ChainID, startBlock, endBlock, contractAddress)
 			if err != nil {
-				logger.ReportSinnerError(fmt.Errorf("could not get logs %v", err), c.config.ChainID, logger.ScribeFetchFailure)
+				logger.ReportSinnerError(fmt.Errorf("could not get logs %w", err), c.config.ChainID, logger.ScribeFetchFailure)
 				timeout = b.Duration()
 				continue
 			}
 
 			txs, err := c.fetcher.FetchTxsInRange(parentCtx, c.config.ChainID, startBlock, endBlock)
 			if err != nil {
-				logger.ReportSinnerError(fmt.Errorf("could not get txs %v", err), c.config.ChainID, logger.ScribeFetchFailure)
+				logger.ReportSinnerError(fmt.Errorf("could not get txs %w", err), c.config.ChainID, logger.ScribeFetchFailure)
 				timeout = b.Duration()
 				continue
 			}
@@ -85,6 +87,9 @@ func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64
 	}
 }
 
+// Index indexes all contracts from the config for the current chain.
+//
+// nolint:gocognit,cyclop
 func (c ChainIndexer) Index(ctx context.Context) error {
 	contractGroup, contractCtx := errgroup.WithContext(ctx)
 
@@ -108,7 +113,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 			for {
 				select {
 				case <-contractCtx.Done():
-					return fmt.Errorf("could not index contract. Error: %v", contractCtx.Err())
+					return fmt.Errorf("could not index contract. Error: %w", contractCtx.Err())
 				case <-time.After(refreshRate):
 					startHeight := contract.StartBlock
 					endHeight := contract.EndBlock
@@ -145,7 +150,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, currentHeight+c.config.FetchBlockIncrement, common.HexToAddress(contract.Address))
 						if contractErr != nil {
-							return fmt.Errorf("error getting scribe data: %v", contractErr)
+							return fmt.Errorf("error getting scribe data: %w", contractErr)
 						}
 						eventParser.UpdateTxMap(txs)
 						logGroup, logCtx := errgroup.WithContext(contractCtx)
@@ -158,26 +163,35 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 								defer func() { <-sem }() // empty the chan by one semaphore
 
 								contractErr = retry.WithBackoff(logCtx, func(parentCtx context.Context) error {
-									return eventParser.ParseAndStore(parentCtx, currentLog)
+									parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
+									if parseErr != nil {
+										return fmt.Errorf("error parsing and storing event: %w", parseErr)
+									}
+									return nil
 								})
 
 								if contractErr != nil {
-									return fmt.Errorf("error parsing and storing event: %v", contractErr)
+									return fmt.Errorf("error parsing and storing event: %w", contractErr)
 								}
 								return nil
 							})
 						}
 						// wait for all goroutines to finish
 						if err := logGroup.Wait(); err != nil {
-							return fmt.Errorf("error processing logs: %v", err)
+							return fmt.Errorf("error processing logs: %w", err)
 						}
 
 						// store last indexed
+						height := currentHeight
 						err = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
-							return c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, currentHeight)
+							storeErr := c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, height)
+							if storeErr != nil {
+								return fmt.Errorf("error storing last indexed: %w", storeErr)
+							}
+							return nil
 						})
 						if err != nil {
-							return fmt.Errorf("error storing last indexed: %v", err)
+							return fmt.Errorf("error storing last indexed: %w", err)
 						}
 					}
 
@@ -189,12 +203,10 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 				}
 			}
 		})
-
-		return nil
 	}
 	// wait for all goroutines to finish
 	if err := contractGroup.Wait(); err != nil {
-		return fmt.Errorf("error processing: %v", err)
+		return fmt.Errorf("error processing: %w", err)
 	}
 	return nil
 }

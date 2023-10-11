@@ -59,6 +59,7 @@ func (s Store) StoreExecuted(ctx context.Context, executedEvent *model.Executed)
 	return nil
 }
 
+// StoreLastIndexed stores the last indexed block number for a contract.
 func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) (err error) {
 	ctx, span := s.metrics.Tracer().Start(parentCtx, "StoreLastIndexed", trace.WithAttributes(
 		attribute.String("contractAddress", contractAddress.String()),
@@ -110,6 +111,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	return nil
 }
 
+// StoreOrUpdateMessageStatus stores or updates the message status.
 func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, messageHash string, messageType types.MessageType) error {
 	dbTx := s.DB().WithContext(ctx)
 

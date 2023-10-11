@@ -12,7 +12,7 @@ import (
 )
 
 //nolint:cyclop
-func (t APISuite) TestGetOrigin() {
+func (t *APISuite) TestGetOrigin() {
 	chainID := gofakeit.Uint32()
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
@@ -34,7 +34,7 @@ func (t APISuite) TestGetOrigin() {
 	Equal(t.T(), txHash, *result.Response.OriginTxHash)
 }
 
-func (t APISuite) TestGetExecuted() {
+func (t *APISuite) TestGetExecuted() {
 	chainID := gofakeit.Uint32()
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
@@ -58,7 +58,7 @@ func (t APISuite) TestGetExecuted() {
 	Equal(t.T(), txHash, *result.Response.TxHash)
 }
 
-func (t APISuite) TestMessageStatus() {
+func (t *APISuite) TestMessageStatus() {
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()

@@ -1,3 +1,4 @@
+// Package model holds all the models for the database.
 package model
 
 import (
@@ -42,7 +43,7 @@ var (
 	ConfirmedFieldName string
 	// TxIndexFieldName is the name of the transaction index field.
 	TxIndexFieldName string
-	// MessageHash is the name of the message hash field.
+	// MessageHashFieldName is the name of the message hash field.
 	MessageHashFieldName string
 )
 

@@ -39,10 +39,10 @@ import (
 	"gorm.io/gorm/schema"
 )
 
+// ServiceSuite is the test suite for the db package.
 type ServiceSuite struct {
 	*testsuite.TestSuite
 	dbs                    []db.EventDB
-	gqlClient              *client.Client
 	logIndex               atomic.Int64
 	scribeDB               scribedb.EventDB
 	metrics                metrics.Handler

@@ -3,7 +3,11 @@ package serverconfig
 
 import (
 	"fmt"
+	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/services/explorer/config"
+	"gopkg.in/yaml.v2"
+	"os"
+	"path/filepath"
 )
 
 // Config is used to configure the explorer server.
@@ -22,10 +26,28 @@ type Config struct {
 
 // IsValid makes sure the config is valid.
 func (c *Config) IsValid() error {
-	switch {
-	case c.DBPath == "":
+	if c.DBPath == "" {
 		return fmt.Errorf("db_address, %w", config.ErrRequiredGlobalField)
 	}
 
 	return nil
+}
+
+// DecodeServerConfig parses in a config from a file.
+func DecodeServerConfig(filePath string) (cfg Config, err error) {
+	input, err := os.ReadFile(filepath.Clean(filePath))
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to read file: %w", err)
+	}
+	err = yaml.Unmarshal(input, &cfg)
+	if err != nil {
+		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+	}
+
+	err = cfg.IsValid()
+	if err != nil {
+		return cfg, err
+	}
+
+	return cfg, nil
 }

@@ -1,3 +1,4 @@
+// Package destination is the execution hub contract parser.
 package destination
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/types"
 )
 
+// ParserImpl is the parser for the origin contract.
 type ParserImpl struct {
 	filterer *destination.DestinationFilterer
 	// parser is the parser interface.
@@ -47,16 +49,18 @@ func NewParser(destinationAddress common.Address, db db.EventDB, chainID uint32)
 	return parser, nil
 }
 
-func (p ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
+// UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
+func (p *ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
 	p.txMap = txMap
 }
-func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
+
+// ParseAndStore parses and stores the log.
+func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	eventType, ok := p.parser.EventType(log)
 	if !ok {
 		logger.ReportSinnerError(fmt.Errorf("unknown destination log topic"), 0, logger.UnknownTopic)
 	}
-	switch eventType {
-	case destination.ExecutedEvent:
+	if eventType == destination.ExecutedEvent {
 		executedEvent, err := p.ParseExecuted(log)
 		if err != nil {
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
@@ -76,7 +80,8 @@ func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
-func (p ParserImpl) ParseExecuted(log ethTypes.Log) (*model.Executed, error) {
+// ParseExecuted parses the sent event.
+func (p *ParserImpl) ParseExecuted(log ethTypes.Log) (*model.Executed, error) {
 	iFace, err := p.filterer.ParseExecuted(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)

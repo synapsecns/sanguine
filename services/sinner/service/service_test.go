@@ -160,7 +160,7 @@ package service_test
 //}
 //
 //// storeTestLogs stores the test logs in the database.
-//func (t *ServiceSuite) storeTestLog(ctx context.Context, tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
+// func (t *ServiceSuite) storeTestLog(ctx context.Context, tx *types.Transaction, chainID uint32, blockNumber uint64) (*types.Log, error) {
 //	t.testBackend.WaitForConfirmation(ctx, tx)
 //	receipt, err := t.testBackend.TransactionReceipt(ctx, tx.Hash())
 //	if err != nil {

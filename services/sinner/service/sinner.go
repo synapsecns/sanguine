@@ -74,12 +74,6 @@ func NewSinner(eventDB db.EventDB, config indexerConfig.Config, handler metrics.
 //
 // nolint:cyclop
 func (e Sinner) Index(ctx context.Context) error {
-	refreshRate := e.config.DefaultRefreshRate
-
-	if refreshRate == 0 {
-		refreshRate = 1
-	}
-
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	for i := range e.config.Chains {
@@ -87,15 +81,15 @@ func (e Sinner) Index(ctx context.Context) error {
 		chainIndexer := e.indexers[chainConfig.ChainID]
 		g.Go(func() error {
 			// generate new context
+			chainContext := context.Background()
 			for {
-				chainContext := context.Background()
 				select {
 				case <-groupCtx.Done(): // global context canceled
 					return fmt.Errorf("global context canceled")
 				case <-chainContext.Done(): // local context canceled, reset context
 					chainContext = context.Background()
 				default:
-					err := chainIndexer.Index(groupCtx)
+					err := chainIndexer.Index(chainContext)
 					if err != nil {
 						// return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
 						continue // continue trying

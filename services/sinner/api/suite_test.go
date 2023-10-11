@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/sinner/api"
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
 	"github.com/synapsecns/sanguine/services/sinner/db"
@@ -31,9 +30,7 @@ type APISuite struct {
 	*testsuite.TestSuite
 	db                 db.EventDB
 	dbPath             string
-	gqlClient          *client.Client
 	logIndex           atomic.Int64
-	scribeDB           scribedb.EventDB
 	metrics            metrics.Handler
 	sinnerAPI          *client.Client
 	originChainID      uint32
