@@ -58,10 +58,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function setAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner {
-        // Check if there has been no fresh data from the Notaries for a while.
-        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
-        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert NotStuck();
+    function setAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner onlyWhenStuck {
         _setAgentRoot(agentRoot_);
     }
 

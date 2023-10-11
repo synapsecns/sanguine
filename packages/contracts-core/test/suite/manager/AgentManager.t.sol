@@ -5,8 +5,8 @@ import {FRESH_DATA_TIMEOUT} from "../../../contracts/libs/Constants.sol";
 import {
     DisputeAlreadyResolved,
     DisputeNotOpened,
-    DisputeNotStuck,
-    IncorrectAgentDomain
+    IncorrectAgentDomain,
+    NotStuck
 } from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 
@@ -65,7 +65,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         timePassed = timePassed % FRESH_DATA_TIMEOUT;
         mockSnapRootTime(timePassed);
         address slashedAgent = random.nextUint256() % 2 == 0 ? guard : notary;
-        vm.expectRevert(DisputeNotStuck.selector);
+        vm.expectRevert(NotStuck.selector);
         testedAM().resolveStuckDispute(agentDomain[slashedAgent], slashedAgent);
     }
 

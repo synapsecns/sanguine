@@ -7,11 +7,11 @@ import {
     CallerNotInbox,
     DisputeAlreadyResolved,
     DisputeNotOpened,
-    DisputeNotStuck,
     IncorrectAgentDomain,
     IndexOutOfRange,
     GuardInDispute,
-    NotaryInDispute
+    NotaryInDispute,
+    NotStuck
 } from "../libs/Errors.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -65,6 +65,13 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         _;
     }
 
+    modifier onlyWhenStuck() {
+        // Check if there has been no fresh data from the Notaries for a while.
+        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert NotStuck();
+        _;
+    }
+
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
@@ -78,13 +85,10 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
 
     /// @inheritdoc IAgentManager
     // solhint-disable-next-line ordering
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner {
+    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
         AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
         if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
         if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        // Check if there has been no fresh data from the Notaries for a while.
-        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
-        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert DisputeNotStuck();
         // This will revert if domain doesn't match the agent's domain.
         _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
     }
