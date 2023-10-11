@@ -9,16 +9,21 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { BridgeState } from '@/slices/bridge/reducer'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
 
-  const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
-  const toToken = useSelector((state: RootState) => state.bridge.toToken)
-  const exchangeRate = useSelector(
-    (state: RootState) => state.bridge.bridgeQuote.exchangeRate
-  )
-  const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
+  const {
+    fromValue: fromAmount,
+    toToken,
+    toChainId,
+    bridgeQuote,
+  }: BridgeState = useBridgeState()
+
+  const exchangeRate: bigint = bridgeQuote?.exchangeRate
+
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
@@ -61,7 +66,10 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
+    <div
+      data-test-id="bridge-exchange-rate-info"
+      className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6"
+    >
       {showGasDrop && (
         <div
           className={

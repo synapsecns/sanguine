@@ -6,8 +6,12 @@ import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
-// Utility function to fetch estimated transaction time
-// Returned as a number, in seconds
+/**
+ * Utility function to fetch estimated transaction time
+ * @param originChainId
+ * @param originTokenAddress
+ * @returns estimated bridge duration, in seconds
+ */
 export const calculateEstimatedTransactionTime = ({
   originChainId,
   originTokenAddress,

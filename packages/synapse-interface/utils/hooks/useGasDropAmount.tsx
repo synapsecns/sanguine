@@ -1,27 +1,33 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
-export const useGasDropAmount = (chainId: number) => {
-  const [gasDrop, setGasDrop] = useState<BigInt | any>(null)
-  const [loading, setLoading] = useState(true)
-
+export const useGasDropAmount = (
+  destinationChainId: number
+): {
+  gasDrop: bigint | any
+  loading: boolean
+} => {
   const { synapseSDK } = useSynapseContext()
 
+  const [gasDrop, setGasDrop] = useState<bigint | any>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+
   useEffect(() => {
-    if (chainId) {
-      ;(async () => {
+    if (destinationChainId) {
+      const fetchGasDrop = async () => {
         try {
-          setGasDrop(await synapseSDK.getBridgeGas(chainId))
+          setGasDrop(await synapseSDK.getBridgeGas(destinationChainId))
           setLoading(false)
         } catch (error) {
           console.error(error)
           setLoading(false)
         }
-      })()
+      }
+      fetchGasDrop()
     }
 
     return () => setLoading(true)
-  }, [chainId])
+  }, [destinationChainId])
 
   return { gasDrop, loading }
 }

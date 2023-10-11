@@ -19,6 +19,7 @@ export type Chain = {
   priorityRank?: number
   color?: string
 }
+
 export type PoolToken = {
   symbol: string
   percent: string
@@ -28,6 +29,7 @@ export type PoolToken = {
   isLP: boolean
   rawBalance: bigint
 }
+
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
   tokenOut: string
@@ -35,12 +37,14 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
   deadline: BigNumber
   rawParams: string
 }
+
 export type PoolUserData = {
   name: string
   tokens: PoolToken[]
   lpTokenBalance: bigint
   nativeTokens?: any
 }
+
 export type PoolData = {
   name: string
   tokens: PoolToken[]
@@ -63,23 +67,28 @@ export type BridgeQuote = {
   estimatedTime: number
   bridgeModuleName: string
 }
+
 interface TokensByChain {
   [cID: string]: Token[]
 }
+
 export type PoolCardInfo = {
   index: number
   label: string
   poolsByChain: TokensByChain
 }
+
 export enum WalletId {
   MetaMask = 'metaMask',
   WalletConnect = 'walletConnect',
   CoinbaseWallet = 'coinbaseWallet',
 }
+
 export interface IconProps {
   walletId?: string
   className?: string
 }
+
 export type PoolTokenObject = {
   token: Token
   balance: string

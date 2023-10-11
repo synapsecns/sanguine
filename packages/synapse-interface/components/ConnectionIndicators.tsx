@@ -141,7 +141,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   )
 }
 
-export function ConnectWalletButton() {
+export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
   const [clientReady, setClientReady] = useState<boolean>(false)
   const { address } = useAccount()
 
@@ -150,7 +150,7 @@ export function ConnectWalletButton() {
   }, [])
 
   return (
-    <div data-test-id="">
+    <div data-test-id="connect-wallet-button">
       {clientReady && (
         <ConnectButton.Custom>
           {({ account, chain, openConnectModal, mounted, openChainModal }) => {
@@ -161,7 +161,14 @@ export function ConnectWalletButton() {
                     return (
                       <button
                         className={`
-                          flex items-center text-sm text-white mr-2
+                          flex items-center mr-2 py-1 px-2
+                          text-sm text-white
+                          border rounded-sm
+                          ${
+                            highlight
+                              ? 'border-synapsePurple'
+                              : 'border-transparent'
+                          }
                         `}
                         onClick={openConnectModal}
                       >
@@ -171,7 +178,7 @@ export function ConnectWalletButton() {
                             border border-indigo-300 border-solid rounded-full
                           `}
                         />
-                        Connect Wallet
+                        Connect
                       </button>
                     )
                   }
