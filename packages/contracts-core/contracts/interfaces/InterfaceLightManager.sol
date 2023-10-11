@@ -17,9 +17,20 @@ interface InterfaceLightManager {
      * @notice Updates the root of Agent Merkle Tree that the Light Manager is tracking.
      * Could be only called by a local Destination contract, which is supposed to
      * verify the attested Agent Merkle Roots.
-     * @param agentRoot     New Agent Merkle Root
+     * @param agentRoot_    New Agent Merkle Root
      */
-    function setAgentRoot(bytes32 agentRoot) external;
+    function setAgentRoot(bytes32 agentRoot_) external;
+
+    /**
+     * @notice Allows contract owner to set the agent root to resolve the "stuck" chain
+     * by setting the agent root.
+     * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
+     * indicating that the chain is stuck for one of the reasons:
+     * - All active Notaries are in Dispute.
+     * - No active Notaries exist under the current agent root.
+     * @param agentRoot_    New Agent Merkle Root
+     */
+    function setAgentRootWhenStuck(bytes32 agentRoot_) external;
 
     /**
      * @notice Withdraws locked base message tips from local Origin to the recipient.

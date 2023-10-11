@@ -53,6 +53,13 @@ contract LightManager is AgentManager, InterfaceLightManager {
         __Ownable_init();
     }
 
+    // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function setAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner {
+        _setAgentRoot(agentRoot_);
+    }
+
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
