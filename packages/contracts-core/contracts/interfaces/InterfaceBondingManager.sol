@@ -89,7 +89,7 @@ interface InterfaceBondingManager {
      * > - Less than `FRESH_DATA_TIMEOUT` has passed since the last Notary submission to the Inbox.
      * @param slashedAgent  Agent that is being slashed
      */
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external;
+    function resolveDisputeWhenStuck(uint32 domain, address slashedAgent) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

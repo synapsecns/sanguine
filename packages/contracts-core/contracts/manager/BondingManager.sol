@@ -148,7 +148,7 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
     // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceBondingManager
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
+    function resolveDisputeWhenStuck(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
         AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
         if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
         if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();

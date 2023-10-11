@@ -71,7 +71,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════ TESTS: RESOLVE STUCK DISPUTES ═══════════════════════════════════════════
 
-    function test_resolveStuckDispute(Random memory random, uint256 timePassed) public {
+    function test_resolveDisputeWhenStuck(Random memory random, uint256 timePassed) public {
         address guard = randomGuard(random);
         address notary = randomNotary(random);
         openDispute(guard, notary);
@@ -81,19 +81,19 @@ contract BondingManagerTest is AgentManagerTest {
         address rival = slashedAgent == guard ? notary : guard;
         expectStatusUpdated(AgentFlag.Fraudulent, agentDomain[slashedAgent], slashedAgent);
         expectDisputeResolved(1, slashedAgent, rival, address(0));
-        bondingManager.resolveStuckDispute(agentDomain[slashedAgent], slashedAgent);
+        bondingManager.resolveDisputeWhenStuck(agentDomain[slashedAgent], slashedAgent);
         checkDisputeStatus(slashedAgent, DisputeFlag.Slashed, rival, address(0), 1);
         checkDisputeStatus(rival, DisputeFlag.None, address(0), address(0), 0);
     }
 
-    function test_resolveStuckDispute_revert_callerNotOwner(address caller) public {
+    function test_resolveDisputeWhenStuck_revert_callerNotOwner(address caller) public {
         vm.assume(caller != testedAM().owner());
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingManager.resolveStuckDispute(0, address(0));
+        bondingManager.resolveDisputeWhenStuck(0, address(0));
     }
 
-    function test_resolveStuckDispute_revert_timeoutNotPassed(Random memory random, uint256 timePassed) public {
+    function test_resolveDisputeWhenStuck_revert_notStuck(Random memory random, uint256 timePassed) public {
         address guard = randomGuard(random);
         address notary = randomNotary(random);
         openDispute(guard, notary);
@@ -101,20 +101,20 @@ contract BondingManagerTest is AgentManagerTest {
         mockSnapRootTime(timePassed);
         address slashedAgent = random.nextUint256() % 2 == 0 ? guard : notary;
         vm.expectRevert(NotStuck.selector);
-        bondingManager.resolveStuckDispute(agentDomain[slashedAgent], slashedAgent);
+        bondingManager.resolveDisputeWhenStuck(agentDomain[slashedAgent], slashedAgent);
     }
 
-    function test_resolveStuckDispute_revert_agentNotDispute(Random memory random) public {
+    function test_resolveDisputeWhenStuck_revert_agentNotDispute(Random memory random) public {
         address guard0 = getGuard(0);
         address notary = randomNotary(random);
         openDispute(guard0, notary);
         address guard1 = getGuard(1);
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         vm.expectRevert(DisputeNotOpened.selector);
-        bondingManager.resolveStuckDispute(agentDomain[guard1], guard1);
+        bondingManager.resolveDisputeWhenStuck(agentDomain[guard1], guard1);
     }
 
-    function test_resolveStuckDispute_revert_alreadyResolved(Random memory random) public {
+    function test_resolveDisputeWhenStuck_revert_alreadyResolved(Random memory random) public {
         address guard = randomGuard(random);
         address notary = randomNotary(random);
         openDispute(guard, notary);
@@ -124,10 +124,10 @@ contract BondingManagerTest is AgentManagerTest {
         address slashedByOwner = random.nextUint256() % 2 == 0 ? guard : notary;
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         vm.expectRevert(slashedByInbox == slashedByOwner ? DisputeAlreadyResolved.selector : DisputeNotOpened.selector);
-        bondingManager.resolveStuckDispute(agentDomain[slashedByOwner], slashedByOwner);
+        bondingManager.resolveDisputeWhenStuck(agentDomain[slashedByOwner], slashedByOwner);
     }
 
-    function test_resolveStuckDispute_revert_incorrectDomain(Random memory random, uint32 incorrectDomain) public {
+    function test_resolveDisputeWhenStuck_revert_incorrectDomain(Random memory random, uint32 incorrectDomain) public {
         address guard = randomGuard(random);
         address notary = randomNotary(random);
         openDispute(guard, notary);
@@ -135,7 +135,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(incorrectDomain != agentDomain[slashedAgent]);
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         vm.expectRevert(IncorrectAgentDomain.selector);
-        bondingManager.resolveStuckDispute(incorrectDomain, slashedAgent);
+        bondingManager.resolveDisputeWhenStuck(incorrectDomain, slashedAgent);
     }
 
     // ══════════════════════════════════ TESTS: UNAUTHORIZED ACCESS (NOT OWNER) ═══════════════════════════════════════
