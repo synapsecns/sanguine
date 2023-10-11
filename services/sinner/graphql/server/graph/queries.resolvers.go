@@ -18,12 +18,8 @@ func (r *queryResolver) GetMessageStatus(ctx context.Context, messageHash string
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving message status: %w", err)
 	}
-	convertedMessageStatus := &model.MessageStatus{
-		MessageHash:       messageStatus.MessageHash,
-		OriginTxHash:      messageStatus.OriginTxHash,
-		DestinationTxHash: messageStatus.DestinationTxHash}
 
-	return convertedMessageStatus, nil
+	return &messageStatus, nil
 }
 
 // GetOriginInfo is the resolver for the getOriginInfo field.

@@ -1,10 +1,13 @@
 package api_test
 
 import (
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+	"github.com/synapsecns/sanguine/services/sinner/types"
 	"math/big"
 )
 
@@ -28,7 +31,7 @@ func (t APISuite) TestGetOrigin() {
 	result, err := t.sinnerAPI.GetOriginInfo(t.GetTestContext(), txHash, int(chainID))
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
-	Equal(t.T(), txHash, result.Response.OriginTxHash)
+	Equal(t.T(), txHash, *result.Response.OriginTxHash)
 }
 
 func (t APISuite) TestGetExecuted() {
@@ -52,5 +55,31 @@ func (t APISuite) TestGetExecuted() {
 	result, err := t.sinnerAPI.GetDestinationInfo(t.GetTestContext(), txHash, int(chainID))
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
-	Equal(t.T(), txHash, result.Response.TxHash)
+	Equal(t.T(), txHash, *result.Response.TxHash)
+}
+
+func (t APISuite) TestMessageStatus() {
+	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+
+	err := t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash, messageHash, types.Origin)
+	Nil(t.T(), err)
+
+	result, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash)
+	Nil(t.T(), err)
+	NotNil(t.T(), result)
+	Equal(t.T(), txHash, *result.Response.OriginTxHash)
+	fmt.Println("r", result.Response.LastSeen, result.Response)
+	Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *result.Response.LastSeen)
+
+	// Add destination
+	err = t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), desTxHash, messageHash, types.Destination)
+	Nil(t.T(), err)
+
+	desResult, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash)
+	Nil(t.T(), err)
+	NotNil(t.T(), desResult)
+	Equal(t.T(), desTxHash, *desResult.Response.DestinationTxHash)
+	Equal(t.T(), graphqlModel.MessageStateLastSeenDestination, *desResult.Response.LastSeen)
 }

@@ -67,7 +67,7 @@ func (t *APISuite) SetupSuite() {
 	t.Require().Nil(err)
 	t.dbPath = filet.TmpDir(t.T(), "")
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), t.dbPath, t.metrics, false)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetSuiteContext(), t.dbPath, t.metrics, false)
 	Nil(t.T(), err)
 
 	t.db = sqliteStore
@@ -82,10 +82,11 @@ func (t *APISuite) SetupSuite() {
 		DBPath:         t.dbPath,
 		DBFlag:         "sqlite",
 		HydrateCache:   false,
-		SkipMigrations: false,
+		SkipMigrations: true,
 	}
+
 	go func() {
-		Nil(t.T(), api.Start(t.GetTestContext(), config, t.metrics))
+		Nil(t.T(), api.Start(t.GetSuiteContext(), config, t.metrics))
 	}()
 	t.sinnerAPI = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
