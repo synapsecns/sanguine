@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
-import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
+import {IndexOutOfRange, NotaryInDispute, OutdatedNonce} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/stack/GasData.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -101,7 +101,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
-        lastAttestationNonce[notaryIndex] = att.nonce();
+        // Check that this Notary hasn't used a more fresh nonce
+        uint32 attNonce = att.nonce();
+        if (attNonce <= lastAttestationNonce[notaryIndex]) revert OutdatedNonce();
+        lastAttestationNonce[notaryIndex] = attNonce;
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));

@@ -91,6 +91,7 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        vm.assume(ra.nonce != 0);
         RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
         ra._snapGasHash = rs.snapGasHash();
         ra.setDataHash();
@@ -107,6 +108,7 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        vm.assume(ra.nonce != 0);
         RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
         ra._snapGasHash = rs.snapGasHash();
         ra.setDataHash();
@@ -132,6 +134,7 @@ contract DestinationTest is ExecutionHubTest {
         uint32 firstRootSubmittedAt,
         uint32 timePassed
     ) public {
+        vm.assume(firstRA.nonce != 0 && secondRA.nonce != 0);
         bytes32 agentRootLM = lightManager.agentRoot();
         vm.assume(firstRA._agentRoot != agentRootLM);
         vm.assume(firstRA.snapRoot != secondRA.snapRoot);
