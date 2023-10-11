@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {FRESH_DATA_TIMEOUT} from "../../../contracts/libs/Constants.sol";
 import {
     CallerNotDestination,
     IncorrectAgentProof,
     MustBeSynapseDomain,
+    NotStuck,
     SynapseDomainForbidden,
     WithdrawTipsOptimisticPeriod
 } from "../../../contracts/libs/Errors.sol";
@@ -68,6 +70,13 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
 
+    function test_setAgentRootWhenStuck_revert_notOwner(address caller) public {
+        vm.assume(caller != lightManager.owner());
+        expectRevertNotOwner();
+        vm.prank(caller);
+        lightManager.setAgentRootWhenStuck(bytes32(uint256(1)));
+    }
+
     // ═════════════════════════════════════════ TESTS: ADD/REMOVE AGENTS ══════════════════════════════════════════════
 
     function test_addAgent_new(address caller, uint32 domain, address agent) public {
@@ -97,6 +106,8 @@ contract LightManagerTest is AgentManagerTest {
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
+    // ═══════════════════════════════════════════ TESTS: SET AGENT ROOT ═══════════════════════════════════════════════
+
     function test_setAgentRoot(bytes32 root) public {
         bool isDifferent = root != lightManager.agentRoot();
         if (isDifferent) {
@@ -114,6 +125,22 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_setAgentRoot_equal() public {
         test_setAgentRoot(lightManager.agentRoot());
+    }
+
+    function test_setAgentRootWhenStuck() public {
+        bytes32 newRoot = keccak256("mock root");
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        vm.expectEmit(address(lightManager));
+        emit RootUpdated(newRoot);
+        lightManager.setAgentRootWhenStuck(newRoot);
+        assertEq(lightManager.agentRoot(), newRoot, "!agentRoot");
+    }
+
+    function test_setAgentRootWhenStuck_revert_notStuck() public {
+        bytes32 newRoot = keccak256("mock root");
+        mockSnapRootTime(FRESH_DATA_TIMEOUT - 1);
+        vm.expectRevert(NotStuck.selector);
+        lightManager.setAgentRootWhenStuck(newRoot);
     }
 
     // ═══════════════════════════════════════ TEST: UPDATE AGENTS (REVERTS) ═══════════════════════════════════════════

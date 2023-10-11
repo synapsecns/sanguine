@@ -74,6 +74,8 @@ error AgentNotFraudulent();
 error AgentNotUnstaking();
 error AgentUnknown();
 
+error NotStuck();
+
 error DisputeAlreadyResolved();
 error DisputeNotOpened();
 error DisputeNotStuck();
