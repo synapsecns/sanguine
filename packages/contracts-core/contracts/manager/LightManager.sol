@@ -2,12 +2,13 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD} from "../libs/Constants.sol";
+import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, FRESH_DATA_TIMEOUT} from "../libs/Constants.sol";
 import {
     IncorrectAgentIndex,
     IncorrectAgentProof,
     CallerNotDestination,
     MustBeSynapseDomain,
+    NotStuck,
     SynapseDomainForbidden,
     WithdrawTipsOptimisticPeriod
 } from "../libs/Errors.sol";
@@ -18,6 +19,7 @@ import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
@@ -57,6 +59,9 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function setAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner {
+        // Check if there has been no fresh data from the Notaries for a while.
+        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert NotStuck();
         _setAgentRoot(agentRoot_);
     }
 
