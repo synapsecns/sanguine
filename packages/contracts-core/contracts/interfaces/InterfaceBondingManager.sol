@@ -78,6 +78,19 @@ interface InterfaceBondingManager {
      */
     function withdrawTips(address recipient, uint32 origin, uint256 amount) external;
 
+    /**
+     * @notice Allows contract owner to resolve a stuck Dispute.
+     * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
+     * which is required for the Dispute to be resolved naturally.
+     * > Will revert if any of these is true:
+     * > - Caller is not contract owner.
+     * > - Domain doesn't match the saved agent domain.
+     * > - `slashedAgent` is not in Dispute.
+     * > - Less than `FRESH_DATA_TIMEOUT` has passed since the last Notary submission to the Inbox.
+     * @param slashedAgent  Agent that is being slashed
+     */
+    function resolveStuckDispute(uint32 domain, address slashedAgent) external;
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**

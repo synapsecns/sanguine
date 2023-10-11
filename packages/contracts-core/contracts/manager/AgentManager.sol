@@ -6,7 +6,6 @@ import {FRESH_DATA_TIMEOUT} from "../libs/Constants.sol";
 import {
     CallerNotInbox,
     DisputeAlreadyResolved,
-    DisputeNotOpened,
     IncorrectAgentDomain,
     IndexOutOfRange,
     GuardInDispute,
@@ -81,21 +80,10 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         inbox = inbox_;
     }
 
-    // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    // solhint-disable-next-line ordering
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
-        AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
-        if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
-        if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        // This will revert if domain doesn't match the agent's domain.
-        _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
-    }
-
     // ════════════════════════════════════════════════ ONLY INBOX ═════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
+    // solhint-disable-next-line ordering
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyInbox {
         // Check that both agents are not in Dispute yet.
         if (_agentDispute[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();

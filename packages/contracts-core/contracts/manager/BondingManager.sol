@@ -7,6 +7,8 @@ import {
     AgentCantBeAdded,
     CallerNotDestination,
     CallerNotSummit,
+    DisputeAlreadyResolved,
+    DisputeNotOpened,
     IncorrectAgentDomain,
     IndexOutOfRange,
     MerkleTreeFull,
@@ -15,7 +17,7 @@ import {
     SynapseDomainForbidden
 } from "../libs/Errors.sol";
 import {DynamicTree, MerkleMath} from "../libs/merkle/MerkleTree.sol";
-import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -141,6 +143,17 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         bytes32 oldValue = _agentLeaf(AgentFlag.Unstaking, domain, agent);
         // This will revert if the proof for the old value is incorrect
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Resting, domain, status.index), agent);
+    }
+
+    // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
+        AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
+        if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
+        if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        // This will revert if domain doesn't match the agent's domain.
+        _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
     }
 
     // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
