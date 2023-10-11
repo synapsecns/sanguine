@@ -52,6 +52,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
 
+    /// @inheritdoc InterfaceDestination
+    mapping(uint32 => uint32) public lastAttestationNonce;
+
     /// @dev Stored lookup data for all accepted Notary Attestations
     StoredAttData[] internal _storedAttestations;
 
@@ -98,6 +101,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
+        lastAttestationNonce[notaryIndex] = att.nonce();
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));

@@ -103,6 +103,7 @@ contract DestinationTest is ExecutionHubTest {
         lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
         (uint48 snapRootTime,,) = InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, rootSubmittedAt);
+        assertEq(InterfaceDestination(localDestination()).lastAttestationNonce(agentIndex[notary]), ra.nonce);
     }
 
     function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
