@@ -134,7 +134,6 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						if err != nil {
 							return fmt.Errorf("could not get last indexed height, %w", err)
 						}
-
 					}
 
 					sem := make(chan struct{}, c.config.MaxGoroutines) // semaphore to limit the number of goroutines
@@ -159,7 +158,6 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 								defer func() { <-sem }() // empty the chan by one semaphore
 
 								contractErr = retry.WithBackoff(logCtx, func(parentCtx context.Context) error {
-
 									return eventParser.ParseAndStore(parentCtx, currentLog)
 								})
 

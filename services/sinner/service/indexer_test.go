@@ -29,7 +29,6 @@ import (
 // TestChainIndexer tests the chain indexer.
 func (t *ServiceSuite) TestChainIndexer() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
-
 		ctx := t.GetTestContext()
 		deployManager := testutil.NewDeployManager(t.T())
 
@@ -89,7 +88,6 @@ func (t *ServiceSuite) TestChainIndexer() {
 					if len(originEvent.Message) > 0 {
 						// cancel if message stored
 						cancelIndexing()
-
 					}
 				}
 			}
@@ -104,7 +102,6 @@ func (t *ServiceSuite) TestChainIndexer() {
 		Nil(t.T(), err)
 		Equal(t.T(), sentLog.TxHash, *messageStatus.OriginTxHash)
 		Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *messageStatus.LastSeen)
-
 	})
 }
 

@@ -29,7 +29,7 @@ type Sinner struct {
 	config indexerConfig.Config
 }
 
-// Parsers holds all the parsers for a given chain
+// Parsers holds all the parsers for a given chain.
 type Parsers struct {
 	// ChainID is the chain these parsers are for.
 	ChainID uint32
@@ -90,19 +90,18 @@ func (e Sinner) Index(ctx context.Context) error {
 			for {
 				chainContext := context.Background()
 				select {
-				case <-groupCtx.Done(): // global context cancelled
-					return fmt.Errorf("global context cancelled")
-				case <-chainContext.Done(): // local context cancelled, reset context
+				case <-groupCtx.Done(): // global context canceled
+					return fmt.Errorf("global context canceled")
+				case <-chainContext.Done(): // local context canceled, reset context
 					chainContext = context.Background()
 				default:
 					err := chainIndexer.Index(groupCtx)
 					if err != nil {
-						//return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
+						// return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
 						continue // continue trying
 					}
 					return nil
 				}
-
 			}
 		})
 	}

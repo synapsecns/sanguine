@@ -72,13 +72,11 @@ func (p ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}
-
 	}
 	return nil
 }
 
 func (p ParserImpl) ParseExecuted(log ethTypes.Log) (*model.Executed, error) {
-
 	iFace, err := p.filterer.ParseExecuted(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)

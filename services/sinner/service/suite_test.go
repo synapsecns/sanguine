@@ -166,7 +166,6 @@ func (t *ServiceSuite) CreateScribeFetcher(ctx context.Context) (scribeDB scribe
 			Database: "sqlite",
 			Path:     dbPath,
 		}, t.metrics)
-
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", freePort)

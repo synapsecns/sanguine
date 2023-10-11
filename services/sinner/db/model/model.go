@@ -5,13 +5,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetAllModels gets all models to migrate
+// GetAllModels gets all models to migrate.
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
 		&OriginSent{}, &Executed{}, &MessageStatus{}, &LastIndexed{},
 	)
 	return allModels
-
 }
 
 func init() {

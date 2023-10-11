@@ -15,7 +15,6 @@ import (
 
 // StoreOriginSent stores an origin event.
 func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent) error {
-
 	dbTx := s.DB().WithContext(ctx)
 	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
 		dbTx = dbTx.Clauses(clause.OnConflict{
@@ -41,7 +40,6 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 func (s Store) StoreExecuted(ctx context.Context, executedEvent *model.Executed) error {
 	dbTx := s.DB().WithContext(ctx)
 	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
-
 		dbTx = dbTx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName},

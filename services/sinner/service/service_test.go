@@ -7,7 +7,7 @@ package service_test
 // Was initially trying to just get the logs statically, but implementing a full End to End message lifecycle with the agents
 // here would be good. Look into embedded agents.
 
-//func (t *ServiceSuite) TestSinnerEndtoEnd() {
+// func (t *ServiceSuite) TestSinnerEndtoEnd() {
 //	t.RunOnAllDBs(func(testDB db.EventDB) {
 //
 //		ctx := t.GetTestContext()
