@@ -321,7 +321,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
-	fmt.Printf("execute msg: %v\n", message)
+	fmt.Printf("executing msg: %v\n", message)
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
