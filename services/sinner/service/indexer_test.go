@@ -100,7 +100,7 @@ func (t *ServiceSuite) TestChainIndexer() {
 		// Get and check the message status
 		messageStatus, err := testDB.RetrieveMessageStatus(ctx, originEvent.MessageHash)
 		Nil(t.T(), err)
-		Equal(t.T(), sentLog.TxHash, *messageStatus.OriginTxHash)
+		Equal(t.T(), sentLog.TxHash.String(), *messageStatus.OriginTxHash)
 		Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *messageStatus.LastSeen)
 	})
 }

@@ -18,7 +18,9 @@ func (t *ContractsSuite) TestOriginNewParser() {
 }
 
 func (t *ContractsSuite) TestOriginUpdateTxMap() {
-	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
+
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 
 	txMap := map[string]sinnerTypes.TxSupplementalInfo{
@@ -34,14 +36,16 @@ func (t *ContractsSuite) TestOriginUpdateTxMap() {
 }
 
 func (t *ContractsSuite) TestOriginParseAndStore() {
-	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
 
-	err := parser.ParseAndStore(t.GetTestContext(), t.originTestLog)
+	err = parser.ParseAndStore(t.GetTestContext(), t.originTestLog)
 	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestOriginParseSent() {
-	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := origin.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
 
 	parsedLog, err := parser.ParseSent(t.originTestLog)
 	Nil(t.T(), err)
@@ -57,7 +61,9 @@ func (t *ContractsSuite) TestDestinationNewParser() {
 }
 
 func (t *ContractsSuite) TestDestinationUpdateTxMap() {
-	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
+
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 
 	txMap := map[string]sinnerTypes.TxSupplementalInfo{
@@ -73,14 +79,17 @@ func (t *ContractsSuite) TestDestinationUpdateTxMap() {
 }
 
 func (t *ContractsSuite) TestDestinationParseAndStore() {
-	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
 
-	err := parser.ParseAndStore(t.GetTestContext(), t.desTestLog)
+	err = parser.ParseAndStore(t.GetTestContext(), t.desTestLog)
 	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestDestinationParseExecuted() {
-	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	parser, err := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	Nil(t.T(), err)
+
 	parsedLog, err := parser.ParseExecuted(t.desTestLog)
 	Nil(t.T(), err)
 	Equal(t.T(), t.desTestLog.TxHash.String(), parsedLog.TxHash)
