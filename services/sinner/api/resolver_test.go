@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -70,7 +69,6 @@ func (t *APISuite) TestMessageStatus() {
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
 	Equal(t.T(), txHash, *result.Response.OriginTxHash)
-	fmt.Println("r", result.Response.LastSeen, result.Response)
 	Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *result.Response.LastSeen)
 
 	// Add destination

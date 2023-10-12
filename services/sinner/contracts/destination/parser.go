@@ -67,6 +67,7 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 		}
 
 		// TODO go func this
+		fmt.Println("Storing executed event", executedEvent.TxHash, executedEvent.MessageHash)
 		err = p.db.StoreOrUpdateMessageStatus(ctx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)

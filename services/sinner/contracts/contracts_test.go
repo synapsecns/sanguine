@@ -9,21 +9,16 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/origin"
 
-	"github.com/synapsecns/sanguine/services/sinner/db/mocks"
 	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 )
 
 func (t *ContractsSuite) TestOriginNewParser() {
-	// Mock values for test
-	dbMock := &mocks.EventDB{}
-	addr := common.Address{}
-
-	_, err := origin.NewParser(addr, dbMock, t.originChainID)
+	_, err := origin.NewParser(common.Address{}, t.db, t.originChainID)
 	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestOriginUpdateTxMap() {
-	parser, _ := origin.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
+	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 
 	txMap := map[string]sinnerTypes.TxSupplementalInfo{
@@ -39,31 +34,30 @@ func (t *ContractsSuite) TestOriginUpdateTxMap() {
 }
 
 func (t *ContractsSuite) TestOriginParseAndStore() {
-	parser, _ := origin.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
+	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
 
 	err := parser.ParseAndStore(t.GetTestContext(), t.originTestLog)
-
-	Equal(t.T(), "error while parsing origin sent event. Err: could not parse sent log. err: topic/field count mismatch", err.Error()) // TODO add correct byte code to test log
+	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestOriginParseSent() {
-	parser, _ := origin.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
+	parser, _ := origin.NewParser(common.Address{}, t.db, t.originChainID)
 
-	_, err := parser.ParseSent(t.originTestLog)
-	Equal(t.T(), "could not parse sent log. err: topic/field count mismatch", err.Error()) // TODO add correct byte code to test log
+	parsedLog, err := parser.ParseSent(t.originTestLog)
+	Nil(t.T(), err)
+	Equal(t.T(), t.originTestLog.TxHash.String(), parsedLog.TxHash)
 }
 
 func (t *ContractsSuite) TestDestinationNewParser() {
 	// Mock values for test
-	dbMock := &mocks.EventDB{}
 	addr := common.Address{}
 
-	_, err := destination.NewParser(addr, dbMock, t.originChainID)
+	_, err := destination.NewParser(addr, t.db, t.originChainID)
 	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestDestinationUpdateTxMap() {
-	parser, _ := destination.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
+	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
 	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 
 	txMap := map[string]sinnerTypes.TxSupplementalInfo{
@@ -79,15 +73,15 @@ func (t *ContractsSuite) TestDestinationUpdateTxMap() {
 }
 
 func (t *ContractsSuite) TestDestinationParseAndStore() {
-	parser, _ := destination.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
+	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
 
 	err := parser.ParseAndStore(t.GetTestContext(), t.desTestLog)
-	Equal(t.T(), "error while parsing origin sent event. Err: could not parse sent log. err: topic/field count mismatch", err.Error()) // TODO add correct byte code to test log
+	Nil(t.T(), err)
 }
 
 func (t *ContractsSuite) TestDestinationParseExecuted() {
-	parser, _ := destination.NewParser(common.Address{}, &mocks.EventDB{}, t.originChainID)
-
-	_, err := parser.ParseExecuted(t.desTestLog)
-	Equal(t.T(), "could not parse sent log. err: topic/field count mismatch", err.Error()) // TODO add correct byte code to test log
+	parser, _ := destination.NewParser(common.Address{}, t.db, t.originChainID)
+	parsedLog, err := parser.ParseExecuted(t.desTestLog)
+	Nil(t.T(), err)
+	Equal(t.T(), t.desTestLog.TxHash.String(), parsedLog.TxHash)
 }

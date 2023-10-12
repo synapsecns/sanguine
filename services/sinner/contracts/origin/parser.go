@@ -87,7 +87,6 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 // ParseSent parses the sent event.
 func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 	iFace, err := p.filterer.ParseSent(log)
-	fmt.Println(err.Error(), "CUM")
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)
 	}
@@ -104,39 +103,41 @@ func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 
 	parsedEvent.ChainID = p.chainID
 
-	parsedMessage, err := types.DecodeMessage(iFace.Message)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode message. err: %w", err)
+	// This case will be hit unless there was a failure in producing the message
+	if len(iFace.Message) > 0 {
+		parsedMessage, err := types.DecodeMessage(iFace.Message)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode message. err: %w", err)
+		}
+
+		messageLeaf, err := parsedMessage.ToLeaf()
+		if err != nil {
+			return nil, fmt.Errorf("could not get leaf from message. err: %w", err)
+		}
+		parsedEvent.MessageLeaf = string(messageLeaf[:])
+		parsedEvent.OptimisticSeconds = parsedMessage.OptimisticSeconds()
+
+		messageHeader := parsedMessage.Header()
+		parsedEvent.MessageFlag = uint8(messageHeader.Flag())
+
+		messageBody := parsedMessage.BaseMessage()
+
+		sender := messageBody.Sender()
+		parsedEvent.Sender = string(sender[:])
+
+		recipient := messageBody.Recipient()
+		parsedEvent.Recipient = string(recipient[:])
+
+		messageRequest := messageBody.Request()
+		parsedEvent.Version = messageRequest.Version()
+		parsedEvent.GasLimit = messageRequest.GasLimit()
+		parsedEvent.GasDrop = messageRequest.GasDrop().String()
+
+		messageTips := messageBody.Tips()
+		parsedEvent.SummitTip = messageTips.SummitTip().String()
+		parsedEvent.AttestationTip = messageTips.AttestationTip().String()
+		parsedEvent.ExecutionTip = messageTips.ExecutionTip().String()
+		parsedEvent.DeliveryTip = messageTips.DeliveryTip().String()
 	}
-
-	messageLeaf, err := parsedMessage.ToLeaf()
-	if err != nil {
-		return nil, fmt.Errorf("could not get leaf from message. err: %w", err)
-	}
-	parsedEvent.MessageLeaf = string(messageLeaf[:])
-	parsedEvent.OptimisticSeconds = parsedMessage.OptimisticSeconds()
-
-	messageHeader := parsedMessage.Header()
-	parsedEvent.MessageFlag = uint8(messageHeader.Flag())
-
-	messageBody := parsedMessage.BaseMessage()
-
-	sender := messageBody.Sender()
-	parsedEvent.Sender = string(sender[:])
-
-	recipient := messageBody.Recipient()
-	parsedEvent.Recipient = string(recipient[:])
-
-	messageRequest := messageBody.Request()
-	parsedEvent.Version = messageRequest.Version()
-	parsedEvent.GasLimit = messageRequest.GasLimit()
-	parsedEvent.GasDrop = messageRequest.GasDrop().String()
-
-	messageTips := messageBody.Tips()
-	parsedEvent.SummitTip = messageTips.SummitTip().String()
-	parsedEvent.AttestationTip = messageTips.AttestationTip().String()
-	parsedEvent.ExecutionTip = messageTips.ExecutionTip().String()
-	parsedEvent.DeliveryTip = messageTips.DeliveryTip().String()
-
 	return &parsedEvent, nil
 }
