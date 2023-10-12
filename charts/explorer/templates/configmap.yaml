@@ -9,5 +9,5 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-{{ toYaml .Values.files | indent 2 }}
+{{ tpl (toYaml .Values.files) . | indent 2 }}
 {{- end }}

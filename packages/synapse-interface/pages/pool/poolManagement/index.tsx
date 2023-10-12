@@ -6,7 +6,7 @@ import { RootState } from '@/store/store'
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import {
   fetchPoolUserData,
   resetPoolUserData,
@@ -38,7 +38,7 @@ const PoolManagement = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
+        <LoadingDots />
       </div>
     )
   }

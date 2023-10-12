@@ -15,7 +15,7 @@ import { Token } from '@/utils/types'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
-import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import LoadingText from '@/components/loading/LoadingText'
 import Button from '@/components/ui/tailwind/Button'
@@ -181,7 +181,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         >
           {isPending ? (
             <div className="flex items-center justify-center space-x-5">
-              <ButtonLoadingSpinner className="mr-2" />
+              <ButtonLoadingDots className="mr-2" />
               <span className="animate-pulse">Claiming SYN</span>{' '}
             </div>
           ) : (
@@ -189,7 +189,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           )}
         </Button>
       )}
-      <Card className="bg-bgBase rounded-md" divider={false}>
+      <Card className="rounded-md bg-bgBase" divider={false}>
         <div className="flex justify-center space-x-4">
           <Button
             className={`${

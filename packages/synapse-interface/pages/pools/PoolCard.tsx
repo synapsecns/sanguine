@@ -9,7 +9,7 @@ import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
-import LoadingSpinner from '@tw/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
 import { commify, formatBigIntToString } from '@/utils/bigint/format'
@@ -123,7 +123,7 @@ const PoolCard = memo(
                       )
                     )}`
                   ) : (
-                    <LoadingSpinner shift={true} />
+                    <LoadingDots shift={true} />
                   )}
                 </div>
               </div>
