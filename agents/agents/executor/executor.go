@@ -177,7 +177,11 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 
 	for _, chain := range config.Chains {
 		err = retry.WithBackoff(ctx, func(ctx context.Context) error {
-			return exec.setupChain(ctx, exec, chain, omniRPCClient)
+			err := exec.setupChain(ctx, exec, chain, omniRPCClient)
+			if err != nil {
+				fmt.Printf("error setting up chain: %v\n", err)
+			}
+			return err
 		}, exec.retryConfig...)
 		if err != nil {
 			return nil, err
@@ -190,11 +194,13 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor.ChainConfig, omniRPCClient omnirpcClient.RPCClient) error {
 	originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not create origin parser: %w", err)
 	}
 
 	lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not create destination parser: %w", err)
 	}
 
@@ -204,11 +210,13 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 	if exec.config.SummitChainID == chain.ChainID {
 		inboxParser, err = inbox.NewParser(common.HexToAddress(exec.config.InboxAddress))
 		if err != nil {
+			fmt.Println(err)
 			return fmt.Errorf("could not create inbox parser: %w", err)
 		}
 
 		summitParser, err = summit.NewParser(common.HexToAddress(exec.config.SummitAddress))
 		if err != nil {
+			fmt.Println(err)
 			return fmt.Errorf("could not create summit parser: %w", err)
 		}
 	} else {
@@ -218,26 +226,31 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 
 	evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not get evm client: %w", err)
 	}
 
 	chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not create chain client: %w", err)
 	}
 
 	boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not bind destination contract: %w", err)
 	}
 
 	boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
 	tree, err := newTreeFromDB(ctx, chain.ChainID, exec.executorDB)
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not get tree from db: %w", err)
 	}
 
