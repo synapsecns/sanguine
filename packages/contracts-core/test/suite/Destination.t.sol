@@ -221,6 +221,34 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(lightManager.agentRoot(), firstRA._agentRoot);
     }
 
+    function test_acceptAttestation_success_diffNotary_lowerNonce() public {
+        Random memory random = Random("salt");
+        RawAttestation memory firstRA = random.nextAttestation({nonce: 2});
+        test_submitAttestation({ra: firstRA, rootSubmittedAt: 1000});
+        skip(100);
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        uint256[] memory snapGas = rawSnap.snapGas();
+        RawAttestation memory secondRA = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        address notary = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, secondRA);
+        bool success = lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas);
+        assertTrue(success);
+    }
+
+    function test_acceptAttestation_success_diffNotary_diffAtt_sameNonce() public {
+        Random memory random = Random("salt");
+        RawAttestation memory firstRA = random.nextAttestation({nonce: 2});
+        test_submitAttestation({ra: firstRA, rootSubmittedAt: 1000});
+        skip(100);
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        uint256[] memory snapGas = rawSnap.snapGas();
+        RawAttestation memory secondRA = random.nextAttestation({rawSnap: rawSnap, nonce: 2});
+        address notary = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, secondRA);
+        bool success = lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas);
+        assertTrue(success);
+    }
+
     function test_passAgentRoot_optimisticPeriodNotOver(
         RawAttestation memory ra,
         uint32 rootSubmittedAt,
