@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {CallerNotInbox, NotaryInDispute, OutdatedNonce} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/memory/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
@@ -172,6 +172,33 @@ contract DestinationTest is ExecutionHubTest {
         vm.prank(address(lightInbox));
         vm.expectRevert(NotaryInDispute.selector);
         InterfaceDestination(localDestination()).acceptAttestation(agentIndex[notary], 0, "", 0, new ChainGas[](0));
+    }
+
+    function test_acceptAttestation_revert_lowerNonce() public {
+        Random memory random = Random("salt");
+        RawAttestation memory firstRA = random.nextAttestation({nonce: 2});
+        test_submitAttestation({ra: firstRA, rootSubmittedAt: 1000});
+        skip(100);
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        uint256[] memory snapGas = rawSnap.snapGas();
+        RawAttestation memory secondRA = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, secondRA);
+        vm.expectRevert(OutdatedNonce.selector);
+        lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas);
+    }
+
+    function test_acceptAttestation_revert_sameNonce() public {
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        uint256[] memory snapGas = rawSnap.snapGas();
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        skip(100);
+        vm.expectRevert(OutdatedNonce.selector);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
     }
 
     function test_acceptAttestation_notAccepted_agentRootUpdated(
