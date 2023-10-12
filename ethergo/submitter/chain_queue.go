@@ -127,23 +127,26 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 	go func() {
 		fmt.Println("SUBMITTING")
 		defer wg.Done()
-		err := c.client.BatchWithContext(ctx, calls...)
-		fmt.Printf("batch err: %v\n", err)
-		fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
-		cancelStore()
-		for i := range c.reprocessQueue {
-			if err != nil {
-				c.reprocessQueue[i].Status = db.FailedSubmit
-				fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
-			} else {
-				c.reprocessQueue[i].Status = db.Submitted
-				fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
+		for _, call := range calls {
+			err := c.client.BatchWithContext(ctx, call)
+			fmt.Printf("batch err: %v\n", err)
+			fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
+			cancelStore()
+			for i := range c.reprocessQueue {
+				if err != nil {
+					c.reprocessQueue[i].Status = db.FailedSubmit
+					fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
+				} else {
+					c.reprocessQueue[i].Status = db.Submitted
+					fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
+				}
 			}
-		}
 
-		err = c.db.PutTXS(ctx, c.reprocessQueue...)
-		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			err = c.db.PutTXS(ctx, c.reprocessQueue...)
+			if err != nil {
+				span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			}
+
 		}
 	}()
 	wg.Wait()
@@ -151,6 +154,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 
 // nolint: cyclop
 func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
+	fmt.Printf("bumpTX: %v\n", ogTx.Transaction.Hash())
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
 			c.addToReprocessQueue(ogTx)
