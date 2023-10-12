@@ -57,7 +57,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     /// - msg.sender is set as contract owner
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable_init();
+        __Ownable2Step_init();
     }
 
     /// @notice MVP function to set the gas data for the given domain.

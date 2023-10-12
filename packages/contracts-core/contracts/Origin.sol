@@ -49,7 +49,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     /// - State of "empty merkle tree" is saved
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable_init();
+        __Ownable2Step_init();
         // Initialize "states": state of an "empty merkle tree" is saved
         _initializeStates();
     }
