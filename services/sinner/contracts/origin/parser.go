@@ -22,8 +22,8 @@ type ParserImpl struct {
 	parser origin.Parser
 	// db is the database
 	db db.EventDB
-	// txMap is a map of tx hashes to tx data
-	txMap map[string]sinnerTypes.TxSupplementalInfo
+	// TxMap is a map of tx hashes to tx data. Exported for testing.
+	TxMap map[string]sinnerTypes.TxSupplementalInfo
 	// chainID is the chainID of the underlying chain
 	chainID uint32
 }
@@ -53,7 +53,7 @@ func NewParser(originAddress common.Address, db db.EventDB, chainID uint32) (*Pa
 
 // UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
 func (p *ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
-	p.txMap = txMap
+	p.TxMap = txMap
 }
 
 // ParseAndStore parses and stores the log.
@@ -87,6 +87,7 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 // ParseSent parses the sent event.
 func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 	iFace, err := p.filterer.ParseSent(log)
+	fmt.Println(err.Error(), "CUM")
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)
 	}

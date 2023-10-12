@@ -22,8 +22,8 @@ type ParserImpl struct {
 	db db.EventDB
 	// chainID is the chain ID
 	chainID uint32
-	// txMap is a map of tx hashes to tx data
-	txMap map[string]types.TxSupplementalInfo
+	// txMap is a map of tx hashes to tx data, exported for testing.
+	TxMap map[string]types.TxSupplementalInfo
 }
 
 // NewParser creates a new parser for the origin contract.
@@ -51,7 +51,7 @@ func NewParser(destinationAddress common.Address, db db.EventDB, chainID uint32)
 
 // UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
 func (p *ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
-	p.txMap = txMap
+	p.TxMap = txMap
 }
 
 // ParseAndStore parses and stores the log.
