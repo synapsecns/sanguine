@@ -113,7 +113,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex,
+        uint8 stateIndex,
         uint64 gasLimit
     ) external nonReentrant {
         // This will revert if payload is not a formatted message payload
@@ -146,7 +146,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
             // This is the first valid attempt to execute the message => save origin and snapshot proof
             rcptData.origin = header.origin();
             rcptData.rootIndex = rootData.index;
-            rcptData.stateIndex = uint8(stateIndex);
+            rcptData.stateIndex = stateIndex;
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
                 rcptData.executor = msg.sender;
@@ -341,7 +341,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex
+        uint8 stateIndex
     ) internal view returns (SnapRootData memory rootData) {
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1

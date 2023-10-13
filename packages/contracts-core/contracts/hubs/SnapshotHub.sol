@@ -169,7 +169,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
+    function getSnapshotProof(uint32 attNonce, uint8 stateIndex) external view returns (bytes32[] memory snapProof) {
         if (attNonce == 0 || attNonce >= _notarySnapshots.length) revert NonceOutOfRange();
         SummitSnapshot memory snap = _notarySnapshots[attNonce];
         uint256 statesAmount = snap.statePtrs.length;
@@ -354,7 +354,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Returns indexes of agents who provided state data for the Notary snapshot with the given nonce.
-    function _stateAgents(uint32 nonce, uint256 stateIndex)
+    function _stateAgents(uint32 nonce, uint8 stateIndex)
         internal
         view
         returns (uint32 guardIndex, uint32 notaryIndex)

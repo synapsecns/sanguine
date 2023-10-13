@@ -24,7 +24,7 @@ interface IStatementInbox {
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitStateReportWithSnapshot(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory snapSignature
@@ -53,7 +53,7 @@ interface IStatementInbox {
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitStateReportWithAttestation(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory attPayload,
@@ -86,7 +86,7 @@ interface IStatementInbox {
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitStateReportWithSnapshotProof(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory statePayload,
         bytes memory srSignature,
         bytes32[] memory snapProof,
@@ -149,7 +149,7 @@ interface IStatementInbox {
      *                          Notary is slashed, if return value is FALSE.
      */
     function verifyStateWithAttestation(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory snapPayload,
         bytes memory attPayload,
         bytes memory attSignature
@@ -177,7 +177,7 @@ interface IStatementInbox {
      *                          Notary is slashed, if return value is FALSE.
      */
     function verifyStateWithSnapshotProof(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory statePayload,
         bytes32[] memory snapProof,
         bytes memory attPayload,
@@ -199,7 +199,7 @@ interface IStatementInbox {
      * @return isValidState     Whether the provided state is valid.
      *                          Agent is slashed, if return value is FALSE.
      */
-    function verifyStateWithSnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
+    function verifyStateWithSnapshot(uint8 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bool isValidState);
 
