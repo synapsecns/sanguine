@@ -384,10 +384,17 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
+		snapshotRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		fmt.Printf("submitting guard snapshot with root: %v\n", common.BytesToHash(snapshotRoot[:]).String())
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
+			}
+			if tx != nil {
+				fmt.Printf("[GUARD] Submitted snapshot: %v\n", tx.Hash().Hex())
+			} else {
+				fmt.Println("Guard snapshot tx was nil")
 			}
 
 			return

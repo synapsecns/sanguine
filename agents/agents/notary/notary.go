@@ -446,6 +446,8 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		))
 	} else {
 		fmt.Printf("Notary submitting snapshot to summit with states: %v\n", statesToSubmit)
+		snapshotRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		fmt.Printf("submitting notary snapshot with root: %v\n", common.BytesToHash(snapshotRoot[:]).String())
 		logger.Infof("Notary submitting snapshot to summit")
 		span.AddEvent("Dispatching snapshot to submitter")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
@@ -457,7 +459,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 				span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
-				fmt.Printf("Submitted snapshot tx: %v\n", tx.Hash().Hex())
+				fmt.Printf("[NOTARY:%d] Submitted snapshot tx: %v\n", n.destinationDomain.Config().DomainID, tx.Hash().Hex())
 			}
 			return
 		})
@@ -560,7 +562,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
 			if tx != nil {
-				fmt.Printf("Submitted attestation: %v\n", tx.Hash().Hex())
+				fmt.Printf("[NOTARY:%d] Submitted attestation: %v\n", n.destinationDomain.Config().DomainID, tx.Hash().Hex())
 				span.AddEvent("Submitted transaction", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
