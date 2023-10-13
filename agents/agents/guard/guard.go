@@ -391,7 +391,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
 			}
-			types.LogTx("GUARD", "snapshot", g.summitDomainID, tx)
+			types.LogTx("GUARD", "Submitted snapshot", g.summitDomainID, tx)
 
 			return
 		})

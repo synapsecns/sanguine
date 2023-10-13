@@ -3,7 +3,6 @@ package types
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -43,7 +42,7 @@ var etherscanTxURLs = map[uint32]string{
 }
 
 func LogTx(agent, msg string, chainID uint32, tx *ethTypes.Transaction) {
-	fmt.Printf("[%s:%d] Submitted %s: %s\n", agent, chainID, msg, getTxLink(chainID, tx))
+	fmt.Printf("[AGENT_%s:%d] %s [%s]\n", agent, chainID, msg, getTxLink(chainID, tx))
 }
 
 func getTxLink(chainID uint32, tx *ethTypes.Transaction) string {
@@ -51,12 +50,7 @@ func getTxLink(chainID uint32, tx *ethTypes.Transaction) string {
 	if tx != nil {
 		link = tx.Hash().String()
 	} else {
-		metadata := []string{}
-		metadata = append(metadata, fmt.Sprintf("cost=%s", tx.Cost().String()))
-		metadata = append(metadata, fmt.Sprintf("gasPrice=%s", tx.GasPrice().String()))
-		metadata = append(metadata, fmt.Sprintf("gasFeeCap=%s", tx.GasFeeCap().String()))
-		metadata = append(metadata, fmt.Sprintf("gasTipCap=%s", tx.GasTipCap().String()))
-		return "Not submitted; metadata: " + strings.Join(metadata, ", ")
+		return ""
 	}
 	url, ok := etherscanTxURLs[chainID]
 	if !ok {

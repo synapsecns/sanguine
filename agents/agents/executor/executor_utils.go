@@ -132,7 +132,7 @@ func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool
 
 // processMessage processes and stores a message.
 func (e Executor) processMessage(ctx context.Context, message types.Message, logBlockNumber uint64) error {
-	fmt.Printf("processMessage: %v\n", message)
+	types.LogTx("EXECUTOR", fmt.Sprintf("Processing message: %s", types.MessageToString(message)), message.OriginDomain(), nil)
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	leaf, err := message.ToLeaf()
 	if err != nil {

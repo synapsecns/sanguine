@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -334,7 +335,7 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
-	fmt.Printf("executing msg: %v\n", message)
+	types.LogTx("EXECUTOR", fmt.Sprintf("Executing message: %s", types.MessageToString(message)), message.DestinationDomain(), nil)
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
@@ -446,7 +447,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
-		types.LogTx("EXECUTOR", "execute", message.DestinationDomain(), tx)
+		types.LogTx("EXECUTOR", "Submitted execute()", message.DestinationDomain(), tx)
 		return
 	})
 	if err != nil {
@@ -845,7 +846,11 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
-				fmt.Printf("got executable messages: %v\n", messages)
+				msgStrs := []string{}
+				for _, msg := range messages {
+					msgStrs = append(msgStrs, types.MessageToString(msg))
+				}
+				fmt.Printf("Got executable messages: %v\n", msgStrs)
 
 				if len(messages) == 0 {
 					break
@@ -931,7 +936,11 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
-				fmt.Printf("got unset min time msgs: %v\n", messages)
+				msgStrs := []string{}
+				for _, msg := range messages {
+					msgStrs = append(msgStrs, types.MessageToString(msg))
+				}
+				fmt.Printf("Got unset min time msgs: %v\n", strings.Join(msgStrs, ", "))
 
 				if len(messages) == 0 {
 					break
@@ -960,7 +969,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
-				fmt.Printf("got timestamp for message: %v, %v\n", minimumTimestamp, message)
+				fmt.Printf("Got timestamp for message: %v, %v\n", minimumTimestamp, types.MessageToString(message))
 
 				if minimumTimestamp == nil {
 					continue

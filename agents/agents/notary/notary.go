@@ -189,6 +189,7 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 		return
 	}
 
+	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
 	fmt.Printf("got attestation: %v\n", attestation)
 	if n.myLatestNotaryAttestation == nil ||
 		attestation.Attestation().SnapshotRoot() != n.myLatestNotaryAttestation.Attestation().SnapshotRoot() {
@@ -455,12 +456,10 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
-			if tx != nil {
-				span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
-					attribute.String("tx", tx.Hash().Hex()),
-				))
-				types.LogTx("NOTARY", "snapshot", n.destinationDomain.Config().DomainID, tx)
-			}
+			span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
+				attribute.String("tx", tx.Hash().Hex()),
+			))
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, tx)
 			return
 		})
 		if err != nil {
@@ -561,12 +560,12 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
-			if tx != nil {
-				types.LogTx("NOTARY", "attestation", n.destinationDomain.Config().DomainID, tx)
-				span.AddEvent("Submitted transaction", trace.WithAttributes(
-					attribute.String("tx", tx.Hash().Hex()),
-				))
-			}
+			snapRoot := n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
+			snapRootStr := common.BytesToHash(snapRoot[:]).String()
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted attestation with snapRoot: %s", snapRootStr), n.destinationDomain.Config().DomainID, tx)
+			span.AddEvent("Submitted transaction", trace.WithAttributes(
+				attribute.String("tx", tx.Hash().Hex()),
+			))
 
 			return
 		})
