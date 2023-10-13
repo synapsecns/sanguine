@@ -10,6 +10,7 @@ import {ChainGas, GasData, GasDataLib} from "../libs/stack/GasData.sol";
 import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {State, StateLib} from "../libs/memory/State.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
@@ -427,8 +428,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         summitAtt.snapRoot = snapRoot;
         summitAtt.agentRoot = agentRoot;
         summitAtt.snapGasHash = snapGasHash;
-        summitAtt.blockNumber = uint40(block.number);
-        summitAtt.timestamp = uint40(block.timestamp);
+        summitAtt.blockNumber = ChainContext.blockNumber();
+        summitAtt.timestamp = ChainContext.blockTimestamp();
     }
 
     /// @dev Checks that an Attestation and its Summit representation are equal.

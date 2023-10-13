@@ -10,6 +10,7 @@ import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
+import {ChainContext} from "./libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
@@ -272,7 +273,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
             pending: true,
             tipsAwarded: savedRcpt.tipsAwarded,
             receiptNotaryIndex: rcptNotaryIndex,
-            submittedAt: uint40(block.timestamp)
+            submittedAt: ChainContext.blockTimestamp()
         });
         // Save receipt tips
         _receiptTips[messageHash] = ReceiptTips({

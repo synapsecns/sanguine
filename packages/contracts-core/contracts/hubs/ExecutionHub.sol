@@ -25,6 +25,7 @@ import {Request} from "../libs/stack/Request.sol";
 import {SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/stack/Tips.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
@@ -283,7 +284,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
             attBN: att.blockNumber(),
             attTS: att.timestamp(),
             index: uint32(_roots.length),
-            submittedAt: uint40(block.timestamp),
+            submittedAt: ChainContext.blockTimestamp(),
             sigIndex: sigIndex
         });
         _roots.push(root);

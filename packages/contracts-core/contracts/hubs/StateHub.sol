@@ -6,6 +6,7 @@ import {IncorrectOriginDomain} from "../libs/Errors.sol";
 import {GasData, GasDataLib} from "../libs/stack/GasData.sol";
 import {HistoricalTree} from "../libs/merkle/MerkleTree.sol";
 import {State, StateLib} from "../libs/memory/State.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
@@ -135,8 +136,8 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
 
     /// @dev Returns a OriginState struct to save in the contract.
     function _toOriginState() internal view returns (OriginState memory originState) {
-        originState.blockNumber = uint40(block.number);
-        originState.timestamp = uint40(block.timestamp);
+        originState.blockNumber = ChainContext.blockNumber();
+        originState.timestamp = ChainContext.blockTimestamp();
         originState.gasData = _fetchGasData();
     }
 
