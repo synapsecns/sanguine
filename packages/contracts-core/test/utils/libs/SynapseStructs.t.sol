@@ -150,7 +150,7 @@ struct RawState {
 using CastLib for RawState global;
 
 struct RawStateIndex {
-    uint256 stateIndex;
+    uint8 stateIndex;
     uint256 statesAmount;
 }
 
@@ -436,7 +436,7 @@ library CastLib {
         // [1 .. SNAPSHOT_MAX_STATES] range
         rsi.statesAmount = 1 + rsi.statesAmount % SNAPSHOT_MAX_STATES;
         // [0 .. statesAmount) range
-        rsi.stateIndex = rsi.stateIndex % rsi.statesAmount;
+        rsi.stateIndex = uint8(rsi.stateIndex % rsi.statesAmount);
     }
 
     // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════

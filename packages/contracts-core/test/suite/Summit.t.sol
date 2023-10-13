@@ -290,7 +290,7 @@ contract SummitTest is AgentSecuredTest {
             assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
-            for (uint256 j = 0; j < STATES; ++j) {
+            for (uint8 j = 0; j < STATES; ++j) {
                 bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(ra.nonce, j);
                 // Item to prove is State's "left sub-leaf"
                 (bytes32 item,) = rs.states[j].castToState().subLeafs();
