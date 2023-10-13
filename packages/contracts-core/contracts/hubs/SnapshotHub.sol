@@ -16,12 +16,15 @@ import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice `SnapshotHub` is a parent contract for `Summit`. It is responsible for the following:
 /// - Accepting and storing Guard and Notary snapshots to keep track of all the remote `Origin` states.
 /// - Generating and storing Attestations derived from Notary snapshots, as well as verifying their validity.
 abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     using AttestationLib for bytes;
+    using SafeCast for uint256;
     using StateLib for bytes;
 
     /// @notice Struct that represents stored State of Origin contract
@@ -258,8 +261,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         uint32 notaryIndex,
         uint256 sigIndex
     ) internal returns (bytes memory attPayload) {
-        // Attestation nonce is its index in `_attestations` array
-        uint32 attNonce = uint32(_attestations.length);
+        uint32 attNonce = _nextAttestationNonce();
         bytes32 snapGasHash = GasDataLib.snapGasHash(snapshot.snapGas());
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, snapGasHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
@@ -296,9 +298,11 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Returns the amount of saved _attestations (created from Notary snapshots) so far.
-    function _attestationsAmount() internal view returns (uint256) {
-        return _attestations.length;
+    /// @dev Returns the nonce of the next attestation to be created from the Notary snapshot.
+    function _nextAttestationNonce() internal view returns (uint32) {
+        // TODO: consider using more than 32 bits for attestation nonce
+        // Attestation nonce is its index in `_attestations` array
+        return _attestations.length.toUint32();
     }
 
     /// @dev Checks if attestation was previously submitted by a Notary (as a signed snapshot).
