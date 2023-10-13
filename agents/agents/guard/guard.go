@@ -391,11 +391,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
 			}
-			if tx != nil {
-				fmt.Printf("[GUARD] Submitted snapshot: %v\n", tx.Hash().Hex())
-			} else {
-				fmt.Println("Guard snapshot tx was nil")
-			}
+			types.LogTx("GUARD", "snapshot", g.summitDomainID, tx)
 
 			return
 		})

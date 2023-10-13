@@ -446,13 +446,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
-
-		if tx != nil {
-			fmt.Printf("[EXECUTOR] Submitted execute(): %v\n", tx.Hash().Hex())
-		} else {
-			fmt.Println("Execute() tx was nil")
-		}
-
+		types.LogTx("EXECUTOR", "execute", message.DestinationDomain(), tx)
 		return
 	})
 	if err != nil {

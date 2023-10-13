@@ -459,7 +459,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 				span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
-				fmt.Printf("[NOTARY:%d] Submitted snapshot tx: %v\n", n.destinationDomain.Config().DomainID, tx.Hash().Hex())
+				types.LogTx("NOTARY", "snapshot", n.destinationDomain.Config().DomainID, tx)
 			}
 			return
 		})
@@ -562,7 +562,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
 			if tx != nil {
-				fmt.Printf("[NOTARY:%d] Submitted attestation: %v\n", n.destinationDomain.Config().DomainID, tx.Hash().Hex())
+				types.LogTx("NOTARY", "attestation", n.destinationDomain.Config().DomainID, tx)
 				span.AddEvent("Submitted transaction", trace.WithAttributes(
 					attribute.String("tx", tx.Hash().Hex()),
 				))
