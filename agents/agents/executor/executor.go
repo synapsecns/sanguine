@@ -874,7 +874,21 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						attribute.Bool(metrics.MessageExecuted, messageExecuted),
 					))
 
-					if !messageExecuted {
+					if messageExecuted {
+						// Mark the message as executed in the database.
+						destinationDomain := message.DestinationDomain()
+						nonce := message.Nonce()
+						executedMessageMask := db.DBMessage{
+							ChainID:     &chainID,
+							Destination: &destinationDomain,
+							Nonce:       &nonce,
+						}
+						err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+						if err != nil {
+							return fmt.Errorf("could not execute message: %w", err)
+						}
+					} else {
+						// Execute the message.
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							fmt.Printf("execute err: %v\n", err)
@@ -886,18 +900,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						if !executed {
 							continue
 						}
-					}
-
-					destinationDomain := message.DestinationDomain()
-					nonce := message.Nonce()
-					executedMessageMask := db.DBMessage{
-						ChainID:     &chainID,
-						Destination: &destinationDomain,
-						Nonce:       &nonce,
-					}
-					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-					if err != nil {
-						return fmt.Errorf("could not execute message: %w", err)
 					}
 				}
 
