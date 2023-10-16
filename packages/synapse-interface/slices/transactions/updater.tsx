@@ -39,8 +39,7 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
-import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
-import { checkTransactionsExist } from '@/components/Portfolio/Activity'
+import { getValidAddress } from '@/utils/isValidAddress'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
