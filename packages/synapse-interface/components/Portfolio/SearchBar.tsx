@@ -68,25 +68,25 @@ export const SearchBar = () => {
     return isTransactionHash(searchInput)
   }, [searchInput])
 
-  const checkSearchInputIsAddress: Address | null = useMemo(() => {
+  const checksumValidAddress: Address | null = useMemo(() => {
     return getValidAddress(searchInput)
   }, [searchInput])
 
   useEffect(() => {
     const masqueradeActive: boolean =
       Object.keys(searchedBalancesAndAllowances).length > 0
-    if (checkSearchInputIsAddress && !masqueradeActive) {
+    if (checksumValidAddress && !masqueradeActive) {
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(
-          checkSearchInputIsAddress as Address
+          checksumValidAddress as Address
         )
       )
     }
 
-    if (masqueradeActive && checkSearchInputIsAddress) {
+    if (masqueradeActive && checksumValidAddress) {
       clearSearchInput()
     }
-  }, [checkSearchInputIsAddress, searchedBalancesAndAllowances])
+  }, [checksumValidAddress, searchedBalancesAndAllowances])
 
   useEffect(() => {
     if (searchInputIsTransactionHash) {
