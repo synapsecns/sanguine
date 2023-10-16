@@ -39,7 +39,7 @@ require (
 	github.com/temoto/robotstxt v1.1.2
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21
 	github.com/urfave/cli/v2 v2.25.5
-	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.44.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0
 	go.opentelemetry.io/otel v1.16.0
