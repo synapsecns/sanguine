@@ -281,6 +281,14 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
+	g.Go(func() error {
+		err := e.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
+		}
+		return err
+	})
+
 	// Listen for snapshotAccepted events on the inbox.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
