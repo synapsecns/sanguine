@@ -13,7 +13,7 @@ import {
   initialState as portfolioInitialState,
   PortfolioState,
 } from '@/slices/portfolio/reducer'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from './Transaction/components/TransactionExplorerLink'
@@ -64,27 +64,29 @@ export const SearchBar = () => {
     }
   }, [activeTab])
 
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
   const searchInputIsTransactionHash: boolean = useMemo(() => {
     return isTransactionHash(searchInput)
+  }, [searchInput])
+
+  const checksumValidAddress: Address | null = useMemo(() => {
+    return getValidAddress(searchInput)
   }, [searchInput])
 
   useEffect(() => {
     const masqueradeActive: boolean =
       Object.keys(searchedBalancesAndAllowances).length > 0
-    if (searchInputIsAddress && !masqueradeActive) {
+    if (checksumValidAddress && !masqueradeActive) {
       dispatch(
-        fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
+        fetchAndStoreSearchInputPortfolioBalances(
+          checksumValidAddress as Address
+        )
       )
     }
 
-    if (masqueradeActive && searchInputIsAddress) {
+    if (masqueradeActive && checksumValidAddress) {
       clearSearchInput()
     }
-  }, [searchInputIsAddress, searchedBalancesAndAllowances])
+  }, [checksumValidAddress, searchedBalancesAndAllowances])
 
   useEffect(() => {
     if (searchInputIsTransactionHash) {
