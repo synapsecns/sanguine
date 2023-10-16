@@ -10,9 +10,7 @@ export const isValidAddress = (address: string): boolean => {
   }
 }
 
-export const getValidAddress = (
-  address: string
-): Address | InvalidAddressError => {
+export const getValidAddress = (address: string): Address | any => {
   try {
     const validatedAddress: Address = getAddress(address)
     return validatedAddress
