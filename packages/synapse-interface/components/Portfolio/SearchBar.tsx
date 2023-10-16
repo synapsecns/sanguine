@@ -64,10 +64,6 @@ export const SearchBar = () => {
     }
   }, [activeTab])
 
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
   const searchInputIsTransactionHash: boolean = useMemo(() => {
     return isTransactionHash(searchInput)
   }, [searchInput])
@@ -75,8 +71,6 @@ export const SearchBar = () => {
   const checkSearchInputIsAddress: Address | null = useMemo(() => {
     return getValidAddress(searchInput)
   }, [searchInput])
-
-  console.log('checkSearchInputIsAddress:', checkSearchInputIsAddress)
 
   useEffect(() => {
     const masqueradeActive: boolean =
