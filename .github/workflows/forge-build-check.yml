@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/foundry-tests.yml'
   pull_request:
     paths:
       - 'packages/contracts-core/**'
@@ -13,17 +14,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up node
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
         with:
-          node-version: '14' # Adjust this if you need a different version
+          submodules: recursive
 
-      - name: Install dependencies
-        run: npm ci
-        working-directory: packages/contracts-core
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Installing dependencies
+        working-directory: ./packages/contracts-core
+        run: yarn install --immutable
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       - name: Run forge build --sizes
         run: |
