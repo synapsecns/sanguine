@@ -262,7 +262,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         uint256 sigIndex
     ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `_attestations` array
-        uint32 attNonce = uint32(_attestations.length);
+        // TODO: consider using more than 32 bits for attestation nonces
+        uint32 attNonce = _attestations.length.toUint32();
         bytes32 snapGasHash = GasDataLib.snapGasHash(snapshot.snapGas());
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, snapGasHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
