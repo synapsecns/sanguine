@@ -37,6 +37,15 @@ export const useFallbackBridgeOriginQuery = ({
       return { chainId, txnHash, bridgeType }
     }, [chainId, txnHash, bridgeType])
 
-  useEffect(() => {}, [useFallback, chainId, txnHash, bridgeType])
+  useEffect(() => {
+    if (useFallback && validQueryParams) {
+      fetchFallbackBridgeOriginQuery({
+        chainId: validQueryParams.chainId,
+        txnHash: validQueryParams.txnHash,
+        bridgeType: validQueryParams.bridgeType,
+      })
+    }
+  }, [useFallback, validQueryParams])
+
   return null
 }
