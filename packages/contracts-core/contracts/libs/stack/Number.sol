@@ -131,6 +131,7 @@ library NumberLib {
 
     /// @dev Wraps (mantissa, exponent) pair into Number.
     function _encode(uint8 mantissa, uint8 exponent) private pure returns (Number) {
+        // Casts below are upcasts, so they are safe.
         return Number.wrap(uint16(mantissa) << SHIFT_MANTISSA | uint16(exponent));
     }
 }

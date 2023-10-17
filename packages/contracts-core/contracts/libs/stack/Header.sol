@@ -53,6 +53,7 @@ library HeaderLib {
         uint32 destination_,
         uint32 optimisticPeriod_
     ) internal pure returns (Header) {
+        // All casts below are upcasts, so they are safe
         // forgefmt: disable-next-item
         return Header.wrap(
             uint136(uint8(flag_)) << SHIFT_FLAG |

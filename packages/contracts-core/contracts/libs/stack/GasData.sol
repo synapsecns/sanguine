@@ -74,6 +74,7 @@ library GasDataLib {
         Number etherPrice_,
         Number markup_
     ) internal pure returns (GasData) {
+        // Number type wraps uint16, so could safely be casted to uint96
         // forgefmt: disable-next-item
         return GasData.wrap(
             uint96(Number.unwrap(gasPrice_)) << SHIFT_GAS_PRICE |
@@ -132,6 +133,7 @@ library GasDataLib {
     /// @param gasData_ Chain's gas data
     /// @param domain_  Chain's domain
     function encodeChainGas(GasData gasData_, uint32 domain_) internal pure returns (ChainGas) {
+        // GasData type wraps uint96, so could safely be casted to uint128
         return ChainGas.wrap(uint128(GasData.unwrap(gasData_)) << SHIFT_GAS_DATA | uint128(domain_));
     }
 

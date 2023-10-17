@@ -30,6 +30,7 @@ library RequestLib {
     /// @param gasLimit_    Minimum amount of gas units to supply for execution
     /// @param version_     Base message version to pass to the recipient
     function encodeRequest(uint96 gasDrop_, uint64 gasLimit_, uint32 version_) internal pure returns (Request) {
+        // Casts below are upcasts, so they are safe
         return Request.wrap(uint192(gasDrop_) << SHIFT_GAS_DROP | uint192(gasLimit_) << SHIFT_GAS_LIMIT | version_);
     }
 
