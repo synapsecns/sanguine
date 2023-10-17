@@ -3,11 +3,8 @@ package cmd
 import (
 	"context"
 	"os"
-	"sync/atomic"
-	"time"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/hedzr/log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
@@ -121,108 +118,98 @@ var GuardRunCommand = &cli.Command{
 			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(guardConfig.BaseOmnirpcURL, handler)
 		}
 
-		var shouldRetryAtomic atomic.Bool
-		shouldRetryAtomic.Store(true)
+		g, ctx := errgroup.WithContext(c.Context)
 
-		for shouldRetryAtomic.Load() {
-			shouldRetryAtomic.Store(false)
-
-			g, ctx := errgroup.WithContext(c.Context)
-
-			switch guardConfig.ScribeConfig.Type {
-			case "embedded":
-				eventDB, err := scribeAPI.InitDB(
-					ctx,
-					guardConfig.DBConfig.Type,
-					guardConfig.DBConfig.Source,
-					handler,
-					false,
-				)
-				if err != nil {
-					return fmt.Errorf("failed to initialize database: %w", err)
-				}
-
-				scribeClients := make(map[uint32][]backend.ScribeBackend)
-
-				for _, client := range guardConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
-					for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-						backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/confirmations/%d/rpc/%d", guardConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
-						if err != nil {
-							return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", guardConfig.BaseOmnirpcURL, client.ChainID))
-						}
-
-						scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
-					}
-				}
-
-				scribe, err := service.NewScribe(eventDB, scribeClients, guardConfig.ScribeConfig.EmbeddedScribeConfig, handler)
-				if err != nil {
-					return fmt.Errorf("failed to initialize scribe: %w", err)
-				}
-
-				g.Go(func() error {
-					err := scribe.Start(ctx)
-					if err != nil {
-						return fmt.Errorf("failed to start scribe: %w", err)
-					}
-
-					return nil
-				})
-				embedded := client.NewEmbeddedScribe(
-					guardConfig.DBConfig.Type,
-					guardConfig.DBConfig.Source,
-					handler,
-				)
-
-				g.Go(func() error {
-					err := embedded.Start(c.Context)
-					if err != nil {
-						return fmt.Errorf("failed to start embedded scribe: %w", err)
-					}
-
-					return nil
-				})
-
-				scribeClient = embedded.ScribeClient
-			case "remote":
-				scribeClient = client.NewRemoteScribe(
-					uint16(guardConfig.ScribeConfig.Port),
-					guardConfig.ScribeConfig.URL,
-					handler,
-				).ScribeClient
-			default:
-				return fmt.Errorf("invalid scribe type: %s", guardConfig.ScribeConfig.Type)
-			}
-			guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, scribeClient, guardDB, handler)
+		switch guardConfig.ScribeConfig.Type {
+		case "embedded":
+			eventDB, err := scribeAPI.InitDB(
+				ctx,
+				guardConfig.DBConfig.Type,
+				guardConfig.DBConfig.Source,
+				handler,
+				false,
+			)
 			if err != nil {
-				return fmt.Errorf("failed to create guard: %w", err)
+				return fmt.Errorf("failed to initialize database: %w", err)
+			}
+
+			scribeClients := make(map[uint32][]backend.ScribeBackend)
+
+			for _, client := range guardConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
+				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
+					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/confirmations/%d/rpc/%d", guardConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+					if err != nil {
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", guardConfig.BaseOmnirpcURL, client.ChainID))
+					}
+
+					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
+				}
+			}
+
+			scribe, err := service.NewScribe(eventDB, scribeClients, guardConfig.ScribeConfig.EmbeddedScribeConfig, handler)
+			if err != nil {
+				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
 
 			g.Go(func() error {
-				err = guard.Start(c.Context)
+				err := scribe.Start(ctx)
 				if err != nil {
-					shouldRetryAtomic.Store(true)
-
-					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
-					time.Sleep(60 * time.Second)
-					return fmt.Errorf("failed to run guard: %w", err)
+					return fmt.Errorf("failed to start scribe: %w", err)
 				}
 
 				return nil
 			})
+			embedded := client.NewEmbeddedScribe(
+				guardConfig.DBConfig.Type,
+				guardConfig.DBConfig.Source,
+				handler,
+			)
 
 			g.Go(func() error {
-				err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+				err := embedded.Start(c.Context)
 				if err != nil {
-					return fmt.Errorf("failed to start api: %w", err)
+					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
 
 				return nil
 			})
 
-			if err := g.Wait(); err != nil {
+			scribeClient = embedded.ScribeClient
+		case "remote":
+			scribeClient = client.NewRemoteScribe(
+				uint16(guardConfig.ScribeConfig.Port),
+				guardConfig.ScribeConfig.URL,
+				handler,
+			).ScribeClient
+		default:
+			return fmt.Errorf("invalid scribe type: %s", guardConfig.ScribeConfig.Type)
+		}
+		guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, scribeClient, guardDB, handler)
+		if err != nil {
+			return fmt.Errorf("failed to create guard: %w", err)
+		}
+
+		g.Go(func() error {
+			err = guard.Start(c.Context)
+			if err != nil {
+				fmt.Printf("error running guard: %v\n", err)
 				return fmt.Errorf("failed to run guard: %w", err)
 			}
+
+			return nil
+		})
+
+		g.Go(func() error {
+			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("failed to start api: %w", err)
+			}
+
+			return nil
+		})
+
+		if err := g.Wait(); err != nil {
+			return fmt.Errorf("failed to run guard: %w", err)
 		}
 
 		return nil
