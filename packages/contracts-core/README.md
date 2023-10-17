@@ -11,10 +11,10 @@
 [![Static Badge](https://img.shields.io/badge/Forge-Docs-f?style=flat-square&logo=gitbook)](https://interchain-contracts.synapseprotocol.com/)
 [![npm](https://img.shields.io/npm/v/%40synapsecns%2Fcontracts-core?style=flat-square)](https://www.npmjs.com/package/@synapsecns/contracts-core)
 
-
 `@synapsecns/contracts-core` contain the Solidity contracts used within the Synapse Interchain Network messaging system.
 
 # Usage
+
 These contracts can be installed with:
 
 `npm i @synapsecns/contracts-core`
