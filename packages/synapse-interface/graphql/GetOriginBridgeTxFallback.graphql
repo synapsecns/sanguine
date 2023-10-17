@@ -1,0 +1,26 @@
+query GetOriginBridgeTxFallback($chainId: Number!, $txnHash: String!, bridgeType: BridgeType!) {
+  getOriginBridgeTx(
+    chainID: $chainId
+    txnHash: $txnHash
+    bridgeType: $bridgeType
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+      }
+      kappa
+      pending
+    }
+}
