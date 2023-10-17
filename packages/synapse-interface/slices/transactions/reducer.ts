@@ -7,6 +7,7 @@ import {
   updateIsUserPendingTransactionsLoading,
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
+  addFallbackQueryTransaction,
   removePendingAwaitingCompletionTransaction,
   resetTransactionsState,
 } from './actions'
@@ -89,6 +90,15 @@ export const transactionsSlice = createSlice({
             state.pendingAwaitingCompletionTransactions.filter(
               (transaction: BridgeTransaction) => transaction.kappa !== kappa
             )
+        }
+      )
+      .addCase(
+        addFallbackQueryTransaction,
+        (state, action: PayloadAction<BridgeTransaction>) => {
+          state.fallbackQueryTransactions = [
+            action.payload,
+            ...state.fallbackQueryTransactions,
+          ]
         }
       )
       .addCase(resetTransactionsState, (state) => {
