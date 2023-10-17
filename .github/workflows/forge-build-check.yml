@@ -1,0 +1,39 @@
+name: Forge Build Size Check
+
+on:
+  push:
+    paths:
+      - 'packages/contracts-core/**'
+  pull_request:
+    paths:
+      - 'packages/contracts-core/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14' # Adjust this if you need a different version
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/contracts-core
+
+      - name: Run forge build --sizes
+        run: |
+          forge build --sizes
+        working-directory: packages/contracts-core
+        continue-on-error: true # This will ensure the step doesn't fail, and we can check the exit code next
+
+      - name: Check exit code
+        run: |
+          if [ "$?" -eq "1" ]; then
+            echo "forge build --sizes failed!"
+            exit 1
+          fi
