@@ -21,6 +21,9 @@ export const addPendingAwaitingCompletionTransaction =
   createAction<BridgeTransaction>(
     'transactions/addPendingAwaitingCompletionTransaction'
   )
+export const addFallbackQueryTransaction = createAction<BridgeTransaction>(
+  'transactions/addFallbackQueryTransaction'
+)
 export const removePendingAwaitingCompletionTransaction = createAction<string>(
   'transactions/removePendingAwaitingCompletionTransaction'
 )
