@@ -79,8 +79,8 @@ jobs:
         working-directory: ./packages/contracts-core
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
   size-check:
+    name: Foundry Size Check
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
