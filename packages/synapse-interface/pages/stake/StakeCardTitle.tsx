@@ -1,9 +1,10 @@
+import numeral from 'numeral'
+import _ from 'lodash'
 import { useEffect, useState, useMemo } from 'react'
+import { LoaderIcon } from 'react-hot-toast'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import ApyTooltip from '@/components/ApyTooltip'
-import LoadingText from '@/components/loading/LoadingText'
-import _ from 'lodash'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -43,7 +44,7 @@ const StakeCardTitle = ({
   const [baseApyData, setBaseApyData] = useState<any>(null)
 
   useEffect(() => {
-    if (connectedChainId && address && prices) {
+    if (connectedChainId && prices) {
       getPoolApyData(connectedChainId, token, prices)
         .then((res) => {
           setPoolApyData(res)
@@ -52,7 +53,7 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, address, prices, lpTokenBalance])
+  }, [connectedChainId, prices, lpTokenBalance])
 
   useEffect(() => {
     null
@@ -62,30 +63,33 @@ const StakeCardTitle = ({
   const displayPoolApyData = useMemo(() => {
     if (!poolApyData) return null
 
-    return poolApyData.fullCompoundedAPYStr
-      ? `${String(poolApyData.fullCompoundedAPYStr)}% `
-      : `-% `
+    return poolApyData.fullCompoundedAPY
+      ? `${numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}`
+      : `-%`
   }, [connectedChainId, prices, poolApyData])
 
   return (
-    <div className="px-2 mb-5">
+    <div className="flex items-center justify-between mb-5">
       <div className="inline-flex items-center mt-2">
         <StakingPoolTokens poolTokens={poolTokens} />
         <h3 className="mr-2 text-xl font-medium text-white">{poolLabel}</h3>
       </div>
 
-      <div className="flex flex-row text-lg font-normal text-white text-opacity-70">
-        {displayPoolApyData ? (
-          <span className="mr-1 text-green-400">{displayPoolApyData}</span>
-        ) : (
-          <LoadingText />
-        )}
-        APY
-        <ApyTooltip
-          apyData={poolApyData}
-          // baseApyData={baseApyData ??}
-          className="flex items-center ml-1"
-        />
+      <div className="text-lg font-normal text-white text-opacity-70">
+        <div>
+          {displayPoolApyData ? (
+            <span className="text-white ">{displayPoolApyData}</span>
+          ) : (
+            <LoaderIcon />
+          )}
+        </div>
+        <div className="flex">
+          <div className="text-sm">APY</div>
+          <ApyTooltip
+            apyData={poolApyData}
+            className="flex items-center ml-1"
+          />
+        </div>
       </div>
     </div>
   )
