@@ -7,6 +7,11 @@ import { setSwapChainId } from '@/slices/swap/reducer'
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
+import {
+  fetchAvaxPrice,
+  fetchEthPrice,
+  fetchSynPrices,
+} from '@/slices/priceDataSlice'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -73,6 +78,12 @@ export const UserProvider = ({ children }) => {
       }
     })()
   }, [chain, address])
+
+  useEffect(() => {
+    dispatch(fetchSynPrices())
+    dispatch(fetchEthPrice())
+    dispatch(fetchAvaxPrice())
+  }, [])
 
   return (
     <WalletStatusContext.Provider value={null}>
