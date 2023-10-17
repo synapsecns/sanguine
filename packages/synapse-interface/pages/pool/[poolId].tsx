@@ -12,7 +12,7 @@ import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const PoolPage = () => {
@@ -59,7 +59,7 @@ const PoolPage = () => {
       >
         {!pool || isLoading || !poolId ? (
           <div className="flex items-center justify-center">
-            <LoadingSpinner />
+            <LoadingDots />
           </div>
         ) : pool ? (
           <PoolBody address={address} connectedChainId={connectedChainId} />

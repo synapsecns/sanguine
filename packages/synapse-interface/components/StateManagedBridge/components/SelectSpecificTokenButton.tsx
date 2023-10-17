@@ -12,6 +12,7 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -21,6 +22,10 @@ const SelectSpecificTokenButton = ({
   selectedToken,
   onClick,
   alternateBackground = false,
+  isLoadingExchangeRate = false,
+  exchangeRate,
+  isBestExchangeRate = false,
+  estimatedDurationInSeconds,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -29,6 +34,10 @@ const SelectSpecificTokenButton = ({
   selectedToken: Token
   onClick: () => void
   alternateBackground?: boolean
+  isLoadingExchangeRate?: boolean
+  exchangeRate?: string
+  isBestExchangeRate?: boolean
+  estimatedDurationInSeconds?: number
 }) => {
   const ref = useRef<any>(null)
   const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
@@ -56,6 +65,7 @@ const SelectSpecificTokenButton = ({
 
   return (
     <button
+      data-test-id="select-specific-token-button"
       ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
@@ -78,7 +88,67 @@ const SelectSpecificTokenButton = ({
         isOrigin={isOrigin}
         showAllChains={showAllChains}
       />
+      {isLoadingExchangeRate ? (
+        <LoadingDots className="mr-8 opacity-50" />
+      ) : (
+        <>
+          {exchangeRate && isBestExchangeRate && (
+            <OptionTag type={BestOptionType.RATE} />
+          )}
+
+          {exchangeRate && (
+            <OptionDetails
+              exchangeRate={exchangeRate}
+              estimatedDurationInSeconds={estimatedDurationInSeconds}
+            />
+          )}
+        </>
+      )}
     </button>
+  )
+}
+
+export enum BestOptionType {
+  RATE = 'Best rate',
+  SPEED = 'Fastest',
+}
+
+export const OptionTag = ({ type }: { type: BestOptionType }) => {
+  return (
+    <div
+      data-test-id="option-tag"
+      className="flex px-3 py-0.5 mr-3 text-sm whitespace-nowrap text-primary rounded-xl"
+      style={{
+        background:
+          'linear-gradient(to right, rgba(128, 0, 255, 0.2), rgba(255, 0, 191, 0.2))',
+      }}
+    >{`${type}`}</div>
+  )
+}
+
+export const OptionDetails = ({
+  exchangeRate,
+  estimatedDurationInSeconds,
+}: {
+  exchangeRate: string
+  estimatedDurationInSeconds: number
+}) => {
+  const estimatedDurationInMinutes: number = Math.floor(
+    estimatedDurationInSeconds / 60
+  )
+
+  return (
+    <div data-test-id="option-details" className="flex flex-col">
+      <div className="flex items-center font-normal">
+        <div className="flex text-sm text-secondary whitespace-nowrap">
+          1&nbsp;:&nbsp;
+        </div>
+        <div className="mb-[1px] text-primary">{exchangeRate}</div>
+      </div>
+      <div className="text-sm text-right text-secondary">
+        {estimatedDurationInMinutes} min
+      </div>
+    </div>
   )
 }
 
@@ -101,7 +171,7 @@ const ButtonContent = memo(
     )?.parsedBalance
 
     return (
-      <div className="flex items-center w-full">
+      <div data-test-id="button-content" className="flex items-center w-full">
         <img
           alt="token image"
           className="w-8 h-8 ml-2 mr-4 rounded-full"

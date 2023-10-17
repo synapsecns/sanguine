@@ -39,3 +39,26 @@ root
 └── <a href="./types">types</a>: Common agents types
 </pre>
 
+# Testing Suite
+
+Tests for `agents` have setup hooks defined in `agents/testutil/simulated_backends_suite.go`. Any suite that embeds `SimulatedBackendsTestSuite` will have simulated backend and messaging contract scaffolding for Summit, Origin, and Desination chains. This includes `TestExecutorSuite`, `TestGuardSuite`, `TestNotarySuite`, `ExampleAgentSuite`, and `AgentsIntegrationSuite`.
+
+To run all agent tests:
+
+```bash
+cd agents
+go test -v ./...
+```
+
+To run an individual suite (for example, `TestExecutorSuite`):
+
+```bash
+cd agents/executor
+go test -v
+```
+
+To run an individual test (for example, `TestVerifyState`):
+```bash
+cd agents/executor
+go test -v -run TestExecutorSuite/TestVerifyState
+```
