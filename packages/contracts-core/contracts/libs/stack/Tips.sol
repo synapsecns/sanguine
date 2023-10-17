@@ -67,9 +67,12 @@ library TipsLib {
         pure
         returns (Tips)
     {
+        // forgefmt: disable-next-item
         return Tips.wrap(
-            uint256(summitTip_) << SHIFT_SUMMIT_TIP | uint256(attestationTip_) << SHIFT_ATTESTATION_TIP
-                | uint256(executionTip_) << SHIFT_EXECUTION_TIP | uint256(deliveryTip_)
+            uint256(summitTip_) << SHIFT_SUMMIT_TIP |
+            uint256(attestationTip_) << SHIFT_ATTESTATION_TIP |
+            uint256(executionTip_) << SHIFT_EXECUTION_TIP |
+            uint256(deliveryTip_)
         );
     }
 
