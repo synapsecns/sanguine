@@ -35,6 +35,7 @@ import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /// @notice `ExecutionHub` is a parent contract for `Destination`. It is responsible for the following:
@@ -50,6 +51,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
     using ByteString for MemView;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
+    using SafeCast for uint256;
     using TypeCasts for bytes32;
 
     /// @notice Struct representing stored data for the snapshot root
@@ -278,12 +280,13 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
     function _saveAttestation(Attestation att, uint32 notaryIndex, uint256 sigIndex) internal {
         bytes32 root = att.snapRoot();
         if (_rootData[root].submittedAt != 0) revert DuplicatedSnapshotRoot();
+        // TODO: consider using more than 32 bits for the root index
         _rootData[root] = SnapRootData({
             notaryIndex: notaryIndex,
             attNonce: att.nonce(),
             attBN: att.blockNumber(),
             attTS: att.timestamp(),
-            index: uint32(_roots.length),
+            index: _roots.length.toUint32(),
             submittedAt: ChainContext.blockTimestamp(),
             sigIndex: sigIndex
         });
