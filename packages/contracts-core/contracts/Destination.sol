@@ -68,7 +68,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// - msg.sender is set as contract owner
     function initialize(bytes32 agentRoot) external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable_init();
+        __Ownable2Step_init();
         // Initialize ReeentrancyGuard
         __ReentrancyGuard_init();
         // Set Agent Merkle Root in Light Manager
