@@ -88,6 +88,7 @@ library GasDataLib {
 
     /// @notice Wraps padded uint256 value into GasData struct.
     function wrapGasData(uint256 paddedGasData) internal pure returns (GasData) {
+        // Casting to uint96 will truncate the highest bits, which is the behavior we want
         return GasData.wrap(uint96(paddedGasData));
     }
 
@@ -139,6 +140,7 @@ library GasDataLib {
 
     /// @notice Wraps padded uint256 value into ChainGas struct.
     function wrapChainGas(uint256 paddedChainGas) internal pure returns (ChainGas) {
+        // Casting to uint128 will truncate the highest bits, which is the behavior we want
         return ChainGas.wrap(uint128(paddedChainGas));
     }
 

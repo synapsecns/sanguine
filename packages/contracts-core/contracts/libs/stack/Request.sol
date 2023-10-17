@@ -40,6 +40,7 @@ library RequestLib {
     /// The highest bits are discarded, so that the contracts dealing with encoded requests
     /// don't need to be updated, if a new field is added.
     function wrapPadded(uint256 paddedRequest) internal pure returns (Request) {
+        // Casting to uint192 will truncate the highest bits, which is the behavior we want
         return Request.wrap(uint192(paddedRequest));
     }
 
