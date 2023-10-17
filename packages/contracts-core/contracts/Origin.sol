@@ -132,6 +132,11 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         _insertAndSave(messageHash);
         // Emit event with message information
         emit Sent(messageHash, messageNonce, destination, msgPayload);
+        // Update the gas oracle data. We do this after the provided tips are checked so that
+        // the provided message is sent in the event that the gas oracle data is updated to a higher value.
+        InterfaceGasOracle(gasOracle).updateGasData(destination);
+        // TODO: consider doing this before the message is sent, while adjusting GasOracle.getMinimumTips() to
+        // use the pending gas oracle data.
     }
 
     /// @dev Returns the minimum tips for sending a message to the given destination with the given request and content.

@@ -173,6 +173,7 @@ contract OriginTest is AgentSecuredTest {
             emit StateSaved(state);
             vm.expectEmit();
             emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
+            vm.expectCall(gasOracle, abi.encodeCall(InterfaceGasOracle.updateGasData, (DOMAIN_REMOTE)));
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
