@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'packages/contracts-core/**'
-      - '.github/workflows/foundry-tests.yml'
+      - '.github/workflows/foundry-build-check.yml'
   pull_request:
     paths:
       - 'packages/contracts-core/**'
