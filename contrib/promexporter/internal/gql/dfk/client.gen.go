@@ -33,6 +33,12 @@ type Query struct {
 	BazaarOrder        *BazaarOrder         "json:\"bazaarOrder\" graphql:\"bazaarOrder\""
 	BazaarOrders       []*BazaarOrder       "json:\"bazaarOrders\" graphql:\"bazaarOrders\""
 	BazaarTransactions []*BazaarTransaction "json:\"bazaarTransactions\" graphql:\"bazaarTransactions\""
+	Weapon             *Weapon              "json:\"weapon\" graphql:\"weapon\""
+	Weapons            []*Weapon            "json:\"weapons\" graphql:\"weapons\""
+	Armor              *Armor               "json:\"armor\" graphql:\"armor\""
+	Armors             []*Armor             "json:\"armors\" graphql:\"armors\""
+	Accessory          *Accessory           "json:\"accessory\" graphql:\"accessory\""
+	Accessories        []*Accessory         "json:\"accessories\" graphql:\"accessories\""
 }
 type StuckHeroes struct {
 	Heroes []*struct {
