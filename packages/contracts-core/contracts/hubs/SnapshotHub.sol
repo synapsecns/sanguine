@@ -261,7 +261,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         uint32 notaryIndex,
         uint256 sigIndex
     ) internal returns (bytes memory attPayload) {
-        uint32 attNonce = _nextAttestationNonce();
+        // Attestation nonce is its index in `_attestations` array
+        uint32 attNonce = uint32(_attestations.length);
         bytes32 snapGasHash = GasDataLib.snapGasHash(snapshot.snapGas());
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, snapGasHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
@@ -297,13 +298,6 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
-
-    /// @dev Returns the nonce of the next attestation to be created from the Notary snapshot.
-    function _nextAttestationNonce() internal view returns (uint32) {
-        // TODO: consider using more than 32 bits for attestation nonce
-        // Attestation nonce is its index in `_attestations` array
-        return _attestations.length.toUint32();
-    }
 
     /// @dev Checks if attestation was previously submitted by a Notary (as a signed snapshot).
     function _isValidAttestation(Attestation att) internal view returns (bool) {
