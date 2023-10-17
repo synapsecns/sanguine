@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"os"
+
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db/sql/sqlite"
@@ -12,12 +14,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm/schema"
-	"os"
-	"sync/atomic"
-	"time"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/hedzr/log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
@@ -115,44 +113,33 @@ var NotaryRunCommand = &cli.Command{
 			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(notaryConfig.BaseOmnirpcURL, metricsProvider)
 		}
 
-		var shouldRetryAtomic atomic.Bool
-		shouldRetryAtomic.Store(true)
+		g, _ := errgroup.WithContext(c.Context)
 
-		for shouldRetryAtomic.Load() {
-			shouldRetryAtomic.Store(false)
+		notary, err := notary.NewNotary(c.Context, notaryConfig, baseOmniRPCClient, notaryDB, metricsProvider)
+		if err != nil {
+			return fmt.Errorf("failed to create notary: %w", err)
+		}
 
-			g, _ := errgroup.WithContext(c.Context)
-
-			notary, err := notary.NewNotary(c.Context, notaryConfig, baseOmniRPCClient, notaryDB, metricsProvider)
+		g.Go(func() error {
+			err = notary.Start(c.Context)
 			if err != nil {
-				return fmt.Errorf("failed to create notary: %w", err)
+				fmt.Printf("error running notary: %v\n", err)
+				return fmt.Errorf("error running notary: %w", err)
+			}
+			return nil
+		})
+
+		g.Go(func() error {
+			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("failed to start api: %w", err)
 			}
 
-			g.Go(func() error {
-				err = notary.Start(c.Context)
-				if err != nil {
-					shouldRetryAtomic.Store(true)
+			return nil
+		})
 
-					log.Errorf("Error running notary, will sleep for a minute and retry: %v", err)
-					time.Sleep(60 * time.Second)
-					return fmt.Errorf("failed to create notary: %w", err)
-				}
-
-				return nil
-			})
-
-			g.Go(func() error {
-				err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
-				if err != nil {
-					return fmt.Errorf("failed to start api: %w", err)
-				}
-
-				return nil
-			})
-
-			if err := g.Wait(); err != nil {
-				return fmt.Errorf("failed to run notary: %w", err)
-			}
+		if err := g.Wait(); err != nil {
+			return fmt.Errorf("failed to run notary: %w", err)
 		}
 
 		return nil
