@@ -8,7 +8,7 @@ import {Tips, TipsLib} from "../../contracts/libs/stack/Tips.sol";
 import {TIPS_MULTIPLIER} from "../../contracts/libs/Constants.sol";
 
 import {Random, GasOracle, GasOracleTest} from "./GasOracle.t.sol";
-import {RawGasData, RawGasData256} from "../utils/libs/SynapseStructs.t.sol";
+import {RawGasData, RawGasData256, RawRequest} from "../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -75,7 +75,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
     function test_getMinimumTips_summitTip(Random memory random) public {
         uint256 summitTip = 1 << 48;
         testedGO().setSummitTip(summitTip);
-        uint256 paddedRequest = random.nextUint192();
+        uint256 paddedRequest = rawTestRequest(random).encodeRequest();
         uint256 contentLength = random.nextUint16();
         Tips tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         // Local chain Ether price is 0.5 ETH, so the summit tip is worth 2x.
@@ -91,7 +91,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
     }
 
     function test_getMinimumTips_attestationTip(Random memory random) public {
-        uint256 paddedRequest = random.nextUint192();
+        uint256 paddedRequest = rawTestRequest(random).encodeRequest();
         uint256 contentLength = random.nextUint16();
         Tips tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 0.5 ETH.
@@ -110,12 +110,8 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
     }
 
     function test_getMinimumTips_executionTip(Random memory random) public {
-        Request request = RequestLib.encodeRequest({
-            gasDrop_: random.nextUint96(),
-            gasLimit_: random.nextUint32(),
-            version_: random.nextUint32()
-        });
-        uint256 paddedRequest = Request.unwrap(request);
+        RawRequest memory request = rawTestRequest(random);
+        uint256 paddedRequest = request.encodeRequest();
         uint256 contentLength = random.nextUint16();
         Tips tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 0.5 ETH.
@@ -123,7 +119,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         // Execution tip is execBuffer + gasPrice * gasLimit + dataPrice * contentLength.
         assertEq(
             tips.executionTip() * TIPS_MULTIPLIER,
-            4 * (EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength),
+            4 * (EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength),
             "!executionTip: 0.5ETH"
         );
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 2.0 ETH.
@@ -132,7 +128,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         assertEq(
             tips.executionTip() * TIPS_MULTIPLIER,
-            EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength,
+            EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength,
             "!executionTip: 2.0ETH"
         );
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 4.0 ETH.
@@ -141,18 +137,14 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         assertEq(
             tips.executionTip() * TIPS_MULTIPLIER,
-            (EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength) / 2,
+            (EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength) / 2,
             "!executionTip: 4.0ETH"
         );
     }
 
     function test_getMinimumTips_deliveryTip(Random memory random) public {
-        Request request = RequestLib.encodeRequest({
-            gasDrop_: random.nextUint96(),
-            gasLimit_: random.nextUint32(),
-            version_: random.nextUint32()
-        });
-        uint256 paddedRequest = Request.unwrap(request);
+        RawRequest memory request = rawTestRequest(random);
+        uint256 paddedRequest = request.encodeRequest();
         uint256 contentLength = random.nextUint16();
         Tips tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 0.5 ETH.
@@ -161,7 +153,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         // Delivery tip is execution tip * markup (50%), therefore the final value is worth 2x.
         assertEq(
             tips.deliveryTip() * TIPS_MULTIPLIER,
-            2 * (EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength),
+            2 * (EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength),
             "!deliveryTip: 0.5ETH"
         );
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 2.0 ETH.
@@ -171,7 +163,7 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         assertEq(
             tips.deliveryTip() * TIPS_MULTIPLIER,
-            (EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength) / 2,
+            (EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength) / 2,
             "!deliveryTip: 2.0ETH"
         );
         // Remote chain Ether price is 2.0 ETH, local chain Ether price is 4.0 ETH.
@@ -181,10 +173,16 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
         tips = TipsLib.wrapPadded(testedGO().getMinimumTips(DOMAIN_REMOTE, paddedRequest, contentLength));
         assertEq(
             tips.deliveryTip() * TIPS_MULTIPLIER,
-            (EXEC_BUFFER + GAS_PRICE * request.gasLimit() + DATA_PRICE * contentLength) / 4,
+            (EXEC_BUFFER + GAS_PRICE * request.gasLimit + DATA_PRICE * contentLength) / 4,
             "!deliveryTip: 4.0ETH"
         );
         // TODO: adjust test when delivery tip will also include the value of gas airdrop.
+    }
+
+    function rawTestRequest(Random memory random) internal pure returns (RawRequest memory rr) {
+        rr = random.nextRequest();
+        // Set sensible max values for gasDrop and gasLimit.
+        rr.boundRequest({maxGasDrop: 10 ** 20, maxGasLimit: 10 ** 8});
     }
 
     function setLocalEtherPrice(uint256 etherPrice) public {

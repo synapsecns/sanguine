@@ -227,6 +227,11 @@ library CastLib {
         request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit, version_: rr.version});
     }
 
+    function boundRequest(RawRequest memory rr, uint96 maxGasDrop, uint64 maxGasLimit) internal pure {
+        rr.gasDrop = rr.gasDrop % maxGasDrop;
+        rr.gasLimit = rr.gasLimit % maxGasLimit;
+    }
+
     function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {
         encodedTips = Tips.unwrap(rt.castToTips());
     }

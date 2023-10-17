@@ -7,6 +7,7 @@ import {
     RawExecReceipt,
     RawGasData,
     RawGasData256,
+    RawRequest,
     RawState,
     RawStateIndex,
     RawSnapshot
@@ -147,6 +148,12 @@ library RandomLib {
 
     function nextGasData(Random memory r) internal pure returns (RawGasData memory rgd) {
         return r.nextGasData256().compress();
+    }
+
+    function nextRequest(Random memory r) internal pure returns (RawRequest memory rr) {
+        rr.gasDrop = r.nextUint96();
+        rr.gasLimit = r.nextUint64();
+        rr.version = r.nextUint32();
     }
 
     function nextStateIndex(Random memory r) internal pure returns (RawStateIndex memory rsi) {
