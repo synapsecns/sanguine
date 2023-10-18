@@ -27,6 +27,11 @@ export const formatBigIntToString = (
     const idx = str.length - nativePrecision
     str = `${str.slice(0, idx)}.${str.slice(idx)}`
 
+    // Handle values below zero by adding a '0' before the decimal point
+    if (str.startsWith('.')) {
+      str = '0' + str
+    }
+
     // Trim to desired number of decimal places
     if (decimalPlaces !== undefined) {
       const decimalIdx = str.indexOf('.')

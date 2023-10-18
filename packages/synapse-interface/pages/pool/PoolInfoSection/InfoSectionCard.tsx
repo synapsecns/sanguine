@@ -5,11 +5,11 @@ const InfoSectionCard = ({ title, children }) => {
   return (
     <Card
       title={title}
-      className="p-6 rounded-lg bg-bgBase"
-      titleClassName="text-base font-base text-secondaryTextColor text-opacity-50 mb-5"
+      className="p-3 rounded-md bg-bgBase"
+      titleClassName="font-thin text-secondaryTextColor mb-3"
       divider={false}
     >
-      <InfoSection showDivider={true} showOutline={false}>
+      <InfoSection showDivider={false} showOutline={false}>
         {children}
       </InfoSection>
     </Card>

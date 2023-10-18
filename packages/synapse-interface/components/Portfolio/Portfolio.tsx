@@ -27,6 +27,7 @@ import { BridgeState } from '@/slices/bridge/reducer'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { Activity } from './Activity'
 import { ViewSearchAddressBanner } from './SearchBar'
+import { resetBridgeInputs } from '@/slices/bridge/actions'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
@@ -42,6 +43,7 @@ export const Portfolio = () => {
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
+      dispatch(resetBridgeInputs())
     },
   })
 

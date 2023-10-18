@@ -93,7 +93,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable_init();
+        __Ownable2Step_init();
         _initializeAttestations();
     }
 
