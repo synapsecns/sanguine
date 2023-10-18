@@ -44,8 +44,9 @@ export const PendingTransaction = ({
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
-  console.log('pending transaction reinit')
   const dispatch = useAppDispatch()
+
+  const currentTime = new Date().getTime() // This returns the timestamp in milliseconds
 
   const transactionStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
@@ -95,6 +96,10 @@ export const PendingTransaction = ({
     setElapsedTime(elapsedMinutes)
   }, [startedTimestamp])
 
+  console.log('elapsedTime:', elapsedTime)
+  console.log('currentTime:', currentTime)
+  console.log('estimatedCompletionInSeconds: ', estimatedCompletionInSeconds)
+
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime: number = Math.floor(Date.now() / 1000)
@@ -119,7 +124,13 @@ export const PendingTransaction = ({
     }
   }, [estimatedMinutes, elapsedTime, startedTimestamp])
 
+  console.log('timeRemaining: ', timeRemaining)
+
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+
+  // const shouldUseFallbackOriginQuery: boolean = useMemo(() => {
+
+  // }, [kappa, elapsedTime, ])
 
   // testing
   const fallback = useFallbackBridgeOriginQuery({

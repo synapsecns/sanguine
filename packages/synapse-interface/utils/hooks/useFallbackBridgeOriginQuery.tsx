@@ -28,7 +28,6 @@ export const useFallbackBridgeOriginQuery = ({
   bridgeType,
 }: useFallbackBridgeOriginQueryProps) => {
   const dispatch = useAppDispatch()
-  console.log('timestamp: ', timestamp)
 
   const { fallbackQueryTransactions }: TransactionsState =
     useTransactionsState()
@@ -51,19 +50,19 @@ export const useFallbackBridgeOriginQuery = ({
     })
   }, [fallbackQueryTransactions, txnHash])
 
-  console.log('queryTransactionAlreadyStored:', queryTransactionAlreadyStored)
+  // console.log('queryTransactionAlreadyStored:', queryTransactionAlreadyStored)
 
   // Start fallback query
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      console.log('start fetch')
+      // console.log('start fetch')
       fetchFallbackBridgeOriginQuery({
         chainId: validQueryParams.chainId,
         txnHash: validQueryParams.txnHash,
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback || queryTransactionAlreadyStored) {
-      console.log('end fetch')
+      // console.log('end fetch')
       fetchFallbackBridgeOriginQuery({
         chainId: null,
         txnHash: null,
