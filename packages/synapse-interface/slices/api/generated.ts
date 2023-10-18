@@ -437,6 +437,40 @@ export type VolumeByChainId = {
   total?: Maybe<Scalars['Float']['output']>
 }
 
+export type GetDestinationBridgeTxFallbackQueryVariables = Exact<{
+  chainId: Scalars['Int']['input']
+  kappa: Scalars['String']['input']
+  address: Scalars['String']['input']
+  timestamp: Scalars['Int']['input']
+  bridgeType: BridgeType
+}>
+
+export type GetDestinationBridgeTxFallbackQuery = {
+  __typename?: 'Query'
+  getDestinationBridgeTx?: {
+    __typename?: 'BridgeWatcherTx'
+    kappa?: string | null
+    pending?: boolean | null
+    bridgeTx?: {
+      __typename?: 'PartialInfo'
+      chainID?: number | null
+      destinationChainID?: number | null
+      address?: string | null
+      txnHash?: string | null
+      value?: string | null
+      formattedValue?: number | null
+      USDValue?: number | null
+      tokenAddress?: string | null
+      tokenSymbol?: string | null
+      blockNumber?: number | null
+      time?: number | null
+      formattedTime?: string | null
+      formattedEventType?: string | null
+      eventType?: number | null
+    } | null
+  } | null
+}
+
 export type GetOriginBridgeTxFallbackQueryVariables = Exact<{
   chainId: Scalars['Int']['input']
   txnHash: Scalars['String']['input']
@@ -563,6 +597,36 @@ export type GetUserPendingTransactionsQuery = {
   } | null> | null
 }
 
+export const GetDestinationBridgeTxFallbackDocument = `
+    query GetDestinationBridgeTxFallback($chainId: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!) {
+  getDestinationBridgeTx(
+    chainID: $chainId
+    kappa: $kappa
+    address: $address
+    timestamp: $timestamp
+    bridgeType: $bridgeType
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    kappa
+    pending
+  }
+}
+    `
 export const GetOriginBridgeTxFallbackDocument = `
     query GetOriginBridgeTxFallback($chainId: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
   getOriginBridgeTx(chainID: $chainId, txnHash: $txnHash, bridgeType: $bridgeType) {
@@ -680,6 +744,15 @@ export const GetUserPendingTransactionsDocument = `
 
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
+    GetDestinationBridgeTxFallback: build.query<
+      GetDestinationBridgeTxFallbackQuery,
+      GetDestinationBridgeTxFallbackQueryVariables
+    >({
+      query: (variables) => ({
+        document: GetDestinationBridgeTxFallbackDocument,
+        variables,
+      }),
+    }),
     GetOriginBridgeTxFallback: build.query<
       GetOriginBridgeTxFallbackQuery,
       GetOriginBridgeTxFallbackQueryVariables
@@ -712,6 +785,8 @@ const injectedRtkApi = api.injectEndpoints({
 
 export { injectedRtkApi as api }
 export const {
+  useGetDestinationBridgeTxFallbackQuery,
+  useLazyGetDestinationBridgeTxFallbackQuery,
   useGetOriginBridgeTxFallbackQuery,
   useLazyGetOriginBridgeTxFallbackQuery,
   useGetUserHistoricalActivityQuery,

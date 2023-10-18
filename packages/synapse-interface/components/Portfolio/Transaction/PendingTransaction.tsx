@@ -17,7 +17,7 @@ import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
-import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery.tsx'
+import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
 import { BridgeType } from '@/slices/api/generated'
 
 interface PendingTransactionProps extends TransactionProps {
