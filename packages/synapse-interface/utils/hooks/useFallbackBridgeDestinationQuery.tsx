@@ -27,5 +27,18 @@ export const useFallbackBridgeDestinationQuery = ({
   bridgeType,
   useFallback,
 }: useFallbackBridgeDestinationQueryProps) => {
+  const [fetchFallbackBridgeDestinationQuery, fetchedFallbackQuery] =
+    useLazyGetDestinationBridgeTxFallbackQuery({ pollingInterval: 30000 })
+
+  const validQueryParams: FallbackBridgeDestinationQueryProps | null =
+    useMemo(() => {
+      if (typeof chainId !== 'number') return null
+      if (!kappa) return null
+      if (!timestamp) return null
+      if (!bridgeType) return null
+
+      return { chainId, kappa, timestamp, bridgeType }
+    }, [chainId, kappa, timestamp, bridgeType])
+
   return null
 }
