@@ -18,6 +18,7 @@ import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
 import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
+import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
 import { BridgeType } from '@/slices/api/generated'
 
 interface PendingTransactionProps extends TransactionProps {
@@ -96,9 +97,9 @@ export const PendingTransaction = ({
     setElapsedTime(elapsedMinutes)
   }, [startedTimestamp])
 
-  console.log('elapsedTime:', elapsedTime)
-  console.log('currentTime:', currentTime)
-  console.log('estimatedCompletionInSeconds: ', estimatedCompletionInSeconds)
+  // console.log('elapsedTime:', elapsedTime)
+  // console.log('currentTime:', currentTime)
+  // console.log('estimatedCompletionInSeconds: ', estimatedCompletionInSeconds)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -124,20 +125,26 @@ export const PendingTransaction = ({
     }
   }, [estimatedMinutes, elapsedTime, startedTimestamp])
 
-  console.log('timeRemaining: ', timeRemaining)
+  // console.log('timeRemaining: ', timeRemaining)
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
-  // const shouldUseFallbackOriginQuery: boolean = useMemo(() => {
+  // testing origin fallback query
+  // const originFallback = useFallbackBridgeOriginQuery({
+  //   useFallback: false,
+  //   chainId: originChain?.id,
+  //   txnHash: transactionHash,
+  //   bridgeType: BridgeType.Bridge,
+  // })
 
-  // }, [kappa, elapsedTime, ])
-
-  // testing
-  const fallback = useFallbackBridgeOriginQuery({
-    useFallback: false,
+  //testing dest fallback query
+  const destinationFallback = useFallbackBridgeDestinationQuery({
     chainId: originChain?.id,
-    txnHash: transactionHash,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
     bridgeType: BridgeType.Bridge,
+    useFallback: true,
   })
 
   useEffect(() => {
