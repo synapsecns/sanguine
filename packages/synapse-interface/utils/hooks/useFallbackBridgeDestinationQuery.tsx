@@ -88,11 +88,14 @@ export const useFallbackBridgeDestinationQuery = ({
       data: fallbackQueryData,
     } = fetchedFallbackQuery
 
-    const { bridgeTx: destinationInfo, kappa } =
-      fallbackQueryData?.getDestinationBridgeTx || {}
+    const {
+      bridgeTx: destinationInfo,
+      kappa,
+      pending,
+    } = fallbackQueryData?.getDestinationBridgeTx || {}
 
     // Update bridge transaction in either Pending or Fallback
-    if (destinationInfo && kappa) {
+    if (destinationInfo && kappa && !pending) {
       const originQueryTransaction: BridgeTransaction | undefined =
         fallbackQueryTransactions.find(
           (transaction: BridgeTransaction) => transaction.kappa === kappa
@@ -101,7 +104,13 @@ export const useFallbackBridgeDestinationQuery = ({
           (transaction: BridgeTransaction) => transaction.kappa === kappa
         )
 
-      if (originQueryTransaction) {
+      const destinationQueryAlreadySaved: boolean =
+        fallbackQueryTransactions.some(
+          (transaction: BridgeTransaction) =>
+            transaction?.toInfo === destinationInfo
+        )
+
+      if (originQueryTransaction && !destinationQueryAlreadySaved) {
         const constructedBridgeTransaction: BridgeTransaction = {
           fromInfo: originQueryTransaction?.fromInfo,
           toInfo: destinationInfo,
