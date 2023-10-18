@@ -36,8 +36,10 @@ export const useFallbackBridgeDestinationQuery = ({
 }: useFallbackBridgeDestinationQueryProps) => {
   const dispatch = useAppDispatch()
 
-  const { fallbackQueryTransactions }: TransactionsState =
-    useTransactionsState()
+  const {
+    fallbackQueryTransactions,
+    pendingAwaitingCompletionTransactions,
+  }: TransactionsState = useTransactionsState()
 
   const [fetchFallbackBridgeDestinationQuery, fetchedFallbackQuery] =
     useLazyGetDestinationBridgeTxFallbackQuery({ pollingInterval: 30000 })
@@ -91,6 +93,9 @@ export const useFallbackBridgeDestinationQuery = ({
     if (destinationInfo && kappa) {
       const originQueryTransaction: BridgeTransaction | undefined =
         fallbackQueryTransactions.find(
+          (transaction: BridgeTransaction) => transaction.kappa === kappa
+        ) ??
+        pendingAwaitingCompletionTransactions.find(
           (transaction: BridgeTransaction) => transaction.kappa === kappa
         )
 
