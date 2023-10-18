@@ -8,6 +8,7 @@ import {
 } from '@/slices/api/generated'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
+import { addFallbackQueryTransaction } from '@/slices/transactions/actions'
 
 interface FallbackBridgeDestinationQueryProps {
   chainId?: number
@@ -30,6 +31,11 @@ export const useFallbackBridgeDestinationQuery = ({
   bridgeType,
   useFallback,
 }: useFallbackBridgeDestinationQueryProps) => {
+  const dispatch = useAppDispatch()
+
+  const { fallbackQueryTransactions }: TransactionsState =
+    useTransactionsState()
+
   const [fetchFallbackBridgeDestinationQuery, fetchedFallbackQuery] =
     useLazyGetDestinationBridgeTxFallbackQuery({ pollingInterval: 30000 })
 
@@ -66,6 +72,20 @@ export const useFallbackBridgeDestinationQuery = ({
       })
     }
   }, [useFallback, validQueryParams])
+
+  useEffect(() => {
+    const {
+      isLoading,
+      isUninitialized,
+      isSuccess,
+      data: fallbackQueryData,
+    } = fetchedFallbackQuery
+
+    const { bridgeTx: destinationInfo } =
+      fallbackQueryData?.getDestinationBridgeTx || {}
+
+    // Update bridge transaction in either Pending or Fallback
+  }, [fetchedFallbackQuery, fallbackQueryTransactions])
 
   return null
 }
