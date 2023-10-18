@@ -117,7 +117,7 @@ export const transactionsSlice = createSlice({
       .addCase(
         updateFallbackQueryTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
-          const { fromInfo, toInfo, kappa }: BridgeTransaction = action.payload
+          const { kappa }: BridgeTransaction = action.payload
 
           state.fallbackQueryTransactions = [
             action.payload,
@@ -137,6 +137,7 @@ export const transactionsSlice = createSlice({
           initialState.seenHistoricalTransactions
         state.pendingAwaitingCompletionTransactions =
           initialState.pendingAwaitingCompletionTransactions
+        state.fallbackQueryTransactions = initialState.fallbackQueryTransactions
       })
   },
 })
