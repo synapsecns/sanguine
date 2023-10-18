@@ -8,6 +8,24 @@ import {
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
-export const useFallbackBridgeDestinationQuery = () => {
+interface FallbackBridgeDestinationQueryProps {
+  chainId?: number
+  kappa?: string
+  timestamp?: number
+  bridgeType?: BridgeType
+}
+
+interface useFallbackBridgeDestinationQueryProps
+  extends FallbackBridgeDestinationQueryProps {
+  useFallback: boolean
+}
+
+export const useFallbackBridgeDestinationQuery = ({
+  chainId,
+  kappa,
+  timestamp,
+  bridgeType,
+  useFallback,
+}: useFallbackBridgeDestinationQueryProps) => {
   return null
 }
