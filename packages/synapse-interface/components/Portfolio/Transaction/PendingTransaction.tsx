@@ -135,7 +135,6 @@ export const PendingTransaction = ({
   // testing
   const fallback = useFallbackBridgeOriginQuery({
     useFallback: false,
-    timestamp: startedTimestamp,
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: BridgeType.Bridge,

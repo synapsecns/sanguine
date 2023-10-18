@@ -17,12 +17,10 @@ interface FallbackBridgeOriginQueryProps {
 interface useFallbackBridgeOriginQueryProps
   extends FallbackBridgeOriginQueryProps {
   useFallback: boolean
-  timestamp: number
 }
 
 export const useFallbackBridgeOriginQuery = ({
   useFallback,
-  timestamp,
   chainId,
   txnHash,
   bridgeType,

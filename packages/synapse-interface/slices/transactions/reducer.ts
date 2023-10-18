@@ -7,8 +7,9 @@ import {
   updateIsUserPendingTransactionsLoading,
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
-  addFallbackQueryTransaction,
   removePendingAwaitingCompletionTransaction,
+  addFallbackQueryTransaction,
+  removeFallbackQueryTransaction,
   resetTransactionsState,
 } from './actions'
 import { BridgeTransaction } from '../api/generated'
@@ -99,6 +100,17 @@ export const transactionsSlice = createSlice({
             action.payload,
             ...state.fallbackQueryTransactions,
           ]
+        }
+      )
+      .addCase(
+        removeFallbackQueryTransaction,
+        (state, action: PayloadAction<string>) => {
+          const kappa: string = action.payload
+
+          state.fallbackQueryTransactions =
+            state.fallbackQueryTransactions.filter(
+              (transaction: BridgeTransaction) => transaction.kappa !== kappa
+            )
         }
       )
       .addCase(resetTransactionsState, (state) => {
