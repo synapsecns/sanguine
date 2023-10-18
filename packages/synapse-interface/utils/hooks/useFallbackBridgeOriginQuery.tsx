@@ -44,7 +44,6 @@ export const useFallbackBridgeOriginQuery = ({
   // Start fallback query
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      console.log('starting fetch')
       fetchFallbackBridgeOriginQuery({
         chainId: validQueryParams.chainId,
         txnHash: validQueryParams.txnHash,
@@ -84,7 +83,7 @@ export const useFallbackBridgeOriginQuery = ({
         dispatch(addFallbackQueryTransaction(constructedBridgeTransaction))
       }
     }
-  }, [fetchedFallbackQuery, fallbackQueryTransactions])
+  }, [fetchedFallbackQuery])
 
   return null
 }
