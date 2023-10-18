@@ -11,6 +11,7 @@ import {
   addFallbackQueryTransaction,
   removeFallbackQueryTransaction,
   resetTransactionsState,
+  updateFallbackQueryTransaction,
 } from './actions'
 import { BridgeTransaction } from '../api/generated'
 
@@ -111,6 +112,19 @@ export const transactionsSlice = createSlice({
             state.fallbackQueryTransactions.filter(
               (transaction: BridgeTransaction) => transaction.kappa !== kappa
             )
+        }
+      )
+      .addCase(
+        updateFallbackQueryTransaction,
+        (state, action: PayloadAction<BridgeTransaction>) => {
+          const { fromInfo, toInfo, kappa }: BridgeTransaction = action.payload
+
+          state.fallbackQueryTransactions = [
+            action.payload,
+            ...state.fallbackQueryTransactions.filter(
+              (transaction: BridgeTransaction) => transaction.kappa !== kappa
+            ),
+          ]
         }
       )
       .addCase(resetTransactionsState, (state) => {
