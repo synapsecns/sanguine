@@ -443,6 +443,10 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	fmt.Println("EXECUTING")
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		span.AddEvent("Submitting execute()", trace.WithAttributes(
+			attribute.Int("origin", int(message.OriginDomain())),
+			attribute.Int("destination", int(destinationDomain)),
+		))
 		fmt.Printf("submitting for execution on domain %d\n", destinationDomain)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
@@ -456,6 +460,13 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
 		types.LogTx("EXECUTOR", "Submitted execute()", message.DestinationDomain(), tx)
+		if tx != nil {
+			span.AddEvent("Submitted execute()", trace.WithAttributes(
+				attribute.String("txHash", tx.Hash().String()),
+			))
+		} else {
+			span.AddEvent("Execute() did not generate a tx")
+		}
 		return
 	})
 	if err != nil {

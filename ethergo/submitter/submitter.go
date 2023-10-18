@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,12 +28,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
-	"math/big"
-	"reflect"
-	"runtime"
-	"sync"
-	"time"
 )
 
 var logger = log.Logger("ethergo-submitter")
@@ -151,20 +152,26 @@ func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.
 	}, nil
 }
 
-func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {
+func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (nonce uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.GetNonce", trace.WithAttributes(
 		attribute.Stringer("chainID", chainID),
 		attribute.Stringer("address", address),
 	))
 
+	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// locks are not built into this method or the insertion level of the db
+	var onChainNonce, dbNonce uint64
+
 	defer func() {
+		span.AddEvent("Got nonce", trace.WithAttributes(
+			attribute.Int("nonce", int(nonce)),
+			attribute.Int("onChainNonce", int(onChainNonce)),
+			attribute.Int("nonce", int(dbNonce)),
+		))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
-	// locks are not built into this method or the insertion level of the db
-	var onChainNonce, dbNonce uint64
 
 	chainClient, err := t.fetcher.GetClient(ctx, chainID)
 	if err != nil {
@@ -200,10 +207,12 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}
 
 	if onChainNonce > dbNonce {
-		return onChainNonce, nil
+		nonce = onChainNonce
+	} else {
+		nonce = dbNonce
 	}
 
-	return dbNonce, nil
+	return nonce, nil
 }
 
 func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
