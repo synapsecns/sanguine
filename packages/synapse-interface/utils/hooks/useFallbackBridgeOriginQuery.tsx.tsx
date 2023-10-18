@@ -1,18 +1,21 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useAppDispatch } from '@/store/hooks'
+import { addFallbackQueryTransaction } from '@/slices/transactions/actions'
 import {
   useLazyGetOriginBridgeTxFallbackQuery,
+  BridgeTransaction,
   BridgeType,
 } from '@/slices/api/generated'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 
-interface fallbackBridgeOriginQueryProps {
+interface FallbackBridgeOriginQueryProps {
   chainId?: number
   txnHash?: string
   bridgeType?: BridgeType
 }
 interface useFallbackBridgeOriginQueryProps
-  extends fallbackBridgeOriginQueryProps {
+  extends FallbackBridgeOriginQueryProps {
   useFallback: boolean
 }
 
@@ -22,13 +25,14 @@ export const useFallbackBridgeOriginQuery = ({
   txnHash,
   bridgeType,
 }: useFallbackBridgeOriginQueryProps) => {
+  const dispatch = useAppDispatch()
   const { fallbackQueryTransactions }: TransactionsState =
     useTransactionsState()
 
-  const [fetchFallbackBridgeOriginQuery, fetchedFallbackQueries] =
+  const [fetchFallbackBridgeOriginQuery, fetchedFallbackQuery] =
     useLazyGetOriginBridgeTxFallbackQuery({ pollingInterval: 30000 })
 
-  const validQueryParams: fallbackBridgeOriginQueryProps | null =
+  const validQueryParams: FallbackBridgeOriginQueryProps | null =
     useMemo(() => {
       if (typeof chainId !== 'number') return null
       if (!txnHash) return null
@@ -37,8 +41,10 @@ export const useFallbackBridgeOriginQuery = ({
       return { chainId, txnHash, bridgeType }
     }, [chainId, txnHash, bridgeType])
 
+  // Start fallback query
   useEffect(() => {
     if (useFallback && validQueryParams) {
+      console.log('starting fetch')
       fetchFallbackBridgeOriginQuery({
         chainId: validQueryParams.chainId,
         txnHash: validQueryParams.txnHash,
@@ -46,6 +52,28 @@ export const useFallbackBridgeOriginQuery = ({
       })
     }
   }, [useFallback, validQueryParams])
+
+  useEffect(() => {
+    const {
+      isLoading,
+      isUninitialized,
+      isSuccess,
+      data: fallbackQueryData,
+    } = fetchedFallbackQuery
+
+    const { bridgeTx: originInfo, kappa } =
+      fallbackQueryData?.getOriginBridgeTx || {}
+
+    if (originInfo && kappa) {
+      const constructedBridgeTransaction: BridgeTransaction = {
+        fromInfo: originInfo,
+        toInfo: null,
+        kappa: kappa,
+      }
+
+      dispatch(addFallbackQueryTransaction(constructedBridgeTransaction))
+    }
+  }, [fetchedFallbackQuery, fallbackQueryTransactions])
 
   return null
 }

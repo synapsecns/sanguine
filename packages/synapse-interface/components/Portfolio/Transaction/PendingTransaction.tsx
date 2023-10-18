@@ -17,6 +17,8 @@ import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
+import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery.tsx'
+import { BridgeType } from '@/slices/api/generated'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -117,6 +119,14 @@ export const PendingTransaction = ({
   }, [estimatedMinutes, elapsedTime, startedTimestamp])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+
+  // testing
+  const fallback = useFallbackBridgeOriginQuery({
+    useFallback: false,
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: BridgeType.Bridge,
+  })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
