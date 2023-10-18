@@ -2,6 +2,9 @@ package submitter
 
 import (
 	"fmt"
+	"math/big"
+	"sort"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
-	"math/big"
-	"sort"
 )
 
 // copyTransactOpts creates a deep copy of the given TransactOpts struct
@@ -97,6 +98,13 @@ func bigPtrToString(num *big.Int) string {
 		return nullFieldAttribute
 	}
 	return num.String()
+}
+
+func errToString(err error) string {
+	if err == nil {
+		return nullFieldAttribute
+	}
+	return err.Error()
 }
 
 // sortTxesByChainID sorts a slice of transactions by nonce.

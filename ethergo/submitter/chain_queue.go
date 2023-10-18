@@ -45,7 +45,10 @@ func (c *chainQueue) chainIDInt() int {
 }
 
 func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
-	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue", trace.WithAttributes(
+		attribute.Int("chainID", int(chainID.Int64())),
+		attribute.Int("numTxes", len(txes)),
+	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -60,6 +63,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
+	span.AddEvent("got nonce", trace.WithAttributes(attribute.Int64("nonce", int64(currentNonce))))
 
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -125,9 +129,11 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 	}()
 
 	go func() {
+		span.AddEvent("submitting batched transactions", trace.WithAttributes(attribute.Int("numCalls", len(calls))))
 		fmt.Println("SUBMITTING")
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
+		span.AddEvent("submitted batched transactions", trace.WithAttributes(attribute.String("err", errToString(err))))
 		fmt.Printf("batch err: %v\n", err)
 		fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
 		cancelStore()
@@ -135,9 +141,11 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
 				fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
+				span.AddEvent("tx marked as FailedSubmit", trace.WithAttributes(txToAttributes(c.reprocessQueue[i].Transaction)...))
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
 				fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
+				span.AddEvent("tx marked as Submitted", trace.WithAttributes(txToAttributes(c.reprocessQueue[i].Transaction)...))
 			}
 		}
 
@@ -151,6 +159,12 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 
 // nolint: cyclop
 func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
+	var err error
+	_, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(txToAttributes(ogTx.Transaction)...))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
 			c.addToReprocessQueue(ogTx)

@@ -397,6 +397,23 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		}
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
+
+	attributes := []attribute.KeyValue{}
+	if transactor.GasPrice != nil {
+		attributes = append(attributes, attribute.Int64("gasPrice", transactor.GasPrice.Int64()))
+	}
+	if transactor.GasFeeCap != nil {
+		attributes = append(attributes, attribute.Int64("gasFeeCap", transactor.GasFeeCap.Int64()))
+	}
+	if transactor.GasTipCap != nil {
+		attributes = append(attributes, attribute.Int64("gasTipCap", transactor.GasTipCap.Int64()))
+	}
+	span.AddEvent("set gas price", trace.WithAttributes(
+		attribute.Int("chainID", chainID),
+		attribute.String("gasPrice", bigPtrToString(transactor.GasPrice)),
+		attribute.String("gasFeeCap", bigPtrToString(transactor.GasFeeCap)),
+		attribute.String("gasTipCap", bigPtrToString(transactor.GasTipCap)),
+	))
 	return nil
 }
 
