@@ -9,6 +9,7 @@ import {
     AgentNotUnstaking,
     CallerNotSummit,
     MustBeSynapseDomain,
+    IncorrectOriginDomain,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../../../contracts/libs/Errors.sol";
@@ -245,6 +246,14 @@ contract BondingManagerTest is AgentManagerTest {
         skip(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_REMOTE, remoteSlashAgentCalldata(0, address(0), address(0)));
         vm.expectRevert(SlashAgentOptimisticPeriod.selector);
+        managerMsgPrank(msgPayload);
+    }
+
+    function test_remoteSlashAgent_revert_sameOriginDomain() public {
+        uint32 proofMaturity = BONDING_OPTIMISTIC_PERIOD;
+        skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteSlashAgentCalldata(0, address(0), address(0)));
+        vm.expectRevert(IncorrectOriginDomain.selector);
         managerMsgPrank(msgPayload);
     }
 
