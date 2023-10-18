@@ -8,7 +8,10 @@ import {
 } from '@/slices/api/generated'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
-import { addFallbackQueryTransaction } from '@/slices/transactions/actions'
+import {
+  addFallbackQueryTransaction,
+  updateFallbackQueryTransaction,
+} from '@/slices/transactions/actions'
 
 interface FallbackBridgeDestinationQueryProps {
   chainId?: number
@@ -81,10 +84,25 @@ export const useFallbackBridgeDestinationQuery = ({
       data: fallbackQueryData,
     } = fetchedFallbackQuery
 
-    const { bridgeTx: destinationInfo } =
+    const { bridgeTx: destinationInfo, kappa } =
       fallbackQueryData?.getDestinationBridgeTx || {}
 
     // Update bridge transaction in either Pending or Fallback
+    if (destinationInfo && kappa) {
+      const originQueryTransaction: BridgeTransaction | undefined =
+        fallbackQueryTransactions.find(
+          (transaction: BridgeTransaction) => transaction.kappa === kappa
+        )
+
+      if (originQueryTransaction) {
+        const constructedBridgeTransaction: BridgeTransaction = {
+          fromInfo: originQueryTransaction?.fromInfo,
+          toInfo: destinationInfo,
+          kappa: kappa,
+        }
+        dispatch(updateFallbackQueryTransaction(constructedBridgeTransaction))
+      }
+    }
   }, [fetchedFallbackQuery, fallbackQueryTransactions])
 
   return null
