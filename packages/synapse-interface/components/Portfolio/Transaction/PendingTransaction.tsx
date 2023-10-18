@@ -44,6 +44,7 @@ export const PendingTransaction = ({
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
+  console.log('pending transaction reinit')
   const dispatch = useAppDispatch()
 
   const transactionStatus: TransactionStatus = useMemo(() => {
@@ -123,6 +124,7 @@ export const PendingTransaction = ({
   // testing
   const fallback = useFallbackBridgeOriginQuery({
     useFallback: false,
+    timestamp: startedTimestamp,
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: BridgeType.Bridge,
