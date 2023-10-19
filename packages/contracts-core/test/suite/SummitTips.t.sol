@@ -374,33 +374,33 @@ contract SummitTipsTest is AgentSecuredTest {
         if (rcptNotary == rcptNotaryFinal) {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == rcptNotaryFinal == attNotary
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + tips.attestationTip);
             } else {
                 // rcptNotary == rcptNotaryFinal != attNotary
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal, 0);
-                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal);
+                checkEarnedActorTips(re.attNotary, re.origin, tips.attestationTip);
             }
         } else if (re.attNotary == rcptNotaryFinal) {
             // rcptNotaryFinal == attNotary != rcptNotary
-            checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
-            checkActorTips(re.attNotary, re.origin, receiptTipFinal + tips.attestationTip, 0);
+            checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst);
+            checkEarnedActorTips(re.attNotary, re.origin, receiptTipFinal + tips.attestationTip);
         } else {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + tips.attestationTip);
             } else {
                 // rcptNotary != attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
-                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst);
+                checkEarnedActorTips(re.attNotary, re.origin, tips.attestationTip);
             }
-            if (isFinal) checkActorTips(rcptNotaryFinal, re.origin, receiptTipFinal, 0);
+            if (isFinal) checkEarnedActorTips(rcptNotaryFinal, re.origin, receiptTipFinal);
         }
         // Check non-bonded actors
         if (re.firstExecutor == re.finalExecutor) {
-            checkActorTips(re.firstExecutor, re.origin, tips.executionTip + (isFinal ? tips.deliveryTip : 0), 0);
+            checkEarnedActorTips(re.firstExecutor, re.origin, tips.executionTip + (isFinal ? tips.deliveryTip : 0));
         } else {
-            checkActorTips(re.firstExecutor, re.origin, tips.executionTip, 0);
-            if (isFinal) checkActorTips(re.finalExecutor, re.origin, tips.deliveryTip, 0);
+            checkEarnedActorTips(re.firstExecutor, re.origin, tips.executionTip);
+            if (isFinal) checkEarnedActorTips(re.finalExecutor, re.origin, tips.deliveryTip);
         }
     }
 
@@ -409,21 +409,22 @@ contract SummitTipsTest is AgentSecuredTest {
         if (re.origin == origin0) {
             // Tips for origin0 go to guard0 and notary0 (they were first to use it),
             // regardless of what attestation was used
-            checkActorTips(guard0, re.origin, snapshotTip, 0);
-            checkActorTips(snapNotary0, re.origin, snapshotTip, 0);
+            checkEarnedActorTips(guard0, re.origin, snapshotTip);
+            checkEarnedActorTips(snapNotary0, re.origin, snapshotTip);
         } else if (re.origin == origin1) {
             // Tips for origin1 go to guard1 and notary1 (they were first to use it)
-            checkActorTips(guard1, re.origin, snapshotTip, 0);
-            checkActorTips(snapNotary1, re.origin, snapshotTip, 0);
+            checkEarnedActorTips(guard1, re.origin, snapshotTip);
+            checkEarnedActorTips(snapNotary1, re.origin, snapshotTip);
         } else {
             revert("Incorrect origin value");
         }
     }
 
-    function checkActorTips(address actor, uint32 origin_, uint128 earned, uint128 claimed) public {
-        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, origin_);
-        assertEq(earned_, earned, "!earned");
-        assertEq(claimed_, claimed, "!claimed");
+    /// @dev We calculate the "scaled down" version of earned tips, i.e. divided by 2^32
+    /// `Summit` is supposed to store the full value, so we scale calculated value up by 2^32.
+    function checkEarnedActorTips(address actor, uint32 origin_, uint128 earnedScaledDown) public {
+        (uint256 earnedTips,) = InterfaceSummit(summit).actorTips(actor, origin_);
+        assertEq(earnedTips, 2 ** 32 * earnedScaledDown);
     }
 
     function logTips(RawTips memory tips) public {
