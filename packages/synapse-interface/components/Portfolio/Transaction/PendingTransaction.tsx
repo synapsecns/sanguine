@@ -47,8 +47,6 @@ export const PendingTransaction = ({
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
 
-  const currentTime = new Date().getTime() // This returns the timestamp in milliseconds
-
   const transactionStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
@@ -138,14 +136,14 @@ export const PendingTransaction = ({
   // })
 
   //testing dest fallback query
-  const destinationFallback = useFallbackBridgeDestinationQuery({
-    chainId: originChain?.id,
-    address: destinationAddress,
-    kappa: kappa,
-    timestamp: startedTimestamp,
-    bridgeType: BridgeType.Bridge,
-    useFallback: true,
-  })
+  // const destinationFallback = useFallbackBridgeDestinationQuery({
+  //   chainId: originChain?.id,
+  //   address: destinationAddress,
+  //   kappa: kappa,
+  //   timestamp: startedTimestamp,
+  //   bridgeType: BridgeType.Bridge,
+  //   useFallback: false,
+  // })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {

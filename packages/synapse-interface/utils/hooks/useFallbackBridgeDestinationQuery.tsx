@@ -9,8 +9,8 @@ import {
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import {
-  addFallbackQueryTransaction,
-  updateFallbackQueryTransaction,
+  addFallbackQueryPendingTransaction,
+  updateFallbackQueryPendingTransaction,
 } from '@/slices/transactions/actions'
 
 interface FallbackBridgeDestinationQueryProps {
@@ -37,7 +37,7 @@ export const useFallbackBridgeDestinationQuery = ({
   const dispatch = useAppDispatch()
 
   const {
-    fallbackQueryTransactions,
+    fallbackQueryPendingTransactions,
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
 
@@ -60,7 +60,7 @@ export const useFallbackBridgeDestinationQuery = ({
   // console.log('validQueryParams:', validQueryParams)
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      console.log('start fetch')
+      // console.log('start fetch')
       fetchFallbackBridgeDestinationQuery({
         chainId: validQueryParams.chainId,
         address: validQueryParams.address,
@@ -69,7 +69,7 @@ export const useFallbackBridgeDestinationQuery = ({
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback) {
-      console.log('end fetch')
+      // console.log('end fetch')
       fetchFallbackBridgeDestinationQuery({
         chainId: null,
         address: null,
@@ -97,7 +97,7 @@ export const useFallbackBridgeDestinationQuery = ({
     // Update bridge transaction in either Pending or Fallback
     if (destinationInfo && kappa && !pending) {
       const originQueryTransaction: BridgeTransaction | undefined =
-        fallbackQueryTransactions.find(
+        fallbackQueryPendingTransactions.find(
           (transaction: BridgeTransaction) => transaction.kappa === kappa
         ) ??
         pendingAwaitingCompletionTransactions.find(
@@ -105,7 +105,7 @@ export const useFallbackBridgeDestinationQuery = ({
         )
 
       const destinationQueryAlreadySaved: boolean =
-        fallbackQueryTransactions.some(
+        fallbackQueryPendingTransactions.some(
           (transaction: BridgeTransaction) =>
             transaction?.toInfo === destinationInfo
         )
@@ -116,10 +116,12 @@ export const useFallbackBridgeDestinationQuery = ({
           toInfo: destinationInfo,
           kappa: kappa,
         }
-        dispatch(updateFallbackQueryTransaction(constructedBridgeTransaction))
+        dispatch(
+          updateFallbackQueryPendingTransaction(constructedBridgeTransaction)
+        )
       }
     }
-  }, [fetchedFallbackQuery, fallbackQueryTransactions])
+  }, [fetchedFallbackQuery, fallbackQueryPendingTransactions])
 
   return null
 }

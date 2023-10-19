@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { addFallbackQueryTransaction } from '@/slices/transactions/actions'
+import { addFallbackQueryPendingTransaction } from '@/slices/transactions/actions'
 import {
   useLazyGetOriginBridgeTxFallbackQuery,
   BridgeTransaction,
@@ -27,7 +27,7 @@ export const useFallbackBridgeOriginQuery = ({
 }: useFallbackBridgeOriginQueryProps) => {
   const dispatch = useAppDispatch()
 
-  const { fallbackQueryTransactions }: TransactionsState =
+  const { fallbackQueryPendingTransactions }: TransactionsState =
     useTransactionsState()
 
   const [fetchFallbackBridgeOriginQuery, fetchedFallbackQuery] =
@@ -43,10 +43,10 @@ export const useFallbackBridgeOriginQuery = ({
     }, [chainId, txnHash, bridgeType])
 
   const queryTransactionAlreadyStored: boolean = useMemo(() => {
-    return fallbackQueryTransactions.some((transaction) => {
+    return fallbackQueryPendingTransactions.some((transaction) => {
       return transaction?.fromInfo?.txnHash === txnHash
     })
-  }, [fallbackQueryTransactions, txnHash])
+  }, [fallbackQueryPendingTransactions, txnHash])
 
   // console.log('queryTransactionAlreadyStored:', queryTransactionAlreadyStored)
 
@@ -87,7 +87,7 @@ export const useFallbackBridgeOriginQuery = ({
         kappa: kappa,
       }
 
-      const alreadyExists: boolean = fallbackQueryTransactions.some(
+      const alreadyExists: boolean = fallbackQueryPendingTransactions.some(
         (transaction) => {
           return (
             transaction.kappa === constructedBridgeTransaction.kappa ||
@@ -97,10 +97,12 @@ export const useFallbackBridgeOriginQuery = ({
       )
 
       if (!alreadyExists) {
-        dispatch(addFallbackQueryTransaction(constructedBridgeTransaction))
+        dispatch(
+          addFallbackQueryPendingTransaction(constructedBridgeTransaction)
+        )
       }
     }
-  }, [fetchedFallbackQuery, fallbackQueryTransactions])
+  }, [fetchedFallbackQuery, fallbackQueryPendingTransactions])
 
   return null
 }
