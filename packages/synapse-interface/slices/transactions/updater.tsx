@@ -374,6 +374,10 @@ export default function Updater(): null {
     )
   }, [fallbackQueryPendingTransactions])
 
+  /**
+   * Handle removing fallback historical transaction from state
+   * when identical transaction gets picked up by Explorer
+   */
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
       Array.isArray(userHistoricalTransactions) &&
