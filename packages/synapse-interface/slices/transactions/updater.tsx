@@ -83,7 +83,10 @@ export default function Updater(): null {
     return Object.keys(searchedBalancesAndAllowances).length > 0
   }, [searchedBalancesAndAllowances])
 
-  // Start fetch when connected address exists
+  /**
+   * Handle fetching for historical and pending activity by polling Explorer endpoint
+   * Will retrigger fetching for Masquerade Mode address when active
+   */
   useEffect(() => {
     if (address && isWindowFocused && !masqueradeActive) {
       fetchUserHistoricalActivity({
@@ -141,6 +144,9 @@ export default function Updater(): null {
     isUserPendingTransactionsLoading,
   ])
 
+  /**
+   * Load fetched historical transactions into state along with fetch status
+   */
   useEffect(() => {
     const {
       isLoading,
@@ -167,6 +173,9 @@ export default function Updater(): null {
     masqueradeActive,
   ])
 
+  /**
+   * Load fetched pending transactions into state along with fetch status
+   */
   useEffect(() => {
     const {
       isLoading,
@@ -186,7 +195,10 @@ export default function Updater(): null {
     }
   }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
 
-  // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
+  /**
+   * Handles removing recent pending unindexed bridge transactions
+   * from Bridge state once Explorer or Fallback query confirms transactions
+   */
   useEffect(() => {
     const matchingTransactionHashes = new Set(
       pendingBridgeTransactions
