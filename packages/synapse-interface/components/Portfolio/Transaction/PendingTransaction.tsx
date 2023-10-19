@@ -131,12 +131,12 @@ export const PendingTransaction = ({
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
   // // testing origin fallback query
-  const originFallback = useFallbackBridgeOriginQuery({
-    useFallback: true,
-    chainId: originChain?.id,
-    txnHash: transactionHash,
-    bridgeType: BridgeType.Bridge,
-  })
+  // const originFallback = useFallbackBridgeOriginQuery({
+  //   useFallback: true,
+  //   chainId: originChain?.id,
+  //   txnHash: transactionHash,
+  //   bridgeType: BridgeType.Bridge,
+  // })
 
   // //testing dest fallback query
   // const destinationFallback = useFallbackBridgeDestinationQuery({

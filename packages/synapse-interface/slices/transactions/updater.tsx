@@ -395,6 +395,7 @@ export default function Updater(): null {
                 historicalTransaction.kappa === fallbackTransaction.kappa
             )
           ) {
+            console.log('removed this transaction: ', fallbackTransaction)
             dispatch(
               removeFallbackQueryHistoricalTransaction(fallbackTransaction)
             )
@@ -402,7 +403,7 @@ export default function Updater(): null {
         }
       )
     }
-  }, [fallbackQueryHistoricalTransactions])
+  }, [fallbackQueryHistoricalTransactions, userHistoricalTransactions])
 
   return null
 }
