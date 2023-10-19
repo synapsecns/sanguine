@@ -331,6 +331,7 @@ export default function Updater(): null {
         if (fromInfo && toInfo && kappa && !alreadyMovedToHistorical) {
           dispatch(addFallbackQueryHistoricalTransaction(transaction))
           dispatch(removeFallbackQueryPendingTransaction(kappa))
+          dispatch(removePendingAwaitingCompletionTransaction(kappa))
         }
       }
     )
