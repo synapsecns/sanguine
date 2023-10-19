@@ -72,17 +72,21 @@ export const transactionsSlice = createSlice({
       .addCase(
         addSeenHistoricalTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
+          const newSeenHistoricalTransaction = action.payload
+
           state.seenHistoricalTransactions = [
+            newSeenHistoricalTransaction,
             ...state.seenHistoricalTransactions,
-            action.payload,
           ]
         }
       )
       .addCase(
         addPendingAwaitingCompletionTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
+          const newPendingTransaction = action.payload
+
           state.pendingAwaitingCompletionTransactions = [
-            action.payload,
+            newPendingTransaction,
             ...state.pendingAwaitingCompletionTransactions,
           ]
         }
@@ -101,10 +105,13 @@ export const transactionsSlice = createSlice({
       .addCase(
         addFallbackQueryPendingTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
-          state.fallbackQueryPendingTransactions = [
-            action.payload,
-            ...state.fallbackQueryPendingTransactions,
-          ]
+          const newfallbackTransaction = action.payload
+          const filtered = state.fallbackQueryPendingTransactions.filter(
+            (transaction: BridgeTransaction) =>
+              transaction.kappa !== newfallbackTransaction.kappa
+          )
+
+          state.fallbackQueryPendingTransactions = [action.payload, ...filtered]
         }
       )
       .addCase(
@@ -134,11 +141,14 @@ export const transactionsSlice = createSlice({
       .addCase(
         addFallbackQueryHistoricalTransaction,
         (state, action: PayloadAction<BridgeTransaction>) => {
-          const fallbackTransaction = action.payload
+          const newFallbackTransaction = action.payload
 
           state.fallbackQueryHistoricalTransactions = [
-            fallbackTransaction,
-            ...state.fallbackQueryHistoricalTransactions,
+            newFallbackTransaction,
+            ...state.fallbackQueryHistoricalTransactions.filter(
+              (transaction: BridgeTransaction) =>
+                transaction.kappa !== newFallbackTransaction.kappa
+            ),
           ]
         }
       )
