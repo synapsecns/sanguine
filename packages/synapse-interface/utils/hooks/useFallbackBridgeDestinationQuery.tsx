@@ -60,7 +60,7 @@ export const useFallbackBridgeDestinationQuery = ({
   // console.log('validQueryParams:', validQueryParams)
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      // console.log('start fetch')
+      console.log('start fetch')
       fetchFallbackBridgeDestinationQuery({
         chainId: validQueryParams.chainId,
         address: validQueryParams.address,
@@ -69,7 +69,7 @@ export const useFallbackBridgeDestinationQuery = ({
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback) {
-      // console.log('end fetch')
+      console.log('end fetch')
       fetchFallbackBridgeDestinationQuery({
         chainId: null,
         address: null,
@@ -94,8 +94,12 @@ export const useFallbackBridgeDestinationQuery = ({
       pending,
     } = fallbackQueryData?.getDestinationBridgeTx || {}
 
+    console.log('fallbackQueryData: ', fallbackQueryData)
+    const isCompleted: boolean =
+      Boolean(!pending) || Boolean(destinationInfo?.txnHash)
+
     // Update bridge transaction in either Pending or Fallback
-    if (destinationInfo && kappa && !pending) {
+    if (destinationInfo && kappa && isCompleted) {
       const originQueryTransaction: BridgeTransaction | undefined =
         fallbackQueryPendingTransactions.find(
           (transaction: BridgeTransaction) => transaction.kappa === kappa
@@ -116,6 +120,10 @@ export const useFallbackBridgeDestinationQuery = ({
           toInfo: destinationInfo,
           kappa: kappa,
         }
+        console.log(
+          'constructedBridgeTransaction: ',
+          constructedBridgeTransaction
+        )
         dispatch(
           updateFallbackQueryPendingTransaction(constructedBridgeTransaction)
         )

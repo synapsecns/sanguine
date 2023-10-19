@@ -378,31 +378,31 @@ export default function Updater(): null {
    * Handle removing fallback historical transaction from state
    * when identical transaction gets picked up by Explorer
    */
-  useEffect(() => {
-    const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
-      !isUserHistoricalTransactionsLoading
+  // useEffect(() => {
+  //   const hasUserHistoricalTransactions: boolean =
+  //     Array.isArray(userHistoricalTransactions) &&
+  //     !isUserHistoricalTransactionsLoading
 
-    if (
-      hasUserHistoricalTransactions &&
-      checkTransactionsExist(fallbackQueryHistoricalTransactions)
-    ) {
-      fallbackQueryHistoricalTransactions.forEach(
-        (fallbackTransaction: BridgeTransaction) => {
-          if (
-            userHistoricalTransactions.some(
-              (historicalTransaction: BridgeTransaction) =>
-                historicalTransaction.kappa === fallbackTransaction.kappa
-            )
-          ) {
-            dispatch(
-              removeFallbackQueryHistoricalTransaction(fallbackTransaction)
-            )
-          }
-        }
-      )
-    }
-  }, [fallbackQueryHistoricalTransactions])
+  //   if (
+  //     hasUserHistoricalTransactions &&
+  //     checkTransactionsExist(fallbackQueryHistoricalTransactions)
+  //   ) {
+  //     fallbackQueryHistoricalTransactions.forEach(
+  //       (fallbackTransaction: BridgeTransaction) => {
+  //         if (
+  //           userHistoricalTransactions.some(
+  //             (historicalTransaction: BridgeTransaction) =>
+  //               historicalTransaction.kappa === fallbackTransaction.kappa
+  //           )
+  //         ) {
+  //           dispatch(
+  //             removeFallbackQueryHistoricalTransaction(fallbackTransaction)
+  //           )
+  //         }
+  //       }
+  //     )
+  //   }
+  // }, [fallbackQueryHistoricalTransactions])
 
   return null
 }

@@ -47,6 +47,9 @@ export const PendingTransaction = ({
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
 
+  const currentTime: number = Math.floor(Date.now() / 1000)
+  console.log('currentTime:', currentTime)
+
   const transactionStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
@@ -127,7 +130,7 @@ export const PendingTransaction = ({
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
-  // testing origin fallback query
+  // // testing origin fallback query
   // const originFallback = useFallbackBridgeOriginQuery({
   //   useFallback: true,
   //   chainId: originChain?.id,
@@ -135,15 +138,15 @@ export const PendingTransaction = ({
   //   bridgeType: BridgeType.Bridge,
   // })
 
-  //testing dest fallback query
-  const destinationFallback = useFallbackBridgeDestinationQuery({
-    chainId: originChain?.id,
-    address: destinationAddress,
-    kappa: kappa,
-    timestamp: startedTimestamp,
-    bridgeType: BridgeType.Bridge,
-    useFallback: true,
-  })
+  // //testing dest fallback query
+  // const destinationFallback = useFallbackBridgeDestinationQuery({
+  //   chainId: originChain?.id,
+  //   address: destinationAddress,
+  //   kappa: kappa,
+  //   timestamp: startedTimestamp,
+  //   bridgeType: BridgeType.Bridge,
+  //   useFallback: true,
+  // })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
