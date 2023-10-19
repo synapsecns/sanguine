@@ -238,8 +238,9 @@ contract SummitTipsTest is AgentSecuredTest {
     ) public checkQueueLength(0) {
         test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, true);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = rcptNotary;
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: true, isFinal: true});
+        assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, true);
     }
 
@@ -253,8 +254,9 @@ contract SummitTipsTest is AgentSecuredTest {
     ) public checkQueueLength(0) {
         test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, false);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = address(0);
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: true, isFinal: false});
+        assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, false);
     }
 
@@ -276,6 +278,7 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
         inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
         skip(BONDING_OPTIMISTIC_PERIOD);
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: false, isFinal: true});
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, true);
     }
@@ -418,6 +421,78 @@ contract SummitTipsTest is AgentSecuredTest {
         } else {
             revert("Incorrect origin value");
         }
+    }
+
+    function expectAwardedTipsEvents(RawExecReceipt memory re, RawTips memory tips, bool isFirst, bool isFinal)
+        public
+    {
+        if (isFirst) {
+            expectAwardedTipsEventsFirstSubmit(re, tips);
+        }
+        expectAwardedTipsEventsReceiptTips(re, tips, isFirst, isFinal);
+        if (isFinal) {
+            expectAwardedTipsEventsFinalSubmit(re, tips);
+        }
+    }
+
+    function expectAwardedTipsEventsFirstSubmit(RawExecReceipt memory re, RawTips memory tips) public {
+        // In the first submit, tips are awarded to
+        // 1. The Guard and Notary who submitted snapshot (summit tips)
+        // 2. Notary who submitted attestation (attestation tips)
+        // 3. First Executor (execution tips)
+        uint64 snapshotTip = splitTip({tip: tips.summitTip, parts: 3, roundUp: false});
+        if (re.origin == origin0) {
+            // Tips for origin0 go to guard0 and notary0 (they were first to use it),
+            // regardless of what attestation was used
+            expectAwardedTipsEvent(guard0, re.origin, snapshotTip);
+            expectAwardedTipsEvent(snapNotary0, re.origin, snapshotTip);
+        } else if (re.origin == origin1) {
+            // Tips for origin1 go to guard1 and notary1 (they were first to use it)
+            expectAwardedTipsEvent(guard1, re.origin, snapshotTip);
+            expectAwardedTipsEvent(snapNotary1, re.origin, snapshotTip);
+        } else {
+            revert("Incorrect origin value");
+        }
+        expectAwardedTipsEvent(re.attNotary, re.origin, tips.attestationTip);
+        expectAwardedTipsEvent(re.firstExecutor, re.origin, tips.executionTip);
+    }
+
+    function expectAwardedTipsEventsReceiptTips(
+        RawExecReceipt memory re,
+        RawTips memory tips,
+        bool isFirst,
+        bool isFinal
+    ) public {
+        // The receipt tips are awarded to Notary who submitted receipt
+        // The receipt tips are 1/3 of the snapshot tips (rounded up). These are then split:
+        // - First half (rounded down) of receipt  tips are awarded to Receipt Notary who submitted first receipt
+        // - Second half (rounded up) of receipt tips are awarded to Receipt Notary who submitted final receipt
+        uint64 receiptTipFull = splitTip({tip: tips.summitTip, parts: 3, roundUp: true});
+        uint64 receiptTip;
+        address notary = rcptNotary;
+        if (isFirst && isFinal) {
+            receiptTip = receiptTipFull;
+        } else if (isFirst) {
+            receiptTip = splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
+        } else if (isFinal) {
+            receiptTip = splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
+            notary = rcptNotaryFinal;
+        } else {
+            revert("Incorrect isFirst and isFinal values");
+        }
+        expectAwardedTipsEvent(notary, re.origin, receiptTip);
+    }
+
+    function expectAwardedTipsEventsFinalSubmit(RawExecReceipt memory re, RawTips memory tips) public {
+        // In the final submit (successful execution) tips are awarded to
+        // 1. Final Executor (delivery tips)
+        expectAwardedTipsEvent(re.finalExecutor, re.origin, tips.deliveryTip);
+    }
+
+    function expectAwardedTipsEvent(address actor, uint32 origin_, uint128 earnedScaledDown) public {
+        uint256 earnedTips = 2 ** 32 * earnedScaledDown;
+        vm.expectEmit(summit);
+        emit TipAwarded(actor, origin_, earnedTips);
     }
 
     /// @dev We calculate the "scaled down" version of earned tips, i.e. divided by 2^32
