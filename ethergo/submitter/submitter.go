@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,12 +28,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
-	"math/big"
-	"reflect"
-	"runtime"
-	"sync"
-	"time"
 )
 
 var logger = log.Logger("ethergo-submitter")
@@ -63,6 +64,8 @@ type txSubmitterImpl struct {
 	// to prevent memory leaks, this has a buffer of 1.
 	// callers adding to this channel should not block.
 	retryNow chan bool
+	// gasBlockCache is used to cache the gas block for a given chain.
+	gasBlockCache map[int]*types.Header
 	// config is the config for the transaction submitter.
 	config config.IConfig
 }
@@ -77,14 +80,15 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:        db,
-		config:    config,
-		metrics:   metrics,
-		signer:    signer,
-		fetcher:   fetcher,
-		nonceMux:  mapmutex.NewStringerMapMutex(),
-		statusMux: mapmutex.NewStringMapMutex(),
-		retryNow:  make(chan bool, 1),
+		db:            db,
+		config:        config,
+		metrics:       metrics,
+		signer:        signer,
+		fetcher:       fetcher,
+		nonceMux:      mapmutex.NewStringerMapMutex(),
+		statusMux:     mapmutex.NewStringMapMutex(),
+		retryNow:      make(chan bool, 1),
+		gasBlockCache: map[int]*types.Header{},
 	}
 }
 
@@ -371,9 +375,10 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	//nolint: nestif
 	if prevTx != nil {
 		// TODO: cache
-		gasBlock, err := t.getGasBlock(ctx, client)
+		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
+			return err
 		}
 
 		// if the prev tx was greater than this one, we should bump the gas price from that point
@@ -392,7 +397,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 }
 
 // getGasBlock gets the gas block for the given chain.
-func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM) (gasBlock *types.Header, err error) {
+func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM, chainID int) (gasBlock *types.Header, err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasBlock")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -407,9 +412,22 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		return nil
 	}, retry.WithMin(time.Millisecond*50), retry.WithMax(time.Second*3), retry.WithMaxAttempts(4))
 
+	// if we can't get the current gas block, attempt to load it from the cache
 	if err != nil {
-		return nil, fmt.Errorf("could not get gas block: %w", err)
+		var ok bool
+		gasBlock, ok = t.gasBlockCache[chainID]
+		if ok {
+			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
+			))
+		} else {
+			return nil, fmt.Errorf("could not get gas block: %w", err)
+		}
 	}
+
+	// cache the latest gas block
+	t.gasBlockCache[chainID] = gasBlock
 
 	return gasBlock, nil
 }
