@@ -293,11 +293,11 @@ export default function Updater(): null {
       pendingAwaitingCompletionTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
           const isCompleted: boolean =
-            userHistoricalTransactions.some(
-              (historicalTransaction: BridgeTransaction) => {
-                return historicalTransaction.kappa === pendingTransaction.kappa
-              }
-            ) ||
+            // userHistoricalTransactions.some(
+            //   (historicalTransaction: BridgeTransaction) => {
+            //     return historicalTransaction.kappa === pendingTransaction.kappa
+            //   }
+            // ) ||
             fallbackQueryHistoricalTransactions.some(
               (historicalTransaction: BridgeTransaction) => {
                 return historicalTransaction.kappa === pendingTransaction.kappa

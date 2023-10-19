@@ -55,6 +55,7 @@ export const useFallbackBridgeDestinationQuery = ({
       return { chainId, address, kappa, timestamp, bridgeType }
     }, [chainId, address, kappa, timestamp, bridgeType])
 
+  console.log('validQueryParams: ', validQueryParams)
   // Start fallback query
   // console.log('useFallback', useFallback)
   // console.log('validQueryParams:', validQueryParams)
