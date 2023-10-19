@@ -129,21 +129,21 @@ export const PendingTransaction = ({
 
   // testing origin fallback query
   // const originFallback = useFallbackBridgeOriginQuery({
-  //   useFallback: false,
+  //   useFallback: true,
   //   chainId: originChain?.id,
   //   txnHash: transactionHash,
   //   bridgeType: BridgeType.Bridge,
   // })
 
   //testing dest fallback query
-  // const destinationFallback = useFallbackBridgeDestinationQuery({
-  //   chainId: originChain?.id,
-  //   address: destinationAddress,
-  //   kappa: kappa,
-  //   timestamp: startedTimestamp,
-  //   bridgeType: BridgeType.Bridge,
-  //   useFallback: false,
-  // })
+  const destinationFallback = useFallbackBridgeDestinationQuery({
+    chainId: originChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: BridgeType.Bridge,
+    useFallback: true,
+  })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
