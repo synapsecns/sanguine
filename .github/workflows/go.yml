@@ -471,13 +471,6 @@ jobs:
         # Fail if files need regeneration
         # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
-#        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
-#        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
-#        with:
-#          add-labels: 'needs-go-generate-${{matrix.package}}'
-#          repo-token: ${{ secrets.GITHUB_TOKEN }}
-#          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
-
         uses: actions/github-script@v6
         if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
         with:
@@ -490,11 +483,15 @@ jobs:
             })
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
-        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        uses: actions/github-script@v6
         with:
-          remove-labels: 'needs-go-generate-${{matrix.package}}'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ needs.pr_metadata.outputs.issue_number }}
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: ${{ needs.pr_metadata.outputs.issue_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: ["needs-go-generate-${{matrix.package}}"]
+            })
 
   remove-label-generation:
     name: Remove Generate Label From Unused Jobs
