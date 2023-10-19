@@ -16,6 +16,8 @@ import {
   oneDayInMinutes,
 } from '@/utils/time'
 import {
+  addFallbackQueryHistoricalTransaction,
+  removeFallbackQueryPendingTransaction,
   resetTransactionsState,
   updateIsUserPendingTransactionsLoading,
 } from './actions'
@@ -55,6 +57,8 @@ export default function Updater(): null {
     userPendingTransactions,
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
@@ -307,6 +311,30 @@ export default function Updater(): null {
       )
     }
   }, [userHistoricalTransactions, activeTab])
+
+  /**
+   * Handle fallback query returned transactions
+   * If transaction is finalized (require destination Info and kappa),
+   * move transaction into historical state to display in Activity
+   */
+  useEffect(() => {
+    fallbackQueryPendingTransactions.forEach(
+      (transaction: BridgeTransaction) => {
+        const { fromInfo, toInfo, kappa } = transaction
+
+        const alreadyMovedToHistorical: boolean =
+          fallbackQueryHistoricalTransactions.some(
+            (historicalTransaction: BridgeTransaction) =>
+              historicalTransaction !== transaction
+          )
+
+        if (fromInfo && toInfo && kappa && !alreadyMovedToHistorical) {
+          dispatch(addFallbackQueryHistoricalTransaction(transaction))
+          dispatch(removeFallbackQueryPendingTransaction(kappa))
+        }
+      }
+    )
+  }, [fallbackQueryPendingTransactions])
 
   return null
 }
