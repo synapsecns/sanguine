@@ -383,6 +383,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		gasBlock, err := t.getGasBlock(ctx, client)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
+			return err
 		}
 
 		// if the prev tx was greater than this one, we should bump the gas price from that point

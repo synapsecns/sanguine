@@ -193,7 +193,6 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 		transactor.Nonce = new(big.Int).SetUint64(tx.Nonce())
 		transactor.GasLimit = newGasEstimate
 
-		fmt.Printf("setGasPrice with ogTx: %v\n", ogTx)
 		err = c.setGasPrice(ctx, c.client, transactor, c.chainID, ogTx.Transaction)
 		if err != nil {
 			return fmt.Errorf("could not set gas price: %w", err)
