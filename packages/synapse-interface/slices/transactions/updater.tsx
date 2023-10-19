@@ -144,9 +144,7 @@ export default function Updater(): null {
     isUserPendingTransactionsLoading,
   ])
 
-  /**
-   * Load fetched historical transactions into state along with fetch status
-   */
+  // Load fetched historical transactions into state along with fetch status
   useEffect(() => {
     const {
       isLoading,
@@ -173,9 +171,7 @@ export default function Updater(): null {
     masqueradeActive,
   ])
 
-  /**
-   * Load fetched pending transactions into state along with fetch status
-   */
+  // Load fetched pending transactions into state along with fetch status
   useEffect(() => {
     const {
       isLoading,
