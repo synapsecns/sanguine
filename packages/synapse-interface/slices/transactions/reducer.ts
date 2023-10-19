@@ -23,6 +23,7 @@ export interface TransactionsState {
   seenHistoricalTransactions: BridgeTransaction[]
   pendingAwaitingCompletionTransactions: BridgeTransaction[]
   fallbackQueryPendingTransactions: BridgeTransaction[]
+  fallbackQueryHistoricalTransactions: BridgeTransaction[]
 }
 
 const initialState: TransactionsState = {
@@ -33,6 +34,7 @@ const initialState: TransactionsState = {
   seenHistoricalTransactions: [],
   pendingAwaitingCompletionTransactions: [],
   fallbackQueryPendingTransactions: [],
+  fallbackQueryHistoricalTransactions: [],
 }
 
 export const transactionsSlice = createSlice({
