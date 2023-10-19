@@ -84,6 +84,7 @@ func (s *SubmitterSuite) TestGetGasBlock() {
 
 	cfg := &config.Config{}
 	ts := submitter.NewTestTransactionSubmitter(s.metrics, signer, s, s.store, cfg)
+	currentHeader := &types.Header{Number: big.NewInt(1)}
 
 	// 1. Test with failed HeaderByNumber RPC call; Error is expected.
 	mockErrMsg := "mock error"
@@ -93,16 +94,15 @@ func (s *SubmitterSuite) TestGetGasBlock() {
 	s.NotNil(err)
 
 	// 2. Test with successful HeaderByNumber RPC call.
-	currentHeader := &types.Header{Number: big.NewInt(1)}
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	gasBlock, err = ts.GetGasBlock(s.GetTestContext(), client, int(chainID.Int64()))
-	s.Nil(err)
+	s.Require().NoError(err)
 	s.Equal(gasBlock.Number.String(), currentHeader.Number.String())
 
 	// 3. Test with failed HeaderByNumber RPC call; the cached value should be used.
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Times(5).Return(nil, fmt.Errorf(mockErrMsg))
 	gasBlock, err = ts.GetGasBlock(s.GetTestContext(), client, int(chainID.Int64()))
-	s.Nil(err)
+	s.Require().NoError(err)
 	s.Equal(gasBlock.Number.String(), currentHeader.Number.String())
 }
 
