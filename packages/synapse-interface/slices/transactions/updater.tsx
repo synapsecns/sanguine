@@ -202,23 +202,31 @@ export default function Updater(): null {
           (recentTx) =>
             (userPendingTransactions &&
               userPendingTransactions.some(
-                (pendingTx) =>
+                (pendingTx: BridgeTransaction) =>
                   pendingTx.fromInfo.txnHash === recentTx.transactionHash
               )) ||
             (userHistoricalTransactions &&
               userHistoricalTransactions.some(
-                (historicalTx) =>
+                (historicalTx: BridgeTransaction) =>
                   historicalTx.fromInfo.txnHash === recentTx.transactionHash
+              )) ||
+            (fallbackQueryPendingTransactions &&
+              fallbackQueryPendingTransactions.some(
+                (pendingTx: BridgeTransaction) =>
+                  pendingTx.fromInfo.txnHash === recentTx.transactionHash
               ))
         )
-        .map((matchingTx) => matchingTx.transactionHash)
+        .map(
+          (matchingTx: PendingBridgeTransaction) => matchingTx.transactionHash
+        )
     )
 
     if (matchingTransactionHashes.size === 0) {
       return
     } else {
       const updatedRecentBridgeTransactions = pendingBridgeTransactions.filter(
-        (recentTx) => !matchingTransactionHashes.has(recentTx.transactionHash)
+        (recentTx: PendingBridgeTransaction) =>
+          !matchingTransactionHashes.has(recentTx.transactionHash)
       )
       dispatch(updatePendingBridgeTransactions(updatedRecentBridgeTransactions))
     }
@@ -226,6 +234,7 @@ export default function Updater(): null {
     pendingBridgeTransactions,
     userHistoricalTransactions,
     userPendingTransactions,
+    fallbackQueryPendingTransactions,
   ])
 
   // Store pending transactions until completed based on subgraph query
