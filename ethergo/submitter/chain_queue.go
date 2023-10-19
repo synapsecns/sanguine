@@ -141,11 +141,9 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
 				fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
-				span.AddEvent("tx marked as FailedSubmit", trace.WithAttributes(txToAttributes(c.reprocessQueue[i].Transaction)...))
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
 				fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
-				span.AddEvent("tx marked as Submitted", trace.WithAttributes(txToAttributes(c.reprocessQueue[i].Transaction)...))
 			}
 		}
 
@@ -195,6 +193,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 		transactor.Nonce = new(big.Int).SetUint64(tx.Nonce())
 		transactor.GasLimit = newGasEstimate
 
+		fmt.Printf("setGasPrice with ogTx: %v\n", ogTx)
 		err = c.setGasPrice(ctx, c.client, transactor, c.chainID, ogTx.Transaction)
 		if err != nil {
 			return fmt.Errorf("could not set gas price: %w", err)

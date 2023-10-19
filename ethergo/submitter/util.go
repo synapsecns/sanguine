@@ -49,6 +49,9 @@ const (
 
 // txToAttributes converts a transaction to a slice of attribute.KeyValue.
 func txToAttributes(transaction *types.Transaction) []attribute.KeyValue {
+	if transaction == nil {
+		return []attribute.KeyValue{}
+	}
 	var from string
 	call, err := util.TxToCall(transaction)
 	if err != nil {
