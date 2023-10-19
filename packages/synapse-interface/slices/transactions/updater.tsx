@@ -17,6 +17,7 @@ import {
 } from '@/utils/time'
 import {
   addFallbackQueryHistoricalTransaction,
+  removeFallbackQueryHistoricalTransaction,
   removeFallbackQueryPendingTransaction,
   resetTransactionsState,
   updateIsUserPendingTransactionsLoading,
@@ -237,7 +238,7 @@ export default function Updater(): null {
     fallbackQueryPendingTransactions,
   ])
 
-  // Store pending transactions until completed based on subgraph query
+  // Store pending transactions until completed based on Explorer query
   useEffect(() => {
     const hasUserPendingTransactions: boolean =
       Array.isArray(userPendingTransactions) &&
@@ -250,6 +251,7 @@ export default function Updater(): null {
             (storedTransaction: BridgeTransaction) =>
               storedTransaction.kappa === pendingTransaction.kappa
           )
+
           if (!isStored) {
             dispatch(
               addPendingAwaitingCompletionTransaction(pendingTransaction)
@@ -290,17 +292,26 @@ export default function Updater(): null {
     if (hasUserHistoricalTransactions) {
       pendingAwaitingCompletionTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isCompleted: boolean = userHistoricalTransactions.some(
-            (historicalTransaction: BridgeTransaction) => {
-              return historicalTransaction.kappa === pendingTransaction.kappa
-            }
-          )
+          const isCompleted: boolean =
+            userHistoricalTransactions.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return historicalTransaction.kappa === pendingTransaction.kappa
+              }
+            ) ||
+            fallbackQueryHistoricalTransactions.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return historicalTransaction.kappa === pendingTransaction.kappa
+              }
+            )
 
           if (isCompleted) {
             dispatch(
               removePendingAwaitingCompletionTransaction(
                 pendingTransaction.kappa
               )
+            )
+            dispatch(
+              removeFallbackQueryPendingTransaction(pendingTransaction.kappa)
             )
           }
         }
@@ -310,14 +321,23 @@ export default function Updater(): null {
     if (hasPendingBridgeTransactions && hasUserHistoricalTransactions) {
       pendingBridgeTransactions.forEach(
         (pendingBridgeTransaction: PendingBridgeTransaction) => {
-          const isCompleted: boolean = userHistoricalTransactions.some(
-            (historicalTransaction: BridgeTransaction) => {
-              return (
-                historicalTransaction.fromInfo.txnHash ===
-                pendingBridgeTransaction.transactionHash
-              )
-            }
-          )
+          const isCompleted: boolean =
+            userHistoricalTransactions.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return (
+                  historicalTransaction.fromInfo.txnHash ===
+                  pendingBridgeTransaction.transactionHash
+                )
+              }
+            ) ||
+            fallbackQueryHistoricalTransactions.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return (
+                  historicalTransaction.fromInfo.txnHash ===
+                  pendingBridgeTransaction.transactionHash
+                )
+              }
+            )
 
           if (isCompleted) {
             dispatch(
@@ -353,6 +373,32 @@ export default function Updater(): null {
       }
     )
   }, [fallbackQueryPendingTransactions])
+
+  useEffect(() => {
+    const hasUserHistoricalTransactions: boolean =
+      Array.isArray(userHistoricalTransactions) &&
+      !isUserHistoricalTransactionsLoading
+
+    if (
+      hasUserHistoricalTransactions &&
+      checkTransactionsExist(fallbackQueryHistoricalTransactions)
+    ) {
+      fallbackQueryHistoricalTransactions.forEach(
+        (fallbackTransaction: BridgeTransaction) => {
+          if (
+            userHistoricalTransactions.some(
+              (historicalTransaction: BridgeTransaction) =>
+                historicalTransaction.kappa === fallbackTransaction.kappa
+            )
+          ) {
+            dispatch(
+              removeFallbackQueryHistoricalTransaction(fallbackTransaction)
+            )
+          }
+        }
+      )
+    }
+  }, [fallbackQueryHistoricalTransactions])
 
   return null
 }
