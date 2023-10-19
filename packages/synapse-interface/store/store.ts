@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
+import { persistStore, persistReducer } from 'redux-persist'
 
 import bridgeReducer from '@/slices/bridge/reducer'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
@@ -34,6 +35,8 @@ export const store = configureStore({
       serializableCheck: false,
     }).concat(api.middleware),
 })
+
+export const persistor = persistStore(store)
 
 let previousState = store.getState()
 
