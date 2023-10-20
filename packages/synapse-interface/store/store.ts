@@ -2,37 +2,13 @@ import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 import { persistStore } from 'redux-persist'
-// import storage from 'redux-persist/lib/storage'
 
-import persistReducer from './reducer'
-import bridgeReducer from '@/slices/bridge/reducer'
-import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
-import poolDataReducer from '@/slices/poolDataSlice'
-import poolUserDataReducer from '@/slices/poolUserDataSlice'
-import poolDepositReducer from '@/slices/poolDepositSlice'
-import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
-import portfolioReducer from '@/slices/portfolio/reducer'
-import swapReducer from '@/slices/swap/reducer'
-import swapDisplayReducer from '@/slices/swapDisplaySlice'
-import transactionsReducer from '@/slices/transactions/reducer'
+import persistedReducer from './reducer'
 import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
-  // reducer: {
-  //   bridge: bridgeReducer,
-  //   bridgeDisplay: bridgeDisplayReducer,
-  //   poolData: poolDataReducer,
-  //   poolUserData: poolUserDataReducer,
-  //   poolDeposit: poolDepositReducer,
-  //   poolWithdraw: poolWithdrawReducer,
-  //   portfolio: portfolioReducer,
-  //   swap: swapReducer,
-  //   swapDisplay: swapDisplayReducer,
-  //   transactions: transactionsReducer,
-  //   [api.reducerPath]: api.reducer,
-  // },
-  reducer: persistReducer,
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
@@ -40,6 +16,9 @@ export const store = configureStore({
 })
 
 export const persistor = persistStore(store)
+
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
 
 let previousState = store.getState()
 
@@ -120,6 +99,3 @@ store.subscribe(() => {
 
   previousState = currentState
 })
-
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
