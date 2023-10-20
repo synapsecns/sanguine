@@ -167,10 +167,12 @@ library SnapshotLib {
         returns (bytes32)
     {
         // Index of "leftLeaf" is twice the state position in the snapshot
+        // This is because each state is represented by two leaves in the Snapshot Merkle Tree:
+        // - leftLeaf is a hash of (originRoot, originDomain)
+        // - rightLeaf is a hash of (nonce, blockNumber, timestamp, gasData)
         uint256 leftLeafIndex = uint256(stateIndex) << 1;
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
         if (leftLeafIndex >= (1 << SNAPSHOT_TREE_HEIGHT)) revert IndexOutOfRange();
-        // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, domain);
         // Reconstruct snapshot root using proof of inclusion
         // This will revert if snapshot proof length exceeds Snapshot Tree Height
