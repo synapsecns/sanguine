@@ -128,9 +128,9 @@ export const PendingTransaction = ({
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
-  // Set fallback period to extend 10 mins past estimated duration
+  // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
-    () => timeRemaining >= -10 && timeRemaining <= -1,
+    () => timeRemaining >= -5 && timeRemaining <= -1,
     [timeRemaining]
   )
 
@@ -145,7 +145,7 @@ export const PendingTransaction = ({
   })
 
   const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback: true && useFallback,
+    useFallback: isDelayed && useFallback,
     chainId: destinationChain?.id,
     address: destinationAddress,
     kappa: kappa,
