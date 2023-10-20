@@ -372,7 +372,7 @@ export default function Updater(): null {
         }
       }
     )
-  }, [fallbackQueryPendingTransactions])
+  }, [fallbackQueryPendingTransactions, userHistoricalTransactions])
 
   /**
    * Handle removing fallback historical transaction from state
