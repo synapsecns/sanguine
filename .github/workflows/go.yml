@@ -471,7 +471,7 @@ jobs:
         # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
         if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
-        uses: ./actions/add-label
+        uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
           issue-number: ${{github.event.number}}
@@ -638,7 +638,7 @@ jobs:
         # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
         if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
-        uses: ./actions/add-label
+        uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
           issue-number: ${{github.event.number}}
