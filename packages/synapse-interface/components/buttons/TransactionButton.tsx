@@ -1,21 +1,20 @@
 import Button from '@tw/Button'
-import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
-import { CSSProperties } from 'react'
+import { CSSProperties, useState } from 'react'
+import { LoaderIcon } from 'react-hot-toast'
 
 const BASE_PROPERTIES = `
-    w-full rounded-md px-4 py-3
-    text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
-    bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+    h-[64px]
+    w-full rounded-sm px-4
+    text-white
+    bg-[#343036]
+    border border-separator
   `
 
-const disabledClass = `opacity-30 cursor-default`
+const disabledClass = `cursor-default opacity-40 border-transparent`
 
 export const TransactionButton = ({
-  className,
   onClick,
   pendingLabel,
   label,
@@ -23,45 +22,58 @@ export const TransactionButton = ({
   disabled,
   chainId,
   style,
+  toolTipLabel,
   ...props
 }: {
-  className?: string
   onClick: () => Promise<TransactionResponse | any>
-  pendingLabel: string
-  label: string
+  pendingLabel?: string | JSX.Element
+  label: string | JSX.Element
   onSuccess?: () => void
   chainId?: number
   style?: CSSProperties
+  toolTipLabel?: string
   disabled?: boolean
 }) => {
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <Button
-      {...props}
-      style={style}
-      disabled={disabled}
-      className={`
-        ${className}
-        ${BASE_PROPERTIES}
-        ${disabled && disabledClass}
-        ${isPending && 'from-[#622e71] to-[#564071]'}
-      `}
-      onClick={async () => {
-        const tx = await pendingTxWrapFunc(onClick())
-        if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
-          onSuccess?.()
-        }
-      }}
+    <div
+      className="relative flex flex-col items-center justify-center"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {isPending ? (
-        <div className="inline-flex items-center justify-center">
-          <ButtonLoadingDots className="mr-8" />
-          <span className="opacity-30">{pendingLabel}</span>{' '}
+      {isHovered && toolTipLabel && (
+        <div className="absolute -top-3 z-10 flex justify-center items-center pl-2 pr-2 pt-1 pb-1 bg-[#151315] border border-[#343036] rounded-sm h-[29px] ">
+          <div className="text-center text-[#EEEDEF] text-sm">
+            {toolTipLabel}
+          </div>
         </div>
-      ) : (
-        <span>{label}</span>
       )}
-    </Button>
+      <Button
+        {...props}
+        style={style}
+        disabled={disabled}
+        className={`
+          ${BASE_PROPERTIES}
+          ${disabled && disabledClass}
+        `}
+        onClick={async () => {
+          const tx = await pendingTxWrapFunc(onClick())
+          if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
+            onSuccess?.()
+          }
+        }}
+      >
+        {isPending ? (
+          <div className="inline-flex items-center justify-center">
+            <LoaderIcon className="mr-2" />
+            <span className="opacity-30">{pendingLabel}</span>{' '}
+          </div>
+        ) : (
+          <span>{label}</span>
+        )}
+      </Button>
+    </div>
   )
 }

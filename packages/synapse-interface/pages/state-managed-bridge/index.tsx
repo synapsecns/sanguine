@@ -1,4 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -13,12 +13,10 @@ import {
   setBridgeQuote,
   setIsLoading,
   setDestinationAddress,
-  addBridgeTxHash,
 } from '@/slices/bridge/reducer'
 
 import {
   setShowDestinationAddress,
-  setShowFromTokenListOverlay,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
@@ -30,12 +28,11 @@ import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
-import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -57,19 +54,13 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
-import {
-  fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
-  useFetchPortfolioBalances,
-} from '@/slices/portfolio/hooks'
+import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
 } from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
@@ -78,7 +69,6 @@ import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListO
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
-  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
@@ -116,8 +106,6 @@ const StateManagedBridge = () => {
   let pendingPopup
   let successPopup
 
-  const [isApproved, setIsApproved] = useState(false)
-
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -150,24 +138,6 @@ const StateManagedBridge = () => {
     address,
     portfolioBalances,
   ])
-
-  // don't like this, rewrite: could be custom hook
-  useEffect(() => {
-    if (fromToken && fromToken?.addresses[fromChainId] === zeroAddress) {
-      setIsApproved(true)
-    } else {
-      if (
-        fromToken &&
-        bridgeQuote?.allowance &&
-        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) <=
-          bridgeQuote.allowance
-      ) {
-        setIsApproved(true)
-      } else {
-        setIsApproved(false)
-      }
-    }
-  }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
 
   let quoteToast
 
@@ -316,34 +286,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  const approveTxn = async () => {
-    try {
-      const tx = approveToken(
-        bridgeQuote?.routerAddress,
-        fromChainId,
-        fromToken?.addresses[fromChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: bridgeQuote?.routerAddress as Address,
-            tokenAddress: fromToken?.addresses[fromChainId] as Address,
-            address: address,
-            chainId: fromChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
-    } catch (error) {
-      return txErrorHandler(error)
-    }
-  }
-
   const executeBridge = async () => {
     segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
       address,
@@ -427,7 +369,6 @@ const StateManagedBridge = () => {
             isSubmitted: false,
           })
         )
-        dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
@@ -511,7 +452,7 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+            pb-1 mt-5 overflow-hidden
             transition-all duration-100 transform rounded-md
             bg-bgBase
           `}
@@ -560,11 +501,7 @@ const StateManagedBridge = () => {
               />
             )}
             <div className="md:my-3">
-              <BridgeTransactionButton
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-              />
+              <BridgeTransactionButton executeBridge={executeBridge} />
             </div>
           </div>
         </Card>

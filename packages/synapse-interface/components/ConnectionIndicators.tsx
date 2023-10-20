@@ -160,10 +160,19 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
+                        style={
+                          highlight
+                            ? {
+                                background:
+                                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                              }
+                            : {}
+                        }
                         className={`
                           flex items-center mr-2 py-1 px-2
                           text-sm text-white
                           border rounded-sm
+                          hover:border-synapsePurple
                           ${
                             highlight
                               ? 'border-synapsePurple'

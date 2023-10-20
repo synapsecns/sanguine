@@ -1,34 +1,21 @@
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { isAddress } from 'viem'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { RootState } from '@/store/store'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
-export const BridgeTransactionButton = ({
-  approveTxn,
-  executeBridge,
-  isApproved,
-}) => {
+export const BridgeTransactionButton = ({ executeBridge }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
-  const { chain } = useNetwork()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
-
-  const { address, isConnected: isConnectedInit } = useAccount({
+  const { isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -53,102 +40,121 @@ export const BridgeTransactionButton = ({
     (state: RootState) => state.bridgeDisplay
   )
 
-  const balances = usePortfolioBalances()
-  const balancesForChain = balances[fromChainId]
-  const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
-
-  const sufficientBalance = useMemo(() => {
-    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
-    return (
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
-      balanceForToken
-    )
-  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
+  const {
+    hasEnoughBalance,
+    hasEnoughApproved,
+    hasInputAmount,
+    hasSelectedNetwork,
+  } = useBridgeStatus()
 
   const isButtonDisabled =
     isLoading ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (showDestinationAddress && !destinationAddress) ||
-    (isConnected && !sufficientBalance)
+    (isConnected && !hasSelectedNetwork) ||
+    (isConnected && !hasEnoughBalance) ||
+    (isConnected && !hasEnoughApproved)
 
-  let buttonProperties
+  let buttonProperties: {
+    label: string | JSX.Element
+    pendingLabel?: string | JSX.Element
+    onClick: any
+    toolTipLabel?: string
+  } = {
+    label: 'Bridge',
+    pendingLabel: 'Bridging',
+    onClick: null,
+  }
 
-  const fromTokenDecimals: number | undefined =
-    fromToken && fromToken.decimals[fromChainId]
-
-  const fromValueBigInt = useMemo(() => {
-    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  }, [fromValue, fromTokenDecimals])
-
-  if (!fromChainId) {
+  if (!isConnected) {
     buttonProperties = {
-      label: 'Please select Origin network',
-      onClick: null,
+      ...buttonProperties,
+      label: 'Connect Wallet',
+      onClick: openConnectModal,
+    }
+  } else if (!fromChainId) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'Origin chain required',
     }
   } else if (!toChainId) {
     buttonProperties = {
-      label: 'Please select Destination network',
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Destination chain required',
     }
   } else if (!fromToken) {
     buttonProperties = {
-      label: `Unsupported Network`,
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Origin token required',
     }
-  } else if (
-    !isLoading &&
-    bridgeQuote?.feeAmount === 0n &&
-    fromValueBigInt > 0
-  ) {
+  } else if (!toToken) {
     buttonProperties = {
-      label: `Amount must be greater than fee`,
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Destination token required',
     }
-  } else if (!isConnected && fromValueBigInt > 0) {
+  } else if (!hasInputAmount) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
-      onClick: openConnectModal,
+      ...buttonProperties,
+      toolTipLabel: 'Input value required',
     }
-  } else if (isConnected && !sufficientBalance) {
+  } else if (!isLoading && bridgeQuote?.feeAmount === 0n && hasInputAmount) {
     buttonProperties = {
-      label: 'Insufficient balance',
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Amount must be greater than fee',
+    }
+  } else if (isConnected && !hasEnoughBalance) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'Insufficient balance',
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
-      label: 'Please add valid destination address',
+      ...buttonProperties,
+      toolTipLabel: 'Please add valid destination address',
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
-      label: 'Invalid destination address',
+      ...buttonProperties,
+      toolTipLabel: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
+  } else if (!hasSelectedNetwork && hasInputAmount) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
-      onClick: () => switchNetwork(fromChainId),
-      pendingLabel: 'Switching chains',
+      ...buttonProperties,
+      toolTipLabel: `Switch to ${CHAINS_BY_ID[fromChainId].name}`,
     }
-  } else if (!isApproved) {
+  } else if (isConnected && !hasEnoughApproved) {
     buttonProperties = {
-      onClick: approveTxn,
-      label: `Approve ${fromToken?.symbol}`,
-      pendingLabel: 'Approving',
+      ...buttonProperties,
+      toolTipLabel: 'Token approval required to bridge',
+    }
+  } else if (isConnected && hasEnoughApproved && hasInputAmount) {
+    buttonProperties = {
+      onClick: executeBridge,
+      label: (
+        <div className="flex flex-col space-y-1">
+          <div>Bridge</div>
+          <div className="text-sm text-[#bfbcc2]">
+            {fromValue} {fromToken?.symbol} to {CHAINS_BY_ID[toChainId]?.name}
+          </div>
+        </div>
+      ),
+      pendingLabel: 'Bridging',
     }
   } else {
     buttonProperties = {
-      onClick: executeBridge,
-      label: `Bridge ${fromToken?.symbol}`,
-      pendingLabel: 'Bridging',
+      ...buttonProperties,
     }
   }
 
   return (
     buttonProperties && (
       <TransactionButton
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+          border: '1px solid #9B6DD7',
+          borderRadius: '4px',
+        }}
         {...buttonProperties}
         disabled={isButtonDisabled}
         chainId={fromChainId}

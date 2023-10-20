@@ -47,7 +47,6 @@ export interface BridgeState {
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
-  bridgeTxHashes: string[] | null
   pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
@@ -86,7 +85,6 @@ export const initialState: BridgeState = {
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
-  bridgeTxHashes: [],
   pendingBridgeTransactions: [],
 }
 
@@ -468,9 +466,6 @@ export const bridgeSlice = createSlice({
     setDestinationAddress: (state, action: PayloadAction<Address | null>) => {
       state.destinationAddress = action.payload
     },
-    addBridgeTxHash: (state, action: PayloadAction<string>) => {
-      state.bridgeTxHashes = [...state.bridgeTxHashes, action.payload]
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -575,7 +570,6 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
-  addBridgeTxHash,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer

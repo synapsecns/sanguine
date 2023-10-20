@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Chain, useAccount, useNetwork } from 'wagmi'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
@@ -16,6 +16,7 @@ import {
 const WalletStatusContext = createContext(undefined)
 
 export const UserProvider = ({ children }) => {
+  const [isClient, setIsClient] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
   const router = useRouter()
@@ -33,6 +34,10 @@ export const UserProvider = ({ children }) => {
       segmentAnalyticsEvent('[Wallet Analytics] disconnect', {})
     },
   })
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const prevChainRef = useRef<Chain | null>(null)
   useEffect(() => {
@@ -65,7 +70,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
-      if (address && chain?.id) {
+      if (isClient && address && chain?.id) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
@@ -77,13 +82,15 @@ export const UserProvider = ({ children }) => {
         dispatch(resetPortfolioState())
       }
     })()
-  }, [chain, address])
+  }, [chain, address, isClient])
 
   useEffect(() => {
-    dispatch(fetchSynPrices())
-    dispatch(fetchEthPrice())
-    dispatch(fetchAvaxPrice())
-  }, [])
+    if (isClient) {
+      dispatch(fetchSynPrices())
+      dispatch(fetchEthPrice())
+      dispatch(fetchAvaxPrice())
+    }
+  }, [isClient])
 
   return (
     <WalletStatusContext.Provider value={null}>
