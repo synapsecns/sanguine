@@ -362,7 +362,8 @@ jobs:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
       # TODO: https://stackoverflow.com/a/75429845 consider splitting w/ gql to reduce limit hit
-      - run: |
+      - name: Fetch Metadata for ${steps.find_pr.outputs.pr}
+        run: |
           # Fetch the metadata
           metadata="$(gh api repos/$OWNER/$REPO_NAME/pulls/$PULL_REQUEST_NUMBER)"
 
