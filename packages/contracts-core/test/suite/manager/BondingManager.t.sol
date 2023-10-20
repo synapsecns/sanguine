@@ -248,6 +248,10 @@ contract BondingManagerTest is AgentManagerTest {
         managerMsgPrank(msgPayload);
     }
 
+    function test_remoteSlashAgent_revert_optimisticPeriodMinus1Second() public {
+        test_remoteSlashAgent_revert_optimisticPeriodNotOver(BONDING_OPTIMISTIC_PERIOD - 1);
+    }
+
     function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         // Initiate slashing

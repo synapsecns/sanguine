@@ -166,6 +166,10 @@ contract LightManagerTest is AgentManagerTest {
         managerMsgPrank(msgPayload);
     }
 
+    function test_remoteWithdrawTips_revert_optimisticPeriodMinus1Second() public {
+        test_remoteWithdrawTips_revert_optimisticPeriodNotOver(BONDING_OPTIMISTIC_PERIOD - 1);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns local domain for the tested contract
