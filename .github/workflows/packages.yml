@@ -67,7 +67,7 @@ jobs:
 
         - name: Remove Label
           if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
-          uses: ./.github/actions/add-label
+          uses: ./.github/actions/remove-label
           with:
             label: 'needs-yarn-install'
 
