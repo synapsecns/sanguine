@@ -92,8 +92,7 @@ type Executor struct {
 	// retryConfig is the retry configuration for RPC calls.
 	retryConfig []retry.WithBackoffConfigurator
 	// NowFunc returns the current time.
-	NowFunc     func() time.Time
-	retryConfig []retry.WithBackoffConfigurator
+	NowFunc func() time.Time
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -151,9 +150,6 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	}
 
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
-	retryConfig := []retry.WithBackoffConfigurator{
-		retry.WithMaxAttemptTime(time.Second * time.Duration(5*time.Second)),
-	}
 
 	if config.MaxRetrySeconds == 0 {
 		config.MaxRetrySeconds = 30
