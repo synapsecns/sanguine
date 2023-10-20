@@ -74,8 +74,8 @@ export const ARBITRUM: Chain = {
   codeName: 'arbitrum',
   blockTime: 300,
   rpcUrls: {
-    primary: 'https://arb1.arbitrum.io/rpc',
-    fallback: 'https://arbitrum-one.publicnode.com',
+    primary: 'https://arbitrum.blockpi.network/v1/rpc/public',
+    fallback: 'https://arb1.arbitrum.io/rpc',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',

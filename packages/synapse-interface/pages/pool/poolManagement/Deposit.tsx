@@ -194,18 +194,26 @@ const Deposit = ({
 
   return (
     <div className="flex-col">
-      <div className="px-2 pt-1 pb-4 mb-4 rounded-md bg-bgLight">
+      <div className="mb-4">
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (
-              <SerializedDepositInput
-                key={i}
-                tokenObj={tokenObj}
-                address={address}
-                chainId={chainId}
-                inputValue={inputValue}
-                onChangeInputValue={onChangeInputValue}
-              />
+              <div
+                className={
+                  i < poolUserData.tokens.length - 1
+                    ? 'border-b border-[#564f58]'
+                    : ''
+                }
+              >
+                <SerializedDepositInput
+                  key={i}
+                  tokenObj={tokenObj}
+                  address={address}
+                  chainId={chainId}
+                  inputValue={inputValue}
+                  onChangeInputValue={onChangeInputValue}
+                />
+              </div>
             )
           })
         ) : (
@@ -262,7 +270,7 @@ const SerializedDepositInput = ({
         balanceStr={formatBigIntToString(
           serializedToken.rawBalance,
           serializedToken.decimals[chainId],
-          4
+          5
         )}
         inputValueStr={inputValue.str[serializedToken.addresses[chainId]]}
         onChange={(value) => onChangeInputValue(serializedToken, value)}
@@ -300,15 +308,13 @@ const serializeToken = async (
       chainId,
     })
 
-    console.log(`fetchedBalance`, fetchedBalance)
-
     return {
       ...balanceToken,
       rawBalance: fetchedBalance.value,
       balanceStr: formatBigIntToString(
         fetchedBalance.value,
         balanceToken.decimals[chainId],
-        4
+        5
       ),
     }
   } else if (balanceToken === WETHE) {

@@ -65,7 +65,7 @@ module.exports = {
       borderRadius: {
         xl: '3rem',
         lg: '1.0rem',
-        md: '0.75rem',
+        md: '0.50rem',
         sm: '0.25rem',
       },
       spacing: {
@@ -107,6 +107,7 @@ module.exports = {
       },
       fontSize: {
         xxs: ['0.675rem', { lineHeight: '0.75rem' }],
+        xxl: ['1.5rem', { lineHeight: '1.75rem' }],
       },
       colors: {
         // updated colors

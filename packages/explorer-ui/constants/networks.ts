@@ -305,7 +305,7 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.KLAYTN]: 'https://scope.klaytn.com',
   [ChainId.TERRA]: 'https://terrasco.pe/mainnet', //'https://finder.terra.money/mainnet',
   [ChainId.DOGECHAIN]: 'https://explorer.dogechain.dog',
-  [ChainId.CANTO]: 'https://evm.explorer.canto.io',
+  [ChainId.CANTO]: 'https://tuber.build',
   [ChainId.BASE]: 'https://basescan.org',
 }
 

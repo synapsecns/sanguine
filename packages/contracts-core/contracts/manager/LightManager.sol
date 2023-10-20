@@ -50,7 +50,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     function initialize(address origin_, address destination_, address inbox_) external initializer {
         __AgentManager_init(origin_, destination_, inbox_);
-        __Ownable_init();
+        __Ownable2Step_init();
     }
 
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
