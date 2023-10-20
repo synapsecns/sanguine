@@ -375,6 +375,10 @@ export default function Updater(): null {
           fallbackQueryHistoricalTransactions.some(
             (historicalTransaction: BridgeTransaction) =>
               historicalTransaction !== transaction
+          ) ||
+          userHistoricalTransactions.some(
+            (historicalTransaction: BridgeTransaction) =>
+              historicalTransaction !== transaction
           )
 
         if (fromInfo && toInfo && kappa && !alreadyMovedToHistorical) {

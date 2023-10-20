@@ -137,21 +137,21 @@ export const PendingTransaction = ({
   console.log('timeRemaining: ', timeRemaining)
   console.log('useFallback: ', useFallback)
 
-  // const originFallback = useFallbackBridgeOriginQuery({
-  //   useFallback: isDelayed && useFallback,
-  //   chainId: originChain?.id,
-  //   txnHash: transactionHash,
-  //   bridgeType: BridgeType.Bridge,
-  // })
+  const originFallback = useFallbackBridgeOriginQuery({
+    useFallback: isDelayed && useFallback,
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: BridgeType.Bridge,
+  })
 
-  // const destinationFallback = useFallbackBridgeDestinationQuery({
-  //   useFallback: isDelayed && useFallback,
-  //   chainId: destinationChain?.id,
-  //   address: destinationAddress,
-  //   kappa: kappa,
-  //   timestamp: startedTimestamp,
-  //   bridgeType: BridgeType.Bridge,
-  // })
+  const destinationFallback = useFallbackBridgeDestinationQuery({
+    useFallback: isDelayed && useFallback,
+    chainId: destinationChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: BridgeType.Bridge,
+  })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
