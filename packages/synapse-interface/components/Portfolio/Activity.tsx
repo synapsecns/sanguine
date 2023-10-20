@@ -58,11 +58,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       }
 
       if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
-        const mergedTransactions =
-          fallbackQueryPendingTransactions.concat(transactions)
-        const uniqueMergedTransactions: BridgeTransaction[] = [
-          ...new Set(mergedTransactions),
-        ]
+        const fallbackTransactions = [...fallbackQueryPendingTransactions]
+        const mergedTransactions = [...fallbackTransactions, ...transactions]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
         return uniqueMergedTransactions
       }
 
@@ -71,6 +74,11 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       pendingAwaitingCompletionTransactions,
       fallbackQueryPendingTransactions,
     ])
+
+  console.log(
+    'pendingAwaitingCompletionTransactionsWithFallback:',
+    pendingAwaitingCompletionTransactionsWithFallback
+  )
 
   const hasHistoricalTransactions: boolean = useMemo(
     () => checkTransactionsExist(userHistoricalTransactions),
@@ -174,11 +182,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       }
 
       if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
-        const mergedTransactions =
-          fallbackQueryHistoricalTransactions.concat(transactions)
-        const uniqueMergedTransactions: BridgeTransaction[] = [
-          ...new Set(mergedTransactions),
-        ]
+        const fallbackTransactions = [...fallbackQueryHistoricalTransactions]
+        const mergedTransactions = [...fallbackTransactions, ...transactions]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
         return uniqueMergedTransactions
       }
 
