@@ -330,6 +330,7 @@ export default function Updater(): null {
       )
     }
 
+    // Handle updating initial bridge transaction (unindexed) if completed
     if (hasPendingBridgeTransactions && hasUserHistoricalTransactions) {
       pendingBridgeTransactions.forEach(
         (pendingBridgeTransaction: PendingBridgeTransaction) => {
@@ -420,6 +421,29 @@ export default function Updater(): null {
       )
     }
   }, [fallbackQueryHistoricalTransactions, userHistoricalTransactions])
+
+  /**
+   * Handle removing fallback pending transaction from state
+   * when completed fallback transaction appears in Historical Fallback Transactions
+   */
+  useEffect(() => {
+    if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+      fallbackQueryHistoricalTransactions.forEach(
+        (historicalTransaction: BridgeTransaction) => {
+          const matched: boolean = fallbackQueryPendingTransactions.some(
+            (pendingTransaction: BridgeTransaction) =>
+              pendingTransaction.kappa === historicalTransaction.kappa
+          )
+
+          if (matched) {
+            dispatch(
+              removeFallbackQueryPendingTransaction(historicalTransaction.kappa)
+            )
+          }
+        }
+      )
+    }
+  }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
 
   return null
 }
