@@ -496,14 +496,18 @@ jobs:
     if: ${{ github.event_name != 'push' && needs.changes.outputs.unchanged_package_count_deps > 0 && contains(needs.pr_metadata.outputs.labels, 'needs-go-generate') }}
     strategy:
       fail-fast: false
-      max-parallel: 1
+#      max-parallel: 1
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
+      # needed for remove label action
+      - uses: actions/checkout@v4
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
+        with:
+          fetch-depth: 1
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
-
         uses: ./.github/actions/remove-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
