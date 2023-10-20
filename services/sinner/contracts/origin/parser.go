@@ -23,7 +23,7 @@ type ParserImpl struct {
 	// db is the database
 	db db.EventDB
 	// TxMap is a map of tx hashes to tx data. Exported for testing.
-	TxMap map[string]sinnerTypes.TxSupplementalInfo
+	txMap map[string]sinnerTypes.TxSupplementalInfo
 	// chainID is the chainID of the underlying chain
 	chainID uint32
 }
@@ -52,8 +52,14 @@ func NewParser(originAddress common.Address, db db.EventDB, chainID uint32) (*Pa
 }
 
 // UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
+// This function is not concurrency safe, and is intended to be used before using ParseAndStore.
 func (p *ParserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
-	p.TxMap = txMap
+	p.txMap = txMap
+}
+
+// UnsafeGetTXMap gets the tx map strictly for testing purposes.
+func (p *ParserImpl) UnsafeGetTXMap() map[string]sinnerTypes.TxSupplementalInfo {
+	return p.txMap
 }
 
 // ParseAndStore parses and stores the log.

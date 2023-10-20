@@ -23,7 +23,7 @@ type ParserImpl struct {
 	// chainID is the chain ID
 	chainID uint32
 	// txMap is a map of tx hashes to tx data, exported for testing.
-	TxMap map[string]types.TxSupplementalInfo
+	txMap map[string]types.TxSupplementalInfo
 }
 
 // NewParser creates a new parser for the origin contract.
@@ -50,8 +50,14 @@ func NewParser(destinationAddress common.Address, db db.EventDB, chainID uint32)
 }
 
 // UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
+// This function is not concurrency safe, and is intended to be used before using ParseAndStore.
 func (p *ParserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
-	p.TxMap = txMap
+	p.txMap = txMap
+}
+
+// UnsafeGetTXMap gets the tx map strictly for testing purposes.
+func (p *ParserImpl) UnsafeGetTXMap() map[string]types.TxSupplementalInfo {
+	return p.txMap
 }
 
 // ParseAndStore parses and stores the log.
@@ -67,7 +73,6 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 		}
 
 		// TODO go func this
-		fmt.Println("Storing executed event", executedEvent.TxHash, executedEvent.MessageHash)
 		err = p.db.StoreOrUpdateMessageStatus(ctx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)

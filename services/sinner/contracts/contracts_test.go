@@ -32,7 +32,8 @@ func (t *ContractsSuite) TestOriginUpdateTxMap() {
 	}
 
 	parser.UpdateTxMap(txMap)
-	Equal(t.T(), txMap, parser.TxMap)
+	parserTxMap := parser.UnsafeGetTXMap()
+	Equal(t.T(), txMap, parserTxMap)
 }
 
 func (t *ContractsSuite) TestOriginParseAndStore() {
@@ -75,7 +76,8 @@ func (t *ContractsSuite) TestDestinationUpdateTxMap() {
 	}
 
 	parser.UpdateTxMap(txMap)
-	Equal(t.T(), txMap, parser.TxMap)
+	parserTxMap := parser.UnsafeGetTXMap()
+	Equal(t.T(), txMap, parserTxMap)
 }
 
 func (t *ContractsSuite) TestDestinationParseAndStore() {

@@ -86,8 +86,6 @@ func (t *APISuite) SetupSuite() {
 		Nil(t.T(), api.Start(t.GetSuiteContext(), config, t.metrics))
 	}()
 	t.sinnerAPI = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
-
-	t.Require().Nil(err)
 }
 
 // TestAPISuite tests the db suite.

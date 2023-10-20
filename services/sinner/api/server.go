@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
-	"github.com/soheilhy/cmux"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
@@ -36,9 +36,6 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 
 	router.Use(handler.Gin())
 	gqlServer.EnableGraphql(router, eventDB, cfg, handler)
-	if err != nil {
-		return fmt.Errorf("could not create grpc server: %w", err)
-	}
 	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -48,25 +45,17 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 		return fmt.Errorf("could not listen on port %d", cfg.HTTPPort)
 	}
 
-	m := cmux.New(listener)
-	httpListener := m.Match(cmux.HTTP1Fast())
+	//m := cmux.New(listener)
+	//httpListener := m.Match(cmux.HTTP1Fast())
 
 	g.Go(func() error {
 		//nolint: gosec
 		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-		err := http.Serve(httpListener, router)
+		err := http.Serve(listener, router)
 		if err != nil {
 			return fmt.Errorf("could not serve http: %w", err)
 		}
 
-		return nil
-	})
-
-	g.Go(func() error {
-		err := m.Serve()
-		if err != nil {
-			return fmt.Errorf("could not start server: %w", err)
-		}
 		return nil
 	})
 
@@ -80,11 +69,15 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 
 // InitDB initializes a database given a database type and path.
 // TODO: use enum for database type.
-func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
+func InitDB(ctx context.Context, dbTypeStr string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
 	logger.Warnf("Starting database connection from api")
-	fmt.Println("here", databaseType, path, skipMigrations, metrics)
-	switch {
-	case databaseType == "sqlite":
+
+	dbType, err := dbcommon.DBTypeFromString(dbTypeStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid databaseType type: %s", dbTypeStr)
+	}
+	switch dbType {
+	case dbcommon.Sqlite:
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
@@ -93,7 +86,7 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 		metrics.AddGormCallbacks(sqliteStore.DB())
 
 		return sqliteStore, nil
-	case databaseType == "mysql":
+	case dbcommon.Mysql:
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
@@ -114,6 +107,6 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 
 		return mysqlStore, nil
 	default:
-		return nil, fmt.Errorf("invalid databaseType type: %s", databaseType)
+		return nil, fmt.Errorf("invalid databaseType type: %s", dbTypeStr)
 	}
 }
