@@ -16,9 +16,9 @@ import {
 const WalletStatusContext = createContext(undefined)
 
 export const UserProvider = ({ children }) => {
+  const [isClient, setIsClient] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
-  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { query, pathname } = router
   const { address, connector } = useAccount({
@@ -34,6 +34,10 @@ export const UserProvider = ({ children }) => {
       segmentAnalyticsEvent('[Wallet Analytics] disconnect', {})
     },
   })
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const prevChainRef = useRef<Chain | null>(null)
   useEffect(() => {

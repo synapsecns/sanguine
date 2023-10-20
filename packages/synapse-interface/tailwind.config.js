@@ -119,7 +119,7 @@ module.exports = {
         tint: '#252226',
         background: '#151315',
         synapsePurple: '#D747FF',
-        synapseYellow: '#FFDD33',
+        synapseYellow: '#FFDF80',
         // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',

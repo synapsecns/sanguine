@@ -2,7 +2,7 @@ import { twMerge } from 'tailwind-merge'
 
 const baseClassname = `
   bg-bgBase
-  pt-lg px-lg pb-6 rounded-md
+  pt-lg px-lg pb-4 rounded-md
   `
 
 const titleBaseClassname = `

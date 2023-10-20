@@ -30,7 +30,7 @@ export const ToChainSelector = () => {
           />
         </div>
         <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">To</div>
+          <div className="text-sm text-secondaryTextColor">To</div>
           <div className="text-md text-primaryTextColor">{toChain?.name}</div>
         </div>
         <DropDownArrowSvg />
@@ -40,7 +40,7 @@ export const ToChainSelector = () => {
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">To</div>
+          <div className="text-sm text-secondaryTextColor">To</div>
           <div className="text-md text-primaryTextColor">Network</div>
         </div>
         <DropDownArrowSvg />

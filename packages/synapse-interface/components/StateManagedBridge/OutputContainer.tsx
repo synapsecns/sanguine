@@ -49,10 +49,11 @@ export const OutputContainer = ({}) => {
             {isLoading ? (
               <LoadingDots className="opacity-50" />
             ) : (
-              <input
-                pattern="[0-9.]+"
-                disabled={true}
-                className={`
+              <div className="flex flex-col">
+                <input
+                  pattern="[0-9.]+"
+                  disabled={true}
+                  className={`
                   focus:outline-none
                   focus:ring-0
                   focus:border-none
@@ -63,15 +64,25 @@ export const OutputContainer = ({}) => {
                 placeholder:text-[#88818C]
                 text-white text-opacity-80 text-xl md:text-2xl font-medium
                 `}
-                placeholder="0.0000"
-                value={
-                  bridgeQuote?.outputAmountString === '0'
-                    ? ''
-                    : bridgeQuote?.outputAmountString
-                }
-                name="inputRow"
-                autoComplete="off"
-              />
+                  placeholder="0.0000"
+                  value={
+                    bridgeQuote?.outputAmountString === '0'
+                      ? ''
+                      : bridgeQuote?.outputAmountString
+                  }
+                  name="inputRow"
+                  autoComplete="off"
+                />
+                {(!toChainId || !toToken) && (
+                  <label
+                    htmlFor="inputRow"
+                    onClick={null}
+                    className="text-sm text-secondary"
+                  >
+                    Set destination
+                  </label>
+                )}
+              </div>
             )}
           </div>
         </div>

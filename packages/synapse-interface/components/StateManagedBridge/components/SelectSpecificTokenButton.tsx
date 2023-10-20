@@ -194,7 +194,7 @@ const Coin = ({ token, showAllChains }: { token; showAllChains: boolean }) => {
   return (
     <div className="flex-col text-left">
       <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
-      <div className="flex items-center space-x-2 text-xs text-secondaryTextColor">
+      <div className="flex items-center space-x-2 text-sm text-secondaryTextColor">
         <div>{token?.name}</div>
         {showAllChains && <AvailableChains token={token} />}
       </div>

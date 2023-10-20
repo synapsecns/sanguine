@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
+import { Address, useAccount, useNetwork } from 'wagmi'
 
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
@@ -14,60 +14,31 @@ import {
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
+import {
+  fetchAndStoreSingleTokenAllowance,
+  usePortfolioState,
+} from '@/slices/portfolio/hooks'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import { approveToken } from '@/utils/approveToken'
+import { useAppDispatch } from '@/store/hooks'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import { LoaderIcon } from 'react-hot-toast'
+import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const dispatch = useDispatch()
   const { chain } = useNetwork()
-  const {
-    fromChainId,
-    fromToken,
-    fromValue,
-    bridgeTxHashes,
-    toChainId,
-    toToken,
-  } = useBridgeState()
-  const {
-    hasValidSelections,
-    hasValidRoute,
-    isConnected,
-    hasEnoughBalance,
-    hasInputAmount,
-  } = useBridgeStatus()
-  const { balancesAndAllowances } = usePortfolioState()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const { hasValidSelections, hasValidRoute, isConnected } = useBridgeStatus()
 
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
-  const previousBridgeTxHashesRef = useRef<string[]>([])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
-
-  useEffect(() => {
-    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
-
-    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
-      setShowValue('')
-    }
-
-    previousBridgeTxHashesRef.current = bridgeTxHashes
-  }, [bridgeTxHashes])
-
-  const parsedBalance: string = balancesAndAllowances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
-
-  const parsedAllowance = balancesAndAllowances[fromChainId]?.find(
-    (token: TokenWithBalanceAndAllowances) => token.token === fromToken
-  )?.allowances
-
-  const balance = balancesAndAllowances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -97,14 +68,6 @@ export const InputContainer = () => {
       }
     }
   }
-
-  const onMaxBalance = useCallback(() => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }, [balance, fromChainId, fromToken])
 
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
@@ -166,38 +129,221 @@ export const InputContainer = () => {
                   style={{ display: 'table-cell', width: '100%' }}
                 />
               </div>
-              {hasMounted && isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  onClick={onMaxBalance}
-                  className={`
-                    text-xs transition-all duration-150 transform-gpu
-                    hover:text-opacity-70 hover:cursor-pointer
-                    ${
-                      fromToken && hasInputAmount && !hasEnoughBalance
-                        ? 'text-synapseYellow'
-                        : 'text-secondary'
-                    }
-                  `}
-                >
-                  {parsedBalance ?? '0.0'}
-                  <span> available</span>
-                </label>
-              )}
+              {hasMounted && <ShowLabel />}
             </div>
           </div>
           <div>
             {hasMounted && isConnected && (
-              <div className="m">
-                <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
-                  onClickBalance={onMaxBalance}
-                />
+              <div className="">
+                <ShowButton />
               </div>
             )}
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+const ShowLabel = () => {
+  const dispatch = useAppDispatch()
+  const { fromChainId, fromToken, bridgeQuote, isLoading } = useBridgeState()
+  const { hasEnoughBalance, hasInputAmount, hasEnoughApproved, isConnected } =
+    useBridgeStatus()
+  const { balancesAndAllowances } = usePortfolioState()
+
+  const balance = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.balance
+  const parsedBalance: string = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.parsedBalance
+
+  const parsedAllowance = balancesAndAllowances[fromChainId]?.find(
+    (token: TokenWithBalanceAndAllowances) => token.token === fromToken
+  )?.allowances[bridgeQuote?.routerAddress]
+
+  const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+      )
+    )
+  }, [balance, fromChainId, fromToken, isLoading])
+
+  const onMaxApproved = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(parsedAllowance, fromToken?.decimals[fromChainId])
+      )
+    )
+  }, [balance, fromChainId, fromToken, isLoading])
+
+  if (!fromToken) {
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={null}
+        className={`
+          text-sm 
+        text-secondary
+        `}
+      >
+        <span>Select token</span>
+      </label>
+    )
+  }
+
+  if (!isConnected) {
+    return null
+  }
+
+  if (
+    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
+    !hasInputAmount ||
+    !hasEnoughBalance ||
+    hasEnoughApproved
+  ) {
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={onMaxBalance}
+        className={`
+          text-sm transition-all duration-150 transform-gpu
+          hover:text-opacity-70 hover:cursor-pointer
+          text-secondary
+          ${
+            fromToken && hasInputAmount && !hasEnoughBalance
+              ? 'text-synapseYellow'
+              : 'text-secondary'
+          }
+        `}
+      >
+        {parsedBalance ?? '0.0'}
+        <span> available</span>
+      </label>
+    )
+  }
+
+  if (!hasEnoughApproved) {
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={onMaxApproved}
+        className={`
+          text-sm transition-all duration-150 transform-gpu
+          hover:text-opacity-70 hover:cursor-pointer
+          text-secondary
+        `}
+      >
+        {formatBigIntToString(
+          parsedAllowance,
+          fromToken.decimals[fromChainId],
+          5
+        ) ?? '0.0'}
+        <span> approved</span>
+      </label>
+    )
+  }
+}
+
+const ShowButton = ({}) => {
+  const dispatch = useAppDispatch()
+  const { fromChainId, fromToken, bridgeQuote } = useBridgeState()
+  const {
+    hasValidSelections,
+    hasEnoughBalance,
+    hasInputAmount,
+    hasEnoughApproved,
+    onSelectedChain,
+  } = useBridgeStatus()
+  const { balancesAndAllowances } = usePortfolioState()
+
+  const balance = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.balance
+
+  const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+      )
+    )
+  }, [balance, fromChainId, fromToken])
+
+  if (
+    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
+    !hasInputAmount ||
+    !hasEnoughBalance ||
+    hasEnoughApproved
+  ) {
+    return (
+      <MiniMaxButton
+        disabled={!balance || balance === 0n ? true : false}
+        onClickBalance={onMaxBalance}
+      />
+    )
+  }
+
+  if (!hasEnoughApproved) {
+    return (
+      <ApproveButton
+        disabled={!hasInputAmount || !hasValidSelections || !onSelectedChain}
+      />
+    )
+  }
+}
+
+const ApproveButton = ({ disabled }) => {
+  const [isApproving, setIsApproving] = useState(false)
+  const dispatch = useAppDispatch()
+  const { address } = useAccount()
+  const { fromChainId, fromToken, bridgeQuote } = useBridgeState()
+
+  const approveTxn = async () => {
+    setIsApproving(true)
+    try {
+      const tx = approveToken(
+        bridgeQuote?.routerAddress,
+        fromChainId,
+        fromToken?.addresses[fromChainId]
+      ).then(() => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: bridgeQuote?.routerAddress as Address,
+            tokenAddress: fromToken?.addresses[fromChainId] as Address,
+            address: address,
+            chainId: fromChainId,
+          })
+        )
+      })
+
+      try {
+        await tx
+      } catch (error) {
+        return txErrorHandler(error)
+      }
+    } catch (error) {
+      return txErrorHandler(error)
+    } finally {
+      setIsApproving(false)
+    }
+  }
+
+  return (
+    <button
+      className={`
+        w-[89px] h-[32px]
+        flex items-center mr-2 py-1 justify-center
+        text-sm text-white
+        border rounded-sm
+        ${disabled ? 'border-separator opacity-50' : 'border-synapsePurple'}
+      `}
+      onClick={approveTxn}
+    >
+      {isApproving ? <LoaderIcon /> : 'Approve'}
+    </button>
   )
 }

@@ -1,14 +1,22 @@
 import Button from '@tw/Button'
+import { LoaderIcon } from 'react-hot-toast'
 
 export default function MiniMaxButton({
   onClickBalance,
   disabled,
+  loading,
 }: {
   onClickBalance: () => void
   disabled: boolean
+  loading?: boolean
 }) {
-  const baseClassName =
-    'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
+  const baseClassName = `
+    w-[89px] h-[32px]
+    flex items-center mr-2 py-1 justify-center
+    text-sm text-white
+    border rounded-sm
+    bg-bgLighter border border-transparent
+  `
 
   const className = disabled
     ? `${baseClassName} opacity-60 cursor-default`
@@ -19,7 +27,7 @@ export default function MiniMaxButton({
       className={className}
       onClick={disabled ? undefined : onClickBalance}
     >
-      Max
+      {loading ? <LoaderIcon /> : 'Max'}
     </Button>
   )
 }

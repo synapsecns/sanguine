@@ -27,7 +27,11 @@ export default function Updater(): null {
   // Update Origin balances when transaction resolves
   useEffect(() => {
     if (!address || !pendingBridgeTransactions) return
-    if (pendingBridgeTransactions && pendingBridgeTransactions.length > 0) {
+    if (
+      pendingBridgeTransactions &&
+      pendingBridgeTransactions.length > 0 &&
+      pendingBridgeTransactions.every((obj) => obj.isSubmitted === true)
+    ) {
       const updateOriginBalancesForNewestTransaction = async () => {
         const newestTransaction: PendingBridgeTransaction =
           pendingBridgeTransactions[0]

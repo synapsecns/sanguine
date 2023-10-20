@@ -27,7 +27,7 @@ export const SwapChainSelector = () => {
         />
       </div>
       <div className="text-left">
-        <div className="text-xs text-secondaryTextColor">From</div>
+        <div className="text-sm text-secondaryTextColor">From</div>
         <div className="text-md text-primaryTextColor">{chain.name}</div>
       </div>
       <DropDownArrowSvg />
@@ -35,7 +35,7 @@ export const SwapChainSelector = () => {
   ) : (
     <div className="flex items-center space-x-3">
       <div className="text-left">
-        <div className="text-xs text-secondaryTextColor">From</div>
+        <div className="text-sm text-secondaryTextColor">From</div>
         <div className="text-md text-primaryTextColor">Network</div>
       </div>
       <DropDownArrowSvg />

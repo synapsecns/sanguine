@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { useAccount, Address } from 'wagmi'
+import { useAccount, Address, useNetwork } from 'wagmi'
+import { zeroAddress } from 'viem'
 
 import { RootState } from '@/store/store'
 import { useAppSelector } from '@/store/hooks'
@@ -30,8 +31,12 @@ export const useBridgeStatus = (): {
   hasValidRoute: boolean
   hasEnoughBalance: boolean
   hasInputAmount: boolean
+  hasEnoughApproved: boolean
+  hasSelectedNetwork: boolean
+  onSelectedChain: boolean
 } => {
   const { isConnected } = useAccount()
+  const { chain } = useNetwork()
   const {
     debouncedFromValue,
     fromValue,
@@ -74,12 +79,36 @@ export const useBridgeStatus = (): {
     return Boolean(!hasOnlyZeroes(fromValue) && !isEmpty)
   }, [fromValue])
 
+  const hasEnoughApproved: boolean = useMemo(() => {
+    if (fromToken?.addresses[fromChainId] === zeroAddress) {
+      return true
+    }
+    const approved = balancesAndAllowances[fromChainId]?.find(
+      (token: TokenWithBalanceAndAllowances) => token.token === fromToken
+    )?.allowances[bridgeQuote?.routerAddress]
+
+    return (
+      approved >= stringToBigInt(fromValue, fromToken?.decimals[fromChainId])
+    )
+  }, [balancesAndAllowances, bridgeQuote, fromValue, fromToken])
+
+  const hasSelectedNetwork: boolean = useMemo(() => {
+    return fromChainId === chain?.id
+  }, [fromChainId, chain])
+
+  const onSelectedChain: boolean = useMemo(() => {
+    return chain?.id === fromChainId
+  }, [fromChainId, chain])
+
   return {
     isConnected,
     hasValidSelections,
     hasValidRoute,
     hasEnoughBalance,
     hasInputAmount,
+    hasEnoughApproved,
+    hasSelectedNetwork,
+    onSelectedChain,
   }
 }
 

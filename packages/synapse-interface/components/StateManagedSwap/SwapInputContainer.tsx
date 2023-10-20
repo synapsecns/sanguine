@@ -143,7 +143,7 @@ export const SwapInputContainer = () => {
               {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                  className="text-sm text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onMaxBalance}
                 >
                   {parsedBalance ?? '0.0'}

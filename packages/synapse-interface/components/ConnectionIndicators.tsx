@@ -6,7 +6,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   getNetworkButtonBgClassNameActive,
@@ -79,7 +79,8 @@ const DisconnectedIndicator = () => {
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
-  const chain = CHAINS_BY_ID[chainId]
+
+  const { hasEnoughBalance, hasInputAmount } = useBridgeStatus()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -102,14 +103,15 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       data-test-id="connect-button"
       className={`
         flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
+        text-base text-white px-3 py-1 rounded-sm
         text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
+        border
+        ${
+          hasEnoughBalance && hasInputAmount
+            ? 'border-synapsePurple'
+            : 'border-separator'
+        } 
         h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
       `}
       onClick={handleConnectNetwork}
     >
@@ -127,15 +129,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
-          Switch Network
-        </div>
+        <div className="flex flex-row text-sm">Connect chain</div>
       )}
     </button>
   )
@@ -160,10 +154,19 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
+                        style={
+                          highlight
+                            ? {
+                                background:
+                                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                              }
+                            : {}
+                        }
                         className={`
                           flex items-center mr-2 py-1 px-2
                           text-sm text-white
                           border rounded-sm
+                          hover:border-synapsePurple
                           ${
                             highlight
                               ? 'border-synapsePurple'
