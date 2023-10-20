@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 
 import bridgeReducer from '@/slices/bridge/reducer'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
