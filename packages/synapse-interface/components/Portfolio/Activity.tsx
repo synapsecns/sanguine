@@ -32,6 +32,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
     pendingAwaitingCompletionTransactions,
+    fallbackQueryPendingTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
@@ -46,6 +47,30 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     }
     return false
   }, [pendingBridgeTransactions, pendingAwaitingCompletionTransactions])
+
+  const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+        transactions = [...pendingAwaitingCompletionTransactions]
+      }
+
+      if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
+        const mergedTransactions =
+          fallbackQueryPendingTransactions.concat(transactions)
+        const uniqueMergedTransactions: BridgeTransaction[] = [
+          ...new Set(mergedTransactions),
+        ]
+
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [
+      pendingAwaitingCompletionTransactions,
+      fallbackQueryPendingTransactions,
+    ])
 
   const hasHistoricalTransactions: boolean = useMemo(
     () => checkTransactionsExist(userHistoricalTransactions),
@@ -180,8 +205,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
-          {pendingAwaitingCompletionTransactions &&
-            pendingAwaitingCompletionTransactions.map(
+          {pendingAwaitingCompletionTransactionsWithFallback &&
+            pendingAwaitingCompletionTransactionsWithFallback.map(
               (transaction: BridgeTransaction) => (
                 <PendingTransaction
                   connectedAddress={viewingAddress as Address}
