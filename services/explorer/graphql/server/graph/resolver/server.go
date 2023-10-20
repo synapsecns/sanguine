@@ -1449,7 +1449,7 @@ Ranked chainIDs by volume
 
 
   """
-  GetBlockHeight gets block heights from the current bridge.
+  GetBlockHeight gets block heights from the current bridge. Returns results in an array of increased block heights.
   """
   getBlockHeight(
     contracts: [ContractQuery]
