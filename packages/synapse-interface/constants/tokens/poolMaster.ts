@@ -60,6 +60,7 @@ export const ETH_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.ETH.id,
+  incentivized: false,
 })
 
 export const BSC_POOL_SWAP_TOKEN = new Token({
@@ -85,6 +86,7 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.BNB.id,
+  incentivized: true,
 })
 
 export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
@@ -108,6 +110,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.OPTIMISM.id,
+  incentivized: true,
 })
 
 export const CRONOS_POOL_SWAP_TOKEN = new Token({
@@ -131,6 +134,7 @@ export const CRONOS_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.CRONOS.id,
+  incentivized: false,
 })
 
 export const POLYGON_POOL_SWAP_TOKEN = new Token({
@@ -156,6 +160,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.POLYGON.id,
+  incentivized: true,
 })
 
 export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
@@ -180,6 +185,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
+  incentivized: false,
 })
 
 export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
@@ -201,6 +207,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
+  incentivized: true,
 })
 
 export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
@@ -226,6 +233,7 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.ARBITRUM.id,
+  incentivized: false,
 })
 
 export const FANTOM_POOL_SWAP_TOKEN = new Token({
@@ -251,6 +259,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.FANTOM.id,
+  incentivized: false,
 })
 
 export const HARMONY_POOL_SWAP_TOKEN = new Token({
@@ -276,6 +285,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
+  incentivized: false,
 })
 
 export const BOBA_POOL_SWAP_TOKEN = new Token({
@@ -301,6 +311,7 @@ export const BOBA_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.BOBA.id,
+  incentivized: false,
 })
 
 export const AURORA_POOL_SWAP_TOKEN = new Token({
@@ -324,6 +335,7 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
   legacy: true,
   priorityRank: 6,
   chainId: CHAINS.AURORA.id,
+  incentivized: false,
 })
 
 export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
@@ -348,6 +360,7 @@ export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.AURORA.id,
+  incentivized: true,
 })
 
 export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
@@ -372,6 +385,7 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.ARBITRUM.id,
+  incentivized: true,
 })
 
 export const FANTOM_3POOL_SWAP_TOKEN = new Token({
@@ -396,6 +410,7 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.FANTOM.id,
+  incentivized: false,
 })
 
 export const METIS_POOL_SWAP_TOKEN = new Token({
@@ -419,6 +434,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
+  incentivized: false,
 })
 
 export const CANTO_POOL_SWAP_TOKEN = new Token({
@@ -441,6 +457,7 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityRank: 6,
   chainId: CHAINS.CANTO.id,
+  incentivized: true,
 })
 
 // export const CANTO_USDC_SWAP_TOKEN = new Token({
@@ -487,6 +504,7 @@ export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.CANTO.id,
+  incentivized: true,
 })
 
 export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
@@ -510,6 +528,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.KLAYTN.id,
+  incentivized: false,
 })
 
 export const HARMONY_AVAX_SWAP_TOKEN = new Token({
@@ -535,6 +554,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
   priceUnits: 'AVAX',
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
+  incentivized: false,
 })
 
 export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
@@ -564,6 +584,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.ARBITRUM.id,
+  incentivized: true,
 })
 
 export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
@@ -593,6 +614,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.OPTIMISM.id,
+  incentivized: true,
 })
 
 export const BOBA_ETH_SWAP_TOKEN = new Token({
@@ -622,6 +644,7 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.BOBA.id,
+  incentivized: false,
 })
 
 export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
@@ -655,6 +678,7 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
+  incentivized: false,
 })
 
 export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
@@ -679,6 +703,7 @@ export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
+  incentivized: false,
 })
 
 export const FANTOM_WETH_SWAP_TOKEN = new Token({
@@ -703,6 +728,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.FANTOM.id,
+  incentivized: false,
 })
 
 export const METIS_WETH_SWAP_TOKEN = new Token({
@@ -727,6 +753,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
+  incentivized: false,
 })
 
 export const CANTO_WETH_SWAP_TOKEN = new Token({
@@ -751,6 +778,7 @@ export const CANTO_WETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.CANTO.id,
+  incentivized: false,
 })
 
 export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
@@ -774,6 +802,7 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
+  incentivized: true,
 })
 
 export const BASE_ETH_SWAP_TOKEN = new Token({
@@ -803,4 +832,5 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.BASE.id,
+  incentivized: true,
 })

@@ -39,8 +39,7 @@ import {
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
-import { isValidAddress } from '@/utils/isValidAddress'
-import { checkTransactionsExist } from '@/components/Portfolio/Activity'
+import { getValidAddress } from '@/utils/isValidAddress'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -99,11 +98,11 @@ export default function Updater(): null {
         searchedBalancesAndAllowances
       )[0] as Address
       fetchUserHistoricalActivity({
-        address: queriedAddress,
+        address: getValidAddress(queriedAddress),
         startTime: queryHistoricalTime,
       })
       fetchUserPendingActivity({
-        address: queriedAddress,
+        address: getValidAddress(queriedAddress),
         startTime: queryPendingTime,
       })
     }

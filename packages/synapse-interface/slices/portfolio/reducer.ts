@@ -25,6 +25,7 @@ import {
 export interface PortfolioState {
   activeTab: PortfolioTabs
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  poolTokenBalances: NetworkTokenBalancesAndAllowances
   status: FetchState
   error?: string
   searchInput: string
@@ -37,6 +38,7 @@ export interface PortfolioState {
 export const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
   balancesAndAllowances: {},
+  poolTokenBalances: {},
   status: FetchState.IDLE,
   error: null,
   searchInput: '',
@@ -105,6 +107,7 @@ export const portfolioSlice = createSlice({
       .addCase(fetchAndStorePortfolioBalances.fulfilled, (state, action) => {
         state.status = FetchState.VALID
         state.balancesAndAllowances = action.payload.balancesAndAllowances
+        state.poolTokenBalances = action.payload.poolTokenBalances
       })
       .addCase(fetchAndStorePortfolioBalances.rejected, (state, action) => {
         state.status = FetchState.INVALID
@@ -156,6 +159,7 @@ export const portfolioSlice = createSlice({
         state.searchedBalancesAndAllowances =
           initialState.searchedBalancesAndAllowances
         state.searchStatus = initialState.searchStatus
+        state.poolTokenBalances = initialState.poolTokenBalances
       })
   },
 })
