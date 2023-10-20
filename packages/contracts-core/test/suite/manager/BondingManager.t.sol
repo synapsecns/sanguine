@@ -242,7 +242,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_remoteSlashAgent_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
-        skip(proofMaturity);
+        skipPeriod(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_REMOTE, remoteSlashAgentCalldata(0, address(0), address(0)));
         vm.expectRevert(SlashAgentOptimisticPeriod.selector);
         managerMsgPrank(msgPayload);
