@@ -60,20 +60,16 @@ jobs:
               yarn.lock
 
         - name: Add Label
-          if: steps.verify-yarn-lock.outputs.files_changed == 'true'
-          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          if: ${{ steps.verify-yarn-lock.outputs.files_changed == 'true' && github.event_name != 'push' }}
+          uses: ./.github/actions/add-label
           with:
-            add-labels: 'needs-yarn-install'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+            label: 'needs-yarn-install'
 
         - name: Remove Label
-          if: steps.verify-yarn-lock.outputs.files_changed != 'true'
-          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
+          uses: ./.github/actions/add-label
           with:
-            remove-labels: 'needs-yarn-install'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+            label: 'needs-yarn-install'
 
 
         - name: Run tests # Run tests of all packages
