@@ -75,11 +75,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       fallbackQueryPendingTransactions,
     ])
 
-  console.log(
-    'pendingAwaitingCompletionTransactionsWithFallback:',
-    pendingAwaitingCompletionTransactionsWithFallback
-  )
-
   const hasHistoricalTransactions: boolean = useMemo(
     () => checkTransactionsExist(userHistoricalTransactions),
     [userHistoricalTransactions]

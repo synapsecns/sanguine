@@ -47,11 +47,6 @@ export const PendingTransaction = ({
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
 
-  console.log('eventType:', eventType)
-
-  const currentTime: number = Math.floor(Date.now() / 1000)
-  // console.log('currentTime:', currentTime)
-
   const transactionStatus: TransactionStatus = useMemo(() => {
     if (!transactionHash && !isSubmitted) {
       return TransactionStatus.PENDING_WALLET_ACTION
@@ -131,9 +126,6 @@ export const PendingTransaction = ({
     () => timeRemaining >= -5 && timeRemaining <= -1,
     [timeRemaining]
   )
-
-  console.log('timeRemaining: ', timeRemaining)
-  console.log('useFallback: ', useFallback)
 
   const originFallback = useFallbackBridgeOriginQuery({
     useFallback: isDelayed && useFallback,
