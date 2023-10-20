@@ -189,12 +189,12 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     ])
 
   const hasFilteredSearchResults: boolean = useMemo(() => {
-    if (filteredHistoricalTransactionsBySearchInput) {
-      return filteredHistoricalTransactionsBySearchInput.length > 0
+    if (filteredHistoricalTransactionsBySearchInputWithFallback) {
+      return filteredHistoricalTransactionsBySearchInputWithFallback.length > 0
     } else {
       return false
     }
-  }, [filteredHistoricalTransactionsBySearchInput])
+  }, [filteredHistoricalTransactionsBySearchInputWithFallback])
 
   const viewingAddress: string | null = useMemo(() => {
     if (masqueradeActive) {
