@@ -234,17 +234,15 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                 <PendingTransaction
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
-                  startedTimestamp={transaction?.fromInfo?.time as number}
-                  transactionHash={transaction?.fromInfo?.txnHash as string}
-                  eventType={transaction?.fromInfo?.eventType as number}
+                  startedTimestamp={transaction?.fromInfo?.time}
+                  transactionHash={transaction?.fromInfo?.txnHash}
+                  eventType={transaction?.fromInfo?.eventType}
                   isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                   isCompleted={transaction?.toInfo?.time ? true : false}
-                  kappa={transaction?.kappa as string}
+                  kappa={transaction?.kappa}
                   transactionType={TransactionType.PENDING}
-                  originValue={transaction?.fromInfo?.formattedValue as number}
-                  destinationValue={
-                    transaction?.toInfo?.formattedValue as number
-                  }
+                  originValue={transaction?.fromInfo?.value}
+                  destinationValue={transaction?.toInfo?.value}
                   originChain={
                     CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                   }
@@ -282,16 +280,14 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   key={transaction.kappa}
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
-                  startedTimestamp={transaction?.fromInfo?.time as number}
-                  completedTimestamp={transaction?.toInfo?.time as number}
-                  transactionHash={transaction?.fromInfo?.txnHash as string}
+                  startedTimestamp={transaction?.fromInfo?.time}
+                  completedTimestamp={transaction?.toInfo?.time}
+                  transactionHash={transaction?.fromInfo?.txnHash}
                   kappa={transaction?.kappa}
                   isCompleted={true}
                   transactionType={TransactionType.HISTORICAL}
-                  originValue={transaction?.fromInfo?.formattedValue as number}
-                  destinationValue={
-                    transaction?.toInfo?.formattedValue as number
-                  }
+                  originValue={transaction?.fromInfo?.value}
+                  destinationValue={transaction?.toInfo?.value}
                   originChain={
                     CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                   }
