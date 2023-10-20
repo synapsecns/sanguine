@@ -59,7 +59,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
         const fallbackTransactions = [...fallbackQueryPendingTransactions]
-        const mergedTransactions = [...fallbackTransactions, ...transactions]
+        const mergedTransactions = [...transactions, ...fallbackTransactions]
 
         const uniqueMergedTransactions = Array.from(
           new Set(mergedTransactions.map((transaction) => transaction.kappa))

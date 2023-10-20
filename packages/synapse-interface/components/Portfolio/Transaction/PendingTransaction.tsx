@@ -47,6 +47,8 @@ export const PendingTransaction = ({
 }: PendingTransactionProps) => {
   const dispatch = useAppDispatch()
 
+  console.log('eventType:', eventType)
+
   const currentTime: number = Math.floor(Date.now() / 1000)
   // console.log('currentTime:', currentTime)
 
@@ -97,10 +99,6 @@ export const PendingTransaction = ({
     )
     setElapsedTime(elapsedMinutes)
   }, [startedTimestamp])
-
-  console.log('currentTime:', currentTime)
-  console.log('elapsedTime:', elapsedTime)
-  // console.log('estimatedCompletionInSeconds: ', estimatedCompletionInSeconds)
 
   useEffect(() => {
     const interval = setInterval(() => {
