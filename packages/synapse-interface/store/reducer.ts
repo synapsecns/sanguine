@@ -11,6 +11,7 @@ import poolData from '@/slices/poolDataSlice'
 import poolDeposit from '@/slices/poolDepositSlice'
 import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
+import priceData from '@/slices/priceDataSlice'
 import swapDisplaySlice from '@/slices/swapDisplaySlice'
 import { api as dataApi } from '@/slices/api/slice'
 
@@ -33,6 +34,7 @@ const appReducer = combineReducers({
   poolDeposit,
   poolUserData,
   poolWithdraw,
+  priceData,
   swapDisplaySlice,
   [dataApi.reducerPath]: dataApi.reducer,
   ...persistedReducers,
