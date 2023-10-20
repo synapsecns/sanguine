@@ -9,7 +9,6 @@ The Synapse Rest API supports four main functions
 
 ## /swap
 
-
 which returns the following
 
 - \`routerAddress\` (string) - The address of the router contract
