@@ -1835,3 +1835,14 @@ func (r *queryResolver) checkIfChainIDExists(chainIDNeeded uint32, bridgeType mo
 	}
 	return exists
 }
+
+func (r *queryResolver) getContractAddressFromType(chainID uint32, contractType model.ContractType) (string, error) {
+	switch contractType {
+	case model.ContractTypeBridge:
+		return r.Config.Chains[chainID].Contracts.Bridge, nil
+	case model.ContractTypeCctp:
+		return r.Config.Chains[chainID].Contracts.CCTP, nil
+	default:
+		return "", fmt.Errorf("contract type not supported")
+	}
+}

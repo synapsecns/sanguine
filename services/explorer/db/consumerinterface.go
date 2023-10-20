@@ -9,6 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO simplify these interfaces so that there is one generic read function using an interface to accept a pointer from
+// the caller so that the query's results are scanned into that pointer.
+
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
@@ -72,6 +75,8 @@ type ConsumerDBReader interface {
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
 	// GetPendingByChain gets the pending txs by chain.
 	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
+	// GetBlockHeights gets the block heights for a given chain and contract.
+	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]*model.ContractType) ([]*model.BlockHeight, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
