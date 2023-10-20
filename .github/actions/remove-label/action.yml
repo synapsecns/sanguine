@@ -1,5 +1,5 @@
 name: Remove Label
-description: Remove\ a label to the issue or pull request
+description: Remove a label to the issue or pull request
 inputs:
   issue_number:
     description: 'The issue number to associate with. Defaults to the current issue or pull request number used to trigger the action.'
