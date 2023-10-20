@@ -130,23 +130,27 @@ export const PendingTransaction = ({
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
-  // // testing origin fallback query
-  // const originFallback = useFallbackBridgeOriginQuery({
-  //   useFallback: true,
-  //   chainId: originChain?.id,
-  //   txnHash: transactionHash,
-  //   bridgeType: BridgeType.Bridge,
-  // })
+  // Set fallback period to extend 10 mins past estimated duration
+  const useFallback: boolean = useMemo(
+    () => timeRemaining >= -10 && timeRemaining <= -1,
+    [timeRemaining]
+  )
 
-  // //testing dest fallback query
-  // const destinationFallback = useFallbackBridgeDestinationQuery({
-  //   chainId: destinationChain?.id,
-  //   address: destinationAddress,
-  //   kappa: kappa,
-  //   timestamp: startedTimestamp,
-  //   bridgeType: BridgeType.Bridge,
-  //   useFallback: true,
-  // })
+  const originFallback = useFallbackBridgeOriginQuery({
+    useFallback: isDelayed && useFallback,
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: BridgeType.Bridge,
+  })
+
+  const destinationFallback = useFallbackBridgeDestinationQuery({
+    useFallback: true && useFallback,
+    chainId: destinationChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: BridgeType.Bridge,
+  })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
