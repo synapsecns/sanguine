@@ -23,6 +23,7 @@ require (
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.1
+
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
