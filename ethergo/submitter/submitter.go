@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/puzpuzpuz/xsync/v2"
 	"math"
 	"math/big"
 	"reflect"
@@ -64,8 +65,8 @@ type txSubmitterImpl struct {
 	// to prevent memory leaks, this has a buffer of 1.
 	// callers adding to this channel should not block.
 	retryNow chan bool
-	// gasBlockCache is used to cache the gas block for a given chain.
-	gasBlockCache map[int]*types.Header
+	// lastGasBlockCache is used to cache the last gas block for a given chain. A new block should still be fetched, if possible.
+	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
 }
@@ -80,15 +81,15 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:            db,
-		config:        config,
-		metrics:       metrics,
-		signer:        signer,
-		fetcher:       fetcher,
-		nonceMux:      mapmutex.NewStringerMapMutex(),
-		statusMux:     mapmutex.NewStringMapMutex(),
-		retryNow:      make(chan bool, 1),
-		gasBlockCache: map[int]*types.Header{},
+		db:                db,
+		config:            config,
+		metrics:           metrics,
+		signer:            signer,
+		fetcher:           fetcher,
+		nonceMux:          mapmutex.NewStringerMapMutex(),
+		statusMux:         mapmutex.NewStringMapMutex(),
+		retryNow:          make(chan bool, 1),
+		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
 	}
 }
 
@@ -414,7 +415,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 	// if we can't get the current gas block, attempt to load it from the cache
 	if err != nil {
 		var ok bool
-		gasBlock, ok = t.gasBlockCache[chainID]
+		gasBlock, ok = t.lastGasBlockCache.Load(chainID)
 		if ok {
 			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
 				attribute.String("error", err.Error()),
@@ -426,7 +427,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 	}
 
 	// cache the latest gas block
-	t.gasBlockCache[chainID] = gasBlock
+	t.lastGasBlockCache.Store(chainID, gasBlock)
 
 	return gasBlock, nil
 }
