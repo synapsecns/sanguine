@@ -501,6 +501,10 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
+      # needed for remove label action
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
 
