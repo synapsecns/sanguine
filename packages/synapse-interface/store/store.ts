@@ -3,9 +3,9 @@ import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 import { persistStore } from 'redux-persist'
 
-import persistedReducer from './reducer'
 import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import persistedReducer from './reducer'
 
 export const store = configureStore({
   reducer: persistedReducer,
