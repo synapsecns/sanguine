@@ -1,6 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit'
 import { PersistConfig, persistReducer } from 'redux-persist'
-import localForage from 'localforage'
 import storage from 'redux-persist/lib/storage'
 
 import bridge from '@/slices/bridge/reducer'
@@ -20,6 +19,12 @@ const persistedReducers = {
   transactions,
 }
 
+const persistConfig: PersistConfig<AppState> = {
+  key: 'synapse-interface',
+  storage,
+  whitelist: Object.keys(persistedReducers),
+}
+
 const appReducer = combineReducers({
   portfolio,
   swap,
@@ -34,12 +39,6 @@ const appReducer = combineReducers({
 })
 
 export type AppState = ReturnType<typeof appReducer>
-
-const persistConfig: PersistConfig<AppState> = {
-  key: 'synapse-interface',
-  storage,
-  whitelist: Object.keys(persistedReducers),
-}
 
 const persistedReducer = persistReducer(persistConfig, appReducer)
 
