@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount } from 'wagmi'
 
-import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
+import LoadingDots from '../ui/tailwind/LoadingDots'
 import { ToChainSelector } from './ToChainSelector'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ToTokenSelector } from './ToTokenSelector'
@@ -47,7 +47,7 @@ export const OutputContainer = ({}) => {
           <ToTokenSelector />
           <div className="flex ml-4">
             {isLoading ? (
-              <LoadingSpinner className="opacity-50" />
+              <LoadingDots className="opacity-50" />
             ) : (
               <input
                 pattern="[0-9.]+"

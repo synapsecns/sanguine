@@ -143,13 +143,14 @@ export const FromChainListOverlay = () => {
       <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mb-4 text-sm  text-primaryTextColor">From…</div>
+            <div className="mb-4 text-sm text-primaryTextColor">From…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
                   key={idx}
                   itemChainId={mapChainId}
                   isCurrentChain={fromChainId === mapChainId}
+                  isOrigin={true}
                   active={idx === currentIdx}
                   onClick={() => {
                     if (fromChainId === mapChainId) {
@@ -175,6 +176,7 @@ export const FromChainListOverlay = () => {
                   key={mapChainId}
                   itemChainId={mapChainId}
                   isCurrentChain={fromChainId === mapChainId}
+                  isOrigin={true}
                   active={idx + possibleChains.length === currentIdx}
                   onClick={() => handleSetFromChainId(mapChainId)}
                   dataId={dataId}

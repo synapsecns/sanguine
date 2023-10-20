@@ -4,7 +4,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
 import { RootState } from '@/store/store'
 
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import { stringToBigInt } from '@/utils/bigint/format'
@@ -81,7 +81,7 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     buttonProperties = {
       label: (
         <div className="flex items-center justify-center h-[24px]">
-          <LoadingSpinner />
+          <LoadingDots />
         </div>
       ),
       onClick: null,
@@ -115,6 +115,19 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     pool &&
     buttonProperties && (
       <TransactionButton
+        style={
+          isButtonDisabled
+            ? {
+                border: '1px solid #453F47',
+                borderRadius: '4px',
+              }
+            : {
+                background:
+                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                border: '1px solid #9B6DD7',
+                borderRadius: '4px',
+              }
+        }
         {...buttonProperties}
         disabled={isButtonDisabled}
         chainId={pool.chainId}

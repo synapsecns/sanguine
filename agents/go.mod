@@ -16,7 +16,6 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jftuga/termsize v1.0.2
-	github.com/jpillora/backoff v1.0.0
 	github.com/libs4go/crypto v0.0.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/richardwilkes/toolbox v1.74.0
@@ -42,7 +41,11 @@ require (
 	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
 )
 
-require dario.cat/mergo v1.0.0 // indirect
+require (
+	dario.cat/mergo v1.0.0 // indirect
+	github.com/jpillora/backoff v1.0.0 // indirect
+	github.com/puzpuzpuz/xsync/v2 v2.5.1 // indirect
+)
 
 require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect

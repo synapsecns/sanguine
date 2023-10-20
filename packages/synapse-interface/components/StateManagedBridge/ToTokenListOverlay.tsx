@@ -1,12 +1,13 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
+import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
-import { setToToken } from '@/slices/bridge/reducer'
+import { BridgeState, setToToken } from '@/slices/bridge/reducer'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -18,16 +19,31 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { FetchState } from '@/slices/portfolio/actions'
+import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
+
+interface TokenWithExchangeRate extends Token {
+  exchangeRate: bigint
+}
 
 export const ToTokenListOverlay = () => {
-  const { fromChainId, toTokens, toChainId, toToken } = useBridgeState()
+  const {
+    fromChainId,
+    fromToken,
+    toTokens,
+    toChainId,
+    toToken,
+    toTokensBridgeQuotes,
+    toTokensBridgeQuotesStatus,
+  }: BridgeState = useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   const overlayRef = useRef(null)
 
-  let possibleTokens = sortByPriorityRank(toTokens)
+  let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
   const { toTokens: allToChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -151,10 +167,71 @@ export const ToTokenListOverlay = () => {
     onClose()
   }
 
+  const isLoadingExchangeRate = useMemo(() => {
+    const hasRequiredUserInput: boolean = Boolean(
+      fromChainId && toChainId && fromToken && toToken
+    )
+    const isFetchLoading: boolean =
+      toTokensBridgeQuotesStatus === FetchState.IDLE ||
+      toTokensBridgeQuotesStatus === FetchState.LOADING
+
+    return hasRequiredUserInput && isFetchLoading
+  }, [fromChainId, toChainId, fromToken, toToken, toTokensBridgeQuotesStatus])
+
+  const bridgeQuotesMatchDestination: boolean = useMemo(() => {
+    return (
+      Array.isArray(toTokensBridgeQuotes) &&
+      toTokensBridgeQuotes[0]?.destinationChainId === toChainId
+    )
+  }, [toTokensBridgeQuotes, toChainId])
+
+  const orderedPossibleTokens: TokenWithExchangeRate[] | Token[] =
+    useMemo(() => {
+      if (
+        toTokensBridgeQuotesStatus === FetchState.VALID &&
+        bridgeQuotesMatchDestination &&
+        possibleTokens &&
+        possibleTokens.length > 0
+      ) {
+        const bridgeQuotesMap = new Map(
+          toTokensBridgeQuotes.map((quote) => [quote.destinationToken, quote])
+        )
+
+        const tokensWithExchangeRates: TokenWithExchangeRate[] =
+          possibleTokens.map((token) => {
+            const bridgeQuote = bridgeQuotesMap.get(token)
+            if (bridgeQuote) {
+              return {
+                ...token,
+                exchangeRate: bridgeQuote.exchangeRate,
+              }
+            } else {
+              return token as TokenWithExchangeRate
+            }
+          })
+
+        const sortedTokens = tokensWithExchangeRates.sort(
+          (a, b) => Number(b.exchangeRate) - Number(a.exchangeRate)
+        )
+
+        return sortedTokens
+      }
+      return possibleTokens
+    }, [
+      possibleTokens,
+      toTokensBridgeQuotes,
+      toTokensBridgeQuotesStatus,
+      bridgeQuotesMatchDestination,
+    ])
+
+  const totalPossibleTokens: number = useMemo(() => {
+    return orderedPossibleTokens.length
+  }, [orderedPossibleTokens])
+
   return (
     <div
       ref={overlayRef}
-      data-test-id="token-slide-over"
+      data-test-id="to-token-list-overlay"
       className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">
@@ -167,31 +244,50 @@ export const ToTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {possibleTokens && possibleTokens.length > 0 && (
+      {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
         <>
           <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
             Receive…
           </div>
           <div className="px-2 pb-2 md:px-2">
-            {possibleTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === toToken) {
-                      onClose()
-                    } else {
-                      handleSetToToken(toToken, token)
+            {orderedPossibleTokens.map(
+              (token: TokenWithExchangeRate, idx: number) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={false}
+                    key={idx}
+                    token={token}
+                    selectedToken={toToken}
+                    active={idx === currentIdx}
+                    showAllChains={false}
+                    isLoadingExchangeRate={isLoadingExchangeRate}
+                    isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
+                    exchangeRate={formatBigIntToString(
+                      token?.exchangeRate,
+                      18,
+                      4
+                    )}
+                    estimatedDurationInSeconds={
+                      toTokensBridgeQuotesStatus === FetchState.VALID &&
+                      bridgeQuotesMatchDestination &&
+                      calculateEstimatedTransactionTime({
+                        originChainId: fromChainId,
+                        originTokenAddress: fromToken.addresses[
+                          fromChainId
+                        ] as Address,
+                      })
                     }
-                  }}
-                />
-              )
-            })}
+                    onClick={() => {
+                      if (token === toToken) {
+                        onClose()
+                      } else {
+                        handleSetToToken(toToken, token)
+                      }
+                    }}
+                  />
+                )
+              }
+            )}
           </div>
         </>
       )}

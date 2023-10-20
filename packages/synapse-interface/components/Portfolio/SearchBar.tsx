@@ -13,7 +13,7 @@ import {
   initialState as portfolioInitialState,
   PortfolioState,
 } from '@/slices/portfolio/reducer'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from './Transaction/components/TransactionExplorerLink'
@@ -30,8 +30,13 @@ export const SearchBar = () => {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
+  const [mounted, setMounted] = useState<boolean>(false)
   const [isFocused, setIsFocused] = useState<boolean>(false)
   const isActive: boolean = searchInput !== portfolioInitialState.searchInput
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleFocus = () => setIsFocused(true)
@@ -59,27 +64,29 @@ export const SearchBar = () => {
     }
   }, [activeTab])
 
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
   const searchInputIsTransactionHash: boolean = useMemo(() => {
     return isTransactionHash(searchInput)
+  }, [searchInput])
+
+  const checksumValidAddress: Address | null = useMemo(() => {
+    return getValidAddress(searchInput)
   }, [searchInput])
 
   useEffect(() => {
     const masqueradeActive: boolean =
       Object.keys(searchedBalancesAndAllowances).length > 0
-    if (searchInputIsAddress && !masqueradeActive) {
+    if (checksumValidAddress && !masqueradeActive) {
       dispatch(
-        fetchAndStoreSearchInputPortfolioBalances(searchInput as Address)
+        fetchAndStoreSearchInputPortfolioBalances(
+          checksumValidAddress as Address
+        )
       )
     }
 
-    if (masqueradeActive && searchInputIsAddress) {
+    if (masqueradeActive && checksumValidAddress) {
       clearSearchInput()
     }
-  }, [searchInputIsAddress, searchedBalancesAndAllowances])
+  }, [checksumValidAddress, searchedBalancesAndAllowances])
 
   useEffect(() => {
     if (searchInputIsTransactionHash) {
@@ -96,6 +103,7 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border rounded-xl
+        ${!mounted && 'border-opacity-30'}
         ${
           isFocused || isActive
             ? 'border-synapsePurple bg-tint'
@@ -107,6 +115,7 @@ export const SearchBar = () => {
         placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
+        disabled={mounted ? false : true}
       />
       <ClearSearchButton show={isActive} onClick={clearSearchInput} />
     </div>
@@ -117,13 +126,16 @@ export default function FilterInput({
   searchStr,
   onSearch,
   placeholder,
+  disabled = false,
 }: {
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
+  disabled: boolean
 }) {
   return (
     <input
+      disabled={disabled}
       ref={inputRef}
       tabIndex={0}
       data-test-id="filter-input"
@@ -134,6 +146,7 @@ export default function FilterInput({
         placeholder-white placeholder-opacity-40
         border-transparent outline-none ring-0
         focus:outline-none focus:ring-0 focus:border-transparent
+        ${disabled && 'opacity-30'}
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}

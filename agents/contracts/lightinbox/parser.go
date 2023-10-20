@@ -13,7 +13,7 @@ type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseAttestationAccepted parses an AttestationAccepted event
-	ParseAttestationAccepted(log ethTypes.Log) (_ *types.FraudAttestation, err error)
+	ParseAttestationAccepted(log ethTypes.Log) (_ *types.AttestationWithMetadata, err error)
 }
 
 type parserImpl struct {
@@ -47,23 +47,23 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 }
 
 // ParseAttestationAccepted parses an AttestationAccepted event.
-func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ *types.FraudAttestation, err error) {
+func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ *types.AttestationWithMetadata, err error) {
 	lightInboxAttestationAccepted, err := p.filterer.ParseAttestationAccepted(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse attestation accepted: %w", err)
 	}
 
-	fraudAttestation, err := types.NewFraudAttestationFromPayload(
+	attestationData, err := types.NewAttestationWithMetadata(
 		lightInboxAttestationAccepted.AttPayload,
 		lightInboxAttestationAccepted.Domain,
 		lightInboxAttestationAccepted.Notary,
 		lightInboxAttestationAccepted.AttSignature,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not create fraud attestation from payload: %w", err)
+		return nil, fmt.Errorf("could not create attestation with metadata from payload: %w", err)
 	}
 
-	return fraudAttestation, nil
+	return attestationData, nil
 }
 
 // EventType is the type of the light inbox event

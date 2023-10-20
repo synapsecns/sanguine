@@ -13,7 +13,7 @@ type Parser interface {
 	// EventType is the event type.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseSnapshotAccepted parses a SnapshotAccepted event.
-	ParseSnapshotAccepted(log ethTypes.Log) (_ *types.FraudSnapshot, err error)
+	ParseSnapshotAccepted(log ethTypes.Log) (_ *types.SnapshotWithMetadata, err error)
 	// ParseReceiptAccepted parses a ReceiptAccepted event.
 	ParseReceiptAccepted(log ethTypes.Log) (_ *InboxReceiptAccepted, err error)
 }
@@ -47,18 +47,18 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 }
 
 // ParseSnapshotAccepted parses a SnapshotAccepted event.
-func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ *types.FraudSnapshot, err error) {
+func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ *types.SnapshotWithMetadata, err error) {
 	inboxSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse snapshot accepted event: %w", err)
 	}
 
-	fraudSnapshot, err := types.NewFraudSnapshotFromPayload(inboxSnapshot.SnapPayload, inboxSnapshot.Domain, inboxSnapshot.Agent, inboxSnapshot.SnapSignature)
+	snapshotData, err := types.NewSnapshotWithMetadata(inboxSnapshot.SnapPayload, inboxSnapshot.Domain, inboxSnapshot.Agent, inboxSnapshot.SnapSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not create fraud snapshot from payload: %w", err)
 	}
 
-	return fraudSnapshot, nil
+	return snapshotData, nil
 }
 
 // ParseReceiptAccepted parses a ReceiptAccepted event.

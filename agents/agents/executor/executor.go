@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/config/executor"
@@ -90,6 +89,8 @@ type Executor struct {
 	handler metrics.Handler
 	// txSubmitter is the transaction submitter.
 	txSubmitter submitter.TransactionSubmitter
+	// retryConfig is the retry configuration for RPC calls.
+	retryConfig []retry.WithBackoffConfigurator
 	// NowFunc returns the current time.
 	NowFunc     func() time.Time
 	retryConfig []retry.WithBackoffConfigurator
@@ -103,7 +104,6 @@ type logOrderInfo struct {
 
 const (
 	logChanSize          = 1000
-	rpcRetry             = 7
 	scribeConnectTimeout = 30 * time.Second
 )
 
@@ -153,6 +153,14 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 	retryConfig := []retry.WithBackoffConfigurator{
 		retry.WithMaxAttemptTime(time.Second * time.Duration(5*time.Second)),
+	}
+
+	if config.MaxRetrySeconds == 0 {
+		config.MaxRetrySeconds = 30
+	}
+
+	retryConfig := []retry.WithBackoffConfigurator{
+		retry.WithMaxAttemptTime(time.Second * time.Duration(config.MaxRetrySeconds)),
 	}
 
 	if config.ExecuteInterval == 0 {
@@ -377,8 +385,16 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
+	var proof [][]byte
+	contractCall := func(ctx context.Context) error {
+		proof, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
+		if err != nil {
+			return fmt.Errorf("could not get merkle proof: %w", err)
+		}
 
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -479,12 +495,31 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
-	root, err := e.chainExecutors[message.OriginDomain()].merkleTree.Root(message.Nonce())
+	var root []byte
+	contractCall := func(ctx context.Context) error {
+		var err error
+		root, err = e.chainExecutors[message.OriginDomain()].merkleTree.Root(message.Nonce())
+		if err != nil {
+			return fmt.Errorf("could not get root: %w", err)
+		}
+
+		return nil
+	}
+	err := retry.WithBackoff(context.Background(), contractCall, e.retryConfig...)
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(message.Nonce()-1, message.Nonce())
+	var proof [][]byte
+	contractCall = func(ctx context.Context) error {
+		proof, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(message.Nonce()-1, message.Nonce())
+		if err != nil {
+			return fmt.Errorf("could not get merkle proof: %w", err)
+		}
+
+		return nil
+	}
+	err = retry.WithBackoff(context.Background(), contractCall, e.retryConfig...)
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -578,38 +613,25 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 		return nil, nil
 	}
 
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-
 	var currentTime uint64
-
-retryLoop:
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(timeout):
-			if b.Attempt() >= rpcRetry {
-				return nil, fmt.Errorf("could not get latest header: %w", err)
-			}
-
-			latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
-			if err != nil {
-				timeout = b.Duration()
-
-				continue
-			}
-
-			currentTime = latestHeader.Time
-
-			break retryLoop
+	chainCall := func(ctx context.Context) error {
+		var err error
+		latestHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("could not get latest header: %w", err)
 		}
+
+		if latestHeader == nil {
+			return fmt.Errorf("latest header is nil")
+		}
+
+		currentTime = latestHeader.Time
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, chainCall, e.retryConfig...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	if *messageMinimumTime > currentTime {
@@ -672,43 +694,28 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return false, fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(timeout):
-			if b.Attempt() >= rpcRetry {
-				return false, fmt.Errorf("could not get executed status: %w", ctx.Err())
-			}
-
-			executed, err := e.chainExecutors[message.DestinationDomain()].boundDestination.MessageStatus(ctx, message)
-			if err != nil {
-				timeout = b.Duration()
-				span.AddEvent("could not get executed status",
-					trace.WithAttributes(attribute.String("error", err.Error())),
-					trace.WithAttributes(attribute.String("timeout", timeout.String())),
-				)
-				continue
-			}
-
-			if execTypes.MessageStatusType(executed) == execTypes.Success {
-				span.AddEvent("message executed")
-				return true, nil
-			}
-
-			span.AddEvent("message not executed")
-			return false, nil
+	var executed uint8
+	contractCall := func(ctx context.Context) error {
+		var err error
+		executed, err = e.chainExecutors[message.DestinationDomain()].boundDestination.MessageStatus(ctx, message)
+		if err != nil {
+			return fmt.Errorf("could not get executed status: %w", err)
 		}
+
+		return nil
 	}
+	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
+	if err != nil {
+		return false, fmt.Errorf("could not get executed status: %w", err)
+	}
+
+	if execTypes.MessageStatusType(executed) == execTypes.Success {
+		span.AddEvent("message executed")
+		return true, nil
+	}
+
+	span.AddEvent("message not executed")
+	return false, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.

@@ -78,3 +78,24 @@ jobs:
       - name: Run snapshot
         working-directory: ./packages/contracts-core
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
+  size-check:
+    name: Foundry Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      # This will run https://book.getfoundry.sh/reference/forge/forge-build#build-options
+      - name: Run forge build --sizes
+        run: |
+          forge build --sizes
+        working-directory: packages/contracts-core

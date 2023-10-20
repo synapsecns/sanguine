@@ -192,7 +192,7 @@ export const canto = {
   blockExplorers: {
     default: {
       name: 'Canto EVM Explorer (Blockscout)',
-      url: 'https://evm.explorer.canto.io',
+      url: 'https://tuber.build',
     },
   },
   contracts: {

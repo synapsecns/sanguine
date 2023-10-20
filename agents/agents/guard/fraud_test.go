@@ -330,14 +330,14 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	Nil(g.T(), err)
 	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, agentRoot, snapGasHash)
 	Nil(g.T(), err)
-	fraudAttestation := types.NewAttestation(
+	attestationData := types.NewAttestation(
 		common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
 		dataHash,
 		1,
 		big.NewInt(int64(gofakeit.Int32())),
 		big.NewInt(int64(gofakeit.Int32())),
 	)
-	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	attSignature, attEncoded, _, err := attestationData.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 
 	// Before submitting the attestation, ensure that there are no disputes opened.

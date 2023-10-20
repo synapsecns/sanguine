@@ -156,6 +156,7 @@ export class Token {
   legacy = false // legacy token
   priorityRank: number // priority token ordering
   chainId?: number // chain id of swap pool
+  incentivized?: boolean // pool is incentivized or not
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -205,6 +206,7 @@ export class Token {
     legacy,
     priorityRank,
     chainId,
+    incentivized,
     priorityPool,
     color,
     priceUnits,
@@ -243,6 +245,7 @@ export class Token {
     legacy?: boolean
     priorityRank: number
     chainId?: number
+    incentivized?: boolean
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -295,6 +298,7 @@ export class Token {
     this.legacy = legacy ?? false
     this.priorityRank = priorityRank
     this.chainId = chainId
+    this.incentivized = incentivized
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
