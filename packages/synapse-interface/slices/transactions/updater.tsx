@@ -87,6 +87,7 @@ export default function Updater(): null {
   /**
    * Handle fetching for historical and pending activity by polling Explorer endpoint
    * Will retrigger fetching for Masquerade Mode address when active
+   * Will unsubscribe when no valid address provided
    */
   useEffect(() => {
     if (address && isWindowFocused && !masqueradeActive) {
@@ -114,6 +115,16 @@ export default function Updater(): null {
         address: getValidAddress(queriedAddress),
         startTime: queryPendingTime,
       })
+    } else {
+      fetchUserHistoricalActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
+
+      fetchUserPendingActivity({
+        address: null,
+        startTime: null,
+      }).unsubscribe()
     }
   }, [
     address,
