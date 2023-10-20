@@ -1,9 +1,10 @@
 import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
-import { persistStore, persistReducer } from 'redux-persist'
-import storage from 'redux-persist/lib/storage'
+import { persistStore } from 'redux-persist'
+// import storage from 'redux-persist/lib/storage'
 
+import persistReducer from './reducer'
 import bridgeReducer from '@/slices/bridge/reducer'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
@@ -18,19 +19,20 @@ import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
-  reducer: {
-    bridge: bridgeReducer,
-    bridgeDisplay: bridgeDisplayReducer,
-    poolData: poolDataReducer,
-    poolUserData: poolUserDataReducer,
-    poolDeposit: poolDepositReducer,
-    poolWithdraw: poolWithdrawReducer,
-    portfolio: portfolioReducer,
-    swap: swapReducer,
-    swapDisplay: swapDisplayReducer,
-    transactions: transactionsReducer,
-    [api.reducerPath]: api.reducer,
-  },
+  // reducer: {
+  //   bridge: bridgeReducer,
+  //   bridgeDisplay: bridgeDisplayReducer,
+  //   poolData: poolDataReducer,
+  //   poolUserData: poolUserDataReducer,
+  //   poolDeposit: poolDepositReducer,
+  //   poolWithdraw: poolWithdrawReducer,
+  //   portfolio: portfolioReducer,
+  //   swap: swapReducer,
+  //   swapDisplay: swapDisplayReducer,
+  //   transactions: transactionsReducer,
+  //   [api.reducerPath]: api.reducer,
+  // },
+  reducer: persistReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
