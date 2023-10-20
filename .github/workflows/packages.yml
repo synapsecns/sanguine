@@ -67,10 +67,14 @@ jobs:
 
         - name: Remove Label
           if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
-          uses: ./.github/actions/add-label
+          uses: ./.github/actions/remove-label
           with:
             label: 'needs-yarn-install'
 
+        - name: List all changed files tracked and untracked files
+          if: steps.verify-changed-files.outputs.files_changed == 'true'
+          run: |
+            echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         - name: Run tests # Run tests of all packages
           run: yarn test:coverage
