@@ -9,6 +9,7 @@ import {
 } from '@/slices/bridge/reducer'
 import { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 function isObject(object): boolean {
   return typeof object === 'object' && object !== null
@@ -92,7 +93,9 @@ export const TransactionPayloadDetail = ({
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
             <div className="mr-1">
-              {formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)}
+              {trimTrailingZeroesAfterDecimal(
+                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
+              )}
             </div>
           ) : typeof tokenAmount === 'number' ? (
             <div className="mr-1">{tokenAmount}</div>
