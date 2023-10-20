@@ -503,11 +503,11 @@ jobs:
     steps:
       # needed for remove label action
       - uses: actions/checkout@v4
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
         with:
           fetch-depth: 1
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
-
         uses: ./.github/actions/remove-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
