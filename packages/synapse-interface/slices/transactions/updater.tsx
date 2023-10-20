@@ -134,6 +134,7 @@ export default function Updater(): null {
   ])
 
   // Unsubscribe when address is unconnected/disconnected
+
   // useEffect(() => {
   //   const isLoading: boolean =
   //     isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
