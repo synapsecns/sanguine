@@ -474,7 +474,7 @@ jobs:
         uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
-          issue-number: ${{github.event.number}}
+#          issue-number: ${{github.event.number}}
 #        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
 #        with:
 #          add-labels: 'needs-go-generate-${{matrix.package}}'
@@ -483,11 +483,11 @@ jobs:
 
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
-        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        uses: ./.github/actions/remove-label
         with:
-          remove-labels: 'needs-go-generate-${{matrix.package}}'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.number}}
+          label: 'needs-go-generate-${{matrix.package}}'
+#          repo-token: ${{ secrets.GITHUB_TOKEN }}
+#          issue-number: ${{github.event.number}}
 
   remove-label-generation:
     name: Remove Generate Label From Unused Jobs
@@ -503,12 +503,15 @@ jobs:
     steps:
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
-        # labels can't be removed in parallel
-        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+
+        uses: ./.github/actions/remove-label
         with:
-          remove-labels: 'needs-go-generate-${{matrix.package}}'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.number}}
+          label: 'needs-go-generate-${{matrix.package}}'
+#        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+#        with:
+#          remove-labels: 'needs-go-generate-${{matrix.package}}'
+#          repo-token: ${{ secrets.GITHUB_TOKEN }}
+#          issue-number: ${{github.event.number}}
 
 
 
@@ -641,12 +644,15 @@ jobs:
         uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
-          issue-number: ${{github.event.number}}
+#          issue-number: ${{github.event.number}}
 
       - name: Remove Label
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
-        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+        uses: ./.github/actions/remove-label
         with:
-          remove-labels: 'needs-go-generate-${{matrix.package}}'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{github.event.number}}
+          label: 'needs-go-generate-${{matrix.package}}'
+#        uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+#        with:
+#          remove-labels: 'needs-go-generate-${{matrix.package}}'
+#          repo-token: ${{ secrets.GITHUB_TOKEN }}
+#          issue-number: ${{github.event.number}}
