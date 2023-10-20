@@ -1837,6 +1837,9 @@ func (r *queryResolver) checkIfChainIDExists(chainIDNeeded uint32, bridgeType mo
 }
 
 func (r *queryResolver) getContractAddressFromType(chainID uint32, contractType model.ContractType) (string, error) {
+	if _, ok := r.Config.Chains[chainID]; !ok {
+		return "", fmt.Errorf("chain ID not found")
+	}
 	switch contractType {
 	case model.ContractTypeBridge:
 		return r.Config.Chains[chainID].Contracts.Bridge, nil
