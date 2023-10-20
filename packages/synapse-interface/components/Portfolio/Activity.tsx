@@ -33,6 +33,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserPendingTransactionsLoading,
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
   const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
@@ -62,7 +63,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         const uniqueMergedTransactions: BridgeTransaction[] = [
           ...new Set(mergedTransactions),
         ]
-
         return uniqueMergedTransactions
       }
 
@@ -165,6 +165,29 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
+  const filteredHistoricalTransactionsBySearchInputWithFallback =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(filteredHistoricalTransactionsBySearchInput)) {
+        transactions = filteredHistoricalTransactionsBySearchInput
+      }
+
+      if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+        const mergedTransactions =
+          fallbackQueryHistoricalTransactions.concat(transactions)
+        const uniqueMergedTransactions: BridgeTransaction[] = [
+          ...new Set(mergedTransactions),
+        ]
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [
+      filteredHistoricalTransactionsBySearchInput,
+      fallbackQueryHistoricalTransactions,
+    ])
+
   const hasFilteredSearchResults: boolean = useMemo(() => {
     if (filteredHistoricalTransactionsBySearchInput) {
       return filteredHistoricalTransactionsBySearchInput.length > 0
@@ -252,7 +275,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
-            filteredHistoricalTransactionsBySearchInput
+            filteredHistoricalTransactionsBySearchInputWithFallback
               .slice(0, searchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
