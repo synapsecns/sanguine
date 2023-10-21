@@ -16,14 +16,7 @@ import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
-
-export function checkTransactionsExist(
-  transactions: any[] | undefined | null
-): boolean {
-  const exists: boolean =
-    transactions && Array.isArray(transactions) && transactions.length > 0
-  return exists
-}
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
