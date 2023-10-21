@@ -456,6 +456,9 @@ export const bridgeSlice = createSlice({
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload
     },
+    resetBridgeQuote: (state) => {
+      state.bridgeQuote = initialState.bridgeQuote
+    },
     updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
     },
@@ -563,6 +566,7 @@ export const bridgeSlice = createSlice({
 
 export const {
   setBridgeQuote,
+  resetBridgeQuote,
   setFromChainId,
   setToChainId,
   setFromToken,

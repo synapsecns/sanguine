@@ -35,9 +35,22 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          github.rest.issues.removeLabel({
-            issue_number: ${{ steps.resolve_issue_number.outputs.issue }},
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            name: ['${{ inputs.label }}']
-          })
+          async function removeLabel() {
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: ${{ steps.resolve_issue_number.outputs.issue }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: '${{ inputs.label }}'
+              });
+            } catch (error) {
+              // Log the error if it's about the label not being present.
+              if (error.status === 404) {
+                console.log(`The label '${{ inputs.label }}' does not exist on the issue.`);
+              } else {
+                console.error('Unexpected error:', error);
+              }
+            }
+          }
+
+          removeLabel();
