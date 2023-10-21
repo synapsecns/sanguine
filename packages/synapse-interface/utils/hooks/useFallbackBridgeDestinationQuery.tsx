@@ -93,7 +93,6 @@ export const useFallbackBridgeDestinationQuery = ({
       pending,
     } = fallbackQueryData?.getDestinationBridgeTx || {}
 
-    console.log('fallbackQueryData: ', fallbackQueryData)
     const isCompleted: boolean =
       Boolean(!pending) || Boolean(destinationInfo?.txnHash)
 
@@ -120,7 +119,7 @@ export const useFallbackBridgeDestinationQuery = ({
           kappa: kappa,
         }
         console.log(
-          'constructedBridgeTransaction: ',
+          'complete fallback transaction: ',
           constructedBridgeTransaction
         )
         dispatch(
