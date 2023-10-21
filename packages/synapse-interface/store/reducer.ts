@@ -12,7 +12,7 @@ import poolDeposit from '@/slices/poolDepositSlice'
 import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
-import swapDisplaySlice from '@/slices/swapDisplaySlice'
+import swapDisplay from '@/slices/swapDisplaySlice'
 import { api } from '@/slices/api/slice'
 
 const persistedReducers = {
@@ -35,7 +35,7 @@ const appReducer = combineReducers({
   poolUserData,
   poolWithdraw,
   priceData,
-  swapDisplaySlice,
+  swapDisplay,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })
