@@ -23,9 +23,6 @@ import (
 	"time"
 )
 
-// Note: parsing the executed event is not tested here as it is non-trivial to do so in a non-hacky way (involves
-// attestations and numerous agents for a successful simulated tx). It will be tested in the EtE test in service_test.go
-
 // TestChainIndexer tests the chain indexer.
 func (t *ServiceSuite) TestChainIndexer() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {

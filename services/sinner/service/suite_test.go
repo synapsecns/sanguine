@@ -3,13 +3,18 @@ package service_test
 import (
 	"context"
 	"database/sql"
+	"github.com/ethereum/go-ethereum/common"
+
 	"fmt"
 	"github.com/alecthomas/assert"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"k8s.io/apimachinery/pkg/util/wait"
+
 	"math/big"
 	"net/http"
 	"os"
@@ -51,6 +56,8 @@ type ServiceSuite struct {
 	destinationTestBackend backends.SimulatedTestBackend
 	originChainID          uint32
 	destinationChainID     uint32
+	originTestLog          types.Log
+	desTestLog             types.Log
 }
 
 // NewEventServiceSuite creates a new EventServiceSuite.
@@ -96,7 +103,39 @@ func (t *ServiceSuite) SetupSuite() {
 	t.testBackend = simulated.NewSimulatedBackendWithChainID(t.GetSuiteContext(), t.T(), big.NewInt(int64(t.originChainID)))
 	t.destinationTestBackend = simulated.NewSimulatedBackendWithChainID(t.GetSuiteContext(), t.T(), big.NewInt(int64(t.destinationChainID)))
 
-	t.Require().Nil(err)
+	t.originChainID = 1
+	t.destinationChainID = 2
+	sentTopic := common.HexToHash("0xcb1f6736605c149e8d69fd9f5393ff113515c28fa5848a3dc26dbde76dd16e87")
+	sentTopic2 := common.HexToHash("0xc6e19a3538fbd9b7a4f9bd8d45e08a95ff23e7e03b6a3bc9d9db9b8869b55c94")
+	sentTopic3 := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000001")
+	sentTopic4 := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000000002c")
+
+	executeTopic := common.HexToHash("0x39c48fd1b2185b07007abc7904a8cdf782cfe449fd0e9bba1c2223a691e15f0b")
+	executeTopic2 := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000000002b")
+	executeTopic3 := common.HexToHash("0x481244fb9db711b88ab9bfe081311cbed0b50dc547a71151aef55a38871fc9bd")
+
+	t.originTestLog = types.Log{
+		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
+		BlockNumber: gofakeit.Uint64(),
+		Topics:      []common.Hash{sentTopic, sentTopic2, sentTopic3, sentTopic4},
+		Data:        []byte{},
+		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
+		TxIndex:     uint(gofakeit.Int8()),
+		BlockHash:   common.HexToHash(big.NewInt(gofakeit.Int64()).String()),
+		Index:       uint(gofakeit.Int8()),
+		Removed:     false,
+	}
+	t.desTestLog = types.Log{
+		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
+		BlockNumber: gofakeit.Uint64(),
+		Topics:      []common.Hash{executeTopic, executeTopic2, executeTopic3},
+		Data:        []byte{},
+		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
+		TxIndex:     uint(gofakeit.Int8()),
+		BlockHash:   common.HexToHash(big.NewInt(gofakeit.Int64()).String()),
+		Index:       uint(gofakeit.Int8()),
+		Removed:     false,
+	}
 }
 
 func (t *ServiceSuite) setupMysqlDB() {

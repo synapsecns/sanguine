@@ -13,6 +13,8 @@ import (
 )
 
 // ContractType is the type of contract specified by the config and used for selecting the correct parser.
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ContractType
 type ContractType int
 
 const (
@@ -21,10 +23,6 @@ const (
 	// ExecutionHubType is the ContractType for the execution hub contract.
 	ExecutionHubType
 )
-
-func (c ContractType) String() string {
-	return [...]string{"origin", "execution_hub"}[c]
-}
 
 // ContractTypeFromString converts a string (intended to be from parsed config) into the ContractType type.
 func ContractTypeFromString(s string) (ContractType, error) {

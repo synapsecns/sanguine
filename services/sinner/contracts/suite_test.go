@@ -95,7 +95,6 @@ func (t *ContractsSuite) SetupSuite() {
 		Index:       uint(gofakeit.Int8()),
 		Removed:     false,
 	}
-	t.Require().Nil(err)
 }
 
 // TestContractsSuite tests the db suite.
