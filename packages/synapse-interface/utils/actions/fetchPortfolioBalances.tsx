@@ -1,7 +1,7 @@
 import { multicall, erc20ABI, Address } from '@wagmi/core'
 import { sortByTokenBalance } from '../sortTokens'
 import { Chain, Token } from '../types'
-import { BRIDGABLE_TOKENS } from '@/constants/tokens'
+import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
@@ -122,10 +122,12 @@ export const fetchPortfolioBalances = async (
   chainId?: number | undefined | null
 ): Promise<{
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  poolTokenBalances: NetworkTokenBalancesAndAllowances
   status: FetchState
   error?: any | undefined
 }> => {
   const balanceRecord = {}
+  const poolTokenBalances = {}
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 
@@ -135,8 +137,17 @@ export const fetchPortfolioBalances = async (
 
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
+      let currentChainTokens
       const currentChainId = Number(chainId)
-      const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+
+      if (POOLS_BY_CHAIN[chainId]) {
+        currentChainTokens = BRIDGABLE_TOKENS[chainId].concat(
+          POOLS_BY_CHAIN[chainId]
+        )
+      } else {
+        currentChainTokens = BRIDGABLE_TOKENS[chainId]
+      }
+
       const [tokenBalances, tokenAllowances] = await Promise.all([
         getTokenBalances(address, currentChainTokens, currentChainId),
         getTokensAllowances(
@@ -152,15 +163,30 @@ export const fetchPortfolioBalances = async (
       )
       return { currentChainId, mergedBalancesAndAllowances }
     })
+
     const balances = await Promise.all(balancePromises)
     balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
-      balanceRecord[currentChainId] = mergedBalancesAndAllowances
+      balanceRecord[currentChainId] = mergedBalancesAndAllowances.filter(
+        (entry) => !entry.token.poolName
+      )
+      poolTokenBalances[currentChainId] = mergedBalancesAndAllowances.filter(
+        (entry) => typeof entry.token.poolName === 'string'
+      )
     })
 
-    return { balancesAndAllowances: balanceRecord, status: FetchState.VALID }
+    return {
+      balancesAndAllowances: balanceRecord,
+      status: FetchState.VALID,
+      poolTokenBalances,
+    }
   } catch (error) {
     console.error('error from fetch:', error)
-    return { balancesAndAllowances: {}, status: FetchState.INVALID, error }
+    return {
+      balancesAndAllowances: {},
+      status: FetchState.INVALID,
+      error,
+      poolTokenBalances: {},
+    }
   }
 }
 

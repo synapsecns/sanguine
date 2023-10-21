@@ -71,7 +71,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         agentManager = agentManager_;
         origin = origin_;
         destination = destination_;
-        __Ownable_init();
+        __Ownable2Step_init();
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════

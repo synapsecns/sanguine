@@ -7,7 +7,7 @@ import {ChainContext} from "../libs/ChainContext.sol";
 import {MultiCallable} from "./MultiCallable.sol";
 import {Versioned} from "./Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 /**
  * @notice Base contract for all messaging contracts.
@@ -15,7 +15,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
  * - Provides ownership functionality.
  * - Will be providing pausing functionality when it is implemented.
  */
-abstract contract MessagingBase is MultiCallable, Versioned, OwnableUpgradeable {
+abstract contract MessagingBase is MultiCallable, Versioned, Ownable2StepUpgradeable {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     /// @notice Domain of the local chain, set once upon contract creation
