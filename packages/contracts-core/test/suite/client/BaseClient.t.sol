@@ -186,6 +186,22 @@ contract BaseClientTest is SynapseTest {
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, 0, "");
     }
 
+    function test_receiveBaseMessage_revert_optimisticPeriodMinus1Second() public {
+        uint32 timePassed = client.optimisticPeriod() - 1;
+        bytes32 sender = client.trustedSender(DOMAIN_REMOTE);
+        skip(timePassed);
+        vm.expectRevert(BaseClientOptimisticPeriod.selector);
+        vm.prank(destination);
+        client.receiveBaseMessage({
+            origin_: DOMAIN_REMOTE,
+            nonce: 1,
+            sender: sender,
+            proofMaturity: timePassed,
+            version: 0,
+            content: ""
+        });
+    }
+
     function test_receiveBaseMessage_revert_zeroProofMaturity(RawHeader memory rh, uint256 rootSubmittedAt) public {
         vm.assume(rh.origin != 0 && rh.origin != DOMAIN_LOCAL && rh.nonce != 0);
         uint32 optimisticPeriod = 0;
