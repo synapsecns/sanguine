@@ -69,8 +69,8 @@ type BridgeWatcherTx struct {
 }
 
 type ContractQuery struct {
-	ChainID *int          `json:"chainID,omitempty"`
-	Type    *ContractType `json:"type,omitempty"`
+	ChainID int          `json:"chainID"`
+	Type    ContractType `json:"type"`
 }
 
 // DateResult is a given statistic for a given date.

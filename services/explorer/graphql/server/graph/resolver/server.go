@@ -1686,8 +1686,8 @@ enum KappaStatus{
 }
 
 input ContractQuery {
-  chainID: Int
-  type: ContractType
+  chainID: Int!
+  type: ContractType!
 }
 
 enum ContractType{
@@ -9818,7 +9818,7 @@ func (ec *executionContext) unmarshalInputContractQuery(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9827,7 +9827,7 @@ func (ec *executionContext) unmarshalInputContractQuery(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOContractType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx, v)
+			data, err := ec.unmarshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11516,6 +11516,16 @@ func (ec *executionContext) unmarshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsan
 }
 
 func (ec *executionContext) marshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeType(ctx context.Context, sel ast.SelectionSet, v model.BridgeType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, v interface{}) (model.ContractType, error) {
+	var res model.ContractType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, sel ast.SelectionSet, v model.ContractType) graphql.Marshaler {
 	return v
 }
 

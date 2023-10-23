@@ -24,7 +24,7 @@ type ConsumerDBWriter interface {
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
 	// StoreSwapFee stores the swap fee data.
 	StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error
-	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
+	// UNSAFE_DB gets the underlying gorm db. This is for testing only and not intended for use in production.
 	//
 	//nolint:golint
 	UNSAFE_DB() *gorm.DB
@@ -75,8 +75,8 @@ type ConsumerDBReader interface {
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
 	// GetPendingByChain gets the pending txs by chain.
 	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
-	// GetBlockHeights gets the block heights for a given chain and contract.
-	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]*model.ContractType) ([]*model.BlockHeight, error)
+	// GetBlockHeights gets the block heights for a given chain and contract type.
+	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

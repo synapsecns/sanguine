@@ -226,8 +226,8 @@ enum KappaStatus{
 }
 
 input ContractQuery {
-  chainID: Int
-  type: ContractType
+  chainID: Int!
+  type: ContractType!
 }
 
 enum ContractType{

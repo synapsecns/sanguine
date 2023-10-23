@@ -172,11 +172,11 @@ func (_m *ConsumerDB) GetAllMessageBusEvents(ctx context.Context, query string) 
 }
 
 // GetBlockHeights provides a mock function with given fields: ctx, query, contractTypeMap
-func (_m *ConsumerDB) GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]*model.ContractType) ([]*model.BlockHeight, error) {
+func (_m *ConsumerDB) GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error) {
 	ret := _m.Called(ctx, query, contractTypeMap)
 
 	var r0 []*model.BlockHeight
-	if rf, ok := ret.Get(0).(func(context.Context, string, map[string]*model.ContractType) []*model.BlockHeight); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, map[string]model.ContractType) []*model.BlockHeight); ok {
 		r0 = rf(ctx, query, contractTypeMap)
 	} else {
 		if ret.Get(0) != nil {
@@ -185,7 +185,7 @@ func (_m *ConsumerDB) GetBlockHeights(ctx context.Context, query string, contrac
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, map[string]*model.ContractType) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, map[string]model.ContractType) error); ok {
 		r1 = rf(ctx, query, contractTypeMap)
 	} else {
 		r1 = ret.Error(1)
