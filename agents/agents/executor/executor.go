@@ -106,6 +106,7 @@ type logOrderInfo struct {
 const (
 	logChanSize                 = 1000
 	scribeConnectTimeout        = 30 * time.Second
+	defaultMaxRetrySeconds      = 30
 	defaultExecuteRetryInterval = 60
 )
 
@@ -155,7 +156,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
 	if config.MaxRetrySeconds == 0 {
-		config.MaxRetrySeconds = 30
+		config.MaxRetrySeconds = defaultMaxRetrySeconds
 	}
 
 	if config.ExecuteRetryInterval == 0 {
