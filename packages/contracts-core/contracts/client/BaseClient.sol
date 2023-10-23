@@ -78,15 +78,25 @@ abstract contract BaseClient is MessageRecipient {
      * This function is not exposed in BaseClient, as the message encoding is implemented by the child contract.
      * > Will revert if the trusted sender is not set for the destination domain.
      * @param destination_          Domain of the destination chain
+     * @param tipsValue             Tips to be paid for sending the message
      * @param request               Encoded message execution request on destination chain
      * @param content               The message content
      */
-    function _sendBaseMessage(uint32 destination_, MessageRequest memory request, bytes memory content)
-        internal
-        returns (uint32 messageNonce, bytes32 messageHash)
-    {
+    function _sendBaseMessage(
+        uint32 destination_,
+        uint256 tipsValue,
+        MessageRequest memory request,
+        bytes memory content
+    ) internal returns (uint32 messageNonce, bytes32 messageHash) {
         // Send message to the trusted sender on destination chain with the defined optimistic period.
         // Note: this will revert if the trusted sender is not set for the destination domain.
-        return _sendBaseMessage(destination_, trustedSender(destination_), optimisticPeriod(), request, content);
+        return _sendBaseMessage({
+            destination_: destination_,
+            recipient: trustedSender(destination_),
+            optimisticPeriod: optimisticPeriod(),
+            tipsValue: tipsValue,
+            request: request,
+            content: content
+        });
     }
 }

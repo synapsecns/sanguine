@@ -12,6 +12,7 @@ import {
     DuplicatedSnapshotRoot,
     IncorrectDestinationDomain,
     IncorrectMagicValue,
+    IncorrectOriginDomain,
     IncorrectSnapshotRoot,
     GasLimitTooLow,
     GasSuppliedTooLow,
@@ -121,6 +122,8 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes32 msgLeaf = message.leaf();
         // Ensure message was meant for this domain
         if (header.destination() != localDomain) revert IncorrectDestinationDomain();
+        // Ensure message was not sent from this domain
+        if (header.origin() == localDomain) revert IncorrectOriginDomain();
         // Check that message has not been executed before
         ReceiptData memory rcptData = _receiptData[msgLeaf];
         if (rcptData.executor != address(0)) revert AlreadyExecuted();
