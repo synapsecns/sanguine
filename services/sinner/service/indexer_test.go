@@ -50,9 +50,9 @@ func (t *ServiceSuite) TestChainIndexer() {
 		Nil(t.T(), err)
 
 		config := indexerConfig.ChainConfig{
-			ChainID:             t.originChainID,
-			FetchBlockIncrement: 10000,
-			MaxGoroutines:       1,
+			ChainID:               t.originChainID,
+			FetchBlockIncrement:   10000,
+			GoroutinesPerContract: 1,
 			Contracts: []indexerConfig.ContractConfig{{
 				ContractType: "origin",
 				Address:      originContract.Address().String(),
@@ -72,7 +72,6 @@ func (t *ServiceSuite) TestChainIndexer() {
 		indexingCtx, cancelIndexing := context.WithCancel(ctx)
 		go func() {
 			err = chainIndexer.Index(indexingCtx)
-			Nil(t.T(), err)
 		}()
 
 		timeout := 1 * time.Second

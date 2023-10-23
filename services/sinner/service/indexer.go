@@ -33,8 +33,8 @@ type ChainIndexer struct {
 
 // NewChainIndexer creates a new chain indexer.
 func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
-	if config.MaxGoroutines < 1 {
-		config.MaxGoroutines = 1
+	if config.GoroutinesPerContract < 1 {
+		config.GoroutinesPerContract = 1
 	}
 
 	if config.FetchBlockIncrement < 1 {
@@ -121,8 +121,11 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 				case <-time.After(refreshRate):
 					startHeight := contract.StartBlock
 					endHeight := contract.EndBlock
+
 					// If the end block is not specified in the config (livefill) the last block stored will be used.
 					if endHeight == 0 {
+
+						// Get last stored block from sinner.
 						storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
 						if err != nil {
 							return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
@@ -131,6 +134,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 							startHeight = storedStartHeight
 						}
 
+						// Get last indexed from Scribe.
 						err = retry.WithBackoff(contractCtx, func(ctx context.Context) error {
 							endHeight, err = c.fetcher.FetchLastIndexed(contractCtx, c.config.ChainID, contract.Address)
 							if err != nil {
@@ -144,8 +148,10 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						}
 					}
 
-					sem := make(chan struct{}, c.config.MaxGoroutines) // semaphore to limit the number of goroutines
+					// Semaphore to limit the number of goroutines for each contract.
+					sem := make(chan struct{}, c.config.GoroutinesPerContract)
 
+					// Iterate through all blocks between start and finish.
 					for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.config.FetchBlockIncrement {
 						if currentHeight > endHeight {
 							currentHeight = endHeight
@@ -156,6 +162,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 							endFetchRange = endHeight
 						}
 
+						// Fetch logs and txs from scribe.
 						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, endFetchRange, common.HexToAddress(contract.Address))
 						if contractErr != nil {
 							return fmt.Errorf("error getting scribe data: %w", contractErr)
@@ -163,9 +170,9 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						eventParser.UpdateTxMap(txs)
 						logGroup, logCtx := errgroup.WithContext(contractCtx)
 
+						// For each log, spin up a go routine and parse + store that data.
 						for _, log := range logs {
 							sem <- struct{}{}
-							defer func() { <-sem }()
 
 							currentLog := log
 							logGroup.Go(func() error {
