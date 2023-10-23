@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
-import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {AgentStatus, DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
@@ -77,6 +77,9 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
         return _getAgent(index);
     }
+
+    /// @inheritdoc IAgentSecured
+    function latestDisputeStatus(uint32 agentIndex) external view returns (DisputeStatus memory) {}
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
