@@ -94,7 +94,7 @@ func (e Sinner) Index(ctx context.Context) error {
 
 					err := chainIndexer.Index(chainContext)
 					if err != nil {
-						// return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
+						logger.ReportSinnerError(err, chainConfig.ChainID, logger.SinnerIndexingFailure)
 						continue // continue trying
 					}
 					return nil
