@@ -22,7 +22,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/mod v0.10.0
-	golang.org/x/net v0.12.0
+	golang.org/x/net v0.17.0
 	golang.org/x/oauth2 v0.7.0
 	golang.org/x/sync v0.3.0
 	golang.org/x/tools v0.9.3
