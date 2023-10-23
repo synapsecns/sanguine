@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[OriginType-0]
 	_ = x[ExecutionHubType-1]
+	_ = x[UnknownType-2]
 }
 
-const _ContractType_name = "OriginTypeExecutionHubType"
+const _ContractType_name = "OriginTypeExecutionHubTypeUnknownType"
 
-var _ContractType_index = [...]uint8{0, 10, 26}
+var _ContractType_index = [...]uint8{0, 10, 26, 37}
 
 func (i ContractType) String() string {
 	if i < 0 || i >= ContractType(len(_ContractType_index)-1) {
