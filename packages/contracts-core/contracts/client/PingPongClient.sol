@@ -125,7 +125,14 @@ contract PingPongClient is MessageRecipient {
         // TODO: this probably shouldn't be hardcoded
         MessageRequest memory request = MessageRequest({gasDrop: 0, gasLimit: 500_000, version: 0});
         bytes memory content = abi.encode(message);
-        _sendBaseMessage(destination_, recipient, _optimisticPeriod(), request, content);
+        _sendBaseMessage({
+            destination_: destination_,
+            recipient: recipient,
+            optimisticPeriod: _optimisticPeriod(),
+            tipsValue: 0,
+            request: request,
+            content: content
+        });
     }
 
     /// @dev Initiate a new Ping-Pong round.
