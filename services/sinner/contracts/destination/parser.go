@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -66,23 +68,34 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 	eventType, ok := p.parser.EventType(log)
 
 	if !ok {
-		logger.ReportSinnerError(fmt.Errorf("unknown destination log topic"), 0, logger.UnknownTopic)
+		logger.ReportSinnerError(fmt.Errorf("unknown execution hub log topic"), 0, logger.UnknownTopic)
 	}
 	if eventType == destination.ExecutedEvent {
 		executedEvent, err := p.ParseExecuted(log)
 		if err != nil {
-			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
+			return fmt.Errorf("error while parsing executed event. Err: %w", err)
 		}
 
-		// TODO go func this
-		err = p.db.StoreOrUpdateMessageStatus(ctx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
-		if err != nil {
-			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
-		}
+		g, storeCtx := errgroup.WithContext(ctx)
+		g.Go(func() error {
+			err := p.db.StoreOrUpdateMessageStatus(storeCtx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
+			if err != nil {
+				return fmt.Errorf("error while storing executed event. Err: %w", err)
+			}
+			return nil
+		})
 
-		err = p.db.StoreExecuted(ctx, executedEvent)
+		g.Go(func() error {
+			err := p.db.StoreExecuted(storeCtx, executedEvent)
+			if err != nil {
+				return fmt.Errorf("error while storing executed event. Err: %w", err)
+			}
+			return nil
+		})
+
+		err = g.Wait()
 		if err != nil {
-			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
+			return fmt.Errorf("error while storing executed event. Err: %w", err)
 		}
 	}
 	return nil
@@ -92,7 +105,7 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 func (p *ParserImpl) ParseExecuted(log ethTypes.Log) (*model.Executed, error) {
 	iFace, err := p.filterer.ParseExecuted(log)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse sent log. err: %w", err)
+		return nil, fmt.Errorf("could not parse executed log. err: %w", err)
 	}
 	parsedEvent := model.Executed{
 

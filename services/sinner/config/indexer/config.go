@@ -3,10 +3,11 @@ package indexerconfig
 
 import (
 	"fmt"
-	"github.com/richardwilkes/toolbox/collection"
-	"github.com/synapsecns/sanguine/services/sinner/config"
 	"os"
 	"path/filepath"
+
+	"github.com/richardwilkes/toolbox/collection"
+	"github.com/synapsecns/sanguine/services/sinner/config"
 
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
@@ -22,6 +23,8 @@ const (
 	OriginType ContractType = iota
 	// ExecutionHubType is the ContractType for the execution hub contract.
 	ExecutionHubType
+	// UnknownType is the ContractType for an unknown contract.
+	UnknownType
 )
 
 // ContractTypeFromString converts a string (intended to be from parsed config) into the ContractType type.
@@ -32,7 +35,7 @@ func ContractTypeFromString(s string) (ContractType, error) {
 	case "execution_hub":
 		return ExecutionHubType, nil
 	default:
-		return -1, fmt.Errorf("unknown contract type: %s", s)
+		return UnknownType, fmt.Errorf("unknown contract type: %s", s)
 	}
 }
 

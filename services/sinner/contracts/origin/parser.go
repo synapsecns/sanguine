@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/sinner/logger"
@@ -23,7 +25,7 @@ type ParserImpl struct {
 	parser origin.Parser
 	// db is the database
 	db db.EventDB
-	// TxMap is a map of tx hashes to tx data. Exported for testing.
+	// txMap is a map of tx hashes to tx data. Exported for testing.
 	txMap map[string]sinnerTypes.TxSupplementalInfo
 	// chainID is the chainID of the underlying chain
 	chainID uint32
@@ -77,13 +79,25 @@ func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
 		}
 
-		// TODO go func this
-		err = p.db.StoreOrUpdateMessageStatus(ctx, parsedEvent.TxHash, parsedEvent.MessageHash, sinnerTypes.Origin)
-		if err != nil {
-			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
-		}
+		g, storeCtx := errgroup.WithContext(ctx)
 
-		err = p.db.StoreOriginSent(ctx, parsedEvent)
+		g.Go(func() error {
+			err := p.db.StoreOrUpdateMessageStatus(storeCtx, parsedEvent.TxHash, parsedEvent.MessageHash, sinnerTypes.Origin)
+			if err != nil {
+				return fmt.Errorf("error while storing origin sent event. Err: %w", err)
+			}
+			return nil
+		})
+
+		g.Go(func() error {
+			err := p.db.StoreOriginSent(storeCtx, parsedEvent)
+			if err != nil {
+				return fmt.Errorf("error while storing origin sent event. Err: %w", err)
+			}
+			return nil
+		})
+
+		err = g.Wait()
 		if err != nil {
 			return fmt.Errorf("error while storing origin sent event. Err: %w", err)
 		}

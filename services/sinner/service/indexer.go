@@ -99,7 +99,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 		contract := c.config.Contracts[i]
 		contractType, err := indexerConfig.ContractTypeFromString(contract.ContractType)
 		if err != nil {
-			return fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
+			return fmt.Errorf("error creating parser for contract type: %s", contract.ContractType)
 		}
 		var eventParser types.EventParser
 		switch contractType {
@@ -107,6 +107,8 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 			eventParser = c.parsers.OriginParser
 		case indexerConfig.ExecutionHubType:
 			eventParser = c.parsers.DestinationParser
+		case indexerConfig.UnknownType:
+			return fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
 		}
 		refreshRate := time.Duration(1)
 
@@ -148,6 +150,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						if currentHeight > endHeight {
 							currentHeight = endHeight
 						}
+
 						endFetchRange := currentHeight + c.config.FetchBlockIncrement
 						if endFetchRange > endHeight {
 							endFetchRange = endHeight
