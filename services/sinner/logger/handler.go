@@ -41,7 +41,7 @@ func ReportSinnerError(err error, chainID uint32, errorType ErrorType) {
 	case ScribeFetchFailure:
 		logger.Errorf("Scribe fetch failure on chain %d. Error: %v", chainID, err)
 	case UnknownTopic:
-		logger.Errorf("Scribe parse failure on chain %d. Error: %v", chainID, err)
+		logger.Errorf("Sinner parse failure on chain %d. Error: %v", chainID, err)
 	default:
 
 		logger.Errorf("Error on chain %d: %v", chainID, err)

@@ -1,95 +1,105 @@
 package service_test
 
 import (
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/services/sinner/db/model"
+	"context"
+
+	. "github.com/stretchr/testify/assert"
 	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+
+	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
+	"github.com/synapsecns/sanguine/services/sinner/db/model"
+
 	"github.com/synapsecns/sanguine/services/sinner/service"
-	"math/big"
+
 	"time"
 )
 
-// TODO need to implement notary, guard, and executor to fully test the operation of sinner and its ability to consume
-// and parse logs from those events. This will act a foundation for also testing other events emitted by the interchain
-// network and sinner's ability to consume and parse those events.
-
-// Was initially trying to just get the logs statically, but implementing a full End to End message lifecycle with the agents
-// here would be good. Look into embedded agents.
-
+// TestSinner tests Sinner.
 func (t *ServiceSuite) TestSinner() {
-	t.RunOnAllDBs(func(testDB.EventDB) {
-		ctx := t.GetTestContext()
-		deployManager := testutil.NewDeployManager(t.T())
+	// Store test logs and txs
+	err := t.scribeDB.StoreLogs(t.GetTestContext(), t.originChainID, t.originTestLog)
+	Nil(t.T(), err)
+	err = t.scribeDB.StoreEthTx(t.GetTestContext(), t.originTestTx, t.originChainID, t.originTestLog.BlockHash, t.originTestLog.BlockNumber, uint64(t.originTestLog.TxIndex))
+	Nil(t.T(), err)
+	err = t.scribeDB.StoreLastIndexed(t.GetTestContext(), t.originTestLog.Address, t.originChainID, 625782, false)
+	Nil(t.T(), err)
 
-		_, originContract := deployManager.GetOriginHarness(ctx, t.testBackend)
+	err = t.scribeDB.StoreLogs(t.GetTestContext(), t.destinationChainID, t.destinationTestLog)
+	Nil(t.T(), err)
+	err = t.scribeDB.StoreEthTx(t.GetTestContext(), t.destinationTestTx, t.destinationChainID, t.destinationTestLog.BlockHash, t.destinationTestLog.BlockNumber, uint64(t.destinationTestLog.TxIndex))
+	Nil(t.T(), err)
+	err = t.scribeDB.StoreLastIndexed(t.GetTestContext(), t.destinationTestLog.Address, t.destinationChainID, 1975780, false)
+	Nil(t.T(), err)
 
-		wllt, err := wallet.FromRandom()
+	originConfig := indexerConfig.ChainConfig{
+		ChainID:             t.originChainID,
+		FetchBlockIncrement: 10,
+		MaxGoroutines:       1,
+		Contracts: []indexerConfig.ContractConfig{{
+			ContractType: "origin",
+			Address:      t.originTestLog.Address.String(),
+			StartBlock:   625780,
+		}},
+	}
+
+	destinationConfig := indexerConfig.ChainConfig{
+		ChainID:             t.destinationChainID,
+		FetchBlockIncrement: 10,
+		MaxGoroutines:       1,
+		Contracts: []indexerConfig.ContractConfig{{
+			ContractType: "execution_hub",
+			Address:      t.destinationTestLog.Address.String(),
+			StartBlock:   1975778,
+		}},
+	}
+
+	config := indexerConfig.Config{
+		ScribeURL:          t.scribeFetcherPath,
+		DBPath:             t.scribeDBPath,
+		DefaultRefreshRate: 1,
+		DBType:             "sqlite",
+		SkipMigrations:     true,
+		Chains:             []indexerConfig.ChainConfig{originConfig, destinationConfig},
+	}
+
+	sinner, err := service.NewSinner(t.sqlite, config, t.metrics)
+	Nil(t.T(), err)
+
+	originEvent := model.OriginSent{}
+	destinationEvent := model.Executed{}
+
+	indexingCtx, cancelIndexing := context.WithCancel(t.GetTestContext())
+	go func() {
+		err = sinner.Index(indexingCtx)
 		Nil(t.T(), err)
-		t.testBackend.FundAccount(ctx, wllt.Address(), *big.NewInt(params.Ether))
+	}()
 
-		txContext := t.testBackend.GetTxContext(ctx, nil)
-		paddedRequest := big.NewInt(0)
-
-		tx, err := originContract.SendBaseMessage(txContext.TransactOpts, t.destinationChainID, [32]byte{}, 1, paddedRequest, []byte{})
-		Nil(t.T(), err)
-		err = t.scribeDB.StoreEthTx(ctx, tx, t.originChainID, common.BigToHash(big.NewInt(int64(3))), 3, uint64(1))
-		Nil(t.T(), err)
-
-		sentLog, err := t.storeTestLog(ctx, tx, t.originChainID, 3)
-		Nil(t.T(), err)
-		err = t.scribeDB.StoreLastIndexed(ctx, originContract.Address(), t.originChainID, sentLog.BlockNumber, false)
-		Nil(t.T(), err)
-
-		config := indexerConfig.ChainConfig{
-			ChainID:             t.originChainID,
-			FetchBlockIncrement: 10000,
-			MaxGoroutines:       1,
-			Contracts: []indexerConfig.ContractConfig{{
-				ContractType: "origin",
-				Address:      originContract.Address().String(),
-				StartBlock:   0,
-			}},
-		}
-
-		parsers := service.Parsers{
-			ChainID: t.originChainID,
-		}
-
-		originParser, err := origin.NewParser(common.HexToAddress(config.Contracts[0].Address), testDB, t.originChainID)
-		Nil(t.T(), err)
-		parsers.OriginParser = originParser
-		chainIndexer := service.NewChainIndexer(testDB, parsers, t.scribeFetcher, config)
-		originEvent := model.OriginSent{}
-		indexingCtx, cancelIndexing := context.WithCancel(ctx)
-		go func() {
-			err = chainIndexer.Index(indexingCtx)
-			Nil(t.T(), err)
-		}()
-
-		timeout := 1 * time.Second
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(timeout):
-					testDB.UNSAFE_DB().WithContext(ctx).Find(&model.OriginSent{}).First(&originEvent)
-					if len(originEvent.Message) > 0 {
-						// cancel if message stored
-						cancelIndexing()
-					}
+	timeout := 2 * time.Second
+	go func() {
+		for {
+			select {
+			case <-t.GetTestContext().Done():
+				return
+			case <-time.After(timeout):
+				// check db
+				t.sqlite.UNSAFE_DB().WithContext(t.GetTestContext()).Find(&model.OriginSent{}).First(&originEvent)
+				t.sqlite.UNSAFE_DB().WithContext(t.GetTestContext()).Find(&model.Executed{}).First(&destinationEvent)
+				if len(originEvent.MessageHash) > 0 && len(destinationEvent.MessageHash) > 0 {
+					// cancel if message stored
+					cancelIndexing()
 				}
 			}
-		}()
-		<-indexingCtx.Done()
+		}
+	}()
+	<-indexingCtx.Done()
 
-		// Check parity of events
-		Equal(t.T(), sentLog.TxIndex, originEvent.TxIndex)
+	// Check parity of events
+	Equal(t.T(), t.originTestLog.TxHash.String(), originEvent.TxHash)
+	Equal(t.T(), t.destinationTestLog.TxHash.String(), destinationEvent.TxHash)
 
-		// Get and check the message status
-		messageStatus, err := testDB.RetrieveMessageStatus(ctx, originEvent.MessageHash)
-		Nil(t.T(), err)
-		Equal(t.T(), sentLog.TxHash.String(), *messageStatus.OriginTxHash)
-		Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *messageStatus.LastSeen)
-	})
+	// Get and check the message status
+	messageStatus, err := t.sqlite.RetrieveMessageStatus(t.GetTestContext(), originEvent.MessageHash)
+	Nil(t.T(), err)
+	Equal(t.T(), t.originTestLog.TxHash.String(), *messageStatus.OriginTxHash)
+	Equal(t.T(), graphqlModel.MessageStateLastSeenDestination, *messageStatus.LastSeen)
 }

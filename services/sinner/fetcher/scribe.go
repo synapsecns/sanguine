@@ -4,9 +4,10 @@ package fetcher
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/sinner/types"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -74,7 +75,6 @@ func (s scribeFetcherImpl) FetchLogsInRange(ctx context.Context, chainID uint32,
 	}
 
 	var parsedLogs []ethTypes.Log
-
 	for _, log := range logs.Response {
 		parsedLog, err := graphql.ParseLog(*log)
 		if err != nil {
@@ -138,7 +138,6 @@ func (s scribeFetcherImpl) FetchTx(ctx context.Context, tx string, chainID int, 
 	timeout := time.Duration(0)
 RETRY:
 	attempts++
-
 	if attempts > retryThreshold {
 		logger.ReportSinnerError(fmt.Errorf("could not get tx after %d attempts for hash %s", retryThreshold, tx), uint32(chainID), logger.ScribeFetchFailure)
 		auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)

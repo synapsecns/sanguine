@@ -56,7 +56,7 @@ func (t *ContractsSuite) SetupSuite() {
 	}
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
-	t.Require().Nil(err)
+	Nil(t.T(), err)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetSuiteContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)

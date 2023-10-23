@@ -4,6 +4,7 @@ package destination
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -63,6 +64,7 @@ func (p *ParserImpl) UnsafeGetTXMap() map[string]types.TxSupplementalInfo {
 // ParseAndStore parses and stores the log.
 func (p *ParserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
 	eventType, ok := p.parser.EventType(log)
+
 	if !ok {
 		logger.ReportSinnerError(fmt.Errorf("unknown destination log topic"), 0, logger.UnknownTopic)
 	}
@@ -98,7 +100,7 @@ func (p *ParserImpl) ParseExecuted(log ethTypes.Log) (*model.Executed, error) {
 		BlockNumber:     iFace.Raw.BlockNumber,
 		TxHash:          iFace.Raw.TxHash.String(),
 		TxIndex:         iFace.Raw.TxIndex,
-		MessageHash:     string(iFace.MessageHash[:]),
+		MessageHash:     common.Bytes2Hex(iFace.MessageHash[:]),
 		RemoteDomain:    iFace.RemoteDomain,
 		Success:         iFace.Success,
 		ChainID:         p.chainID,

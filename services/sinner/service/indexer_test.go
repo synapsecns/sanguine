@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"

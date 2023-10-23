@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/origin"
 	"github.com/synapsecns/sanguine/services/sinner/logger"
-	"net/http"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
@@ -79,6 +80,7 @@ func (e Sinner) Index(ctx context.Context) error {
 	for i := range e.config.Chains {
 		chainConfig := e.config.Chains[i]
 		chainIndexer := e.indexers[chainConfig.ChainID]
+
 		g.Go(func() error {
 			// generate new context
 			chainContext := context.Background()
@@ -89,6 +91,7 @@ func (e Sinner) Index(ctx context.Context) error {
 				case <-chainContext.Done(): // local context canceled, reset context
 					chainContext = context.Background()
 				default:
+
 					err := chainIndexer.Index(chainContext)
 					if err != nil {
 						// return fmt.Errorf("could not index chain %d: %w", chainConfig.ChainID, err)
@@ -99,6 +102,7 @@ func (e Sinner) Index(ctx context.Context) error {
 			}
 		})
 	}
+
 	if err := g.Wait(); err != nil {
 		logger.ReportSinnerError(fmt.Errorf("could not livefill explorer: %w", err), 0, logger.SinnerIndexingFailure)
 

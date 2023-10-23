@@ -74,7 +74,7 @@ var livefillCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-		db, err := api.InitDB(c.Context, decodeConfig.DBFlag, decodeConfig.DBPath, metrics.Get(), decodeConfig.SkipMigrations)
+		db, err := api.InitDB(c.Context, decodeConfig.DBType, decodeConfig.DBPath, metrics.Get(), decodeConfig.SkipMigrations)
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)
 		}

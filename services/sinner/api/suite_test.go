@@ -61,7 +61,7 @@ func (t *APISuite) SetupSuite() {
 	}
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
-	t.Require().Nil(err)
+	Nil(t.T(), err)
 	t.dbPath = filet.TmpDir(t.T(), "")
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetSuiteContext(), t.dbPath, t.metrics, false)

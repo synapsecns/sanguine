@@ -4,6 +4,7 @@ package origin
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/sinner/logger"
@@ -104,7 +105,7 @@ func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		DestinationChainID: iFace.Destination,
 		Message:            iFace.Message,
 		Nonce:              iFace.Nonce,
-		MessageHash:        string(iFace.MessageHash[:]),
+		MessageHash:        common.Bytes2Hex(iFace.MessageHash[:]),
 	}
 
 	parsedEvent.ChainID = p.chainID
@@ -120,7 +121,7 @@ func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not get leaf from message. err: %w", err)
 		}
-		parsedEvent.MessageLeaf = string(messageLeaf[:])
+		parsedEvent.MessageLeaf = common.Bytes2Hex(messageLeaf[:])
 		parsedEvent.OptimisticSeconds = parsedMessage.OptimisticSeconds()
 
 		messageHeader := parsedMessage.Header()
@@ -129,10 +130,10 @@ func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		messageBody := parsedMessage.BaseMessage()
 
 		sender := messageBody.Sender()
-		parsedEvent.Sender = string(sender[:])
+		parsedEvent.Sender = common.Bytes2Hex(sender[:])
 
 		recipient := messageBody.Recipient()
-		parsedEvent.Recipient = string(recipient[:])
+		parsedEvent.Recipient = common.Bytes2Hex(recipient[:])
 
 		messageRequest := messageBody.Request()
 		parsedEvent.Version = messageRequest.Version()

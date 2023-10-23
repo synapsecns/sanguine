@@ -30,7 +30,7 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 	}
 
 	if dbTx.Error != nil {
-		return fmt.Errorf("could not store executed: %w", dbTx.Error)
+		return fmt.Errorf("could not store origin: %w", dbTx.Error)
 	}
 
 	return nil

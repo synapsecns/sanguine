@@ -46,8 +46,8 @@ type Config struct {
 	Chains []ChainConfig `yaml:"chains"`
 	// DBPath is the path to the database.
 	DBPath string `yaml:"db_path"`
-	// DBFlag is the flag of the database.
-	DBFlag string `yaml:"db_flag"`
+	// DBType is the flag signifying the type of database (mysql, sqlite, etc).
+	DBType string `yaml:"db_type"`
 	// SkipMigrations skips db migrations.
 	SkipMigrations bool `yaml:"skip_migrations"`
 }

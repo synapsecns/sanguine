@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/retry"
+
+	"time"
 
 	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
 	"github.com/synapsecns/sanguine/services/sinner/db"
@@ -14,7 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/logger"
 	"github.com/synapsecns/sanguine/services/sinner/types"
 	"golang.org/x/sync/errgroup"
-	"time"
 )
 
 // ChainIndexer indexes message logs for a chain.
@@ -117,7 +119,6 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 				case <-time.After(refreshRate):
 					startHeight := contract.StartBlock
 					endHeight := contract.EndBlock
-
 					// If the end block is not specified in the config (livefill) the last block stored will be used.
 					if endHeight == 0 {
 						storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
@@ -190,13 +191,14 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 							}
 							return nil
 						})
+
 						if err != nil {
 							return fmt.Errorf("error storing last indexed: %w", err)
 						}
 					}
 
 					// Backfill complete. Terminate current thread.
-					if contract.EndBlock == 0 {
+					if contract.EndBlock > 0 {
 						return nil
 					}
 					// Continue livefilling

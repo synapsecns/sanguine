@@ -45,8 +45,8 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 		return fmt.Errorf("could not listen on port %d", cfg.HTTPPort)
 	}
 
-	//m := cmux.New(listener)
-	//httpListener := m.Match(cmux.HTTP1Fast())
+	// m := cmux.New(listener)
+	// httpListener := m.Match(cmux.HTTP1Fast())
 
 	g.Go(func() error {
 		//nolint: gosec
@@ -76,6 +76,8 @@ func InitDB(ctx context.Context, dbTypeStr string, path string, metrics metrics.
 	if err != nil {
 		return nil, fmt.Errorf("invalid databaseType type: %s", dbTypeStr)
 	}
+
+	// nolint:exhaustive
 	switch dbType {
 	case dbcommon.Sqlite:
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
