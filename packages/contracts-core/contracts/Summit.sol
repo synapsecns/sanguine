@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
-import {BONDING_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
+import {BONDING_OPTIMISTIC_PERIOD, TIPS_GRANULARITY} from "./libs/Constants.sol";
 import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
 import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
@@ -61,6 +61,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint64 deliveryTip;
     }
 
+    /// @notice Struct for storing the actor tips for a given origin domain.
+    /// @param earned   Total amount of tips earned by the actor, denominated in domain's wei
+    /// @param claimed  Total amount of tips claimed by the actor, denominated in domain's wei
     struct ActorTips {
         uint128 earned;
         uint128 claimed;
@@ -326,8 +329,12 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Award tip to any actor whether bonded or unbonded
     function _awardActorTip(address actor, uint32 origin, uint64 tip) internal {
-        actorTips[actor][origin].earned += tip;
-        emit TipAwarded(actor, origin, tip);
+        // We need to do a shit here, as we operate with "scaled down" tips everywhere,
+        // but Summit is supposed to store the "full tip value".
+        // Tip fits into 64 bits, so it's safe to do a 32 bit shift without risk of overflow
+        uint128 tipAwarded = uint128(tip) << uint128(TIPS_GRANULARITY);
+        actorTips[actor][origin].earned += tipAwarded;
+        emit TipAwarded(actor, origin, tipAwarded);
     }
 
     /// @dev Award tip for posting Receipt to Summit contract.
