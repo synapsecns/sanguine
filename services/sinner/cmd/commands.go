@@ -4,9 +4,9 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
-	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/sinner/api"
@@ -29,13 +29,6 @@ var infoCommand = &cli.Command{
 		return nil
 	},
 }
-
-var portFlag = &cli.UintFlag{
-	Name:  "port",
-	Usage: "--port 5121",
-	Value: 0,
-}
-
 var configFlag = &cli.StringFlag{
 	Name:      "config",
 	Usage:     "--config /Users/synapsecns/config.yaml",
@@ -89,8 +82,4 @@ var livefillCommand = &cli.Command{
 		}
 		return nil
 	},
-}
-
-func init() {
-	portFlag.Value = uint(freeport.GetPort())
 }
