@@ -72,6 +72,12 @@ func SprintfEscape(format string, a ...interface{}) string {
 		switch v := arg.(type) {
 		case string:
 			escapedArgs[i] = MysqlRealEscapeString(v)
+		case []string:
+			escapedStrings := make([]string, len(v))
+			for it, s := range v {
+				escapedStrings[it] = MysqlRealEscapeString(s)
+			}
+			escapedArgs[i] = escapedStrings
 		default:
 			escapedArgs[i] = v
 		}
