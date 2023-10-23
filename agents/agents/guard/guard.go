@@ -303,6 +303,7 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
+	fmt.Println("loadOriginLatestStates")
 	for _, d := range g.domains {
 		domain := d
 		ctx, span := g.handler.Tracer().Start(parentCtx, "loadOriginLatestStates", trace.WithAttributes(
@@ -311,8 +312,16 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 
 		originID := domain.Config().DomainID
 
-		// TODO: Wrap this with a retry if `Start` behavior changes.
-		latestState, err := domain.Origin().SuggestLatestState(ctx)
+		var latestState types.State
+		contractCall := func(ctx context.Context) (err error) {
+			latestState, err = domain.Origin().SuggestLatestState(ctx)
+			if err != nil {
+				return fmt.Errorf("failed calling GetLatestAgentState for originID %d on the Summit contract: err = %w", originID, err)
+			}
+
+			return nil
+		}
+		err := retry.WithBackoff(ctx, contractCall, g.retryConfig...)
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
@@ -337,6 +346,7 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
+	fmt.Println("getLatestSnapshot")
 	_, span := g.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
 		stateMapToAttribute("summitLatestStates", g.summitLatestStates),
 		stateMapToAttribute("originLatestStates", g.originLatestStates),
@@ -380,6 +390,7 @@ func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map
 
 //nolint:cyclop
 func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
+	fmt.Println("submitLatestSnapshot")
 	summitDomain := g.domains[g.summitDomainID]
 
 	ctx, span := g.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
