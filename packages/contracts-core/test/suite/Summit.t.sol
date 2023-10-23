@@ -88,7 +88,7 @@ contract SummitTest is AgentSecuredTest {
     }
 
     function test_acceptGuardSnapshot_revert_notInbox(address caller) public {
-        vm.assume(caller != localAgentManager());
+        vm.assume(caller != localInbox());
         vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
