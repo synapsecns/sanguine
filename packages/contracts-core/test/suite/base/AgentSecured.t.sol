@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 import {CallerNotAgentManager} from "../../../contracts/libs/Errors.sol";
+import {DisputeFlag, DisputeStatus} from "../../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {Origin} from "../../utils/SynapseTest.t.sol";
 import {MessagingBaseTest} from "./MessagingBase.t.sol";
 
 abstract contract AgentSecuredTest is MessagingBaseTest {
-    // TODO: unit tests for AgentSecured
     // ═══════════════════════════════════════════ UPDATE IMPLEMENTATION ═══════════════════════════════════════════════
 
     function updateOrigin(uint32 domain, address agentManager, address inbox_, address gasOracle_) public {
@@ -19,14 +19,30 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
 
     // ════════════════════════════════════════════ TESTS: OPEN DISPUTE ════════════════════════════════════════════════
 
-    function openTestDispute() public {
+    function openTestDispute(uint32 guardIndex, uint32 notaryIndex) public {
+        vm.warp(1234);
         vm.prank(localAgentManager());
-        localAgentSecured().openDispute(1, 2);
+        localAgentSecured().openDispute(guardIndex, notaryIndex);
+    }
+
+    function resolveTestDispute(uint32 slashedIndex, uint32 rivalIndex) public {
+        vm.warp(5678);
+        vm.prank(localAgentManager());
+        localAgentSecured().resolveDispute(slashedIndex, rivalIndex);
+    }
+
+    function checkLatestDisputeStatus(uint32 index, DisputeStatus memory expected) public {
+        DisputeStatus memory actual = localAgentSecured().latestDisputeStatus(index);
+        assertEq(uint8(actual.flag), uint8(expected.flag), "!flag");
+        assertEq(actual.openedAt, expected.openedAt, "!openedAt");
+        assertEq(actual.resolvedAt, expected.resolvedAt, "!resolvedAt");
     }
 
     function test_openDispute() public {
-        // TODO: add expectations
-        openTestDispute();
+        DisputeStatus memory expected = DisputeStatus({flag: DisputeFlag.Pending, openedAt: 1234, resolvedAt: 0});
+        openTestDispute({guardIndex: 1, notaryIndex: 2});
+        checkLatestDisputeStatus(1, expected);
+        checkLatestDisputeStatus(2, expected);
     }
 
     function test_openDispute_revert_onlyAgentManager(address caller) public {
@@ -39,13 +55,14 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
     // ══════════════════════════════════════════ TESTS: RESOLVE DISPUTE ═══════════════════════════════════════════════
 
     function test_resolveDispute() public {
-        openTestDispute();
-        // TODO: add expectations
-        vm.prank(localAgentManager());
-        localAgentSecured().resolveDispute(1, 2);
+        openTestDispute({guardIndex: 1, notaryIndex: 2});
+        resolveTestDispute({slashedIndex: 1, rivalIndex: 2});
+        checkLatestDisputeStatus(1, DisputeStatus({flag: DisputeFlag.Slashed, openedAt: 1234, resolvedAt: 5678}));
+        checkLatestDisputeStatus(2, DisputeStatus({flag: DisputeFlag.None, openedAt: 1234, resolvedAt: 5678}));
     }
 
     function test_resolveDispute_revert_onlyAgentManager(address caller) public {
+        openTestDispute({guardIndex: 1, notaryIndex: 2});
         vm.assume(caller != localAgentManager());
         vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
