@@ -431,20 +431,17 @@ func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID int,
 func (r *queryResolver) GetBlockHeight(ctx context.Context, contracts []*model.ContractQuery) ([]*model.BlockHeight, error) {
 	// Generate string for right side of IN clause
 	var contractString string
-	contractTypeMap := make(map[string]*model.ContractType)
+	contractTypeMap := make(map[string]model.ContractType)
 	for i, contract := range contracts {
-		if contract.ChainID == nil || contract.Type == nil {
-			return nil, fmt.Errorf("chainID and type must be set")
-		}
-		contractAddr, err := r.getContractAddressFromType(uint32(*contract.ChainID), *contract.Type)
+		contractAddr, err := r.getContractAddressFromType(uint32(contract.ChainID), contract.Type)
 		if err != nil {
 			return nil, fmt.Errorf("could not get contract address from type %s, %w", contract.Type, err)
 		}
 		contractTypeMap[contractAddr] = contract.Type
 		if i == 0 {
-			contractString += fmt.Sprintf("('%s', %d)", contractAddr, *contract.ChainID)
+			contractString += fmt.Sprintf("('%s', %d)", contractAddr, contract.ChainID)
 		} else {
-			contractString += fmt.Sprintf(", ('%s', %d)", contractAddr, *contract.ChainID)
+			contractString += fmt.Sprintf(", ('%s', %d)", contractAddr, contract.ChainID)
 		}
 	}
 

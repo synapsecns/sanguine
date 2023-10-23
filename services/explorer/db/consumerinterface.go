@@ -76,7 +76,7 @@ type ConsumerDBReader interface {
 	// GetPendingByChain gets the pending txs by chain.
 	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
 	// GetBlockHeights gets the block heights for a given chain and contract.
-	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]*model.ContractType) ([]*model.BlockHeight, error)
+	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
