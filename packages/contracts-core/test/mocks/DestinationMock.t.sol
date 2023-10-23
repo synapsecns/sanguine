@@ -29,4 +29,6 @@ contract DestinationMock is ExecutionHubMock, AgentSecuredMock, InterfaceDestina
     function destStatus() external view returns (uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex) {}
 
     function nextAgentRoot() external view returns (bytes32) {}
+
+    function lastAttestationNonce(uint32 notaryIndex) external view returns (uint32) {}
 }
