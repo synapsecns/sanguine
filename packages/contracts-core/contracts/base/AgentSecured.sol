@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {ChainContext} from "../libs/ChainContext.sol";
 import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
 import {AgentStatus, DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -29,8 +30,8 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    // (agent index => their dispute flag: None/Pending/Slashed)
-    mapping(uint32 => DisputeFlag) internal _disputes;
+    // (agent index => their dispute status: flag, openedAt, resolvedAt)
+    mapping(uint32 => DisputeStatus) internal _disputes;
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -56,14 +57,23 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
 
     /// @inheritdoc IAgentSecured
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyAgentManager {
-        _disputes[guardIndex] = DisputeFlag.Pending;
-        _disputes[notaryIndex] = DisputeFlag.Pending;
+        uint40 openedAt = ChainContext.blockTimestamp();
+        DisputeStatus memory status = DisputeStatus({flag: DisputeFlag.Pending, openedAt: openedAt, resolvedAt: 0});
+        _disputes[guardIndex] = status;
+        _disputes[notaryIndex] = status;
     }
 
     /// @inheritdoc IAgentSecured
-    function resolveDispute(uint32 slashedIndex, uint32 honestIndex) external onlyAgentManager {
-        _disputes[slashedIndex] = DisputeFlag.Slashed;
-        if (honestIndex != 0) delete _disputes[honestIndex];
+    function resolveDispute(uint32 slashedIndex, uint32 rivalIndex) external onlyAgentManager {
+        // Update the dispute status of the slashed agent first.
+        uint40 resolvedAt = ChainContext.blockTimestamp();
+        _disputes[slashedIndex].flag = DisputeFlag.Slashed;
+        _disputes[slashedIndex].resolvedAt = resolvedAt;
+        // Mark the rival agent as not disputed, if there was an ongoing dispute.
+        if (rivalIndex != 0) {
+            _disputes[rivalIndex].flag = DisputeFlag.None;
+            _disputes[rivalIndex].resolvedAt = resolvedAt;
+        }
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -79,7 +89,9 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
     }
 
     /// @inheritdoc IAgentSecured
-    function latestDisputeStatus(uint32 agentIndex) external view returns (DisputeStatus memory) {}
+    function latestDisputeStatus(uint32 agentIndex) external view returns (DisputeStatus memory) {
+        return _disputes[agentIndex];
+    }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
@@ -95,6 +107,7 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
 
     /// @dev Checks if the agent with the given index is in a dispute.
     function _isInDispute(uint32 agentIndex) internal view returns (bool) {
-        return _disputes[agentIndex] != DisputeFlag.None;
+        // TODO: add timeout for Notaries that just won the dispute.
+        return _disputes[agentIndex].flag != DisputeFlag.None;
     }
 }

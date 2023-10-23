@@ -211,7 +211,8 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// - Notary was slashed => receipt is invalided and deleted
     /// - Notary is in Dispute => receipt handling is postponed
     function _checkNotaryDisputed(bytes32 messageHash, uint32 notaryIndex) internal returns (bool queuePopped) {
-        DisputeFlag flag = _disputes[notaryIndex];
+        // TODO: add timeout for Notaries that just won the dispute.
+        DisputeFlag flag = _disputes[notaryIndex].flag;
         if (flag == DisputeFlag.Slashed) {
             // Notary has been slashed, so we can't trust their statement.
             // Honest Notaries are incentivized to resubmit the Receipt or Attestation if it was in fact valid.
