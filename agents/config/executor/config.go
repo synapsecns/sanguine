@@ -47,6 +47,8 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// MaxRetrySeconds is the maximum number of seconds to retry an RPC call (not a transaction).
 	MaxRetrySeconds uint32 `yaml:"max_retry_seconds"`
+	// ExecuteRetryInterval is the interval (in seconds) at which the executor agent will retry a message execution retry a message execution.
+	ExecuteRetryInterval uint32 `yaml:"execute_retry_interval"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

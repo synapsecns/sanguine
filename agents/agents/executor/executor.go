@@ -91,6 +91,8 @@ type Executor struct {
 	txSubmitter submitter.TransactionSubmitter
 	// retryConfig is the retry configuration for RPC calls.
 	retryConfig []retry.WithBackoffConfigurator
+	// lastExecuteAttempts is a map from message hash -> last execute attempt time, in seconds.
+	lastExecuteAttempts map[[32]byte]uint64
 	// NowFunc returns the current time.
 	NowFunc func() time.Time
 }
@@ -102,8 +104,9 @@ type logOrderInfo struct {
 }
 
 const (
-	logChanSize          = 1000
-	scribeConnectTimeout = 30 * time.Second
+	logChanSize                 = 1000
+	scribeConnectTimeout        = 30 * time.Second
+	defaultExecuteRetryInterval = 60
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
@@ -155,6 +158,10 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		config.MaxRetrySeconds = 30
 	}
 
+	if config.ExecuteRetryInterval == 0 {
+		config.ExecuteRetryInterval = defaultExecuteRetryInterval
+	}
+
 	retryConfig := []retry.WithBackoffConfigurator{
 		retry.WithMaxAttemptTime(time.Second * time.Duration(config.MaxRetrySeconds)),
 	}
@@ -168,16 +175,17 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	}
 
 	exec := &Executor{
-		config:         config,
-		executorDB:     executorDB,
-		grpcConn:       conn,
-		grpcClient:     grpcClient,
-		signer:         executorSigner,
-		chainExecutors: chainExecutors,
-		handler:        handler,
-		txSubmitter:    txSubmitter,
-		retryConfig:    retryConfig,
-		NowFunc:        time.Now,
+		config:              config,
+		executorDB:          executorDB,
+		grpcConn:            conn,
+		grpcClient:          grpcClient,
+		signer:              executorSigner,
+		chainExecutors:      chainExecutors,
+		handler:             handler,
+		txSubmitter:         txSubmitter,
+		retryConfig:         retryConfig,
+		lastExecuteAttempts: make(map[[32]byte]uint64),
+		NowFunc:             time.Now,
 	}
 
 	for _, chain := range config.Chains {
@@ -885,6 +893,19 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				))
 
 				for _, message := range messages {
+					leaf, err := message.ToLeaf()
+					if err != nil {
+						return fmt.Errorf("could not convert message to leaf: %w", err)
+					}
+
+					lastExecuteTime, ok := e.lastExecuteAttempts[leaf]
+					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
+					now := uint64(e.NowFunc().Unix())
+					if ok && nextExecuteTime <= now {
+						fmt.Printf("nextExecuteTime %v <= now: %v; not executing\n", nextExecuteTime, now)
+						continue
+					}
+
 					messageExecuted, err := e.checkIfExecuted(ctx, message)
 					if err != nil {
 						return fmt.Errorf("could not check if message was executed: %w", err)
@@ -905,7 +926,10 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						}
 						fmt.Printf("executed: %v\n", executed)
 
-						if !executed {
+						if executed {
+							delete(e.lastExecuteAttempts, leaf)
+						} else {
+							e.lastExecuteAttempts[leaf] = uint64(e.NowFunc().Unix())
 							continue
 						}
 					}
