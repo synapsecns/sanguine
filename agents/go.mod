@@ -44,6 +44,7 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
+	github.com/puzpuzpuz/xsync/v2 v2.5.1 // indirect
 )
 
 require (

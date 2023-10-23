@@ -59,7 +59,8 @@ contract BaseClientTest is SynapseTest {
         );
         vm.expectCall(origin, tipsValue, expectedCall);
         vm.prank(user);
-        (uint32 nonce_, bytes32 msgHash_) = client.sendBaseMessage{value: tipsValue}(destination_, request, content);
+        (uint32 nonce_, bytes32 msgHash_) =
+            client.sendBaseMessage{value: tipsValue}(destination_, tipsValue, request, content);
         assertEq(nonce_, nonce);
         assertEq(msgHash_, msgHash);
     }
@@ -77,7 +78,22 @@ contract BaseClientTest is SynapseTest {
         vm.deal(user, tipsValue);
         vm.expectRevert(IncorrectRecipient.selector);
         vm.prank(user);
-        client.sendBaseMessage{value: tipsValue}(destination_, request, "");
+        client.sendBaseMessage{value: tipsValue}(destination_, tipsValue, request, "");
+    }
+
+    function test_sendBaseMessage_tipsValueNotMsgValue() public {
+        address user = makeAddr("User");
+        uint32 destination_ = 1;
+        uint256 tipsValue = 1337;
+        uint256 msgValue = 6969;
+        // Use empty request for this test
+        MessageRecipient.MessageRequest memory request;
+        vm.deal(user, msgValue);
+        bytes memory expectedCall = abi.encodeWithSelector(InterfaceOrigin.sendBaseMessage.selector);
+        // Should call origin with provided tipsValue as msg.value
+        vm.expectCall(origin, tipsValue, expectedCall);
+        vm.prank(user);
+        client.sendBaseMessage{value: msgValue}(destination_, tipsValue, request, "");
     }
 
     function test_getMinimumTipsValue(
@@ -184,6 +200,22 @@ contract BaseClientTest is SynapseTest {
         vm.expectRevert(BaseClientOptimisticPeriod.selector);
         vm.prank(destination);
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, 0, "");
+    }
+
+    function test_receiveBaseMessage_revert_optimisticPeriodMinus1Second() public {
+        uint32 timePassed = client.optimisticPeriod() - 1;
+        bytes32 sender = client.trustedSender(DOMAIN_REMOTE);
+        skip(timePassed);
+        vm.expectRevert(BaseClientOptimisticPeriod.selector);
+        vm.prank(destination);
+        client.receiveBaseMessage({
+            origin_: DOMAIN_REMOTE,
+            nonce: 1,
+            sender: sender,
+            proofMaturity: timePassed,
+            version: 0,
+            content: ""
+        });
     }
 
     function test_receiveBaseMessage_revert_zeroProofMaturity(RawHeader memory rh, uint256 rootSubmittedAt) public {

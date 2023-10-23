@@ -258,6 +258,27 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_messageStatusNone(msgLeaf);
     }
 
+    function test_execute_base_revert_optimisticPeriodMinus1Second() public {
+        Random memory random = Random("random salt");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        vm.assume(rh.optimisticPeriod != 0);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is NOT over
+        uint32 timePassed = rh.optimisticPeriod - 1;
+        skip(timePassed);
+        vm.expectRevert(MessageOptimisticPeriod.selector);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+    }
+
     function test_execute_base_revert_gasLimitTooLow(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
