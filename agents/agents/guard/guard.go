@@ -336,7 +336,15 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
+func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
+	_, span := g.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
+		stateMapToAttribute("summitLatestStates", g.summitLatestStates),
+		stateMapToAttribute("originLatestStates", g.originLatestStates),
+	))
+	defer func() {
+		span.End()
+	}()
+
 	statesToSubmit := make(map[uint32]types.State, len(g.domains))
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
@@ -362,6 +370,7 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 		}
 		snapshotStates = append(snapshotStates, state)
 	}
+	span.AddEvent("got latest states for snapshot", trace.WithAttributes(stateSliceToAttribute("snapshotStates", snapshotStates)))
 	if len(snapshotStates) > 0 {
 		return types.NewSnapshot(snapshotStates), statesToSubmit
 	}
@@ -381,7 +390,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 		span.End()
 	}()
 
-	snapshot, statesToSubmit := g.getLatestSnapshot()
+	snapshot, statesToSubmit := g.getLatestSnapshot(ctx)
 	if snapshot == nil {
 		return
 	}
