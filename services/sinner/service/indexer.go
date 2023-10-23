@@ -148,8 +148,12 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						if currentHeight > endHeight {
 							currentHeight = endHeight
 						}
+						endFetchRange := currentHeight + c.config.FetchBlockIncrement
+						if endFetchRange > endHeight {
+							endFetchRange = endHeight
+						}
 
-						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, currentHeight+c.config.FetchBlockIncrement, common.HexToAddress(contract.Address))
+						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, endFetchRange, common.HexToAddress(contract.Address))
 						if contractErr != nil {
 							return fmt.Errorf("error getting scribe data: %w", contractErr)
 						}
@@ -158,6 +162,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 						for _, log := range logs {
 							sem <- struct{}{}
+							defer func() { <-sem }()
 
 							currentLog := log
 							logGroup.Go(func() error {
