@@ -19,7 +19,7 @@ type captureClient struct {
 func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, capture bool) (*captureClient, error) {
 	client := new(http.Client)
 
-	if capture {
+	if true {
 		client.Transport = instrumentation.NewCaptureTransport(client.Transport, handler)
 	}
 	c, err := metrics.RPCClient(ctx, handler, url, client)
