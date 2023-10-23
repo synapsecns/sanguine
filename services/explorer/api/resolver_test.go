@@ -740,12 +740,12 @@ func (g APISuite) TestGetBlockHeight() {
 
 	contracts := []*model.ContractQuery{
 		{
-			ChainID: &chainID1,
-			Type:    &type1,
+			ChainID: chainID1,
+			Type:    type1,
 		},
 		{
-			ChainID: &chainID2,
-			Type:    &type2,
+			ChainID: chainID2,
+			Type:    type2,
 		},
 	}
 
