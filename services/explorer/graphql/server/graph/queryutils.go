@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 	"strconv"
 	"sync"
@@ -19,10 +20,10 @@ import (
 // nolint:unparam
 func generateDeDepQuery(filter string, page *int, offset *int) string {
 	if page != nil || offset != nil {
-		return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
+		return dbcommon.SprintfEscape("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d", filter, *page, *offset)
 	}
 
-	return fmt.Sprintf("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter)
+	return dbcommon.SprintfEscape("SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash", filter)
 }
 
 func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) string {
@@ -31,9 +32,9 @@ func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) strin
 		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp, (SELECT count(*) FROM baseQuery) AS rowCount"
 	}
 	if page != nil || offset != nil {
-		return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s, %s", filter, *page, *offset, minTimestamp, swapDeDup)
+		return dbcommon.SprintfEscape("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s, %s", filter, *page, *offset, minTimestamp, swapDeDup)
 	}
-	return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), %s, %s", filter, minTimestamp, swapDeDup)
+	return dbcommon.SprintfEscape("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), %s, %s", filter, minTimestamp, swapDeDup)
 }
 
 func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
@@ -66,12 +67,12 @@ func (r *queryResolver) mergeBridgeTransactions(origin []*model.BridgeTransactio
 	uniqueBridgeTransactions := make(map[string]*model.BridgeTransaction)
 
 	for _, originTx := range origin {
-		key := keyGen(fmt.Sprintf("%d", *originTx.FromInfo.ChainID), *originTx.Kappa)
+		key := keyGen(dbcommon.SprintfEscape("%d", *originTx.FromInfo.ChainID), *originTx.Kappa)
 		uniqueBridgeTransactions[key] = originTx
 	}
 
 	for _, destinationTx := range destination {
-		key := keyGen(fmt.Sprintf("%d", *destinationTx.FromInfo.ChainID), *destinationTx.Kappa)
+		key := keyGen(dbcommon.SprintfEscape("%d", *destinationTx.FromInfo.ChainID), *destinationTx.Kappa)
 		uniqueBridgeTransactions[key] = destinationTx
 	}
 
@@ -90,10 +91,10 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix
 	//	if *firstFilter {
 	//		*firstFilter = false
 	//
-	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//		return dbcommon.SprintfEscape(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//	}
 	//
-	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	return dbcommon.SprintfEscape(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//}
 	//
 	// return ""
@@ -101,10 +102,10 @@ func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 	}
 
 	return ""
@@ -118,10 +119,10 @@ func generateAddressSpecifierSQLMv(address *string, firstFilter *bool, firstInLo
 	//	if *firstFilter {
 	//		*firstFilter = false
 	//
-	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//		return dbcommon.SprintfEscape(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//	}
 	//
-	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	return dbcommon.SprintfEscape(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//}
 	//
 	// return ""
@@ -129,15 +130,15 @@ func generateAddressSpecifierSQLMv(address *string, firstFilter *bool, firstInLo
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf("  %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+			return dbcommon.SprintfEscape("  %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 	}
 
 	return ""
@@ -148,10 +149,10 @@ func generateRecipientSpecifierSQL(address *string, firstFilter *bool, tablePref
 	//	if *firstFilter {
 	//		*firstFilter = false
 	//
-	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//		return dbcommon.SprintfEscape(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//	}
 	//
-	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	return dbcommon.SprintfEscape(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//}
 	//
 	// return ""
@@ -159,10 +160,10 @@ func generateRecipientSpecifierSQL(address *string, firstFilter *bool, tablePref
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 	}
 
 	return ""
@@ -173,10 +174,10 @@ func generateRecipientSpecifierSQLMv(address *string, firstFilter *bool, firstIn
 	//	if *firstFilter {
 	//		*firstFilter = false
 	//
-	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//		return dbcommon.SprintfEscape(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//	}
 	//
-	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	return dbcommon.SprintfEscape(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
 	//}
 	//
 	// return ""
@@ -184,15 +185,15 @@ func generateRecipientSpecifierSQLMv(address *string, firstFilter *bool, firstIn
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+			return dbcommon.SprintfEscape(" %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 	}
 
 	return ""
@@ -210,10 +211,10 @@ func generateEqualitySpecifierSQL(value *int, field string, firstFilter *bool, t
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s %s %d", tablePrefix, field, operator, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s %s %d", tablePrefix, field, operator, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s %s %d", tablePrefix, field, operator, *value)
+		return dbcommon.SprintfEscape(" AND %s%s %s %d", tablePrefix, field, operator, *value)
 	}
 
 	return ""
@@ -231,10 +232,10 @@ func generateCCTPSpecifierSQL(onlyCctp *bool, to bool, field string, firstFilter
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s =  %d", tablePrefix, field, eventType)
+			return dbcommon.SprintfEscape(" WHERE %s%s =  %d", tablePrefix, field, eventType)
 		}
 
-		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, eventType)
+		return dbcommon.SprintfEscape(" AND %s%s = %d", tablePrefix, field, eventType)
 	}
 
 	return ""
@@ -252,15 +253,15 @@ func generateEqualitySpecifierSQLMv(value *int, field string, firstFilter *bool,
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s%s %s %d", tablePrefix, field, operator, *value)
+			return dbcommon.SprintfEscape(" %s%s %s %d", tablePrefix, field, operator, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s %s %d", tablePrefix, field, operator, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s %s %d", tablePrefix, field, operator, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s %s %d", tablePrefix, field, operator, *value)
+		return dbcommon.SprintfEscape(" AND %s%s %s %d", tablePrefix, field, operator, *value)
 	}
 
 	return ""
@@ -274,18 +275,18 @@ func generateDirectionSpecifierSQL(in bool, firstFilter *bool, tablePrefix strin
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
+			return dbcommon.SprintfEscape(" WHERE %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
 		}
 
-		return fmt.Sprintf(" AND %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
+		return dbcommon.SprintfEscape(" AND %s%s > 0", tablePrefix, sql.DestinationChainIDFieldName)
 	}
 	if *firstFilter {
 		*firstFilter = false
 
-		return fmt.Sprintf(" WHERE %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
+		return dbcommon.SprintfEscape(" WHERE %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
 	}
 
-	return fmt.Sprintf(" AND %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
+	return dbcommon.SprintfEscape(" AND %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
 }
 
 // generateSingleSpecifierI32SQL generates a where function with an uint32.
@@ -296,10 +297,10 @@ func generateSingleSpecifierI32SQL(value *int, field string, firstFilter *bool, 
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = %d", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s = %d", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s = %d", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -319,7 +320,7 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 	}
 
 	for i := range values {
-		final += fmt.Sprintf(" %s%s = %d", tablePrefix, field, *values[i])
+		final += dbcommon.SprintfEscape(" %s%s = %d", tablePrefix, field, *values[i])
 		if i < len(values)-1 {
 			final += orString
 		}
@@ -345,7 +346,7 @@ func generateSingleSpecifierI32ArrSQLMv(values []*int, field string, firstFilter
 		final += whereString
 	}
 	for i := range values {
-		final += fmt.Sprintf(" %s%s = %d", tablePrefix, field, *values[i])
+		final += dbcommon.SprintfEscape(" %s%s = %d", tablePrefix, field, *values[i])
 		if i < len(values)-1 {
 			final += orString
 		}
@@ -371,7 +372,7 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 
 	for i := range values {
 		if values[i] != nil {
-			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
+			final += dbcommon.SprintfEscape(" %s%s = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
 				final += orString
 			}
@@ -403,7 +404,7 @@ func generateSingleSpecifierStringArrSQLMv(values []*string, field string, first
 	}
 	for i := range values {
 		if values[i] != nil {
-			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
+			final += dbcommon.SprintfEscape(" %s%s = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
 				final += orString
 			}
@@ -421,10 +422,10 @@ func generateTimestampSpecifierSQL(value *uint64, field string, firstFilter *boo
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s >= %d", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s >= %d", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s >= %d", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s >= %d", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -438,10 +439,10 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s =  '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s =  '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s =  '%s'", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s =  '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -455,15 +456,15 @@ func generateSingleSpecifierStringSQLMv(value *string, field string, firstFilter
 		if *firstLocale {
 			*firstFilter = false
 			*firstLocale = false
-			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" %s%s = '%s'", tablePrefix, field, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -475,10 +476,10 @@ func generateKappaSpecifierSQL(value *string, field string, firstFilter *bool, t
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -490,15 +491,15 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" %s%s = '%s'", tablePrefix, field, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
+			return dbcommon.SprintfEscape(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
+		return dbcommon.SprintfEscape(" AND %s%s = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -516,15 +517,15 @@ func generateCCTPSpecifierSQLMv(onlyCctp *bool, to bool, field string, firstFilt
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s%s = %d", tablePrefix, field, eventType)
+			return dbcommon.SprintfEscape(" %s%s = %d", tablePrefix, field, eventType)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s%s =  %d", tablePrefix, field, eventType)
+			return dbcommon.SprintfEscape(" WHERE %s%s =  %d", tablePrefix, field, eventType)
 		}
 
-		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, eventType)
+		return dbcommon.SprintfEscape(" AND %s%s = %d", tablePrefix, field, eventType)
 	}
 
 	return ""
@@ -536,17 +537,17 @@ func generateCCTPSpecifierSQLMv(onlyCctp *bool, to bool, field string, firstFilt
 //		if *firstFilter {
 //			*firstFilter = false
 //
-//			return fmt.Sprintf(" WHERE %s%s == 0", tablePrefix, field)
+//			return dbcommon.SprintfEscape(" WHERE %s%s == 0", tablePrefix, field)
 //		}
 //
-//		return fmt.Sprintf(" AND %s%s  == 0", tablePrefix, field)
+//		return dbcommon.SprintfEscape(" AND %s%s  == 0", tablePrefix, field)
 //	}
 //	if *firstFilter {
 //		*firstFilter = false
 //
-//		return fmt.Sprintf(" WHERE %s%s > 0", tablePrefix, field)
+//		return dbcommon.SprintfEscape(" WHERE %s%s > 0", tablePrefix, field)
 //	}
-//	return fmt.Sprintf(" AND %s%s  > 0", tablePrefix, field)
+//	return dbcommon.SprintfEscape(" AND %s%s  > 0", tablePrefix, field)
 //}
 
 // generateBridgeEventCountQuery creates the query for bridge event count.
@@ -560,16 +561,16 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
 	timestampSpecifier := generateTimestampSpecifierSQL(timestamp, sql.TimeStampFieldName, &firstFilter, "")
 
-	compositeFilters := fmt.Sprintf(
+	compositeFilters := dbcommon.SprintfEscape(
 		`%s%s%s%s%s`,
 		directionSpecifier, chainIDSpecifier, addressSpecifier, tokenAddressSpecifier, timestampSpecifier,
 	)
 	var query string
 	if isTokenCount {
-		query = fmt.Sprintf(`%s SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s, %s ORDER BY Count Desc`,
+		query = dbcommon.SprintfEscape(`%s SELECT %s, %s AS TokenAddress, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s, %s ORDER BY Count Desc`,
 			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TokenFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.TokenFieldName, sql.ChainIDFieldName)
 	} else {
-		query = fmt.Sprintf(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
+		query = dbcommon.SprintfEscape(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
 			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.ChainIDFieldName)
 	}
 	return query
@@ -714,17 +715,17 @@ func generateMessageBusQuery(chainID []*int, address *string, startTime *int, en
 	if !pending {
 		operation = " != ''"
 	}
-	pendingSpecifier := fmt.Sprintf(" WHERE t.message_id %s", operation)
+	pendingSpecifier := dbcommon.SprintfEscape(" WHERE t.message_id %s", operation)
 	compositeFilters := chainIDSpecifier + minTimeSpecfier + maxTimeSpecfier + addressSpecifier + messageIDSpecifier + txHashSpecifier
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 
-	cte := fmt.Sprintf("WITH baseQuery AS (SELECT * FROM message_bus_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp", compositeFilters)
+	cte := dbcommon.SprintfEscape("WITH baseQuery AS (SELECT * FROM message_bus_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp", compositeFilters)
 
-	finalQuery := fmt.Sprintf("%s SELECT * FROM (SELECT * FROM (SELECT * FROM %s WHERE %s = 1 ) f LEFT JOIN (SELECT * FROM (%s) WHERE %s = 0) t ON f.%s = t.%s %s)  LIMIT %d OFFSET %d", cte, "baseQuery", sql.EventTypeFieldName, baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pendingSpecifier, pageValue, pageOffset)
+	finalQuery := dbcommon.SprintfEscape("%s SELECT * FROM (SELECT * FROM (SELECT * FROM %s WHERE %s = 1 ) f LEFT JOIN (SELECT * FROM (%s) WHERE %s = 0) t ON f.%s = t.%s %s)  LIMIT %d OFFSET %d", cte, "baseQuery", sql.EventTypeFieldName, baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pendingSpecifier, pageValue, pageOffset)
 
 	if reverted {
-		finalQuery = fmt.Sprintf("%s SELECT * FROM  (SELECT * FROM (select * from (%s) WHERE %s = 1) f RIGHT OUTER JOIN (Select r.reverted_reason AS reverted_reason, j.reverted_reason AS rrr, * FROM (select * from %s WHERE event_type = 0 and status = 'Fail') j LEFT JOIN (select reverted_reason, tx_hash from (%s) WHERE %s = 2) r on j.tx_hash = r.tx_hash) t ON f.%s = t.%s)  LIMIT %d OFFSET %d", cte, baseMessageBus, sql.EventTypeFieldName, "baseQuery", baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pageValue, pageOffset)
+		finalQuery = dbcommon.SprintfEscape("%s SELECT * FROM  (SELECT * FROM (select * from (%s) WHERE %s = 1) f RIGHT OUTER JOIN (Select r.reverted_reason AS reverted_reason, j.reverted_reason AS rrr, * FROM (select * from %s WHERE event_type = 0 and status = 'Fail') j LEFT JOIN (select reverted_reason, tx_hash from (%s) WHERE %s = 2) r on j.tx_hash = r.tx_hash) t ON f.%s = t.%s)  LIMIT %d OFFSET %d", cte, baseMessageBus, sql.EventTypeFieldName, "baseQuery", baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pageValue, pageOffset)
 	}
 	return finalQuery
 }
@@ -759,9 +760,9 @@ func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom [
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	if postJoinFilters == "" {
-		return fmt.Sprintf("%s SELECT %s FROM %s %s %s %s", generateDeDepQueryCTE(toFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2)
+		return dbcommon.SprintfEscape("%s SELECT %s FROM %s %s %s %s", generateDeDepQueryCTE(toFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2)
 	}
-	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(toFilters, nil, nil, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2, postJoinFilters, pageValue, pageOffset)
+	return dbcommon.SprintfEscape("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(toFilters, nil, nil, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2, postJoinFilters, pageValue, pageOffset)
 }
 
 func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *string, minAmount *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressTo []*string, kappa *string, txHash *string, pending *bool, page int) string {
@@ -806,7 +807,7 @@ func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 
-	return fmt.Sprintf("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", toFilters, pageValue, pageOffset)
+	return dbcommon.SprintfEscape("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", toFilters, pageValue, pageOffset)
 }
 
 // generateAllBridgeEventsQueryFromOrigin gets all the filters for query from origin.
@@ -841,15 +842,15 @@ func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int
 	if pending != nil && !*pending {
 		operation = " != ''"
 	}
-	pendingFilter := fmt.Sprintf(" WHERE t%s %s", sql.KappaFieldName, operation)
+	pendingFilter := dbcommon.SprintfEscape(" WHERE t%s %s", sql.KappaFieldName, operation)
 	postJoinFilters := minAmountFilter + minAmountFilterUsd + maxAmountFilter + maxAmountFilterUsd + tokenAddressToFilter + tokenAddressFromFilter
 
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	if pending != nil && !*pending && postJoinFilters == "" {
-		return fmt.Sprintf("%s SELECT %s FROM %s %s %s %s", generateDeDepQueryCTE(fromFilters, &pageValue, &pageOffset, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2)
+		return dbcommon.SprintfEscape("%s SELECT %s FROM %s %s %s %s", generateDeDepQueryCTE(fromFilters, &pageValue, &pageOffset, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2)
 	}
-	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(fromFilters, nil, nil, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2, pendingFilter+postJoinFilters, pageValue, pageOffset)
+	return dbcommon.SprintfEscape("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(fromFilters, nil, nil, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2, pendingFilter+postJoinFilters, pageValue, pageOffset)
 }
 
 // generateAllBridgeEventsQueryFromOriginMv gets all the filters for query from origin.
@@ -889,7 +890,7 @@ func generateAllBridgeEventsQueryFromOriginMv(chainIDFrom []*int, addressFrom *s
 	fromFilters := chainIDFromFilter + minTimeFilter + maxTimeFilter + addressFromFilter + txHashFilter + tokenAddressFromFilter + maxAmountFilter + maxAmountFilterUsd + pendingFilter + kappaFilter
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	return fmt.Sprintf("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", fromFilters, pageValue, pageOffset)
+	return dbcommon.SprintfEscape("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", fromFilters, pageValue, pageOffset)
 }
 func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, kappa *string, pending *bool, onlyCctp *bool, page int) string {
 	firstFilter := true
@@ -923,11 +924,11 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	var allFilters string
 	switch {
 	case fromFilters != "" && toFilters != "":
-		allFilters = fmt.Sprintf("WHERE ((%s) OR (%s)) %s", fromFilters, toFilters, minTimeFilter+maxTimeFilter)
+		allFilters = dbcommon.SprintfEscape("WHERE ((%s) OR (%s)) %s", fromFilters, toFilters, minTimeFilter+maxTimeFilter)
 	case fromFilters != "" && toFilters == "":
-		allFilters = fmt.Sprintf("WHERE (%s) %s", fromFilters, minTimeFilter+maxTimeFilter)
+		allFilters = dbcommon.SprintfEscape("WHERE (%s) %s", fromFilters, minTimeFilter+maxTimeFilter)
 	case fromFilters == "" && toFilters != "":
-		allFilters = fmt.Sprintf("WHERE (%s) %s ", toFilters, minTimeFilter+maxTimeFilter)
+		allFilters = dbcommon.SprintfEscape("WHERE (%s) %s ", toFilters, minTimeFilter+maxTimeFilter)
 	default:
 		allFilters = minTimeFilter + maxTimeFilter
 	}
@@ -942,7 +943,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	}
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	return fmt.Sprintf("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d SETTINGS memory_overcommit_ratio_denominator=4000, memory_usage_overcommit_max_wait_microseconds=500 ", allFilters, pendingFilter, pageValue, pageOffset)
+	return dbcommon.SprintfEscape("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d SETTINGS memory_overcommit_ratio_denominator=4000, memory_usage_overcommit_max_wait_microseconds=500 ", allFilters, pendingFilter, pageValue, pageOffset)
 }
 
 // nolint:cyclop
@@ -1157,7 +1158,7 @@ func getAdjustedValue(amount *big.Int, decimals uint8) *float64 {
 	return &priceFloat
 }
 func keyGen(chainID string, kappa string) string {
-	return fmt.Sprintf("%s-%s", chainID, kappa)
+	return dbcommon.SprintfEscape("%s-%s", chainID, kappa)
 }
 
 // GenerateAmountStatisticBridgeSQL generate sql for the bridge platform.
@@ -1171,29 +1172,29 @@ func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *stri
 	compositeFilters := addressFilter + chainIDFilter + tokenAddressFilter
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
-		operation = fmt.Sprintf("AVG(f%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("AVG(f%s)", sql.AmountUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
-		operation = fmt.Sprintf("median(f%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("median(f%s)", sql.AmountUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
-		operation = fmt.Sprintf("sumKahan(f%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("sumKahan(f%s)", sql.AmountUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(%s)", "tfee_amount_usd")
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("AVG(%s)", "tfee_amount_usd")
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(%s)", "tfee_amount_usd")
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("median(%s)", "tfee_amount_usd")
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", "tfee_amount_usd")
-		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
+		operation = dbcommon.SprintfEscape("sumKahan(%s)", "tfee_amount_usd")
+		finalSQL = dbcommon.SprintfEscape("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
@@ -1210,30 +1211,30 @@ func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilter
 
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
-		operation = fmt.Sprintf("AVG(%s)", swapVolumeSelect)
+		operation = dbcommon.SprintfEscape("AVG(%s)", swapVolumeSelect)
 	case model.StatisticTypeMedianVolumeUsd:
-		operation = fmt.Sprintf("median(%s)", swapVolumeSelect)
+		operation = dbcommon.SprintfEscape("median(%s)", swapVolumeSelect)
 	case model.StatisticTypeTotalVolumeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", swapVolumeSelect)
+		operation = dbcommon.SprintfEscape("sumKahan(%s)", swapVolumeSelect)
 	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		operation = dbcommon.SprintfEscape("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		operation = dbcommon.SprintfEscape("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
+		operation = dbcommon.SprintfEscape("AVG(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
+		operation = dbcommon.SprintfEscape("median(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
+		operation = dbcommon.SprintfEscape("sumKahan(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 	if tokenAddress == nil {
-		finalSQL = fmt.Sprintf("SELECT %s FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", operation, compositeFilters)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", operation, compositeFilters)
 	} else {
 		firstFilter := true
 		tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s %s %s %s", operation, baseSwapWithTokenPt1, compositeFilters, baseSwapWithTokenPt2, tokenAddressSpecifier)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s %s %s %s", operation, baseSwapWithTokenPt1, compositeFilters, baseSwapWithTokenPt2, tokenAddressSpecifier)
 	}
 	return &finalSQL, nil
 }
@@ -1250,20 +1251,20 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 	case model.StatisticTypeTotalVolumeUsd:
 		return nil, fmt.Errorf("cannot calculate volume data for messagebus events")
 	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
+		operation = dbcommon.SprintfEscape("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("uniq(%s, source_address) AS res", sql.ChainIDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
+		operation = dbcommon.SprintfEscape("uniq(%s, source_address) AS res", sql.ChainIDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
+		operation = dbcommon.SprintfEscape("AVG(%s)", sql.FeeUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
+		operation = dbcommon.SprintfEscape("median(%s)", sql.FeeUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
+		operation = dbcommon.SprintfEscape("sumKahan(%s)", sql.FeeUSDFieldName)
+		finalSQL = dbcommon.SprintfEscape("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
@@ -1273,7 +1274,7 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 // GenerateRankedChainsByVolumeSQL generates sql for getting all chains ranked in order of volume.
 func GenerateRankedChainsByVolumeSQL(compositeFilters string, firstFilter *bool) string {
 	directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-	return fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id], 0)) as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by chain_id) s ON b.pre_fchain_id = s.chain_id ORDER BY total DESC SETTINGS join_use_nulls = 1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), rankedChainsBridgeVolume, compositeFilters)
+	return dbcommon.SprintfEscape("%s %s FULL OUTER JOIN (SELECT chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id], 0)) as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by chain_id) s ON b.pre_fchain_id = s.chain_id ORDER BY total DESC SETTINGS join_use_nulls = 1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), rankedChainsBridgeVolume, compositeFilters)
 }
 
 // GenerateDailyStatisticByChainAllSQL generates sql for getting daily stats across all chains.
@@ -1282,14 +1283,14 @@ func GenerateDailyStatisticByChainAllSQL(typeArg *model.DailyStatisticType, comp
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
 		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		query = fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.pre_fchain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyVolumeBridge, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.pre_fchain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyVolumeBridge, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeFee:
-		query = fmt.Sprintf("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s FROM ( SELECT %s, chain_id, uniq(chain_id, sender) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, chain_id, uniq(chain_id, sender) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
 		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		query = fmt.Sprintf("%s FROM ( SELECT %s, chain_id, uniq(chain_id, tx_hash) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters+directionSpecifier, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, chain_id, uniq(chain_id, tx_hash) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters+directionSpecifier, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1304,14 +1305,14 @@ func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, c
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
 		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		query = fmt.Sprintf("%s  %s sumKahan(amount_usd) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
+		query = dbcommon.SprintfEscape("%s  %s sumKahan(amount_usd) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
 	case model.DailyStatisticTypeFee:
-		query = fmt.Sprintf("%s  %s sumKahan(fee_usd) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
+		query = dbcommon.SprintfEscape("%s  %s sumKahan(fee_usd) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s  %s uniq(chain_id, sender) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
+		query = dbcommon.SprintfEscape("%s  %s uniq(chain_id, sender) AS sumTotal %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
 	case model.DailyStatisticTypeTransactions:
 		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		query = fmt.Sprintf("%s %s uniq(chain_id, tx_hash) AS sumTotal  %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
+		query = dbcommon.SprintfEscape("%s %s uniq(chain_id, tx_hash) AS sumTotal  %s group by date, chain_id order by date, chain_id) group by date order by date )", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyStatisticGenericSinglePlatform, dailyStatisticBridge)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1323,13 +1324,13 @@ func GenerateDailyStatisticByChainSwapSQL(typeArg *model.DailyStatisticType, com
 	var query string
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
-		query = fmt.Sprintf("%s sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],0)) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, baseSwap, compositeFilters)
+		query = dbcommon.SprintfEscape("%s sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],0)) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, baseSwap, compositeFilters)
 	case model.DailyStatisticTypeFee:
-		query = fmt.Sprintf("%s sumKahan(arraySum(mapValues(%s))) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.FeeUSDFieldName, baseSwap, compositeFilters)
+		query = dbcommon.SprintfEscape("%s sumKahan(arraySum(mapValues(%s))) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.FeeUSDFieldName, baseSwap, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseSwap, compositeFilters)
+		query = dbcommon.SprintfEscape("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseSwap, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
-		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.TxHashFieldName, baseSwap, compositeFilters)
+		query = dbcommon.SprintfEscape("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.TxHashFieldName, baseSwap, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1343,11 +1344,11 @@ func GenerateDailyStatisticByChainMessageBusSQL(typeArg *model.DailyStatisticTyp
 	case model.DailyStatisticTypeVolume:
 		return nil, fmt.Errorf("cannot calculate volume for messagebus")
 	case model.DailyStatisticTypeFee:
-		query = fmt.Sprintf("%s sumKahan(%s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.FeeUSDFieldName, baseMessageBus, compositeFilters)
+		query = dbcommon.SprintfEscape("%s sumKahan(%s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.FeeUSDFieldName, baseMessageBus, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s)%s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseMessageBus, compositeFilters)
+		query = dbcommon.SprintfEscape("%s uniq(%s, %s) AS sumTotal FROM (%s)%s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseMessageBus, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
-		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.TxHashFieldName, baseMessageBus, compositeFilters)
+		query = dbcommon.SprintfEscape("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.TxHashFieldName, baseMessageBus, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1370,7 +1371,7 @@ func (s SortMessageBusTxType) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 func keyGenHandleNilInt(item *int) string {
 	if item != nil {
-		return fmt.Sprintf("%d", *item)
+		return dbcommon.SprintfEscape("%d", *item)
 	}
 	return ""
 }
@@ -1505,7 +1506,7 @@ func (r *queryResolver) getAmountStatisticsAll(ctx context.Context, typeArg mode
 	if err != nil {
 		return nil, fmt.Errorf("error getting data from all platforms, %w", err)
 	}
-	value := fmt.Sprintf("%f", bridgeSum+swapSum+messageBusSum)
+	value := dbcommon.SprintfEscape("%f", bridgeSum+swapSum+messageBusSum)
 	return &value, nil
 }
 
@@ -1515,14 +1516,14 @@ func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int
 	firstFilter := true
 	timestampSpecifierMv := GetDurationFilter(duration, &firstFilter, "f")
 	chainIDSpecifierMv := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "f")
-	compositeFiltersMv := fmt.Sprintf(
+	compositeFiltersMv := dbcommon.SprintfEscape(
 		`%s%s`,
 		timestampSpecifierMv, chainIDSpecifierMv,
 	)
 	firstFilter = true
 	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	compositeFilters := fmt.Sprintf(
+	compositeFilters := dbcommon.SprintfEscape(
 		`%s%s`,
 		timestampSpecifier, chainIDSpecifier,
 	)
@@ -1535,7 +1536,7 @@ func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int
 		// Change chainID filter to destination chainID as that's where fees are collected.
 		if *typeArg == model.DailyStatisticTypeFee {
 			chainIDSpecifierMv = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t")
-			compositeFiltersMv = fmt.Sprintf(
+			compositeFiltersMv = dbcommon.SprintfEscape(
 				`%s%s`,
 				timestampSpecifierMv, chainIDSpecifierMv,
 			)
@@ -1571,7 +1572,7 @@ func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int
 	if err != nil {
 		return nil, fmt.Errorf("could not get daily data by chain: %w", err)
 	}
-	err = r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
+	err = r.Cache.CacheResponse(dbcommon.SprintfEscape("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
 	if err != nil {
 		return nil, fmt.Errorf("error caching response, %w", err)
 	}
@@ -1583,13 +1584,13 @@ func GenerateDailyStatisticByChainBridgeSQLMv(typeArg *model.DailyStatisticType,
 	var query string
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
-		query = fmt.Sprintf("%s  sumKahan(famount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+		query = dbcommon.SprintfEscape("%s  sumKahan(famount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
 	case model.DailyStatisticTypeFee:
-		query = fmt.Sprintf("%s  sumKahan(tfee_amount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMvFee, compositeFilters)
+		query = dbcommon.SprintfEscape("%s  sumKahan(tfee_amount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMvFee, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s  uniq(fchain_id, fsender) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+		query = dbcommon.SprintfEscape("%s  uniq(fchain_id, fsender) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
-		query = fmt.Sprintf("%s  uniq(fchain_id, ftx_hash) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date) ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+		query = dbcommon.SprintfEscape("%s  uniq(fchain_id, ftx_hash) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date) ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1601,13 +1602,13 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 	var query string
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
-		query = fmt.Sprintf("%s %s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", dailyVolumeBridgeMvPt1, compositeFiltersMv, dailyVolumeBridgeMvPt2, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s %s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", dailyVolumeBridgeMvPt1, compositeFiltersMv, dailyVolumeBridgeMvPt2, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeFee: // destination chain fee used
-		query = fmt.Sprintf("%s FROM ( SELECT %s, tchain_id AS chain_id, sumKahan(tfee_amount_usd) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, tchain_id AS chain_id, sumKahan(tfee_amount_usd) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
-		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, fsender) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, fsender) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
-		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, ftx_hash) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+		query = dbcommon.SprintfEscape("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, ftx_hash) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
@@ -1617,7 +1618,7 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 // GetOriginBridgeTxBW gets an origin bridge tx.
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txType := model.BridgeTxTypeOrigin
-	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' ORDER BY insert_time desc LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
+	query := dbcommon.SprintfEscape("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' ORDER BY insert_time desc LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
 
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 
@@ -1639,7 +1640,7 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeDestination
-	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' ORDER BY insert_time desc LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
+	query := dbcommon.SprintfEscape("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' ORDER BY insert_time desc LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)

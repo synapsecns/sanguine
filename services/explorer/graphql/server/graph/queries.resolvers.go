@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"sort"
 	"sync"
 
@@ -98,8 +99,8 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 	firstFilter := true
 	timeStampSpecifier := generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
-	compositeFilters := fmt.Sprintf("%s%s", timeStampSpecifier, directionSpecifier)
-	query := fmt.Sprintf(`SELECT %s AS address, COUNT(DISTINCT %s) AS Count FROM (%s) GROUP BY %s ORDER BY Count Desc`, sql.SenderFieldName, sql.TxHashFieldName, generateDeDepQuery(compositeFilters, nil, nil), sql.SenderFieldName)
+	compositeFilters := dbcommon.SprintfEscape("%s%s", timeStampSpecifier, directionSpecifier)
+	query := dbcommon.SprintfEscape(`SELECT %s AS address, COUNT(DISTINCT %s) AS Count FROM (%s) GROUP BY %s ORDER BY Count Desc`, sql.SenderFieldName, sql.TxHashFieldName, generateDeDepQuery(compositeFilters, nil, nil), sql.SenderFieldName)
 	res, err := r.DB.GetAddressRanking(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
@@ -111,7 +112,7 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 // AmountStatistic is the resolver for the amountStatistic field.
 func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) (*model.ValueResult, error) {
 	if useCache != nil && *useCache {
-		res, err := r.getValueResultFromCache(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
+		res, err := r.getValueResultFromCache(dbcommon.SprintfEscape("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
 		if err == nil {
 			return res, nil
 		}
@@ -123,7 +124,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 
-	compositeFilters := fmt.Sprintf(
+	compositeFilters := dbcommon.SprintfEscape(
 		`%s%s%s`,
 		timestampSpecifier, addressSpecifier, chainIDSpecifier,
 	)
@@ -159,7 +160,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		output := model.ValueResult{
 			Value: value,
 		}
-		err = r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+		err = r.Cache.CacheResponse(dbcommon.SprintfEscape("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
 		if err != nil {
 			return nil, fmt.Errorf("error caching results, %w", err)
 		}
@@ -175,11 +176,11 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		return nil, fmt.Errorf("failed to get amount data stats: %w", err)
 	}
 
-	value := fmt.Sprintf("%f", res)
+	value := dbcommon.SprintfEscape("%f", res)
 	output := model.ValueResult{
 		Value: &value,
 	}
-	err = r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+	err = r.Cache.CacheResponse(dbcommon.SprintfEscape("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
 	if err != nil {
 		return nil, fmt.Errorf("error storing cache data, %w", err)
 	}
@@ -189,7 +190,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
 func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) ([]*model.DateResultByChain, error) {
 	if useCache != nil && *useCache {
-		res, err := r.getDateResultByChainFromCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
+		res, err := r.getDateResultByChainFromCache(dbcommon.SprintfEscape("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
 		if err == nil {
 			return res, nil
 		}
@@ -207,7 +208,7 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	firstFilter := true
 	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	compositeFilters := fmt.Sprintf(
+	compositeFilters := dbcommon.SprintfEscape(
 		`%s%s`,
 		timestampSpecifier, chainIDSpecifier,
 	)
@@ -248,7 +249,7 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	if err != nil {
 		return nil, fmt.Errorf("could not get daily data by chain: %w", err)
 	}
-	err = r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
+	err = r.Cache.CacheResponse(dbcommon.SprintfEscape("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
 	if err != nil {
 		return nil, fmt.Errorf("error cahcing response, %w", err)
 	}
@@ -285,12 +286,12 @@ func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *mo
 
 // AddressData is the resolver for the addressData field.
 func (r *queryResolver) AddressData(ctx context.Context, address string) (*model.AddressData, error) {
-	bridgeQuery := fmt.Sprintf("SELECT toFloat64(sumKahan(famount_usd)) AS volumeTotal, toFloat64(sumKahan(tfee_amount_usd)) AS feeTotal, toInt64(uniq(fchain_id, ftx_hash)) AS txTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
-	swapQuery := fmt.Sprintf("SELECT toFloat64(sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],0))) AS volumeTotal, toFloat64(sumKahan(arraySum(mapValues(fee_usd)))) AS feeTotal,  toInt64(uniq(chain_id, tx_hash)) AS txTotal FROM (SELECT * FROM swap_events where sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", address)
-	rankingQuery := fmt.Sprintf("select rowNumber from (select sender, row_number() over (order by sumTotal desc ) as rowNumber from (select fsender as sender, sumKahan(famount_usd) as sumTotal from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' group by fsender)) where sender = '%s'", address)
-	firstTx := fmt.Sprintf("SELECT min(ftimestamp) AS earliestTime FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
-	dailyDataQuery := fmt.Sprintf("SELECT coalesce(toString(date), toString(s.date)) AS date, toFloat64(coalesce(sumTotal, 0)) + toFloat64(coalesce(s.sumTotal, 0)) as count FROM (SELECT * FROM (SELECT %s, uniq(fchain_id, ftx_hash) AS sumTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date order by date) b FULL OUTER JOIN (SELECT %s, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events WHERE sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date) s ON b.date = s.date) SETTINGS join_use_nulls=1", toDateSelectMv, address, toDateSelect, address)
-	chainRankingQuery := fmt.Sprintf("SELECT row_number() over (order by VolumeUsd desc ) as Rank, tchain_id as ChainID, sumKahan(tamount_usd) AS VolumeUsd FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where ChainID > 0 group by ChainID", address)
+	bridgeQuery := dbcommon.SprintfEscape("SELECT toFloat64(sumKahan(famount_usd)) AS volumeTotal, toFloat64(sumKahan(tfee_amount_usd)) AS feeTotal, toInt64(uniq(fchain_id, ftx_hash)) AS txTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
+	swapQuery := dbcommon.SprintfEscape("SELECT toFloat64(sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],0))) AS volumeTotal, toFloat64(sumKahan(arraySum(mapValues(fee_usd)))) AS feeTotal,  toInt64(uniq(chain_id, tx_hash)) AS txTotal FROM (SELECT * FROM swap_events where sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", address)
+	rankingQuery := dbcommon.SprintfEscape("select rowNumber from (select sender, row_number() over (order by sumTotal desc ) as rowNumber from (select fsender as sender, sumKahan(famount_usd) as sumTotal from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' group by fsender)) where sender = '%s'", address)
+	firstTx := dbcommon.SprintfEscape("SELECT min(ftimestamp) AS earliestTime FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
+	dailyDataQuery := dbcommon.SprintfEscape("SELECT coalesce(toString(date), toString(s.date)) AS date, toFloat64(coalesce(sumTotal, 0)) + toFloat64(coalesce(s.sumTotal, 0)) as count FROM (SELECT * FROM (SELECT %s, uniq(fchain_id, ftx_hash) AS sumTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date order by date) b FULL OUTER JOIN (SELECT %s, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events WHERE sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date) s ON b.date = s.date) SETTINGS join_use_nulls=1", toDateSelectMv, address, toDateSelect, address)
+	chainRankingQuery := dbcommon.SprintfEscape("SELECT row_number() over (order by VolumeUsd desc ) as Rank, tchain_id as ChainID, sumKahan(tamount_usd) AS VolumeUsd FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where ChainID > 0 group by ChainID", address)
 	var bridgeVolume float64
 	var bridgeFees float64
 	var bridgeTxs int
@@ -384,7 +385,7 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 	pageValue := sql.PageSize
 	pageOffset := (*page - 1) * sql.PageSize
 	filters := timestampSpecifier + chainIDSpecifier
-	leaderboardQuery := fmt.Sprintf("select row_number() over (order by VolumeUsd desc ) as Rank, * from (select fsender as Address, toFloat64(sumKahan(famount_usd)) as VolumeUsd,toFloat64(avg(famount_usd)) as AvgVolumeUsd, count(DISTINCT ftx_hash) as Txs,toFloat64(sumKahan(tfee_amount_usd)) as Fees from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' %s group by fsender) LIMIT %d OFFSET %d", filters, pageValue, pageOffset)
+	leaderboardQuery := dbcommon.SprintfEscape("select row_number() over (order by VolumeUsd desc ) as Rank, * from (select fsender as Address, toFloat64(sumKahan(famount_usd)) as VolumeUsd,toFloat64(avg(famount_usd)) as AvgVolumeUsd, count(DISTINCT ftx_hash) as Txs,toFloat64(sumKahan(tfee_amount_usd)) as Fees from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' %s group by fsender) LIMIT %d OFFSET %d", filters, pageValue, pageOffset)
 	leaderboardRes, err := r.DB.GetLeaderboard(ctx, leaderboardQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get leaderboard %w", err)
@@ -439,13 +440,13 @@ func (r *queryResolver) GetBlockHeight(ctx context.Context, contracts []*model.C
 		}
 		contractTypeMap[contractAddr] = contract.Type
 		if i == 0 {
-			contractString += fmt.Sprintf("('%s', %d)", contractAddr, contract.ChainID)
+			contractString += dbcommon.SprintfEscape("('%s', %d)", contractAddr, contract.ChainID)
 		} else {
-			contractString += fmt.Sprintf(", ('%s', %d)", contractAddr, contract.ChainID)
+			contractString += dbcommon.SprintfEscape(", ('%s', %d)", contractAddr, contract.ChainID)
 		}
 	}
 
-	query := fmt.Sprintf("SELECT contract_address, chain_id, block_number FROM last_blocks WHERE (contract_address, chain_id) IN (%s) ORDER BY block_number", contractString)
+	query := dbcommon.SprintfEscape("SELECT contract_address, chain_id, block_number FROM last_blocks WHERE (contract_address, chain_id) IN (%s) ORDER BY block_number", contractString)
 	results, err := r.DB.GetBlockHeights(ctx, query, contractTypeMap)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block heights from database %w", err)

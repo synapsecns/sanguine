@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/benbjohnson/immutable"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
@@ -225,7 +226,7 @@ func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.A
 
 // GetLastStoredBlock returns the last stored block for a given chainID and contract.
 func (s *Store) GetLastStoredBlock(ctx context.Context, chainID uint32, contract string) (uint64, error) {
-	query := fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s' ORDER BY %s DESC LIMIT 1", BlockNumberFieldName, ChainIDFieldName, chainID, ContractAddressFieldName, contract, BlockNumberFieldName)
+	query := dbcommon.SprintfEscape("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s' ORDER BY %s DESC LIMIT 1", BlockNumberFieldName, ChainIDFieldName, chainID, ContractAddressFieldName, contract, BlockNumberFieldName)
 	lastBlock, err := s.GetUint64(ctx, query)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get last block: %w", err)

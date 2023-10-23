@@ -8,6 +8,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -443,7 +444,7 @@ func (r Resolver) parseSwapLog(ctx context.Context, swapLog ethTypes.Log, chainI
 	}
 
 	soldID := iFace.SoldId
-	address, err := r.DB.GetString(ctx, fmt.Sprintf("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
+	address, err := r.DB.GetString(ctx, dbcommon.SprintfEscape("SELECT token_address FROM token_indices WHERE contract_address='%s' AND chain_id=%d AND token_index=%d", swapLog.Address.String(), chainID, soldID.Uint64()))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse swap event: %w", err)
 	}

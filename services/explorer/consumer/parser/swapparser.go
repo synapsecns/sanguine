@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math"
 	"math/big"
 	"time"
@@ -502,14 +503,14 @@ func (p *SwapParser) GetCorrectSwapFee(ctx context.Context, swapEvent model.Swap
 	var err error
 	g, groupCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		dbAdminFee, err = p.consumerDB.GetUint64(groupCtx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
+		dbAdminFee, err = p.consumerDB.GetUint64(groupCtx, dbcommon.SprintfEscape("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
 		if err != nil {
 			return fmt.Errorf("could not get admin fee: %w", err)
 		}
 		return nil
 	})
 	g.Go(func() error {
-		dbSwapFee, err = p.consumerDB.GetUint64(groupCtx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
+		dbSwapFee, err = p.consumerDB.GetUint64(groupCtx, dbcommon.SprintfEscape("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
 		if err != nil {
 			return fmt.Errorf("could not get swap fee: %w", err)
 		}
