@@ -26,8 +26,7 @@ func TestMysqlRealEscapeString(t *testing.T) {
 		{"he\x1allo", "he\\Zllo"},
 	}
 
-	for i, tt := range tests {
-		_ = i
+	for _, tt := range tests {
 		result := MysqlRealEscapeString(tt.input)
 		if result != tt.expect {
 			t.Errorf("For input '%s', expected '%s' but got '%s'", tt.input, tt.expect, result)
