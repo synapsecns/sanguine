@@ -1,3 +1,7 @@
+export const config = {
+  runtime: 'experimental-edge',
+}
+
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'

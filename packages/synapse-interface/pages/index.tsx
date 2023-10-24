@@ -9,7 +9,7 @@ import ReactGA from 'react-ga'
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
-export const runtime = 'experimental-edge'
+
 const Home = () => {
   return (
     <LandingPageWrapper>
