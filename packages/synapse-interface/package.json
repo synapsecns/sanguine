@@ -6,7 +6,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "cf:build": "next export",
+    "cf:build": "next build && next export",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
