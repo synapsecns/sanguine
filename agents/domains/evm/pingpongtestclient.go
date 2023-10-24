@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -18,13 +18,17 @@ import (
 // NewPingPongClientContract returns a bound ping pong test client contract.
 //
 //nolint:staticcheck
-func NewPingPongClientContract(ctx context.Context, client chain.Chain, pingPongClientAddress common.Address) (domains.PingPongClientContract, error) {
+func NewPingPongClientContract(ctx context.Context, client client.EVMClient, pingPongClientAddress common.Address) (domains.PingPongClientContract, error) {
 	boundCountract, err := pingpongclient.NewPingPongClientRef(pingPongClientAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &pingpongclient.PingPongClientRef{}, err)
 	}
 
-	nonceManager := nonce.NewNonceManager(ctx, client, client.GetBigChainID())
+	chainID, err := client.ChainID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	nonceManager := nonce.NewNonceManager(ctx, client, chainID)
 	return pingPongClientContract{
 		contract:     boundCountract,
 		client:       client,
@@ -37,7 +41,7 @@ type pingPongClientContract struct {
 	contract *pingpongclient.PingPongClientRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVMClient
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }
@@ -75,7 +79,11 @@ func (a pingPongClientContract) WatchPongReceived(ctx context.Context, sink chan
 }
 
 func (a pingPongClientContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	chainID, err := a.client.ChainID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get chain id: %w", err)
+	}
+	transactor, err := signer.GetTransactor(ctx, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}

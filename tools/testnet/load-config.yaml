@@ -1,0 +1,17 @@
+summit_domain_id: 444
+scribe_url: scribe:80
+
+chains:
+  444:
+    rpc: https://l2-synapse-sepolia-testnet-1mdqkm651f.t.conduit.xyz
+      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/444
+    message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+  421614:
+    rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
+      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/421614
+    message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+  11155111:
+    rpc: https://ethereum-sepolia.blockpi.network/v1/rpc/public
+      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/11155111
+    message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+
