@@ -6,6 +6,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
+    "cf:build": "npx @cloudflare/next-on-pages@1",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -23,6 +24,7 @@
     "test": "jest --watch"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "1",
     "@depay/web3-mock": "^14.0.0",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/address": "5.7.0",
