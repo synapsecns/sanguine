@@ -214,7 +214,6 @@ type Leaderboard {
   rank: Int
   avgVolumeUSD: Float
 }
-
 enum BridgeType{
   BRIDGE
   CCTP
@@ -225,3 +224,21 @@ enum KappaStatus{
   PENDING
   UNKNOWN
 }
+
+input ContractQuery {
+  chainID: Int!
+  type: ContractType!
+}
+
+enum ContractType{
+  BRIDGE
+  CCTP
+}
+
+type BlockHeight {
+  chainID: Int
+  type: ContractType
+  blockNumber: Int
+}
+
+
