@@ -13,9 +13,8 @@ const nextConfig = {
     tsconfigPath: './tsconfig.json',
   },
   images: {
-    unoptimized: true
-  }
-
+    unoptimized: true,
+  },
 }
 
 module.exports = {
