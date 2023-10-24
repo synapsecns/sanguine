@@ -8,7 +8,7 @@ import {
   ETH_POOLS_BY_CHAIN,
   LEGACY_POOLS_BY_CHAIN,
 } from '@constants/tokens'
-export const runtime = 'edge'
+export const runtime = 'experimental-edge'
 
 import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'

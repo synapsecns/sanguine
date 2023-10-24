@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { POOLS_PATH } from '@/constants/urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import toast from 'react-hot-toast'
-export const runtime = 'edge'
+export const runtime = 'experimental-edge'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()

@@ -7,7 +7,7 @@ import { POOL_BY_ROUTER_INDEX } from '@/constants/tokens'
 import Link from 'next/link'
 import { POOL_PATH } from '@/constants/urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-export const runtime = 'edge'
+export const runtime = 'experimental-edge'
 const SingleStakePage = () => {
   const router = useRouter()
   const { routerIndex } = router.query
