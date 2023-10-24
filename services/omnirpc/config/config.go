@@ -60,9 +60,10 @@ type RPCConfig struct {
 	RPCType string `json:"rpc_type" yaml:"rpc_type"`
 }
 
-func FlattenRPCs(RPCs []RPCConfig) []string {
-	rpcs := make([]string, len(RPCs))
-	for i, rpc := range RPCs {
+// FlattenRPCs flattens a list of RPCConfigs to a list of strings.
+func FlattenRPCs(configRPCs []RPCConfig) []string {
+	rpcs := make([]string, len(configRPCs))
+	for i, rpc := range configRPCs {
 		rpcs[i] = rpc.RPC
 	}
 	return rpcs
