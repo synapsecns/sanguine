@@ -23,6 +23,7 @@
     "test": "jest --watch"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "^1.7.2",
     "@depay/web3-mock": "^14.0.0",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/address": "5.7.0",
