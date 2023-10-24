@@ -38,6 +38,41 @@ jobs:
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
   # for details on how to use, please see ui-preview.md
+  deploy-cf:
+    name: Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+      - name: Install Vercel CLI
+        working-directory: packages/${{ matrix.package }}
+        run: yarn build
+      - name: Deploy to Pages
+        if: matrix.package == 'synapse-interface' #${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && matrix.package == 'synapse-interface' }}
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID}}
+          projectName: YOUR_PROJECT_NAME
+          directory: packages/synapse-interface/build
+          # Optional: Enable this if you want to have GitHub Deployments triggered
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Switch what branch you are publishing to.
+          # By default this will be the branch which triggered this workflow
+#          branch: main
+          # Optional: Change the working directory
+#          workingDirectory: my-site
+          # Optional: Change the Wrangler version, allows you to point to a specific version or a tag such as `beta`
+          wranglerVersion: '3'
+
+
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
