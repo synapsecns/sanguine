@@ -5,6 +5,8 @@ import Head from 'next/head'
 import '@/patch'
 import { Analytics } from '@vercel/analytics/react'
 
+export const runtime = 'experimental-edge'
+
 import {
   boba,
   cronos,
