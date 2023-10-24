@@ -21,6 +21,7 @@ import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const PoolPage = () => {
   const router = useRouter()
+
   const { poolId } = router.query
   const { address } = useAccount()
   const { chain } = useNetwork()
