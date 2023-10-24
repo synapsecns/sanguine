@@ -666,7 +666,10 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			span.AddEvent("Error submitting attestation", trace.WithAttributes(
 				attribute.String("err", err.Error()),
 			))
+			return
 		}
+		n.didSubmitMyLatestNotaryAttestation = true
+		fmt.Println("set didSubmitMyLatestNotaryAttestation to true")
 	}
 }
 
