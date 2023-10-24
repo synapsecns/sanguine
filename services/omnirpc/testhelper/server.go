@@ -25,7 +25,10 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 
 	for _, backend := range backends {
 		chains[uint32(backend.GetChainID())] = config.ChainConfig{
-			RPCs:   []string{backend.RPCAddress()},
+			RPCs: []config.RPCConfig{{
+				RPC:     backend.RPCAddress(),
+				RPCType: "stable",
+			}},
 			Checks: 1,
 		}
 	}

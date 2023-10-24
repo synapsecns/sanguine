@@ -51,7 +51,6 @@ func GetRPCLatency(parentCtx context.Context, timeout time.Duration, rpcList []s
 		rpcURL := rpcURL
 		g.Go(func() error {
 			latency := getLatency(ctx, rpcURL, handler)
-
 			mux.Lock()
 			latSlice = append(latSlice, latency)
 			mux.Unlock()

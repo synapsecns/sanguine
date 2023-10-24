@@ -15,16 +15,30 @@ func TestGetPublicConfig(t *testing.T) {
 	res, err := config.GetPublicRPCConfig()
 	Nil(t, err)
 
-	True(t, slices.Contains(res.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
+	True(t, slices.Contains(res.Chains[1].RPCs, config.RPCConfig{
+		RPC:     "https://api.mycryptoapi.com/eth",
+		RPCType: "auxiliary",
+	}))
 }
 
 func TestPublicConfig(t *testing.T) {
 	rpcMap, err := config.ParseConfig([]byte(testData))
 	Nil(t, err)
 
-	True(t, slices.Contains(rpcMap.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcMap.Chains[1].RPCs, "https://cloudflare-eth.com/"))
-	True(t, slices.Contains(rpcMap.Chains[2].RPCs, "https://node.eggs.cool"))
+	True(t, slices.Contains(rpcMap.Chains[1].RPCs, config.RPCConfig{
+		RPC:     "https://api.mycryptoapi.com/eth",
+		RPCType: "auxiliary",
+	}))
+	True(t, slices.Contains(rpcMap.Chains[1].RPCs,
+		config.RPCConfig{
+			RPC:     "https://cloudflare-eth.com/",
+			RPCType: "auxiliary",
+		}))
+	True(t, slices.Contains(rpcMap.Chains[2].RPCs,
+		config.RPCConfig{
+			RPC:     "https://node.eggs.cool",
+			RPCType: "auxiliary",
+		}))
 }
 
 // first two rpcs from https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/extraRpcs.json
