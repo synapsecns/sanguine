@@ -3,8 +3,7 @@ package testhelper
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"testing"
+	. "github.com/stretchr/testify/assert"
 
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +17,8 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
+	"net/http"
+	"testing"
 )
 
 func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.ClientType) config.Config {
@@ -81,7 +82,7 @@ func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.S
 		}
 
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, healthCheck, nil)
-		assert.Nil(tb, err)
+		Nil(tb, err)
 
 		res, err := http.DefaultClient.Do(request)
 		if err == nil {

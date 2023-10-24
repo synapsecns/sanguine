@@ -19,6 +19,7 @@ const (
 	Auxiliary
 )
 
+// StringToRPCType converts a string to an RPCType.
 func StringToRPCType(s string) RPCType {
 	switch s {
 	case "stable":

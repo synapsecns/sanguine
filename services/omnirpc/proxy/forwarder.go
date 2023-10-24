@@ -165,13 +165,13 @@ func (f *Forwarder) startForwarding(forwardCtx context.Context, errChan chan Fai
 }
 
 // handleResponses handles the responses from the forwarding goroutines(s).
-func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan rawResponse, requiredResponses int) bool {
+func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan rawResponse, requiredResponses int) {
 	totalResponses := 0
 
 	for {
 		select {
 		case <-f.c.Done():
-			return true
+			return
 		case failedForward := <-errChan:
 			totalResponses++
 			f.failedForwards.Store(failedForward.URL, failedForward.Err)
@@ -184,7 +184,7 @@ func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan raw
 
 		if totalResponses == len(f.chain.URLs()) || (requiredResponses != 1 && uint16(f.resMap.Size()) >= f.requiredConfirmations) {
 			if done := f.checkResponses(totalResponses); done {
-				return true
+				return
 			}
 		}
 	}
@@ -194,9 +194,7 @@ func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan raw
 func (f *Forwarder) forwardSingleConfirmation(forwardCtx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) {
 	for range f.chain.URLs() {
 		f.startForwarding(forwardCtx, errChan, resChan, urlIter)
-		if f.handleResponses(errChan, resChan, 1) {
-			return
-		}
+		f.handleResponses(errChan, resChan, 1)
 	}
 }
 
@@ -205,9 +203,7 @@ func (f *Forwarder) forwardMultipleConfirmations(forwardCtx context.Context, err
 	for i := uint16(0); i < f.requiredConfirmations; i++ {
 		f.startForwarding(forwardCtx, errChan, resChan, urlIter)
 	}
-	if f.handleResponses(errChan, resChan, len(f.chain.URLs())) {
-		return
-	}
+	f.handleResponses(errChan, resChan, len(f.chain.URLs()))
 }
 
 // urlConfirmationsHeader is a header specifying which urls were checked.
