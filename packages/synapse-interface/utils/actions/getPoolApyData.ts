@@ -2,7 +2,7 @@ import { formatUnits } from '@ethersproject/units'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
 import { Token } from '@types'
-import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
+import { readContracts, Address, erc20ABI } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
 
@@ -17,6 +17,10 @@ export const getPoolApyData = async (
   poolToken: Token,
   prices?: any
 ) => {
+  if (chainId === 10 && poolToken.symbol === 'nETH-LP') {
+    console.log('in getPoolAPYData')
+  }
+
   if (!MINICHEF_ADDRESSES?.[chainId]) {
     console.log('no minichef address found for chainId', chainId)
     return {
@@ -48,29 +52,27 @@ export const getPoolApyData = async (
         chainId,
         args: [poolToken.poolId[chainId]],
       },
+      {
+        address: poolToken.addresses[chainId] as Address,
+        abi: erc20ABI,
+        functionName: 'balanceOf',
+        chainId,
+        args: [minichefAddress],
+      },
+      {
+        address: poolToken.addresses[chainId] as Address,
+        abi: erc20ABI,
+        functionName: 'totalSupply',
+        chainId,
+      },
     ],
   })
 
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
   const poolInfoResult: PoolInfoResult = data[2].result
-
-  const lpTokenBalanceResult =
-    (
-      await fetchBalance({
-        address: minichefAddress,
-        chainId,
-        token: poolToken.addresses[chainId] as Address,
-      })
-    )?.value ?? 0n
-
-  const lpTokenSupplyResult =
-    (
-      await fetchToken({
-        address: poolToken.addresses[chainId] as Address,
-        chainId,
-      })
-    )?.totalSupply?.value ?? 0n
+  const lpTokenBalanceResult: bigint = data[3].result ?? 0n
+  const lpTokenSupplyResult: bigint = data[4].result ?? 0n
 
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
   const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n

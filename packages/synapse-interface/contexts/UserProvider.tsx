@@ -5,7 +5,7 @@ import { useRouter } from 'next/router'
 import { setSwapChainId } from '@/slices/swap/reducer'
 
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
-import { useAppDispatch } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
 import {
   fetchAvaxPrice,
@@ -67,7 +67,7 @@ export const UserProvider = ({ children }) => {
     ;(async () => {
       if (address && chain?.id) {
         try {
-          await dispatch(fetchAndStorePortfolioBalances(address))
+          // await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }

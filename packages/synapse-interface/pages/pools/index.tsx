@@ -66,6 +66,12 @@ const PoolsPage = () => {
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
           <PoolCards address={address} pools={incentivizedPools} />
+          {/* <PoolCards
+              address={address}
+              pools={{
+                10: [OPTIMISM_ETH_SWAP_TOKEN],
+              }}
+            /> */}
         </Grid>
         <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
           <PageHeader

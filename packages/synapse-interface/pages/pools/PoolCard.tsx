@@ -21,11 +21,21 @@ const PoolCard = memo(
     pool,
     chainId,
     address,
+    ethPrice,
+    avaxPrice,
+    synPrices,
   }: {
     pool: Token
     chainId: number
     address: string
+    ethPrice: any
+    avaxPrice: any
+    synPrices: any
   }) => {
+    if (pool.chainId === 10 && pool.symbol === 'nETH-LP') {
+      console.log(`chainID: ${pool.chainId}`)
+      console.log(pool.symbol)
+    }
     const [poolData, setPoolData] = useState(undefined)
     const [poolApyData, setPoolApyData] = useState(undefined)
     const [stakedBalance, setStakedBalance] = useState({
@@ -33,43 +43,53 @@ const PoolCard = memo(
       reward: 0n,
     })
     const { isDisconnected } = useAccount()
-    const { synPrices, ethPrice, avaxPrice } = useAppSelector(
-      (state) => state.priceData
-    )
 
     let popup: string
 
     useEffect(() => {
-      if (chainId && pool) {
+      if (pool.chainId === 10 && pool.symbol === 'nETH-LP') {
+        console.log(`pool`, pool)
+      }
+      if (pool) {
         // TODO - separate the apy and tvl so they load async.
-        getSinglePoolData(chainId, pool, { synPrices, ethPrice, avaxPrice })
+        getSinglePoolData(pool.chainId, pool, {
+          synPrices,
+          ethPrice,
+          avaxPrice,
+        })
           .then((res) => {
             setPoolData(res)
           })
           .catch((err) => {
-            console.log('Could not get Pool Data: ', err)
+            // console.log('Could not get Pool Data: ', err)
           })
-        getPoolApyData(chainId, pool, { synPrices, ethPrice, avaxPrice })
+        getPoolApyData(pool.chainId, pool, { synPrices, ethPrice, avaxPrice })
           .then((res) => {
             setPoolApyData(res)
           })
           .catch((err) => {
-            console.log('Could not get Pool APY Data: ', err)
+            // console.log('Could not get Pool APY Data: ', err)
           })
-
-        if (address) {
-          getStakedBalance(address as Address, chainId, pool.poolId[chainId])
-            .then((res) => {
-              setStakedBalance(res)
-            })
-            .catch((err) => {
-              console.log('Could not get staked balances: ', err)
-            })
-        } else {
-          setStakedBalance({ amount: 0n, reward: 0n })
-        }
       }
-    }, [synPrices, ethPrice, avaxPrice, chainId, pool, address])
+    }, [pool])
+
+    useEffect(() => {
+      if (address) {
+        getStakedBalance(
+          address as Address,
+          pool.chainId,
+          pool.poolId[pool.chainId]
+        )
+          .then((res) => {
+            setStakedBalance(res)
+          })
+          .catch((err) => {
+            console.log('Could not get staked balances: ', err)
+          })
+      } else {
+        setStakedBalance({ amount: 0n, reward: 0n })
+      }
+    }, [address])
 
     /*
   useEffect triggers: address, isDisconnected, popup
@@ -97,7 +117,7 @@ const PoolCard = memo(
       >
         <div>
           <Link href={getPoolUrl(pool)}>
-            {pool && <PoolHeader pool={pool} address={address} />}
+            {pool && <PoolHeader pool={pool} address={address as Address} />}
             {pool &&
             poolData &&
             poolApyData &&
