@@ -20,13 +20,11 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
     // ════════════════════════════════════════════ TESTS: OPEN DISPUTE ════════════════════════════════════════════════
 
     function openTestDispute(uint32 guardIndex, uint32 notaryIndex) public {
-        vm.warp(1234);
         vm.prank(localAgentManager());
         localAgentSecured().openDispute(guardIndex, notaryIndex);
     }
 
     function resolveTestDispute(uint32 slashedIndex, uint32 rivalIndex) public {
-        vm.warp(5678);
         vm.prank(localAgentManager());
         localAgentSecured().resolveDispute(slashedIndex, rivalIndex);
     }
@@ -40,6 +38,7 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
 
     function test_openDispute() public {
         DisputeStatus memory expected = DisputeStatus({flag: DisputeFlag.Pending, openedAt: 1234, resolvedAt: 0});
+        vm.warp(1234);
         openTestDispute({guardIndex: 1, notaryIndex: 2});
         checkLatestDisputeStatus(1, expected);
         checkLatestDisputeStatus(2, expected);
@@ -55,7 +54,9 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
     // ══════════════════════════════════════════ TESTS: RESOLVE DISPUTE ═══════════════════════════════════════════════
 
     function test_resolveDispute() public {
+        vm.warp(1234);
         openTestDispute({guardIndex: 1, notaryIndex: 2});
+        vm.warp(5678);
         resolveTestDispute({slashedIndex: 1, rivalIndex: 2});
         checkLatestDisputeStatus(1, DisputeStatus({flag: DisputeFlag.Slashed, openedAt: 1234, resolvedAt: 5678}));
         checkLatestDisputeStatus(2, DisputeStatus({flag: DisputeFlag.None, openedAt: 1234, resolvedAt: 5678}));
