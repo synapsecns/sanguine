@@ -6,6 +6,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
+    "cf:build": "npx @cloudflare/next-on-pages@1",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
