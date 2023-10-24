@@ -15,6 +15,7 @@ import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+export const runtime = 'edge'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()

@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { setIsLoading } from '@/slices/swap/reducer'
+export const runtime = 'edge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'

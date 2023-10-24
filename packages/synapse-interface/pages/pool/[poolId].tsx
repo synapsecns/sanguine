@@ -14,6 +14,7 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+export const runtime = 'edge'
 
 const PoolPage = () => {
   const router = useRouter()
