@@ -92,7 +92,7 @@ type Executor struct {
 	// retryConfig is the retry configuration for RPC calls.
 	retryConfig []retry.WithBackoffConfigurator
 	// lastExecuteAttempts is a map from message hash -> last execute attempt time, in seconds.
-	lastExecuteAttempts map[[32]byte]uint64
+	lastExecuteAttempts map[string]uint64
 	// NowFunc returns the current time.
 	NowFunc func() time.Time
 }
@@ -185,7 +185,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		handler:             handler,
 		txSubmitter:         txSubmitter,
 		retryConfig:         retryConfig,
-		lastExecuteAttempts: make(map[[32]byte]uint64),
+		lastExecuteAttempts: make(map[string]uint64),
 		NowFunc:             time.Now,
 	}
 
@@ -898,8 +898,10 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					if err != nil {
 						return fmt.Errorf("could not convert message to leaf: %w", err)
 					}
+					leafHex := common.BytesToHash(leaf[:]).String()
 
-					lastExecuteTime, ok := e.lastExecuteAttempts[leaf]
+					lastExecuteTime, ok := e.lastExecuteAttempts[leafHex]
+					fmt.Printf("loaded attempt for %s: %v\n", leafHex, lastExecuteTime)
 					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
 					now := uint64(e.NowFunc().Unix())
 					if ok && nextExecuteTime <= now {
@@ -928,9 +930,12 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						fmt.Printf("executed: %v\n", executed)
 
 						if executed {
-							delete(e.lastExecuteAttempts, leaf)
+							delete(e.lastExecuteAttempts, leafHex)
+							fmt.Printf("removed attempt for %s\n", leafHex)
 						} else {
-							e.lastExecuteAttempts[leaf] = uint64(e.NowFunc().Unix())
+							now := uint64(e.NowFunc().Unix())
+							e.lastExecuteAttempts[leafHex] = now
+							fmt.Printf("inserted attempt for %s: %v\n", leafHex, now)
 							continue
 						}
 					}
