@@ -7,11 +7,11 @@ replace (
 	// later versions give errors on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/synapsecns/sanguine/agents => ../../agents
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../scribe
-
 )
 
 require (
@@ -36,7 +36,6 @@ require (
 	github.com/synapsecns/sanguine/agents v0.0.243
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
-	github.com/synapsecns/sanguine/services/explorer v0.0.177
 	github.com/synapsecns/sanguine/services/scribe v0.0.194
 	github.com/urfave/cli/v2 v2.25.5
 	github.com/vektah/gqlparser/v2 v2.5.8

@@ -4,7 +4,7 @@ package serverconfig
 import (
 	"fmt"
 	"github.com/jftuga/ellipsis"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	"github.com/synapsecns/sanguine/services/sinner/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
