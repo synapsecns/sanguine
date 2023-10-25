@@ -13,13 +13,7 @@ import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
-import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
-import { POOL_BY_ROUTER_INDEX, POOL_CHAINS_BY_NAME, POOLS_BY_CHAIN } from "@constants/tokens";
-import {
-  GetStaticPaths,
-  GetStaticProps,
-} from 'next'
-
+import { POOL_BY_ROUTER_INDEX } from "@constants/tokens";
 
 export const getStaticPaths = (async () => {
   const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
