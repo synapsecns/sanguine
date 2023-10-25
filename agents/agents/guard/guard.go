@@ -221,6 +221,7 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 
 		select {
 		case <-ctx.Done():
+			fmt.Printf("context done on chain %d addr %s\n", chainID, address)
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -231,6 +232,7 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 				return fmt.Errorf("could not close connection: %w", err)
 			}
 
+			fmt.Printf("exiting on chain %d addr %s\n", chainID, address)
 			return fmt.Errorf("context done: %w", ctx.Err())
 		case g.logChans[chainID] <- log:
 			logger.Info("Received log with topic: %s", log.Topics[0].String())
@@ -243,6 +245,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
+			fmt.Printf("exiting receiveLogs on chainID %d\n", chainID)
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case log := <-g.logChans[chainID]:
 			if log == nil {
@@ -499,15 +502,19 @@ func (g Guard) Start(parentCtx context.Context) error {
 				g.submitLatestSnapshot(ctx)
 				err := g.updateAgentStatuses(ctx)
 				if err != nil {
+					fmt.Println("exiting refresh loop")
 					return err
 				}
 			}
 		}
 	})
 
-	if err := group.Wait(); err != nil {
+	err := group.Wait()
+	if err != nil {
+		fmt.Printf("guard exiting with error: %v\n", err)
 		return fmt.Errorf("guard error: %w", err)
 	}
 
+	fmt.Println("guard exiting")
 	return nil
 }
