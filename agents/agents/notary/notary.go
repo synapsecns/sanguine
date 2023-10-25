@@ -563,7 +563,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
 				attribute.String("tx", tx.Hash().Hex()),
 			))
-			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, tx)
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.summitDomain.Config().DomainID, tx)
 			return
 		})
 		if err != nil {
