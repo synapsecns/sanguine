@@ -30,15 +30,11 @@ export const getStaticPaths = (async () => {
     paths,
     fallback: true, // false or "blocking"
   }
-}) satisfies GetStaticPaths
+});
 
 export const getStaticProps = (async (context) => {
-  // const res = await fetch('https://api.github.com/repos/vercel/next.js')
-  // const repo = await res.json()
   return { props: {  } }
-}) satisfies GetStaticProps<{
-  poolId: string
-}>
+})
 
 
 const PoolPage = () => {
