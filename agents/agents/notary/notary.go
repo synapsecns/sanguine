@@ -226,7 +226,10 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
 	fmt.Printf("got attestation: %v\n", attestation)
 	newSnapRoot := attestation.Attestation().SnapshotRoot()
-	oldSnapRoot := n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
+	var oldSnapRoot [32]byte
+	if n.myLatestNotaryAttestation != nil {
+		oldSnapRoot = n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
+	}
 	if n.myLatestNotaryAttestation == nil || newSnapRoot != oldSnapRoot {
 		span.AddEvent("updating current attestation", trace.WithAttributes(
 			attribute.String("oldSnapRoot", common.Bytes2Hex(oldSnapRoot[:])),
@@ -517,17 +520,30 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		fmt.Println("no snapshot to submit")
 		return
 	}
+
 	n.currentSnapRoot, _, _ = snapshot.SnapshotRootAndProofs()
-	_, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
+	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("Could not get attestation nonce for snapRoot: %s", common.BytesToHash(n.currentSnapRoot[:])), trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
 		return
 	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int("attNonce", int(attNonce)),
+	))
+
+	// update our view of summit states even if we don't submit the snapshot
+	for originID, state := range statesToSubmit {
+		n.summitMyLatestStates[originID] = state
+	}
+
+	// if the snapshot root has a corresponding attestation, no need to submit it
+	if attNonce > 0 {
+		return
+	}
 
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, n.bondedSigner)
-
 	//nolint:nestif
 	if err != nil {
 		span.AddEvent("Error signing snapshot", trace.WithAttributes(
@@ -554,10 +570,6 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
 				attribute.String("err", err.Error()),
 			))
-		} else {
-			for originID, state := range statesToSubmit {
-				n.summitMyLatestStates[originID] = state
-			}
 		}
 	}
 }
