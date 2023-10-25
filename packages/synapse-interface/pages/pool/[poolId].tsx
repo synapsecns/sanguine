@@ -14,6 +14,32 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import { POOL_BY_ROUTER_INDEX, POOL_CHAINS_BY_NAME, POOLS_BY_CHAIN } from "@constants/tokens";
+import {
+  GetStaticPaths,
+  GetStaticProps,
+} from 'next'
+
+
+export const getStaticPaths = (async () => {
+  const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
+    params: { poolId: key }
+  }));
+
+  return {
+    paths,
+    fallback: true, // false or "blocking"
+  }
+}) satisfies GetStaticPaths
+
+export const getStaticProps = (async (context) => {
+  // const res = await fetch('https://api.github.com/repos/vercel/next.js')
+  // const repo = await res.json()
+  return { props: {  } }
+}) satisfies GetStaticProps<{
+  poolId: string
+}>
+
 
 const PoolPage = () => {
   const router = useRouter()
@@ -23,6 +49,7 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
 
   const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
+
 
   const dispatch: any = useDispatch()
 
