@@ -15,24 +15,24 @@ import (
 
 // ContractType is the type of contract specified by the config and used for selecting the correct parser.
 //
-//go:generate go run golang.org/x/tools/cmd/stringer -type=ContractType
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ContractType -linecomment
 type ContractType int
 
 const (
 	// OriginType is the ContractType for the origin contract.
-	OriginType ContractType = iota
+	OriginType ContractType = iota // origin
 	// ExecutionHubType is the ContractType for the execution hub contract.
-	ExecutionHubType
+	ExecutionHubType // execution_hub
 	// UnknownType is the ContractType for an unknown contract.
-	UnknownType
+	UnknownType // unknown
 )
 
 // ContractTypeFromString converts a string (intended to be from parsed config) into the ContractType type.
 func ContractTypeFromString(s string) (ContractType, error) {
 	switch s {
-	case "origin":
+	case OriginType.String():
 		return OriginType, nil
-	case "execution_hub":
+	case ExecutionHubType.String():
 		return ExecutionHubType, nil
 	default:
 		return UnknownType, fmt.Errorf("unknown contract type: %s", s)
