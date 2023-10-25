@@ -214,11 +214,24 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 		))
 		return
 	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int("nonce", int(attNonce)),
+	))
+
+	if attNonce == 0 {
+		fmt.Println("not updating myLatestNotaryAttestation with nonce of 0")
+		return
+	}
 
 	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
 	fmt.Printf("got attestation: %v\n", attestation)
-	if n.myLatestNotaryAttestation == nil ||
-		attestation.Attestation().SnapshotRoot() != n.myLatestNotaryAttestation.Attestation().SnapshotRoot() {
+	newSnapRoot := attestation.Attestation().SnapshotRoot()
+	oldSnapRoot := n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
+	if n.myLatestNotaryAttestation == nil || newSnapRoot != oldSnapRoot {
+		span.AddEvent("updating current attestation", trace.WithAttributes(
+			attribute.String("oldSnapRoot", common.Bytes2Hex(oldSnapRoot[:])),
+			attribute.String("newSnapRoot", common.Bytes2Hex(newSnapRoot[:])),
+		))
 		n.myLatestNotaryAttestation = attestation
 		n.didSubmitMyLatestNotaryAttestation = false
 		fmt.Println("set didSubmitMyLatestNotaryAttestation to false")
