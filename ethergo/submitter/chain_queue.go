@@ -165,12 +165,13 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
+			span.AddEvent("bump interval not elapsed; adding to reprocess queue")
 			c.addToReprocessQueue(ogTx)
 			return nil
 		}
 		tx := ogTx.Transaction
 
-		ctx, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
+		ctx, span := c.metrics.Tracer().Start(parentCtx, "bump interval elapsed", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
 		defer func() {
 			metrics.EndSpanWithErr(span, err)
 		}()
