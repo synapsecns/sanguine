@@ -38,4 +38,5 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.AVALANCHE,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
 ]
