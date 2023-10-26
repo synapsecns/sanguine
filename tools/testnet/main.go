@@ -10,6 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -205,28 +206,49 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 			return fmt.Errorf("could not parse pong received event")
 		}
 		fmt.Printf("Parsed pong received on chain %d [ID=%d]\n", chainID, pongReceivedEvent.PingId.Int64())
-		itersProcessed++
 	}
 	if event, ok = originParser.ParseSent(*log); ok {
 		message, ok := event.(types.Message)
 		if !ok {
 			return fmt.Errorf("could not parse message sent event")
 		}
-		leaf, err := message.ToLeaf()
+		leafBytes, err := message.ToLeaf()
 		if err != nil {
 			fmt.Printf("Error getting message leaf: %v\n", err)
 			return err
 		}
-		fmt.Printf("Parsed message sent from %d to %d [hash=%s]\n", message.OriginDomain(), message.DestinationDomain(), common.BytesToHash(leaf[:]).String())
-		messages = append(messages, message)
+		leaf := common.BytesToHash(leafBytes[:])
+
+		// make sure it's a ping that we sent
+		_, ok = sentTxes[log.TxHash]
+		if ok {
+			fmt.Printf("Parsed message sent from %d to %d... [leaf=%s]\n", message.OriginDomain(), message.DestinationDomain(), leaf)
+			messages[leaf] = message
+		}
+	}
+	if event, err = destinationParser.ParseExecuted(*log); err == nil {
+		messageExecutedEvent, ok := event.(*destination.DestinationExecuted)
+		if !ok {
+			return fmt.Errorf("could not parse message executed event")
+		}
+		leaf := common.BytesToHash(messageExecutedEvent.MessageHash[:])
+
+		// make sure it's a message that we sent
+		_, ok = messages[leaf]
+		if ok {
+			fmt.Printf("\u2713 Parsed message executed [leaf=%s]\n", leaf)
+			numExecuted++
+		}
 	}
 	return nil
 }
 
 var pingPongParser *pingpongclient.PingPongClientFilterer
 var originParser origin.Parser
-var numIters, itersProcessed, numRoutes int
-var messages []types.Message
+var destinationParser *destination.DestinationFilterer
+var numIters, numExecuted, numRoutes int
+var messages = map[common.Hash]types.Message{}
+var sentTxes = map[common.Hash]bool{}
 
 const eventBufferSize = 1000
 
@@ -263,6 +285,12 @@ func main() {
 
 	originAddr := loadCfg.Chains[loadCfg.SummitDomainID].OriginAddr
 	originParser, err = origin.NewParser(common.HexToAddress(originAddr))
+	if err != nil {
+		panic(err)
+	}
+
+	destinationAddr := loadCfg.Chains[loadCfg.SummitDomainID].DestinationAddr
+	destinationParser, err = destination.NewDestinationFilterer(common.HexToAddress(destinationAddr), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -324,13 +352,17 @@ func main() {
 		g.Go(func() error {
 			return streamLogs(ctx, uint32(chainID), originAddr, scribeClient, omniRPCClient)
 		})
+
+		destinationAddr := chainCfg.DestinationAddr
+		g.Go(func() error {
+			return streamLogs(ctx, uint32(chainID), destinationAddr, scribeClient, omniRPCClient)
+		})
 	}
 
 	// Send messages.
 	fmt.Printf("Running %d iterations.\n\n", numIters)
 	for i := 0; i < numIters; i++ {
 		for _, route := range routes {
-			fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
 			destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
 			contract, ok := messageContracts[route[0]]
 			if !ok {
@@ -340,14 +372,15 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Sent ping to contract %s: %s\n", destPingPongAddr.String(), tx.Hash().String())
+			fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], tx.Hash().String())
+			sentTxes[tx.Hash()] = true
 		}
 	}
 
 	g.Go(func() error {
 		for {
 			numRoutesActual := len(routes)
-			if itersProcessed >= numRoutesActual*numIters {
+			if numExecuted >= 2*numRoutesActual*numIters {
 				fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
 				cancel()
 				return nil
@@ -364,16 +397,15 @@ func main() {
 	// Verify all messages were executed.
 	numSuccesses := 0
 	ctx = context.Background()
-	for _, message := range messages {
-		leaf, _ := message.ToLeaf()
-		fmt.Printf("Verifying message with leaf: %v\n", common.BytesToHash(leaf[:]))
+	for leaf, message := range messages {
+		fmt.Printf("Verifying message with leaf: %v\n", leaf)
 		contract, ok := destinationContracts[int(message.DestinationDomain())]
 		if !ok {
 			panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
 		}
 		status, err := contract.MessageStatus(ctx, message)
 		if err != nil {
-			fmt.Printf("error getting message status [hash=%s]", leaf)
+			fmt.Printf("error getting message status [leaf=%s]", leaf)
 			continue
 		}
 		fmt.Printf("Got status for message %s: %d\n", leaf, status)
