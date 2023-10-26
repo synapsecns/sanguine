@@ -77,8 +77,7 @@ func (t *APISuite) SetupSuite() {
 	config := serverConfig.Config{
 		HTTPPort:       uint16(httpPort),
 		DBPath:         t.dbPath,
-		DBFlag:         "sqlite",
-		HydrateCache:   false,
+		DBType:         "sqlite",
 		SkipMigrations: true,
 	}
 

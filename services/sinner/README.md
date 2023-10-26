@@ -10,9 +10,58 @@ While this applications goal is to encompass the full range of events sent throu
 
 ## Config:
 
-<!-- todo: add config here, see: https://github.com/synapsecns/sanguine/pull/1380#discussion_r1371772535 -->
+Example Indexer Config:
 
+```yaml
+default_refresh_rate: 1
+scribe_url: "http://scribe.com/graphql"
+db_path: "/tmp/a.db"
+db_type: sqlite
+skip_migrations: false
+chains:
+  - chain_id: 444
+    fetch_block_increment: 1000
+    goroutines_per_contract: 1
+    contracts:
+      - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
+        start_block: 1
+        contract_type: origin
+      - address: "0xA944636Ac279e0346AF96Ef7e236025C6cBFE609"
+        start_block: 1
+        contract_type: execution_hub
+  - chain_id: 421614
+    fetch_block_increment: 1000
+    goroutines_per_contract: 1
+    contracts:
+      - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
+        start_block: 1
+        contract_type: origin
+      - address: "0xA944636Ac279e0346AF96Ef7e236025C6cBFE609"
+        start_block: 1
+        contract_type: execution_hub
+  - chain_id: 11155111
+    fetch_block_increment: 1000
+    goroutines_per_contract: 1
+    contracts:
+      - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
+        start_block: 1
+        contract_type: origin
+      - address: "0xA944636Ac279e0346AF96Ef7e236025C6cBFE609"
+        start_block: 1
+        contract_type: execution_hub
+```
 
+Example Server Config
+
+  ```yaml
+http_port: 8080
+db_path: "/tmp/a.db"
+db_type: sqlite
+skip_migrations: true
+hydrate_cache: false
+  ```
+
+If running the `unified` command, the config will be a combination of the above two configs (simply add the `http_port` to the top of your indexer config).
 ### **Message Stages**
 
 1. [x] Message sent on origin chain.

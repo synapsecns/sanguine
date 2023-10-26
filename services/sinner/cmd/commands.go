@@ -12,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/api"
 	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
 	serverConfig "github.com/synapsecns/sanguine/services/sinner/config/server"
+	unifiedConfig "github.com/synapsecns/sanguine/services/sinner/config/unified"
+
 	"github.com/synapsecns/sanguine/services/sinner/service"
 
 	"github.com/urfave/cli/v2"
@@ -29,6 +31,7 @@ var infoCommand = &cli.Command{
 		return nil
 	},
 }
+
 var configFlag = &cli.StringFlag{
 	Name:      "config",
 	Usage:     "--config /Users/synapsecns/config.yaml",
@@ -57,9 +60,9 @@ var serverCommand = &cli.Command{
 }
 
 // nolint:dupl
-var livefillCommand = &cli.Command{
+var indexerCommand = &cli.Command{
 	Name:        "indexer",
-	Description: "indexs contracts from config",
+	Description: "indexes contracts from config",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		decodeConfig, err := indexerConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
@@ -80,6 +83,42 @@ var livefillCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not backfill backfiller: %w", err)
 		}
+		return nil
+	},
+}
+
+// nolint:dupl
+var unifiedCommand = &cli.Command{
+	Name:        "unified",
+	Description: "runs both the Sinner server and indexer",
+	Flags:       []cli.Flag{configFlag},
+	Action: func(c *cli.Context) error {
+		decodeConfig, err := unifiedConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+
+		}
+		db, err := api.InitDB(c.Context, decodeConfig.DBType, decodeConfig.DBPath, metrics.Get(), decodeConfig.SkipMigrations)
+		if err != nil {
+			return fmt.Errorf("could not initialize database: %w", err)
+		}
+
+		// Start indexer
+		sinnerService, err := service.NewSinner(db, decodeConfig.IndexerConfig(), metrics.Get())
+		if err != nil {
+			return fmt.Errorf("could not create explorer backfiller: %w", err)
+		}
+		err = sinnerService.Index(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not backfill backfiller: %w", err)
+		}
+
+		// Start server
+		err = api.Start(c.Context, decodeConfig.ServerConfig(), metrics.Get())
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+
 		return nil
 	},
 }

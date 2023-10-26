@@ -16,12 +16,10 @@ type Config struct {
 	HTTPPort uint16 `yaml:"http_port"`
 	// DBPath is the address of the database
 	DBPath string `yaml:"db_path"`
-	// DBFlag is the address of the database
-	DBFlag string `yaml:"db_flag"`
+	// DBType is the flag signifying the type of database (mysql, sqlite, etc).
+	DBType string `yaml:"db_type"`
 	// SkipMigrations skips the database migrations.
 	SkipMigrations bool `yaml:"skip_migrations"`
-	// HydrateCache is a flag for enabling cache hydration.
-	HydrateCache bool `yaml:"hydrate_cache"`
 }
 
 // IsValid makes sure the config is valid.

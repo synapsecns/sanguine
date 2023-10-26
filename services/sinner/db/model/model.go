@@ -85,9 +85,7 @@ type OriginSent struct {
 	// Nonce is the nonce.
 	Nonce uint32 `gorm:"column:nonce"`
 	// Message is the message.
-	Message []byte `gorm:"column:message"`
-	// MessageContent is the message's content being sent to the recipient.
-	MessageContent []byte `gorm:"column:message_content"`
+	Message string `gorm:"column:message"`
 	// OptimisticSeconds is if the optimistic seconds.
 	OptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
 

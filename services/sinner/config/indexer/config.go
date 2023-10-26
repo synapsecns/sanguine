@@ -39,11 +39,11 @@ func ContractTypeFromString(s string) (ContractType, error) {
 	}
 }
 
-// Config is used to configure the explorer's data consumption.
+// Config is used to configure the sinner's data consumption.
 type Config struct {
-	// DefaultRefreshRate is the default rate at which data is refreshed.
+	// DefaultRefreshRate is the default rate at which data is refreshed in seconds.
 	DefaultRefreshRate int `yaml:"default_refresh_rate"`
-	// ScribeURL is the URL of the Scribe server.
+	// ScribeURL is the URL of the Scribe graphql server.
 	ScribeURL string `yaml:"scribe_url"`
 	// Chains stores the chain configurations.
 	Chains []ChainConfig `yaml:"chains"`
@@ -59,9 +59,9 @@ type Config struct {
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// FetchBlockIncrement is the number of blocks to fetch at a time.
+	// FetchBlockIncrement is the number of blocks to fetch at a time. Optional and defaults at 1000000.
 	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
-	// GoroutinesPerContract is the number of goroutines that can be spawned while processing logs.
+	// GoroutinesPerContract is the number of goroutines to be spawned while processing logs. Optional and defaults at 1.
 	GoroutinesPerContract int `yaml:"goroutines_per_contract"`
 	// Contracts are the contracts.
 	Contracts []ContractConfig `yaml:"contracts"`
@@ -79,9 +79,7 @@ type ContractConfig struct {
 	EndBlock uint64 `yaml:"end_block"`
 }
 
-// IsValid makes sure the config is valid. This is done by calling IsValid() on each
-// submodule. If any method returns an error that is returned here and the entirety
-// of IsValid returns false. Any warnings are logged by the submodules respective loggers.
+// IsValid makes sure the config is valid. This is done by calling IsValid() on each submodule.
 func (c *Config) IsValid() error {
 	if c.ScribeURL == "" {
 		return fmt.Errorf("scribe_url, %w", config.ErrRequiredGlobalField)
@@ -101,13 +99,6 @@ func (c *Config) IsValid() error {
 
 // IsValid validates the chain config.
 func (c ChainConfig) IsValid() error {
-	switch {
-	case c.ChainID == 0:
-		return fmt.Errorf("chain_id, %w", config.ErrRequiredGlobalField)
-	case c.GoroutinesPerContract == 0:
-		return fmt.Errorf("max_goroutines, %w", config.ErrRequiredGlobalField)
-	}
-
 	intSet := collection.Set[string]{}
 	for _, contract := range c.Contracts {
 		err := contract.IsValid()

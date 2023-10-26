@@ -29,7 +29,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 	// wrap gin with metrics
 	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
-	eventDB, err := InitDB(ctx, cfg.DBFlag, cfg.DBPath, handler, cfg.SkipMigrations)
+	eventDB, err := InitDB(ctx, cfg.DBType, cfg.DBPath, handler, cfg.SkipMigrations)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}

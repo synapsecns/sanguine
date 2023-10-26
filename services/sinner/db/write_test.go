@@ -69,8 +69,7 @@ func (t *DBSuite) TestStoreRetrieveOriginSent() {
 		chainID := gofakeit.Uint32()
 		destinationChainID := gofakeit.Uint32()
 		nonce := gofakeit.Uint32()
-		message := []byte(gofakeit.Sentence(10))
-		messageContent := []byte(gofakeit.Sentence(20))
+		message := gofakeit.Sentence(10)
 		optimisticSeconds := gofakeit.Uint32()
 		messageFlag := uint8(gofakeit.Uint32())
 		summitTip := gofakeit.Word()
@@ -95,7 +94,6 @@ func (t *DBSuite) TestStoreRetrieveOriginSent() {
 			DestinationChainID: destinationChainID,
 			Nonce:              nonce,
 			Message:            message,
-			MessageContent:     messageContent,
 			OptimisticSeconds:  optimisticSeconds,
 			MessageFlag:        messageFlag,
 			SummitTip:          summitTip,

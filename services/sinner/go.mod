@@ -36,6 +36,7 @@ require (
 	github.com/synapsecns/sanguine/agents v0.0.243
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
+	github.com/synapsecns/sanguine/services/explorer v0.0.180
 	github.com/synapsecns/sanguine/services/scribe v0.0.194
 	github.com/urfave/cli/v2 v2.25.5
 	github.com/vektah/gqlparser/v2 v2.5.8
