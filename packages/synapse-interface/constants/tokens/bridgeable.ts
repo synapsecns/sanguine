@@ -3,7 +3,7 @@ import ageurLogo from '@assets/icons/ageur.svg'
 import avaxLogo from '@assets/icons/avax.svg'
 import btcLogo from '@assets/icons/btc.svg'
 import busdLogo from '@assets/icons/busd.svg'
-import crvusdLogo from '@assets/icons/crvusd.png'
+import crvusdLogo from '@assets/icons/crvusd.svg'
 import linkLogo from '@assets/icons/link.svg'
 import daiLogo from '@assets/icons/dai.svg'
 import dogLogo from '@assets/icons/dog.svg'
@@ -34,7 +34,6 @@ import susdLogo from '@assets/icons/susd.svg'
 import synapseLogo from '@assets/icons/syn.svg'
 import unidexLogo from '@assets/icons/unidex.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
-import usdbcLogo from '@assets/icons/usdbc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
@@ -1209,7 +1208,7 @@ export const USDBC = new Token({
   swapExceptions: {},
   symbol: 'USDbC',
   name: 'USD Base Coin',
-  logo: usdbcLogo,
+  logo: usdcLogo,
   swapableType: 'USD',
   swapableOn: [],
   color: 'blue',
