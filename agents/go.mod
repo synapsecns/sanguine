@@ -34,7 +34,7 @@ require (
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
 	golang.org/x/sync v0.3.0
-	google.golang.org/grpc v1.55.0
+	google.golang.org/grpc v1.56.3
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.5.3
@@ -49,7 +49,7 @@ require (
 
 require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
-	cloud.google.com/go/compute v1.19.0 // indirect
+	cloud.google.com/go/compute v1.19.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.13.0 // indirect
 	cloud.google.com/go/kms v1.10.1 // indirect
