@@ -1,5 +1,6 @@
 summit_domain_id: 444
 scribe_url: scribe:80
+omnirpc_url: https://rpc.interop-staging.com
 
 chains:
   444:

@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
-	"github.com/synapsecns/sanguine/ethergo/chain/client"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -18,7 +18,7 @@ import (
 // NewPingPongClientContract returns a bound ping pong test client contract.
 //
 //nolint:staticcheck
-func NewPingPongClientContract(ctx context.Context, client client.EVMClient, pingPongClientAddress common.Address) (domains.PingPongClientContract, error) {
+func NewPingPongClientContract(ctx context.Context, client client.EVM, pingPongClientAddress common.Address) (domains.PingPongClientContract, error) {
 	boundCountract, err := pingpongclient.NewPingPongClientRef(pingPongClientAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &pingpongclient.PingPongClientRef{}, err)
@@ -41,7 +41,7 @@ type pingPongClientContract struct {
 	contract *pingpongclient.PingPongClientRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client client.EVMClient
+	client client.EVM
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

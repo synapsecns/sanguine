@@ -14,9 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
@@ -27,12 +27,12 @@ import (
 
 type loadConfig struct {
 	SummitDomainID int                 `yaml:"summit_domain_id"`
+	OmniRPCUrl     string              `yaml:"omnirpc_url"`
 	ScribeURL      string              `yaml:"scribe_url"`
 	Chains         map[int]chainConfig `yaml:"chains"`
 }
 
 type chainConfig struct {
-	RPC                 string `yaml:"rpc"`
 	MessageContractAddr string `yaml:"message_contract_addr"`
 }
 
@@ -104,12 +104,19 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 	return conn, scribeClient, nil
 }
 
+var startBlocks map[int]uint64 = map[int]uint64{}
+
 // streamLogs uses the grpcConnection to Scribe, with a chainID and address to get all logs from that address.
-func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient, chainClient client.EVMClient) error {
-	fromBlock, err := chainClient.BlockNumber(ctx)
+func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient, omniRPCClient omniClient.RPCClient) error {
+	chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 	if err != nil {
 		return err
 	}
+	startBlocks[int(chainID)], err = chainClient.BlockNumber(ctx)
+	if err != nil {
+		return err
+	}
+	fromBlock := 0
 	toBlock := "latest"
 	fmt.Printf("Streaming logs for chain %d on addr %s from %v to %v.\n", chainID, address, fromBlock, toBlock)
 	stream, err := conn.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
@@ -155,6 +162,16 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 }
 
 func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
+	fmt.Printf("Handling log on chain %d with block number %d\n", chainID, log.BlockNumber)
+	startBlock, ok := startBlocks[int(chainID)]
+	if !ok {
+		return fmt.Errorf("could not get start block for chain %d", chainID)
+	}
+	if log.BlockNumber < startBlock {
+		fmt.Println("dropping")
+		return nil
+	}
+
 	fmt.Printf("Handling log on chain %d\n", chainID)
 	var event interface{}
 	if event, err = parser.ParsePingSent(*log); err == nil {
@@ -235,7 +252,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("routes: %v\n", routes)
 	fmt.Println("Routes:")
 	for _, route := range routes {
 		fmt.Printf("--- %d -> %d\n", route[0], route[1])
@@ -247,17 +263,21 @@ func main() {
 		panic(err)
 	}
 
+	// Connect to OmniRPC.
+	omniRPCClient := omniClient.NewOmnirpcClient(loadCfg.OmniRPCUrl, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
+
 	// Listen for messages.
 	g, ctx := errgroup.WithContext(ctx)
 	contracts := map[int]domains.PingPongClientContract{}
 	for cid, c := range loadCfg.Chains {
 		chainCfg := c
 		chainID := cid
-		chainClient, err := client.NewClient(context.Background(), c.RPC)
+		chainClient, err := omniRPCClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Connecting to contract at %s with RPC %s...\n", c.MessageContractAddr, c.RPC)
+
+		fmt.Printf("Connecting to contract at %s...\n", c.MessageContractAddr)
 		contracts[chainID], err = evm.NewPingPongClientContract(context.Background(), chainClient, common.HexToAddress(c.MessageContractAddr))
 		if err != nil {
 			panic(err)
@@ -265,8 +285,9 @@ func main() {
 
 		addr := chainCfg.MessageContractAddr
 		g.Go(func() error {
-			return streamLogs(context.Background(), uint32(chainID), addr, scribeClient, chainClient)
+			return streamLogs(context.Background(), uint32(chainID), addr, scribeClient, omniRPCClient)
 		})
+
 	}
 
 	// Send messages.
