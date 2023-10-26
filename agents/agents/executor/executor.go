@@ -107,7 +107,7 @@ const (
 	logChanSize                 = 1000
 	scribeConnectTimeout        = 30 * time.Second
 	defaultMaxRetrySeconds      = 30
-	defaultExecuteRetryInterval = 60
+	defaultExecuteRetryInterval = 300
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
@@ -901,10 +901,11 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					leafHex := common.BytesToHash(leaf[:]).String()
 
 					lastExecuteTime, ok := e.lastExecuteAttempts[leafHex]
-					fmt.Printf("loaded attempt for %s: %v\n", leafHex, lastExecuteTime)
+					fmt.Printf("loaded attempt for %s: %v [retryInterval=%d]\n", leafHex, lastExecuteTime, e.config.ExecuteRetryInterval)
 					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
 					now := uint64(e.NowFunc().Unix())
-					if ok && nextExecuteTime <= now {
+					fmt.Printf("nextExecuteTime: %v, now: %v\n", nextExecuteTime, now)
+					if ok && nextExecuteTime > now {
 						fmt.Printf("nextExecuteTime %v <= now: %v; not executing\n", nextExecuteTime, now)
 						continue
 					}
