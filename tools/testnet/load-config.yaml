@@ -4,15 +4,12 @@ omnirpc_url: https://rpc.interop-staging.com
 
 chains:
   444:
-    rpc: https://l2-synapse-sepolia-testnet-1mdqkm651f.t.conduit.xyz
-      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/444
     message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+    origin_addr: 0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED
   421614:
-    rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
-      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/421614
     message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+    origin_addr: 0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED
   11155111:
-    rpc: https://ethereum-sepolia.blockpi.network/v1/rpc/public
-      # rpc: http://omnirpc.omnirpc.svc.cluster.local/confirmations/1/rpc/11155111
     message_contract_addr: 0x7A193a5f45ff4cDE43708101b3C03793155A152F
+    origin_addr: 0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED
 
