@@ -12,14 +12,42 @@ import (
 	resolvers "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/resolver"
 )
 
+// MessageStatus is the resolver for the messageStatus field.
+func (r *destinationInfoResolver) MessageStatus(ctx context.Context, obj *model.DestinationInfo) (*model.MessageStatus, error) {
+	messageStatus, err := r.DB.RetrieveMessageStatus(ctx, *obj.MessageHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving message status: %w", err)
+	}
+
+	return &messageStatus, nil
+}
+
 // OriginInfo is the resolver for the originInfo field.
 func (r *destinationInfoResolver) OriginInfo(ctx context.Context, obj *model.DestinationInfo) (*model.OriginInfo, error) {
+	originSent, err := r.DB.RetrieveOriginSent(ctx, *obj.MessageHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving origin sent data: %w", err)
+	}
+	return dbToGraphqlModelOrigin(originSent), nil
+}
 
+// MessageStatus is the resolver for the messageStatus field.
+func (r *originInfoResolver) MessageStatus(ctx context.Context, obj *model.OriginInfo) (*model.MessageStatus, error) {
+	messageStatus, err := r.DB.RetrieveMessageStatus(ctx, *obj.MessageHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving message status: %w", err)
+	}
+
+	return &messageStatus, nil
 }
 
 // DestinationInfo is the resolver for the destinationInfo field.
 func (r *originInfoResolver) DestinationInfo(ctx context.Context, obj *model.OriginInfo) (*model.DestinationInfo, error) {
-	panic(fmt.Errorf("not implemented: DestinationInfo - destinationInfo"))
+	executed, err := r.DB.RetrieveExecuted(ctx, *obj.MessageHash)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving destination info: %w", err)
+	}
+	return dbToGraphqlModelDestination(executed), nil
 }
 
 // DestinationInfo returns resolvers.DestinationInfoResolver implementation.

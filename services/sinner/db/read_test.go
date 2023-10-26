@@ -89,11 +89,17 @@ func (t *DBSuite) TestRetrieveOriginSent() {
 		Nil(t.T(), err)
 
 		// Test: Retrieve and validate the OriginSent record
-		retrievedRecord, err := testDB.RetrieveOriginSent(t.GetTestContext(), chainID, txHash)
+		retrievedRecord, err := testDB.RetrieveOriginSent(t.GetTestContext(), messageHash)
 		Nil(t.T(), err)
 		Equal(t.T(), txHash, retrievedRecord.TxHash)
 		Equal(t.T(), chainID, retrievedRecord.ChainID)
 		Equal(t.T(), messageHash, retrievedRecord.MessageHash)
+
+		retrievedRecords, err := testDB.RetrieveOriginSents(t.GetTestContext(), chainID, txHash)
+		Nil(t.T(), err)
+		Equal(t.T(), txHash, retrievedRecords[0].TxHash)
+		Equal(t.T(), chainID, retrievedRecords[0].ChainID)
+		Equal(t.T(), messageHash, retrievedRecords[0].MessageHash)
 	})
 }
 
@@ -118,10 +124,16 @@ func (t *DBSuite) TestRetrieveExecuted() {
 		Nil(t.T(), err)
 
 		// Test: Retrieve and validate the Executed record
-		retrievedRecord, err := testDB.RetrieveExecuted(t.GetTestContext(), chainID, txHash)
+		retrievedRecord, err := testDB.RetrieveExecuted(t.GetTestContext(), messageHash)
 		Nil(t.T(), err)
 		Equal(t.T(), txHash, retrievedRecord.TxHash)
 		Equal(t.T(), chainID, retrievedRecord.ChainID)
 		Equal(t.T(), messageHash, retrievedRecord.MessageHash)
+
+		retrievedRecords, err := testDB.RetrieveExecuteds(t.GetTestContext(), chainID, txHash)
+		Nil(t.T(), err)
+		Equal(t.T(), txHash, retrievedRecords[0].TxHash)
+		Equal(t.T(), chainID, retrievedRecords[0].ChainID)
+		Equal(t.T(), messageHash, retrievedRecords[0].MessageHash)
 	})
 }

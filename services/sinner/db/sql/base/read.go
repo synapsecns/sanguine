@@ -12,7 +12,7 @@ import (
 func (s Store) RetrieveMessageStatus(ctx context.Context, messageHash string) (graphqlModel.MessageStatus, error) {
 	var record model.MessageStatus
 
-	err := s.DB().WithContext(ctx).
+	err := s.DB().WithContext(ctx).Model(&model.MessageStatus{}).
 		Where("message_hash = ?", messageHash).
 		First(&record).Error
 
@@ -41,7 +41,7 @@ func (s Store) RetrieveMessageStatus(ctx context.Context, messageHash string) (g
 // RetrieveLastStoredBlock gets the last stored block.
 func (s Store) RetrieveLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error) {
 	var lastIndexed model.LastIndexed
-	err := s.DB().WithContext(ctx).
+	err := s.DB().WithContext(ctx).Model(&model.LastIndexed{}).
 		Where("contract_address = ? AND chain_id = ?", address.String(), chainID).
 		Order("block_number DESC").First(&lastIndexed).Error
 
@@ -56,28 +56,54 @@ func (s Store) RetrieveLastStoredBlock(ctx context.Context, chainID uint32, addr
 	return lastIndexed.BlockNumber, nil
 }
 
-// RetrieveOriginSent gets the OriginSent record.
-func (s Store) RetrieveOriginSent(ctx context.Context, chainID uint32, txHash string) (model.OriginSent, error) {
+// RetrieveOriginSent gets the Origin Sent event.
+func (s Store) RetrieveOriginSent(ctx context.Context, messageHash string) (model.OriginSent, error) {
 	var originSentRecord model.OriginSent
-	err := s.DB().WithContext(ctx).
-		Where("chain_id = ? AND tx_hash = ?", chainID, txHash).
+	err := s.DB().WithContext(ctx).Model(&model.OriginSent{}).
+		Where("message_hash = ?", messageHash).
 		First(&originSentRecord).Error
 
 	if err != nil {
-		return model.OriginSent{}, fmt.Errorf("could not retrieve OriginSent record: %w", err)
+		return model.OriginSent{}, fmt.Errorf("could not retrieve Origin Sent event: %w", err)
 	}
 	return originSentRecord, nil
 }
 
-// RetrieveExecuted gets the Executed record.
-func (s Store) RetrieveExecuted(ctx context.Context, chainID uint32, txHash string) (model.Executed, error) {
-	var executedRecord model.Executed
-	err := s.DB().WithContext(ctx).
+// RetrieveOriginSents gets the Origin Sent events.
+func (s Store) RetrieveOriginSents(ctx context.Context, chainID uint32, txHash string) ([]model.OriginSent, error) {
+	var originSentRecord []model.OriginSent
+	err := s.DB().WithContext(ctx).Model(&model.OriginSent{}).
 		Where("chain_id = ? AND tx_hash = ?", chainID, txHash).
+		Scan(&originSentRecord).Error
+
+	if err != nil {
+		return []model.OriginSent{}, fmt.Errorf("could not retrieve Origin Sent event: %w", err)
+	}
+	return originSentRecord, nil
+}
+
+// RetrieveExecuted gets a Executed event.
+func (s Store) RetrieveExecuted(ctx context.Context, messageHash string) (model.Executed, error) {
+	var executedRecord model.Executed
+	err := s.DB().WithContext(ctx).Model(&model.Executed{}).
+		Where("message_hash = ?", messageHash).
 		First(&executedRecord).Error
 
 	if err != nil {
-		return model.Executed{}, fmt.Errorf("could not retrieve Executed record: %w", err)
+		return model.Executed{}, fmt.Errorf("could not retrieve Executed event: %w", err)
+	}
+	return executedRecord, nil
+}
+
+// RetrieveExecuteds gets Executed events.
+func (s Store) RetrieveExecuteds(ctx context.Context, chainID uint32, txHash string) ([]model.Executed, error) {
+	var executedRecord []model.Executed
+	err := s.DB().WithContext(ctx).Model(&model.Executed{}).
+		Where("chain_id = ? AND tx_hash = ?", chainID, txHash).
+		Scan(&executedRecord).Error
+
+	if err != nil {
+		return []model.Executed{}, fmt.Errorf("could not retrieve Executed event: %w", err)
 	}
 	return executedRecord, nil
 }

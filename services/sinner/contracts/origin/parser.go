@@ -117,7 +117,7 @@ func (p *ParserImpl) ParseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		TxHash:             iFace.Raw.TxHash.String(),
 		TxIndex:            iFace.Raw.TxIndex,
 		DestinationChainID: iFace.Destination,
-		Message:            common.Bytes2Hex(iFace.Message[:]),
+		Message:            common.Bytes2Hex(iFace.Message),
 		Nonce:              iFace.Nonce,
 		MessageHash:        common.Bytes2Hex(iFace.MessageHash[:]),
 	}

@@ -23,15 +23,38 @@ type EventDB struct {
 	mock.Mock
 }
 
-// RetrieveExecuted provides a mock function with given fields: ctx, chainID, txHash
-func (_m *EventDB) RetrieveExecuted(ctx context.Context, chainID uint32, txHash string) (model.Executed, error) {
-	ret := _m.Called(ctx, chainID, txHash)
+// RetrieveExecuted provides a mock function with given fields: ctx, messageHash
+func (_m *EventDB) RetrieveExecuted(ctx context.Context, messageHash string) (model.Executed, error) {
+	ret := _m.Called(ctx, messageHash)
 
 	var r0 model.Executed
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, string) model.Executed); ok {
-		r0 = rf(ctx, chainID, txHash)
+	if rf, ok := ret.Get(0).(func(context.Context, string) model.Executed); ok {
+		r0 = rf(ctx, messageHash)
 	} else {
 		r0 = ret.Get(0).(model.Executed)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, messageHash)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveExecuteds provides a mock function with given fields: ctx, chainID, txHash
+func (_m *EventDB) RetrieveExecuteds(ctx context.Context, chainID uint32, txHash string) ([]model.Executed, error) {
+	ret := _m.Called(ctx, chainID, txHash)
+
+	var r0 []model.Executed
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, string) []model.Executed); ok {
+		r0 = rf(ctx, chainID, txHash)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.Executed)
+		}
 	}
 
 	var r1 error
@@ -86,15 +109,38 @@ func (_m *EventDB) RetrieveMessageStatus(ctx context.Context, messageHash string
 	return r0, r1
 }
 
-// RetrieveOriginSent provides a mock function with given fields: ctx, chainID, txHash
-func (_m *EventDB) RetrieveOriginSent(ctx context.Context, chainID uint32, txHash string) (model.OriginSent, error) {
-	ret := _m.Called(ctx, chainID, txHash)
+// RetrieveOriginSent provides a mock function with given fields: ctx, messageHash
+func (_m *EventDB) RetrieveOriginSent(ctx context.Context, messageHash string) (model.OriginSent, error) {
+	ret := _m.Called(ctx, messageHash)
 
 	var r0 model.OriginSent
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, string) model.OriginSent); ok {
-		r0 = rf(ctx, chainID, txHash)
+	if rf, ok := ret.Get(0).(func(context.Context, string) model.OriginSent); ok {
+		r0 = rf(ctx, messageHash)
 	} else {
 		r0 = ret.Get(0).(model.OriginSent)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, messageHash)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveOriginSents provides a mock function with given fields: ctx, chainID, txHash
+func (_m *EventDB) RetrieveOriginSents(ctx context.Context, chainID uint32, txHash string) ([]model.OriginSent, error) {
+	ret := _m.Called(ctx, chainID, txHash)
+
+	var r0 []model.OriginSent
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, string) []model.OriginSent); ok {
+		r0 = rf(ctx, chainID, txHash)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.OriginSent)
+		}
 	}
 
 	var r1 error
