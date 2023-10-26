@@ -6,12 +6,12 @@ type Query {
   getOriginInfo(
     txHash: String!
     chainID: Int!
-  ): OriginInfo
+  ): [OriginInfo]
 
   getDestinationInfo(
     txHash: String!
     chainID: Int!
-  ): DestinationInfo
+  ): [DestinationInfo]
 
 }
 

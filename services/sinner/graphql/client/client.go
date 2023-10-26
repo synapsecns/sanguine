@@ -19,9 +19,9 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	GetMessageStatus   *model.MessageStatus   "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
-	GetOriginInfo      *model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
-	GetDestinationInfo *model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
+	GetMessageStatus   *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
+	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
 	Response *struct {
@@ -32,7 +32,7 @@ type GetMessageStatus struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetOriginInfo struct {
-	Response *struct {
+	Response []*struct {
 		MessageHash        *string "json:\"messageHash\" graphql:\"messageHash\""
 		ContractAddress    *string "json:\"contractAddress\" graphql:\"contractAddress\""
 		BlockNumber        *int    "json:\"blockNumber\" graphql:\"blockNumber\""
@@ -55,7 +55,7 @@ type GetOriginInfo struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDestinationInfo struct {
-	Response *struct {
+	Response []*struct {
 		ContractAddress *string "json:\"contractAddress\" graphql:\"contractAddress\""
 		BlockNumber     *int    "json:\"blockNumber\" graphql:\"blockNumber\""
 		TxHash          *string "json:\"txHash\" graphql:\"txHash\""
