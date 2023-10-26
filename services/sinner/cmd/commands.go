@@ -77,7 +77,7 @@ var indexerCommand = &cli.Command{
 
 		sinnerService, err := service.NewSinner(db, decodeConfig, metrics.Get())
 		if err != nil {
-			return fmt.Errorf("could not create explorer backfiller: %w", err)
+			return fmt.Errorf("could not create Sinner indexer: %w", err)
 		}
 		err = sinnerService.Index(c.Context)
 		if err != nil {
@@ -106,7 +106,7 @@ var unifiedCommand = &cli.Command{
 		// Start indexer
 		sinnerService, err := service.NewSinner(db, decodeConfig.IndexerConfig(), metrics.Get())
 		if err != nil {
-			return fmt.Errorf("could not create explorer backfiller: %w", err)
+			return fmt.Errorf("could not create Sinner indexer: %w", err)
 		}
 		err = sinnerService.Index(c.Context)
 		if err != nil {

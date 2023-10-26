@@ -45,12 +45,8 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 		return fmt.Errorf("could not listen on port %d", cfg.HTTPPort)
 	}
 
-	// m := cmux.New(listener)
-	// httpListener := m.Match(cmux.HTTP1Fast())
-
 	g.Go(func() error {
 		//nolint: gosec
-		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
 		err := http.Serve(listener, router)
 		if err != nil {
 			return fmt.Errorf("could not serve http: %w", err)
