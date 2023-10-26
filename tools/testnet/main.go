@@ -14,7 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -34,8 +36,9 @@ type loadConfig struct {
 }
 
 type chainConfig struct {
-	MessageContractAddr string `yaml:"message_contract_addr"`
-	OriginAddr          string `yaml:"origin_addr"`
+	MessageAddr     string `yaml:"message_contract_addr"`
+	OriginAddr      string `yaml:"origin_addr"`
+	DestinationAddr string `yaml:"destination_addr"`
 }
 
 func getLoadConfig(path string) (cfg loadConfig, err error) {
@@ -204,19 +207,26 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		fmt.Printf("Parsed pong received on chain %d [ID=%d]\n", chainID, pongReceivedEvent.PingId.Int64())
 		itersProcessed++
 	}
-	if event, err = originParser.ParseSent(*log); err == nil {
-		sentEvent, ok := event.(*origin.OriginSent)
+	if event, ok = originParser.ParseSent(*log); ok {
+		message, ok := event.(types.Message)
 		if !ok {
 			return fmt.Errorf("could not parse message sent event")
 		}
-		fmt.Printf("Parsed sent on chain %d [hash=%s]\n", chainID, common.BytesToHash(sentEvent.MessageHash[:]).String())
+		leaf, err := message.ToLeaf()
+		if err != nil {
+			fmt.Printf("Error getting message leaf: %v\n", err)
+			return err
+		}
+		fmt.Printf("Parsed message sent from %d to %d [hash=%s]\n", message.OriginDomain(), message.DestinationDomain(), common.BytesToHash(leaf[:]).String())
+		messages = append(messages, message)
 	}
 	return nil
 }
 
 var pingPongParser *pingpongclient.PingPongClientFilterer
-var originParser *origin.OriginFilterer
+var originParser origin.Parser
 var numIters, itersProcessed, numRoutes int
+var messages []types.Message
 
 const eventBufferSize = 1000
 
@@ -245,14 +255,14 @@ func main() {
 		panic(err)
 	}
 
-	pingPongAddr := loadCfg.Chains[loadCfg.SummitDomainID].MessageContractAddr
+	pingPongAddr := loadCfg.Chains[loadCfg.SummitDomainID].MessageAddr
 	pingPongParser, err = pingpongclient.NewPingPongClientFilterer(common.HexToAddress(pingPongAddr), nil)
 	if err != nil {
 		panic(err)
 	}
 
 	originAddr := loadCfg.Chains[loadCfg.SummitDomainID].OriginAddr
-	originParser, err = origin.NewOriginFilterer(common.HexToAddress(originAddr), nil)
+	originParser, err = origin.NewParser(common.HexToAddress(originAddr))
 	if err != nil {
 		panic(err)
 	}
@@ -284,7 +294,8 @@ func main() {
 
 	// Listen for messages.
 	g, _ := errgroup.WithContext(ctx)
-	contracts := map[int]domains.PingPongClientContract{}
+	messageContracts := map[int]domains.PingPongClientContract{}
+	destinationContracts := map[int]domains.DestinationContract{}
 	for cid, c := range loadCfg.Chains {
 		chainCfg := c
 		chainID := cid
@@ -293,13 +304,18 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("Connecting to contract at %s...\n", c.MessageContractAddr)
-		contracts[chainID], err = evm.NewPingPongClientContract(ctx, chainClient, common.HexToAddress(c.MessageContractAddr))
+		messageContracts[chainID], err = evm.NewPingPongClientContract(ctx, chainClient, common.HexToAddress(c.MessageAddr))
 		if err != nil {
 			panic(err)
 		}
 
-		messageAddr := chainCfg.MessageContractAddr
+		cClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(chainID, 1))
+		destinationContracts[chainID], err = evm.NewDestinationContract(ctx, cClient, common.HexToAddress(c.DestinationAddr))
+		if err != nil {
+			panic(err)
+		}
+
+		messageAddr := chainCfg.MessageAddr
 		g.Go(func() error {
 			return streamLogs(ctx, uint32(chainID), messageAddr, scribeClient, omniRPCClient)
 		})
@@ -315,8 +331,8 @@ func main() {
 	for i := 0; i < numIters; i++ {
 		for _, route := range routes {
 			fmt.Printf("Sending message from %d to %d\n", route[0], route[1])
-			destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageContractAddr)
-			contract, ok := contracts[route[0]]
+			destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
+			contract, ok := messageContracts[route[0]]
 			if !ok {
 				panic(fmt.Errorf("could not get contract for chain %d", route[0]))
 			}
@@ -344,4 +360,26 @@ func main() {
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
+
+	// Verify all messages were executed.
+	numSuccesses := 0
+	ctx = context.Background()
+	for _, message := range messages {
+		leaf, _ := message.ToLeaf()
+		fmt.Printf("Verifying message with leaf: %v\n", common.BytesToHash(leaf[:]))
+		contract, ok := destinationContracts[int(message.DestinationDomain())]
+		if !ok {
+			panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
+		}
+		status, err := contract.MessageStatus(ctx, message)
+		if err != nil {
+			fmt.Printf("error getting message status [hash=%s]", leaf)
+			continue
+		}
+		fmt.Printf("Got status for message %s: %d\n", leaf, status)
+		if status == 2 {
+			numSuccesses++
+		}
+	}
+	fmt.Printf("Checked all messages [%d/%d successful].\n", numSuccesses, len(messages))
 }
