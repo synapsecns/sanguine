@@ -20,7 +20,7 @@ require (
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/mod v0.10.0
 	golang.org/x/tools v0.9.3
-	google.golang.org/grpc v1.55.0
+	google.golang.org/grpc v1.56.3
 	k8s.io/apiextensions-apiserver v0.25.5
 	k8s.io/apimachinery v0.25.5
 	k8s.io/client-go v0.25.5
@@ -31,7 +31,7 @@ require (
 	bitbucket.org/creachadair/stringset v0.0.8 // indirect
 	cloud.google.com/go v0.110.0 // indirect
 	cloud.google.com/go/bigtable v1.10.1 // indirect
-	cloud.google.com/go/compute v1.19.0 // indirect
+	cloud.google.com/go/compute v1.19.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.13.0 // indirect
 	cloud.google.com/go/longrunning v0.4.1 // indirect
