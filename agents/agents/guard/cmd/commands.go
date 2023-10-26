@@ -209,6 +209,7 @@ var GuardRunCommand = &cli.Command{
 		})
 
 		if err := g.Wait(); err != nil {
+			fmt.Printf("outer guard err: %v\n", err)
 			return fmt.Errorf("failed to run guard: %w", err)
 		}
 

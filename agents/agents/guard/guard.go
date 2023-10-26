@@ -254,7 +254,8 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 
 			err := g.handleLog(ctx, *log, chainID)
 			if err != nil {
-				return fmt.Errorf("could not process log: %w", err)
+				//TODO: how to handle error here?
+				logger.Errorf("could not process log: %v", err)
 			}
 		}
 	}
