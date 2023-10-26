@@ -1201,7 +1201,7 @@ export const CRVUSDC = new Token({
 export const USDBC = new Token({
   visibilityRank: 101,
   addresses: {
-    [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
+    [CHAINS.BASE.id]: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
   },
   decimals: {
     [CHAINS.BASE.id]: 6,
