@@ -77,6 +77,7 @@ error AgentUnknown();
 error DisputeAlreadyResolved();
 error DisputeNotOpened();
 error DisputeNotStuck();
+error DisputeTimeoutNotOver();
 error GuardInDispute();
 error NotaryInDispute();
 

@@ -44,6 +44,8 @@ bytes32 constant STATE_INVALID_SALT = keccak256("STATE_INVALID_SALT");
 /// @dev Optimistic period for new agent roots in LightManager
 uint32 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
 uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
+/// @dev Amount of time that the Notary will not be considered active after they won a dispute
+uint32 constant DISPUTE_TIMEOUT_NOTARY = 12 hours;
 /// @dev Amount of time without fresh data from Notaries before contract owner can resolve stuck disputes manually
 uint256 constant FRESH_DATA_TIMEOUT = 4 hours;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
