@@ -58,6 +58,12 @@ contract OriginTest is AgentSecuredTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Origin({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3), gasOracle_: address(4)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = uint32(block.chainid);
         address caller = random.nextAddress();
@@ -78,6 +84,24 @@ contract OriginTest is AgentSecuredTest {
 
     function initializeLocalContract() public override {
         Origin(localContract()).initialize();
+    }
+
+    function test_sendBaseMessage_revert_blockTimestampOverflow() public {
+        vm.warp(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendBaseMessage_revert_blockNumberOverflow() public {
+        vm.roll(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
     }
 
     function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {

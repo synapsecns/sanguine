@@ -68,6 +68,12 @@ contract SummitTest is AgentSecuredTest {
         assertEq(snapGas.length, 0, "!snapGas");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Summit({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
         vm.chainId(domain);
@@ -99,6 +105,20 @@ contract SummitTest is AgentSecuredTest {
         vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
+    }
+
+    function test_acceptNotarySnapshot_revert_blockTimestampOverflow() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        // Another Guard signs the snapshot
+        (bytes memory snapPayload, bytes memory guardSignature) = signSnapshot(guard, rawSnap);
+        bytes memory notarySig = signSnapshot(notary, snapPayload);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        vm.warp(2 ** 40);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        inbox.submitSnapshot(snapPayload, notarySig);
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
