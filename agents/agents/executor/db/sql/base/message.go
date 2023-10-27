@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
@@ -348,6 +349,11 @@ func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
 	}
+	leafBytes, err := message.ToLeaf()
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to get message leaf: %w", err)
+	}
+	leaf := common.BytesToHash(leafBytes[:])
 	return Message{
 		ChainID:        message.OriginDomain(),
 		Destination:    message.DestinationDomain(),
@@ -357,5 +363,6 @@ func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64
 		Executed:       false,
 		MinimumTimeSet: minimumTimeSet,
 		MinimumTime:    minimumTime,
+		Leaf:           leaf.String(),
 	}, nil
 }
