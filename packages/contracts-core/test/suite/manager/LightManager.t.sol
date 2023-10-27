@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {FRESH_DATA_TIMEOUT} from "../../../contracts/libs/Constants.sol";
+import {AGENT_ROOT_PROPOSAL_TIMEOUT, FRESH_DATA_TIMEOUT} from "../../../contracts/libs/Constants.sol";
 import {
+    AgentRootNotProposed,
+    AgentRootTimeoutNotOver,
     CallerNotDestination,
     IncorrectAgentProof,
     MustBeSynapseDomain,
@@ -125,6 +127,156 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_setAgentRoot_equal() public {
         test_setAgentRoot(lightManager.agentRoot());
+    }
+
+    // ════════════════════════════════════ TESTS: SET AGENT ROOT (WHEN STUCK) ═════════════════════════════════════════
+
+    function checkProposedAgentData(bytes32 expectedAgentRoot, uint256 expectedProposedAt) public {
+        (bytes32 agentRoot, uint256 proposedAt) = lightManager.proposedAgentRootData();
+        assertEq(agentRoot, expectedAgentRoot, "!agentRoot");
+        assertEq(proposedAt, expectedProposedAt, "!proposedAt");
+    }
+
+    function test_proposeAgentRootWhenStuck_revert_notOwner(address caller) public {
+        vm.assume(caller != lightManager.owner());
+        expectRevertNotOwner();
+        vm.prank(caller);
+        lightManager.proposeAgentRootWhenStuck("root");
+    }
+
+    function test_resolveProposedAgentRoot_revert_notOwner(address caller) public {
+        vm.assume(caller != lightManager.owner());
+        expectRevertNotOwner();
+        vm.prank(caller);
+        lightManager.resolveProposedAgentRoot();
+    }
+
+    function test_proposedAgentRootDataEmpty() public {
+        checkProposedAgentData({expectedAgentRoot: 0, expectedProposedAt: 0});
+    }
+
+    function test_proposeAgentRootWhenStuck() public {
+        vm.warp(1234);
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 expectedAgentRoot = keccak256("mock root");
+        uint256 expectedProposedAt = block.timestamp;
+        vm.expectEmit(address(lightManager));
+        emit AgentRootProposed(expectedAgentRoot);
+        lightManager.proposeAgentRootWhenStuck(expectedAgentRoot);
+        checkProposedAgentData(expectedAgentRoot, expectedProposedAt);
+    }
+
+    function test_proposeAgentRootWhenStuck_proposedTwice() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("first root");
+        skip(1 hours);
+        bytes32 expectedAgentRoot = keccak256("second root");
+        uint256 expectedProposedAt = block.timestamp;
+        vm.expectEmit(address(lightManager));
+        emit AgentRootProposed(expectedAgentRoot);
+        lightManager.proposeAgentRootWhenStuck(expectedAgentRoot);
+        checkProposedAgentData(expectedAgentRoot, expectedProposedAt);
+    }
+
+    function test_proposeAgentRootWhenStuck_proposedTwice_revert_chainUnstuck() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("first root");
+        skip(1 hours);
+        mockSnapRootTime(0);
+        vm.expectRevert(NotStuck.selector);
+        lightManager.proposeAgentRootWhenStuck("second root");
+    }
+
+    function test_proposeAgentRootWhenStuck_revert_notStuck() public {
+        bytes32 newRoot = keccak256("mock root");
+        mockSnapRootTime(FRESH_DATA_TIMEOUT - 1);
+        vm.expectRevert(NotStuck.selector);
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+    }
+
+    function test_resolveProposedAgentRoot() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 newRoot = keccak256("mock root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        // Should emit two events: one signaling the new root, and another one signaling the manual resolution
+        vm.expectEmit(address(lightManager));
+        emit RootUpdated(newRoot);
+        vm.expectEmit(address(lightManager));
+        emit AgentRootResolved(newRoot);
+        lightManager.resolveProposedAgentRoot();
+        checkProposedAgentData(0, 0);
+    }
+
+    /// @dev Should proceed with the proposed root, even if new Notary data is available.
+    /// This is done to prevent rogue Notaries from going offline and then
+    /// indefinitely blocking the agent root resolution.
+    function test_resolveProposedAgentRoot_chainUnstuck() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 newRoot = keccak256("mock root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        mockSnapRootTime(0);
+        // Should emit two events: one signaling the new root, and another one signaling the manual resolution
+        vm.expectEmit(address(lightManager));
+        emit RootUpdated(newRoot);
+        vm.expectEmit(address(lightManager));
+        emit AgentRootResolved(newRoot);
+        lightManager.resolveProposedAgentRoot();
+        checkProposedAgentData(0, 0);
+    }
+
+    function test_resolveProposedAgentRoot_revert_timeoutNotOver() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 newRoot = keccak256("mock root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT - 1);
+        vm.expectRevert(AgentRootTimeoutNotOver.selector);
+        lightManager.resolveProposedAgentRoot();
+    }
+
+    function test_resolveProposedAgentRoot_proposedTwice() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("first root");
+        skip(1 hours);
+        bytes32 newRoot = keccak256("second root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        // Should emit two events: one signaling the new root, and another one signaling the manual resolution
+        vm.expectEmit(address(lightManager));
+        emit RootUpdated(newRoot);
+        vm.expectEmit(address(lightManager));
+        emit AgentRootResolved(newRoot);
+        lightManager.resolveProposedAgentRoot();
+        checkProposedAgentData(0, 0);
+    }
+
+    function test_resolveProposedAgentRoot_proposedTwice_revert_timeoutNotOver() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("first root");
+        skip(1 hours);
+        bytes32 newRoot = keccak256("second root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT - 1);
+        vm.expectRevert(AgentRootTimeoutNotOver.selector);
+        lightManager.resolveProposedAgentRoot();
+    }
+
+    function test_resolveProposedAgentRoot_revert_notProposed() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        vm.expectRevert(AgentRootNotProposed.selector);
+        lightManager.resolveProposedAgentRoot();
+    }
+
+    function test_resolveProposedAgentRoot_revert_alreadyResolved() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("mock root");
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        lightManager.resolveProposedAgentRoot();
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        vm.expectRevert(AgentRootNotProposed.selector);
+        lightManager.resolveProposedAgentRoot();
     }
 
     function test_setAgentRootWhenStuck() public {
