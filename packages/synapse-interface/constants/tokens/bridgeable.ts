@@ -3,6 +3,7 @@ import ageurLogo from '@assets/icons/ageur.svg'
 import avaxLogo from '@assets/icons/avax.svg'
 import btcLogo from '@assets/icons/btc.svg'
 import busdLogo from '@assets/icons/busd.svg'
+import crvusdLogo from '@assets/icons/crvusd.svg'
 import linkLogo from '@assets/icons/link.svg'
 import daiLogo from '@assets/icons/dai.svg'
 import dogLogo from '@assets/icons/dog.svg'
@@ -389,6 +390,7 @@ export const USDC = new Token({
     [CHAINS.ARBITRUM.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
+    [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -403,6 +405,7 @@ export const USDC = new Token({
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.DFK.id]: 18,
+    [CHAINS.BASE.id]: 6,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -508,6 +511,7 @@ export const DAI = new Token({
     [CHAINS.DOGE.id]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
     [CHAINS.KLAYTN.id]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
     [CHAINS.ARBITRUM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+    [CHAINS.BASE.id]: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -1172,4 +1176,42 @@ export const WETH = new Token({
   color: 'sky',
   priorityRank: 3,
   routeSymbol: 'WETH',
+})
+
+export const CRVUSDC = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
+  },
+  decimals: {
+    [CHAINS.BASE.id]: 18,
+  },
+  swapExceptions: {},
+  symbol: 'crvUSD',
+  name: 'Curve.fi USD',
+  logo: crvusdLogo,
+  swapableType: 'USD',
+  swapableOn: [],
+  color: 'yellow',
+  priorityRank: 1,
+  routeSymbol: 'crvUSD',
+})
+
+export const USDBC = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.BASE.id]: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
+  },
+  decimals: {
+    [CHAINS.BASE.id]: 6,
+  },
+  swapExceptions: {},
+  symbol: 'USDbC',
+  name: 'USD Base Coin',
+  logo: usdcLogo,
+  swapableType: 'USD',
+  swapableOn: [],
+  color: 'blue',
+  priorityRank: 1,
+  routeSymbol: 'USDbC',
 })
