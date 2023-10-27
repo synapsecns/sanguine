@@ -94,7 +94,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 							(SELECT {snapshotRoot}, {destBlockNum} FROM {attTable} WHERE {destination} = ?) as attestationTable
 							ON stateTable.{snapshotRoot} = attestationTable.{snapshotRoot}
 						)
-					) ORDER BY {attNonce} DESC LIMIT 1
+					) ORDER BY {attNonce} ASC LIMIT 1
 				)`,
 		map[string]string{
 			"stTable":      statesTableName,
