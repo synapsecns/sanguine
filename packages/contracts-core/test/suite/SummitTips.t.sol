@@ -524,6 +524,8 @@ contract SummitTipsTest is AgentSecuredTest {
         SummitCheats(summit).setActorTips(actor, domain, earned, claimed);
         bytes memory expectedCall = abi.encodeWithSelector(bondingManager.withdrawTips.selector, actor, domain, amount);
         vm.expectCall(address(bondingManager), expectedCall);
+        vm.expectEmit(summit);
+        emit TipWithdrawalInitiated(actor, domain, amount);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
         (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, domain);

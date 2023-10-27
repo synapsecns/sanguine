@@ -428,6 +428,8 @@ contract OriginTest is AgentSecuredTest {
 
     function test_withdrawTips(uint256 amount) public {
         vm.deal(origin, amount);
+        vm.expectEmit(origin);
+        emit TipWithdrawalCompleted(recipient, amount);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         assertEq(recipient.balance, amount);

@@ -178,6 +178,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         // Guaranteed to fit into uint128, as the sum is lower than `earned`
         actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
         InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);
+        emit TipWithdrawalInitiated(msg.sender, origin, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

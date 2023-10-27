@@ -107,6 +107,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         if (address(this).balance < amount) revert InsufficientEthBalance();
         (bool success,) = recipient.call{value: amount}("");
         if (!success) revert EthTransferFailed();
+        emit TipWithdrawalCompleted(recipient, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
