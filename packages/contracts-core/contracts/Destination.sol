@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
-import {IndexOutOfRange, NotaryInDispute, OutdatedNonce} from "./libs/Errors.sol";
+import {IndexOutOfRange, DisputeTimeoutNotOver, NotaryInDispute, OutdatedNonce} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/stack/GasData.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 import {ChainContext} from "./libs/ChainContext.sol";
@@ -94,7 +94,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes32 agentRoot,
         ChainGas[] memory snapGas
     ) external onlyInbox returns (bool wasAccepted) {
+        // Check that we can trust the Notary data: they are not in dispute, and the dispute timeout is over (if any)
         if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeTimeout(notaryIndex)) revert DisputeTimeoutNotOver();
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -132,6 +134,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             // Remove the pending agent merkle root, as its signer is in dispute
             _nextAgentRoot = oldRoot;
             return (false, false);
+        }
+        // If Notary recently won a Dispute, we can optimistically assume that their passed root is valid.
+        // However, we need to wait until the Dispute timeout is over, before passing the new root to LightManager.
+        if (_notaryDisputeTimeout(status.notaryIndex)) {
+            // We didn't pass anything, but there is a pending root
+            return (false, true);
         }
         // Check if agent root optimistic period is over
         if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) {
@@ -174,12 +182,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
         StoredGasData memory storedGasData = _storedGasData[domain];
-        // Check if there is a stored gas data for the domain, and if the notary who provided the data is not in dispute
-        if (storedGasData.submittedAt != 0 && !_notaryDisputeExists(storedGasData.notaryIndex)) {
+        // Form the data to return only if it exists and we can trust it:
+        // - There is stored gas data for the domain
+        // - Notary who provided the data is not in dispute
+        // - Notary who provided the data is not in post-dispute timeout period
+        // forgefmt: disable-next-item
+        if (
+            storedGasData.submittedAt != 0 &&
+            !_notaryDisputeExists(storedGasData.notaryIndex) &&
+            !_notaryDisputeTimeout(storedGasData.notaryIndex)
+        ) {
             gasData = storedGasData.gasData;
             dataMaturity = block.timestamp - storedGasData.submittedAt;
         }
-        // Return empty values if there is no data for the domain, or if the notary who provided the data is in dispute
+        // Return empty values if there is no data for the domain, or the notary who provided the data can't be trusted.
     }
 
     /// @inheritdoc InterfaceDestination
