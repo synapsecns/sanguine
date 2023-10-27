@@ -26,17 +26,25 @@ interface InterfaceLightManager {
      * by proposing the new agent root. The contract owner will be able to resolve the proposed
      * agent root after a certain period of time.
      * Note: this function could be called multiple times, each time the timer will be reset.
-     * Note: supplying the empty agent root will cancel the proposed agent root.
      * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
      * indicating that the chain is stuck for one of the reasons:
      * - All active Notaries are in Dispute.
      * - No active Notaries exist under the current agent root.
      * @dev Will revert if any of the following conditions is met:
      * - Caller is not the contract owner.
+     * - Agent root is empty.
      * - The chain is not in a stuck state (has recently received a fresh data from the Notaries).
      * @param agentRoot_    New Agent Merkle Root that is proposed to be set
      */
     function proposeAgentRootWhenStuck(bytes32 agentRoot_) external;
+
+    /**
+     * @notice Allows contract owner to cancel the previously proposed agent root.
+     * @dev Will revert if any of the following conditions is met:
+     * - Caller is not the contract owner.
+     * - No agent root was proposed.
+     */
+    function cancelProposedAgentRoot() external;
 
     /**
      * @notice Allows contract owner to resolve the previously proposed agent root.
