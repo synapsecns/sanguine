@@ -5,7 +5,13 @@ pragma solidity 0.8.17;
 import {AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, TIPS_GRANULARITY} from "./libs/Constants.sol";
-import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
+import {
+    MustBeSynapseDomain,
+    DisputeTimeoutNotOver,
+    NotaryInDispute,
+    TipsClaimMoreThanEarned,
+    TipsClaimZero
+} from "./libs/Errors.sol";
 import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
@@ -112,7 +118,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 paddedTips,
         bytes memory rcptPayload
     ) external onlyInbox returns (bool wasAccepted) {
+        // Check that we can trust the receipt Notary data: they are not in dispute, and the dispute timeout is over.
         if (_notaryDisputeExists(rcptNotaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeTimeout(rcptNotaryIndex)) revert DisputeTimeoutNotOver();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcpt: rcptPayload.castToReceipt(),
@@ -138,7 +146,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         onlyInbox
         returns (bytes memory attPayload)
     {
+        // Check that we can trust the snapshot Notary data: they are not in dispute, and the dispute timeout is over.
         if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeTimeout(notaryIndex)) revert DisputeTimeoutNotOver();
         // This will revert if payload is not a snapshot
         return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
@@ -218,9 +228,10 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
             // Honest Notaries are incentivized to resubmit the Receipt or Attestation if it was in fact valid.
             _deleteFromQueue(messageHash);
             queuePopped = true;
-        } else if (flag == DisputeFlag.Pending) {
-            // Notary is not slashed, but is in Dispute. To keep the tips flow going we add the receipt to the back of
-            // the queue, hoping that by the next interaction the dispute will have been resolved.
+        } else if (flag == DisputeFlag.Pending || _notaryDisputeTimeout(notaryIndex)) {
+            // Notary is in the ongoing Dispute, or has recently won one. We postpone the receipt handling.
+            // To keep the tips flow going we add the receipt to the back of the queue,
+            // hoping that by the next interaction the dispute will have been resolved.
             _moveToBack();
             queuePopped = true;
         }
