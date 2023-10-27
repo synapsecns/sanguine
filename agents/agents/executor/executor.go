@@ -929,23 +929,28 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 							continue
 						}
 						fmt.Printf("executed: %v\n", executed)
-						now := uint64(e.NowFunc().Unix())
-						e.lastExecuteAttempts[leafHex] = now
-						fmt.Printf("inserted attempt for %s: %v\n", leafHex, now)
-					} else {
-						delete(e.lastExecuteAttempts, leafHex)
-						fmt.Printf("removed attempt for %s\n", leafHex)
-						destinationDomain := message.DestinationDomain()
-						nonce := message.Nonce()
-						executedMessageMask := db.DBMessage{
-							ChainID:     &chainID,
-							Destination: &destinationDomain,
-							Nonce:       &nonce,
+
+						if executed {
+							delete(e.lastExecuteAttempts, leafHex)
+							fmt.Printf("removed attempt for %s\n", leafHex)
+						} else {
+							now := uint64(e.NowFunc().Unix())
+							e.lastExecuteAttempts[leafHex] = now
+							fmt.Printf("inserted attempt for %s: %v\n", leafHex, now)
+							continue
 						}
-						err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-						if err != nil {
-							return fmt.Errorf("could not execute message: %w", err)
-						}
+					}
+
+					destinationDomain := message.DestinationDomain()
+					nonce := message.Nonce()
+					executedMessageMask := db.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
+					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
 					}
 				}
 
