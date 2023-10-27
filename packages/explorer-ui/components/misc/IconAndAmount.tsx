@@ -29,7 +29,8 @@ export function IconAndAmount({
     const displaySymbol = addressToSymbol({ tokenAddress, chainId })
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
   } else {
-    showToken = <span className={`${textSize} text-slate-400`}>--</span>
+    const displaySymbol = addressToSymbol({ tokenAddress, chainId })
+    showToken = displaySymbol ? <div className={styledCoinClass}>{displaySymbol}</div> : <span className={`${textSize} text-slate-400`}>--</span>
   }
   return (
     <div className="flex justify-between items-center ">
