@@ -81,7 +81,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
     }
 
     /// @inheritdoc InterfaceLightManager
-    function cancelProposedAgentRoot() external {}
+    function cancelProposedAgentRoot() external onlyOwner {
+        if (_proposedAgentRoot == 0) revert AgentRootNotProposed();
+        _proposedAgentRoot = 0;
+        _agentRootProposedAt = 0;
+        emit ProposedAgentRootCancelled(_proposedAgentRoot);
+    }
 
     /// @inheritdoc InterfaceLightManager
     /// @dev Should proceed with the proposed root, even if new Notary data is available.
