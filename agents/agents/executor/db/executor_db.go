@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"encoding/json"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -11,7 +13,7 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) error
 	// ExecuteMessage marks a message as executed in the database.
 	ExecuteMessage(ctx context.Context, messageMask DBMessage) error
 	// SetMinimumTime sets the minimum time of a message.

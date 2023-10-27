@@ -822,7 +822,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
-		return e.processMessage(ctx, datatype, log.BlockNumber)
+		return e.processMessage(ctx, datatype, log.BlockNumber, log.TxHash)
 	case types.Snapshot:
 		return e.processSnapshot(ctx, datatype, log.BlockNumber)
 	case types.Attestation:

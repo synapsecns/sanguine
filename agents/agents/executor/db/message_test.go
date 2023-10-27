@@ -1,13 +1,14 @@
 package db_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
-	"math/big"
 )
 
 func (t *DBSuite) TestStoreRetrieveMessage() {
@@ -23,7 +24,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		headerA := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainIDA, nonceA, destinationA, gofakeit.Uint32())
 		typesMessageA := agentsTypes.NewMessage(headerA, nil, messageA)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, minimumTimeSetA, minimumTimeA)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, minimumTimeSetA, minimumTimeA, common.Hash{})
 		Nil(t.T(), err)
 
 		chainIDB := gofakeit.Uint32()
@@ -37,7 +38,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		headerB := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainIDB, nonceB, destinationB, gofakeit.Uint32())
 		typesMessageB := agentsTypes.NewMessage(headerB, nil, messageB)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, minimumTimeSetB, minimumTimeB)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, minimumTimeSetB, minimumTimeB, common.Hash{})
 		Nil(t.T(), err)
 
 		messageAMask := db.DBMessage{
@@ -105,7 +106,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, optimisticSeconds)
 		message, err := agentsTypes.NewMessageFromManagerMessage(header, messageBody)
 		Nil(t.T(), err)
-		err = testDB.StoreMessage(t.GetTestContext(), message, messageBlockNumber, false, 0)
+		err = testDB.StoreMessage(t.GetTestContext(), message, messageBlockNumber, false, 0, common.Hash{})
 		Nil(t.T(), err)
 
 		// Create and store an attestation.
@@ -145,7 +146,7 @@ func (t *DBSuite) TestExecuteMessage() {
 		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage := agentsTypes.NewMessage(header, nil, message)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 5)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 5, common.Hash{})
 		Nil(t.T(), err)
 
 		messageMask := db.DBMessage{
@@ -185,7 +186,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage := agentsTypes.NewMessage(header, nil, message)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 10)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 10, common.Hash{})
 		Nil(t.T(), err)
 
 		messageMask := db.DBMessage{
@@ -206,7 +207,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		header = agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage = agentsTypes.NewMessage(header, nil, message)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 20)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 20, common.Hash{})
 		Nil(t.T(), err)
 
 		// Check when the current time is after the minimum time, and minimum time is set to true.
@@ -245,7 +246,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage := agentsTypes.NewMessage(header, nil, message)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0, common.Hash{})
 		Nil(t.T(), err)
 
 		messageMask := db.DBMessage{
@@ -264,7 +265,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		header = agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage = agentsTypes.NewMessage(header, nil, message)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 0)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 0, common.Hash{})
 		Nil(t.T(), err)
 
 		messages, err = testDB.GetUnsetMinimumTimeMessages(t.GetTestContext(), messageMask, 1)
@@ -285,7 +286,7 @@ func (t *DBSuite) TestSetMinimumTime() {
 		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, gofakeit.Uint32())
 		typesMessage := agentsTypes.NewMessage(header, nil, message)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0, common.Hash{})
 		Nil(t.T(), err)
 
 		trueVal := true

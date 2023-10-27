@@ -22,7 +22,6 @@ func init() {
 	MinimumTimeSetFieldName = namer.GetConsistentName("MinimumTimeSet")
 	MinimumTimeFieldName = namer.GetConsistentName("MinimumTime")
 	SnapshotRootFieldName = namer.GetConsistentName("SnapshotRoot")
-	LeafFieldName = namer.GetConsistentName("Leaf")
 	AttestationNonceFieldName = namer.GetConsistentName("AttestationNonce")
 }
 
@@ -51,8 +50,6 @@ var (
 	MinimumTimeFieldName string
 	// SnapshotRootFieldName is the snapshot root field name.
 	SnapshotRootFieldName string
-	// LeafFieldName is the leaf field name.
-	LeafFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -78,6 +75,8 @@ type Message struct {
 	MinimumTime uint64 `gorm:"column:minimum_time"`
 	// Leaf is the leaf of the message.
 	Leaf string `gorm:"column:leaf"`
+	// OriginTxHash is the origin transaction hash of the message.
+	OriginTxHash string `gorm:"column:origin_tx_hash"`
 }
 
 // Attestation is the information about an attestation parsed by the Executor. This is an event derived from the destination contract.

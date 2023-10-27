@@ -133,7 +133,7 @@ func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool
 }
 
 // processMessage processes and stores a message.
-func (e Executor) processMessage(ctx context.Context, message types.Message, logBlockNumber uint64) (err error) {
+func (e Executor) processMessage(ctx context.Context, message types.Message, logBlockNumber uint64, logTxHash common.Hash) (err error) {
 	types.LogTx("EXECUTOR", fmt.Sprintf("Processing message: %s", types.MessageToString(message)), message.OriginDomain(), nil)
 	ctx, span := e.handler.Tracer().Start(ctx, "processMessage", trace.WithAttributes(
 		attribute.Int("log_block_number", int(logBlockNumber)),
@@ -165,7 +165,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	e.chainExecutors[message.OriginDomain()].merkleTree.Insert(leaf[:])
 
 	span.AddEvent("storing message", trace.WithAttributes(attribute.Int("nonce", int(message.Nonce()))))
-	err = e.executorDB.StoreMessage(ctx, message, logBlockNumber, false, 0)
+	err = e.executorDB.StoreMessage(ctx, message, logBlockNumber, false, 0, logTxHash)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)
 	}

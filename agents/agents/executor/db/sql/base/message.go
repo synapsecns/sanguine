@@ -14,8 +14,8 @@ import (
 )
 
 // StoreMessage stores a message in the database.
-func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error {
-	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
+func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) error {
+	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime, originTxHash)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -344,7 +344,7 @@ func MessageToDBMessage(message Message) db.DBMessage {
 }
 
 // AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
+func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
@@ -364,5 +364,6 @@ func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64
 		MinimumTimeSet: minimumTimeSet,
 		MinimumTime:    minimumTime,
 		Leaf:           leaf.String(),
+		OriginTxHash:   originTxHash.String(),
 	}, nil
 }
