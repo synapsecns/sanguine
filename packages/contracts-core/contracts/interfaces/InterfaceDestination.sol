@@ -81,4 +81,10 @@ interface InterfaceDestination {
      * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
      */
     function nextAgentRoot() external view returns (bytes32);
+
+    /**
+     * @notice Returns the nonce of the last attestation submitted by a Notary with a given agent index.
+     * @dev Will return zero if the Notary hasn't submitted any attestations yet.
+     */
+    function lastAttestationNonce(uint32 notaryIndex) external view returns (uint32);
 }
