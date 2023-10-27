@@ -7,7 +7,7 @@
 
 A highly experimental rpc load balancer. This is designed to be embeddable in sanguine agents, but can also be used generally. It reduces trust in any one rpc provider by verifying the response against multiple.
 
-For instance, the following config can be used to make sure a response is matched across 5 Ethereum rpc clients (all from chainlist):
+For instance, the following config can be used to make sure a response is matched across 5 Ethereum rpc clients (sourced from chainlist):
 
 ```yaml
 chains:
