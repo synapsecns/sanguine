@@ -133,10 +133,11 @@ func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool
 }
 
 // processMessage processes and stores a message.
-func (e Executor) processMessage(ctx context.Context, message types.Message, logBlockNumber uint64, logTxHash common.Hash) (err error) {
+func (e Executor) processMessage(ctx context.Context, message types.Message, log ethTypes.Log) (err error) {
 	types.LogTx("EXECUTOR", fmt.Sprintf("Processing message: %s", types.MessageToString(message)), message.OriginDomain(), nil)
 	ctx, span := e.handler.Tracer().Start(ctx, "processMessage", trace.WithAttributes(
-		attribute.Int("log_block_number", int(logBlockNumber)),
+		attribute.String("txHash", log.TxHash.String()),
+		attribute.Int("logBlockNumber", int(log.BlockNumber)),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -165,7 +166,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	e.chainExecutors[message.OriginDomain()].merkleTree.Insert(leaf[:])
 
 	span.AddEvent("storing message", trace.WithAttributes(attribute.Int("nonce", int(message.Nonce()))))
-	err = e.executorDB.StoreMessage(ctx, message, logBlockNumber, false, 0, logTxHash)
+	err = e.executorDB.StoreMessage(ctx, message, log.BlockNumber, false, 0, log.TxHash)
 	if err != nil {
 		return fmt.Errorf("could not store message: %w", err)
 	}
@@ -174,15 +175,16 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 }
 
 // processAttestation processes and stores an attestation.
-func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) (err error) {
+func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, log ethTypes.Log) (err error) {
 	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
 	if err != nil {
 		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 	}
 
 	ctx, span := e.handler.Tracer().Start(ctx, "processSnapshot", trace.WithAttributes(
-		attribute.Int("log_block_number", int(logBlockNumber)),
-		attribute.String("snapshot_root", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.Int("logBlockNumber", int(log.BlockNumber)),
+		attribute.String("snapshotRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -220,7 +222,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 	}
 
 	span.AddEvent("storing states", trace.WithAttributes(attribute.Int("num_states", len(snapshot.States()))))
-	err = e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, logBlockNumber)
+	err = e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, log.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not store states: %w", err)
 	}
@@ -229,11 +231,14 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 }
 
 // processAttestation processes and stores an attestation.
-func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) (err error) {
+func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, log ethTypes.Log) (err error) {
 	fmt.Printf("processAttestation on chain %d: %v\n", chainID, attestation)
+	snapshotRoot := attestation.SnapshotRoot()
 	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
-		attribute.Int("chain_id", int(chainID)),
-		attribute.Int("log_block_number", int(logBlockNumber)),
+		attribute.Int("chainID", int(chainID)),
+		attribute.Int("logBlockNumber", int(log.BlockNumber)),
+		attribute.String("snapshotRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -253,7 +258,7 @@ func (e Executor) processAttestation(ctx context.Context, attestation types.Atte
 	// If the attestation is on a remote chain, we need to fetch the timestamp via an RPC call.
 	var logHeader *ethTypes.Header
 	contractCall := func(ctx context.Context) error {
-		logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(logBlockNumber)))
+		logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
 		if err != nil {
 			return fmt.Errorf("could not get log header: %w", err)
 		}
@@ -271,7 +276,7 @@ func (e Executor) processAttestation(ctx context.Context, attestation types.Atte
 
 	fmt.Printf("storing attestation: %v\n", attestation)
 	span.AddEvent("storing remote attestation", trace.WithAttributes(attribute.Int("time", int(logHeader.Time))))
-	err = e.executorDB.StoreAttestation(ctx, attestation, chainID, logBlockNumber, logHeader.Time)
+	err = e.executorDB.StoreAttestation(ctx, attestation, chainID, log.BlockNumber, logHeader.Time)
 	if err != nil {
 		return fmt.Errorf("could not store attestation: %w", err)
 	}
