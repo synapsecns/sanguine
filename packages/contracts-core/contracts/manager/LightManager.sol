@@ -62,6 +62,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
         _setAgentRoot(agentRoot_);
     }
 
+    /// @inheritdoc InterfaceLightManager
+    function proposeAgentRootWhenStuck(bytes32 agentRoot_) external {}
+
+    /// @inheritdoc InterfaceLightManager
+    function resolveProposedAgentRoot() external {}
+
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
@@ -113,6 +119,11 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Magic value to return is selector of the called function
         return this.remoteWithdrawTips.selector;
     }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function proposedAgentRootData() external view returns (bytes32 agentRoot_, uint256 proposedAt_) {}
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
