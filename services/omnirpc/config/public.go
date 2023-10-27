@@ -63,9 +63,18 @@ func parseConfig(rawData []byte) (c Config, err error) {
 			return nil
 		}
 
+		// convert to rpc config type
+		rpcs := make([]RPCConfig, len(rpcArr))
+		for i, rpc := range rpcArr {
+			rpcs[i] = RPCConfig{
+				RPC:     rpc,
+				RPCType: "auxiliary",
+			}
+		}
+
 		// public rpcs always use
 		c.Chains[uint32(chainID)] = ChainConfig{
-			RPCs:   rpcArr,
+			RPCs:   rpcs,
 			Checks: 1,
 		}
 

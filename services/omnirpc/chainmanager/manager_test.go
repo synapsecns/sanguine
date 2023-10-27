@@ -8,6 +8,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
+	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"sort"
@@ -76,7 +77,8 @@ func TestGetChainIDs(t *testing.T) {
 		testChainID := gofakeit.Uint32()
 
 		chainIDs.Add(testChainID)
-		cm.PutChain(testChainID, []string{gofakeit.URL(), gofakeit.URL()}, gofakeit.Uint16())
+
+		cm.PutChain(testChainID, []string{gofakeit.URL(), gofakeit.URL()}, gofakeit.Uint16(), make(map[string]config.RPCType))
 	}
 
 	// sort both slices to assert equality

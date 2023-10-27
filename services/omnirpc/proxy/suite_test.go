@@ -3,7 +3,7 @@ package proxy_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -40,7 +40,7 @@ func (p *ProxySuite) SetupSuite() {
 
 	var err error
 	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
-	assert.Nil(p.T(), err)
+	Nil(p.T(), err)
 }
 
 func TestProxySuite(t *testing.T) {

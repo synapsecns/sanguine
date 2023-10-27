@@ -30,7 +30,7 @@ var latencyCommand = &cli.Command{
 			return fmt.Errorf("could not get chain config for chain %d", c.Int(chainIDFlag.Name))
 		}
 
-		res := rpcinfo.GetRPCLatency(c.Context, time.Second*5, chainConfig.RPCs, metrics.Get())
+		res := rpcinfo.GetRPCLatency(c.Context, time.Second*5, rpcConfig.FlattenRPCs(chainConfig.RPCs), metrics.Get())
 		DisplayLatency(res)
 
 		return nil

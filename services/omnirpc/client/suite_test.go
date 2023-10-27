@@ -2,12 +2,9 @@ package client_test
 
 import (
 	"context"
-	"fmt"
-	"math/big"
-	"net/url"
-	"sync"
-	"testing"
+	. "github.com/stretchr/testify/assert"
 
+	"fmt"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -19,6 +16,10 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"golang.org/x/sync/errgroup"
+	"math/big"
+	"net/url"
+	"sync"
+	"testing"
 )
 
 type TestClientSuite struct {
@@ -80,7 +81,7 @@ func (s *TestClientSuite) SetupJaeger() {
 
 	var err error
 	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
-	s.Require().Nil(err)
+	Nil(s.T(), err)
 }
 
 // SetupBackends sets up the test backends that are used for the tests. These need to be setup as embedded backends since

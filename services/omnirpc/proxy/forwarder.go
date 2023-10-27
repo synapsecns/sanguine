@@ -135,62 +135,75 @@ func (f *Forwarder) attemptForwardAndValidate(ctx context.Context) {
 	forwardCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// start requiredConfirmations workers
-	for i := uint16(0); i < f.requiredConfirmations; i++ {
-		go func() {
-			f.mux.RLock()
-			defer f.mux.RUnlock()
-
-			for {
-				select {
-				case <-forwardCtx.Done():
-					return
-				default:
-					done := f.attemptForward(forwardCtx, errChan, resChan, urlIter)
-					// if there's nothing else we can end the goroutine
-					if done {
-						return
-					}
-				}
-			}
-		}()
+	switch {
+	case f.requiredConfirmations > 1:
+		f.forwardMultipleConfirmations(forwardCtx, errChan, resChan, urlIter)
+	default:
+		// If confirmations is 1 or below, only request from one RPC then iterate through the rest of RPCs in config.
+		f.forwardSingleConfirmation(forwardCtx, errChan, resChan, urlIter)
 	}
+}
 
-	totalResponses := 0
+// startForwarding attempts to forward the request in a goroutine.
+func (f *Forwarder) startForwarding(forwardCtx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) {
+	go func() {
+		f.mux.RLock()
+		defer f.mux.RUnlock()
 
-	for {
-		select {
-		// request timeout
-		case <-f.c.Done():
-			return
-		case failedForward := <-errChan:
-			totalResponses++
-
-			f.failedForwards.Store(failedForward.URL, failedForward.Err)
-
-			// if we've checked every url
-			if totalResponses == len(f.chain.URLs()) {
-				if done := f.checkResponses(totalResponses); done {
-					return
-				}
-			}
-		case res := <-resChan:
-			totalResponses++
-
-			// add the response to resmap
-			responses, _ := f.resMap.Load(res.hash)
-			responses = append(responses, res)
-			f.resMap.Store(res.hash, responses)
-
-			// if we've checked every url or the number of non-error responses is greater than or equal to the
-			// number of confirmations
-			if totalResponses == len(f.chain.URLs()) || uint16(f.resMap.Size()) >= f.requiredConfirmations {
-				if done := f.checkResponses(totalResponses); done {
+		for {
+			select {
+			case <-forwardCtx.Done():
+				return
+			default:
+				done := f.attemptForward(forwardCtx, errChan, resChan, urlIter)
+				if done {
 					return
 				}
 			}
 		}
+	}()
+}
+
+// handleResponses handles the responses from the forwarding goroutines(s).
+func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan rawResponse, requiredResponses int) {
+	totalResponses := 0
+
+	for {
+		select {
+		case <-f.c.Done():
+			return
+		case failedForward := <-errChan:
+			totalResponses++
+			f.failedForwards.Store(failedForward.URL, failedForward.Err)
+		case res := <-resChan:
+			totalResponses++
+			responses, _ := f.resMap.Load(res.hash)
+			responses = append(responses, res)
+			f.resMap.Store(res.hash, responses)
+		}
+
+		if totalResponses == len(f.chain.URLs()) || (requiredResponses != 1 && uint16(f.resMap.Size()) >= f.requiredConfirmations) {
+			if done := f.checkResponses(totalResponses); done {
+				return
+			}
+		}
 	}
+}
+
+// forwardSingleConfirmation forwards a single confirmation.
+func (f *Forwarder) forwardSingleConfirmation(forwardCtx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) {
+	for range f.chain.URLs() {
+		f.startForwarding(forwardCtx, errChan, resChan, urlIter)
+		f.handleResponses(errChan, resChan, 1)
+	}
+}
+
+// forwardMultipleConfirmations forwards multiple confirmations.
+func (f *Forwarder) forwardMultipleConfirmations(forwardCtx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) {
+	for i := uint16(0); i < f.requiredConfirmations; i++ {
+		f.startForwarding(forwardCtx, errChan, resChan, urlIter)
+	}
+	f.handleResponses(errChan, resChan, len(f.chain.URLs()))
 }
 
 // urlConfirmationsHeader is a header specifying which urls were checked.
@@ -303,8 +316,8 @@ func (f *Forwarder) attemptForward(ctx context.Context, errChan chan FailedForwa
 	}
 
 	url := nextURL.Unwrap()
-
 	res, err := f.forwardRequest(ctx, url)
+
 	if err != nil {
 		// check if we're done, otherwise add to errchan
 		select {

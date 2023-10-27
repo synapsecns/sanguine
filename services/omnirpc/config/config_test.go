@@ -12,11 +12,33 @@ func TestConfig(t *testing.T) {
 	testConfig := config.Config{
 		Chains: map[uint32]config.ChainConfig{
 			1: {
-				RPCs:   []string{gofakeit.URL(), gofakeit.URL(), gofakeit.URL()},
+				RPCs: []config.RPCConfig{{
+					RPC:     gofakeit.URL(),
+					RPCType: "stable",
+				},
+					{
+						RPC:     gofakeit.URL(),
+						RPCType: "stable",
+					},
+					{
+						RPC:     gofakeit.URL(),
+						RPCType: "stable",
+					}},
 				Checks: gofakeit.Uint16(),
 			},
 			2: {
-				RPCs:   []string{gofakeit.URL(), gofakeit.URL(), gofakeit.URL()},
+				RPCs: []config.RPCConfig{{
+					RPC:     gofakeit.URL(),
+					RPCType: "stable",
+				},
+					{
+						RPC:     gofakeit.URL(),
+						RPCType: "stable",
+					},
+					{
+						RPC:     gofakeit.URL(),
+						RPCType: "stable",
+					}},
 				Checks: gofakeit.Uint16(),
 			},
 		},
@@ -37,39 +59,71 @@ func TestUnmarshallMarshall(t *testing.T) {
 	rpcConf, err := config.UnmarshallConfig([]byte(testYaml))
 	Nil(t, err)
 
-	True(t, slices.Contains(rpcConf.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))
-	True(t, slices.Contains(rpcConf.Chains[1].RPCs, "https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet"))
-	True(t, slices.Contains(rpcConf.Chains[2].RPCs, "https://node.eggs.cool"))
+	True(t, slices.Contains(rpcConf.Chains[1].RPCs, config.RPCConfig{
+		RPC:     "https://api.mycryptoapi.com/eth",
+		RPCType: "stable",
+	}))
+	True(t, slices.Contains(rpcConf.Chains[1].RPCs,
+		config.RPCConfig{
+			RPC:     "https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet",
+			RPCType: "auxiliary",
+		}))
+	True(t, slices.Contains(rpcConf.Chains[2].RPCs,
+		config.RPCConfig{
+			RPC:     "https://node.eggs.cool",
+			RPCType: "stable",
+		}))
 }
 
 const testYaml = `
 chains:
-    0:
-        rpcs:
-            - https://rpc.kardiachain.io/
-        confirmations: 1
-    1:
-        rpcs:
-            - https://api.mycryptoapi.com/eth
-            - https://rpc.flashbots.net/
-            - https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79
-            - https://cloudflare-eth.com/
-            - https://mainnet-nethermind.blockscout.com/
-            - https://nodes.mewapi.io/rpc/eth
-            - https://main-rpc.linkpool.io/
-            - https://mainnet.eth.cloud.ava.do/
-            - https://ethereumnodelight.app.runonflux.io
-            - https://rpc.ankr.com/eth
-            - https://eth-rpc.gateway.pokt.network
-            - https://main-light.eth.linkpool.io
-            - https://eth-mainnet.public.blastapi.io
-            - http://18.211.207.34:8545
-            - https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7
-            - wss://eth-mainnet.nodereal.io/ws/v1/1659dfb40aa24bbb8153a677b98064d7
-            - https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet
-        confirmations: 1
-    2:
-        rpcs:
-            - https://node.eggs.cool
-            - https://node.expanse.tech
-        confirmations: 1`
+  0:
+    confirmations: 1
+    rpcs:
+      - rpc: 'https://rpc.kardiachain.io/'
+        rpc_type: stable
+  1:
+    confirmations: 1
+    rpcs:
+      - rpc: 'https://api.mycryptoapi.com/eth'
+        rpc_type: stable
+      - rpc: 'https://rpc.flashbots.net/'
+        rpc_type: stable
+      - rpc: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79'
+        rpc_type: stable
+      - rpc: 'https://cloudflare-eth.com/'
+        rpc_type: stable
+      - rpc: 'https://mainnet-nethermind.blockscout.com/'
+        rpc_type: stable
+      - rpc: 'https://nodes.mewapi.io/rpc/eth'
+        rpc_type: stable
+      - rpc: 'https://main-rpc.linkpool.io/'
+        rpc_type: stable
+      - rpc: 'https://mainnet.eth.cloud.ava.do/'
+        rpc_type: stable
+      - rpc: 'https://ethereumnodelight.app.runonflux.io'
+        rpc_type: stable
+      - rpc: 'https://rpc.ankr.com/eth'
+        rpc_type: stable
+      - rpc: 'https://eth-rpc.gateway.pokt.network'
+        rpc_type: stable
+      - rpc: 'https://main-light.eth.linkpool.io'
+        rpc_type: stable
+      - rpc: 'https://eth-mainnet.public.blastapi.io'
+        rpc_type: stable
+      - rpc: 'http://18.211.207.34:8545'
+        rpc_type: stable
+      - rpc: 'https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7'
+        rpc_type: stable
+      - rpc: 'wss://eth-mainnet.nodereal.io/ws/v1/1659dfb40aa24bbb8153a677b98064d7'
+        rpc_type: stable
+      - rpc: 'https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet'
+        rpc_type: auxiliary
+  2:
+    confirmations: 1
+    rpcs:
+      - rpc: 'https://node.eggs.cool'
+        rpc_type: stable
+      - rpc: 'https://node.expanse.tech'
+        rpc_type: stable
+`

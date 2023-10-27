@@ -28,7 +28,7 @@ type ChainManager interface {
 	// GetChain gets the chain
 	GetChain(chainID uint32) Chain
 	// PutChain adds chain urls. Any previous chain data is overwritten
-	PutChain(chainID uint32, urls []string, confirmations uint16)
+	PutChain(chainID uint32, urls []string, confirmations uint16, rpcTypes map[string]config.RPCType)
 }
 
 // NewChainManager creates a new chain manager.
@@ -59,18 +59,21 @@ func NewChainManagerFromConfig(configuration config.Config, handler metrics.Hand
 			confThreshold = chn.Checks
 		}
 
-		// store all the chains w/ empty latency results
+		// store all the chains w/ empty latency results + rpc types
 		chains := make([]rpcinfo.Result, len(chn.RPCs))
+		rpcTypes := make(map[string]config.RPCType, len(chn.RPCs))
 		for i := range chn.RPCs {
 			chains[i] = rpcinfo.Result{
-				URL: chn.RPCs[i],
+				URL: chn.RPCs[i].RPC,
 			}
+			rpcTypes[chn.RPCs[i].RPC] = config.StringToRPCType(chn.RPCs[i].RPCType)
 		}
 
 		cm.chainList[chainID] = &chain{
 			chainID:               chainID,
 			confirmationThreshold: confThreshold,
 			rpcs:                  chains,
+			rpcTypes:              rpcTypes,
 		}
 	}
 
@@ -115,7 +118,7 @@ func (c *chainManager) GetChainIDs() (chainIDs []uint32) {
 }
 
 // PutChain puts new chain urls.
-func (c *chainManager) PutChain(chainID uint32, urls []string, confirmations uint16) {
+func (c *chainManager) PutChain(chainID uint32, urls []string, confirmations uint16, rpcTypes map[string]config.RPCType) {
 	rpcs := make([]rpcinfo.Result, len(urls))
 	for i, url := range urls {
 		rpcs[i] = rpcinfo.Result{
@@ -130,6 +133,7 @@ func (c *chainManager) PutChain(chainID uint32, urls []string, confirmations uin
 		chainID:               chainID,
 		rpcs:                  rpcs,
 		confirmationThreshold: confirmations,
+		rpcTypes:              rpcTypes,
 	}
 }
 
@@ -143,7 +147,7 @@ func (c *chainManager) RefreshRPCInfo(ctx context.Context, chainID uint32) {
 	if !ok {
 		return
 	}
-	rpcURLS := chainList.URLs()
+	rpcURLS := chainList.AllURLs()
 
 	rpcInfoList := sortInfoList(rpcinfo.GetRPCLatency(ctx, rpcTimeout, rpcURLS, c.handler))
 
@@ -235,7 +239,9 @@ var _ ChainManager = &chainManager{}
 type Chain interface {
 	// ConfirmationsThreshold gets the confirmation count
 	ConfirmationsThreshold() uint16
-	// URLs gets the urls
+	// AllURLs gets all urls
+	AllURLs() []string
+	// URLs gets urls depending on number of confirmations
 	URLs() []string
 	// ID returns the id of the chain
 	ID() uint32
@@ -249,6 +255,8 @@ type chain struct {
 	confirmationThreshold uint16
 	// rpcs contains a list of rpcs sorted by speed
 	rpcs []rpcinfo.Result
+	// rpcTypes contains a list of rpc types.
+	rpcTypes map[string]config.RPCType
 }
 
 func (c *chain) ID() uint32 {
@@ -259,12 +267,27 @@ func (c *chain) ConfirmationsThreshold() uint16 {
 	return c.confirmationThreshold
 }
 
-// URLs gets all urls for a chain.
-func (c *chain) URLs() (res []string) {
+// AllURLs gets all urls for a chain.
+func (c *chain) AllURLs() (res []string) {
 	res = make([]string, len(c.rpcs))
 	for i, chainInfo := range c.rpcs {
 		res[i] = chainInfo.URL
 	}
+
+	return res
+}
+
+// URLs gets urls for a chain depending on number of confirmations.
+func (c *chain) URLs() (res []string) {
+	res = make([]string, len(c.rpcs))
+	for i, chainInfo := range c.rpcs {
+		// Return only stable urls if more than one confirmation is required.
+		if c.confirmationThreshold > 1 && c.rpcTypes[chainInfo.URL] == config.Auxiliary {
+			continue
+		}
+		res[i] = chainInfo.URL
+	}
+
 	return res
 }
 
