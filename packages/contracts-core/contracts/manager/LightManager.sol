@@ -13,6 +13,7 @@ import {
     AgentRootTimeoutNotOver,
     IncorrectAgentIndex,
     IncorrectAgentProof,
+    IncorrectAgentRoot,
     CallerNotDestination,
     MustBeSynapseDomain,
     NotStuck,
@@ -72,9 +73,10 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function proposeAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner onlyWhenStuck {
+        if (agentRoot_ == 0) revert IncorrectAgentRoot();
         // Update the proposed agent root, clear the timer if the root is empty
         _proposedAgentRoot = agentRoot_;
-        _agentRootProposedAt = agentRoot_ == 0 ? 0 : block.timestamp;
+        _agentRootProposedAt = block.timestamp;
         emit AgentRootProposed(agentRoot_);
     }
 
