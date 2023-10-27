@@ -37,6 +37,7 @@ interface InterfaceLightManager {
      * by proposing the new agent root. The contract owner will be able to resolve the proposed
      * agent root after a certain period of time.
      * Note: this function could be called multiple times, each time the timer will be reset.
+     * Note: supplying the empty agent root will cancel the proposed agent root.
      * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
      * indicating that the chain is stuck for one of the reasons:
      * - All active Notaries are in Dispute.
