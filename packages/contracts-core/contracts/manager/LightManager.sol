@@ -71,11 +71,6 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function setAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner onlyWhenStuck {
-        _setAgentRoot(agentRoot_);
-    }
-
-    /// @inheritdoc InterfaceLightManager
     function proposeAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner onlyWhenStuck {
         // Update the proposed agent root, clear the timer if the root is empty
         _proposedAgentRoot = agentRoot_;
