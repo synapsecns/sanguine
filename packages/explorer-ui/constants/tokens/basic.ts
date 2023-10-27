@@ -285,7 +285,7 @@ export const DAI = new Token({
   swapableType: 'USD',
 })
 
-export const CRVUSDC = new Token({
+export const CRVUSD = new Token({
   addresses: {
     [ChainId.BASE]: '0x417ac0e078398c154edfadd9ef675d30be60af93',
   },
@@ -1173,10 +1173,10 @@ export const BASIC_TOKENS_BY_CHAIN = {
     ETH,
     NETH,
     WETH,
-    USDC,
+    // USDC,
     DAI,
     USDBC,
-    CRVUSDC,
+    CRVUSD,
     CCTP_USDC,
     UNIDX,
   ],
