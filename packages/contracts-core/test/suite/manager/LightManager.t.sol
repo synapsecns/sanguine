@@ -7,6 +7,7 @@ import {
     AgentRootTimeoutNotOver,
     CallerNotDestination,
     IncorrectAgentProof,
+    IncorrectAgentRoot,
     MustBeSynapseDomain,
     NotStuck,
     SynapseDomainForbidden,
@@ -144,6 +145,13 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.resolveProposedAgentRoot();
     }
 
+    function test_cancelProposedAgentRoot_revert_notOwner(address caller) public {
+        vm.assume(caller != lightManager.owner());
+        expectRevertNotOwner();
+        vm.prank(caller);
+        lightManager.cancelProposedAgentRoot();
+    }
+
     function test_proposedAgentRootDataEmpty() public {
         checkProposedAgentData({expectedAgentRoot: 0, expectedProposedAt: 0});
     }
@@ -171,18 +179,6 @@ contract LightManagerTest is AgentManagerTest {
         checkProposedAgentData(expectedAgentRoot, expectedProposedAt);
     }
 
-    function test_proposeAgentRootWhenStuck_proposedTwice_cancelled() public {
-        mockSnapRootTime(FRESH_DATA_TIMEOUT);
-        lightManager.proposeAgentRootWhenStuck("first root");
-        skip(1 hours);
-        lightManager.proposeAgentRootWhenStuck(0);
-        // This should cancel the proposed agent root and the timestamp
-        vm.expectEmit(address(lightManager));
-        emit AgentRootProposed(0);
-        lightManager.proposeAgentRootWhenStuck(0);
-        checkProposedAgentData(0, 0);
-    }
-
     function test_proposeAgentRootWhenStuck_proposedTwice_revert_chainUnstuck() public {
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         lightManager.proposeAgentRootWhenStuck("first root");
@@ -192,11 +188,58 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.proposeAgentRootWhenStuck("second root");
     }
 
+    function test_proposeAgentRootWhenStuck_revert_emptyRoot() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        vm.expectRevert(IncorrectAgentRoot.selector);
+        lightManager.proposeAgentRootWhenStuck(0);
+    }
+
     function test_proposeAgentRootWhenStuck_revert_notStuck() public {
         bytes32 newRoot = keccak256("mock root");
         mockSnapRootTime(FRESH_DATA_TIMEOUT - 1);
         vm.expectRevert(NotStuck.selector);
         lightManager.proposeAgentRootWhenStuck(newRoot);
+    }
+
+    function test_cancelProposedAgentRoot() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 root = "mock root";
+        lightManager.proposeAgentRootWhenStuck(root);
+        skip(1 hours);
+        // This should cancel the proposed agent root and the timestamp
+        vm.expectEmit(address(lightManager));
+        emit ProposedAgentRootCancelled(root);
+        lightManager.cancelProposedAgentRoot();
+        checkProposedAgentData(0, 0);
+    }
+
+    function test_cancelProposedAgentRoot_chainUnstuck() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        bytes32 newRoot = keccak256("mock root");
+        lightManager.proposeAgentRootWhenStuck(newRoot);
+        skip(1 hours);
+        mockSnapRootTime(0);
+        // This should cancel the proposed agent root and the timestamp
+        vm.expectEmit(address(lightManager));
+        emit ProposedAgentRootCancelled(newRoot);
+        lightManager.cancelProposedAgentRoot();
+        checkProposedAgentData(0, 0);
+    }
+
+    function test_cancelProposedAgentRoot_revert_notProposed() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        vm.expectRevert(AgentRootNotProposed.selector);
+        lightManager.cancelProposedAgentRoot();
+    }
+
+    function test_cancelProposedAgentRoot_revert_alreadyResolved() public {
+        mockSnapRootTime(FRESH_DATA_TIMEOUT);
+        lightManager.proposeAgentRootWhenStuck("mock root");
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        lightManager.resolveProposedAgentRoot();
+        skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
+        vm.expectRevert(AgentRootNotProposed.selector);
+        lightManager.cancelProposedAgentRoot();
     }
 
     function test_resolveProposedAgentRoot() public {
@@ -208,7 +251,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.expectEmit(address(lightManager));
         emit RootUpdated(newRoot);
         vm.expectEmit(address(lightManager));
-        emit AgentRootResolved(newRoot);
+        emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
     }
@@ -226,7 +269,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.expectEmit(address(lightManager));
         emit RootUpdated(newRoot);
         vm.expectEmit(address(lightManager));
-        emit AgentRootResolved(newRoot);
+        emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
     }
@@ -251,7 +294,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.expectEmit(address(lightManager));
         emit RootUpdated(newRoot);
         vm.expectEmit(address(lightManager));
-        emit AgentRootResolved(newRoot);
+        emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
     }
@@ -271,8 +314,7 @@ contract LightManagerTest is AgentManagerTest {
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         lightManager.proposeAgentRootWhenStuck("first root");
         skip(1 hours);
-        // This should cancel the proposed agent root and the timestamp
-        lightManager.proposeAgentRootWhenStuck(0);
+        lightManager.cancelProposedAgentRoot();
         skip(AGENT_ROOT_PROPOSAL_TIMEOUT);
         vm.expectRevert(AgentRootNotProposed.selector);
         lightManager.resolveProposedAgentRoot();
