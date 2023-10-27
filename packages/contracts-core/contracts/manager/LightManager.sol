@@ -82,10 +82,11 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function cancelProposedAgentRoot() external onlyOwner {
-        if (_proposedAgentRoot == 0) revert AgentRootNotProposed();
+        bytes32 cancelledAgentRoot = _proposedAgentRoot;
+        if (cancelledAgentRoot == 0) revert AgentRootNotProposed();
         _proposedAgentRoot = 0;
         _agentRootProposedAt = 0;
-        emit ProposedAgentRootCancelled(_proposedAgentRoot);
+        emit ProposedAgentRootCancelled(cancelledAgentRoot);
     }
 
     /// @inheritdoc InterfaceLightManager
