@@ -90,7 +90,6 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 		return 0, fmt.Errorf("could not get message status: %w", err)
 	}
 
-	fmt.Printf("Checked if message was executed: leaf=%v, nonce=%v, status=%v, addr=%v\n", common.BytesToHash(messageLeaf[:]).String(), message.Nonce(), status, a.contract.Address())
 	return status, nil
 }
 
