@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {DISPUTE_TIMEOUT_NOTARY} from "../libs/Constants.sol";
 import {ChainContext} from "../libs/ChainContext.sol";
 import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
 import {AgentStatus, DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
@@ -105,9 +106,27 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
         return IAgentManager(agentManager).getAgent(index);
     }
 
-    /// @dev Checks if the agent with the given index is in a dispute.
-    function _isInDispute(uint32 agentIndex) internal view returns (bool) {
-        // TODO: add timeout for Notaries that just won the dispute.
-        return _disputes[agentIndex].flag != DisputeFlag.None;
+    /// @dev Checks if a Dispute exists for the given Notary. This function returns true, if
+    /// Notary is in ongoing Dispute, or if Dispute was resolved not in Notary's favor.
+    /// In both cases we can't trust Notary's data.
+    /// Note: Agent-Secured contracts can trust Notary data only if both `_notaryDisputeExists` and
+    /// `_notaryDisputeTimeout` return false.
+    function _notaryDisputeExists(uint32 notaryIndex) internal view returns (bool) {
+        return _disputes[notaryIndex].flag != DisputeFlag.None;
+    }
+
+    /// @dev Checks if a Notary recently won a Dispute and is still in the "post-dispute" timeout period.
+    /// In this period we still can't trust Notary's data, though we can optimistically assume that
+    /// that the data will be correct after the timeout (assuming no new Disputes are opened).
+    /// Note: Agent-Secured contracts can trust Notary data only if both `_notaryDisputeExists` and
+    /// `_notaryDisputeTimeout` return false.
+    function _notaryDisputeTimeout(uint32 notaryIndex) internal view returns (bool) {
+        DisputeStatus memory status = _disputes[notaryIndex];
+        // Exit early if Notary is in ongoing Dispute / slashed.
+        if (status.flag != DisputeFlag.None) return false;
+        // Check if Notary has been in any Dispute at all.
+        if (status.openedAt == 0) return false;
+        // Otherwise check if the Dispute timeout is still active.
+        return block.timestamp < status.resolvedAt + DISPUTE_TIMEOUT_NOTARY;
     }
 }

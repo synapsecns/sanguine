@@ -112,7 +112,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 paddedTips,
         bytes memory rcptPayload
     ) external onlyInbox returns (bool wasAccepted) {
-        if (_isInDispute(rcptNotaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeExists(rcptNotaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcpt: rcptPayload.castToReceipt(),
@@ -138,7 +138,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         onlyInbox
         returns (bytes memory attPayload)
     {
-        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a snapshot
         return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
