@@ -157,6 +157,7 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function test_proposeAgentRootWhenStuck() public {
+        bytes32 oldRoot = lightManager.agentRoot();
         vm.warp(1234);
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         bytes32 expectedAgentRoot = keccak256("mock root");
@@ -165,9 +166,11 @@ contract LightManagerTest is AgentManagerTest {
         emit AgentRootProposed(expectedAgentRoot);
         lightManager.proposeAgentRootWhenStuck(expectedAgentRoot);
         checkProposedAgentData(expectedAgentRoot, expectedProposedAt);
+        assertEq(lightManager.agentRoot(), oldRoot);
     }
 
     function test_proposeAgentRootWhenStuck_proposedTwice() public {
+        bytes32 oldRoot = lightManager.agentRoot();
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         lightManager.proposeAgentRootWhenStuck("first root");
         skip(1 hours);
@@ -177,6 +180,7 @@ contract LightManagerTest is AgentManagerTest {
         emit AgentRootProposed(expectedAgentRoot);
         lightManager.proposeAgentRootWhenStuck(expectedAgentRoot);
         checkProposedAgentData(expectedAgentRoot, expectedProposedAt);
+        assertEq(lightManager.agentRoot(), oldRoot);
     }
 
     function test_proposeAgentRootWhenStuck_proposedTwice_revert_chainUnstuck() public {
@@ -202,6 +206,7 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function test_cancelProposedAgentRoot() public {
+        bytes32 oldRoot = lightManager.agentRoot();
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         bytes32 root = "mock root";
         lightManager.proposeAgentRootWhenStuck(root);
@@ -211,9 +216,11 @@ contract LightManagerTest is AgentManagerTest {
         emit ProposedAgentRootCancelled(root);
         lightManager.cancelProposedAgentRoot();
         checkProposedAgentData(0, 0);
+        assertEq(lightManager.agentRoot(), oldRoot);
     }
 
     function test_cancelProposedAgentRoot_chainUnstuck() public {
+        bytes32 oldRoot = lightManager.agentRoot();
         mockSnapRootTime(FRESH_DATA_TIMEOUT);
         bytes32 newRoot = keccak256("mock root");
         lightManager.proposeAgentRootWhenStuck(newRoot);
@@ -224,6 +231,7 @@ contract LightManagerTest is AgentManagerTest {
         emit ProposedAgentRootCancelled(newRoot);
         lightManager.cancelProposedAgentRoot();
         checkProposedAgentData(0, 0);
+        assertEq(lightManager.agentRoot(), oldRoot);
     }
 
     function test_cancelProposedAgentRoot_revert_notProposed() public {
@@ -254,6 +262,7 @@ contract LightManagerTest is AgentManagerTest {
         emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
+        assertEq(lightManager.agentRoot(), newRoot);
     }
 
     /// @dev Should proceed with the proposed root, even if new Notary data is available.
@@ -272,6 +281,7 @@ contract LightManagerTest is AgentManagerTest {
         emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
+        assertEq(lightManager.agentRoot(), newRoot);
     }
 
     function test_resolveProposedAgentRoot_revert_timeoutNotOver() public {
@@ -297,6 +307,7 @@ contract LightManagerTest is AgentManagerTest {
         emit ProposedAgentRootResolved(newRoot);
         lightManager.resolveProposedAgentRoot();
         checkProposedAgentData(0, 0);
+        assertEq(lightManager.agentRoot(), newRoot);
     }
 
     function test_resolveProposedAgentRoot_proposedTwice_revert_timeoutNotOver() public {
