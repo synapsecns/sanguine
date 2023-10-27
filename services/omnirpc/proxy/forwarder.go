@@ -165,13 +165,13 @@ func (f *Forwarder) startForwarding(forwardCtx context.Context, errChan chan Fai
 }
 
 // handleResponses handles the responses from the forwarding goroutines(s).
-func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan rawResponse, requiredResponses int) {
+func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan rawResponse, requiredResponses int) bool {
 	totalResponses := 0
 
 	for {
 		select {
 		case <-f.c.Done():
-			return
+			return false
 		case failedForward := <-errChan:
 			totalResponses++
 			f.failedForwards.Store(failedForward.URL, failedForward.Err)
@@ -182,10 +182,12 @@ func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan raw
 			f.resMap.Store(res.hash, responses)
 		}
 
-		if totalResponses == len(f.chain.URLs()) || (requiredResponses != 1 && uint16(f.resMap.Size()) >= f.requiredConfirmations) {
+		if totalResponses == requiredResponses || (requiredResponses != 1 && uint16(f.resMap.Size()) >= f.requiredConfirmations) {
 			if done := f.checkResponses(totalResponses); done {
-				return
+				return true
 			}
+
+			return false
 		}
 	}
 }
@@ -194,7 +196,9 @@ func (f *Forwarder) handleResponses(errChan chan FailedForward, resChan chan raw
 func (f *Forwarder) forwardSingleConfirmation(forwardCtx context.Context, errChan chan FailedForward, resChan chan rawResponse, urlIter iter.Iterator[string]) {
 	for range f.chain.URLs() {
 		f.startForwarding(forwardCtx, errChan, resChan, urlIter)
-		f.handleResponses(errChan, resChan, 1)
+		if f.handleResponses(errChan, resChan, 1) {
+			return
+		}
 	}
 }
 
