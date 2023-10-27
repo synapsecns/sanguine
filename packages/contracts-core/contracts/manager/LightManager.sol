@@ -79,6 +79,9 @@ contract LightManager is AgentManager, InterfaceLightManager {
     }
 
     /// @inheritdoc InterfaceLightManager
+    function cancelProposedAgentRoot() external {}
+
+    /// @inheritdoc InterfaceLightManager
     /// @dev Should proceed with the proposed root, even if new Notary data is available.
     /// This is done to prevent rogue Notaries from going offline and then
     /// indefinitely blocking the agent root resolution, thus `onlyWhenStuck` modifier is not used here.
@@ -89,7 +92,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         _setAgentRoot(newAgentRoot);
         _proposedAgentRoot = 0;
         _agentRootProposedAt = 0;
-        emit AgentRootResolved(newAgentRoot);
+        emit ProposedAgentRootResolved(newAgentRoot);
     }
 
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════

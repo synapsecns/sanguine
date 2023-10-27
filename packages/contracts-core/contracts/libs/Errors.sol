@@ -14,6 +14,7 @@ error IncorrectAttestation();
 error IncorrectAgentDomain();
 error IncorrectAgentIndex();
 error IncorrectAgentProof();
+error IncorrectAgentRoot();
 error IncorrectDataHash();
 error IncorrectDestinationDomain();
 error IncorrectOriginDomain();

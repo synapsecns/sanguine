@@ -38,10 +38,16 @@ abstract contract AgentManagerEvents {
     event AgentRootProposed(bytes32 newRoot);
 
     /**
-     * @notice Emitted after the contract owner resolves the previously proposed agent root.
-     * @param newRoot   New agent merkle root that was resolved
+     * @notice Emitted after the contract owner cancels the previously proposed agent root.
+     * @param proposedRoot  Agent merkle root that was proposed
      */
-    event AgentRootResolved(bytes32 newRoot);
+    event ProposedAgentRootCancelled(bytes32 proposedRoot);
+
+    /**
+     * @notice Emitted after the contract owner resolves the previously proposed agent root.
+     * @param proposedRoot  New agent merkle root that was resolved
+     */
+    event ProposedAgentRootResolved(bytes32 proposedRoot);
 
     /**
      * @notice Emitted whenever a status of the agent is updated.
