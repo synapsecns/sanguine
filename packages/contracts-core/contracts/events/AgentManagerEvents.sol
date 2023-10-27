@@ -32,6 +32,18 @@ abstract contract AgentManagerEvents {
     event RootUpdated(bytes32 newRoot);
 
     /**
+     * @notice Emitted after the contract owner proposes a new agent root to resolve the stuck chain.
+     * @param newRoot   New agent merkle root that was proposed
+     */
+    event AgentRootProposed(bytes32 newRoot);
+
+    /**
+     * @notice Emitted after the contract owner resolves the previously proposed agent root.
+     * @param newRoot   New agent merkle root that was resolved
+     */
+    event AgentRootResolved(bytes32 newRoot);
+
+    /**
      * @notice Emitted whenever a status of the agent is updated.
      * @dev Only Active/Unstaking/Resting/Slashed flags could be stored in the Agent Merkle Tree.
      * Unknown flag is the default (zero) value and is used to represent agents that never

@@ -74,6 +74,9 @@ error AgentNotFraudulent();
 error AgentNotUnstaking();
 error AgentUnknown();
 
+error AgentRootNotProposed();
+error AgentRootTimeoutNotOver();
+
 error NotStuck();
 
 error DisputeAlreadyResolved();
