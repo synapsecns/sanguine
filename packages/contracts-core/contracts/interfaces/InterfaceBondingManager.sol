@@ -59,6 +59,7 @@ interface InterfaceBondingManager {
      * for the OLD agent status.
      * Note: as an extra security check this function returns its own selector, so that
      * Destination could verify that a "remote" function was called when executing a manager message.
+     * Will revert if `msgOrigin` is equal to contract's local domain.
      * @param domain        Domain where the slashed agent was active
      * @param agent         Address of the slashed Agent
      * @param prover        Address that initially provided fraud proof to remote AgentManager

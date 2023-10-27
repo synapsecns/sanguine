@@ -12,6 +12,7 @@ import {
     DisputeNotOpened,
     IncorrectAgentDomain,
     MustBeSynapseDomain,
+    IncorrectOriginDomain,
     NotStuck,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
@@ -315,9 +316,21 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_remoteSlashAgent_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
-        skip(proofMaturity);
+        skipPeriod(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_REMOTE, remoteSlashAgentCalldata(0, address(0), address(0)));
         vm.expectRevert(SlashAgentOptimisticPeriod.selector);
+        managerMsgPrank(msgPayload);
+    }
+
+    function test_remoteSlashAgent_revert_optimisticPeriodMinus1Second() public {
+        test_remoteSlashAgent_revert_optimisticPeriodNotOver(BONDING_OPTIMISTIC_PERIOD - 1);
+    }
+
+    function test_remoteSlashAgent_revert_sameOriginDomain() public {
+        uint32 proofMaturity = BONDING_OPTIMISTIC_PERIOD;
+        skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteSlashAgentCalldata(0, address(0), address(0)));
+        vm.expectRevert(IncorrectOriginDomain.selector);
         managerMsgPrank(msgPayload);
     }
 

@@ -6,7 +6,7 @@ const baseClassname = `
   `
 
 const titleBaseClassname = `
-  font-medium text-lg mb-2 text-white
+  font-medium text-lg  text-white
 `
 
 export default function Card({

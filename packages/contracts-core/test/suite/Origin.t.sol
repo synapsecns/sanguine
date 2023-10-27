@@ -4,7 +4,12 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
-import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
+import {
+    EthTransferFailed,
+    IncorrectDestinationDomain,
+    InsufficientEthBalance,
+    TipsValueTooLow
+} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
@@ -98,6 +103,20 @@ contract OriginTest is AgentSecuredTest {
         );
     }
 
+    function test_sendBaseMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage(
+            localDomain(), addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendManagementMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(localAgentManager());
+        InterfaceOrigin(origin).sendManagerMessage(localDomain(), period, "test payload");
+    }
+
     function test_getMinimumTipsValue(
         uint32 destination_,
         uint256 paddedRequest,
@@ -173,6 +192,7 @@ contract OriginTest is AgentSecuredTest {
             emit StateSaved(state);
             vm.expectEmit();
             emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
+            vm.expectCall(gasOracle, abi.encodeCall(InterfaceGasOracle.updateGasData, (DOMAIN_REMOTE)));
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
@@ -408,6 +428,8 @@ contract OriginTest is AgentSecuredTest {
 
     function test_withdrawTips(uint256 amount) public {
         vm.deal(origin, amount);
+        vm.expectEmit(origin);
+        emit TipWithdrawalCompleted(recipient, amount);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         assertEq(recipient.balance, amount);

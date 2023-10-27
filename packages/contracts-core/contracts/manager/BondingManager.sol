@@ -10,6 +10,7 @@ import {
     DisputeAlreadyResolved,
     DisputeNotOpened,
     IncorrectAgentDomain,
+    IncorrectOriginDomain,
     IndexOutOfRange,
     MerkleTreeFull,
     MustBeSynapseDomain,
@@ -68,7 +69,7 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
     function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
         __AgentManager_init(origin_, destination_, inbox_);
         summit = summit_;
-        __Ownable_init();
+        __Ownable2Step_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
         _agents.push(address(0));
@@ -184,8 +185,9 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         // Check that merkle proof is mature enough
         // TODO: separate constant for slashing optimistic period
         if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert SlashAgentOptimisticPeriod();
-        // TODO: do we need to save this?
-        msgOrigin;
+        // TODO: do we need to save domain where the agent was slashed?
+        // Message needs to be sent from the remote chain
+        if (msgOrigin == localDomain) revert IncorrectOriginDomain();
         // Slash agent and notify local AgentSecured contracts
         _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function

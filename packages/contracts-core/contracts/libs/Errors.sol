@@ -110,6 +110,7 @@ error RemoteGasDataNotSet();
 
 // ═══════════════════════════════════ TIPS ════════════════════════════════════
 
+error SummitTipTooHigh();
 error TipsClaimMoreThanEarned();
 error TipsClaimZero();
 error TipsOverflow();

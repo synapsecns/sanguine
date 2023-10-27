@@ -1,11 +1,12 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.149",
+  "version": "0.1.157",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
+    "cf:build": "npx @cloudflare/next-on-pages@1",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -23,6 +24,7 @@
     "test": "jest --watch"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "1",
     "@depay/web3-mock": "^14.0.0",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/address": "5.7.0",
@@ -40,7 +42,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.2.19",
+    "@synapsecns/sdk-router": "^0.2.20",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",

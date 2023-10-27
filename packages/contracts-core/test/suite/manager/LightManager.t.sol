@@ -392,10 +392,14 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_remoteWithdrawTips_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
-        skip(proofMaturity);
+        skipPeriod(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteWithdrawTipsCalldata(address(0), 0));
         vm.expectRevert(WithdrawTipsOptimisticPeriod.selector);
         managerMsgPrank(msgPayload);
+    }
+
+    function test_remoteWithdrawTips_revert_optimisticPeriodMinus1Second() public {
+        test_remoteWithdrawTips_revert_optimisticPeriodNotOver(BONDING_OPTIMISTIC_PERIOD - 1);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

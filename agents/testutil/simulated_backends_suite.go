@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/synapsecns/sanguine/core"
@@ -373,18 +374,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		defer wg.Done()
 		anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
 		anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		anvilOptsOrigin.SetBlockTime(1 * time.Second)
 		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
 	}()
 	go func() {
 		defer wg.Done()
 		anvilOptsDestination := anvil.NewAnvilOptionBuilder()
 		anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		anvilOptsDestination.SetBlockTime(1 * time.Second)
 		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
 	}()
 	go func() {
 		defer wg.Done()
 		anvilOptsSummit := anvil.NewAnvilOptionBuilder()
 		anvilOptsSummit.SetChainID(uint64(10))
+		anvilOptsSummit.SetBlockTime(1 * time.Second)
 		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
 	}()
 	wg.Wait()

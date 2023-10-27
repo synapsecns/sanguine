@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.19...@synapsecns/contracts-core@1.0.20) (2023-10-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
+## [1.0.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.18...@synapsecns/contracts-core@1.0.19) (2023-10-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
+## [1.0.18](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.17...@synapsecns/contracts-core@1.0.18) (2023-10-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
+## [1.0.17](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.16...@synapsecns/contracts-core@1.0.17) (2023-10-17)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
+## [1.0.16](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.15...@synapsecns/contracts-core@1.0.16) (2023-10-17)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
+## [1.0.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.14...@synapsecns/contracts-core@1.0.15) (2023-10-17)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
 ## [1.0.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.13...@synapsecns/contracts-core@1.0.14) (2023-09-14)
 
 **Note:** Version bump only for package @synapsecns/contracts-core

@@ -19,14 +19,21 @@ contract TestClient is MessageRecipient {
     function sendMessage(
         uint32 destination_,
         address recipientAddress,
-        uint32 optimisticSeconds,
+        uint32 optimisticPeriod,
         uint64 gasLimit,
         uint32 version,
         bytes memory content
     ) external payable {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         MessageRequest memory request = MessageRequest({gasDrop: 0, gasLimit: gasLimit, version: version});
-        (uint32 nonce,) = _sendBaseMessage(destination_, recipient, optimisticSeconds, request, content);
+        (uint32 nonce,) = _sendBaseMessage({
+            destination_: destination_,
+            recipient: recipient,
+            optimisticPeriod: optimisticPeriod,
+            tipsValue: msg.value,
+            request: request,
+            content: content
+        });
         emit MessageSent(destination_, nonce, TypeCasts.addressToBytes32(address(this)), recipient, content);
     }
 
