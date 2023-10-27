@@ -35,24 +35,24 @@ func signEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, sal
 	return signature, encoded, hashedDigest, nil
 }
 
-var etherscanTxURLs = map[uint32]string{
+var EtherscanTxURLs = map[uint32]string{
 	444:      "https://explorerl2-synapse-sepolia-testnet-1mdqkm651f.t.conduit.xyz/tx",
 	421614:   "https://sepolia-explorer.arbitrum.io/tx",
 	11155111: "https://sepolia.etherscan.io/tx",
 }
 
 func LogTx(agent, msg string, chainID uint32, tx *ethTypes.Transaction) {
-	fmt.Printf("[AGENT_%s:%d] %s [%s]\n", agent, chainID, msg, getTxLink(chainID, tx))
+	fmt.Printf("[AGENT_%s:%d] %s [%s]\n", agent, chainID, msg, GetTxLink(chainID, tx))
 }
 
-func getTxLink(chainID uint32, tx *ethTypes.Transaction) string {
+func GetTxLink(chainID uint32, tx *ethTypes.Transaction) string {
 	var link string
 	if tx != nil {
 		link = tx.Hash().String()
 	} else {
 		return ""
 	}
-	url, ok := etherscanTxURLs[chainID]
+	url, ok := EtherscanTxURLs[chainID]
 	if !ok {
 		return link
 	}

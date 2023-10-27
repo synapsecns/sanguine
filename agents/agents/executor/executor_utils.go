@@ -175,8 +175,14 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) (err error) {
+	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
+	if err != nil {
+		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
+	}
+
 	ctx, span := e.handler.Tracer().Start(ctx, "processSnapshot", trace.WithAttributes(
 		attribute.Int("log_block_number", int(logBlockNumber)),
+		attribute.String("snapshot_root", common.BytesToHash(snapshotRoot[:]).String()),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -212,10 +218,6 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 			return nil
 		}
 	}
-	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
-	if err != nil {
-		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
-	}
 
 	span.AddEvent("storing states", trace.WithAttributes(attribute.Int("num_states", len(snapshot.States()))))
 	err = e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, logBlockNumber)
@@ -229,7 +231,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 // processAttestation processes and stores an attestation.
 func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) (err error) {
 	fmt.Printf("processAttestation on chain %d: %v\n", chainID, attestation)
-	ctx, span := e.handler.Tracer().Start(ctx, "processSnapshot", trace.WithAttributes(
+	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
 		attribute.Int("chain_id", int(chainID)),
 		attribute.Int("log_block_number", int(logBlockNumber)),
 	))
