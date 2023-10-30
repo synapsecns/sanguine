@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"net/http"
 
 	"github.com/Flaque/filet"
@@ -77,7 +78,7 @@ func (t *APISuite) SetupSuite() {
 	config := serverConfig.Config{
 		HTTPPort:       uint16(httpPort),
 		DBPath:         t.dbPath,
-		DBType:         "sqlite",
+		DBType:         dbcommon.Sqlite.String(),
 		SkipMigrations: true,
 	}
 
