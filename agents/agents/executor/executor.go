@@ -368,9 +368,11 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
+	leaf, _ := message.ToLeaf()
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(originDomain)),
 		attribute.Int(metrics.Destination, int(destinationDomain)),
+		attribute.String("messageLeaf", common.BytesToHash(leaf[:]).String()),
 	))
 
 	defer func() {
@@ -409,26 +411,31 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
 	if err != nil {
+		span.AddEvent("could not get merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verifiedMessageProof, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
+		span.AddEvent("could not verify merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
 	if !verifiedMessageProof {
+		span.AddEvent("message proof not verified")
 		fmt.Println("message proof not verified")
 		return false, nil
 	}
 
 	verifiedStateProof, err := e.verifyStateMerkleProof(ctx, *state)
 	if err != nil {
+		span.AddEvent("could not verify state merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
 		return false, fmt.Errorf("could not verify state merkle proof: %w", err)
 	}
 
 	if !verifiedStateProof {
 		fmt.Println("state proof not verified")
+		span.AddEvent("state proof not verified")
 		return false, nil
 	}
 
@@ -441,13 +448,19 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		ChainID: &origin,
 		Nonce:   &stateNonce,
 	}
+	span.AddEvent("got state data", trace.WithAttributes(
+		attribute.String("stateRoot", stateRootString),
+		attribute.Int("stateNonce", int(stateNonce)),
+	))
 
 	_, snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
+		span.AddEvent("could not get state index", trace.WithAttributes(attribute.String("error", err.Error())))
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
 
 	if snapshotProof == nil || stateIndex == nil {
+		span.AddEvent("snapshot proof or state index is nil")
 		fmt.Printf("snapshot proof or state index is nil (%v, %v)", snapshotProof, snapshotProof)
 		return false, nil
 	}
@@ -457,13 +470,14 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		copy(originProof[i][:], p)
 	}
 
-	leaf, _ := message.ToLeaf()
 	originProofValid, err := e.verifyOriginMerkleProof(ctx, originProofRaw, leaf, uint32(message.Nonce()-1), stateRoot)
 	if err != nil {
+		span.AddEvent("could not verify origin merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
 		return false, fmt.Errorf("could not verify origin merkle proof: %w", err)
 	}
 
 	if !originProofValid {
+		span.AddEvent("origin proof not valid")
 		fmt.Println("origin proof not valid")
 		return false, nil
 	}
@@ -613,7 +627,11 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 
 // verifyOriginMerkleProof verifies that a message is in the origin merkle tree.
 func (e Executor) verifyOriginMerkleProof(parentCtx context.Context, originProof [][]byte, messageLeaf [32]byte, index uint32, stateRoot [32]byte) (_ bool, err error) {
-	_, span := e.handler.Tracer().Start(parentCtx, "verifyOriginMerkleProof", trace.WithAttributes())
+	_, span := e.handler.Tracer().Start(parentCtx, "verifyOriginMerkleProof", trace.WithAttributes(
+		attribute.Int("index", int(index)),
+		attribute.String("messageLeaf", common.BytesToHash(messageLeaf[:]).String()),
+		attribute.String("stateRoot", common.BytesToHash(stateRoot[:]).String()),
+	))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
