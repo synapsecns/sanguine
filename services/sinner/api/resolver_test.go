@@ -27,10 +27,15 @@ func (t *APISuite) TestGetOrigin() {
 	err := t.db.StoreOriginSent(t.GetTestContext(), originSent)
 	Nil(t.T(), err)
 
-	result, err := t.sinnerAPI.GetOriginInfo(t.GetTestContext(), txHash, int(chainID))
+	result, err := t.sinnerAPI.GetOriginInfo(t.GetTestContext(), messageHash)
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
 	Equal(t.T(), txHash, *result.Response.OriginTxHash)
+
+	results, err := t.sinnerAPI.GetOriginInfos(t.GetTestContext(), txHash, int(chainID))
+	Nil(t.T(), err)
+	NotNil(t.T(), results)
+	Equal(t.T(), txHash, *results.Response[0].OriginTxHash)
 }
 
 func (t *APISuite) TestGetExecuted() {
@@ -51,10 +56,15 @@ func (t *APISuite) TestGetExecuted() {
 	err := t.db.StoreExecuted(t.GetTestContext(), executed)
 	Nil(t.T(), err)
 
-	result, err := t.sinnerAPI.GetDestinationInfo(t.GetTestContext(), txHash, int(chainID))
+	result, err := t.sinnerAPI.GetDestinationInfo(t.GetTestContext(), messageHash)
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
 	Equal(t.T(), txHash, *result.Response.TxHash)
+
+	results, err := t.sinnerAPI.GetDestinationInfos(t.GetTestContext(), txHash, int(chainID))
+	Nil(t.T(), err)
+	NotNil(t.T(), results)
+	Equal(t.T(), txHash, *results.Response[0].TxHash)
 }
 
 func (t *APISuite) TestMessageStatus() {

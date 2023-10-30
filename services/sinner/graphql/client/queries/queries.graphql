@@ -11,8 +11,33 @@ query GetMessageStatus($messageHash: String!) {
 }
 
 
-query GetOriginInfo($txHash: String!, $chainID: Int!) {
+query GetOriginInfo($messageHash: String!) {
   response: getOriginInfo(
+    messageHash: $messageHash
+  ) {
+    messageHash
+    contractAddress
+    blockNumber
+    originTxHash
+    sender
+    recipient
+    originChainID
+    destinationChainID
+    nonce
+    message
+    optimisticSeconds
+    messageFlag
+    summitTip
+    attestationTip
+    executionTip
+    deliveryTip
+    version
+    gasLimit
+    gasDrop
+  }
+}
+query GetOriginInfos($txHash: String!, $chainID: Int!) {
+  response: getOriginInfos(
     txHash: $txHash,
     chainID: $chainID
   ) {
@@ -38,8 +63,22 @@ query GetOriginInfo($txHash: String!, $chainID: Int!) {
   }
 }
 
-query GetDestinationInfo($txHash: String!, $chainID: Int!) {
+query GetDestinationInfo($messageHash: String!) {
   response: getDestinationInfo(
+    messageHash: $messageHash) {
+    contractAddress
+    blockNumber
+    txHash
+    txIndex
+    messageHash
+    chainID
+    remoteDomain
+    success
+  }
+}
+
+query GetDestinationInfos($txHash: String!, $chainID: Int!) {
+  response: getDestinationInfos(
     txHash: $txHash,
     chainID: $chainID  ) {
     contractAddress

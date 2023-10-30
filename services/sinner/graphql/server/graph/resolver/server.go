@@ -36,6 +36,8 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	DestinationInfo() DestinationInfoResolver
+	OriginInfo() OriginInfoResolver
 	Query() QueryResolver
 }
 
@@ -48,6 +50,8 @@ type ComplexityRoot struct {
 		ChainID         func(childComplexity int) int
 		ContractAddress func(childComplexity int) int
 		MessageHash     func(childComplexity int) int
+		MessageStatus   func(childComplexity int) int
+		OriginInfo      func(childComplexity int) int
 		RemoteDomain    func(childComplexity int) int
 		Success         func(childComplexity int) int
 		TxHash          func(childComplexity int) int
@@ -67,12 +71,14 @@ type ComplexityRoot struct {
 		ContractAddress    func(childComplexity int) int
 		DeliveryTip        func(childComplexity int) int
 		DestinationChainID func(childComplexity int) int
+		DestinationInfo    func(childComplexity int) int
 		ExecutionTip       func(childComplexity int) int
 		GasDrop            func(childComplexity int) int
 		GasLimit           func(childComplexity int) int
 		Message            func(childComplexity int) int
 		MessageFlag        func(childComplexity int) int
 		MessageHash        func(childComplexity int) int
+		MessageStatus      func(childComplexity int) int
 		Nonce              func(childComplexity int) int
 		OptimisticSeconds  func(childComplexity int) int
 		OriginChainID      func(childComplexity int) int
@@ -84,16 +90,28 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetDestinationInfo func(childComplexity int, txHash string, chainID int) int
-		GetMessageStatus   func(childComplexity int, messageHash string) int
-		GetOriginInfo      func(childComplexity int, txHash string, chainID int) int
+		GetDestinationInfo  func(childComplexity int, messageHash string) int
+		GetDestinationInfos func(childComplexity int, txHash string, chainID int) int
+		GetMessageStatus    func(childComplexity int, messageHash string) int
+		GetOriginInfo       func(childComplexity int, messageHash string) int
+		GetOriginInfos      func(childComplexity int, txHash string, chainID int) int
 	}
 }
 
+type DestinationInfoResolver interface {
+	MessageStatus(ctx context.Context, obj *model.DestinationInfo) (*model.MessageStatus, error)
+	OriginInfo(ctx context.Context, obj *model.DestinationInfo) (*model.OriginInfo, error)
+}
+type OriginInfoResolver interface {
+	MessageStatus(ctx context.Context, obj *model.OriginInfo) (*model.MessageStatus, error)
+	DestinationInfo(ctx context.Context, obj *model.OriginInfo) (*model.DestinationInfo, error)
+}
 type QueryResolver interface {
 	GetMessageStatus(ctx context.Context, messageHash string) (*model.MessageStatus, error)
-	GetOriginInfo(ctx context.Context, txHash string, chainID int) (*model.OriginInfo, error)
-	GetDestinationInfo(ctx context.Context, txHash string, chainID int) (*model.DestinationInfo, error)
+	GetOriginInfo(ctx context.Context, messageHash string) (*model.OriginInfo, error)
+	GetDestinationInfo(ctx context.Context, messageHash string) (*model.DestinationInfo, error)
+	GetOriginInfos(ctx context.Context, txHash string, chainID int) ([]*model.OriginInfo, error)
+	GetDestinationInfos(ctx context.Context, txHash string, chainID int) ([]*model.DestinationInfo, error)
 }
 
 type executableSchema struct {
@@ -138,6 +156,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DestinationInfo.MessageHash(childComplexity), true
+
+	case "DestinationInfo.messageStatus":
+		if e.complexity.DestinationInfo.MessageStatus == nil {
+			break
+		}
+
+		return e.complexity.DestinationInfo.MessageStatus(childComplexity), true
+
+	case "DestinationInfo.originInfo":
+		if e.complexity.DestinationInfo.OriginInfo == nil {
+			break
+		}
+
+		return e.complexity.DestinationInfo.OriginInfo(childComplexity), true
 
 	case "DestinationInfo.remoteDomain":
 		if e.complexity.DestinationInfo.RemoteDomain == nil {
@@ -230,6 +262,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OriginInfo.DestinationChainID(childComplexity), true
 
+	case "OriginInfo.destinationInfo":
+		if e.complexity.OriginInfo.DestinationInfo == nil {
+			break
+		}
+
+		return e.complexity.OriginInfo.DestinationInfo(childComplexity), true
+
 	case "OriginInfo.executionTip":
 		if e.complexity.OriginInfo.ExecutionTip == nil {
 			break
@@ -271,6 +310,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OriginInfo.MessageHash(childComplexity), true
+
+	case "OriginInfo.messageStatus":
+		if e.complexity.OriginInfo.MessageStatus == nil {
+			break
+		}
+
+		return e.complexity.OriginInfo.MessageStatus(childComplexity), true
 
 	case "OriginInfo.nonce":
 		if e.complexity.OriginInfo.Nonce == nil {
@@ -338,7 +384,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDestinationInfo(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
+		return e.complexity.Query.GetDestinationInfo(childComplexity, args["messageHash"].(string)), true
+
+	case "Query.getDestinationInfos":
+		if e.complexity.Query.GetDestinationInfos == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getDestinationInfos_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetDestinationInfos(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
 
 	case "Query.getMessageStatus":
 		if e.complexity.Query.GetMessageStatus == nil {
@@ -362,7 +420,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOriginInfo(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
+		return e.complexity.Query.GetOriginInfo(childComplexity, args["messageHash"].(string)), true
+
+	case "Query.getOriginInfos":
+		if e.complexity.Query.GetOriginInfos == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getOriginInfos_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetOriginInfos(childComplexity, args["txHash"].(string), args["chainID"].(int)), true
 
 	}
 	return 0, false
@@ -469,15 +539,22 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   ): MessageStatus
 
   getOriginInfo(
-    txHash: String!
-    chainID: Int!
+    messageHash: String!
   ): OriginInfo
 
   getDestinationInfo(
-    txHash: String!
-    chainID: Int!
+    messageHash: String!
   ): DestinationInfo
 
+  getOriginInfos(
+    txHash: String!
+    chainID: Int!
+  ): [OriginInfo]
+
+  getDestinationInfos(
+    txHash: String!
+    chainID: Int!
+  ): [DestinationInfo]
 }
 
 
@@ -492,8 +569,9 @@ type MessageStatus {
   messageHash: String
 }
 
+
 """
-MessageInfo provides granular information on a message.
+OriginInfo provides granular information on an origin sent event.
 """
 type OriginInfo {
   messageHash: String
@@ -502,12 +580,12 @@ type OriginInfo {
   originTxHash: String
   sender: String
   recipient: String
-  originChainID: String
-  destinationChainID: String
+  originChainID: Int
+  destinationChainID: Int
   nonce: Int
   message: String
-  optimisticSeconds: String
-  messageFlag: String
+  optimisticSeconds: Int
+  messageFlag: Int
   summitTip: String
   attestationTip: String
   executionTip: String
@@ -515,8 +593,13 @@ type OriginInfo {
   version: Int
   gasLimit:Int
   gasDrop: String
-}
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  destinationInfo: DestinationInfo @goField(forceResolver: true)
 
+}
+"""
+DestinationInfo provides granular information on an execution event.
+"""
 type DestinationInfo {
   contractAddress: String
   blockNumber: Int
@@ -526,6 +609,8 @@ type DestinationInfo {
   chainID: Int
   remoteDomain: Int
   success: Boolean
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  originInfo: OriginInfo @goField(forceResolver: true)
 }
 
 enum MessageStateLastSeen{
@@ -557,6 +642,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_getDestinationInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["messageHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageHash"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["messageHash"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getDestinationInfos_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -596,6 +696,21 @@ func (ec *executionContext) field_Query_getMessageStatus_args(ctx context.Contex
 }
 
 func (ec *executionContext) field_Query_getOriginInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["messageHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageHash"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["messageHash"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getOriginInfos_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -980,6 +1095,142 @@ func (ec *executionContext) fieldContext_DestinationInfo_success(ctx context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DestinationInfo_messageStatus(ctx context.Context, field graphql.CollectedField, obj *model.DestinationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DestinationInfo_messageStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DestinationInfo().MessageStatus(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MessageStatus)
+	fc.Result = res
+	return ec.marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DestinationInfo_messageStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DestinationInfo",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "lastSeen":
+				return ec.fieldContext_MessageStatus_lastSeen(ctx, field)
+			case "originTxHash":
+				return ec.fieldContext_MessageStatus_originTxHash(ctx, field)
+			case "destinationTxHash":
+				return ec.fieldContext_MessageStatus_destinationTxHash(ctx, field)
+			case "messageHash":
+				return ec.fieldContext_MessageStatus_messageHash(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageStatus", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DestinationInfo_originInfo(ctx context.Context, field graphql.CollectedField, obj *model.DestinationInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DestinationInfo_originInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DestinationInfo().OriginInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.OriginInfo)
+	fc.Result = res
+	return ec.marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DestinationInfo_originInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DestinationInfo",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "messageHash":
+				return ec.fieldContext_OriginInfo_messageHash(ctx, field)
+			case "contractAddress":
+				return ec.fieldContext_OriginInfo_contractAddress(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_OriginInfo_blockNumber(ctx, field)
+			case "originTxHash":
+				return ec.fieldContext_OriginInfo_originTxHash(ctx, field)
+			case "sender":
+				return ec.fieldContext_OriginInfo_sender(ctx, field)
+			case "recipient":
+				return ec.fieldContext_OriginInfo_recipient(ctx, field)
+			case "originChainID":
+				return ec.fieldContext_OriginInfo_originChainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_OriginInfo_destinationChainID(ctx, field)
+			case "nonce":
+				return ec.fieldContext_OriginInfo_nonce(ctx, field)
+			case "message":
+				return ec.fieldContext_OriginInfo_message(ctx, field)
+			case "optimisticSeconds":
+				return ec.fieldContext_OriginInfo_optimisticSeconds(ctx, field)
+			case "messageFlag":
+				return ec.fieldContext_OriginInfo_messageFlag(ctx, field)
+			case "summitTip":
+				return ec.fieldContext_OriginInfo_summitTip(ctx, field)
+			case "attestationTip":
+				return ec.fieldContext_OriginInfo_attestationTip(ctx, field)
+			case "executionTip":
+				return ec.fieldContext_OriginInfo_executionTip(ctx, field)
+			case "deliveryTip":
+				return ec.fieldContext_OriginInfo_deliveryTip(ctx, field)
+			case "version":
+				return ec.fieldContext_OriginInfo_version(ctx, field)
+			case "gasLimit":
+				return ec.fieldContext_OriginInfo_gasLimit(ctx, field)
+			case "gasDrop":
+				return ec.fieldContext_OriginInfo_gasDrop(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_OriginInfo_messageStatus(ctx, field)
+			case "destinationInfo":
+				return ec.fieldContext_OriginInfo_destinationInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OriginInfo", field.Name)
 		},
 	}
 	return fc, nil
@@ -1418,9 +1669,9 @@ func (ec *executionContext) _OriginInfo_originChainID(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OriginInfo_originChainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1430,7 +1681,7 @@ func (ec *executionContext) fieldContext_OriginInfo_originChainID(ctx context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1459,9 +1710,9 @@ func (ec *executionContext) _OriginInfo_destinationChainID(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OriginInfo_destinationChainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1471,7 +1722,7 @@ func (ec *executionContext) fieldContext_OriginInfo_destinationChainID(ctx conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1582,9 +1833,9 @@ func (ec *executionContext) _OriginInfo_optimisticSeconds(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OriginInfo_optimisticSeconds(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1594,7 +1845,7 @@ func (ec *executionContext) fieldContext_OriginInfo_optimisticSeconds(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1623,9 +1874,9 @@ func (ec *executionContext) _OriginInfo_messageFlag(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OriginInfo_messageFlag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1635,7 +1886,7 @@ func (ec *executionContext) fieldContext_OriginInfo_messageFlag(ctx context.Cont
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1928,6 +2179,120 @@ func (ec *executionContext) fieldContext_OriginInfo_gasDrop(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _OriginInfo_messageStatus(ctx context.Context, field graphql.CollectedField, obj *model.OriginInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OriginInfo_messageStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.OriginInfo().MessageStatus(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MessageStatus)
+	fc.Result = res
+	return ec.marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OriginInfo_messageStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OriginInfo",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "lastSeen":
+				return ec.fieldContext_MessageStatus_lastSeen(ctx, field)
+			case "originTxHash":
+				return ec.fieldContext_MessageStatus_originTxHash(ctx, field)
+			case "destinationTxHash":
+				return ec.fieldContext_MessageStatus_destinationTxHash(ctx, field)
+			case "messageHash":
+				return ec.fieldContext_MessageStatus_messageHash(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageStatus", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OriginInfo_destinationInfo(ctx context.Context, field graphql.CollectedField, obj *model.OriginInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OriginInfo_destinationInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.OriginInfo().DestinationInfo(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.DestinationInfo)
+	fc.Result = res
+	return ec.marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OriginInfo_destinationInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OriginInfo",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "contractAddress":
+				return ec.fieldContext_DestinationInfo_contractAddress(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_DestinationInfo_blockNumber(ctx, field)
+			case "txHash":
+				return ec.fieldContext_DestinationInfo_txHash(ctx, field)
+			case "txIndex":
+				return ec.fieldContext_DestinationInfo_txIndex(ctx, field)
+			case "messageHash":
+				return ec.fieldContext_DestinationInfo_messageHash(ctx, field)
+			case "chainID":
+				return ec.fieldContext_DestinationInfo_chainID(ctx, field)
+			case "remoteDomain":
+				return ec.fieldContext_DestinationInfo_remoteDomain(ctx, field)
+			case "success":
+				return ec.fieldContext_DestinationInfo_success(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_DestinationInfo_messageStatus(ctx, field)
+			case "originInfo":
+				return ec.fieldContext_DestinationInfo_originInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DestinationInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getMessageStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getMessageStatus(ctx, field)
 	if err != nil {
@@ -2004,7 +2369,7 @@ func (ec *executionContext) _Query_getOriginInfo(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOriginInfo(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
+		return ec.resolvers.Query().GetOriginInfo(rctx, fc.Args["messageHash"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2064,6 +2429,10 @@ func (ec *executionContext) fieldContext_Query_getOriginInfo(ctx context.Context
 				return ec.fieldContext_OriginInfo_gasLimit(ctx, field)
 			case "gasDrop":
 				return ec.fieldContext_OriginInfo_gasDrop(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_OriginInfo_messageStatus(ctx, field)
+			case "destinationInfo":
+				return ec.fieldContext_OriginInfo_destinationInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OriginInfo", field.Name)
 		},
@@ -2096,7 +2465,7 @@ func (ec *executionContext) _Query_getDestinationInfo(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDestinationInfo(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
+		return ec.resolvers.Query().GetDestinationInfo(rctx, fc.Args["messageHash"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2134,6 +2503,10 @@ func (ec *executionContext) fieldContext_Query_getDestinationInfo(ctx context.Co
 				return ec.fieldContext_DestinationInfo_remoteDomain(ctx, field)
 			case "success":
 				return ec.fieldContext_DestinationInfo_success(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_DestinationInfo_messageStatus(ctx, field)
+			case "originInfo":
+				return ec.fieldContext_DestinationInfo_originInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DestinationInfo", field.Name)
 		},
@@ -2146,6 +2519,176 @@ func (ec *executionContext) fieldContext_Query_getDestinationInfo(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getDestinationInfo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getOriginInfos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getOriginInfos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetOriginInfos(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OriginInfo)
+	fc.Result = res
+	return ec.marshalOOriginInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getOriginInfos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "messageHash":
+				return ec.fieldContext_OriginInfo_messageHash(ctx, field)
+			case "contractAddress":
+				return ec.fieldContext_OriginInfo_contractAddress(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_OriginInfo_blockNumber(ctx, field)
+			case "originTxHash":
+				return ec.fieldContext_OriginInfo_originTxHash(ctx, field)
+			case "sender":
+				return ec.fieldContext_OriginInfo_sender(ctx, field)
+			case "recipient":
+				return ec.fieldContext_OriginInfo_recipient(ctx, field)
+			case "originChainID":
+				return ec.fieldContext_OriginInfo_originChainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_OriginInfo_destinationChainID(ctx, field)
+			case "nonce":
+				return ec.fieldContext_OriginInfo_nonce(ctx, field)
+			case "message":
+				return ec.fieldContext_OriginInfo_message(ctx, field)
+			case "optimisticSeconds":
+				return ec.fieldContext_OriginInfo_optimisticSeconds(ctx, field)
+			case "messageFlag":
+				return ec.fieldContext_OriginInfo_messageFlag(ctx, field)
+			case "summitTip":
+				return ec.fieldContext_OriginInfo_summitTip(ctx, field)
+			case "attestationTip":
+				return ec.fieldContext_OriginInfo_attestationTip(ctx, field)
+			case "executionTip":
+				return ec.fieldContext_OriginInfo_executionTip(ctx, field)
+			case "deliveryTip":
+				return ec.fieldContext_OriginInfo_deliveryTip(ctx, field)
+			case "version":
+				return ec.fieldContext_OriginInfo_version(ctx, field)
+			case "gasLimit":
+				return ec.fieldContext_OriginInfo_gasLimit(ctx, field)
+			case "gasDrop":
+				return ec.fieldContext_OriginInfo_gasDrop(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_OriginInfo_messageStatus(ctx, field)
+			case "destinationInfo":
+				return ec.fieldContext_OriginInfo_destinationInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OriginInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getOriginInfos_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getDestinationInfos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getDestinationInfos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetDestinationInfos(rctx, fc.Args["txHash"].(string), fc.Args["chainID"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DestinationInfo)
+	fc.Result = res
+	return ec.marshalODestinationInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getDestinationInfos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "contractAddress":
+				return ec.fieldContext_DestinationInfo_contractAddress(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_DestinationInfo_blockNumber(ctx, field)
+			case "txHash":
+				return ec.fieldContext_DestinationInfo_txHash(ctx, field)
+			case "txIndex":
+				return ec.fieldContext_DestinationInfo_txIndex(ctx, field)
+			case "messageHash":
+				return ec.fieldContext_DestinationInfo_messageHash(ctx, field)
+			case "chainID":
+				return ec.fieldContext_DestinationInfo_chainID(ctx, field)
+			case "remoteDomain":
+				return ec.fieldContext_DestinationInfo_remoteDomain(ctx, field)
+			case "success":
+				return ec.fieldContext_DestinationInfo_success(ctx, field)
+			case "messageStatus":
+				return ec.fieldContext_DestinationInfo_messageStatus(ctx, field)
+			case "originInfo":
+				return ec.fieldContext_DestinationInfo_originInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DestinationInfo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getDestinationInfos_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4089,6 +4632,72 @@ func (ec *executionContext) _DestinationInfo(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._DestinationInfo_remoteDomain(ctx, field, obj)
 		case "success":
 			out.Values[i] = ec._DestinationInfo_success(ctx, field, obj)
+		case "messageStatus":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DestinationInfo_messageStatus(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "originInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DestinationInfo_originInfo(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4203,6 +4812,72 @@ func (ec *executionContext) _OriginInfo(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._OriginInfo_gasLimit(ctx, field, obj)
 		case "gasDrop":
 			out.Values[i] = ec._OriginInfo_gasDrop(ctx, field, obj)
+		case "messageStatus":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._OriginInfo_messageStatus(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "destinationInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._OriginInfo_destinationInfo(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4293,6 +4968,44 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getDestinationInfo(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getOriginInfos":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getOriginInfos(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getDestinationInfos":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getDestinationInfos(ctx, field)
 				return res
 			}
 
@@ -4983,6 +5696,47 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalODestinationInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx context.Context, sel ast.SelectionSet, v []*model.DestinationInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalODestinationInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDestinationInfo(ctx context.Context, sel ast.SelectionSet, v *model.DestinationInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5027,6 +5781,47 @@ func (ec *executionContext) marshalOMessageStatus2ᚖgithubᚗcomᚋsynapsecns�
 		return graphql.Null
 	}
 	return ec._MessageStatus(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOOriginInfo2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx context.Context, sel ast.SelectionSet, v []*model.OriginInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOOriginInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐOriginInfo(ctx context.Context, sel ast.SelectionSet, v *model.OriginInfo) graphql.Marshaler {

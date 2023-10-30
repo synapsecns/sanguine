@@ -8,8 +8,9 @@ type MessageStatus {
   messageHash: String
 }
 
+
 """
-MessageInfo provides granular information on a message.
+OriginInfo provides granular information on an origin sent event.
 """
 type OriginInfo {
   messageHash: String
@@ -18,12 +19,12 @@ type OriginInfo {
   originTxHash: String
   sender: String
   recipient: String
-  originChainID: String
-  destinationChainID: String
+  originChainID: Int
+  destinationChainID: Int
   nonce: Int
   message: String
-  optimisticSeconds: String
-  messageFlag: String
+  optimisticSeconds: Int
+  messageFlag: Int
   summitTip: String
   attestationTip: String
   executionTip: String
@@ -31,8 +32,13 @@ type OriginInfo {
   version: Int
   gasLimit:Int
   gasDrop: String
-}
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  destinationInfo: DestinationInfo @goField(forceResolver: true)
 
+}
+"""
+DestinationInfo provides granular information on an execution event.
+"""
 type DestinationInfo {
   contractAddress: String
   blockNumber: Int
@@ -42,6 +48,8 @@ type DestinationInfo {
   chainID: Int
   remoteDomain: Int
   success: Boolean
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  originInfo: OriginInfo @goField(forceResolver: true)
 }
 
 enum MessageStateLastSeen{

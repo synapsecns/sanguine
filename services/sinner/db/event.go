@@ -31,19 +31,21 @@ type EventDBWriter interface {
 //
 //nolint:interfacebloat
 type EventDBReader interface {
-	// RetrieveOriginSent gets the OriginSent record.
-	RetrieveOriginSent(ctx context.Context, chainID uint32, txHash string) (model.OriginSent, error)
+	// RetrieveOriginSent gets the Origin Sent event with a message hash.
+	RetrieveOriginSent(ctx context.Context, messageHash string) (model.OriginSent, error)
+	// RetrieveOriginSents gets the Origin Sent events tied to a tx hash.
+	RetrieveOriginSents(ctx context.Context, chainID uint32, txHash string) ([]model.OriginSent, error)
+	// RetrieveExecuted gets the Executed event with a message hash.
+	RetrieveExecuted(ctx context.Context, messageHash string) (model.Executed, error)
+	// RetrieveExecuteds gets the Executed events tied to a tx hash.
+	RetrieveExecuteds(ctx context.Context, chainID uint32, txHash string) ([]model.Executed, error)
 	// RetrieveMessageStatus gets status of a message.
 	RetrieveMessageStatus(ctx context.Context, messageHash string) (graphqlModel.MessageStatus, error)
 	// RetrieveLastStoredBlock gets the last block stored in sinner.
 	RetrieveLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error)
-	// RetrieveExecuted gets the Executed record.
-	RetrieveExecuted(ctx context.Context, chainID uint32, txHash string) (model.Executed, error)
 }
 
 // EventDB stores events.
-//
-//go:generate go run github.com/vektra/mockery/v2 --name EventDB --output ./mocks --case=underscore
 type EventDB interface {
 	EventDBWriter
 	EventDBReader
