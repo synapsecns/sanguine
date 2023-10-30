@@ -32,7 +32,7 @@ const SynapseCCTPAddress = '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
 const SynapseCCTPOptimismAddress = '0x5e69c336661dde70404e3345BA61F9c01DdB4C36'
 
 // Chain IDs where SynapseCCTPRouter is allowed
-const allowedChainIdsForSynapseCCTPRouter = [1, 10, 42161, 43114]
+const allowedChainIdsForSynapseCCTPRouter = [1, 10, 8453, 42161, 43114]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}

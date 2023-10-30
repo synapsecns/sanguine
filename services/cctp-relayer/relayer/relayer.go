@@ -680,7 +680,10 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	contract := c.boundSynapseCCTPs[msg.DestChainID]
+	contract, ok := c.boundSynapseCCTPs[msg.DestChainID]
+	if !ok {
+		return fmt.Errorf("could not find destination chain %d", msg.DestChainID)
+	}
 
 	// TODO: functionalize this
 	ridBytes := common.Hex2Bytes(msg.RequestID)

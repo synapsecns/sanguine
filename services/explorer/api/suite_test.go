@@ -174,6 +174,7 @@ type APISuite struct {
 	chainIDs        []uint32
 	scribeMetrics   metrics.Handler
 	explorerMetrics metrics.Handler
+	config          serverConfig.Config
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -282,6 +283,7 @@ func (g *APISuite) SetupTest() {
 			},
 		},
 	}
+	g.config = config
 	go func() {
 		Nil(g.T(), api.Start(g.GetTestContext(), config, g.explorerMetrics))
 	}()

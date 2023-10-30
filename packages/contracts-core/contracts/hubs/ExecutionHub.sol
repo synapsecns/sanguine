@@ -12,12 +12,14 @@ import {
     DuplicatedSnapshotRoot,
     IncorrectDestinationDomain,
     IncorrectMagicValue,
+    IncorrectOriginDomain,
     IncorrectSnapshotRoot,
     GasLimitTooLow,
     GasSuppliedTooLow,
     MessageOptimisticPeriod,
     NotaryInDispute
 } from "../libs/Errors.sol";
+import {SafeCall} from "../libs/SafeCall.sol";
 import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/memory/Message.sol";
 import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
@@ -51,6 +53,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
     using ByteString for MemView;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
+    using SafeCall for address;
     using SafeCast for uint256;
     using TypeCasts for bytes32;
 
@@ -124,6 +127,8 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes32 msgLeaf = message.leaf();
         // Ensure message was meant for this domain
         if (header.destination() != localDomain) revert IncorrectDestinationDomain();
+        // Ensure message was not sent from this domain
+        if (header.origin() == localDomain) revert IncorrectOriginDomain();
         // Check that message has not been executed before
         ReceiptData memory rcptData = _receiptData[msgLeaf];
         if (rcptData.executor != address(0)) revert AlreadyExecuted();
@@ -221,18 +226,20 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
         if (gasleft() <= gasLimit) revert GasSuppliedTooLow();
-        try IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}({
-            origin: header.origin(),
-            nonce: header.nonce(),
-            sender: baseMessage.sender(),
-            proofMaturity: proofMaturity,
-            version: request.version(),
-            content: baseMessage.content().clone()
-        }) {
-            return true;
-        } catch {
-            return false;
-        }
+        // receiveBaseMessage(origin, nonce, sender, proofMaturity, version, content)
+        bytes memory payload = abi.encodeCall(
+            IMessageRecipient.receiveBaseMessage,
+            (
+                header.origin(),
+                header.nonce(),
+                baseMessage.sender(),
+                proofMaturity,
+                request.version(),
+                baseMessage.content().clone()
+            )
+        );
+        // Pass the base message to the recipient, return the success status of the call
+        return recipient.safeCall({gasLimit: gasLimit, msgValue: 0, payload: payload});
     }
 
     /// @dev Uses message body for a call to AgentManager, and checks the returned magic value to ensure that

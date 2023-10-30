@@ -31,6 +31,7 @@ type Query struct {
 	Leaderboard            []*model.Leaderboard            "json:\"leaderboard\" graphql:\"leaderboard\""
 	GetOriginBridgeTx      *model.BridgeWatcherTx          "json:\"getOriginBridgeTx\" graphql:\"getOriginBridgeTx\""
 	GetDestinationBridgeTx *model.BridgeWatcherTx          "json:\"getDestinationBridgeTx\" graphql:\"getDestinationBridgeTx\""
+	GetBlockHeight         []*model.BlockHeight            "json:\"getBlockHeight\" graphql:\"getBlockHeight\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -89,6 +90,13 @@ type GetRankedChainIDsByVolume struct {
 	Response []*struct {
 		ChainID *int     "json:\"chainID\" graphql:\"chainID\""
 		Total   *float64 "json:\"total\" graphql:\"total\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetBlockHeight struct {
+	Response []*struct {
+		ChainID     *int                "json:\"chainID\" graphql:\"chainID\""
+		Type        *model.ContractType "json:\"type\" graphql:\"type\""
+		BlockNumber *int                "json:\"blockNumber\" graphql:\"blockNumber\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetAmountStatistic struct {
@@ -412,6 +420,28 @@ func (c *Client) GetRankedChainIDsByVolume(ctx context.Context, duration *model.
 
 	var res GetRankedChainIDsByVolume
 	if err := c.Client.Post(ctx, "GetRankedChainIDsByVolume", GetRankedChainIDsByVolumeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetBlockHeightDocument = `query GetBlockHeight ($contracts: [ContractQuery]) {
+	response: getBlockHeight(contracts: $contracts) {
+		chainID
+		type
+		blockNumber
+	}
+}
+`
+
+func (c *Client) GetBlockHeight(ctx context.Context, contracts []*model.ContractQuery, httpRequestOptions ...client.HTTPRequestOption) (*GetBlockHeight, error) {
+	vars := map[string]interface{}{
+		"contracts": contracts,
+	}
+
+	var res GetBlockHeight
+	if err := c.Client.Post(ctx, "GetBlockHeight", GetBlockHeightDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
