@@ -197,6 +197,7 @@ export abstract class RouterSet {
       originQuery.minAmountOut,
       hasComplexBridgeAction(destQuery)
     )
+    const estimatedTime = this.getEstimatedTime(bridgeRoute.originChainId)
     return {
       feeAmount,
       feeConfig,
@@ -204,6 +205,7 @@ export abstract class RouterSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
+      estimatedTime,
     }
   }
 }
