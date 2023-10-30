@@ -61,8 +61,6 @@ type ChainConfig struct {
 	ChainID uint32 `yaml:"chain_id"`
 	// FetchBlockIncrement is the number of blocks to fetch at a time. Optional and defaults at 1000000.
 	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
-	// GoroutinesPerContract is the number of goroutines to be spawned while processing logs. Optional and defaults at 1.
-	GoroutinesPerContract int `yaml:"goroutines_per_contract"`
 	// Contracts are the contracts.
 	Contracts []ContractConfig `yaml:"contracts"`
 }

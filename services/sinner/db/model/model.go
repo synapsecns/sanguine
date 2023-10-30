@@ -18,8 +18,10 @@ func init() {
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	ContractAddressFieldName = namer.GetConsistentName("ContractAddress")
-	TxIndexFieldName = namer.GetConsistentName("TxIndex")
 	MessageHashFieldName = namer.GetConsistentName("MessageHash")
+
+	OriginTxHashFieldName = namer.GetConsistentName("OriginTxHash")
+	DestinationTxHashFieldName = namer.GetConsistentName("DestinationTxHash")
 }
 
 var (
@@ -31,16 +33,12 @@ var (
 	BlockNumberFieldName string
 	// ContractAddressFieldName is the address of the contract.
 	ContractAddressFieldName string
-	// BlockIndexFieldName is the index field name.
-	BlockIndexFieldName string
-	// BlockHashFieldName is the block hash field name.
-	BlockHashFieldName string
-	// ConfirmedFieldName is the confirmed field name.
-	ConfirmedFieldName string
-	// TxIndexFieldName is the name of the transaction index field.
-	TxIndexFieldName string
 	// MessageHashFieldName is the name of the message hash field.
 	MessageHashFieldName string
+	// OriginTxHashFieldName is the name of the origin tx hash field.
+	OriginTxHashFieldName string
+	// DestinationTxHashFieldName is the name of the destination tx hash field.
+	DestinationTxHashFieldName string
 )
 
 // MessageStatus is the table holding the status of each message.
@@ -50,7 +48,7 @@ type MessageStatus struct {
 	// OriginTxHash is the txhash when the origin event was emitted.
 	OriginTxHash string `gorm:"column:origin_txhash"`
 	// DestinationTxHash is the txhash when the destination event was emitted.
-	DestinationTxHash string `gorm:"column:destination_txhash"`
+	DestinationTxHash string `gorm:"column:successful_destination_txhash"`
 }
 
 // OriginSent is the information about a message parsed by the Executor. This is an event derived from the origin contract.

@@ -50,9 +50,8 @@ func (t *ServiceSuite) TestChainIndexer() {
 		Nil(t.T(), err)
 
 		config := indexerConfig.ChainConfig{
-			ChainID:               t.originChainID,
-			FetchBlockIncrement:   10000,
-			GoroutinesPerContract: 1,
+			ChainID:             t.originChainID,
+			FetchBlockIncrement: 10000,
 			Contracts: []indexerConfig.ContractConfig{{
 				ContractType: "origin",
 				Address:      originContract.Address().String(),

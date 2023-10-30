@@ -5,6 +5,7 @@ import (
 	"fmt"
 	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -17,8 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	fetcherpkg "github.com/synapsecns/sanguine/services/sinner/fetcher"
 	gqlClient "github.com/synapsecns/sanguine/services/sinner/fetcher/client"
-
-	"golang.org/x/sync/errgroup"
 )
 
 // Sinner parses messages stored in scribe.
@@ -76,39 +75,46 @@ func NewSinner(eventDB db.EventDB, config indexerConfig.Config, handler metrics.
 //
 // nolint:cyclop
 func (e Sinner) Index(ctx context.Context) error {
-	g, groupCtx := errgroup.WithContext(ctx)
+	var wg sync.WaitGroup
+	errChan := make(chan error)
 
 	for i := range e.config.Chains {
 		chainConfig := e.config.Chains[i]
 		chainIndexer := e.indexers[chainConfig.ChainID]
 
-		g.Go(func() error {
+		go func(chainCfg *indexerConfig.ChainConfig, indexer *ChainIndexer) {
+			defer wg.Done()
 			// generate new context
-			chainContext := context.Background()
+			chainContext := context.WithoutCancel(ctx)
 			for {
 				select {
-				case <-groupCtx.Done(): // global context canceled
-					return fmt.Errorf("global context canceled")
+				case <-ctx.Done(): // global context canceled
+					errChan <- fmt.Errorf("global context canceled")
+					return
 				case <-chainContext.Done(): // local context canceled, reset context
-					chainContext = context.Background()
+					chainContext = context.WithoutCancel(ctx)
 				default:
-
 					err := chainIndexer.Index(chainContext)
 					if err != nil {
-						logger.ReportSinnerError(err, chainConfig.ChainID, logger.SinnerIndexingFailure)
+						errChan <- fmt.Errorf(" error indexing chain %d: %w", chainConfig.ChainID, err)
 						continue // continue trying
 					}
-					return nil
+					return
 				}
 			}
-		})
+		}(&chainConfig, chainIndexer)
 	}
 
-	if err := g.Wait(); err != nil {
-		logger.ReportSinnerError(fmt.Errorf("could not livefill explorer: %w", err), 0, logger.SinnerIndexingFailure)
+	// Goroutine to collect errors, closes once the wait group is done.
+	go func() {
+		for err := range errChan {
+			logger.ReportSinnerError(fmt.Errorf("could not livefill explorer: %w", err), 0, logger.SinnerIndexingFailure)
+		}
+	}()
 
-		return fmt.Errorf("could not livefill explorer: %w", err)
-	}
+	// Wait for all goroutines to finish
+	wg.Wait()
+	close(errChan)
 	return nil
 }
 

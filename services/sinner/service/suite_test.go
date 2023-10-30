@@ -234,7 +234,7 @@ func (t *ServiceSuite) BuildAndSetTestData() {
 		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
 		BlockNumber: 1975778,
 		Topics:      []common.Hash{executeTopic, executeTopic2, executeTopic3},
-		Data:        []byte{},
+		Data:        common.FromHex("0000000000000000000000000000000000000000000000000000000000000001"),
 		TxHash:      common.HexToHash("0x09680d9dd6585a7608470ed29acd0a845a5498d93136ad2ea6a8f271e55de577"),
 		TxIndex:     1,
 		BlockHash:   common.HexToHash(big.NewInt(1975778).String()),

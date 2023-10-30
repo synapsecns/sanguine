@@ -164,3 +164,5 @@ func (p *parserImpl) parseSent(log ethTypes.Log) (*model.OriginSent, error) {
 	}
 	return &parsedEvent, nil
 }
+
+var _ sinnerTypes.EventParser = &parserImpl{}

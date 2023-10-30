@@ -33,9 +33,6 @@ type ChainIndexer struct {
 
 // NewChainIndexer creates a new chain indexer.
 func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
-	if config.GoroutinesPerContract < 1 {
-		config.GoroutinesPerContract = 1
-	}
 
 	if config.FetchBlockIncrement < 1 {
 		config.FetchBlockIncrement = 10000
@@ -147,9 +144,6 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 						}
 					}
 
-					// Semaphore to limit the number of goroutines for each contract.
-					sem := make(chan struct{}, c.config.GoroutinesPerContract)
-
 					// Iterate through all blocks between start and finish.
 					for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.config.FetchBlockIncrement {
 						if currentHeight > endHeight {
@@ -167,33 +161,19 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 							return fmt.Errorf("error getting scribe data: %w", contractErr)
 						}
 						eventParser.UpdateTxMap(txs)
-						logGroup, logCtx := errgroup.WithContext(contractCtx)
-
 						// For each log, spin up a go routine and parse + store that data.
 						for _, log := range logs {
-							sem <- struct{}{}
-
 							currentLog := log
-							logGroup.Go(func() error {
-								defer func() { <-sem }() // empty the chan by one semaphore
-
-								contractErr = retry.WithBackoff(logCtx, func(parentCtx context.Context) error {
-									parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
-									if parseErr != nil {
-										return fmt.Errorf("error parsing and storing event: %w", parseErr)
-									}
-									return nil
-								})
-
-								if contractErr != nil {
-									return fmt.Errorf("error parsing and storing event: %w", contractErr)
+							contractErr = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
+								parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
+								if parseErr != nil {
+									return fmt.Errorf("error parsing and storing event: %w", parseErr)
 								}
 								return nil
 							})
-						}
-						// wait for all goroutines to finish
-						if err := logGroup.Wait(); err != nil {
-							return fmt.Errorf("error processing logs: %w", err)
+							if contractErr != nil {
+								return fmt.Errorf("error parsing and storing event: %w", contractErr)
+							}
 						}
 
 						// store last indexed

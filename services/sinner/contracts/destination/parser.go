@@ -77,14 +77,16 @@ func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 		}
 
 		g, storeCtx := errgroup.WithContext(ctx)
-		g.Go(func() error {
-			err := p.db.StoreOrUpdateMessageStatus(storeCtx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
-			if err != nil {
-				return fmt.Errorf("error while storing executed event. Err: %w", err)
-			}
-			return nil
-		})
-
+		// If the message was successfully executed, store the executed event in the message status table.
+		if executedEvent.Success {
+			g.Go(func() error {
+				err := p.db.StoreOrUpdateMessageStatus(storeCtx, executedEvent.TxHash, executedEvent.MessageHash, types.Destination)
+				if err != nil {
+					return fmt.Errorf("error while storing executed event. Err: %w", err)
+				}
+				return nil
+			})
+		}
 		g.Go(func() error {
 			err := p.db.StoreExecuted(storeCtx, executedEvent)
 			if err != nil {
@@ -122,3 +124,5 @@ func (p *parserImpl) parseExecuted(log ethTypes.Log) (*model.Executed, error) {
 	}
 	return &parsedEvent, nil
 }
+
+var _ types.EventParser = &parserImpl{}

@@ -105,8 +105,8 @@ func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, me
 	case types.Origin:
 		// If the record exists, it will be updated, otherwise, a new one will be created
 		dbTx = dbTx.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "message_hash"}},
-			DoUpdates: clause.AssignmentColumns([]string{"origin_txhash"}),
+			Columns:   []clause.Column{{Name: model.MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{model.OriginTxHashFieldName}),
 		}).Create(&model.MessageStatus{
 			MessageHash:       messageHash,
 			OriginTxHash:      txHash,
@@ -116,8 +116,8 @@ func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, me
 	case types.Destination:
 		// If the record exists, it will be updated, otherwise, a new one will be created with empty OriginTxHash
 		dbTx = dbTx.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "message_hash"}},
-			DoUpdates: clause.AssignmentColumns([]string{"destination_txhash"}),
+			Columns:   []clause.Column{{Name: model.MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{model.DestinationTxHashFieldName}),
 		}).Create(&model.MessageStatus{
 			MessageHash:       messageHash,
 			OriginTxHash:      "",

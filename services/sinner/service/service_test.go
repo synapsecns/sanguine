@@ -32,9 +32,8 @@ func (t *ServiceSuite) TestSinner() {
 	Nil(t.T(), err)
 
 	originConfig := indexerConfig.ChainConfig{
-		ChainID:               t.originChainID,
-		FetchBlockIncrement:   10,
-		GoroutinesPerContract: 1,
+		ChainID:             t.originChainID,
+		FetchBlockIncrement: 10,
 		Contracts: []indexerConfig.ContractConfig{{
 			ContractType: "origin",
 			Address:      t.originTestLog.Address.String(),
@@ -43,9 +42,8 @@ func (t *ServiceSuite) TestSinner() {
 	}
 
 	destinationConfig := indexerConfig.ChainConfig{
-		ChainID:               t.destinationChainID,
-		FetchBlockIncrement:   10,
-		GoroutinesPerContract: 1,
+		ChainID:             t.destinationChainID,
+		FetchBlockIncrement: 10,
 		Contracts: []indexerConfig.ContractConfig{{
 			ContractType: "execution_hub",
 			Address:      t.destinationTestLog.Address.String(),
