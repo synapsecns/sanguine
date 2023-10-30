@@ -22,6 +22,8 @@ import {
   ETH_POOL_NUSD,
   ETH_USDC,
   ETH_USDT,
+  MEDIAN_TIME_BRIDGE,
+  MEDIAN_TIME_CCTP,
   PUBLIC_PROVIDER_URLS,
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
@@ -262,6 +264,10 @@ describe('SynapseSDK', () => {
           )
           // SynapseCCTPRouterQuery has routerAdapter property
           expect(result.originQuery.routerAdapter).toBeDefined()
+          // Estimated time must match the SynapseCCTP median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_CCTP[SupportedChainId.ETH]
+          )
         })
       })
     })
@@ -296,6 +302,10 @@ describe('SynapseSDK', () => {
           )
           // SynapseCCTPRouterQuery has routerAdapter property
           expect(result.originQuery.routerAdapter).toBeDefined()
+          // Estimated time must match the SynapseCCTP median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_CCTP[SupportedChainId.ETH]
+          )
         })
       })
     })
@@ -330,6 +340,10 @@ describe('SynapseSDK', () => {
           )
           // SynapseRouterQuery has swapAdapter property
           expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
+          )
         })
       })
     })
@@ -359,6 +373,20 @@ describe('SynapseSDK', () => {
         amount,
         resultPromise
       )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
+          )
+        })
+      })
     })
 
     describe('AVAX gOHM -> BSC gOHM', () => {
@@ -379,6 +407,20 @@ describe('SynapseSDK', () => {
         amount,
         resultPromise
       )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
+          )
+        })
+      })
     })
   })
 
