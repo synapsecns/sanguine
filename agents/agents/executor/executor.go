@@ -110,7 +110,7 @@ const (
 	scribeConnectTimeout        = 30 * time.Second
 	defaultMaxRetrySeconds      = 30
 	defaultExecuteRetryInterval = 300
-	defaultMaxExecuteAttempts   = 3
+	defaultMaxExecuteAttempts   = 5
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
@@ -472,10 +472,13 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	fmt.Println("EXECUTING")
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		leafBytes, _ := message.ToLeaf()
+		leafHex := common.Bytes2Hex(leafBytes[:])
 		stateHash, _ := (*state).Hash()
 		span.AddEvent("Submitting execute()", trace.WithAttributes(
 			attribute.Int("origin", int(message.OriginDomain())),
 			attribute.Int("destination", int(destinationDomain)),
+			attribute.String("leaf", leafHex),
 			attribute.String("stateRoot", stateRootString),
 			attribute.Int("stateIndex", int(*stateIndex)),
 			attribute.Int("stateNonce", int(stateNonce)),
@@ -493,7 +496,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
-		types.LogTx("EXECUTOR", "Submitted execute()", message.DestinationDomain(), tx)
+		types.LogTx("EXECUTOR", fmt.Sprintf("Submitted execute() with leaf %s", leafHex), message.DestinationDomain(), tx)
 		if tx != nil {
 			span.AddEvent("Submitted execute()", trace.WithAttributes(
 				attribute.String("txHash", tx.Hash().String()),
