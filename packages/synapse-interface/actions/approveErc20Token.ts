@@ -39,7 +39,7 @@ export const approveErc20Token = async ({
     args: [spender, amount ?? MAX_UINT256],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract({ config })
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

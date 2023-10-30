@@ -26,7 +26,7 @@ const persistConfig: PersistConfig<AppState> = {
   whitelist: Object.keys(persistedReducers),
 }
 
-const appReducer = combineReducers({
+export const appReducer = combineReducers({
   portfolio,
   swap,
   bridgeDisplay,

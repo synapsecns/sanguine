@@ -44,7 +44,7 @@ export const swapPoolAddLiquidity = async ({
 
   const config = await prepareWriteContract(pwcConfig)
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract({ config })
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

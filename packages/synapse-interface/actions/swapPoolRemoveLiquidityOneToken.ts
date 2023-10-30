@@ -45,7 +45,7 @@ export const swapPoolRemoveLiquidityOneToken = async ({
     ],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract({ config })
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt
