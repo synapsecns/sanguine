@@ -8,15 +8,11 @@ import (
 
 // GetAllModels gets all models to migrate.
 func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels,
-		&OriginSent{}, &Executed{}, &MessageStatus{}, &LastIndexed{},
-	)
-	return allModels
+	return []interface{}{&OriginSent{}, &Executed{}, &MessageStatus{}, &LastIndexed{}}
 }
 
 func init() {
-	var allModels []interface{}
-	allModels = append(allModels, &OriginSent{}, &Executed{})
+	allModels := GetAllModels()
 	namer := dbcommon.NewNamer(allModels)
 	TxHashFieldName = namer.GetConsistentName("TxHash")
 	ChainIDFieldName = namer.GetConsistentName("ChainID")

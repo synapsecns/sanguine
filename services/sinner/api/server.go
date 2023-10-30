@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/ginhelper"
@@ -21,7 +20,6 @@ import (
 	"os"
 )
 
-var logger = log.Logger("sinner-api")
 var errNoPort = errors.New("port not specified, must be between 1 and 65535")
 
 // Start starts the api server for sinner.
