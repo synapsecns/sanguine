@@ -1,40 +1,31 @@
 package graph
 
 import (
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
 	graphqlmodel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
 )
-
-// Helper function to convert int to *int.
-func intPtr(val int) *int {
-	return &val
-}
-
-// Helper function to convert string to *string.
-func strPtr(val string) *string {
-	return &val
-}
 
 func dbToGraphqlModelOrigin(event model.OriginSent) *graphqlmodel.OriginInfo {
 	return &graphqlmodel.OriginInfo{
 		MessageHash:        &event.MessageHash,
 		ContractAddress:    &event.ContractAddress,
-		BlockNumber:        intPtr(int(event.BlockNumber)),
+		BlockNumber:        core.PtrTo(int(event.BlockNumber)),
 		OriginTxHash:       &event.TxHash,
 		Sender:             &event.Sender,
 		Recipient:          &event.Recipient,
-		OriginChainID:      intPtr(int(event.ChainID)),
-		DestinationChainID: intPtr(int(event.DestinationChainID)),
-		Nonce:              intPtr(int(event.Nonce)),
-		Message:            strPtr(event.Message),
-		OptimisticSeconds:  intPtr(int(event.OptimisticSeconds)),
-		MessageFlag:        intPtr(int(event.MessageFlag)),
+		OriginChainID:      core.PtrTo(int(event.ChainID)),
+		DestinationChainID: core.PtrTo(int(event.DestinationChainID)),
+		Nonce:              core.PtrTo(int(event.Nonce)),
+		Message:            &event.Message,
+		OptimisticSeconds:  core.PtrTo(int(event.OptimisticSeconds)),
+		MessageFlag:        core.PtrTo(int(event.MessageFlag)),
 		SummitTip:          &event.SummitTip,
 		AttestationTip:     &event.AttestationTip,
 		ExecutionTip:       &event.ExecutionTip,
 		DeliveryTip:        &event.DeliveryTip,
-		Version:            intPtr(int(event.Version)),
-		GasLimit:           intPtr(int(event.GasLimit)),
+		Version:            core.PtrTo(int(event.Version)),
+		GasLimit:           core.PtrTo(int(event.GasLimit)),
 		GasDrop:            &event.GasDrop,
 	}
 }
@@ -42,12 +33,12 @@ func dbToGraphqlModelOrigin(event model.OriginSent) *graphqlmodel.OriginInfo {
 func dbToGraphqlModelDestination(event model.Executed) *graphqlmodel.DestinationInfo {
 	return &graphqlmodel.DestinationInfo{
 		ContractAddress: &event.ContractAddress,
-		BlockNumber:     intPtr(int(event.BlockNumber)),
+		BlockNumber:     core.PtrTo(int(event.BlockNumber)),
 		TxHash:          &event.TxHash,
-		TxIndex:         intPtr(int(event.TxIndex)),
+		TxIndex:         core.PtrTo(int(event.TxIndex)),
 		MessageHash:     &event.MessageHash,
-		ChainID:         intPtr(int(event.ChainID)),
-		RemoteDomain:    intPtr(int(event.RemoteDomain)),
+		ChainID:         core.PtrTo(int(event.ChainID)),
+		RemoteDomain:    core.PtrTo(int(event.RemoteDomain)),
 		Success:         &event.Success,
 	}
 }
