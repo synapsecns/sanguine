@@ -19,7 +19,7 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
 		dbTx = dbTx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: model.ChainIDFieldName}, {Name: model.MessageHashFieldName},
+				{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName}, {Name: model.MessageHashFieldName},
 			},
 			DoNothing: true,
 		}).CreateInBatches(originSent, 10)

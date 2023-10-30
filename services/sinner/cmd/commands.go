@@ -4,6 +4,7 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
@@ -103,22 +104,32 @@ var unifiedCommand = &cli.Command{
 			return fmt.Errorf("could not initialize database: %w", err)
 		}
 
+		g, groupCtx := errgroup.WithContext(c.Context)
 		// Start indexer
-		sinnerService, err := service.NewSinner(db, decodeConfig.IndexerConfig(), metrics.Get())
-		if err != nil {
-			return fmt.Errorf("could not create Sinner indexer: %w", err)
-		}
-		err = sinnerService.Index(c.Context)
-		if err != nil {
-			return fmt.Errorf("could not backfill backfiller: %w", err)
-		}
-
+		g.Go(func() error {
+			sinnerService, err := service.NewSinner(db, decodeConfig.IndexerConfig(), metrics.Get())
+			if err != nil {
+				return fmt.Errorf("could not create Sinner indexer: %w", err)
+			}
+			err = sinnerService.Index(groupCtx)
+			if err != nil {
+				return fmt.Errorf("could not backfill backfiller: %w", err)
+			}
+			return nil
+		})
 		// Start server
-		err = api.Start(c.Context, decodeConfig.ServerConfig(), metrics.Get())
-		if err != nil {
-			return fmt.Errorf("could not start server: %w", err)
-		}
+		g.Go(func() error {
+			err = api.Start(groupCtx, decodeConfig.ServerConfig(), metrics.Get())
+			if err != nil {
+				return fmt.Errorf("could not start server: %w", err)
+			}
+			return nil
+		})
 
+		err = g.Wait()
+		if err != nil {
+			return fmt.Errorf("server error: %w", err)
+		}
 		return nil
 	},
 }

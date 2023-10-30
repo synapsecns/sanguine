@@ -64,7 +64,7 @@ type OriginSent struct {
 	// BlockNumber is the block number in which the tx occurred.
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the hash of the tx.
-	TxHash string `gorm:"column:tx_hash;index:idx_tx_hash_origin,priority:1,sort:desc"`
+	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_tx_hash_origin,priority:1,sort:desc"`
 	// TxIndex is the index of the tx in a block.
 	TxIndex uint `gorm:"column:tx_index"`
 	// Sender is the address of the sender of the tx.
