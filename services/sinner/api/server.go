@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
@@ -21,9 +22,13 @@ import (
 )
 
 var logger = log.Logger("sinner-api")
+var errNoPort = errors.New("port not specified, must be between 1 and 65535")
 
 // Start starts the api server for sinner.
 func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler) error {
+	if cfg.HTTPPort == 0 {
+		return errNoPort
+	}
 	logger.Warnf("starting api server")
 	router := ginhelper.New(logger)
 	// wrap gin with metrics
