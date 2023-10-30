@@ -41,9 +41,9 @@ func (t *DBSuite) TestRetrieveLastStoredBlock() {
 
 func (t *DBSuite) TestRetrieveMessageStatus() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
-		messageHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
-		originTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
-		destinationTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		messageHash1 := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		originTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		destinationTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
 		// Insert origin only record
 		err := testDB.StoreOrUpdateMessageStatus(t.GetTestContext(), originTxHash1, messageHash1, types.Origin)
@@ -51,7 +51,7 @@ func (t *DBSuite) TestRetrieveMessageStatus() {
 		Nil(t.T(), err)
 
 		// Test: Retrieve and validate the origin only record
-		retrievedStatus1, err := testDB.RetrieveMessageStatus(t.GetTestContext(), messageHash1)
+		retrievedStatus1, err := testDB.RetrieveMessageStatus(t.GetTestContext(), messageHash1.String())
 		Nil(t.T(), err)
 		Equal(t.T(), originTxHash1, *retrievedStatus1.OriginTxHash)
 		Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *retrievedStatus1.LastSeen)
@@ -62,7 +62,7 @@ func (t *DBSuite) TestRetrieveMessageStatus() {
 		Nil(t.T(), err)
 
 		// Test: Retrieve and validate the updated record
-		retrievedStatus2, err := testDB.RetrieveMessageStatus(t.GetTestContext(), messageHash1)
+		retrievedStatus2, err := testDB.RetrieveMessageStatus(t.GetTestContext(), messageHash1.String())
 		Nil(t.T(), err)
 		Equal(t.T(), originTxHash1, *retrievedStatus2.OriginTxHash)
 		Equal(t.T(), destinationTxHash1, *retrievedStatus2.DestinationTxHash)

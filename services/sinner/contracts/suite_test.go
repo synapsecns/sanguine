@@ -80,7 +80,7 @@ func (t *ContractsSuite) SetupSuite() {
 		Data:        []byte{},
 		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
 		TxIndex:     uint(gofakeit.Int8()),
-		BlockHash:   common.HexToHash(big.NewInt(gofakeit.Int64()).String()),
+		BlockHash:   mocls.NewMockHash(t.T()),
 		Index:       uint(gofakeit.Int8()),
 		Removed:     false,
 	}
@@ -91,7 +91,7 @@ func (t *ContractsSuite) SetupSuite() {
 		Data:        []byte{},
 		TxHash:      common.BigToHash(big.NewInt(gofakeit.Int64())),
 		TxIndex:     uint(gofakeit.Int8()),
-		BlockHash:   common.HexToHash(big.NewInt(gofakeit.Int64()).String()),
+		BlockHash:   mocls.NewMockHash(t.T()),
 		Index:       uint(gofakeit.Int8()),
 		Removed:     false,
 	}

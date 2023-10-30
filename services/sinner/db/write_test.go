@@ -4,6 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
 	"github.com/synapsecns/sanguine/services/sinner/types"
@@ -167,8 +168,8 @@ func (t *DBSuite) TestStoreLastIndexed() {
 func (t *DBSuite) TestStoreOrUpdateMessageStatus() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		// Test Case 1: Create message status record with Origin
-		messageID1 := common.HexToAddress(big.NewInt(gofakeit.Int64()).String()).String()
-		txHash1 := common.HexToHash(big.NewInt(gofakeit.Int64()).String()).String()
+		messageID1 := mocks.NewMockHash(t.T())
+		txHash1 := mocks.NewMockHash(t.T())
 		err := testDB.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash1, messageID1, types.Origin)
 		Nil(t.T(), err)
 
@@ -178,8 +179,8 @@ func (t *DBSuite) TestStoreOrUpdateMessageStatus() {
 		Equal(t.T(), txHash1, status1.OriginTxHash)
 
 		// Test Case 2: Create message status record with Destination
-		messageID2 := common.HexToAddress(big.NewInt(gofakeit.Int64()).String()).String()
-		txHash2 := common.HexToHash(big.NewInt(gofakeit.Int64()).String()).String()
+		messageID2 := common.HexToHash(big.NewInt(gofakeit.Int64()).String())
+		txHash2 := mocks.NewMockHash(t.T())
 		err = testDB.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash2, messageID2, types.Destination)
 		Nil(t.T(), err)
 
@@ -189,7 +190,7 @@ func (t *DBSuite) TestStoreOrUpdateMessageStatus() {
 		Equal(t.T(), txHash2, status2.DestinationTxHash)
 
 		// Test Case 3: Update message status record with Origin
-		newTxHash1 := common.HexToHash(big.NewInt(gofakeit.Int64()).String()).String()
+		newTxHash1 := mocks.NewMockHash(t.T())
 		err = testDB.StoreOrUpdateMessageStatus(t.GetTestContext(), newTxHash1, messageID1, types.Origin)
 		Nil(t.T(), err)
 
@@ -199,7 +200,7 @@ func (t *DBSuite) TestStoreOrUpdateMessageStatus() {
 		Equal(t.T(), newTxHash1, updatedStatus1.OriginTxHash)
 
 		// Test Case 4: Update message status record with Destination
-		newTxHash2 := common.HexToHash(big.NewInt(gofakeit.Int64()).String()).String()
+		newTxHash2 := mocks.NewMockHash(t.T())
 		err = testDB.StoreOrUpdateMessageStatus(t.GetTestContext(), newTxHash2, messageID2, types.Destination)
 		Nil(t.T(), err)
 

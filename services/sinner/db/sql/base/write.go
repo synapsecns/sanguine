@@ -112,7 +112,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 }
 
 // StoreOrUpdateMessageStatus stores or updates the message status.
-func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, messageHash string, messageType types.MessageType) error {
+func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash, messageHash common.Hash, messageType types.MessageType) error {
 	dbTx := s.DB().WithContext(ctx)
 
 	switch messageType {
@@ -122,8 +122,8 @@ func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, me
 			Columns:   []clause.Column{{Name: "message_hash"}},
 			DoUpdates: clause.AssignmentColumns([]string{"origin_txhash"}),
 		}).Create(&model.MessageStatus{
-			MessageHash:       messageHash,
-			OriginTxHash:      txHash,
+			MessageHash:       messageHash.String(),
+			OriginTxHash:      txHash.String(),
 			DestinationTxHash: "",
 		})
 
@@ -133,9 +133,9 @@ func (s Store) StoreOrUpdateMessageStatus(ctx context.Context, txHash string, me
 			Columns:   []clause.Column{{Name: "message_hash"}},
 			DoUpdates: clause.AssignmentColumns([]string{"destination_txhash"}),
 		}).Create(&model.MessageStatus{
-			MessageHash:       messageHash,
+			MessageHash:       messageHash.String(),
 			OriginTxHash:      "",
-			DestinationTxHash: txHash,
+			DestinationTxHash: txHash.String(),
 		})
 	default:
 		return fmt.Errorf("unknown message type: %s", messageType)
