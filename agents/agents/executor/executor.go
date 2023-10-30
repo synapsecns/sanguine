@@ -472,9 +472,14 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	fmt.Println("EXECUTING")
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		stateHash, _ := (*state).Hash()
 		span.AddEvent("Submitting execute()", trace.WithAttributes(
 			attribute.Int("origin", int(message.OriginDomain())),
 			attribute.Int("destination", int(destinationDomain)),
+			attribute.String("stateRoot", stateRootString),
+			attribute.Int("stateIndex", int(*stateIndex)),
+			attribute.Int("stateNonce", int(stateNonce)),
+			attribute.String("stateHash", common.BytesToHash(stateHash[:]).String()),
 		))
 		fmt.Printf("submitting for execution on domain %d\n", destinationDomain)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
