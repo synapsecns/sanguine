@@ -44,15 +44,6 @@ func (t *ContractsSuite) TestOriginParseAndStore() {
 	Nil(t.T(), err)
 }
 
-func (t *ContractsSuite) TestOriginParseSent() {
-	parser, err := origin.NewParser(common.Address{}, t.db, t.originChainID)
-	Nil(t.T(), err)
-
-	parsedLog, err := parser.ParseSent(t.originTestLog)
-	Nil(t.T(), err)
-	Equal(t.T(), t.originTestLog.TxHash.String(), parsedLog.TxHash)
-}
-
 func (t *ContractsSuite) TestDestinationNewParser() {
 	// Mock values for test
 	addr := common.Address{}
@@ -86,13 +77,4 @@ func (t *ContractsSuite) TestDestinationParseAndStore() {
 
 	err = parser.ParseAndStore(t.GetTestContext(), t.desTestLog)
 	Nil(t.T(), err)
-}
-
-func (t *ContractsSuite) TestDestinationParseExecuted() {
-	parser, err := destination.NewParser(common.Address{}, t.db, t.originChainID)
-	Nil(t.T(), err)
-
-	parsedLog, err := parser.ParseExecuted(t.desTestLog)
-	Nil(t.T(), err)
-	Equal(t.T(), t.desTestLog.TxHash.String(), parsedLog.TxHash)
 }

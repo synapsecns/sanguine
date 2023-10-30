@@ -65,6 +65,8 @@ type OriginSent struct {
 	TxIndex uint `gorm:"column:tx_index"`
 	// Sender is the address of the sender of the tx.
 	Sender string `gorm:"column:sender"`
+	// Timestamp is the timestamp of the tx.
+	Timestamp uint64 `gorm:"column:timestamp"`
 	// Recipient is the address of the recipient of the tx.
 	Recipient string `gorm:"column:recipient"`
 	// MessageLeaf is the keccaked message leaf.
@@ -121,6 +123,10 @@ type Executed struct {
 	RemoteDomain uint32 `gorm:"column:destination_chain_id"`
 	// Success is the status of success of the message.
 	Success bool `gorm:"column:success"`
+	// Sender is the address of the sender of the tx.
+	Sender string `gorm:"column:sender"`
+	// Timestamp is the timestamp of the tx.
+	Timestamp uint64 `gorm:"column:timestamp"`
 }
 
 // LastIndexed contains information on when a contract was last indexed.

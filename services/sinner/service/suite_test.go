@@ -49,8 +49,8 @@ import (
 // ServiceSuite is the test suite for the db package.
 type ServiceSuite struct {
 	*testsuite.TestSuite
-	dbs                    []db.EventDB
-	sqlite                 db.EventDB
+	dbs                    []db.TestEventDB
+	sqlite                 db.TestEventDB
 	logIndex               atomic.Int64
 	scribeDB               scribedb.EventDB
 	scribeDBPath           string
@@ -73,7 +73,7 @@ func NewEventServiceSuite(tb testing.TB) *ServiceSuite {
 
 	return &ServiceSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.EventDB{},
+		dbs:       []db.TestEventDB{},
 	}
 }
 
@@ -98,7 +98,7 @@ func (t *ServiceSuite) SetupSuite() {
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetSuiteContext(), t.scribeDBPath, t.metrics, false)
 	Nil(t.T(), err)
 
-	t.dbs = []db.EventDB{sqliteStore}
+	t.dbs = []db.TestEventDB{sqliteStore}
 	t.sqlite = sqliteStore
 	t.setupMysqlDB()
 	t.originChainID = 421614
@@ -141,13 +141,13 @@ func (t *ServiceSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *ServiceSuite) RunOnAllDBs(testFunc func(testDB db.EventDB)) {
+func (t *ServiceSuite) RunOnAllDBs(testFunc func(testDB db.TestEventDB)) {
 	t.T().Helper()
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.EventDB) {
+		go func(testDB db.TestEventDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

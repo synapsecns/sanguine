@@ -27,7 +27,7 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs      []db.EventDB
+	dbs      []db.TestEventDB
 	logIndex atomic.Int64
 	metrics  metrics.Handler
 }
@@ -38,7 +38,7 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.EventDB{},
+		dbs:       []db.TestEventDB{},
 	}
 }
 
@@ -48,7 +48,7 @@ func (t *DBSuite) SetupTest() {
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
-	t.dbs = []db.EventDB{sqliteStore}
+	t.dbs = []db.TestEventDB{sqliteStore}
 	t.setupMysqlDB()
 }
 
@@ -102,13 +102,13 @@ func (t *DBSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.EventDB)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.TestEventDB)) {
 	t.T().Helper()
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.EventDB) {
+		go func(testDB db.TestEventDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

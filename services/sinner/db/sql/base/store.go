@@ -12,7 +12,7 @@ type Store struct {
 	metrics metrics.Handler
 }
 
-// UNSAFE_DB gets the underlying gorm db.
+// UNSAFE_DB gets the underlying gorm db. This is for use only for testing.
 //
 //nolint:golint,revive,stylecheck
 func (s Store) UNSAFE_DB() *gorm.DB {

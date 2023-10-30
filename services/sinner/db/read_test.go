@@ -13,7 +13,7 @@ import (
 )
 
 func (t *DBSuite) TestRetrieveLastStoredBlock() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		address := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		chainID := gofakeit.Uint32()
 		blockNumber1 := gofakeit.Uint64()
@@ -40,7 +40,7 @@ func (t *DBSuite) TestRetrieveLastStoredBlock() {
 }
 
 func (t *DBSuite) TestRetrieveMessageStatus() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		messageHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 		originTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 		destinationTxHash1 := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
@@ -71,7 +71,7 @@ func (t *DBSuite) TestRetrieveMessageStatus() {
 }
 
 func (t *DBSuite) TestRetrieveOriginSent() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Setup: Insert some dummy data
 		chainID := gofakeit.Uint32()
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
@@ -104,7 +104,7 @@ func (t *DBSuite) TestRetrieveOriginSent() {
 }
 
 func (t *DBSuite) TestRetrieveExecuted() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Setup: Insert some dummy data
 		chainID := gofakeit.Uint32()
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()

@@ -12,6 +12,8 @@ type EventParser interface {
 	ParseAndStore(ctx context.Context, log ethTypes.Log) error
 	// UpdateTxMap updates the tx map for providing more information to the parser.
 	UpdateTxMap(txMap map[string]TxSupplementalInfo)
+	// UnsafeGetTXMap gets the tx map strictly for testing purposes.
+	UnsafeGetTXMap() map[string]TxSupplementalInfo
 }
 
 // TxSupplementalInfo is the supplemental info for a tx.

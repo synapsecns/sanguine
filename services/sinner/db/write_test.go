@@ -11,7 +11,7 @@ import (
 )
 
 func (t *DBSuite) TestStoreRetrieveExecuted() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Randomly generate values for the fields of the Executed type
 		contractAddressRandom := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumber := gofakeit.Uint64()
@@ -55,7 +55,7 @@ func (t *DBSuite) TestStoreRetrieveExecuted() {
 }
 
 func (t *DBSuite) TestStoreRetrieveOriginSent() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Randomly generate values for the fields of the OriginSent type
 		contractAddressRandom := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 		blockNumber := gofakeit.Uint64()
@@ -122,7 +122,7 @@ func (t *DBSuite) TestStoreRetrieveOriginSent() {
 }
 
 func (t *DBSuite) TestStoreLastIndexed() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Randomly generate values for the fields of the LastIndexedInfo type
 		contractAddressRandom := common.HexToAddress(big.NewInt(gofakeit.Int64()).String())
 		chainID := gofakeit.Uint32()
@@ -165,7 +165,7 @@ func (t *DBSuite) TestStoreLastIndexed() {
 }
 
 func (t *DBSuite) TestStoreOrUpdateMessageStatus() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Test Case 1: Create message status record with Origin
 		messageID1 := common.HexToAddress(big.NewInt(gofakeit.Int64()).String()).String()
 		txHash1 := common.HexToHash(big.NewInt(gofakeit.Int64()).String()).String()

@@ -27,7 +27,9 @@ func (c *Config) IsValid() error {
 	if c.DBPath == "" {
 		return fmt.Errorf("db_address, %w", config.ErrRequiredGlobalField)
 	}
-
+	if c.HTTPPort == 0 {
+		return fmt.Errorf("http_port cannot be zero, %w", config.ErrRequiredGlobalField)
+	}
 	return nil
 }
 

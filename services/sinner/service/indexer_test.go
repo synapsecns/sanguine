@@ -26,7 +26,7 @@ import (
 
 // TestChainIndexer tests the chain indexer.
 func (t *ServiceSuite) TestChainIndexer() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		ctx := t.GetTestContext()
 		deployManager := testutil.NewDeployManager(t.T())
 

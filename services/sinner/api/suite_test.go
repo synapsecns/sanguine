@@ -29,7 +29,7 @@ import (
 
 type APISuite struct {
 	*testsuite.TestSuite
-	db                 db.EventDB
+	db                 db.TestEventDB
 	dbPath             string
 	logIndex           atomic.Int64
 	metrics            metrics.Handler

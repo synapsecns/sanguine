@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 	"net/http"
 	"time"
 
@@ -35,9 +36,9 @@ type Parsers struct {
 	// ChainID is the chain these parsers are for.
 	ChainID uint32
 	// OriginParser parses logs from the origin contract.
-	OriginParser *origin.ParserImpl
+	OriginParser sinnerTypes.EventParser
 	// DestinationParser parses logs from the execution hub contract.
-	DestinationParser *destination.ParserImpl
+	DestinationParser sinnerTypes.EventParser
 }
 
 // NewSinner creates a new sinner indexer service.

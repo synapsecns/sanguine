@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
 	"github.com/synapsecns/sanguine/services/sinner/types"
@@ -16,19 +15,12 @@ import (
 // StoreOriginSent stores an origin event.
 func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent) error {
 	dbTx := s.DB().WithContext(ctx)
-	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
-		dbTx = dbTx.Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName}, {Name: model.MessageHashFieldName},
-			},
-			DoNothing: true,
-		}).CreateInBatches(originSent, 10)
-	} else {
-		dbTx = dbTx.Clauses(clause.Insert{
-			Modifier: "IGNORE",
-		}).Create(originSent)
-	}
-
+	dbTx = dbTx.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: model.ChainIDFieldName}, {Name: model.TxHashFieldName}, {Name: model.MessageHashFieldName},
+		},
+		DoNothing: true,
+	}).Create(originSent)
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store origin: %w", dbTx.Error)
 	}
@@ -39,18 +31,12 @@ func (s Store) StoreOriginSent(ctx context.Context, originSent *model.OriginSent
 // StoreExecuted stores an origin event.
 func (s Store) StoreExecuted(ctx context.Context, executedEvent *model.Executed) error {
 	dbTx := s.DB().WithContext(ctx)
-	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
-		dbTx = dbTx.Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: model.ChainIDFieldName}, {Name: model.MessageHashFieldName},
-			},
-			DoNothing: true,
-		}).CreateInBatches(executedEvent, 10)
-	} else {
-		dbTx = dbTx.Clauses(clause.Insert{
-			Modifier: "IGNORE",
-		}).Create(executedEvent)
-	}
+	dbTx = dbTx.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: model.ChainIDFieldName}, {Name: model.MessageHashFieldName},
+		},
+		DoNothing: true,
+	}).Create(executedEvent)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)

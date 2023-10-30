@@ -32,7 +32,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 	logger.Warnf("starting api server")
 	router := ginhelper.New(logger)
 	// wrap gin with metrics
-	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
+	router.GET(metrics.MetricsPath, gin.WrapH(handler.Handler()))
 
 	eventDB, err := InitDB(ctx, cfg.DBType, cfg.DBPath, handler, cfg.SkipMigrations)
 	if err != nil {

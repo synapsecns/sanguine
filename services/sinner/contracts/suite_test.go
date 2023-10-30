@@ -23,7 +23,7 @@ import (
 
 type ContractsSuite struct {
 	*testsuite.TestSuite
-	db                 db.EventDB
+	db                 db.TestEventDB
 	logIndex           atomic.Int64
 	metrics            metrics.Handler
 	originChainID      uint32
