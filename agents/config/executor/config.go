@@ -49,6 +49,8 @@ type Config struct {
 	MaxRetrySeconds uint32 `yaml:"max_retry_seconds"`
 	// ExecuteRetryInterval is the interval (in seconds) at which the executor agent will retry a message execution retry a message execution.
 	ExecuteRetryInterval uint32 `yaml:"execute_retry_interval"`
+	// MaxExecuteAttempts is the maximum number of attempts to execute a message.
+	MaxExecuteAttempts int `yaml:"max_execute_attempts"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

@@ -93,6 +93,8 @@ type Executor struct {
 	retryConfig []retry.WithBackoffConfigurator
 	// lastExecuteAttempts is a map from message hash -> last execute attempt time, in seconds.
 	lastExecuteAttempts map[string]uint64
+	// numExecuteAttempts is a map from message hash -> number of execute attempts.
+	numExecuteAttempts map[string]int
 	// NowFunc returns the current time.
 	NowFunc func() time.Time
 }
@@ -108,6 +110,7 @@ const (
 	scribeConnectTimeout        = 30 * time.Second
 	defaultMaxRetrySeconds      = 30
 	defaultExecuteRetryInterval = 300
+	defaultMaxExecuteAttempts   = 3
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
@@ -163,6 +166,10 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		config.ExecuteRetryInterval = defaultExecuteRetryInterval
 	}
 
+	if config.MaxExecuteAttempts == 0 {
+		config.MaxExecuteAttempts = defaultMaxExecuteAttempts
+	}
+
 	retryConfig := []retry.WithBackoffConfigurator{
 		retry.WithMaxAttemptTime(time.Second * time.Duration(config.MaxRetrySeconds)),
 	}
@@ -186,6 +193,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		txSubmitter:         txSubmitter,
 		retryConfig:         retryConfig,
 		lastExecuteAttempts: make(map[string]uint64),
+		numExecuteAttempts:  make(map[string]int),
 		NowFunc:             time.Now,
 	}
 
@@ -900,6 +908,10 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					}
 					leafHex := common.BytesToHash(leaf[:]).String()
 
+					num, ok := e.numExecuteAttempts[leafHex]
+					if num >= e.config.MaxExecuteAttempts {
+						continue
+					}
 					lastExecuteTime, ok := e.lastExecuteAttempts[leafHex]
 					fmt.Printf("loaded attempt for %s: %v [retryInterval=%d]\n", leafHex, lastExecuteTime, e.config.ExecuteRetryInterval)
 					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
@@ -922,6 +934,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					))
 
 					if !messageExecuted {
+						e.numExecuteAttempts[leafHex]++
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							fmt.Printf("execute err: %v\n", err)
