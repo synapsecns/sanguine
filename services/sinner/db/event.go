@@ -46,8 +46,6 @@ type EventDBReader interface {
 }
 
 // EventDB stores events.
-//
-//go:generate go run github.com/vektra/mockery/v2 --name EventDB --output ./mocks --case=underscore
 type EventDB interface {
 	EventDBWriter
 	EventDBReader
