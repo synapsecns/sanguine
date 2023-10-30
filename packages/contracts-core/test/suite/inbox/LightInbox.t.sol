@@ -54,7 +54,13 @@ contract LightInboxTest is StatementInboxTest {
     function test_constructor_revert_onSynapseChain() public {
         vm.chainId(DOMAIN_SYNAPSE);
         vm.expectRevert(SynapseDomainForbidden.selector);
-        LightInbox inbox = new LightInbox(DOMAIN_SYNAPSE);
+        new LightInbox({synapseDomain_: DOMAIN_SYNAPSE});
+    }
+
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new LightInbox({synapseDomain_: 1});
     }
 
     function initializeLocalContract() public override {

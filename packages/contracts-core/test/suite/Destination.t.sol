@@ -45,6 +45,12 @@ contract DestinationTest is ExecutionHubTest {
         assertFalse(rootPending);
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Destination({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
         vm.assume(domain != DOMAIN_SYNAPSE);
@@ -164,6 +170,20 @@ contract DestinationTest is ExecutionHubTest {
         vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
+    }
+
+    function test_acceptAttestation_revert_blockTimestampOverflow() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        uint256[] memory snapGas = rawSnap.snapGas();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+
+        vm.warp(2 ** 40);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
     }
 
     function test_acceptAttestation_revert_notaryInDispute(uint256 notaryId) public {

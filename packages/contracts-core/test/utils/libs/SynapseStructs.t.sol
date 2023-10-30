@@ -150,7 +150,7 @@ struct RawState {
 using CastLib for RawState global;
 
 struct RawStateIndex {
-    uint256 stateIndex;
+    uint8 stateIndex;
     uint256 statesAmount;
 }
 
@@ -227,11 +227,19 @@ library CastLib {
         request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit, version_: rr.version});
     }
 
+    function boundRequest(RawRequest memory rr, uint96 maxGasDrop, uint64 maxGasLimit) internal pure {
+        require(maxGasDrop != 0, "maxGasDrop can't be 0");
+        require(maxGasLimit != 0, "maxGasLimit can't be 0");
+        rr.gasDrop = rr.gasDrop % maxGasDrop;
+        rr.gasLimit = rr.gasLimit % maxGasLimit;
+    }
+
     function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {
         encodedTips = Tips.unwrap(rt.castToTips());
     }
 
     function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
+        require(maxTipValue != 0, "maxTipValue can't be 0");
         rt.summitTip = rt.summitTip % maxTipValue;
         rt.attestationTip = rt.attestationTip % maxTipValue;
         rt.executionTip = rt.executionTip % maxTipValue;
@@ -436,7 +444,7 @@ library CastLib {
         // [1 .. SNAPSHOT_MAX_STATES] range
         rsi.statesAmount = 1 + rsi.statesAmount % SNAPSHOT_MAX_STATES;
         // [0 .. statesAmount) range
-        rsi.stateIndex = rsi.stateIndex % rsi.statesAmount;
+        rsi.stateIndex = uint8(rsi.stateIndex % rsi.statesAmount);
     }
 
     // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════

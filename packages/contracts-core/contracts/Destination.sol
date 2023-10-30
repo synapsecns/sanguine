@@ -8,6 +8,7 @@ import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
 import {IndexOutOfRange, NotaryInDispute, OutdatedNonce} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/stack/GasData.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
+import {ChainContext} from "./libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
@@ -78,7 +79,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (localDomain != synapseDomain) {
             _nextAgentRoot = agentRoot;
             InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
-            destStatus.agentRootTime = uint40(block.timestamp);
+            destStatus.agentRootTime = ChainContext.blockTimestamp();
         }
         // No need to do anything on Synapse Chain, as the agent root is set in BondingManager
     }
@@ -198,12 +199,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
-        status.snapRootTime = uint40(block.timestamp);
+        status.snapRootTime = ChainContext.blockTimestamp();
         // No need to save agent roots on Synapse Chain, as they could be accessed via BondingManager
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
         if (localDomain != synapseDomain && !rootPending && _nextAgentRoot != agentRoot) {
-            status.agentRootTime = uint40(block.timestamp);
+            status.agentRootTime = ChainContext.blockTimestamp();
             status.notaryIndex = notaryIndex;
             _nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
@@ -224,7 +225,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             if (GasData.unwrap(gasData) == GasData.unwrap(storedGasData.gasData)) continue;
             // Save the gas data
             _storedGasData[domain] =
-                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: uint40(block.timestamp)});
+                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: ChainContext.blockTimestamp()});
         }
     }
 }
