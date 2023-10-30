@@ -398,9 +398,9 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, nil
 	}
 
-	var proof [][]byte
+	var originProofRaw [][]byte
 	contractCall := func(ctx context.Context) error {
-		proof, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
+		originProofRaw, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
 		if err != nil {
 			return fmt.Errorf("could not get merkle proof: %w", err)
 		}
@@ -432,8 +432,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, nil
 	}
 
-	root := (*state).Root()
-	stateRootString := common.BytesToHash(root[:]).String()
+	stateRoot := (*state).Root()
+	stateRootString := common.BytesToHash(stateRoot[:]).String()
 	origin := (*state).Origin()
 	stateNonce := (*state).Nonce()
 	stateMask := db.DBState{
@@ -453,8 +453,19 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	var originProof [32][32]byte
-	for i, p := range proof {
+	for i, p := range originProofRaw {
 		copy(originProof[i][:], p)
+	}
+
+	leaf, _ := message.ToLeaf()
+	originProofValid, err := e.verifyOriginMerkleProof(ctx, originProofRaw, leaf, uint32(message.Nonce()-1), stateRoot)
+	if err != nil {
+		return false, fmt.Errorf("could not verify origin merkle proof: %w", err)
+	}
+
+	if !originProofValid {
+		fmt.Println("origin proof not valid")
+		return false, nil
 	}
 
 	var snapshotProofBytes [][]byte
@@ -596,6 +607,19 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 	}
 
 	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, merkle.SnapshotTreeHeight)
+
+	return inTree, nil
+}
+
+// verifyOriginMerkleProof verifies that a message is in the origin merkle tree.
+func (e Executor) verifyOriginMerkleProof(parentCtx context.Context, originProof [][]byte, messageLeaf [32]byte, index uint32, stateRoot [32]byte) (_ bool, err error) {
+	_, span := e.handler.Tracer().Start(parentCtx, "verifyOriginMerkleProof", trace.WithAttributes())
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	inTree := merkle.VerifyMerkleProof(stateRoot[:], messageLeaf[:], index, originProof, merkle.MessageTreeHeight)
 
 	return inTree, nil
 }
