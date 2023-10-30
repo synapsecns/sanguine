@@ -124,7 +124,6 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 
 					// If the end block is not specified in the config (livefill) the last block stored will be used.
 					if endHeight == 0 {
-
 						// Get last stored block from sinner.
 						storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
 						if err != nil {

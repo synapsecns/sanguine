@@ -64,7 +64,7 @@ type OriginSent struct {
 	// BlockNumber is the block number in which the tx occurred.
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the hash of the tx.
-	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_tx_hash_origin,priority:1,sort:desc"`
+	TxHash string `gorm:"column:tx_hash;index:idx_tx_hash_origin,priority:1,sort:desc"`
 	// TxIndex is the index of the tx in a block.
 	TxIndex uint `gorm:"column:tx_index"`
 	// Sender is the address of the sender of the tx.
@@ -76,7 +76,7 @@ type OriginSent struct {
 	// MessageID is the keccaked message.
 	MessageID string `gorm:"column:message_id"`
 	// MessageHash is the message hash.
-	MessageHash string `gorm:"column:message_hash"`
+	MessageHash string `gorm:"column:message_hash;primaryKey"`
 	// ChainID is the chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_tx_hash_origin,priority:2,sort:desc"`
 	// Destination is the destination chain id.
@@ -114,11 +114,11 @@ type Executed struct {
 	// BlockNumber is the block number in which the tx occurred.
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// TxHash is the hash of the tx.
-	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_tx_hash_executed,priority:1,sort:desc"`
+	TxHash string `gorm:"column:tx_hash;index:idx_tx_hash_executed,priority:1,sort:desc"`
 	// TxIndex is the index of the tx in a block.
 	TxIndex uint `gorm:"column:tx_index"`
 	// MessageHash is the message hash.
-	MessageHash string `gorm:"column:message_hash"`
+	MessageHash string `gorm:"column:message_hash;primaryKey"`
 	// ChainID is the chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_tx_hash_executed,priority:2,sort:desc"`
 	// RemoteDomain is the destination.

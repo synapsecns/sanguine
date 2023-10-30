@@ -8,15 +8,18 @@ import (
 	"strconv"
 )
 
+// DestinationInfo provides granular information on an execution event.
 type DestinationInfo struct {
-	ContractAddress *string `json:"contractAddress,omitempty"`
-	BlockNumber     *int    `json:"blockNumber,omitempty"`
-	TxHash          *string `json:"txHash,omitempty"`
-	TxIndex         *int    `json:"txIndex,omitempty"`
-	MessageHash     *string `json:"messageHash,omitempty"`
-	ChainID         *int    `json:"chainID,omitempty"`
-	RemoteDomain    *int    `json:"remoteDomain,omitempty"`
-	Success         *bool   `json:"success,omitempty"`
+	ContractAddress *string        `json:"contractAddress,omitempty"`
+	BlockNumber     *int           `json:"blockNumber,omitempty"`
+	TxHash          *string        `json:"txHash,omitempty"`
+	TxIndex         *int           `json:"txIndex,omitempty"`
+	MessageHash     *string        `json:"messageHash,omitempty"`
+	ChainID         *int           `json:"chainID,omitempty"`
+	RemoteDomain    *int           `json:"remoteDomain,omitempty"`
+	Success         *bool          `json:"success,omitempty"`
+	MessageStatus   *MessageStatus `json:"messageStatus,omitempty"`
+	OriginInfo      *OriginInfo    `json:"originInfo,omitempty"`
 }
 
 // MessageStatus gives the status of a message.
@@ -27,27 +30,29 @@ type MessageStatus struct {
 	MessageHash       *string               `json:"messageHash,omitempty"`
 }
 
-// MessageInfo provides granular information on a message.
+// OriginInfo provides granular information on an origin sent event.
 type OriginInfo struct {
-	MessageHash        *string `json:"messageHash,omitempty"`
-	ContractAddress    *string `json:"contractAddress,omitempty"`
-	BlockNumber        *int    `json:"blockNumber,omitempty"`
-	OriginTxHash       *string `json:"originTxHash,omitempty"`
-	Sender             *string `json:"sender,omitempty"`
-	Recipient          *string `json:"recipient,omitempty"`
-	OriginChainID      *string `json:"originChainID,omitempty"`
-	DestinationChainID *string `json:"destinationChainID,omitempty"`
-	Nonce              *int    `json:"nonce,omitempty"`
-	Message            *string `json:"message,omitempty"`
-	OptimisticSeconds  *string `json:"optimisticSeconds,omitempty"`
-	MessageFlag        *string `json:"messageFlag,omitempty"`
-	SummitTip          *string `json:"summitTip,omitempty"`
-	AttestationTip     *string `json:"attestationTip,omitempty"`
-	ExecutionTip       *string `json:"executionTip,omitempty"`
-	DeliveryTip        *string `json:"deliveryTip,omitempty"`
-	Version            *int    `json:"version,omitempty"`
-	GasLimit           *int    `json:"gasLimit,omitempty"`
-	GasDrop            *string `json:"gasDrop,omitempty"`
+	MessageHash        *string          `json:"messageHash,omitempty"`
+	ContractAddress    *string          `json:"contractAddress,omitempty"`
+	BlockNumber        *int             `json:"blockNumber,omitempty"`
+	OriginTxHash       *string          `json:"originTxHash,omitempty"`
+	Sender             *string          `json:"sender,omitempty"`
+	Recipient          *string          `json:"recipient,omitempty"`
+	OriginChainID      *int             `json:"originChainID,omitempty"`
+	DestinationChainID *int             `json:"destinationChainID,omitempty"`
+	Nonce              *int             `json:"nonce,omitempty"`
+	Message            *string          `json:"message,omitempty"`
+	OptimisticSeconds  *int             `json:"optimisticSeconds,omitempty"`
+	MessageFlag        *int             `json:"messageFlag,omitempty"`
+	SummitTip          *string          `json:"summitTip,omitempty"`
+	AttestationTip     *string          `json:"attestationTip,omitempty"`
+	ExecutionTip       *string          `json:"executionTip,omitempty"`
+	DeliveryTip        *string          `json:"deliveryTip,omitempty"`
+	Version            *int             `json:"version,omitempty"`
+	GasLimit           *int             `json:"gasLimit,omitempty"`
+	GasDrop            *string          `json:"gasDrop,omitempty"`
+	MessageStatus      *MessageStatus   `json:"messageStatus,omitempty"`
+	DestinationInfo    *DestinationInfo `json:"destinationInfo,omitempty"`
 }
 
 type MessageStateLastSeen string
