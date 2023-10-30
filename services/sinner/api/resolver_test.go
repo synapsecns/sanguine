@@ -68,14 +68,14 @@ func (t *APISuite) TestGetExecuted() {
 }
 
 func (t *APISuite) TestMessageStatus() {
-	txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 
 	err := t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash, messageHash, types.Origin)
 	Nil(t.T(), err)
 
-	result, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash.String())
+	result, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash)
 	Nil(t.T(), err)
 	NotNil(t.T(), result)
 	Equal(t.T(), txHash, *result.Response.OriginTxHash)
@@ -85,7 +85,7 @@ func (t *APISuite) TestMessageStatus() {
 	err = t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), desTxHash, messageHash, types.Destination)
 	Nil(t.T(), err)
 
-	desResult, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash.String())
+	desResult, err := t.sinnerAPI.GetMessageStatus(t.GetTestContext(), messageHash)
 	Nil(t.T(), err)
 	NotNil(t.T(), desResult)
 	Equal(t.T(), desTxHash, *desResult.Response.DestinationTxHash)

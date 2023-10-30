@@ -20,7 +20,7 @@ type EventDBWriter interface {
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
 	// StoreOrUpdateMessageStatus stores/updates the status of a message.
-	StoreOrUpdateMessageStatus(ctx context.Context, txHash, messageID common.Hash, messageType types.MessageType) error
+	StoreOrUpdateMessageStatus(ctx context.Context, txHash string, messageID string, messageType types.MessageType) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint
