@@ -161,16 +161,18 @@ library SnapshotLib {
     /// @param domain        Domain of Origin chain
     /// @param snapProof     Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
     /// @param stateIndex    Index of Origin State in the Snapshot
-    function proofSnapRoot(bytes32 originRoot, uint32 domain, bytes32[] memory snapProof, uint256 stateIndex)
+    function proofSnapRoot(bytes32 originRoot, uint32 domain, bytes32[] memory snapProof, uint8 stateIndex)
         internal
         pure
         returns (bytes32)
     {
         // Index of "leftLeaf" is twice the state position in the snapshot
-        uint256 leftLeafIndex = stateIndex << 1;
+        // This is because each state is represented by two leaves in the Snapshot Merkle Tree:
+        // - leftLeaf is a hash of (originRoot, originDomain)
+        // - rightLeaf is a hash of (nonce, blockNumber, timestamp, gasData)
+        uint256 leftLeafIndex = uint256(stateIndex) << 1;
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
         if (leftLeafIndex >= (1 << SNAPSHOT_TREE_HEIGHT)) revert IndexOutOfRange();
-        // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, domain);
         // Reconstruct snapshot root using proof of inclusion
         // This will revert if snapshot proof length exceeds Snapshot Tree Height

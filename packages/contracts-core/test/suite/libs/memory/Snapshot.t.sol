@@ -48,7 +48,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         // Test getters
         assertEq(libHarness.statesAmount(payload), statesAmount, "!statesAmount");
         ChainGas[] memory snapGas = libHarness.snapGas(payload);
-        for (uint256 i = 0; i < statesAmount; ++i) {
+        for (uint8 i = 0; i < statesAmount; ++i) {
             assertEq(libHarness.state(payload, i), statePayloads[i], "!state");
             assertEq(snapGas[i].domain(), states[i].origin, "!snapGas.domain");
             assertEq(GasData.unwrap(snapGas[i].gasData()), states[i].gasData.encodeGasData(), "!snapGas.gasData");

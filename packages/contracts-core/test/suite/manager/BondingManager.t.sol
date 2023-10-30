@@ -60,6 +60,12 @@ contract BondingManagerTest is AgentManagerTest {
         new BondingManager(DOMAIN_SYNAPSE);
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new BondingManager(DOMAIN_SYNAPSE);
+    }
+
     function test_setup() public override {
         super.test_setup();
         assertEq(bondingManager.summit(), localSummit(), "!summit");

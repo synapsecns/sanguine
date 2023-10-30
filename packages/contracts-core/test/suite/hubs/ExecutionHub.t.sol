@@ -522,7 +522,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_messageStatus(
         bytes32 messageHash,
         bytes32 snapRoot,
-        uint256 stateIndex,
+        uint8 stateIndex,
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
@@ -625,7 +625,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
-        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));
+        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint8(), random.nextUint256()));
         sm.rsi.boundStateIndex();
     }
 

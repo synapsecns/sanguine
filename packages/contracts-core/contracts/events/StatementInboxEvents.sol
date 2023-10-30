@@ -36,7 +36,7 @@ abstract contract StatementInboxEvents {
      * @param attPayload    Raw payload with Attestation data for snapshot
      * @param attSignature  Notary signature for the attestation
      */
-    event InvalidStateWithAttestation(uint256 stateIndex, bytes statePayload, bytes attPayload, bytes attSignature);
+    event InvalidStateWithAttestation(uint8 stateIndex, bytes statePayload, bytes attPayload, bytes attSignature);
 
     /**
      * @notice Emitted when a proof of invalid state in the signed snapshot is submitted.
@@ -44,7 +44,7 @@ abstract contract StatementInboxEvents {
      * @param snapPayload   Raw payload with snapshot data
      * @param snapSignature Agent signature for the snapshot
      */
-    event InvalidStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature);
+    event InvalidStateWithSnapshot(uint8 stateIndex, bytes snapPayload, bytes snapSignature);
 
     /**
      * @notice Emitted when a proof of invalid state report is submitted.

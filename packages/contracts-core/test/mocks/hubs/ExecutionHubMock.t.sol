@@ -13,7 +13,7 @@ contract ExecutionHubMock is BaseMock, IExecutionHub {
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex,
+        uint8 stateIndex,
         uint64 gasLimit
     ) external {}
 
