@@ -424,6 +424,157 @@ describe('SynapseSDK', () => {
     })
   })
 
+  describe('Bridging: ARB -> ETH', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
+    )
+
+    describe('ARB USDC -> ETH USDC (using Bridge)', () => {
+      const amount = BigNumber.from(10).pow(12).add(1)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
+        ARB_USDC,
+        ETH_USDC,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
+          )
+        })
+      })
+    })
+
+    describe('ARB USDC -> ETH USDC (using CCTP)', () => {
+      const amount = BigNumber.from(10).pow(12)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
+        ARB_USDC,
+        ETH_USDC,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a CCTP bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+          )
+          // SynapseCCTPRouterQuery has routerAdapter property
+          expect(result.originQuery.routerAdapter).toBeDefined()
+          // Estimated time must match the SynapseCCTP median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
+          )
+        })
+      })
+    })
+  })
+
+  describe('Bridging: BSC -> AVAX', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.AVALANCHE, SupportedChainId.BSC],
+      [avaxProvider, bscProvider]
+    )
+
+    describe('BSC USDC -> AVAX USDC.e', () => {
+      // USDC has 18 decimals on BSC. Don't ask me why.
+      const amount = BigNumber.from(10).pow(21)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.BSC,
+        SupportedChainId.AVALANCHE,
+        BSC_USDC,
+        AVAX_USDC_E,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_USDC_E,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.BSC]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
+          )
+        })
+      })
+    })
+
+    describe('BSC gOHM -> AVAX gOHM', () => {
+      const amount = BigNumber.from(10).pow(21)
+      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.BSC,
+        SupportedChainId.AVALANCHE,
+        BSC_GOHM,
+        AVAX_GOHM,
+        amount
+      )
+
+      createBridgeQuoteTests(
+        synapse,
+        SupportedChainId.AVALANCHE,
+        SupportedChainId.BSC,
+        AVAX_GOHM,
+        amount,
+        resultPromise
+      )
+
+      it('Fetches a Synapse bridge quote', async () => {
+        resultPromise.then((result) => {
+          expect(result.routerAddress).toEqual(
+            ROUTER_ADDRESS_MAP[SupportedChainId.BSC]
+          )
+          // SynapseRouterQuery has swapAdapter property
+          expect(result.originQuery.swapAdapter).toBeDefined()
+          // Estimated time must match the SynapseBridge median time
+          expect(result.estimatedTime).toEqual(
+            MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
+          )
+        })
+      })
+    })
+  })
+
   describe('Errors', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.BSC],
