@@ -533,11 +533,6 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		attribute.Int("attNonce", int(attNonce)),
 	))
 
-	// update our view of summit states even if we don't submit the snapshot
-	for originID, state := range statesToSubmit {
-		n.summitMyLatestStates[originID] = state
-	}
-
 	// if the snapshot root has a corresponding attestation, no need to submit it
 	if attNonce > 0 {
 		return
@@ -570,6 +565,11 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
 				attribute.String("err", err.Error()),
 			))
+			return
+		}
+		// update our view of summit states
+		for originID, state := range statesToSubmit {
+			n.summitMyLatestStates[originID] = state
 		}
 	}
 }
