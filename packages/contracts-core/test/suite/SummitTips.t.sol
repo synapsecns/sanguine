@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {DISPUTE_TIMEOUT_NOTARY} from "../../contracts/libs/Constants.sol";
 import {
     AgentNotNotary,
     CallerNotInbox,
+    DisputeTimeoutNotOver,
     IncorrectSnapshotRoot,
     IncorrectTipsProof,
     NotaryInDispute,
@@ -125,6 +127,19 @@ contract SummitTipsTest is AgentSecuredTest {
         Summit(localContract()).initialize();
     }
 
+    function prepareNotaryInDisputeTest() internal {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        address guard = domains[0].agent;
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+    }
+
+    /// @dev Resolves test dispute above in favor of the Notary.
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
 
     function test_submitReceipt(
@@ -181,6 +196,35 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(NotaryInDispute.selector);
         inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+    }
+
+    function test_submitReceipt_revert_notaryWonDisputeTimeout() public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Put DOMAIN_REMOTE notary in Dispute
+        prepareNotaryInDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+    }
+
+    function test_submitReceipt_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Put DOMAIN_REMOTE notary in Dispute
+        prepareNotaryInDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        bool wasAccepted =
+            inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+        assertTrue(wasAccepted);
     }
 
     function test_submitReceipt_revert_unknownSnapRoot() public {
@@ -297,6 +341,32 @@ contract SummitTipsTest is AgentSecuredTest {
         assertFalse(InterfaceSummit(summit).distributeTips());
     }
 
+    /// @dev When Notary in "Dispute Won Timeout" mode, the receipt is moved to the end of the queue,
+    /// therefore two receipts in the queue are expected in the modifier.
+    function test_distributeTips_attestationNotary_wonDisputeTimeout() public checkQueueLength(2) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        prepareTwoReceiptTest(1, 0);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev Should distribute tips if the "dispute won" timeout is over.
+    function test_distributeTips_attestationNotary_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        prepareTwoReceiptTest(1, 0);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        vm.recordLogs();
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        // Should end up emitting TipsAwarded logs (TODO: better way to check this)
+        assertGt(vm.getRecordedLogs().length, 0);
+    }
+
     function test_distributeTips_attestationNotaryDispute() public checkQueueLength(2) {
         // rcptNotary: agents[1], attNotary: agents[0]
         prepareTwoReceiptTest(1, 0);
@@ -334,6 +404,32 @@ contract SummitTipsTest is AgentSecuredTest {
         // Put DOMAIN_REMOTE agents[0] in Dispute
         openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev When Notary in "Dispute Won Timeout" mode, the receipt is moved to the end of the queue,
+    /// therefore two receipts in the queue are expected in the modifier.
+    function test_distributeTips_receiptNotary_wonDisputeTimeout() public checkQueueLength(2) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev Should distribute tips if the "dispute won" timeout is over.
+    function test_distributeTips_receiptNotary_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        vm.recordLogs();
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        // Should end up emitting TipsAwarded logs (TODO: better way to check this)
+        assertGt(vm.getRecordedLogs().length, 0);
     }
 
     function test_distributeTips_receiptNotaryFraudulent() public checkQueueLength(1) {

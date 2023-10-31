@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotInbox, NotaryInDispute, OutdatedNonce} from "../../contracts/libs/Errors.sol";
+import {DISPUTE_TIMEOUT_NOTARY} from "../../contracts/libs/Constants.sol";
+import {CallerNotInbox, DisputeTimeoutNotOver, NotaryInDispute, OutdatedNonce} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/memory/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
@@ -194,6 +195,46 @@ contract DestinationTest is ExecutionHubTest {
         InterfaceDestination(localDestination()).acceptAttestation(agentIndex[notary], 0, "", 0, new ChainGas[](0));
     }
 
+    function test_acceptAttestation_revert_notaryWonDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        uint256[] memory snapGas = rawSnap.snapGas();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+        skip(7 days);
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+    }
+
+    function test_acceptAttestation_afterNotaryDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        bytes32 snapRoot = rawSnap.castToSnapshot().calculateRoot();
+        // Sanity check
+        assert(testedEH().getAttestationNonce(snapRoot) == 0);
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        uint256[] memory snapGas = rawSnap.snapGas();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+        skip(7 days);
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        // Snapshot root should be known to ExecutionHub (Destination)
+        assertGt(testedEH().getAttestationNonce(snapRoot), 0);
+    }
+
     function test_acceptAttestation_revert_lowerNonce() public {
         Random memory random = Random("salt");
         RawAttestation memory firstRA = random.nextAttestation({nonce: 2});
@@ -296,6 +337,124 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(lightManager.agentRoot(), ra._agentRoot);
     }
 
+    /// @dev Submits a mock attestation and opens a dispute for the Notary that signed it.
+    function prepareAgentRootDisputeTest() internal returns (bytes32 newAgentRoot) {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        newAgentRoot = ra._agentRoot;
+        uint256[] memory snapGas = rawSnap.snapGas();
+
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        // Sanity check
+        assert(InterfaceDestination(localDestination()).nextAgentRoot() == newAgentRoot);
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+    }
+
+    /// @dev Resolves test dispute above in favor of the Notary.
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
+    function test_passAgentRoot_notaryInDispute_optimisticPeriodNotOver() public {
+        bytes32 oldRoot = lightManager.agentRoot();
+        prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD - 1);
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should not pass the root
+        assertFalse(rootPassed);
+        assertEq(lightManager.agentRoot(), oldRoot);
+        // Should clear pending
+        assertFalse(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), oldRoot);
+    }
+
+    function test_passAgentRoot_notaryInDispute_optimisticPeriodOver() public {
+        bytes32 oldRoot = lightManager.agentRoot();
+        prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should not pass the root
+        assertFalse(rootPassed);
+        assertEq(lightManager.agentRoot(), oldRoot);
+        // Should clear pending
+        assertFalse(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), oldRoot);
+    }
+
+    function test_passAgentRoot_notaryWonDisputeTimeout_optimisticPeriodNotOver() public {
+        bytes32 oldRoot = lightManager.agentRoot();
+        bytes32 newRoot = prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD - DISPUTE_TIMEOUT_NOTARY);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD - 1
+        // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY - 1
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should not pass the root
+        assertFalse(rootPassed);
+        assertEq(lightManager.agentRoot(), oldRoot);
+        // Should not clear pending
+        assertTrue(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), newRoot);
+    }
+
+    function test_passAgentRoot_notaryWonDisputeTimeout_optimisticPeriodOver() public {
+        bytes32 oldRoot = lightManager.agentRoot();
+        bytes32 newRoot = prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD - (DISPUTE_TIMEOUT_NOTARY - 1));
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD
+        // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY - 1
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should not pass the root
+        assertFalse(rootPassed);
+        assertEq(lightManager.agentRoot(), oldRoot);
+        // Should not clear pending
+        assertTrue(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), newRoot);
+    }
+
+    function test_passAgentRoot_afterNotaryDisputeTimeout_optimisticPeriodNotOver() public {
+        bytes32 oldRoot = lightManager.agentRoot();
+        bytes32 newRoot = prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD - 1 - DISPUTE_TIMEOUT_NOTARY);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD - 1
+        // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should not pass the root
+        assertFalse(rootPassed);
+        assertEq(lightManager.agentRoot(), oldRoot);
+        // Should not clear pending
+        assertTrue(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), newRoot);
+    }
+
+    function test_passAgentRoot_afterNotaryDisputeTimeout_optimisticPeriodOver() public {
+        bytes32 newRoot = prepareAgentRootDisputeTest();
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD - DISPUTE_TIMEOUT_NOTARY);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD
+        // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        // Should pass the root
+        assertTrue(rootPassed);
+        assertEq(lightManager.agentRoot(), newRoot);
+        // Should clear pending
+        assertFalse(rootPending);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), newRoot);
+    }
+
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
 
     function test_getGasData(Random memory random) public {
@@ -387,20 +546,36 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(dataMaturity, 0);
     }
 
-    function test_getGasData_notaryInDispute(Random memory random) public {
-        RawSnapshot memory firstSnap;
-        firstSnap.states = new RawState[](2);
-        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
-        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
-        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
-        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
-        uint256[] memory firstSnapGas = firstSnap.snapGas();
-        // Submit first attestation
-        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
-        skip(random.nextUint32());
-        // Open dispute
-        openDispute({guard: domains[0].agent, notary: firstNotary});
+    function prepareGasDataDisputeTest() internal returns (GasData remoteGasData, GasData synapseGasData) {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = RawSnapshot(new RawState[](2));
+        rawSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        rawSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: 2});
+        remoteGasData = rawSnap.states[0].castToState().gasData();
+        synapseGasData = rawSnap.states[1].castToState().gasData();
+
+        RawAttestation memory ra = random.nextAttestation({rawSnap: rawSnap, nonce: 1});
+        uint256[] memory snapGas = rawSnap.snapGas();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        // Sanity checks
+        {
+            (GasData gasData,) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+            assert(GasData.unwrap(gasData) == GasData.unwrap(remoteGasData));
+        }
+        {
+            (GasData gasData,) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
+            assert(GasData.unwrap(gasData) == GasData.unwrap(synapseGasData));
+        }
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+    }
+
+    function test_getGasData_notaryInDispute() public {
+        prepareGasDataDisputeTest();
+        skip(7 days);
         // Check getGasData
         (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
         assertEq(GasData.unwrap(gasData), 0);
@@ -408,6 +583,34 @@ contract DestinationTest is ExecutionHubTest {
         (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_notaryWonDisputeTimeout() public {
+        prepareGasDataDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_afterNotaryDisputeTimeout() public {
+        (GasData remoteGasData, GasData synapseGasData) = prepareGasDataDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(remoteGasData));
+        assertEq(dataMaturity, 7 days + DISPUTE_TIMEOUT_NOTARY);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(synapseGasData));
+        assertEq(dataMaturity, 7 days + DISPUTE_TIMEOUT_NOTARY);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

@@ -82,6 +82,7 @@ error NotStuck();
 
 error DisputeAlreadyResolved();
 error DisputeNotOpened();
+error DisputeTimeoutNotOver();
 error GuardInDispute();
 error NotaryInDispute();
 
