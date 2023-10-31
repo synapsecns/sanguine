@@ -21,7 +21,6 @@ skip_migrations: false
 chains:
   - chain_id: 444
     fetch_block_increment: 1000
-    goroutines_per_contract: 1
     contracts:
       - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
         start_block: 1
@@ -31,7 +30,6 @@ chains:
         contract_type: execution_hub
   - chain_id: 421614
     fetch_block_increment: 1000
-    goroutines_per_contract: 1
     contracts:
       - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
         start_block: 1
@@ -41,7 +39,6 @@ chains:
         contract_type: execution_hub
   - chain_id: 11155111
     fetch_block_increment: 1000
-    goroutines_per_contract: 1
     contracts:
       - address: "0x537ab51470984D6D9aDF8953C0D2ed8eDA4050ED"
         start_block: 1
@@ -58,7 +55,6 @@ http_port: 8080
 db_path: "/tmp/a.db"
 db_type: sqlite
 skip_migrations: true
-hydrate_cache: false
   ```
 
 If running the `unified` command, the config will be a combination of the above two configs (simply add the `http_port` to the top of your indexer config).
