@@ -33,12 +33,18 @@ type Query struct {
 	BazaarOrder        *BazaarOrder         "json:\"bazaarOrder\" graphql:\"bazaarOrder\""
 	BazaarOrders       []*BazaarOrder       "json:\"bazaarOrders\" graphql:\"bazaarOrders\""
 	BazaarTransactions []*BazaarTransaction "json:\"bazaarTransactions\" graphql:\"bazaarTransactions\""
-	Weapon             *Weapon              "json:\"weapon\" graphql:\"weapon\""
-	Weapons            []*Weapon            "json:\"weapons\" graphql:\"weapons\""
-	Armor              *Armor               "json:\"armor\" graphql:\"armor\""
-	Armors             []*Armor             "json:\"armors\" graphql:\"armors\""
 	Accessory          *Accessory           "json:\"accessory\" graphql:\"accessory\""
 	Accessories        []*Accessory         "json:\"accessories\" graphql:\"accessories\""
+	AccessoryAuction   *AccessoryAuction    "json:\"accessoryAuction\" graphql:\"accessoryAuction\""
+	AccessoryAuctions  []*AccessoryAuction  "json:\"accessoryAuctions\" graphql:\"accessoryAuctions\""
+	Armor              *Armor               "json:\"armor\" graphql:\"armor\""
+	Armors             []*Armor             "json:\"armors\" graphql:\"armors\""
+	ArmorAuction       *ArmorAuction        "json:\"armorAuction\" graphql:\"armorAuction\""
+	ArmorAuctions      []*ArmorAuction      "json:\"armorAuctions\" graphql:\"armorAuctions\""
+	Weapon             *Weapon              "json:\"weapon\" graphql:\"weapon\""
+	Weapons            []*Weapon            "json:\"weapons\" graphql:\"weapons\""
+	WeaponAuction      *WeaponAuction       "json:\"weaponAuction\" graphql:\"weaponAuction\""
+	WeaponAuctions     []*WeaponAuction     "json:\"weaponAuctions\" graphql:\"weaponAuctions\""
 }
 type StuckHeroes struct {
 	Heroes []*struct {
