@@ -34,9 +34,6 @@ type ChainIndexer struct {
 
 // NewChainIndexer creates a new chain indexer.
 func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig, refreshRate time.Duration) *ChainIndexer {
-	if config.FetchBlockIncrement < 1 {
-		config.FetchBlockIncrement = 10000
-	}
 	chainIndexer := ChainIndexer{
 		eventDB,
 		parsers,

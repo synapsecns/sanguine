@@ -59,8 +59,6 @@ type Config struct {
 type ChainConfig struct {
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// FetchBlockIncrement is the number of blocks to fetch at a time. Optional and defaults at 1000000.
-	FetchBlockIncrement uint64 `yaml:"fetch_block_increment"`
 	// Contracts are the contracts.
 	Contracts []ContractConfig `yaml:"contracts"`
 }
