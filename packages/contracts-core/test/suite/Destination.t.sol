@@ -262,22 +262,33 @@ contract DestinationTest is ExecutionHubTest {
         lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
     }
 
-    function test_acceptAttestation_notAccepted_agentRootUpdated(
+    function test_acceptAttestation_passesAgentRoot(
         RawAttestation memory firstRA,
+        RawAttestation memory secondRA,
         uint32 firstRootSubmittedAt
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
         vm.assume(firstRA._agentRoot != agentRootLM);
+        vm.assume(firstRA.snapRoot != secondRA.snapRoot);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Mock a call from lightInbox, could as well use the empty values as they won't be checked for validity
-        vm.prank(address(lightInbox));
-        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0)));
+        // Form a second attestation: Notary 1
+        RawSnapshot memory rs = Random(secondRA.snapRoot).nextSnapshot();
+        secondRA._snapGasHash = rs.snapGasHash();
+        secondRA.setDataHash();
+        uint256[] memory snapGas = rs.snapGas();
+        address notaryS = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
+        uint256 newRootTimestamp = block.timestamp;
+        assertTrue(lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
             InterfaceDestination(localDestination()).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(index, agentIndex[domains[DOMAIN_LOCAL].agent]);
+        // Dest status should point to the new root
+        assertEq(snapRootTime, newRootTimestamp);
+        assertEq(agentRootTime, newRootTimestamp);
+        assertEq(index, agentIndex[notaryS]);
+        // New agent root should be pending in Destination
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), secondRA._agentRoot);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA._agentRoot);
     }
