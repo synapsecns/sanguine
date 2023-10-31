@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -86,122 +85,150 @@ func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64
 }
 
 // Index indexes all contracts from the config for the current chain.
-//
-// nolint:gocognit,cyclop
 func (c ChainIndexer) Index(ctx context.Context) error {
 	contractGroup, contractCtx := errgroup.WithContext(ctx)
 
-	for i := range c.config.Contracts {
-		contract := c.config.Contracts[i]
-		contractType, err := indexerConfig.ContractTypeFromString(contract.ContractType)
-		if err != nil {
-			return fmt.Errorf("error creating parser for contract type: %s", contract.ContractType)
+	for _, contract := range c.config.Contracts {
+		if err := c.processContract(contractCtx, contractGroup, contract); err != nil {
+			return err
 		}
-		var eventParser types.EventParser
-		switch contractType {
-		case indexerConfig.OriginType:
-			eventParser = c.parsers.OriginParser
-		case indexerConfig.ExecutionHubType:
-			eventParser = c.parsers.DestinationParser
-		case indexerConfig.UnknownType:
-			return fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
-		}
-		refreshRate := time.Duration(1)
+	}
+	return contractGroup.Wait()
+}
 
-		// Create thread for current contract
-		contractGroup.Go(func() error {
-			for {
-				select {
-				case <-contractCtx.Done():
-					return fmt.Errorf("could not index contract. Error: %w", contractCtx.Err())
-				case <-time.After(refreshRate):
-					startHeight := contract.StartBlock
-					endHeight := contract.EndBlock
+// processContract indexes a contract by creating an appropriate parser and then indexing the contract in a go routine.
+func (c ChainIndexer) processContract(contractCtx context.Context, contractGroup *errgroup.Group, contract indexerConfig.ContractConfig) error {
+	eventParser, err := c.createEventParser(contract)
+	if err != nil {
+		return err
+	}
+	contractGroup.Go(func() error {
+		return c.indexContractEvents(contractCtx, contract, eventParser)
+	})
+	return nil
+}
 
-					// If the end block is not specified in the config (livefill) the last block stored will be used.
-					if endHeight == 0 {
-						// Get last stored block from sinner.
-						storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
-						if err != nil {
-							return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
-						}
-						if storedStartHeight > startHeight {
-							startHeight = storedStartHeight
-						}
+// createEventParser creates an event parser for the contract.
+func (c ChainIndexer) createEventParser(contract indexerConfig.ContractConfig) (types.EventParser, error) {
+	contractType, err := indexerConfig.ContractTypeFromString(contract.ContractType)
+	if err != nil {
+		return nil, fmt.Errorf("error creating parser for contract type: %s", contract.ContractType)
+	}
+	switch contractType {
+	case indexerConfig.OriginType:
+		return c.parsers.OriginParser, nil
+	case indexerConfig.ExecutionHubType:
+		return c.parsers.DestinationParser, nil
+	case indexerConfig.UnknownType:
+		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
+	default:
+		return nil, fmt.Errorf("unsupported contract type: %s", contract.ContractType)
+	}
+}
 
-						// Get last indexed from Scribe.
-						err = retry.WithBackoff(contractCtx, func(ctx context.Context) error {
-							endHeight, err = c.fetcher.FetchLastIndexed(contractCtx, c.config.ChainID, contract.Address)
-							if err != nil {
-								return fmt.Errorf("could not get last indexed height, %w", err)
-							}
-							return nil
-						})
+// indexContractEvents indexes all events for a contract.
+func (c ChainIndexer) indexContractEvents(contractCtx context.Context, contract indexerConfig.ContractConfig, eventParser types.EventParser) error {
+	refreshRate := time.Duration(1)
 
-						if err != nil {
-							return fmt.Errorf("could not get last indexed height, %w", err)
-						}
-					}
-
-					// Iterate through all blocks between start and finish.
-					for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.config.FetchBlockIncrement {
-						if currentHeight > endHeight {
-							currentHeight = endHeight
-						}
-
-						endFetchRange := currentHeight + c.config.FetchBlockIncrement
-						if endFetchRange > endHeight {
-							endFetchRange = endHeight
-						}
-
-						// Fetch logs and txs from scribe.
-						logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, endFetchRange, common.HexToAddress(contract.Address))
-						if contractErr != nil {
-							return fmt.Errorf("error getting scribe data: %w", contractErr)
-						}
-						eventParser.UpdateTxMap(txs)
-						// For each log, spin up a go routine and parse + store that data.
-						for _, log := range logs {
-							currentLog := log
-							contractErr = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
-								parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
-								if parseErr != nil {
-									return fmt.Errorf("error parsing and storing event: %w", parseErr)
-								}
-								return nil
-							})
-							if contractErr != nil {
-								return fmt.Errorf("error parsing and storing event: %w", contractErr)
-							}
-						}
-
-						// store last indexed
-						height := currentHeight
-						err = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
-							storeErr := c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, height)
-							if storeErr != nil {
-								return fmt.Errorf("error storing last indexed: %w", storeErr)
-							}
-							return nil
-						})
-
-						if err != nil {
-							return fmt.Errorf("error storing last indexed: %w", err)
-						}
-					}
-
-					// Backfill complete. Terminate current thread.
-					if contract.EndBlock > 0 {
-						return nil
-					}
-					// Continue livefilling
-				}
+	for {
+		select {
+		case <-contractCtx.Done():
+			return fmt.Errorf("could not index contract. Error: %w", contractCtx.Err())
+		case <-time.After(refreshRate):
+			startHeight, endHeight, err := c.fetchBlockRange(contractCtx, contract)
+			if err != nil {
+				return err
 			}
+
+			if err := c.processBlocksInRange(contractCtx, startHeight, endHeight, contract, eventParser); err != nil {
+				return err
+			}
+
+			// Terminate if backfill is complete.
+			if contract.EndBlock > 0 {
+				return nil
+			}
+		}
+	}
+}
+
+// fetchBlockRange gets the block range to fetch for the contract.
+func (c ChainIndexer) fetchBlockRange(contractCtx context.Context, contract indexerConfig.ContractConfig) (uint64, uint64, error) {
+	startHeight := contract.StartBlock
+	endHeight := contract.EndBlock
+
+	// If the end block is not specified in the config (livefill) the last block stored will be used.
+	if endHeight == 0 {
+		storedStartHeight, err := c.eventDB.RetrieveLastStoredBlock(contractCtx, c.config.ChainID, common.HexToAddress(contract.Address))
+		if err != nil {
+			return 0, 0, fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
+		}
+		if storedStartHeight > startHeight {
+			startHeight = storedStartHeight
+		}
+
+		err = retry.WithBackoff(contractCtx, func(ctx context.Context) error {
+			endHeight, err = c.fetcher.FetchLastIndexed(contractCtx, c.config.ChainID, contract.Address)
+			if err != nil {
+				return fmt.Errorf("could not get last indexed height, %w", err)
+			}
+			return nil
 		})
+
+		if err != nil {
+			return 0, 0, fmt.Errorf("could not get last indexed height, %w", err)
+		}
 	}
-	// wait for all goroutines to finish
-	if err := contractGroup.Wait(); err != nil {
-		return fmt.Errorf("error processing: %w", err)
+
+	return startHeight, endHeight, nil
+}
+
+// processBlocksInRange handles all the core indexing logic and processes all blocks in the range for the contract.
+func (c ChainIndexer) processBlocksInRange(contractCtx context.Context, startHeight uint64, endHeight uint64, contract indexerConfig.ContractConfig, eventParser types.EventParser) error {
+	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.config.FetchBlockIncrement {
+		if currentHeight > endHeight {
+			currentHeight = endHeight
+		}
+
+		endFetchRange := currentHeight + c.config.FetchBlockIncrement
+		if endFetchRange > endHeight {
+			endFetchRange = endHeight
+		}
+
+		logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, endFetchRange, common.HexToAddress(contract.Address))
+		if contractErr != nil {
+			return fmt.Errorf("error getting scribe data: %w", contractErr)
+		}
+		eventParser.UpdateTxMap(txs)
+
+		for _, log := range logs {
+			currentLog := log
+			contractErr = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
+				parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
+				if parseErr != nil {
+					return fmt.Errorf("error parsing and storing event: %w", parseErr)
+				}
+				return nil
+			})
+
+			if contractErr != nil {
+				return fmt.Errorf("error parsing and storing event: %w", contractErr)
+			}
+		}
+
+		height := currentHeight
+		err := retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
+			storeErr := c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, height)
+			if storeErr != nil {
+				return fmt.Errorf("error storing last indexed: %w", storeErr)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("error storing last indexed: %w", err)
+		}
 	}
+
 	return nil
 }

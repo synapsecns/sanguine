@@ -17,6 +17,9 @@ func ifNilString(ptr *string) string {
 
 func ifNilUint32(ptr *int) uint32 {
 	if ptr != nil {
+		if *ptr < 0 {
+			return 0
+		}
 		return uint32(*ptr)
 	}
 	return 0
