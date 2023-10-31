@@ -684,6 +684,74 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('getEstimatedTime', () => {
+    const synapse = new SynapseSDK(
+      [
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.MOONBEAM,
+      ],
+      [ethProvider, arbProvider, moonbeamProvider]
+    )
+
+    it('Returns estimated time for SynapseBridge', () => {
+      expect(
+        synapse.getEstimatedTime(
+          SupportedChainId.ETH,
+          ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+        )
+      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ETH])
+
+      expect(
+        synapse.getEstimatedTime(
+          SupportedChainId.ARBITRUM,
+          ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+        )
+      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM])
+
+      expect(
+        synapse.getEstimatedTime(
+          SupportedChainId.MOONBEAM,
+          ROUTER_ADDRESS_MAP[SupportedChainId.MOONBEAM]
+        )
+      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.MOONBEAM])
+    })
+
+    it('Returns estimated time for SynapseCCTP', () => {
+      expect(
+        synapse.getEstimatedTime(
+          SupportedChainId.ETH,
+          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+        )
+      ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
+
+      expect(
+        synapse.getEstimatedTime(
+          SupportedChainId.ARBITRUM,
+          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+        )
+      ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM])
+    })
+
+    it('Throws for chain without a provider', () => {
+      expect(() =>
+        synapse.getEstimatedTime(
+          SupportedChainId.AVALANCHE,
+          ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
+        )
+      ).toThrow('Unknown router address')
+    })
+
+    it('Throws for unknown router address', () => {
+      expect(() =>
+        synapse.getEstimatedTime(
+          SupportedChainId.MOONBEAM,
+          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
+        )
+      ).toThrow('Unknown router address')
+    })
+  })
+
   describe('Get bridge gas', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
