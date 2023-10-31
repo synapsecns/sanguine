@@ -133,30 +133,6 @@ export default function Updater(): null {
     isWindowFocused,
   ])
 
-  // Unsubscribe when address is unconnected/disconnected
-
-  // useEffect(() => {
-  //   const isLoading: boolean =
-  //     isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
-
-  //   if ((!isLoading || masqueradeActive) && !isWindowFocused) {
-  //     fetchUserHistoricalActivity({
-  //       address: null,
-  //       startTime: null,
-  //     }).unsubscribe()
-
-  //     fetchUserPendingActivity({
-  //       address: null,
-  //       startTime: null,
-  //     }).unsubscribe()
-  //   }
-  // }, [
-  //   isWindowFocused,
-  //   masqueradeActive,
-  //   isUserHistoricalTransactionsLoading,
-  //   isUserPendingTransactionsLoading,
-  // ])
-
   // Load fetched historical transactions into state along with fetch status
   useEffect(() => {
     const {
