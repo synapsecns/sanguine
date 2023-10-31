@@ -43,6 +43,8 @@ bytes32 constant STATE_INVALID_SALT = keccak256("STATE_INVALID_SALT");
 // ═════════════════════════════════ PROTOCOL ══════════════════════════════════
 /// @dev Optimistic period for new agent roots in LightManager
 uint32 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
+/// @dev Timeout between the agent root could be proposed and resolved in LightManager
+uint32 constant AGENT_ROOT_PROPOSAL_TIMEOUT = 12 hours;
 uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 /// @dev Amount of time that the Notary will not be considered active after they won a dispute
 uint32 constant DISPUTE_TIMEOUT_NOTARY = 12 hours;

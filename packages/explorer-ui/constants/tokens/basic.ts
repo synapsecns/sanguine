@@ -22,6 +22,7 @@ import pepeLogo from '@assets/icons/pepe.webp'
 import maticLogo from '@assets/icons/matic.svg'
 import crvusdLogo from '@assets/icons/crvusd.svg'
 import ftmLogo from '@assets/icons/ftm.svg'
+import susdLogo from '@assets/icons/susd.svg'
 import { ChainId } from '@constants/networks'
 import { Token } from '@utils/classes/Token'
 import {
@@ -277,11 +278,23 @@ export const DAI = new Token({
     [ChainId.BOBA]: '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
     [ChainId.KLAYTN]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
     [ChainId.BASE]: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+    [ChainId.OPTIMISM]: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
   },
   decimals: 18,
   symbol: 'DAI',
   name: 'Dai',
   logo: daiLogo,
+  swapableType: 'USD',
+})
+
+export const SUSD = new Token({
+  addresses: {
+    [ChainId.OPTIMISM]: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
+  },
+  decimals: 18,
+  symbol: 'sUSD',
+  name: 'Synth USD',
+  logo: susdLogo,
   swapableType: 'USD',
 })
 
@@ -535,6 +548,7 @@ export const FRAX = new Token({
     [ChainId.MOONBEAM]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
     [ChainId.HARMONY]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [ChainId.DOGECHAIN]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
+    [ChainId.ARBITRUM]: '0x17fc002b466eec40dae837fc4be5c67993ddbd6f',
   },
   decimals: 18,
   symbol: 'FRAX',
@@ -1050,11 +1064,13 @@ export const BASIC_TOKENS_BY_CHAIN = {
     AGEUR,
     UNIDX,
     PEPE,
+    FRAX,
   ],
   [ChainId.AVALANCHE]: [
     USDC,
     USDT,
     CCTP_USDC,
+    // Note that this is Dai.e on Avalanche
     DAI,
     WETHE,
     NETH,
@@ -1132,6 +1148,8 @@ export const BASIC_TOKENS_BY_CHAIN = {
     USDT,
     CCTP_USDC,
     UNIDX,
+    SUSD,
+    DAI,
   ],
   [ChainId.TERRA]: [UST],
   [ChainId.CRONOS]: [
