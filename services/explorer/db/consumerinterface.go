@@ -9,6 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO simplify these interfaces so that there is one generic read function using an interface to accept a pointer from
+// the caller so that the query's results are scanned into that pointer.
+
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
@@ -21,7 +24,7 @@ type ConsumerDBWriter interface {
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
 	// StoreSwapFee stores the swap fee data.
 	StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error
-	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
+	// UNSAFE_DB gets the underlying gorm db. This is for testing only and not intended for use in production.
 	//
 	//nolint:golint
 	UNSAFE_DB() *gorm.DB
@@ -72,6 +75,8 @@ type ConsumerDBReader interface {
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
 	// GetPendingByChain gets the pending txs by chain.
 	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
+	// GetBlockHeights gets the block heights for a given chain and contract type.
+	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

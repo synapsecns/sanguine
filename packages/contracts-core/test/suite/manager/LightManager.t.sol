@@ -45,6 +45,12 @@ contract LightManagerTest is AgentManagerTest {
         LightManager(localContract()).initialize(address(0), address(0), address(0));
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new LightManager({synapseDomain_: 1});
+    }
+
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_constructor_revert_onSynapseChain() public {

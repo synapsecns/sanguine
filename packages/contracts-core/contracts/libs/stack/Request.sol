@@ -30,6 +30,7 @@ library RequestLib {
     /// @param gasLimit_    Minimum amount of gas units to supply for execution
     /// @param version_     Base message version to pass to the recipient
     function encodeRequest(uint96 gasDrop_, uint64 gasLimit_, uint32 version_) internal pure returns (Request) {
+        // Casts below are upcasts, so they are safe
         return Request.wrap(uint192(gasDrop_) << SHIFT_GAS_DROP | uint192(gasLimit_) << SHIFT_GAS_LIMIT | version_);
     }
 
@@ -39,6 +40,7 @@ library RequestLib {
     /// The highest bits are discarded, so that the contracts dealing with encoded requests
     /// don't need to be updated, if a new field is added.
     function wrapPadded(uint256 paddedRequest) internal pure returns (Request) {
+        // Casting to uint192 will truncate the highest bits, which is the behavior we want
         return Request.wrap(uint192(paddedRequest));
     }
 

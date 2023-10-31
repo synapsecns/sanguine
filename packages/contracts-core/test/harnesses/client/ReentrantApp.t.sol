@@ -11,7 +11,7 @@ contract ReentrantApp is IMessageRecipient {
     bytes internal msgPayload;
     bytes32[] internal originProof;
     bytes32[] internal snapProof;
-    uint256 internal stateIndex;
+    uint8 internal stateIndex;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testReentrantApp() external {}
@@ -20,7 +20,7 @@ contract ReentrantApp is IMessageRecipient {
         bytes memory msgPayload_,
         bytes32[] memory originProof_,
         bytes32[] memory snapProof_,
-        uint256 stateIndex_
+        uint8 stateIndex_
     ) external {
         msgPayload = msgPayload_;
         originProof = originProof_;
