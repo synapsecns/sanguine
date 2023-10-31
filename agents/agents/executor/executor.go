@@ -594,6 +594,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
 		attribute.String("root", root),
+		attribute.String("snapshotRoot", snapshotRoot),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
@@ -602,8 +603,9 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 	}()
 
 	stateMask := db.DBState{
-		Root:    &root,
-		ChainID: &chainID,
+		SnapshotRoot: &snapshotRoot,
+		Root:         &root,
+		ChainID:      &chainID,
 	}
 
 	proof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
