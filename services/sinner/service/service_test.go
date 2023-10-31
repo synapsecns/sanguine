@@ -18,7 +18,6 @@ import (
 // TestSinner tests Sinner.
 func (t *ServiceSuite) TestSinner() {
 	t.RunOnAllDBs(func(testDB db.TestEventDB) {
-
 		// Store test logs and txs
 		err := t.scribeDB.StoreLogs(t.GetTestContext(), t.originChainID, t.originTestLog)
 		Nil(t.T(), err)

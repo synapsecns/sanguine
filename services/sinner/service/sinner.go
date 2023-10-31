@@ -3,18 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/sinner/logger"
 	sinnerTypes "github.com/synapsecns/sanguine/services/sinner/types"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
+	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/destination"
 	"github.com/synapsecns/sanguine/services/sinner/contracts/origin"
-	"github.com/synapsecns/sanguine/services/sinner/logger"
-
-	"github.com/ethereum/go-ethereum/common"
-	indexerConfig "github.com/synapsecns/sanguine/services/sinner/config/indexer"
 	"github.com/synapsecns/sanguine/services/sinner/db"
 	fetcherpkg "github.com/synapsecns/sanguine/services/sinner/fetcher"
 	gqlClient "github.com/synapsecns/sanguine/services/sinner/fetcher/client"
@@ -76,27 +75,37 @@ func NewSinner(eventDB db.EventDB, config indexerConfig.Config, handler metrics.
 // nolint:cyclop
 func (e Sinner) Index(ctx context.Context) error {
 	var wg sync.WaitGroup
-	errChan := make(chan error)
+	errChan := make(chan error, len(e.config.Chains)) // Buffered to prevent goroutine blockage
+
+	// Listen for errors
+	go func() {
+		for err := range errChan {
+			logger.ReportSinnerError(fmt.Errorf("could not livefill explorer: %w", err), 0, logger.SinnerIndexingFailure)
+		}
+	}()
 
 	for i := range e.config.Chains {
 		chainConfig := e.config.Chains[i]
 		chainIndexer := e.indexers[chainConfig.ChainID]
 
+		wg.Add(1)
 		go func(chainCfg *indexerConfig.ChainConfig, indexer *ChainIndexer) {
 			defer wg.Done()
-			// generate new context
-			chainContext := context.WithoutCancel(ctx)
+
 			for {
+				chainCtx, cancelChainCtx := context.WithCancel(ctx)
+
 				select {
 				case <-ctx.Done(): // global context canceled
 					errChan <- fmt.Errorf("global context canceled")
+					cancelChainCtx() // cancel the local context before returning
 					return
-				case <-chainContext.Done(): // local context canceled, reset context
-					chainContext = context.WithoutCancel(ctx)
 				default:
-					err := chainIndexer.Index(chainContext)
+					err := chainIndexer.Index(chainCtx)
+					cancelChainCtx() // cancel the local context immediately after its use
+
 					if err != nil {
-						errChan <- fmt.Errorf(" error indexing chain %d: %w", chainConfig.ChainID, err)
+						errChan <- fmt.Errorf("error indexing chain %d: %w", chainCfg.ChainID, err)
 						continue // continue trying
 					}
 					return
@@ -105,16 +114,9 @@ func (e Sinner) Index(ctx context.Context) error {
 		}(&chainConfig, chainIndexer)
 	}
 
-	// Goroutine to collect errors, closes once the wait group is done.
-	go func() {
-		for err := range errChan {
-			logger.ReportSinnerError(fmt.Errorf("could not livefill explorer: %w", err), 0, logger.SinnerIndexingFailure)
-		}
-	}()
-
-	// Wait for all goroutines to finish
 	wg.Wait()
 	close(errChan)
+
 	return nil
 }
 
