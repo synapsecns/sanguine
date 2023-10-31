@@ -148,6 +148,8 @@ export const PendingTransaction = ({
       const updateResolvedTransaction = async () => {
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
+        }).catch((error) => {
+          console.error('update resolved transaction failed: ', error)
         })
 
         if (resolvedTransaction) {
