@@ -97,6 +97,17 @@ query GetRankedChainIDsByVolume($duration: Duration) {
   }
 }
 
+query GetBlockHeight($contracts: [ContractQuery]) {
+  response: getBlockHeight(
+    contracts: $contracts
+  ) {
+    chainID
+    type
+    blockNumber
+  }
+}
+
+
 
 
 

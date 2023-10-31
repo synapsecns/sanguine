@@ -107,6 +107,31 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(rcptPayload);
     }
 
+    function test_execute_base_recipientEOA(Random memory random) public {
+        recipient = random.nextAddress();
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, msgLeaf, false);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        bytes memory rcptPayloadFirst =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0));
+        verify_receipt_valid(rcptPayloadFirst);
+    }
+
     function test_execute_base_recipientReverted_thenSuccess(Random memory random) public {
         recipient = address(new RevertingApp());
         // Create some simple data
@@ -497,7 +522,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_messageStatus(
         bytes32 messageHash,
         bytes32 snapRoot,
-        uint256 stateIndex,
+        uint8 stateIndex,
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
@@ -600,7 +625,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
-        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));
+        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint8(), random.nextUint256()));
         sm.rsi.boundStateIndex();
     }
 

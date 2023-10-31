@@ -10,7 +10,6 @@ import {
     IncorrectAgentDomain,
     IncorrectOriginDomain,
     IndexOutOfRange,
-    MerkleTreeFull,
     MustBeSynapseDomain,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
@@ -24,6 +23,8 @@ import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice BondingManager keeps track of all existing agents on the Synapse Chain.
 /// It utilizes a dynamic Merkle Tree to store the agent information. This enables passing only the
@@ -39,6 +40,8 @@ import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 /// - Accepting Manager Message from remote `LightManager` to slash agents on the Synapse Chain, when their fraud
 ///   is proven on the remote chain.
 contract BondingManager is AgentManager, InterfaceBondingManager {
+    using SafeCast for uint256;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // The address of the Summit contract.
@@ -89,8 +92,8 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         if (status.flag == AgentFlag.Unknown) {
             // Unknown address could be added to any domain
             // New agent will need to be added to `_agents` list: could not have more than 2**32 agents
-            if (_agents.length >= type(uint32).max) revert MerkleTreeFull();
-            index = uint32(_agents.length);
+            // TODO: consider using more than 32 bits for agent indexes
+            index = _agents.length.toUint32();
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
             _agents.push(agent);
             _domainAgents[domain].push(agent);
