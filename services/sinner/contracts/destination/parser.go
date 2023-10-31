@@ -110,7 +110,6 @@ func (p *parserImpl) parseExecuted(log ethTypes.Log) (*model.Executed, error) {
 		return nil, fmt.Errorf("could not parse executed log. err: %w", err)
 	}
 	parsedEvent := model.Executed{
-
 		ContractAddress: iFace.Raw.Address.String(),
 		BlockNumber:     iFace.Raw.BlockNumber,
 		TxHash:          iFace.Raw.TxHash.String(),

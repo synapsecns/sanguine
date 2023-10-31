@@ -2,11 +2,17 @@
 MessageStatus gives the status of a message.
 """
 type MessageStatus {
+  messageHash: String
   lastSeen: MessageStateLastSeen
   originTxHash: String
   destinationTxHash: String
-  messageHash: String
+  originInfo: [OriginInfo] @goField(forceResolver: true)
+  destinationInfo: [DestinationInfo] @goField(forceResolver: true)
 }
+
+
+
+
 
 
 """
@@ -33,7 +39,7 @@ type OriginInfo {
   gasLimit:Int
   gasDrop: String
   messageStatus: MessageStatus @goField(forceResolver: true)
-  destinationInfo: DestinationInfo @goField(forceResolver: true)
+  destinationInfo: [DestinationInfo] @goField(forceResolver: true)
 
 }
 """
@@ -49,7 +55,7 @@ type DestinationInfo {
   remoteDomain: Int
   success: Boolean
   messageStatus: MessageStatus @goField(forceResolver: true)
-  originInfo: OriginInfo @goField(forceResolver: true)
+  originInfo: [OriginInfo] @goField(forceResolver: true)
 }
 
 enum MessageStateLastSeen{

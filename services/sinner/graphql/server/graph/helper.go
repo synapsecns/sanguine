@@ -1,13 +1,61 @@
 package graph
 
 import (
+	"context"
+	"fmt"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
-	graphqlmodel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
 )
 
-func dbToGraphqlModelOrigin(event model.OriginSent) *graphqlmodel.OriginInfo {
-	return &graphqlmodel.OriginInfo{
+func ifNilString(ptr *string) string {
+	if ptr != nil {
+		return *ptr
+	}
+	return ""
+}
+
+func ifNilUint32(ptr *int) uint32 {
+	if ptr != nil {
+		return uint32(*ptr)
+	}
+	return 0
+}
+
+func (r *queryResolver) getOriginInfoWithMessageHash(ctx context.Context, messageHash string) ([]*graphqlModel.OriginInfo, error) {
+	filter := model.OriginSent{
+		MessageHash: messageHash,
+	}
+	originTxs, err := r.DB.RetrieveOriginSent(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving origin sent data: %w", err)
+	}
+
+	var output []*graphqlModel.OriginInfo
+	for _, originTx := range originTxs {
+		output = append(output, dbToGraphqlModelOrigin(originTx))
+	}
+
+	return output, nil
+}
+
+func dbToGraphqlModelOriginMultiple(events []model.OriginSent) []*graphqlModel.OriginInfo {
+	var output []*graphqlModel.OriginInfo
+	for _, event := range events {
+		output = append(output, dbToGraphqlModelOrigin(event))
+	}
+	return output
+}
+
+func dbToGraphqlModelDestinationMultiple(events []model.Executed) []*graphqlModel.DestinationInfo {
+	var output []*graphqlModel.DestinationInfo
+	for _, event := range events {
+		output = append(output, dbToGraphqlModelDestination(event))
+	}
+	return output
+}
+func dbToGraphqlModelOrigin(event model.OriginSent) *graphqlModel.OriginInfo {
+	return &graphqlModel.OriginInfo{
 		MessageHash:        &event.MessageHash,
 		ContractAddress:    &event.ContractAddress,
 		BlockNumber:        core.PtrTo(int(event.BlockNumber)),
@@ -30,8 +78,8 @@ func dbToGraphqlModelOrigin(event model.OriginSent) *graphqlmodel.OriginInfo {
 	}
 }
 
-func dbToGraphqlModelDestination(event model.Executed) *graphqlmodel.DestinationInfo {
-	return &graphqlmodel.DestinationInfo{
+func dbToGraphqlModelDestination(event model.Executed) *graphqlModel.DestinationInfo {
+	return &graphqlModel.DestinationInfo{
 		ContractAddress: &event.ContractAddress,
 		BlockNumber:     core.PtrTo(int(event.BlockNumber)),
 		TxHash:          &event.TxHash,

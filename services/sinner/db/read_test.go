@@ -88,14 +88,15 @@ func (t *DBSuite) TestRetrieveOriginSent() {
 		err := testDB.StoreOriginSent(t.GetTestContext(), originSent)
 		Nil(t.T(), err)
 
-		// Test: Retrieve and validate the OriginSent record
-		retrievedRecord, err := testDB.RetrieveOriginSent(t.GetTestContext(), messageHash)
+		filter := model.OriginSent{MessageHash: messageHash}
+		retrievedRecord, err := testDB.RetrieveOriginSent(t.GetTestContext(), filter)
 		Nil(t.T(), err)
-		Equal(t.T(), txHash, retrievedRecord.TxHash)
-		Equal(t.T(), chainID, retrievedRecord.ChainID)
-		Equal(t.T(), messageHash, retrievedRecord.MessageHash)
+		Equal(t.T(), txHash, retrievedRecord[0].TxHash)
+		Equal(t.T(), chainID, retrievedRecord[0].ChainID)
+		Equal(t.T(), messageHash, retrievedRecord[0].MessageHash)
 
-		retrievedRecords, err := testDB.RetrieveOriginSents(t.GetTestContext(), chainID, txHash)
+		filter = model.OriginSent{ChainID: chainID, TxHash: txHash}
+		retrievedRecords, err := testDB.RetrieveOriginSent(t.GetTestContext(), filter)
 		Nil(t.T(), err)
 		Equal(t.T(), txHash, retrievedRecords[0].TxHash)
 		Equal(t.T(), chainID, retrievedRecords[0].ChainID)
@@ -123,14 +124,15 @@ func (t *DBSuite) TestRetrieveExecuted() {
 		err := testDB.StoreExecuted(t.GetTestContext(), executed)
 		Nil(t.T(), err)
 
-		// Test: Retrieve and validate the Executed record
-		retrievedRecord, err := testDB.RetrieveExecuted(t.GetTestContext(), messageHash)
+		filter := model.Executed{MessageHash: messageHash}
+		retrievedRecord, err := testDB.RetrieveExecuted(t.GetTestContext(), filter)
 		Nil(t.T(), err)
-		Equal(t.T(), txHash, retrievedRecord.TxHash)
-		Equal(t.T(), chainID, retrievedRecord.ChainID)
-		Equal(t.T(), messageHash, retrievedRecord.MessageHash)
+		Equal(t.T(), txHash, retrievedRecord[0].TxHash)
+		Equal(t.T(), chainID, retrievedRecord[0].ChainID)
+		Equal(t.T(), messageHash, retrievedRecord[0].MessageHash)
 
-		retrievedRecords, err := testDB.RetrieveExecuteds(t.GetTestContext(), chainID, txHash)
+		filter = model.Executed{ChainID: chainID, TxHash: txHash}
+		retrievedRecords, err := testDB.RetrieveExecuted(t.GetTestContext(), filter)
 		Nil(t.T(), err)
 		Equal(t.T(), txHash, retrievedRecords[0].TxHash)
 		Equal(t.T(), chainID, retrievedRecords[0].ChainID)

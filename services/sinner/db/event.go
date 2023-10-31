@@ -27,14 +27,10 @@ type EventDBWriter interface {
 //
 //nolint:interfacebloat
 type EventDBReader interface {
-	// RetrieveOriginSent gets the Origin Sent event with a message hash.
-	RetrieveOriginSent(ctx context.Context, messageHash string) (model.OriginSent, error)
-	// RetrieveOriginSents gets the Origin Sent events tied to a tx hash.
-	RetrieveOriginSents(ctx context.Context, chainID uint32, txHash string) ([]model.OriginSent, error)
-	// RetrieveExecuted gets the Executed event with a message hash.
-	RetrieveExecuted(ctx context.Context, messageHash string) (model.Executed, error)
-	// RetrieveExecuteds gets the Executed events tied to a tx hash.
-	RetrieveExecuteds(ctx context.Context, chainID uint32, txHash string) ([]model.Executed, error)
+	// RetrieveOriginSent gets the Origin Sent events with a filter.
+	RetrieveOriginSent(ctx context.Context, filter model.OriginSent) ([]model.OriginSent, error)
+	// RetrieveExecuted gets the Executed events with a filter.
+	RetrieveExecuted(ctx context.Context, filter model.Executed) ([]model.Executed, error)
 	// RetrieveMessageStatus gets status of a message.
 	RetrieveMessageStatus(ctx context.Context, messageHash string) (graphqlModel.MessageStatus, error)
 	// RetrieveLastStoredBlock gets the last block stored in sinner.

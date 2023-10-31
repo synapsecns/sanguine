@@ -19,40 +19,42 @@ type DestinationInfo struct {
 	RemoteDomain    *int           `json:"remoteDomain,omitempty"`
 	Success         *bool          `json:"success,omitempty"`
 	MessageStatus   *MessageStatus `json:"messageStatus,omitempty"`
-	OriginInfo      *OriginInfo    `json:"originInfo,omitempty"`
+	OriginInfo      []*OriginInfo  `json:"originInfo,omitempty"`
 }
 
 // MessageStatus gives the status of a message.
 type MessageStatus struct {
+	MessageHash       *string               `json:"messageHash,omitempty"`
 	LastSeen          *MessageStateLastSeen `json:"lastSeen,omitempty"`
 	OriginTxHash      *string               `json:"originTxHash,omitempty"`
 	DestinationTxHash *string               `json:"destinationTxHash,omitempty"`
-	MessageHash       *string               `json:"messageHash,omitempty"`
+	OriginInfo        []*OriginInfo         `json:"originInfo,omitempty"`
+	DestinationInfo   []*DestinationInfo    `json:"destinationInfo,omitempty"`
 }
 
 // OriginInfo provides granular information on an origin sent event.
 type OriginInfo struct {
-	MessageHash        *string          `json:"messageHash,omitempty"`
-	ContractAddress    *string          `json:"contractAddress,omitempty"`
-	BlockNumber        *int             `json:"blockNumber,omitempty"`
-	OriginTxHash       *string          `json:"originTxHash,omitempty"`
-	Sender             *string          `json:"sender,omitempty"`
-	Recipient          *string          `json:"recipient,omitempty"`
-	OriginChainID      *int             `json:"originChainID,omitempty"`
-	DestinationChainID *int             `json:"destinationChainID,omitempty"`
-	Nonce              *int             `json:"nonce,omitempty"`
-	Message            *string          `json:"message,omitempty"`
-	OptimisticSeconds  *int             `json:"optimisticSeconds,omitempty"`
-	MessageFlag        *int             `json:"messageFlag,omitempty"`
-	SummitTip          *string          `json:"summitTip,omitempty"`
-	AttestationTip     *string          `json:"attestationTip,omitempty"`
-	ExecutionTip       *string          `json:"executionTip,omitempty"`
-	DeliveryTip        *string          `json:"deliveryTip,omitempty"`
-	Version            *int             `json:"version,omitempty"`
-	GasLimit           *int             `json:"gasLimit,omitempty"`
-	GasDrop            *string          `json:"gasDrop,omitempty"`
-	MessageStatus      *MessageStatus   `json:"messageStatus,omitempty"`
-	DestinationInfo    *DestinationInfo `json:"destinationInfo,omitempty"`
+	MessageHash        *string            `json:"messageHash,omitempty"`
+	ContractAddress    *string            `json:"contractAddress,omitempty"`
+	BlockNumber        *int               `json:"blockNumber,omitempty"`
+	OriginTxHash       *string            `json:"originTxHash,omitempty"`
+	Sender             *string            `json:"sender,omitempty"`
+	Recipient          *string            `json:"recipient,omitempty"`
+	OriginChainID      *int               `json:"originChainID,omitempty"`
+	DestinationChainID *int               `json:"destinationChainID,omitempty"`
+	Nonce              *int               `json:"nonce,omitempty"`
+	Message            *string            `json:"message,omitempty"`
+	OptimisticSeconds  *int               `json:"optimisticSeconds,omitempty"`
+	MessageFlag        *int               `json:"messageFlag,omitempty"`
+	SummitTip          *string            `json:"summitTip,omitempty"`
+	AttestationTip     *string            `json:"attestationTip,omitempty"`
+	ExecutionTip       *string            `json:"executionTip,omitempty"`
+	DeliveryTip        *string            `json:"deliveryTip,omitempty"`
+	Version            *int               `json:"version,omitempty"`
+	GasLimit           *int               `json:"gasLimit,omitempty"`
+	GasDrop            *string            `json:"gasDrop,omitempty"`
+	MessageStatus      *MessageStatus     `json:"messageStatus,omitempty"`
+	DestinationInfo    []*DestinationInfo `json:"destinationInfo,omitempty"`
 }
 
 type MessageStateLastSeen string

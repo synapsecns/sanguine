@@ -62,30 +62,11 @@ func (s Store) RetrieveLastStoredBlock(ctx context.Context, chainID uint32, addr
 }
 
 // RetrieveOriginSent gets the Origin Sent event.
-func (s Store) RetrieveOriginSent(ctx context.Context, messageHash string) (model.OriginSent, error) {
-	var originSentRecord model.OriginSent
-	err := s.DB().WithContext(ctx).
-		Model(&model.OriginSent{}).
-		Where(model.OriginSent{
-			MessageHash: messageHash,
-		}).
-		First(&originSentRecord).Error
-
-	if err != nil {
-		return model.OriginSent{}, fmt.Errorf("could not retrieve Origin Sent event: %w", err)
-	}
-	return originSentRecord, nil
-}
-
-// RetrieveOriginSents gets the Origin Sent events.
-func (s Store) RetrieveOriginSents(ctx context.Context, chainID uint32, txHash string) ([]model.OriginSent, error) {
+func (s Store) RetrieveOriginSent(ctx context.Context, filter model.OriginSent) ([]model.OriginSent, error) {
 	var originSentRecord []model.OriginSent
 	err := s.DB().WithContext(ctx).
 		Model(&model.OriginSent{}).
-		Where(&model.OriginSent{
-			ChainID: chainID,
-			TxHash:  txHash,
-		}).
+		Where(filter).
 		Scan(&originSentRecord).Error
 
 	if err != nil {
@@ -95,30 +76,11 @@ func (s Store) RetrieveOriginSents(ctx context.Context, chainID uint32, txHash s
 }
 
 // RetrieveExecuted gets a Executed event.
-func (s Store) RetrieveExecuted(ctx context.Context, messageHash string) (model.Executed, error) {
-	var executedRecord model.Executed
-	err := s.DB().WithContext(ctx).
-		Model(&model.Executed{}).
-		Where(&model.Executed{
-			MessageHash: messageHash,
-		}).
-		First(&executedRecord).Error
-
-	if err != nil {
-		return model.Executed{}, fmt.Errorf("could not retrieve Executed event: %w", err)
-	}
-	return executedRecord, nil
-}
-
-// RetrieveExecuteds gets Executed events.
-func (s Store) RetrieveExecuteds(ctx context.Context, chainID uint32, txHash string) ([]model.Executed, error) {
+func (s Store) RetrieveExecuted(ctx context.Context, filter model.Executed) ([]model.Executed, error) {
 	var executedRecord []model.Executed
 	err := s.DB().WithContext(ctx).
 		Model(&model.Executed{}).
-		Where(&model.Executed{
-			ChainID: chainID,
-			TxHash:  txHash,
-		}).
+		Where(filter).
 		Scan(&executedRecord).Error
 
 	if err != nil {

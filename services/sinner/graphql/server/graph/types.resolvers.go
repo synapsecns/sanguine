@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	dbModel "github.com/synapsecns/sanguine/services/sinner/db/model"
 	"github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
 	resolvers "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/resolver"
 )
@@ -18,17 +19,46 @@ func (r *destinationInfoResolver) MessageStatus(ctx context.Context, obj *model.
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving message status: %w", err)
 	}
-
 	return &messageStatus, nil
 }
 
 // OriginInfo is the resolver for the originInfo field.
-func (r *destinationInfoResolver) OriginInfo(ctx context.Context, obj *model.DestinationInfo) (*model.OriginInfo, error) {
-	originSent, err := r.DB.RetrieveOriginSent(ctx, *obj.MessageHash)
+func (r *destinationInfoResolver) OriginInfo(ctx context.Context, obj *model.DestinationInfo) ([]*model.OriginInfo, error) {
+	if obj.MessageHash == nil {
+		return nil, fmt.Errorf("message hash must be provided")
+	}
+	filter := dbModel.OriginSent{MessageHash: *obj.MessageHash}
+	originTxs, err := r.DB.RetrieveOriginSent(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving origin sent data: %w", err)
 	}
-	return dbToGraphqlModelOrigin(originSent), nil
+	return dbToGraphqlModelOriginMultiple(originTxs), nil
+}
+
+// OriginInfo is the resolver for the originInfo field.
+func (r *messageStatusResolver) OriginInfo(ctx context.Context, obj *model.MessageStatus) ([]*model.OriginInfo, error) {
+	if obj.MessageHash == nil {
+		return nil, fmt.Errorf("message hash must be provided")
+	}
+	filter := dbModel.OriginSent{MessageHash: *obj.MessageHash}
+	originTxs, err := r.DB.RetrieveOriginSent(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving origin sent data: %w", err)
+	}
+	return dbToGraphqlModelOriginMultiple(originTxs), nil
+}
+
+// DestinationInfo is the resolver for the destinationInfo field.
+func (r *messageStatusResolver) DestinationInfo(ctx context.Context, obj *model.MessageStatus) ([]*model.DestinationInfo, error) {
+	if obj.MessageHash == nil {
+		return nil, fmt.Errorf("message hash must be provided")
+	}
+	filter := dbModel.Executed{MessageHash: *obj.MessageHash}
+	executedTxs, err := r.DB.RetrieveExecuted(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving destination info: %w", err)
+	}
+	return dbToGraphqlModelDestinationMultiple(executedTxs), nil
 }
 
 // MessageStatus is the resolver for the messageStatus field.
@@ -37,17 +67,20 @@ func (r *originInfoResolver) MessageStatus(ctx context.Context, obj *model.Origi
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving message status: %w", err)
 	}
-
 	return &messageStatus, nil
 }
 
 // DestinationInfo is the resolver for the destinationInfo field.
-func (r *originInfoResolver) DestinationInfo(ctx context.Context, obj *model.OriginInfo) (*model.DestinationInfo, error) {
-	executed, err := r.DB.RetrieveExecuted(ctx, *obj.MessageHash)
+func (r *originInfoResolver) DestinationInfo(ctx context.Context, obj *model.OriginInfo) ([]*model.DestinationInfo, error) {
+	if obj.MessageHash == nil {
+		return nil, fmt.Errorf("message hash must be provided")
+	}
+	filter := dbModel.Executed{MessageHash: *obj.MessageHash}
+	executedTxs, err := r.DB.RetrieveExecuted(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving destination info: %w", err)
 	}
-	return dbToGraphqlModelDestination(executed), nil
+	return dbToGraphqlModelDestinationMultiple(executedTxs), nil
 }
 
 // DestinationInfo returns resolvers.DestinationInfoResolver implementation.
@@ -55,8 +88,12 @@ func (r *Resolver) DestinationInfo() resolvers.DestinationInfoResolver {
 	return &destinationInfoResolver{r}
 }
 
+// MessageStatus returns resolvers.MessageStatusResolver implementation.
+func (r *Resolver) MessageStatus() resolvers.MessageStatusResolver { return &messageStatusResolver{r} }
+
 // OriginInfo returns resolvers.OriginInfoResolver implementation.
 func (r *Resolver) OriginInfo() resolvers.OriginInfoResolver { return &originInfoResolver{r} }
 
 type destinationInfoResolver struct{ *Resolver }
+type messageStatusResolver struct{ *Resolver }
 type originInfoResolver struct{ *Resolver }
