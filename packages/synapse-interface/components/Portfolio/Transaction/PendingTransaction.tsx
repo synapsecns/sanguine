@@ -130,9 +130,6 @@ export const PendingTransaction = ({
     [timeRemaining]
   )
 
-  console.log('isDelayed:', isDelayed)
-  console.log('useFallback: ', useFallback)
-
   const originFallback = useFallbackBridgeOriginQuery({
     useFallback: isDelayed && useFallback,
     chainId: originChain?.id,

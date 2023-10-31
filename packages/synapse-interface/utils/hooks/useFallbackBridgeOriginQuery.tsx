@@ -51,14 +51,14 @@ export const useFallbackBridgeOriginQuery = ({
   // Start fallback query
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      console.log('start origin fallback fetch')
+      console.log('start origin fallback subscription')
       fetchFallbackBridgeOriginQuery({
         chainId: validQueryParams.chainId,
         txnHash: validQueryParams.txnHash,
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback || queryTransactionAlreadyStored) {
-      console.log('end origin fallback fetch')
+      console.log('end origin fallback subscription')
       fetchFallbackBridgeOriginQuery({
         chainId: null,
         txnHash: null,

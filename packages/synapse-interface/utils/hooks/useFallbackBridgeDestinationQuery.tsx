@@ -59,7 +59,7 @@ export const useFallbackBridgeDestinationQuery = ({
   // Start fallback query
   useEffect(() => {
     if (useFallback && validQueryParams) {
-      console.log('start dest fallback fetch')
+      console.log('start dest fallback subscription')
       fetchFallbackBridgeDestinationQuery({
         chainId: validQueryParams.chainId,
         address: validQueryParams.address,
@@ -68,7 +68,7 @@ export const useFallbackBridgeDestinationQuery = ({
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback) {
-      console.log('end dest fallback fetch')
+      console.log('end dest fallback subscription')
       fetchFallbackBridgeDestinationQuery({
         chainId: null,
         address: null,
