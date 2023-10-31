@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {CallerNotInbox, DisputeTimeoutNotOver, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
-import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
+import {DISPUTE_TIMEOUT_NOTARY, SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/merkle/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
@@ -401,6 +401,50 @@ contract SummitTest is AgentSecuredTest {
         vm.expectEmit();
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
         inbox.submitSnapshot(snapPayload, guardSig);
+    }
+
+    // ═════════════════════════════════════════ TESTS: NOTARY WON DISPUTE ═════════════════════════════════════════════
+
+    function prepareSubmitSnapshotDisputeTest() internal returns (bytes memory snapPayload, bytes memory notarySig) {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address reportGuard = domains[0].agent;
+        address snapshotGuard = domains[0].agents[1];
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        // Another Guard signs the snapshot
+        bytes memory guardSignature;
+        (snapPayload, guardSignature) = signSnapshot(snapshotGuard, rawSnap);
+        notarySig = signSnapshot(notary, snapPayload);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        openTestDispute({guardIndex: agentIndex[reportGuard], notaryIndex: agentIndex[notary]});
+    }
+
+    /// @dev Resolves test dispute above in favor of the Notary.
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
+    function test_submitSnapshot_revert_notaryWonDisputeTimeout() public {
+        (bytes memory snapPayload, bytes memory notarySig) = prepareSubmitSnapshotDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        inbox.submitSnapshot(snapPayload, notarySig);
+    }
+
+    function test_submitSnapshot_afterNotaryDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory notarySig) = prepareSubmitSnapshotDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        inbox.submitSnapshot(snapPayload, notarySig);
+        (bytes memory snapPayload_,) = ISnapshotHub(summit).getNotarySnapshot(0);
+        assertEq(snapPayload_, snapPayload);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

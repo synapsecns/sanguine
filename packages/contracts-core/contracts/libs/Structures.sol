@@ -54,6 +54,16 @@ enum DisputeFlag {
     Slashed
 }
 
+/// @notice Struct for storing dispute status of an agent.
+/// @param flag         Dispute flag: None/Pending/Slashed.
+/// @param openedAt     Timestamp when the latest agent dispute was opened (zero if not opened).
+/// @param resolvedAt   Timestamp when the latest agent dispute was resolved (zero if not resolved).
+struct DisputeStatus {
+    DisputeFlag flag;
+    uint40 openedAt;
+    uint40 resolvedAt;
+}
+
 // ════════════════════════════════ DESTINATION ════════════════════════════════
 
 /// @notice Struct representing the status of Destination contract.
