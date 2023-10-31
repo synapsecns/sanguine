@@ -2,7 +2,10 @@ import { useMemo, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { waitForTransaction, Address } from '@wagmi/core'
 import { useAppDispatch } from '@/store/hooks'
-import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
+import {
+  removePendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+} from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
@@ -150,6 +153,8 @@ export const PendingTransaction = ({
           hash: transactionHash as Address,
         }).catch((error) => {
           console.error('update resolved transaction failed: ', error)
+
+          dispatch(removePendingBridgeTransaction(startedTimestamp))
         })
 
         if (resolvedTransaction) {
