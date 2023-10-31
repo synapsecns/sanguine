@@ -152,7 +152,7 @@ export const PendingTransaction = ({
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
         }).catch((error) => {
-          console.error('update resolved transaction failed: ', error)
+          console.error('resolving transaction failed: ', error)
 
           dispatch(removePendingBridgeTransaction(startedTimestamp))
         })
