@@ -59,7 +59,7 @@ type ExecutorDBReader interface {
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask DBState) (*agentsTypes.State, error)
 	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-	GetStateMetadata(ctx context.Context, stateMask DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error)
+	GetStateMetadata(ctx context.Context, stateMask DBState) (proof *json.RawMessage, stateIndex *uint32, err error)
 	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
 	// a specified chain ID.
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
@@ -75,7 +75,7 @@ type ExecutorDBReader interface {
 	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
 	// 1. Get all states that are within a nonce range.
 	// 2. Get the state with the earliest attestation associated to it.
-	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error)
+	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, *string, error)
 }
 
 // ExecutorDB is the interface for the executor database.

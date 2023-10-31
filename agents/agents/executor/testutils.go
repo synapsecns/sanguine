@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
@@ -51,8 +52,8 @@ func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) 
 }
 
 // VerifyStateMerkleProof verifies state merkle proof.
-func (e Executor) VerifyStateMerkleProof(ctx context.Context, state types.State) (bool, error) {
-	return e.verifyStateMerkleProof(ctx, state)
+func (e Executor) VerifyStateMerkleProof(ctx context.Context, state types.State, snapshotRoot string) (bool, error) {
+	return e.verifyStateMerkleProof(ctx, state, snapshotRoot)
 }
 
 // VerifyMessageOptimisticPeriod verifies message optimistic period.

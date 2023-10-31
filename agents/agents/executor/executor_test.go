@@ -91,28 +91,29 @@ func (e *ExecutorSuite) TestVerifyState() {
 
 	root, proofs, err := snapshot.SnapshotRootAndProofs()
 	e.Nil(err)
+	rootStr := common.BytesToHash(root[:]).String()
 
 	// Insert the states into the database.
 	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, 5)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
+	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0, rootStr)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state1)
+	inTree1, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state1, rootStr)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state2)
+	inTree2, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state2, rootStr)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTree3, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state3)
+	inTree3, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state3, rootStr)
 	e.Nil(err)
 	e.True(inTree3)
 
-	inTreeFail, err := exec.VerifyStateMerkleProof(e.GetTestContext(), failState)
+	inTreeFail, err := exec.VerifyStateMerkleProof(e.GetTestContext(), failState, rootStr)
 	e.Nil(err)
 	e.False(inTreeFail)
 }
