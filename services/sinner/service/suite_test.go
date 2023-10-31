@@ -110,6 +110,7 @@ func (t *ServiceSuite) SetupSuite() {
 }
 
 func (t *ServiceSuite) setupMysqlDB() {
+	t.T().Helper()
 	// skip if mysql test disabled, this really only needs to be run in ci
 	// skip if mysql test disabled
 	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
@@ -135,7 +136,7 @@ func (t *ServiceSuite) setupMysqlDB() {
 	mysql.MaxOpenConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetSuiteContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
