@@ -229,8 +229,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactionsWithFallback &&
             pendingAwaitingCompletionTransactionsWithFallback.map(
-              (transaction: BridgeTransaction) => (
+              (transaction: BridgeTransaction, key: number) => (
                 <PendingTransaction
+                  key={key}
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time}
@@ -325,8 +326,9 @@ export const PendingTransactionAwaitingIndexing = () => {
   return (
     <>
       {pendingBridgeTransactions.map(
-        (transaction: PendingBridgeTransaction) => (
+        (transaction: PendingBridgeTransaction, key: number) => (
           <PendingTransaction
+            key={key}
             connectedAddress={address as Address}
             originChain={transaction.originChain as Chain}
             originToken={transaction.originToken as Token}
