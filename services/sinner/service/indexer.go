@@ -53,7 +53,7 @@ func getBackoffConfig() *backoff.Backoff {
 	}
 }
 
-func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, map[string]types.TxSupplementalInfo, error) {
+func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64, endBlock uint64, contractAddress common.Address, page int) ([]ethTypes.Log, map[string]types.TxSupplementalInfo, error) {
 	b := getBackoffConfig()
 	timeout := time.Duration(0)
 	for {
@@ -61,20 +61,12 @@ func (c ChainIndexer) getScribeData(parentCtx context.Context, startBlock uint64
 		case <-parentCtx.Done():
 			return nil, nil, fmt.Errorf("could not get scribe data from block %d and %d. Error: %w", startBlock, endBlock, parentCtx.Err())
 		case <-time.After(timeout):
-			logs, err := c.fetcher.FetchLogsInRange(parentCtx, c.config.ChainID, startBlock, endBlock, contractAddress)
+			logs, txs, err := c.fetcher.FetchLogsAndTransactionsRange(parentCtx, c.config.ChainID, startBlock, endBlock, contractAddress, page)
 			if err != nil {
-				logger.ReportSinnerError(fmt.Errorf("could not get logs %w", err), c.config.ChainID, logger.ScribeFetchFailure)
+				logger.ReportSinnerError(fmt.Errorf("could not get logs and txs %w", err), c.config.ChainID, logger.ScribeFetchFailure)
 				timeout = b.Duration()
 				continue
 			}
-
-			txs, err := c.fetcher.FetchTxsInRange(parentCtx, c.config.ChainID, startBlock, endBlock)
-			if err != nil {
-				logger.ReportSinnerError(fmt.Errorf("could not get txs %w", err), c.config.ChainID, logger.ScribeFetchFailure)
-				timeout = b.Duration()
-				continue
-			}
-
 			txMap := make(map[string]types.TxSupplementalInfo)
 			for _, tx := range txs {
 				txMap[tx.TxHash] = tx
@@ -139,7 +131,7 @@ func (c ChainIndexer) indexContractEvents(contractCtx context.Context, contract 
 			if err != nil {
 				return err
 			}
-
+			fmt.Println("SSS")
 			if err := c.processBlocksInRange(contractCtx, startHeight, endHeight, contract, eventParser); err != nil {
 				return err
 			}
@@ -185,26 +177,27 @@ func (c ChainIndexer) fetchBlockRange(contractCtx context.Context, contract inde
 
 // processBlocksInRange handles all the core indexing logic and processes all blocks in the range for the contract.
 func (c ChainIndexer) processBlocksInRange(contractCtx context.Context, startHeight uint64, endHeight uint64, contract indexerConfig.ContractConfig, eventParser types.EventParser) error {
-	for currentHeight := startHeight; currentHeight <= endHeight; currentHeight += c.config.FetchBlockIncrement {
-		if currentHeight > endHeight {
-			currentHeight = endHeight
-		}
+	currPage := 1
 
-		endFetchRange := currentHeight + c.config.FetchBlockIncrement
-		if endFetchRange > endHeight {
-			endFetchRange = endHeight
-		}
-
-		logs, txs, contractErr := c.getScribeData(contractCtx, currentHeight, endFetchRange, common.HexToAddress(contract.Address))
+	// Loop until all logs are processed in the provided range.
+	for {
+		logs, txs, contractErr := c.getScribeData(contractCtx, startHeight, endHeight, common.HexToAddress(contract.Address), currPage)
 		if contractErr != nil {
 			return fmt.Errorf("error getting scribe data: %w", contractErr)
 		}
-		eventParser.UpdateTxMap(txs)
+
+		// No more logs to process, finished draining logs/txs with pagination.
+		if len(logs) == 0 {
+			return nil
+		}
 
 		for _, log := range logs {
-			currentLog := log
+			tx, ok := txs[log.TxHash.String()]
+			if !ok {
+				tx = types.TxSupplementalInfo{}
+			}
 			contractErr = retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
-				parseErr := eventParser.ParseAndStore(parentCtx, currentLog)
+				parseErr := eventParser.ParseAndStore(parentCtx, log, tx)
 				if parseErr != nil {
 					return fmt.Errorf("error parsing and storing event: %w", parseErr)
 				}
@@ -216,9 +209,10 @@ func (c ChainIndexer) processBlocksInRange(contractCtx context.Context, startHei
 			}
 		}
 
-		height := currentHeight
+		// Store last indexed block number
+		currentHeight := logs[len(logs)-1].BlockNumber
 		err := retry.WithBackoff(contractCtx, func(parentCtx context.Context) error {
-			storeErr := c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, height)
+			storeErr := c.eventDB.StoreLastIndexed(parentCtx, common.HexToAddress(contract.Address), c.config.ChainID, currentHeight)
 			if storeErr != nil {
 				return fmt.Errorf("error storing last indexed: %w", storeErr)
 			}
@@ -228,7 +222,8 @@ func (c ChainIndexer) processBlocksInRange(contractCtx context.Context, startHei
 		if err != nil {
 			return fmt.Errorf("error storing last indexed: %w", err)
 		}
-	}
 
-	return nil
+		// Move to next page
+		currPage++
+	}
 }

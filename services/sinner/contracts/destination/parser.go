@@ -25,8 +25,6 @@ type parserImpl struct {
 	db db.EventDB
 	// chainID is the chain ID
 	chainID uint32
-	// txMap is a map of tx hashes to tx data, exported for testing.
-	txMap map[string]types.TxSupplementalInfo
 }
 
 // NewParser creates a new parser for the origin contract.
@@ -52,26 +50,15 @@ func NewParser(destinationAddress common.Address, db db.EventDB, chainID uint32)
 	return parser, nil
 }
 
-// UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
-// This function is not concurrency safe, and is intended to be used before using ParseAndStore.
-func (p *parserImpl) UpdateTxMap(txMap map[string]types.TxSupplementalInfo) {
-	p.txMap = txMap
-}
-
-// UnsafeGetTXMap gets the tx map strictly for testing purposes.
-func (p *parserImpl) UnsafeGetTXMap() map[string]types.TxSupplementalInfo {
-	return p.txMap
-}
-
 // ParseAndStore parses and stores the log.
-func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
+func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log, tx types.TxSupplementalInfo) error {
 	eventType, ok := p.parser.EventType(log)
 
 	if !ok {
 		logger.ReportSinnerError(fmt.Errorf("unknown execution hub log topic"), 0, logger.UnknownTopic)
 	}
 	if eventType == destination.ExecutedEvent {
-		executedEvent, err := p.parseExecuted(log)
+		executedEvent, err := p.parseExecuted(log, tx)
 		if err != nil {
 			return fmt.Errorf("error while parsing executed event. Err: %w", err)
 		}
@@ -104,7 +91,7 @@ func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 }
 
 // ParseExecuted parses the sent event.
-func (p *parserImpl) parseExecuted(log ethTypes.Log) (*model.Executed, error) {
+func (p *parserImpl) parseExecuted(log ethTypes.Log, tx types.TxSupplementalInfo) (*model.Executed, error) {
 	iFace, err := p.filterer.ParseExecuted(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse executed log. err: %w", err)
@@ -118,8 +105,8 @@ func (p *parserImpl) parseExecuted(log ethTypes.Log) (*model.Executed, error) {
 		RemoteDomain:    iFace.RemoteDomain,
 		Success:         iFace.Success,
 		ChainID:         p.chainID,
-		Timestamp:       uint64(p.txMap[iFace.Raw.TxHash.String()].Timestamp),
-		Sender:          p.txMap[iFace.Raw.TxHash.String()].Sender,
+		Timestamp:       uint64(tx.Timestamp),
+		Sender:          tx.Sender,
 	}
 	return &parsedEvent, nil
 }

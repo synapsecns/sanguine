@@ -12,7 +12,36 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
     removed
   }
 }
-
+query GetLogsAndTransactionsRange ($chain_id: Int!, $floor_block: Int!, $ceiling_block: Int!, $page: Int!, $contract_address: String!) {
+  response: transactionsRange (chain_id: $chain_id, start_block: $floor_block, end_block: $ceiling_block, page: $page) {
+    chain_id
+    tx_hash
+    protected
+    type
+    data
+    gas
+    gas_price
+    gas_tip_cap
+    gas_fee_cap
+    value
+    nonce
+    to
+    timestamp
+    sender
+  }
+  logsRange (chain_id: $chain_id, start_block: $ceiling_block, end_block: $floor_block, page: $page, contract_address: $contract_address) {
+    contract_address
+    chain_id
+    topics
+    data
+    block_number
+    tx_hash
+    tx_index
+    block_hash
+    index
+    removed
+  }
+}
 query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
   response: transactionsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
     chain_id

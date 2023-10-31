@@ -25,8 +25,6 @@ type parserImpl struct {
 	parser origin.Parser
 	// db is the database
 	db db.EventDB
-	// txMap is a map of tx hashes to tx data. Exported for testing.
-	txMap map[string]sinnerTypes.TxSupplementalInfo
 	// chainID is the chainID of the underlying chain
 	chainID uint32
 }
@@ -54,19 +52,8 @@ func NewParser(originAddress common.Address, db db.EventDB, chainID uint32) (sin
 	return parser, nil
 }
 
-// UpdateTxMap updates the tx map so that scribe does not have to be requested for each log.
-// This function is not concurrency safe, and is intended to be used before using ParseAndStore.
-func (p *parserImpl) UpdateTxMap(txMap map[string]sinnerTypes.TxSupplementalInfo) {
-	p.txMap = txMap
-}
-
-// UnsafeGetTXMap gets the tx map strictly for testing purposes.
-func (p *parserImpl) UnsafeGetTXMap() map[string]sinnerTypes.TxSupplementalInfo {
-	return p.txMap
-}
-
 // ParseAndStore parses and stores the log.
-func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error {
+func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log, tx sinnerTypes.TxSupplementalInfo) error {
 	eventType, ok := p.parser.EventType(log)
 
 	if !ok {
@@ -74,7 +61,7 @@ func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 		return nil
 	}
 	if eventType == origin.SentEvent {
-		parsedEvent, err := p.parseSent(log)
+		parsedEvent, err := p.parseSent(log, tx)
 		if err != nil {
 			return fmt.Errorf("error while parsing origin sent event. Err: %w", err)
 		}
@@ -106,7 +93,7 @@ func (p *parserImpl) ParseAndStore(ctx context.Context, log ethTypes.Log) error 
 }
 
 // parseSent parses the sent event.
-func (p *parserImpl) parseSent(log ethTypes.Log) (*model.OriginSent, error) {
+func (p *parserImpl) parseSent(log ethTypes.Log, tx sinnerTypes.TxSupplementalInfo) (*model.OriginSent, error) {
 	iFace, err := p.filterer.ParseSent(log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sent log. err: %w", err)
@@ -120,8 +107,8 @@ func (p *parserImpl) parseSent(log ethTypes.Log) (*model.OriginSent, error) {
 		Message:            common.Bytes2Hex(iFace.Message),
 		Nonce:              iFace.Nonce,
 		MessageHash:        common.Bytes2Hex(iFace.MessageHash[:]),
-		Timestamp:          uint64(p.txMap[iFace.Raw.TxHash.String()].Timestamp),
-		Sender:             p.txMap[iFace.Raw.TxHash.String()].Sender,
+		Timestamp:          uint64(tx.Timestamp),
+		Sender:             tx.Sender,
 	}
 
 	parsedEvent.ChainID = p.chainID
