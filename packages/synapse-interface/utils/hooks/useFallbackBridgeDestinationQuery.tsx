@@ -75,7 +75,7 @@ export const useFallbackBridgeDestinationQuery = ({
         kappa: null,
         timestamp: null,
         bridgeType: null,
-      })
+      }).unsubscribe()
     }
   }, [useFallback, validQueryParams])
 

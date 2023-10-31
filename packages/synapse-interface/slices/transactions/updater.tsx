@@ -126,12 +126,7 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [
-    address,
-    masqueradeActive,
-    searchedBalancesAndAllowances,
-    isWindowFocused,
-  ])
+  }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
   // Load fetched historical transactions into state along with fetch status
   useEffect(() => {

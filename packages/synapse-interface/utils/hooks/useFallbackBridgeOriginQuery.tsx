@@ -63,7 +63,7 @@ export const useFallbackBridgeOriginQuery = ({
         chainId: null,
         txnHash: null,
         bridgeType: null,
-      })
+      }).unsubscribe()
     }
   }, [useFallback, validQueryParams, queryTransactionAlreadyStored])
 
