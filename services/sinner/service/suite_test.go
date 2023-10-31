@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"database/sql"
+	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
@@ -20,7 +21,6 @@ import (
 
 	"math/big"
 	"net/http"
-	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -50,7 +50,6 @@ import (
 type ServiceSuite struct {
 	*testsuite.TestSuite
 	dbs                    []db.TestEventDB
-	sqlite                 db.TestEventDB
 	logIndex               atomic.Int64
 	scribeDB               scribedb.EventDB
 	scribeDBPath           string
@@ -77,6 +76,16 @@ func NewEventServiceSuite(tb testing.TB) *ServiceSuite {
 	}
 }
 
+func (t *ServiceSuite) SetupTest() {
+	t.TestSuite.SetupTest()
+
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
+	Nil(t.T(), err)
+
+	t.dbs = []db.TestEventDB{sqliteStore}
+	t.setupMysqlDB()
+}
+
 func (t *ServiceSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 	t.logIndex.Store(0)
@@ -99,8 +108,6 @@ func (t *ServiceSuite) SetupSuite() {
 	Nil(t.T(), err)
 
 	t.dbs = []db.TestEventDB{sqliteStore}
-	t.sqlite = sqliteStore
-	t.setupMysqlDB()
 	t.originChainID = 421614
 	t.destinationChainID = 444
 	t.scribeDB, t.scribeFetcher = t.CreateScribeFetcher(t.GetSuiteContext())
@@ -110,7 +117,6 @@ func (t *ServiceSuite) SetupSuite() {
 }
 
 func (t *ServiceSuite) setupMysqlDB() {
-	t.T().Helper()
 	// skip if mysql test disabled, this really only needs to be run in ci
 	// skip if mysql test disabled
 	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
@@ -136,7 +142,7 @@ func (t *ServiceSuite) setupMysqlDB() {
 	mysql.MaxOpenConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetSuiteContext(), connString, t.metrics, false)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)

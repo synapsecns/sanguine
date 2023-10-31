@@ -53,10 +53,10 @@ func NewSinner(eventDB db.EventDB, config indexerConfig.Config, handler metrics.
 	}
 
 	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL), handler)
-
+	refreshRate := time.Duration(config.DefaultRefreshRate) * time.Second
 	// Initialize each chain backfiller.
 	for _, chainConfig := range config.Chains {
-		chainIndexer, err := getChainIndexer(eventDB, chainConfig.ChainID, fetcher, chainConfig)
+		chainIndexer, err := getChainIndexer(eventDB, chainConfig.ChainID, fetcher, chainConfig, refreshRate)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain indexer: %w", err)
 		}
@@ -119,7 +119,7 @@ func (e Sinner) Index(ctx context.Context) error {
 }
 
 // nolint gocognit,cyclop
-func getChainIndexer(eventDB db.EventDB, chainID uint32, fetcher fetcherpkg.ScribeFetcher, chainConfig indexerConfig.ChainConfig) (*ChainIndexer, error) {
+func getChainIndexer(eventDB db.EventDB, chainID uint32, fetcher fetcherpkg.ScribeFetcher, chainConfig indexerConfig.ChainConfig, refreshRate time.Duration) (*ChainIndexer, error) {
 	parsers := Parsers{
 		ChainID: chainID,
 	}
@@ -140,7 +140,7 @@ func getChainIndexer(eventDB db.EventDB, chainID uint32, fetcher fetcherpkg.Scri
 		}
 	}
 
-	chainIndexer := NewChainIndexer(eventDB, parsers, fetcher, chainConfig)
+	chainIndexer := NewChainIndexer(eventDB, parsers, fetcher, chainConfig, refreshRate)
 
 	return chainIndexer, nil
 }

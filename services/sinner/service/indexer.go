@@ -28,10 +28,12 @@ type ChainIndexer struct {
 	fetcher fetcher.ScribeFetcher
 	// config is the config for the backfiller.
 	config indexerConfig.ChainConfig
+	// default refresh rate
+	refreshRate time.Duration
 }
 
 // NewChainIndexer creates a new chain indexer.
-func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig) *ChainIndexer {
+func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.ScribeFetcher, config indexerConfig.ChainConfig, refreshRate time.Duration) *ChainIndexer {
 	if config.FetchBlockIncrement < 1 {
 		config.FetchBlockIncrement = 10000
 	}
@@ -40,6 +42,7 @@ func NewChainIndexer(eventDB db.EventDB, parsers Parsers, fetcher fetcher.Scribe
 		parsers,
 		fetcher,
 		config,
+		refreshRate,
 	}
 	return &chainIndexer
 }
@@ -120,18 +123,15 @@ func (c ChainIndexer) createEventParser(contract indexerConfig.ContractConfig) (
 
 // indexContractEvents indexes all events for a contract.
 func (c ChainIndexer) indexContractEvents(contractCtx context.Context, contract indexerConfig.ContractConfig, eventParser types.EventParser) error {
-	refreshRate := time.Duration(1)
-
 	for {
 		select {
 		case <-contractCtx.Done():
 			return fmt.Errorf("could not index contract. Error: %w", contractCtx.Err())
-		case <-time.After(refreshRate):
+		case <-time.After(c.refreshRate):
 			startHeight, endHeight, err := c.fetchBlockRange(contractCtx, contract)
 			if err != nil {
 				return err
 			}
-			fmt.Println("SSS")
 			if err := c.processBlocksInRange(contractCtx, startHeight, endHeight, contract, eventParser); err != nil {
 				return err
 			}

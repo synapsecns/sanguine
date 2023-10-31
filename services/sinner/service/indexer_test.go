@@ -66,7 +66,7 @@ func (t *ServiceSuite) TestChainIndexer() {
 		originParser, err := origin.NewParser(common.HexToAddress(config.Contracts[0].Address), testDB, t.originChainID)
 		Nil(t.T(), err)
 		parsers.OriginParser = originParser
-		chainIndexer := service.NewChainIndexer(testDB, parsers, t.scribeFetcher, config)
+		chainIndexer := service.NewChainIndexer(testDB, parsers, t.scribeFetcher, config, 1*time.Second)
 		originEvent := model.OriginSent{}
 		indexingCtx, cancelIndexing := context.WithCancel(ctx)
 		go func() {
