@@ -8,7 +8,6 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { RootState } from '@/store/store'
 
 import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
-import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const BridgeTransactionButton = ({ executeBridge }) => {
   const [isConnected, setIsConnected] = useState(false)
@@ -95,11 +94,6 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
       ...buttonProperties,
       toolTipLabel: 'Input value required',
     }
-  } else if (!isLoading && bridgeQuote?.feeAmount === 0n && hasInputAmount) {
-    buttonProperties = {
-      ...buttonProperties,
-      toolTipLabel: 'Amount must be greater than fee',
-    }
   } else if (isConnected && !hasEnoughBalance) {
     buttonProperties = {
       ...buttonProperties,
@@ -114,11 +108,6 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
     buttonProperties = {
       ...buttonProperties,
       toolTipLabel: 'Invalid destination address',
-    }
-  } else if (!hasSelectedNetwork && hasInputAmount) {
-    buttonProperties = {
-      ...buttonProperties,
-      toolTipLabel: `Switch to ${CHAINS_BY_ID[fromChainId].name}`,
     }
   } else if (isConnected && !hasEnoughApproved) {
     buttonProperties = {

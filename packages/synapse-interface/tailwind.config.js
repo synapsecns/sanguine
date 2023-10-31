@@ -113,7 +113,7 @@ module.exports = {
         // updated colors
         strong: '#FCFCFD',
         primary: '#EEEDEF',
-        secondary: '#C0BCC2',
+        secondary: '#BFBCC2',
         separator: '#565058',
         surface: '#343036',
         tint: '#252226',

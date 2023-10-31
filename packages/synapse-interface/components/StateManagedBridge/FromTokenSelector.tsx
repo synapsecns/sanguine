@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeShowBorder } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
@@ -11,14 +11,23 @@ import {
 
 export const FromTokenSelector = () => {
   const dispatch = useDispatch()
-
-  const { fromToken } = useBridgeState()
+  const { fromToken, toToken } = useBridgeState()
+  const { showFromTokenBorder } = useBridgeShowBorder()
+  const BASE_BUTTON_PROPERTIES = 'p-md rounded-sm bg-[#565058] border-2'
 
   let buttonContent
+  let buttonClassName
 
   if (fromToken) {
     const src = fromToken?.icon?.src
     const symbol = fromToken?.symbol
+
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      border-transparent
+      ${getMenuItemHoverBgForCoin(fromToken?.color)}
+      ${getBorderStyleForCoinHover(fromToken?.color)}
+    `
 
     buttonContent = (
       <div className="flex items-center space-x-2">
@@ -32,6 +41,15 @@ export const FromTokenSelector = () => {
       </div>
     )
   } else {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      ${
+        showFromTokenBorder
+          ? 'border-synapsePurple hover:border-secondary'
+          : 'border-transparent hover:border-secondary'
+      }
+    `
+
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
@@ -45,13 +63,7 @@ export const FromTokenSelector = () => {
   return (
     <button
       data-test-id="bridge-origin-token"
-      className={`
-        p-md rounded-sm min-w-[80px]
-        bg-[#565058]
-        ${getMenuItemHoverBgForCoin(fromToken?.color)}
-        border border-transparent
-        ${getBorderStyleForCoinHover(fromToken?.color)}
-      `}
+      className={buttonClassName}
       onClick={() => dispatch(setShowFromTokenListOverlay(true))}
     >
       {buttonContent}

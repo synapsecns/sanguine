@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeShowBorder, useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
@@ -11,14 +11,24 @@ import {
 
 export const ToTokenSelector = () => {
   const dispatch = useDispatch()
-
-  const { toToken } = useBridgeState()
+  const { fromToken, toToken } = useBridgeState()
+  const { showToTokenBorder } = useBridgeShowBorder()
+  const BASE_BUTTON_PROPERTIES =
+    'p-md rounded-sm min-w-[80px] bg-[#565058] border-2'
 
   let buttonContent
+  let buttonClassName
 
   if (toToken) {
     const src = toToken?.icon?.src
     const symbol = toToken?.symbol
+
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      border-transparent
+      ${getMenuItemHoverBgForCoin(toToken?.color)}
+      ${getBorderStyleForCoinHover(toToken?.color)}
+    `
 
     buttonContent = (
       <div className="flex items-center space-x-2">
@@ -32,6 +42,14 @@ export const ToTokenSelector = () => {
       </div>
     )
   } else {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      ${
+        showToTokenBorder
+          ? 'border-synapsePurple hover:border-secondary'
+          : 'border-transparent hover:border-secondary'
+      }
+    `
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
@@ -45,13 +63,7 @@ export const ToTokenSelector = () => {
   return (
     <button
       data-test-id="bridge-destination-token"
-      className={`
-        p-md rounded-sm min-w-[80px]
-        bg-[#565058]
-        ${getMenuItemHoverBgForCoin(toToken?.color)}
-        border border-transparent
-        ${getBorderStyleForCoinHover(toToken?.color)}
-      `}
+      className={buttonClassName}
       onClick={() => dispatch(setShowToTokenListOverlay(true))}
     >
       {buttonContent}

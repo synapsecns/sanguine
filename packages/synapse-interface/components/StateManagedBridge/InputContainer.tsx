@@ -31,7 +31,8 @@ export const InputContainer = () => {
   const dispatch = useDispatch()
   const { chain } = useNetwork()
   const { fromChainId, fromToken, fromValue } = useBridgeState()
-  const { hasValidSelections, hasValidRoute, isConnected } = useBridgeStatus()
+  const { hasInputAmount, hasValidSelections, hasValidRoute, isConnected } =
+    useBridgeStatus()
 
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
@@ -49,6 +50,13 @@ export const InputContainer = () => {
       setShowValue(initialState.fromValue)
     }
   }, [fromValue, inputRef, fromChainId, fromToken])
+
+  useEffect(() => {
+    if (hasValidSelections && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [hasValidSelections])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -76,7 +84,12 @@ export const InputContainer = () => {
       )
     } else if (hasMounted && isConnected && fromChainId === chain.id) {
       return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+    } else if (
+      hasMounted &&
+      isConnected &&
+      fromChainId &&
+      fromChainId !== chain.id
+    ) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [
@@ -112,7 +125,7 @@ export const InputContainer = () => {
                 <input
                   ref={inputRef}
                   pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
+                  disabled={!hasValidSelections && !hasInputAmount}
                   className={`
                   text-white text-opacity-80 text-xl font-medium
                     p-0 border-none bg-transparent max-w-[190px]
@@ -127,6 +140,7 @@ export const InputContainer = () => {
                   minLength={1}
                   maxLength={79}
                   style={{ display: 'table-cell', width: '100%' }}
+                  onClick={() => inputRef.current && inputRef.current.select()}
                 />
               </div>
               {hasMounted && <ShowLabel />}
@@ -301,6 +315,7 @@ const ApproveButton = ({ disabled }) => {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
   const { fromChainId, fromToken, bridgeQuote } = useBridgeState()
+  const { onSelectedChain, hasEnoughApproved } = useBridgeStatus()
 
   const approveTxn = async () => {
     setIsApproving(true)
@@ -332,15 +347,27 @@ const ApproveButton = ({ disabled }) => {
     }
   }
 
+  const borderStyle = useMemo(() => {
+    if (isApproving) {
+      return 'border-secondary'
+    } else if (onSelectedChain && !hasEnoughApproved) {
+      return 'border-synapsePurple'
+    } else {
+      return 'border-secondary'
+    }
+  }, [onSelectedChain, hasEnoughApproved, isApproving])
+
   return (
     <button
       className={`
         w-[89px] h-[32px]
-        flex items-center mr-2 py-1 justify-center
-        text-sm text-white
-        border rounded-sm
-        ${disabled ? 'border-separator opacity-50' : 'border-synapsePurple'}
+        flex items-center mr-2 py-lg px-md justify-center
+        text-sm text-secondary
+        border-2 rounded-sm
+        ${borderStyle}
+        ${disabled ? 'opacity-50' : 'hover:border-secondary'}
       `}
+      disabled={disabled}
       onClick={approveTxn}
     >
       {isApproving ? <LoaderIcon /> : 'Approve'}

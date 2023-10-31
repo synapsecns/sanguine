@@ -12,15 +12,15 @@ export default function MiniMaxButton({
 }) {
   const baseClassName = `
     w-[89px] h-[32px]
-    flex items-center mr-2 py-1 justify-center
-    text-sm text-white
+    flex items-center mr-2 py-lg px-md justify-center
+    text-sm text-secondary
     border rounded-sm
-    bg-bgLighter border border-transparent
+    bg-bgLighter border-transparent
   `
 
   const className = disabled
     ? `${baseClassName} opacity-60 cursor-default`
-    : `${baseClassName} hover:border-[#AC8FFF]`
+    : `${baseClassName} hover:border-secondary`
 
   return (
     <Button

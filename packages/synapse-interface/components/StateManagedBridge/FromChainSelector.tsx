@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeShowBorder, useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
@@ -16,10 +16,21 @@ export const FromChainSelector = () => {
   const dispatch = useDispatch()
   const { fromChainId } = useBridgeState()
   const fromChain = CHAINS_BY_ID[fromChainId]
+  const { showFromChainBorder } = useBridgeShowBorder()
+  const BASE_BUTTON_PROPERTIES = 'bg-transparent p-md border-2 rounded-sm'
 
   let buttonContent
+  let buttonClassName
 
   if (fromChainId) {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES} 
+      border-transparent
+      ${getNetworkHover(fromChain?.color)}
+      ${getNetworkButtonBgClassNameActive(fromChain?.color)}
+      ${getNetworkButtonBorderActive(fromChain?.color)}
+      ${getNetworkButtonBorderHover(fromChain?.color)}
+    `
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div>
@@ -37,6 +48,15 @@ export const FromChainSelector = () => {
       </div>
     )
   } else {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      ${
+        showFromChainBorder
+          ? 'border-synapsePurple hover:border-secondary'
+          : 'border-transparent hover:border-secondary'
+      }
+    `
+
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
@@ -51,16 +71,7 @@ export const FromChainSelector = () => {
   return (
     <button
       data-test-id="bridge-origin-chain-list-button"
-      className={`
-        bg-transparent
-        p-md
-        ${getNetworkHover(fromChain?.color)}
-        ${getNetworkButtonBgClassNameActive(fromChain?.color)}
-        border border-transparent
-        ${getNetworkButtonBorderActive(fromChain?.color)}
-        ${getNetworkButtonBorderHover(fromChain?.color)}
-        rounded-sm
-      `}
+      className={buttonClassName}
       onClick={() => dispatch(setShowFromChainListOverlay(true))}
     >
       <div className="flex items-center">{buttonContent}</div>

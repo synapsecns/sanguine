@@ -42,45 +42,12 @@ export const ConnectedIndicator = () => {
   )
 }
 
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
-
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
-      onClick={openConnectModal}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
-    </button>
-  )
-}
-
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
 
-  const { hasEnoughBalance, hasInputAmount } = useBridgeStatus()
+  const { hasEnoughBalance, hasInputAmount, hasValidSelections } =
+    useBridgeStatus()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -103,14 +70,16 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       data-test-id="connect-button"
       className={`
         flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-sm
-        text-center transform-gpu transition-all duration-75
-        border
+        text-secondary py-lg px-md rounded-sm
+        text-center
+        border-2
+        hover:border-secondary
         ${
-          hasEnoughBalance && hasInputAmount
-            ? 'border-synapsePurple'
+          hasInputAmount && hasValidSelections
+            ? 'border-synapsePurple border-[1px]'
             : 'border-separator'
         } 
+        ${isConnecting ? 'border-transparent' : ''}
         h-8
       `}
       onClick={handleConnectNetwork}
@@ -129,7 +98,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-row text-sm">Connect chain</div>
+        <div className="flex text-sm">Connect chain</div>
       )}
     </button>
   )
@@ -154,34 +123,20 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
-                        style={
-                          highlight
-                            ? {
-                                background:
-                                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                              }
-                            : {}
-                        }
                         className={`
-                          flex items-center mr-2 py-1 px-2
-                          text-sm text-white
-                          border rounded-sm
-                          hover:border-synapsePurple
+                          flex items-center mr-2 py-md px-md
+                          text-sm text-secondary
+                          border-2 rounded-sm 
+                          hover:border-secondary
                           ${
                             highlight
                               ? 'border-synapsePurple'
-                              : 'border-transparent'
+                              : 'border-separator'
                           }
                         `}
                         onClick={openConnectModal}
                       >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
-                        Connect
+                        Connect wallet
                       </button>
                     )
                   }

@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeShowBorder } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
@@ -15,11 +15,23 @@ import {
 export const ToChainSelector = () => {
   const dispatch = useDispatch()
   const { toChainId } = useBridgeState()
+  const { showToChainBorder } = useBridgeShowBorder()
   const toChain = CHAINS_BY_ID[toChainId]
+  const BASE_BUTTON_PROPERTIES = 'bg-transparent p-md border-2 rounded-sm'
 
   let buttonContent
+  let buttonClassName
 
   if (toChainId) {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES} 
+      border-transparent
+      ${getNetworkHover(toChain?.color)}
+      ${getNetworkButtonBgClassNameActive(toChain?.color)}
+      ${getNetworkButtonBorderActive(toChain?.color)}
+      ${getNetworkButtonBorderHover(toChain?.color)}
+    `
+
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="">
@@ -37,6 +49,15 @@ export const ToChainSelector = () => {
       </div>
     )
   } else {
+    buttonClassName = `
+      ${BASE_BUTTON_PROPERTIES}
+      ${
+        showToChainBorder
+          ? 'border-synapsePurple hover:border-secondary'
+          : 'border border-transparent hover:border-secondary'
+      }
+    `
+
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="text-left">
@@ -50,16 +71,7 @@ export const ToChainSelector = () => {
 
   return (
     <button
-      className={`
-        bg-transparent
-        p-md
-        ${getNetworkHover(toChain?.color)}
-        ${getNetworkButtonBgClassNameActive(toChain?.color)}
-        border border-transparent
-        ${getNetworkButtonBorderActive(toChain?.color)}
-        ${getNetworkButtonBorderHover(toChain?.color)}
-        rounded-sm
-      `}
+      className={buttonClassName}
       onClick={() => dispatch(setShowToChainListOverlay(true))}
     >
       {buttonContent}
