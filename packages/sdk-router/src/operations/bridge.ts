@@ -118,6 +118,30 @@ export async function bridgeQuote(
 }
 
 /**
+ * Returns the estimated time for a bridge operation from a given origin chain using a given router.
+ * This will be the estimated time for the bridge operation to be completed regardless of the destination chain,
+ * or the bridge token.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param routerAddress - The address of the router deployed on the origin chain.
+ * @returns - The estimated time for a bridge operation.
+ * @throws - Will throw an error if the router address is unknown for the given chain.
+ */
+export function getEstimatedTime(
+  this: SynapseSDK,
+  originChainId: number,
+  routerAddress: string
+): number {
+  if (this.synapseRouterSet.getRouter(originChainId, routerAddress)) {
+    return this.synapseRouterSet.getEstimatedTime(originChainId)
+  }
+  if (this.synapseCCTPRouterSet.getRouter(originChainId, routerAddress)) {
+    return this.synapseCCTPRouterSet.getEstimatedTime(originChainId)
+  }
+  throw new Error('Unknown router address')
+}
+
+/**
  * Gets the chain gas amount for the Synapse bridge.
  *
  * @param chainId The chain ID
