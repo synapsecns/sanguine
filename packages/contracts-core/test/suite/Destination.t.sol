@@ -269,6 +269,7 @@ contract DestinationTest is ExecutionHubTest {
         bytes32 agentRootLM = lightManager.agentRoot();
         vm.assume(firstRA._agentRoot != agentRootLM);
         vm.assume(firstRA.snapRoot != secondRA.snapRoot);
+        vm.assume(secondRA.nonce > firstRA.nonce);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Form a second attestation: Notary 1
