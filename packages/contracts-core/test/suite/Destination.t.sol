@@ -41,8 +41,7 @@ contract DestinationTest is ExecutionHubTest {
         // Check version
         assertEq(dst.version(), LATEST_VERSION, "!version");
         // Check pending Agent Merkle Root
-        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
-        assertFalse(rootPassed);
+        (bool rootPending) = dst.passAgentRoot();
         assertFalse(rootPending);
     }
 
@@ -262,22 +261,34 @@ contract DestinationTest is ExecutionHubTest {
         lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
     }
 
-    function test_acceptAttestation_notAccepted_agentRootUpdated(
+    function test_acceptAttestation_passesAgentRoot(
         RawAttestation memory firstRA,
+        RawAttestation memory secondRA,
         uint32 firstRootSubmittedAt
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
         vm.assume(firstRA._agentRoot != agentRootLM);
+        vm.assume(firstRA.snapRoot != secondRA.snapRoot);
+        vm.assume(secondRA.nonce > firstRA.nonce);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Mock a call from lightInbox, could as well use the empty values as they won't be checked for validity
-        vm.prank(address(lightInbox));
-        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0)));
+        // Form a second attestation: Notary 1
+        RawSnapshot memory rs = Random(secondRA.snapRoot).nextSnapshot();
+        secondRA._snapGasHash = rs.snapGasHash();
+        secondRA.setDataHash();
+        uint256[] memory snapGas = rs.snapGas();
+        address notaryS = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
+        uint256 newRootTimestamp = block.timestamp;
+        assertTrue(lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
             InterfaceDestination(localDestination()).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(index, agentIndex[domains[DOMAIN_LOCAL].agent]);
+        // Dest status should point to the new root
+        assertEq(snapRootTime, newRootTimestamp);
+        assertEq(agentRootTime, newRootTimestamp);
+        assertEq(index, agentIndex[notaryS]);
+        // New agent root should be pending in Destination
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), secondRA._agentRoot);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA._agentRoot);
     }
@@ -321,8 +332,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
         skip(timePassed);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
-        assertFalse(rootPassed);
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         assertTrue(rootPending);
         assertEq(lightManager.agentRoot(), agentRootLM);
     }
@@ -331,8 +341,7 @@ contract DestinationTest is ExecutionHubTest {
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
-        assertTrue(rootPassed);
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         assertFalse(rootPending);
         assertEq(lightManager.agentRoot(), ra._agentRoot);
     }
@@ -366,9 +375,8 @@ contract DestinationTest is ExecutionHubTest {
         bytes32 oldRoot = lightManager.agentRoot();
         prepareAgentRootDisputeTest();
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD - 1);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should not pass the root
-        assertFalse(rootPassed);
         assertEq(lightManager.agentRoot(), oldRoot);
         // Should clear pending
         assertFalse(rootPending);
@@ -379,9 +387,8 @@ contract DestinationTest is ExecutionHubTest {
         bytes32 oldRoot = lightManager.agentRoot();
         prepareAgentRootDisputeTest();
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should not pass the root
-        assertFalse(rootPassed);
         assertEq(lightManager.agentRoot(), oldRoot);
         // Should clear pending
         assertFalse(rootPending);
@@ -396,9 +403,8 @@ contract DestinationTest is ExecutionHubTest {
         skip(DISPUTE_TIMEOUT_NOTARY - 1);
         // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD - 1
         // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY - 1
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should not pass the root
-        assertFalse(rootPassed);
         assertEq(lightManager.agentRoot(), oldRoot);
         // Should not clear pending
         assertTrue(rootPending);
@@ -413,9 +419,8 @@ contract DestinationTest is ExecutionHubTest {
         skip(DISPUTE_TIMEOUT_NOTARY - 1);
         // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD
         // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY - 1
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should not pass the root
-        assertFalse(rootPassed);
         assertEq(lightManager.agentRoot(), oldRoot);
         // Should not clear pending
         assertTrue(rootPending);
@@ -430,9 +435,8 @@ contract DestinationTest is ExecutionHubTest {
         skip(DISPUTE_TIMEOUT_NOTARY);
         // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD - 1
         // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should not pass the root
-        assertFalse(rootPassed);
         assertEq(lightManager.agentRoot(), oldRoot);
         // Should not clear pending
         assertTrue(rootPending);
@@ -446,9 +450,8 @@ contract DestinationTest is ExecutionHubTest {
         skip(DISPUTE_TIMEOUT_NOTARY);
         // Time since attestation was submitted: AGENT_ROOT_OPTIMISTIC_PERIOD
         // Time sinceNotary won the dispute: DISPUTE_TIMEOUT_NOTARY
-        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        bool rootPending = InterfaceDestination(localDestination()).passAgentRoot();
         // Should pass the root
-        assertTrue(rootPassed);
         assertEq(lightManager.agentRoot(), newRoot);
         // Should clear pending
         assertFalse(rootPending);

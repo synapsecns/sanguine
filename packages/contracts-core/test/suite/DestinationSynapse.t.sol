@@ -33,8 +33,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         // Check version
         assertEq(dst.version(), LATEST_VERSION, "!version");
         // Check pending Agent Merkle Root
-        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
-        assertFalse(rootPassed);
+        bool rootPending = dst.passAgentRoot();
         assertFalse(rootPending);
     }
 

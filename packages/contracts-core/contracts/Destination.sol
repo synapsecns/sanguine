@@ -98,10 +98,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
         if (_notaryDisputeTimeout(notaryIndex)) revert DisputeTimeoutNotOver();
         // First, try passing current agent merkle root
-        (bool rootPassed, bool rootPending) = passAgentRoot();
-        // Don't accept attestation, if the agent root was updated in LightManager,
-        // as the following agent check will fail.
-        if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // Check that this Notary hasn't used a more fresh nonce
@@ -112,6 +108,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _saveAttestation(att, notaryIndex, sigIndex);
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
+        bool rootPending = passAgentRoot();
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         _saveGasData(snapGas, notaryIndex);
         return true;
@@ -120,36 +117,36 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═══════════════════════════════════════════ AGENT ROOT QUARANTINE ═══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
+    function passAgentRoot() public returns (bool rootPending) {
         // Agent root is not passed on Synapse Chain, as it could be accessed via BondingManager
-        if (localDomain == synapseDomain) return (false, false);
+        if (localDomain == synapseDomain) return false;
         bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
         bytes32 newRoot = _nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
-        if (oldRoot == newRoot) return (false, false);
+        if (oldRoot == newRoot) return false;
         DestinationStatus memory status = destStatus;
         // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
         // So we just need to check the Dispute status of the Notary
         if (_notaryDisputeExists(status.notaryIndex)) {
             // Remove the pending agent merkle root, as its signer is in dispute
             _nextAgentRoot = oldRoot;
-            return (false, false);
+            return false;
         }
         // If Notary recently won a Dispute, we can optimistically assume that their passed root is valid.
         // However, we need to wait until the Dispute timeout is over, before passing the new root to LightManager.
         if (_notaryDisputeTimeout(status.notaryIndex)) {
             // We didn't pass anything, but there is a pending root
-            return (false, true);
+            return true;
         }
         // Check if agent root optimistic period is over
         if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) {
             // We didn't pass anything, but there is a pending root
-            return (false, true);
+            return true;
         }
         // `newRoot` signer was not disputed, and the root optimistic period is over.
         // Finally, pass the Agent Merkle Root to LightManager
         InterfaceLightManager(address(agentManager)).setAgentRoot(newRoot);
-        return (true, false);
+        return false;
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
