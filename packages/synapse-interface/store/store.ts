@@ -13,7 +13,9 @@ const checkVersionAndResetCache = (): boolean => {
     const persistedStateRaw = localStorage.getItem(`persist:${storageKey}`)
     if (persistedStateRaw) {
       const persistedState = JSON.parse(persistedStateRaw)
-      if (persistedState._persist.version !== persistConfig.version) {
+      const persistedVersion = JSON.parse(persistedState._persist)
+
+      if (persistedVersion.version !== persistConfig.version) {
         return true
       }
     }
@@ -30,7 +32,7 @@ export const store = configureStore({
 })
 
 if (checkVersionAndResetCache()) {
-  console.log('resetting cache')
+  console.log('resetting cache: ', checkVersionAndResetCache())
   store.dispatch(resetReduxCache())
 }
 
