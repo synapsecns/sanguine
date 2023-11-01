@@ -90,7 +90,7 @@ export default function Updater(): null {
    * Will unsubscribe when no valid address provided
    */
   useEffect(() => {
-    if (address && isWindowFocused && !masqueradeActive) {
+    if (address && !masqueradeActive) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -99,11 +99,7 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (
-      masqueradeActive &&
-      isWindowFocused &&
-      searchedBalancesAndAllowances
-    ) {
+    } else if (masqueradeActive && searchedBalancesAndAllowances) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
