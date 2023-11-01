@@ -140,9 +140,13 @@ export const InterruptedServiceBanner = () => {
             <p className="text-md">
               <div>
                 Synapse Explorer and the transaction watcher may not appear
-                during planned maintenance from 0500–1900 UTC. Transactions will
-                still go through as expected. Please confirm transactions using
-                the native explorer for your destination chain during this time.
+                during planned maintenance on 2023-11-01 from 5am - 7pm UTC.
+                <br className="block lg:hidden" />
+                <br className="block lg:hidden" />
+                <div className="hidden lg:inline"> </div>
+                Transactions will still go through as expected. Please confirm
+                transactions using the native explorer for your destination
+                chain during this time.
               </div>
             </p>
           </div>
