@@ -2,7 +2,7 @@ import invariant from 'tiny-invariant'
 
 import { SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
-import { ROUTER_ADDRESS_MAP } from '../constants'
+import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -12,6 +12,16 @@ export class SynapseRouterSet extends RouterSet {
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)
+  }
+
+  /**
+   * @inheritdoc RouterSet.getOriginAmountOut
+   */
+  public getEstimatedTime(chainId: number): number {
+    const medianTime =
+      MEDIAN_TIME_BRIDGE[chainId as keyof typeof MEDIAN_TIME_BRIDGE]
+    invariant(medianTime, `No estimated time for chain ${chainId}`)
+    return medianTime
   }
 
   /**
