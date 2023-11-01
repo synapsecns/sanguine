@@ -178,14 +178,20 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
-      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-        await synapseSDK.bridgeQuote(
-          fromChainId,
-          toChainId,
-          fromToken.addresses[fromChainId],
-          toToken.addresses[toChainId],
-          stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
-        )
+      const {
+        feeAmount,
+        routerAddress,
+        maxAmountOut,
+        originQuery,
+        destQuery,
+        estimatedTime,
+      } = await synapseSDK.bridgeQuote(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
+      )
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
@@ -279,6 +285,7 @@ const StateManagedBridge = () => {
               originQuery: newOriginQuery,
               destQuery: newDestQuery,
             },
+            estimatedTime: estimatedTime,
           })
         )
 

@@ -13,6 +13,7 @@ export const EMPTY_BRIDGE_QUOTE = {
   feeAmount: 0n,
   delta: 0n,
   quotes: { originQuery: null, destQuery: null },
+  estimatedTime: null,
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
