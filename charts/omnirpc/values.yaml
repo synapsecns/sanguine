@@ -100,14 +100,14 @@ files:
     chains:
       11155111:
         rpcs:
-            - rpc: https://eth-sepolia.g.alchemy.com/v2/QAUtq7R0_g8nxuFEjhc6XvPCpuOFFl_1
-              rpc_type: stable
-              - rpc: https://ethereum-sepolia.publicnode.com
-                rpc_type: auxiliary
-              - rpc: https://rpc.sepolia.org
-                rpc_type: auxiliary
-              - rpc: https://endpoints.omniatech.io/v1/eth/sepolia/public
-                rpc_type: auxiliary
+          - rpc: https://eth-sepolia.g.alchemy.com/v2/QAUtq7R0_g8nxuFEjhc6XvPCpuOFFl_1
+            rpc_type: stable
+          - rpc: https://ethereum-sepolia.publicnode.com
+            rpc_type: auxiliary
+          - rpc: https://rpc.sepolia.org
+            rpc_type: auxiliary
+          - rpc: https://endpoints.omniatech.io/v1/eth/sepolia/public
+            rpc_type: auxiliary
         confirmations: 1
       421614:
         rpcs:
