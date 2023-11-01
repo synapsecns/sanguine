@@ -52,9 +52,7 @@ export const rootReducer = (
   action: Action<string>
 ) => {
   if (action.type === RootActions.RESET_REDUX_CACHE) {
-    // persistor.purge()
     localStorage.removeItem(`persist:${storageKey}`)
-
     state = undefined
   }
   return appReducer(state, action)
