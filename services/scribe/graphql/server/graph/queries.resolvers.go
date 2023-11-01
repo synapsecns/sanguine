@@ -31,14 +31,14 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 }
 
 // LogsRange is the resolver for the logsRange field.
-func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error) {
+func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int, asc *bool) ([]*model.Log, error) {
 	logsFilter := db.BuildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index, confirmed)
 	logsFilter.ChainID = uint32(chainID)
 	var logs []*types.Log
 	var err error
 	// Get logs in ascending order if startBlock > endBlock
-	if startBlock > endBlock {
-		logs, err = r.DB.RetrieveLogsInRangeAsc(ctx, logsFilter, uint64(endBlock), uint64(startBlock), page)
+	if asc != nil && *asc {
+		logs, err = r.DB.RetrieveLogsInRangeAsc(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
 	} else {
 		logs, err = r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
 	}

@@ -13,8 +13,8 @@ query GetLogs ($chain_id: Int!, $page: Int!) {
     }
 }
 
-query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
-    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $asc: Boolean = false) {
+    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page,asc: $asc) {
         contract_address
         chain_id
         topics
