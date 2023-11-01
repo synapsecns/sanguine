@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -169,13 +170,13 @@ func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscri
 
 func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 	// drop logs that are before the start block for this chain
-	startBlock, ok := startBlocks[int(chainID)]
-	if !ok {
-		return fmt.Errorf("could not get start block for chain %d", chainID)
-	}
-	if log.BlockNumber < startBlock {
-		return nil
-	}
+	// startBlock, ok := startBlocks[int(chainID)]
+	// if !ok {
+	// 	return fmt.Errorf("could not get start block for chain %d", chainID)
+	// }
+	// if log.BlockNumber < startBlock {
+	// 	return nil
+	// }
 
 	// parse the log and print output
 	var event interface{}
@@ -207,7 +208,7 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		}
 		fmt.Printf("Parsed pong received on chain %d [ID=%d]\n", chainID, pongReceivedEvent.PingId.Int64())
 	}
-	if event, ok = originParser.ParseSent(*log); ok {
+	if event, ok := originParser.ParseSent(*log); ok {
 		message, ok := event.(types.Message)
 		if !ok {
 			return fmt.Errorf("could not parse message sent event")
@@ -222,8 +223,8 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		// make sure it's a ping that we sent
 		_, ok = sentTxes[log.TxHash]
 		if ok {
-			fmt.Printf("Parsed message sent from %d to %d... [leaf=%s]\n", message.OriginDomain(), message.DestinationDomain(), leaf)
 			messages[leaf] = message
+			fmt.Printf("Parsed message sent from %d to %d [leaf=%s,num=%d,nonce=%d]\n", message.OriginDomain(), message.DestinationDomain(), leaf, len(messages), message.Nonce())
 		}
 	}
 	if event, err = destinationParser.ParseExecuted(*log); err == nil {
@@ -236,8 +237,7 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		// make sure it's a message that we sent
 		_, ok = messages[leaf]
 		if ok {
-			fmt.Printf("\u2713 Parsed message executed [leaf=%s]\n", leaf)
-			numExecuted++
+			fmt.Printf("\u2713 Parsed message executed on chain %d [leaf=%s]\n", chainID, leaf)
 		}
 	}
 	return nil
@@ -311,11 +311,11 @@ func main() {
 		fmt.Printf("--- %d -> %d\n", route[0], route[1])
 	}
 
-	// Connect to Scribe.
-	_, scribeClient, err := makeScribeClient(ctx, metrics.NewNullHandler(), loadCfg.ScribeURL)
-	if err != nil {
-		panic(err)
-	}
+	// // Connect to Scribe.
+	// _, scribeClient, err := makeScribeClient(ctx, metrics.NewNullHandler(), loadCfg.ScribeURL)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Connect to OmniRPC.
 	omniRPCClient := omniClient.NewOmnirpcClient(loadCfg.OmniRPCUrl, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
@@ -325,7 +325,7 @@ func main() {
 	messageContracts := map[int]domains.PingPongClientContract{}
 	destinationContracts := map[int]domains.DestinationContract{}
 	for cid, c := range loadCfg.Chains {
-		chainCfg := c
+		// chainCfg := c
 		chainID := cid
 		chainClient, err := omniRPCClient.GetChainClient(ctx, chainID)
 		if err != nil {
@@ -343,20 +343,20 @@ func main() {
 			panic(err)
 		}
 
-		messageAddr := chainCfg.MessageAddr
-		g.Go(func() error {
-			return streamLogs(ctx, uint32(chainID), messageAddr, scribeClient, omniRPCClient)
-		})
+		// messageAddr := chainCfg.MessageAddr
+		// g.Go(func() error {
+		// 	return streamLogs(ctx, uint32(chainID), messageAddr, scribeClient, omniRPCClient)
+		// })
 
-		originAddr := chainCfg.OriginAddr
-		g.Go(func() error {
-			return streamLogs(ctx, uint32(chainID), originAddr, scribeClient, omniRPCClient)
-		})
+		// originAddr := chainCfg.OriginAddr
+		// g.Go(func() error {
+		// 	return streamLogs(ctx, uint32(chainID), originAddr, scribeClient, omniRPCClient)
+		// })
 
-		destinationAddr := chainCfg.DestinationAddr
-		g.Go(func() error {
-			return streamLogs(ctx, uint32(chainID), destinationAddr, scribeClient, omniRPCClient)
-		})
+		// destinationAddr := chainCfg.DestinationAddr
+		// g.Go(func() error {
+		// 	return streamLogs(ctx, uint32(chainID), destinationAddr, scribeClient, omniRPCClient)
+		// })
 	}
 
 	// Send messages.
@@ -372,20 +372,62 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], tx.Hash().String())
+			fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
 			sentTxes[tx.Hash()] = true
+
+			chainClient, err := omniRPCClient.GetChainClient(ctx, int(route[0]))
+			if err != nil {
+				panic(err)
+			}
+
+			var receipt *ethTypes.Receipt
+			origin := route[0]
+			err = retry.WithBackoff(ctx, func(context.Context) error {
+				receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
+				return err
+			}, retry.WithMaxAttemptTime(300*time.Second))
+			if err != nil {
+				fmt.Printf("error getting transaction receipt: %v\n", err)
+				continue
+			}
+			for _, log := range receipt.Logs {
+				fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
+				handleLog(log, uint32(origin))
+			}
 		}
 	}
 
 	g.Go(func() error {
+		numRoutesActual := len(routes)
+		expectedNumExecuted := 1 * numRoutesActual * numIters
+		numExecuted := 0
+		executedMap := map[common.Hash]bool{}
 		for {
-			numRoutesActual := len(routes)
-			if numExecuted >= 2*numRoutesActual*numIters {
-				fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
-				cancel()
-				return nil
+			for leaf, message := range messages {
+				_, ok := executedMap[leaf]
+				if !ok {
+					contract, ok := destinationContracts[int(message.DestinationDomain())]
+					if !ok {
+						panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
+					}
+					status, err := contract.MessageStatus(ctx, message)
+					if err != nil {
+						fmt.Printf("error getting message status [leaf=%s]: %v", leaf, err)
+						continue
+					}
+					if status == 2 {
+						executedMap[leaf] = true
+						numExecuted++
+						fmt.Printf("Verified message %s was executed. [total=%d]\n", leaf, numExecuted)
+					}
+				}
+				if numExecuted >= expectedNumExecuted {
+					fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
+					cancel()
+					return nil
+				}
+				time.Sleep(1 * time.Second)
 			}
-			time.Sleep(200 * time.Millisecond)
 		}
 	})
 
@@ -393,25 +435,4 @@ func main() {
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
-
-	// Verify all messages were executed.
-	numSuccesses := 0
-	ctx = context.Background()
-	for leaf, message := range messages {
-		fmt.Printf("Verifying message with leaf: %v\n", leaf)
-		contract, ok := destinationContracts[int(message.DestinationDomain())]
-		if !ok {
-			panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
-		}
-		status, err := contract.MessageStatus(ctx, message)
-		if err != nil {
-			fmt.Printf("error getting message status [leaf=%s]", leaf)
-			continue
-		}
-		fmt.Printf("Got status for message %s: %d\n", leaf, status)
-		if status == 2 {
-			numSuccesses++
-		}
-	}
-	fmt.Printf("Checked all messages [%d/%d successful].\n", numSuccesses, len(messages))
 }
