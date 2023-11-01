@@ -44,7 +44,7 @@ var (
 // MessageStatus is the table holding the status of each message.
 type MessageStatus struct {
 	// MessageHash is the message hash.
-	MessageHash string `gorm:"column:message_hash;uniqueIndex:idx_message_hash_status"`
+	MessageHash string `gorm:"column:message_hash;primaryKey"`
 	// OriginTxHash is the txhash when the origin event was emitted.
 	OriginTxHash string `gorm:"column:origin_txhash"`
 	// DestinationTxHash is the txhash when the destination event was emitted.
