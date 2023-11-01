@@ -193,6 +193,7 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
       )
 
+      console.log('estimatedTime:', estimatedTime)
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
       // console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
