@@ -3291,7 +3291,7 @@ func (_Destination *DestinationFilterer) ParseExecuted(log types.Log) (*Destinat
 	return event, nil
 }
 
-// DestinationInitializedIterator is returwened from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the Destination contract.
+// DestinationInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the Destination contract.
 type DestinationInitializedIterator struct {
 	Event *DestinationInitialized // Event containing the contract specifics and raw log
 
