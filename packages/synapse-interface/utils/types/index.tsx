@@ -60,6 +60,7 @@ export type BridgeQuote = {
   feeAmount: bigint
   delta: bigint
   quotes: { originQuery: any; destQuery: any }
+  estimatedTime: number
 }
 interface TokensByChain {
   [cID: string]: Token[]
