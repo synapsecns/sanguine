@@ -1,4 +1,4 @@
-import { combineReducers } from '@reduxjs/toolkit'
+import { Action, combineReducers } from '@reduxjs/toolkit'
 import { PersistConfig, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
@@ -14,6 +14,7 @@ import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import swapDisplay from '@/slices/swapDisplaySlice'
 import { api } from '@/slices/api/slice'
+import { persistor } from './store'
 
 const persistedReducers = {
   bridge,
@@ -39,6 +40,21 @@ export const appReducer = combineReducers({
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })
+
+export enum RootActions {
+  RESET_REDUX_CACHE = 'reset_redux_cache',
+}
+
+export const rootReducer = (
+  state: AppState | undefined,
+  action: Action<string>
+) => {
+  if (action.type === RootActions.RESET_REDUX_CACHE) {
+    persistor.purge()
+    state = undefined
+  }
+  return appReducer(state, action)
+}
 
 export type AppState = ReturnType<typeof appReducer>
 
