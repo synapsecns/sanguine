@@ -1,5 +1,9 @@
 import { SupportedChainId } from './chainIds'
 
+/**
+ * Median time (in seconds) for a SynapseBridge transaction to be completed,
+ * when the transaction is sent from a given chain.
+ */
 export const MEDIAN_TIME_BRIDGE = {
   [SupportedChainId.ETH]: 420,
   [SupportedChainId.OPTIMISM]: 1290,
@@ -22,6 +26,10 @@ export const MEDIAN_TIME_BRIDGE = {
   [SupportedChainId.HARMONY]: 30,
 }
 
+/**
+ * Median time (in seconds) for a SynapseCCTP transaction to be completed,
+ * when the transaction is sent from a given chain.
+ */
 export const MEDIAN_TIME_CCTP = {
   [SupportedChainId.ETH]: 1020,
   [SupportedChainId.OPTIMISM]: 1170,

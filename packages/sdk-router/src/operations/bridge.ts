@@ -124,7 +124,7 @@ export async function bridgeQuote(
  *
  * @param originChainId - The ID of the origin chain.
  * @param routerAddress - The address of the router deployed on the origin chain.
- * @returns - The estimated time for a bridge operation.
+ * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the router address is unknown for the given chain.
  */
 export function getEstimatedTime(
