@@ -176,6 +176,7 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	fmt.Println("loadNotaryLatestAttestation")
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String("currentSnapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
 	))
 	defer span.End()
 
@@ -651,10 +652,12 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	defer span.End()
 
 	if n.myLatestNotaryAttestation == nil {
+		span.AddEvent("myLatestNotaryAttestation is nil")
 		return
 	}
 
 	if n.didSubmitMyLatestNotaryAttestation {
+		span.AddEvent("already submitted latest notary attestation")
 		return
 	}
 
@@ -665,7 +668,11 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		span.AddEvent("Dispatching attestation to submitter")
+		snapRoot := n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
+		span.AddEvent("Dispatching attestation to submitter", trace.WithAttributes(
+			attribute.String("snapshotRoot", common.BytesToHash(snapRoot[:]).String()),
+			attribute.Int("attNonce", int(n.myLatestNotaryAttestation.Attestation().Nonce())),
+		))
 		fmt.Printf("Submitting tx for attestation: %v\n", n.myLatestNotaryAttestation.Attestation())
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
@@ -678,7 +685,6 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
-			snapRoot := n.myLatestNotaryAttestation.Attestation().SnapshotRoot()
 			snapRootStr := common.BytesToHash(snapRoot[:]).String()
 			types.LogTx("NOTARY", fmt.Sprintf("Submitted attestation with snapRoot: %s", snapRootStr), n.destinationDomain.Config().DomainID, tx)
 			span.AddEvent("Submitted transaction", trace.WithAttributes(
