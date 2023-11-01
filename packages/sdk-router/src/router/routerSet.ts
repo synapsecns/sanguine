@@ -61,6 +61,16 @@ export abstract class RouterSet {
   }
 
   /**
+   * Returns the estimated time for a bridge transaction to be completed,
+   * when the transaction is sent from the given chain.
+   *
+   * @param chainId - The ID of the origin chain.
+   * @returns The estimated time in seconds.
+   * @throws Will throw an error if the chain ID is not supported.
+   */
+  abstract getEstimatedTime(chainId: number): number
+
+  /**
    * Returns the existing Router instance for the given address on the given chain.
    * If the router address is not valid, it will return undefined.
    *
@@ -187,6 +197,7 @@ export abstract class RouterSet {
       originQuery.minAmountOut,
       hasComplexBridgeAction(destQuery)
     )
+    const estimatedTime = this.getEstimatedTime(bridgeRoute.originChainId)
     return {
       feeAmount,
       feeConfig,
@@ -194,6 +205,7 @@ export abstract class RouterSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
+      estimatedTime,
     }
   }
 }
