@@ -5,7 +5,7 @@
 Scribe is a multi-chain indexing service. Scribe is designed to take a list of contracts specified by chain id and store logs, receipts, and txs for every event, past to present, in a mysql database.
 
 Use cases
-- Analytics for on chain events
+- Analytics for on-chain events
 - Stream events occurring across chains
 - Monitor activity on your contracts
 
