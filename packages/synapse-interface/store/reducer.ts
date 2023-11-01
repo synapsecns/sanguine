@@ -20,10 +20,11 @@ const persistedReducers = {
   transactions,
 }
 
-const key: string = 'synapse-interface'
+export const storageKey: string = 'synapse-interface'
 
-const persistConfig: PersistConfig<AppState> = {
-  key,
+export const persistConfig: PersistConfig<AppState> = {
+  version: 0, // upgrade to reset cache
+  key: storageKey,
   storage,
   whitelist: Object.keys(persistedReducers),
 }
@@ -52,7 +53,7 @@ export const rootReducer = (
 ) => {
   if (action.type === RootActions.RESET_REDUX_CACHE) {
     // persistor.purge()
-    localStorage.removeItem(`persist:${key}`)
+    localStorage.removeItem(`persist:${storageKey}`)
 
     state = undefined
   }
@@ -61,6 +62,4 @@ export const rootReducer = (
 
 export type AppState = ReturnType<typeof appReducer>
 
-const persistedReducer = persistReducer(persistConfig, appReducer)
-
-export default persistedReducer
+export const persistedReducer = persistReducer(persistConfig, rootReducer)

@@ -5,7 +5,21 @@ import { persistStore } from 'redux-persist'
 
 import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import persistedReducer from './reducer'
+import { storageKey, persistConfig, persistedReducer } from './reducer'
+import { resetReduxCache } from '@/slices/application/actions'
+
+const checkVersionAndResetCache = (): boolean => {
+  if (typeof window !== 'undefined') {
+    const persistedStateRaw = localStorage.getItem(`persist:${storageKey}`)
+    if (persistedStateRaw) {
+      const persistedState = JSON.parse(persistedStateRaw)
+      if (persistedState._persist.version !== persistConfig.version) {
+        return true
+      }
+    }
+  }
+  return false
+}
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -14,6 +28,11 @@ export const store = configureStore({
       serializableCheck: false,
     }).concat(api.middleware),
 })
+
+if (checkVersionAndResetCache()) {
+  console.log('resetting cache')
+  store.dispatch(resetReduxCache())
+}
 
 export const persistor = persistStore(store)
 
