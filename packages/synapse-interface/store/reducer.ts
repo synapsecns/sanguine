@@ -14,15 +14,16 @@ import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import swapDisplay from '@/slices/swapDisplaySlice'
 import { api } from '@/slices/api/slice'
-import { persistor } from './store'
 
 const persistedReducers = {
   bridge,
   transactions,
 }
 
+const key: string = 'synapse-interface'
+
 const persistConfig: PersistConfig<AppState> = {
-  key: 'synapse-interface',
+  key,
   storage,
   whitelist: Object.keys(persistedReducers),
 }
@@ -50,7 +51,9 @@ export const rootReducer = (
   action: Action<string>
 ) => {
   if (action.type === RootActions.RESET_REDUX_CACHE) {
-    persistor.purge()
+    // persistor.purge()
+    localStorage.removeItem(`persist:${key}`)
+
     state = undefined
   }
   return appReducer(state, action)
