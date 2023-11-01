@@ -32,7 +32,6 @@ export const store = configureStore({
 })
 
 if (checkVersionAndResetCache()) {
-  console.log('resetting cache: ', checkVersionAndResetCache())
   store.dispatch(resetReduxCache())
 }
 
