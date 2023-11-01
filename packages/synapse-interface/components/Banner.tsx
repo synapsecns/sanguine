@@ -124,7 +124,7 @@ export const InterruptedServiceBanner = () => {
 
   return (
     <div
-      className="flex items-center justify-center mx-auto lg:flex-row"
+      className="flex items-center justify-center mx-auto lg:flex-row lg:px-20"
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
@@ -132,24 +132,18 @@ export const InterruptedServiceBanner = () => {
     >
       <div
         id="banner-default"
-        className="flex items-center pt-1 pb-1 pl-3 pr-3 rounded-md text-primaryTextColor"
+        className="flex items-center px-8 pt-1 pb-1 rounded-md text-primaryTextColor"
         role="alert"
       >
         <div className="m-1 font-thin">
           <div className="container mx-auto">
             <p className="text-md">
-              {/* TODO: replace w/ tweetlink directly */}
-              <a
-                href={
-                  'https://twitter.com/SynapseProtocol/status/1701315115692466220'
-                }
-                target={'_blank'}
-              >
+              <div>
                 Synapse Explorer and the transaction watcher may not appear
                 during planned maintenance from 0500–1900 UTC. Transactions will
                 still go through as expected. Please confirm transactions using
                 the native explorer for your destination chain during this time.
-              </a>
+              </div>
             </p>
           </div>
         </div>
