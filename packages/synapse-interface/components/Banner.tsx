@@ -103,7 +103,7 @@ export const InterruptedServiceBanner = () => {
   useEffect(() => {
     if (hasMounted) {
       const storedBannerVersion = localStorage.getItem('bannerVersion')
-      const storedShowBanner = localStorage.getItem('showBanner')
+      const storedShowBanner = localStorage.getItem('showInterruptedBanner')
 
       setShowBanner(
         storedBannerVersion !== BANNER_VERSION ||
@@ -115,7 +115,7 @@ export const InterruptedServiceBanner = () => {
 
   useEffect(() => {
     if (hasMounted) {
-      localStorage.setItem('showBanner', showBanner.toString())
+      localStorage.setItem('showInterruptedBanner', showBanner.toString())
       localStorage.setItem('bannerVersion', BANNER_VERSION)
     }
   }, [showBanner, hasMounted])
