@@ -2,11 +2,16 @@ package client_test
 
 import (
 	"context"
+	"io"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/dwasse/w3/module/eth"
+	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/lmittmann/w3/module/eth"
-	"github.com/lmittmann/w3/w3types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
@@ -16,10 +21,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	_ "go.opentelemetry.io/otel/sdk/trace/tracetest"
-	"io"
-	"math/big"
-	"net/http"
-	"net/http/httptest"
 )
 
 // TestEVM is an EVM that can be used for testing.

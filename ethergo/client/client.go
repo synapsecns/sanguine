@@ -3,18 +3,19 @@ package client
 import (
 	"context"
 	"fmt"
+	"math/big"
+
+	"github.com/dwasse/w3"
+	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/lmittmann/w3"
-	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
 )
 
 // EVM is the set of functions that the scribe needs from a client.

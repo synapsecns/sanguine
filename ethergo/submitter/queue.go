@@ -3,18 +3,19 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sync"
+	"time"
+
+	"github.com/dwasse/w3"
+	"github.com/dwasse/w3/module/eth"
+	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/lmittmann/w3"
-	"github.com/lmittmann/w3/module/eth"
-	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"sync"
-	"time"
 )
 
 // runSelector runs the selector start loop.

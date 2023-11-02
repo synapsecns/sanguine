@@ -4,11 +4,17 @@ package exporters
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"net"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/dwasse/w3/module/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
-	"github.com/lmittmann/w3/module/eth"
 	"github.com/synapsecns/sanguine/contrib/promexporter/config"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/dfk"
 	"github.com/synapsecns/sanguine/core"
@@ -20,11 +26,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"net"
-	"net/http"
-	"os"
-	"time"
 )
 
 var logger = log.Logger("proxy-logger")

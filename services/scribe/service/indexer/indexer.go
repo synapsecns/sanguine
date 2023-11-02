@@ -4,16 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
-	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"math/big"
 	"time"
 
-	"github.com/lmittmann/w3"
-	"github.com/lmittmann/w3/module/eth"
-	"github.com/lmittmann/w3/w3types"
+	"github.com/synapsecns/sanguine/services/scribe/logger"
+
+	"github.com/dwasse/w3"
+	"github.com/dwasse/w3/module/eth"
+	"github.com/dwasse/w3/w3types"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"

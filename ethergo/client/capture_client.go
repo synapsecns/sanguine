@@ -3,11 +3,12 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/dwasse/w3"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/lmittmann/w3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
-	"net/http"
 )
 
 // captureClient is a wrapper around ethclient that can (but doesn't have to) captures requests and responses.
