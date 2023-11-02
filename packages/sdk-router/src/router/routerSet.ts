@@ -206,6 +206,7 @@ export abstract class RouterSet {
       originQuery,
       destQuery,
       estimatedTime,
+      bridgeModuleName: this.bridgeModuleName,
     }
   }
 }
