@@ -88,7 +88,7 @@ func (c ChainIndexer) Index(ctx context.Context) error {
 	return contractGroup.Wait()
 }
 
-// processContract indexes a contract by creating an appropriate parser and then indexing the contract in a go routine.
+// processContract indexes a contract by creating an appropriate parser and then indexing the contract in a goroutine.
 func (c ChainIndexer) processContract(contractCtx context.Context, contractGroup *errgroup.Group, contract indexerConfig.ContractConfig) error {
 	eventParser, err := c.createEventParser(contract)
 	if err != nil {
