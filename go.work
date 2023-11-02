@@ -16,5 +16,6 @@ use (
 	./services/explorer
 	./services/omnirpc
 	./services/scribe
+	./services/sinner
 	./tools
 )
