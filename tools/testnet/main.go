@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -221,10 +222,11 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		leaf := common.BytesToHash(leafBytes[:])
 
 		// make sure it's a ping that we sent
-		_, ok = sentTxes[log.TxHash]
+		_, ok = sentTxes.Load(log.TxHash)
 		if ok {
-			messages[leaf] = message
-			fmt.Printf("Parsed message sent from %d to %d [leaf=%s,num=%d,nonce=%d]\n", message.OriginDomain(), message.DestinationDomain(), leaf, len(messages), message.Nonce())
+			messages.Store(leaf, message)
+			numSent++
+			fmt.Printf("Parsed message sent from %d to %d [leaf=%s,num=%d,nonce=%d]\n", message.OriginDomain(), message.DestinationDomain(), leaf, numSent, message.Nonce())
 		}
 	}
 	if event, err = destinationParser.ParseExecuted(*log); err == nil {
@@ -235,7 +237,7 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 		leaf := common.BytesToHash(messageExecutedEvent.MessageHash[:])
 
 		// make sure it's a message that we sent
-		_, ok = messages[leaf]
+		_, ok = messages.Load(leaf)
 		if ok {
 			fmt.Printf("\u2713 Parsed message executed on chain %d [leaf=%s]\n", chainID, leaf)
 		}
@@ -246,9 +248,12 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 var pingPongParser *pingpongclient.PingPongClientFilterer
 var originParser origin.Parser
 var destinationParser *destination.DestinationFilterer
-var numIters, numExecuted, numRoutes int
-var messages = map[common.Hash]types.Message{}
-var sentTxes = map[common.Hash]bool{}
+var numIters, numExecuted, numRoutes, numSent int
+var messages = &sync.Map{}
+var sentTxes = &sync.Map{}
+
+// var messages = map[common.Hash]types.Message{}
+// var sentTxes = map[common.Hash]bool{}
 
 const eventBufferSize = 1000
 
@@ -362,38 +367,44 @@ func main() {
 	// Send messages.
 	fmt.Printf("Running %d iterations.\n\n", numIters)
 	for i := 0; i < numIters; i++ {
-		for _, route := range routes {
-			destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
-			contract, ok := messageContracts[route[0]]
-			if !ok {
-				panic(fmt.Errorf("could not get contract for chain %d", route[0]))
-			}
-			tx, err := contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
-			sentTxes[tx.Hash()] = true
+		for _, r := range routes {
+			route := r
+			g.Go(func() error {
+				destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
+				contract, ok := messageContracts[route[0]]
+				if !ok {
+					panic(fmt.Errorf("could not get contract for chain %d", route[0]))
+				}
+				var tx *ethTypes.Transaction
+				retry.WithBackoff(ctx, func(context.Context) error {
+					tx, err = contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
+					return err
+				})
+				fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
+				sentTxes.Store(tx.Hash(), true)
 
-			chainClient, err := omniRPCClient.GetChainClient(ctx, int(route[0]))
-			if err != nil {
-				panic(err)
-			}
+				chainClient, err := omniRPCClient.GetChainClient(ctx, int(route[0]))
+				if err != nil {
+					panic(err)
+				}
 
-			var receipt *ethTypes.Receipt
-			origin := route[0]
-			err = retry.WithBackoff(ctx, func(context.Context) error {
-				receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
-				return err
-			}, retry.WithMaxAttemptTime(300*time.Second))
-			if err != nil {
-				fmt.Printf("error getting transaction receipt: %v\n", err)
-				continue
-			}
-			for _, log := range receipt.Logs {
-				fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
-				handleLog(log, uint32(origin))
-			}
+				var receipt *ethTypes.Receipt
+				origin := route[0]
+				err = retry.WithBackoff(ctx, func(context.Context) error {
+					receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
+					return err
+				}, retry.WithMaxTotalTime(300*time.Second))
+				if err != nil {
+					fmt.Printf("error getting transaction receipt: %v\n", err)
+					return err
+				}
+				for _, log := range receipt.Logs {
+					fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
+					handleLog(log, uint32(origin))
+				}
+				return nil
+			})
+			time.Sleep(250 * time.Millisecond)
 		}
 	}
 
@@ -403,7 +414,9 @@ func main() {
 		numExecuted := 0
 		executedMap := map[common.Hash]bool{}
 		for {
-			for leaf, message := range messages {
+			messages.Range(func(key, value interface{}) bool {
+				leaf := key.(common.Hash)
+				message := value.(types.Message)
 				_, ok := executedMap[leaf]
 				if !ok {
 					contract, ok := destinationContracts[int(message.DestinationDomain())]
@@ -413,7 +426,7 @@ func main() {
 					status, err := contract.MessageStatus(ctx, message)
 					if err != nil {
 						fmt.Printf("error getting message status [leaf=%s]: %v", leaf, err)
-						continue
+						return true
 					}
 					if status == 2 {
 						executedMap[leaf] = true
@@ -424,10 +437,11 @@ func main() {
 				if numExecuted >= expectedNumExecuted {
 					fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
 					cancel()
-					return nil
+					return false
 				}
 				time.Sleep(1 * time.Second)
-			}
+				return true
+			})
 		}
 	})
 

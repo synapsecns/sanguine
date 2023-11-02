@@ -492,6 +492,7 @@ func (g Guard) Start(parentCtx context.Context) error {
 	}
 
 	group.Go(func() error {
+		fmt.Println("starting guard parent loop")
 		for {
 			select {
 			// parent loop terminated
