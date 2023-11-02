@@ -698,7 +698,7 @@ describe('SynapseSDK', () => {
 
     // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/bridge/SynapseBridge.sol#L63-L121
     describe('SynapseBridge events', () => {
-      const eventNames = [
+      const contractEvents = [
         'TokenDeposit',
         'TokenRedeem',
         'TokenWithdraw',
@@ -711,11 +711,12 @@ describe('SynapseSDK', () => {
         'TokenRedeemV2',
       ]
 
-      eventNames.forEach((eventName) => {
-        it(eventName, () => {
+      contractEvents.forEach((contractEvent) => {
+        it(contractEvent, () => {
+          // Event naming in contract and explorer is a bit different
           // schema: TokenDeposit => DepositEvent
-          const explorerEventName = `${eventName.slice(5)}Event`
-          expect(synapse.getBridgeModuleName(explorerEventName)).toEqual(
+          const explorerEvent = `${contractEvent.slice(5)}Event`
+          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
             'SynapseBridge'
           )
         })
@@ -724,13 +725,14 @@ describe('SynapseSDK', () => {
 
     // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/cctp/events/SynapseCCTPEvents.sol#L5-L45
     describe('SynapseCCTP events', () => {
-      const eventNames = ['CircleRequestSent', 'CircleRequestFulfilled']
+      const contractEvents = ['CircleRequestSent', 'CircleRequestFulfilled']
 
-      eventNames.forEach((eventName) => {
-        it(eventName, () => {
+      contractEvents.forEach((contractEvent) => {
+        it(contractEvent, () => {
+          // Event naming in contract and explorer is a bit different
           // schema: CircleRequestSent => CircleRequestSentEvent
-          const explorerEventName = `${eventName}Event`
-          expect(synapse.getBridgeModuleName(explorerEventName)).toEqual(
+          const explorerEvent = `${contractEvent}Event`
+          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
             'SynapseCCTP'
           )
         })
