@@ -100,7 +100,7 @@ func (c ChainIndexer) processContract(contractCtx context.Context, contractGroup
 	return nil
 }
 
-// createEventParser creates an event parser for the contract.
+// createEventParser creates an event parser for the given contract.
 func (c ChainIndexer) createEventParser(contract indexerConfig.ContractConfig) (types.EventParser, error) {
 	contractType, err := indexerConfig.ContractTypeFromString(contract.ContractType)
 	if err != nil {
