@@ -179,8 +179,8 @@ func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, 
 	return &res, nil
 }
 
-const GetLogsAndTransactionsRangeDocument = `query GetLogsAndTransactionsRange ($chain_id: Int!, $floor_block: Int!, $ceiling_block: Int!, $page: Int!, $contract_address: String!) {
-	response: transactionsRange(chain_id: $chain_id, start_block: $floor_block, end_block: $ceiling_block, page: $page) {
+const GetLogsAndTransactionsRangeDocument = `query GetLogsAndTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $contract_address: String!, $asc: Boolean!) {
+	response: transactionsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
 		chain_id
 		tx_hash
 		protected
@@ -196,7 +196,7 @@ const GetLogsAndTransactionsRangeDocument = `query GetLogsAndTransactionsRange (
 		timestamp
 		sender
 	}
-	logsRange(chain_id: $chain_id, start_block: $ceiling_block, end_block: $floor_block, page: $page, contract_address: $contract_address) {
+	logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, contract_address: $contract_address, asc: $asc) {
 		contract_address
 		chain_id
 		topics
@@ -211,13 +211,14 @@ const GetLogsAndTransactionsRangeDocument = `query GetLogsAndTransactionsRange (
 }
 `
 
-func (c *Client) GetLogsAndTransactionsRange(ctx context.Context, chainID int, floorBlock int, ceilingBlock int, page int, contractAddress string, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsAndTransactionsRange, error) {
+func (c *Client) GetLogsAndTransactionsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, contractAddress string, asc bool, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsAndTransactionsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":         chainID,
-		"floor_block":      floorBlock,
-		"ceiling_block":    ceilingBlock,
+		"start_block":      startBlock,
+		"end_block":        endBlock,
 		"page":             page,
 		"contract_address": contractAddress,
+		"asc":              asc,
 	}
 
 	var res GetLogsAndTransactionsRange
