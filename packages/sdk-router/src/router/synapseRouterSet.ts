@@ -8,7 +8,7 @@ import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
  */
 export class SynapseRouterSet extends RouterSet {
-  public readonly routerName = 'SynapseRouter'
+  public readonly bridgeModuleName = 'SynapseBridge'
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)
