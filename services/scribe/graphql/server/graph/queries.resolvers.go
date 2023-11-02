@@ -31,10 +31,17 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 }
 
 // LogsRange is the resolver for the logsRange field.
-func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error) {
+func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int, asc *bool) ([]*model.Log, error) {
 	logsFilter := db.BuildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index, confirmed)
 	logsFilter.ChainID = uint32(chainID)
-	logs, err := r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	var logs []*types.Log
+	var err error
+	// Get logs in ascending order if asc is set to true.
+	if asc != nil && *asc {
+		logs, err = r.DB.RetrieveLogsInRangeAsc(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	} else {
+		logs, err = r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
@@ -50,11 +51,17 @@ func (g APISuite) TestRetrieveData() {
 	logs, err := g.gqlClient.GetLogs(g.GetTestContext(), int(chainID), 1)
 	Nil(g.T(), err)
 	// there were 20 logs created (2 per loop, in a loop of 10)
-	Equal(g.T(), len(logs.Response), 20)
-	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1)
+	Equal(g.T(), 20, len(logs.Response))
+	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1, nil)
 	Nil(g.T(), err)
 	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
-	Equal(g.T(), len(logsRange.Response), 8)
+	Equal(g.T(), 8, len(logsRange.Response))
+
+	// Test getting logs in a range in ascending order.
+	logsRangeAsc, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1, core.PtrTo(true))
+	Nil(g.T(), err)
+	Equal(g.T(), 8, len(logsRangeAsc.Response))
+	Equal(g.T(), 2, logsRangeAsc.Response[0].BlockNumber)
 
 	// test get logs and get logs in a range (GRPC)
 	grpcLogs, res, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceFilterLogs(g.GetTestContext(), rest.V1FilterLogsRequest{
@@ -213,17 +220,17 @@ func (g APISuite) TestBlockTimeDataEquality() {
 	Nil(g.T(), err)
 
 	// check that the data is equal
-	Equal(g.T(), *retrievedBlockTime.Response, int(blockTime))
+	Equal(g.T(), int(blockTime), *retrievedBlockTime.Response)
 
 	// check that the last stored block is correct
 	lastBlock, err := g.gqlClient.GetLastStoredBlockNumber(g.GetTestContext(), int(chainID))
 	Nil(g.T(), err)
-	Equal(g.T(), *lastBlock.Response, int(blockNumber))
+	Equal(g.T(), int(blockNumber), *lastBlock.Response)
 
 	// check that the first stored block is correct
 	firstBlock, err := g.gqlClient.GetFirstStoredBlockNumber(g.GetTestContext(), int(chainID))
 	Nil(g.T(), err)
-	Equal(g.T(), *firstBlock.Response, int(blockNumber))
+	Equal(g.T(), int(blockNumber), *firstBlock.Response)
 }
 
 func (g *APISuite) buildLog(contractAddress common.Address, blockNumber uint64) types.Log {
@@ -291,7 +298,7 @@ func (g APISuite) TestLastContractIndexed() {
 	Nil(g.T(), err)
 
 	// check that the data is equal
-	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
+	Equal(g.T(), int(blockNumber), *retrievedBlockTime.Response)
 }
 
 // nolint:dupl
@@ -390,7 +397,7 @@ func (g APISuite) TestLastConfirmedBlock() {
 	Nil(g.T(), err)
 
 	// check that the data is equal
-	Equal(g.T(), *retrievedBlockTime.Response, int(blockNumber))
+	Equal(g.T(), int(blockNumber), *retrievedBlockTime.Response)
 }
 
 // nolint:dupl
