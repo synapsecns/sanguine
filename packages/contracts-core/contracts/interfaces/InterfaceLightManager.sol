@@ -17,9 +17,45 @@ interface InterfaceLightManager {
      * @notice Updates the root of Agent Merkle Tree that the Light Manager is tracking.
      * Could be only called by a local Destination contract, which is supposed to
      * verify the attested Agent Merkle Roots.
-     * @param agentRoot     New Agent Merkle Root
+     * @param agentRoot_    New Agent Merkle Root
      */
-    function setAgentRoot(bytes32 agentRoot) external;
+    function setAgentRoot(bytes32 agentRoot_) external;
+
+    /**
+     * @notice Allows contract owner to set the agent root to resolve the "stuck" chain
+     * by proposing the new agent root. The contract owner will be able to resolve the proposed
+     * agent root after a certain period of time.
+     * Note: this function could be called multiple times, each time the timer will be reset.
+     * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
+     * indicating that the chain is stuck for one of the reasons:
+     * - All active Notaries are in Dispute.
+     * - No active Notaries exist under the current agent root.
+     * @dev Will revert if any of the following conditions is met:
+     * - Caller is not the contract owner.
+     * - Agent root is empty.
+     * - The chain is not in a stuck state (has recently received a fresh data from the Notaries).
+     * @param agentRoot_    New Agent Merkle Root that is proposed to be set
+     */
+    function proposeAgentRootWhenStuck(bytes32 agentRoot_) external;
+
+    /**
+     * @notice Allows contract owner to cancel the previously proposed agent root.
+     * @dev Will revert if any of the following conditions is met:
+     * - Caller is not the contract owner.
+     * - No agent root was proposed.
+     */
+    function cancelProposedAgentRoot() external;
+
+    /**
+     * @notice Allows contract owner to resolve the previously proposed agent root.
+     * This will update the agent root, allowing the agents to update their status, effectively
+     * resolving the "stuck" chain.
+     * @dev Will revert if any of the following conditions is met:
+     * - Caller is not the contract owner.
+     * - No agent root was proposed.
+     * - Not enough time has passed since the agent root was proposed.
+     */
+    function resolveProposedAgentRoot() external;
 
     /**
      * @notice Withdraws locked base message tips from local Origin to the recipient.
@@ -32,4 +68,13 @@ interface InterfaceLightManager {
     function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount)
         external
         returns (bytes4 magicValue);
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns the latest proposed agent root and the timestamp when it was proposed.
+     * @dev Will return zero values if no agent root was proposed, or if the proposed agent root
+     * was already resolved.
+     */
+    function proposedAgentRootData() external view returns (bytes32 agentRoot_, uint256 proposedAt_);
 }

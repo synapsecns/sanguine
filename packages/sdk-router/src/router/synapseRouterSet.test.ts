@@ -5,6 +5,8 @@ import {
   PUBLIC_PROVIDER_URLS,
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_BRIDGE,
+  SUPPORTED_CHAIN_IDS,
   SupportedChainId,
 } from '../constants'
 import { ChainProvider } from './routerSet'
@@ -50,6 +52,27 @@ describe('SynapseRouterSet', () => {
 
     it('Does not create SynapseRouter instances for chains without providers', () => {
       expect(routerSet.routers[SupportedChainId.AVALANCHE]).toBeUndefined()
+    })
+
+    it('Correct bridge module name', () => {
+      expect(routerSet.bridgeModuleName).toEqual('SynapseBridge')
+    })
+  })
+
+  describe('getEstimatedTime', () => {
+    it('Returns the correct estimated time for all supported chains', () => {
+      SUPPORTED_CHAIN_IDS.forEach((chainId) => {
+        expect(routerSet.getEstimatedTime(Number(chainId))).toEqual(
+          MEDIAN_TIME_BRIDGE[chainId as keyof typeof MEDIAN_TIME_BRIDGE]
+        )
+      })
+    })
+
+    it('Throws error for unsupported chain', () => {
+      // 5 is the chain ID for Goerli testnet
+      expect(() => routerSet.getEstimatedTime(5)).toThrow(
+        'No estimated time for chain 5'
+      )
     })
   })
 

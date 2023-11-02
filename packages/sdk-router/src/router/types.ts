@@ -70,6 +70,8 @@ export type BridgeQuote = {
   maxAmountOut: BigNumber
   originQuery: Query
   destQuery: Query
+  estimatedTime: number
+  bridgeModuleName: string
 }
 
 /**

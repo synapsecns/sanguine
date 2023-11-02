@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {DISPUTE_TIMEOUT_NOTARY} from "../../contracts/libs/Constants.sol";
+import {CallerNotInbox, DisputeTimeoutNotOver, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {ChainGas, GasData, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
@@ -32,8 +33,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         // Check version
         assertEq(dst.version(), LATEST_VERSION, "!version");
         // Check pending Agent Merkle Root
-        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
-        assertFalse(rootPassed);
+        bool rootPending = dst.passAgentRoot();
         assertFalse(rootPending);
     }
 
@@ -193,20 +193,45 @@ contract DestinationSynapseTest is ExecutionHubTest {
         assertEq(dataMaturity, 0);
     }
 
-    function test_getGasData_notaryInDispute(Random memory random) public {
-        RawSnapshot memory firstSnap;
-        firstSnap.states = new RawState[](2);
-        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
-        firstSnap.states[1] = random.nextState({origin: DOMAIN_LOCAL, nonce: 1});
-        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
-        (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
-        (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
-        inbox.submitSnapshot(firstSnapPayload, firstGuardSignature);
-        inbox.submitSnapshot(firstSnapPayload, firstNotarySignature);
-        uint256 firstSkipTime = random.nextUint32();
-        skip(firstSkipTime);
-        // Open dispute
-        openDispute({guard: domains[0].agent, notary: firstNotary});
+    function prepareGasDataDisputeTest() internal returns (GasData remoteGasData, GasData localGasData) {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address reportGuard = domains[0].agent;
+        address snapshotGuard = domains[0].agents[1];
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = RawSnapshot(new RawState[](2));
+        rawSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        rawSnap.states[1] = random.nextState({origin: DOMAIN_LOCAL, nonce: 2});
+        remoteGasData = rawSnap.states[0].castToState().gasData();
+        localGasData = rawSnap.states[1].castToState().gasData();
+
+        // Another Guard signs the snapshot
+        (bytes memory snapPayload, bytes memory guardSignature) = signSnapshot(snapshotGuard, rawSnap);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        // Notary signs the snapshot
+        (, bytes memory notarySignature) = signSnapshot(notary, rawSnap);
+        inbox.submitSnapshot(snapPayload, notarySignature);
+        // Sanity checks
+        {
+            (GasData gasData,) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+            assert(GasData.unwrap(gasData) == GasData.unwrap(remoteGasData));
+        }
+        {
+            (GasData gasData,) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
+            assert(GasData.unwrap(gasData) == GasData.unwrap(localGasData));
+        }
+        openTestDispute({guardIndex: agentIndex[reportGuard], notaryIndex: agentIndex[notary]});
+    }
+
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
+    function test_getGasData_notaryInDispute() public {
+        prepareGasDataDisputeTest();
+        skip(7 days);
         // Check getGasData
         (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
         assertEq(GasData.unwrap(gasData), 0);
@@ -214,6 +239,34 @@ contract DestinationSynapseTest is ExecutionHubTest {
         (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_notaryWonDisputeTimeout() public {
+        prepareGasDataDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_afterNotaryDisputeTimeout() public {
+        (GasData remoteGasData, GasData localGasData) = prepareGasDataDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(remoteGasData));
+        assertEq(dataMaturity, 7 days + DISPUTE_TIMEOUT_NOTARY);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(localGasData));
+        assertEq(dataMaturity, 7 days + DISPUTE_TIMEOUT_NOTARY);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

@@ -25,12 +25,13 @@ export type RouterConstructor = new (
  *
  * The class children should provide the router addresses for each chain, as well as the Router constructor.
  *
- * @property routerName The name of the router set.
+ * @property bridgeModuleName The name of the bridge module used by the routers.
  * @property routers Collection of Router instances indexed by chainId.
  * @property providers Collection of Provider instances indexed by chainId.
  */
 export abstract class RouterSet {
-  abstract readonly routerName: string
+  abstract readonly bridgeModuleName: string
+  abstract readonly allEvents: string[]
 
   public routers: {
     [chainId: number]: Router
@@ -59,6 +60,16 @@ export abstract class RouterSet {
       }
     })
   }
+
+  /**
+   * Returns the estimated time for a bridge transaction to be completed,
+   * when the transaction is sent from the given chain.
+   *
+   * @param chainId - The ID of the origin chain.
+   * @returns The estimated time in seconds.
+   * @throws Will throw an error if the chain ID is not supported.
+   */
+  abstract getEstimatedTime(chainId: number): number
 
   /**
    * Returns the existing Router instance for the given address on the given chain.
@@ -187,6 +198,7 @@ export abstract class RouterSet {
       originQuery.minAmountOut,
       hasComplexBridgeAction(destQuery)
     )
+    const estimatedTime = this.getEstimatedTime(bridgeRoute.originChainId)
     return {
       feeAmount,
       feeConfig,
@@ -194,6 +206,8 @@ export abstract class RouterSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
+      estimatedTime,
+      bridgeModuleName: this.bridgeModuleName,
     }
   }
 }

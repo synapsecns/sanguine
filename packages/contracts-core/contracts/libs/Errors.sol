@@ -14,6 +14,7 @@ error IncorrectAttestation();
 error IncorrectAgentDomain();
 error IncorrectAgentIndex();
 error IncorrectAgentProof();
+error IncorrectAgentRoot();
 error IncorrectDataHash();
 error IncorrectDestinationDomain();
 error IncorrectOriginDomain();
@@ -74,9 +75,14 @@ error AgentNotFraudulent();
 error AgentNotUnstaking();
 error AgentUnknown();
 
+error AgentRootNotProposed();
+error AgentRootTimeoutNotOver();
+
+error NotStuck();
+
 error DisputeAlreadyResolved();
 error DisputeNotOpened();
-error DisputeNotStuck();
+error DisputeTimeoutNotOver();
 error GuardInDispute();
 error NotaryInDispute();
 

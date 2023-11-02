@@ -7,8 +7,8 @@ import ReactGA from 'react-ga'
 // TODO: someone should add this to the .env, disable if blank, etc.
 // this is being added as a hotfix to assess user load on the synapse explorer api
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
-const TRACKING_ID = "G-BBC13LQXBD"
-ReactGA.initialize(TRACKING_ID);
+const TRACKING_ID = 'G-BBC13LQXBD'
+ReactGA.initialize(TRACKING_ID)
 
 const Home = () => {
   return (

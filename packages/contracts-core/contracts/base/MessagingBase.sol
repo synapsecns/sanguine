@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {ChainContext} from "../libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MultiCallable} from "./MultiCallable.sol";
 import {Versioned} from "./Version.sol";
@@ -27,8 +29,7 @@ abstract contract MessagingBase is MultiCallable, Versioned, Ownable2StepUpgrade
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
     constructor(string memory version_, uint32 synapseDomain_) Versioned(version_) {
-        // TODO: do we want to/need to check for overflow?
-        localDomain = uint32(block.chainid);
+        localDomain = ChainContext.chainId();
         synapseDomain = synapseDomain_;
     }
 

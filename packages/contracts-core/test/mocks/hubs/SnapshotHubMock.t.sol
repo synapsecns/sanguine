@@ -45,5 +45,5 @@ contract SnapshotHubMock is BaseMock, ISnapshotHub {
         returns (bytes memory snapPayload, bytes memory snapSignature)
     {}
 
-    function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {}
+    function getSnapshotProof(uint32 attNonce, uint8 stateIndex) external view returns (bytes32[] memory snapProof) {}
 }

@@ -118,6 +118,50 @@ export async function bridgeQuote(
 }
 
 /**
+ * Returns the name of the bridge module that emits the given event.
+ * This will be either SynapseBridge or SynapseCCTP.
+ *
+ * @param eventName - The name of the event.
+ * @returns - The name of the bridge module.
+ */
+export function getBridgeModuleName(
+  this: SynapseSDK,
+  eventName: string
+): string {
+  if (this.synapseRouterSet.allEvents.includes(eventName)) {
+    return this.synapseRouterSet.bridgeModuleName
+  }
+  if (this.synapseCCTPRouterSet.allEvents.includes(eventName)) {
+    return this.synapseCCTPRouterSet.bridgeModuleName
+  }
+  throw new Error('Unknown event')
+}
+
+/**
+ * Returns the estimated time for a bridge operation from a given origin chain using a given bridge module.
+ * This will be the estimated time for the bridge operation to be completed regardless of the destination chain,
+ * or the bridge token.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param bridgeNoduleName - The name of the bridge module.
+ * @returns - The estimated time for a bridge operation, in seconds.
+ * @throws - Will throw an error if the bridge module is unknown for the given chain.
+ */
+export function getEstimatedTime(
+  this: SynapseSDK,
+  originChainId: number,
+  bridgeNoduleName: string
+): number {
+  if (this.synapseRouterSet.bridgeModuleName === bridgeNoduleName) {
+    return this.synapseRouterSet.getEstimatedTime(originChainId)
+  }
+  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeNoduleName) {
+    return this.synapseCCTPRouterSet.getEstimatedTime(originChainId)
+  }
+  throw new Error('Unknown bridge module')
+}
+
+/**
  * Gets the chain gas amount for the Synapse bridge.
  *
  * @param chainId The chain ID

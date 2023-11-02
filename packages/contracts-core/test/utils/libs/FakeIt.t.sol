@@ -36,5 +36,5 @@ function fakeSnapshot(RawState memory state, RawStateIndex memory rsi) pure retu
 /// @notice Returns RawSnapshot struct with fake states.
 function fakeSnapshot(uint256 statesAmount) pure returns (RawSnapshot memory rawSnap) {
     RawState memory state;
-    return fakeSnapshot(state, RawStateIndex(statesAmount, statesAmount));
+    return fakeSnapshot(state, RawStateIndex(uint8(statesAmount), statesAmount));
 }
