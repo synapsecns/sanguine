@@ -693,6 +693,120 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('getBridgeModuleName', () => {
+    const synapse = new SynapseSDK([], [])
+
+    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/bridge/SynapseBridge.sol#L63-L121
+    describe('SynapseBridge events', () => {
+      // schema: TokenDeposit => DepositEvent
+      const transformBridgeEventName = (contractEventName: string) => {
+        // Remove 'Token' prefix, then add 'Event' suffix
+        return `${contractEventName.slice(5)}Event`
+      }
+
+      it('TokenDeposit', () => {
+        expect(
+          synapse.getBridgeModuleName(transformBridgeEventName('TokenDeposit'))
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenRedeem', () => {
+        expect(
+          synapse.getBridgeModuleName(transformBridgeEventName('TokenRedeem'))
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenWithdraw', () => {
+        expect(
+          synapse.getBridgeModuleName(transformBridgeEventName('TokenWithdraw'))
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenMint', () => {
+        expect(
+          synapse.getBridgeModuleName(transformBridgeEventName('TokenMint'))
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenDepositAndSwap', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformBridgeEventName('TokenDepositAndSwap')
+          )
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenMintAndSwap', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformBridgeEventName('TokenMintAndSwap')
+          )
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenRedeemAndSwap', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformBridgeEventName('TokenRedeemAndSwap')
+          )
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenRedeemAndRemove', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformBridgeEventName('TokenRedeemAndRemove')
+          )
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenWithdrawAndRemove', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformBridgeEventName('TokenWithdrawAndRemove')
+          )
+        ).toEqual('SynapseBridge')
+      })
+
+      it('TokenRedeemV2', () => {
+        expect(
+          synapse.getBridgeModuleName(transformBridgeEventName('TokenRedeemV2'))
+        ).toEqual('SynapseBridge')
+      })
+    })
+
+    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/cctp/events/SynapseCCTPEvents.sol#L5-L45
+    describe('SynapseCCTP events', () => {
+      // schema: CircleRequestSent => CircleRequestSentEvent
+      const transformCCTPEventName = (contractEventName: string) => {
+        // Add 'Event' suffix
+        return `${contractEventName}Event`
+      }
+
+      it('CircleRequestSent', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformCCTPEventName('CircleRequestSent')
+          )
+        ).toEqual('SynapseCCTP')
+      })
+
+      it('CircleRequestFulfilled', () => {
+        expect(
+          synapse.getBridgeModuleName(
+            transformCCTPEventName('CircleRequestFulfilled')
+          )
+        ).toEqual('SynapseCCTP')
+      })
+    })
+
+    it('Throws when event name is unknown', () => {
+      expect(() => synapse.getBridgeModuleName('SomeUnknownEvent')).toThrow(
+        'Unknown event'
+      )
+    })
+  })
+
   describe('getEstimatedTime', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.MOONBEAM],
