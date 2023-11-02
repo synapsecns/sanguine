@@ -36,7 +36,7 @@ func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, 
 	logsFilter.ChainID = uint32(chainID)
 	var logs []*types.Log
 	var err error
-	// Get logs in ascending order if asc is true.
+	// Get logs in ascending order if asc is set to true.
 	if asc != nil && *asc {
 		logs, err = r.DB.RetrieveLogsInRangeAsc(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
 	} else {
