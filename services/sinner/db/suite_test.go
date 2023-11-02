@@ -14,46 +14,47 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"github.com/synapsecns/sanguine/services/sinner/db"
+	"github.com/synapsecns/sanguine/services/sinner/metadata"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/mysql"
+	"github.com/synapsecns/sanguine/services/sinner/db/sql/sqlite"
 	"gorm.io/gorm/schema"
 )
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs           []db.EventDB
-	logIndex      atomic.Int64
-	scribeMetrics metrics.Handler
+	dbs      []db.TestEventDB
+	logIndex atomic.Int64
+	metrics  metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
 func NewEventDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
+
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.EventDB{},
+		dbs:       []db.TestEventDB{},
 	}
 }
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
-	t.dbs = []db.EventDB{sqliteStore}
+	t.dbs = []db.TestEventDB{sqliteStore}
 	t.setupMysqlDB()
 }
 
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
+	t.logIndex.Store(0)
 
 	// don't use metrics on ci for integration tests
 	isCI := core.GetEnvBool("CI", false)
@@ -64,10 +65,9 @@ func (t *DBSuite) SetupSuite() {
 		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 		metricsHandler = metrics.Jaeger
 	}
-
 	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
-	t.Require().Nil(err)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
+	Nil(t.T(), err)
 }
 
 func (t *DBSuite) setupMysqlDB() {
@@ -96,20 +96,19 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxOpenConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.scribeMetrics, false)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.EventDB)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.TestEventDB)) {
 	t.T().Helper()
-
 	wg := sync.WaitGroup{}
 	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.EventDB) {
+		go func(testDB db.TestEventDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

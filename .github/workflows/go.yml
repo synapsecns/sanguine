@@ -200,6 +200,12 @@ jobs:
               fi
             done
 
+            # Check if max retries is exceeded for this package.
+            if [ $retries -eq $max_num_retries ]; then
+                echo "Max retries exceeded for $pkg"
+                exit 1
+            fi
+
             if [ -f profile.cov ]; then
               tail -n +2 profile.cov >> coverage.txt
               rm profile.cov

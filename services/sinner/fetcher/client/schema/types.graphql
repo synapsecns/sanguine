@@ -1,0 +1,64 @@
+scalar JSON
+
+type Receipt {
+  chain_id: Int!
+  type: Int!
+  post_state: String!
+  status: Int!
+  cumulative_gas_used: Int!
+  bloom: String!
+  tx_hash: String!
+  contract_address: String!
+  gas_used: Int!
+  block_number: Int!
+  transaction_index: Int!
+  page: Int!
+  logs: [Log!] @goField(forceResolver:true)
+  transaction: Transaction! @goField(forceResolver:true)
+  json: JSON! @goField(forceResolver:true)
+}
+
+type Transaction {
+  chain_id: Int!
+  tx_hash: String!
+  protected: Boolean!
+  type:  Int!
+  data: String!
+  gas: Int!
+  gas_price: Int!
+  gas_tip_cap: String!
+  gas_fee_cap: String!
+  value: String!
+  nonce: Int!
+  to: String!
+  page: Int!
+  sender: String!
+  timestamp: Int!
+  logs: [Log!] @goField(forceResolver: true)
+  receipt: Receipt! @goField(forceResolver: true)
+  json: JSON! @goField(forceResolver:true)
+}
+
+type Log {
+  contract_address: String!
+  chain_id: Int!
+  topics: [String!]!
+  data: String!
+  block_number: Int!
+  tx_hash: String!
+  tx_index: Int!
+  block_hash: String!
+  index: Int!
+  removed: Boolean!
+  page: Int!
+  transaction: Transaction! @goField(forceResolver: true)
+  receipt: Receipt! @goField(forceResolver: true)
+  json: JSON! @goField(forceResolver:true)
+}
+
+type BlockTime {
+  chain_id: Int!
+  block_number: Int!
+  timestamp: Int!
+
+}
