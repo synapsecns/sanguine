@@ -9,6 +9,18 @@ import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
  */
 export class SynapseRouterSet extends RouterSet {
   public readonly bridgeModuleName = 'SynapseBridge'
+  public readonly allEvents = [
+    'DepositEvent',
+    'RedeemEvent',
+    'WithdrawEvent',
+    'MintEvent',
+    'DepositAndSwapEvent',
+    'MintAndSwapEvent',
+    'RedeemAndSwapEvent',
+    'RedeemAndRemoveEvent',
+    'WithdrawAndRemoveEvent',
+    'RedeemV2Event',
+  ]
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)

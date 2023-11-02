@@ -31,6 +31,7 @@ export type RouterConstructor = new (
  */
 export abstract class RouterSet {
   abstract readonly bridgeModuleName: string
+  abstract readonly allEvents: string[]
 
   public routers: {
     [chainId: number]: Router
