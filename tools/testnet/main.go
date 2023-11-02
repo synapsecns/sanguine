@@ -425,7 +425,7 @@ func main() {
 					}
 					status, err := contract.MessageStatus(ctx, message)
 					if err != nil {
-						fmt.Printf("error getting message status [leaf=%s]: %v", leaf, err)
+						fmt.Printf("error getting message status [leaf=%s]: %v\n", leaf, err)
 						return true
 					}
 					if status == 2 {
