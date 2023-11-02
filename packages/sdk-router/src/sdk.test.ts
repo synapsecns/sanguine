@@ -268,6 +268,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -306,6 +307,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -344,6 +346,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -385,6 +388,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -419,6 +423,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -460,6 +465,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -494,6 +500,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -536,6 +543,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -570,6 +578,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
