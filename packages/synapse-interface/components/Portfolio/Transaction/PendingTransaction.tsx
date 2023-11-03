@@ -124,16 +124,16 @@ export const PendingTransaction = ({
   )
 
   const originFallback = useFallbackBridgeOriginQuery({
-    useFallback: isDelayed && useFallback,
-    // useFallback: true,
+    // useFallback: isDelayed && useFallback,
+    useFallback: true,
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: BridgeType.Bridge,
   })
 
   const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback: isDelayed && useFallback,
-    // useFallback: true,
+    // useFallback: isDelayed && useFallback,
+    useFallback: true,
     chainId: destinationChain?.id,
     address: destinationAddress,
     kappa: kappa,
