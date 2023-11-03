@@ -4,12 +4,12 @@ import { Address } from 'viem'
 import { updateLastConnectedAddress, updateLastConnectedTime } from './actions'
 
 export interface ApplicationState {
-  lastConnectedTimestamp: number | undefined
-  lastConnectedAddress: Address | undefined
+  lastConnectedTimestamp: number | null
+  lastConnectedAddress: Address | null
 }
 const initialState: ApplicationState = {
-  lastConnectedTimestamp: undefined,
-  lastConnectedAddress: undefined,
+  lastConnectedTimestamp: null,
+  lastConnectedAddress: null,
 }
 
 export const applicationSlice = createSlice({
