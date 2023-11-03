@@ -243,6 +243,7 @@ export const MostRecentTransaction = () => {
       )
     }
   }, [
+    currentTime,
     lastPendingBridgeTransaction,
     lastHistoricalTransaction,
     lastPendingTransaction,
