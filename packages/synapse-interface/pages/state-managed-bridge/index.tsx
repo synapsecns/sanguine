@@ -374,6 +374,8 @@ const StateManagedBridge = () => {
         transactionHash: undefined,
         timestamp: undefined,
         isSubmitted: false,
+        estimatedTime: bridgeQuote.estimatedTime,
+        bridgeModuleName: bridgeQuote.bridgeModuleName,
       })
     )
     try {

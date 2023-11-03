@@ -26,7 +26,7 @@ import { BridgeType } from '@/slices/api/generated'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
-  isSubmitted?: boolean
+  isSubmitted: boolean
   isCompleted?: boolean
 }
 
@@ -91,26 +91,20 @@ export const PendingTransaction = ({
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
   useEffect(() => {
-    const currentTime: number = Math.floor(Date.now() / 1000)
-    const elapsedMinutes: number = Math.floor(
-      (currentTime - startedTimestamp) / 60
-    )
-    setElapsedTime(elapsedMinutes)
-  }, [startedTimestamp])
+    if (isSubmitted) {
+      const interval = setInterval(() => {
+        const currentTime: number = Math.floor(Date.now() / 1000)
+        const elapsedMinutes: number = Math.floor(
+          (currentTime - startedTimestamp) / 60
+        )
+        setElapsedTime(elapsedMinutes)
+      }, 60000)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime: number = Math.floor(Date.now() / 1000)
-      const elapsedMinutes: number = Math.floor(
-        (currentTime - startedTimestamp) / 60
-      )
-      setElapsedTime(elapsedMinutes)
-    }, 60000)
-
-    return () => {
-      clearInterval(interval)
+      return () => {
+        clearInterval(interval)
+      }
     }
-  }, [startedTimestamp])
+  }, [startedTimestamp, isSubmitted])
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
 
