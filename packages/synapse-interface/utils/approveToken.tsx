@@ -35,7 +35,8 @@ export const approveToken = async (
       tokenAddress: tokenAddress as Address,
     })
 
-    if (approveTx.status === 'success') {
+    console.log('approveTx: ', approveTx)
+    if (approveTx?.status === 'success') {
       toast.dismiss(pendingPopup)
 
       segmentAnalyticsEvent(`[Approval] successfully approves token`, {
@@ -59,7 +60,7 @@ export const approveToken = async (
       })
     }
 
-    return approveTx.transactionHash
+    return approveTx?.transactionHash
   } catch (error) {
     segmentAnalyticsEvent(`[Approval] approval fails`, {
       chainId,

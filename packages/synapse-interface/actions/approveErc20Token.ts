@@ -31,6 +31,7 @@ export const approveErc20Token = async ({
     abi = erc20ABI
   }
 
+  // try {
   const { request } = await prepareWriteContract({
     chainId,
     address: tokenAddress,
@@ -40,7 +41,12 @@ export const approveErc20Token = async ({
   })
 
   const { hash } = await writeContract(request)
+
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt
+  // } catch (error) {
+  //   console.error('approve failed: ', error)
+  //   throw error
+  // }
 }
