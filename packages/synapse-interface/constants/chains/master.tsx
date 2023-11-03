@@ -119,8 +119,8 @@ export const AVALANCHE: Chain = {
     fallback: 'https://1rpc.io/avax/c',
   },
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
-  explorerUrl: 'https://snowtrace.io',
-  explorerName: 'Snowtrace',
+  explorerUrl: 'https://avascan.info/',
+  explorerName: 'Avascan',
   explorerImg: avalancheExplorerImg,
   color: 'red',
 }

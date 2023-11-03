@@ -9,6 +9,7 @@ import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {
     AlreadyExecuted,
     AlreadyFailed,
+    DisputeTimeoutNotOver,
     DuplicatedSnapshotRoot,
     IncorrectDestinationDomain,
     IncorrectMagicValue,
@@ -367,7 +368,9 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         // Check if snapshot root has been submitted
         if (rootData.submittedAt == 0) revert IncorrectSnapshotRoot();
         // Check that Notary who submitted the attestation is not in dispute
-        if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeExists(rootData.notaryIndex)) revert NotaryInDispute();
+        // Check that Notary who submitted the attestation isn't in post-dispute timeout
+        if (_notaryDisputeTimeout(rootData.notaryIndex)) revert DisputeTimeoutNotOver();
     }
 
     /// @dev Formats the message execution receipt payload for the given hash and receipt data.

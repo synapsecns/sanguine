@@ -12,8 +12,8 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
     removed
   }
 }
-query GetLogsAndTransactionsRange ($chain_id: Int!, $floor_block: Int!, $ceiling_block: Int!, $page: Int!, $contract_address: String!) {
-  response: transactionsRange (chain_id: $chain_id, start_block: $floor_block, end_block: $ceiling_block, page: $page) {
+query GetLogsAndTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $contract_address: String!, $asc: Boolean!) {
+  response: transactionsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
     chain_id
     tx_hash
     protected
@@ -29,7 +29,7 @@ query GetLogsAndTransactionsRange ($chain_id: Int!, $floor_block: Int!, $ceiling
     timestamp
     sender
   }
-  logsRange (chain_id: $chain_id, start_block: $ceiling_block, end_block: $floor_block, page: $page, contract_address: $contract_address) {
+  logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, contract_address: $contract_address, asc: $asc) {
     contract_address
     chain_id
     topics

@@ -6,7 +6,7 @@ Sinner tracks the message lifecycle for the synapse interchain network.
 
 ## Scope
 
-While this applications goal is to encompass the full range of events sent through SIN, the intiial scope is much smaller & pragmatically focused on developers building on SIN & the developent of the off-chain protocols itself. To that end, at a high level the goal of the application is to track the message through the following stages. Completed types are contained in the table below:
+While this applications goal is to encompass the full range of events sent through SIN, the initial scope is much smaller & pragmatically focused on developers building on SIN & the developent of the off-chain protocols itself. To that end, at a high level the goal of the application is to track the message through the following stages. Completed types are contained in the table below:
 
 ## Config:
 

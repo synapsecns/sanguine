@@ -15,19 +15,6 @@ interface IAgentManager {
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external;
 
     /**
-     * @notice Allows contract owner to resolve a stuck Dispute.
-     * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
-     * which is required for the Dispute to be resolved naturally.
-     * > Will revert if any of these is true:
-     * > - Caller is not contract owner.
-     * > - Domain doesn't match the saved agent domain.
-     * > - `slashedAgent` is not in Dispute.
-     * > - Less than `FRESH_DATA_TIMEOUT` has passed since the last Notary submission to the Inbox.
-     * @param slashedAgent  Agent that is being slashed
-     */
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external;
-
-    /**
      * @notice Allows Inbox to slash an agent, if their fraud was proven.
      * > Will revert if any of these is true:
      * > - Caller is not Inbox.

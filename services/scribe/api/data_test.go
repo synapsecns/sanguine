@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
@@ -51,13 +52,13 @@ func (g APISuite) TestRetrieveData() {
 	Nil(g.T(), err)
 	// there were 20 logs created (2 per loop, in a loop of 10)
 	Equal(g.T(), 20, len(logs.Response))
-	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1)
+	logsRange, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1, nil)
 	Nil(g.T(), err)
 	// from 2-5, there were 8 logs created (2 per loop, in a range of 4)
 	Equal(g.T(), 8, len(logsRange.Response))
 
 	// Test getting logs in a range in ascending order.
-	logsRangeAsc, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 5, 2, 1)
+	logsRangeAsc, err := g.gqlClient.GetLogsRange(g.GetTestContext(), int(chainID), 2, 5, 1, core.PtrTo(true))
 	Nil(g.T(), err)
 	Equal(g.T(), 8, len(logsRangeAsc.Response))
 	Equal(g.T(), 2, logsRangeAsc.Response[0].BlockNumber)

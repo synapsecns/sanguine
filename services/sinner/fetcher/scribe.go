@@ -26,8 +26,6 @@ type scribeFetcherImpl struct {
 	handler          metrics.Handler
 }
 
-const retryThreshold = 5
-
 // NewFetcher creates a new fetcher.
 func NewFetcher(fetchClient *client.Client, handler metrics.Handler) ScribeFetcher {
 	return &scribeFetcherImpl{
@@ -47,7 +45,7 @@ func (s scribeFetcherImpl) FetchLastIndexed(ctx context.Context, chainID uint32,
 
 func (s scribeFetcherImpl) FetchLogsAndTransactionsRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address, page int) ([]ethTypes.Log, []types.TxSupplementalInfo, error) {
 	// Get data in ascending order.
-	res, err := s.underlyingClient.GetLogsAndTransactionsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, contractAddress.String())
+	res, err := s.underlyingClient.GetLogsAndTransactionsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, contractAddress.String(), true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get logs and txs: %w", err)
 	}

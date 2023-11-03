@@ -24,6 +24,7 @@ type Query {
     start_block: Int!
     end_block: Int!
     page: Int!
+    asc: Boolean = false
   ): [Log]
   # returns all transactions that match the given filter and range
   transactionsRange(
