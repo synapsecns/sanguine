@@ -39,6 +39,7 @@ export const PendingTransaction = ({
   destinationChain,
   destinationToken,
   destinationValue,
+  estimatedDuration,
   startedTimestamp,
   completedTimestamp,
   transactionHash,
@@ -118,7 +119,7 @@ export const PendingTransaction = ({
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
-    () => timeRemaining >= -5 && timeRemaining <= -1,
+    () => timeRemaining >= -5 && timeRemaining <= 0,
     [timeRemaining]
   )
 
@@ -169,7 +170,7 @@ export const PendingTransaction = ({
     const isStale: boolean =
       !transactionHash &&
       !isSubmitted &&
-      currentTimestamp - startedTimestamp > 180
+      currentTimestamp - startedTimestamp > 100
 
     if (!isSubmitted && isStale) {
       dispatch(removePendingBridgeTransaction(startedTimestamp))

@@ -328,6 +328,11 @@ const StateManagedBridge = () => {
   }
 
   const approveTxn = async () => {
+    console.log('bridgeQuote?.routerAddress:', bridgeQuote?.routerAddress)
+    console.log(
+      'fromToken?.addresses[fromChainId]:',
+      fromToken?.addresses[fromChainId]
+    )
     try {
       const tx = approveToken(
         bridgeQuote?.routerAddress,

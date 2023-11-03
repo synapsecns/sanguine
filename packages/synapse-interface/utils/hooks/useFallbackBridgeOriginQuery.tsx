@@ -75,10 +75,13 @@ export const useFallbackBridgeOriginQuery = ({
       data: fallbackQueryData,
     } = fetchedFallbackQuery
 
-    const { bridgeTx: originInfo, kappa } =
-      fallbackQueryData?.getOriginBridgeTx || {}
+    const {
+      bridgeTx: originInfo,
+      kappa,
+      pending,
+    } = fallbackQueryData?.getOriginBridgeTx || {}
 
-    if (originInfo && kappa) {
+    if (originInfo && kappa && pending) {
       const constructedBridgeTransaction: BridgeTransaction = {
         fromInfo: originInfo,
         toInfo: null,

@@ -11,6 +11,7 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import {
   addFallbackQueryHistoricalTransaction,
   addFallbackQueryPendingTransaction,
+  removeFallbackQueryPendingTransaction,
   updateFallbackQueryPendingTransaction,
 } from '@/slices/transactions/actions'
 
@@ -122,9 +123,7 @@ export const useFallbackBridgeDestinationQuery = ({
           'complete fallback transaction: ',
           constructedBridgeTransaction
         )
-        dispatch(
-          updateFallbackQueryPendingTransaction(constructedBridgeTransaction)
-        )
+        dispatch(removeFallbackQueryPendingTransaction(kappa))
         dispatch(
           addFallbackQueryHistoricalTransaction(constructedBridgeTransaction)
         )

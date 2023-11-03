@@ -31,18 +31,18 @@ export const approveToken = async (
     const approveTx = await approveErc20Token({
       spender: address as Address,
       chainId,
-      tokenAddress: tokenAddress as Address,
       amount,
+      tokenAddress: tokenAddress as Address,
     })
 
     if (approveTx.status === 'success') {
       toast.dismiss(pendingPopup)
 
-        segmentAnalyticsEvent(`[Approval] successfully approves token`, {
-          chainId,
-          tokenAddress,
-          amount,
-        })
+      segmentAnalyticsEvent(`[Approval] successfully approves token`, {
+        chainId,
+        tokenAddress,
+        amount,
+      })
       const successToastContent = (
         <div>
           <div>Successfully approved on {currentChainName}</div>

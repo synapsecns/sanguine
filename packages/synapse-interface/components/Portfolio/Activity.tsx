@@ -335,6 +335,7 @@ export const PendingTransactionAwaitingIndexing = () => {
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain as Chain}
             destinationToken={transaction.destinationToken as Token}
+            estimatedDuration={transaction.estimatedTime}
             transactionHash={transaction.transactionHash}
             isSubmitted={transaction.isSubmitted as boolean}
             startedTimestamp={transaction.timestamp as number}
