@@ -54,9 +54,6 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
-  console.log('chain: ', chain)
-  console.log('token: ', token)
-  console.log('tokenAmount:', tokenAmount)
   return (
     <div
       data-test-id="transaction-payload-detail"
