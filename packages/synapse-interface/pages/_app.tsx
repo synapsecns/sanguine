@@ -49,9 +49,10 @@ import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
 
+import ApplicationUpdater from '@/slices/application/updater'
+import BridgeUpdater from '@/slices/bridge/updater'
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
-import BridgeUpdater from '@/slices/bridge/updater'
 
 const rawChains = [
   mainnet,
@@ -133,6 +134,7 @@ export const wagmiConfig = createConfig({
 function Updaters() {
   return (
     <>
+      <ApplicationUpdater />
       <PortfolioUpdater />
       <TransactionsUpdater />
       <BridgeUpdater />
