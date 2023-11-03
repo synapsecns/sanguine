@@ -75,7 +75,7 @@ export const MostRecentTransaction = () => {
       fallbackQueryPendingTransactions,
     ])
 
-  const userHistoricalTransaactionsWithFallback: BridgeTransaction[] =
+  const userHistoricalTransactionsWithFallback: BridgeTransaction[] =
     useMemo(() => {
       let transactions: BridgeTransaction[] = []
 
@@ -109,8 +109,8 @@ export const MostRecentTransaction = () => {
   }, [pendingAwaitingCompletionTransactionsWithFallback])
 
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
-    return userHistoricalTransaactionsWithFallback?.[0]
-  }, [userHistoricalTransaactionsWithFallback])
+    return userHistoricalTransactionsWithFallback?.[0]
+  }, [userHistoricalTransactionsWithFallback])
 
   const recentMinutesInUnix: number = 15 * 60
 
@@ -134,104 +134,116 @@ export const MostRecentTransaction = () => {
 
   let transaction
 
-  if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
-    return null
-  }
+  return useMemo(() => {
+    if (
+      isUserHistoricalTransactionsLoading ||
+      isUserPendingTransactionsLoading
+    ) {
+      return null
+    }
 
-  if (!masqueradeActive && lastPendingBridgeTransaction) {
-    transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
-    return (
-      <div data-test-id="most-recent-transaction" className="mt-6">
-        <PendingTransaction
-          connectedAddress={address as Address}
-          originChain={transaction.originChain as Chain}
-          originToken={transaction.originToken as Token}
-          originValue={Number(transaction.originValue)}
-          destinationChain={transaction.destinationChain as Chain}
-          destinationToken={transaction.destinationToken as Token}
-          startedTimestamp={transaction.id ?? transaction.startedTimestamp}
-          transactionHash={transaction.transactionHash as string}
-          isSubmitted={transaction.isSubmitted as boolean}
-          transactionType={TransactionType.PENDING}
-        />
-      </div>
-    )
-  }
+    if (!masqueradeActive && lastPendingBridgeTransaction) {
+      transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
+      return (
+        <div data-test-id="most-recent-transaction" className="mt-6">
+          <PendingTransaction
+            connectedAddress={address as Address}
+            originChain={transaction.originChain as Chain}
+            originToken={transaction.originToken as Token}
+            originValue={Number(transaction.originValue)}
+            destinationChain={transaction.destinationChain as Chain}
+            destinationToken={transaction.destinationToken as Token}
+            startedTimestamp={transaction.id ?? transaction.startedTimestamp}
+            transactionHash={transaction.transactionHash as string}
+            isSubmitted={transaction.isSubmitted as boolean}
+            transactionType={TransactionType.PENDING}
+          />
+        </div>
+      )
+    }
 
-  if (!masqueradeActive && lastPendingTransaction) {
-    transaction = lastPendingTransaction as BridgeTransaction
-    return (
-      <div data-test-id="most-recent-transaction" className="mt-6">
-        <PendingTransaction
-          connectedAddress={address as Address}
-          startedTimestamp={transaction?.fromInfo?.time as number}
-          transactionHash={transaction?.fromInfo?.txnHash as string}
-          transactionType={TransactionType.PENDING}
-          originValue={transaction?.fromInfo?.formattedValue as number}
-          originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
-          destinationChain={
-            CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
-          }
-          originToken={
-            tokenAddressToToken(
-              transaction?.fromInfo?.chainID,
-              transaction?.fromInfo?.tokenAddress
-            ) as Token
-          }
-          destinationToken={
-            tokenAddressToToken(
-              transaction?.toInfo?.chainID,
-              transaction?.toInfo?.tokenAddress
-            ) as Token
-          }
-          destinationAddress={transaction?.fromInfo?.address as Address}
-          isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-          isCompleted={transaction?.toInfo?.time ? true : false}
-          kappa={transaction?.kappa}
-        />
-      </div>
-    )
-  }
+    if (!masqueradeActive && lastPendingTransaction) {
+      transaction = lastPendingTransaction as BridgeTransaction
+      return (
+        <div data-test-id="most-recent-transaction" className="mt-6">
+          <PendingTransaction
+            connectedAddress={address as Address}
+            startedTimestamp={transaction?.fromInfo?.time as number}
+            transactionHash={transaction?.fromInfo?.txnHash as string}
+            transactionType={TransactionType.PENDING}
+            originValue={transaction?.fromInfo?.formattedValue as number}
+            originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
+            destinationChain={
+              CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
+            }
+            originToken={
+              tokenAddressToToken(
+                transaction?.fromInfo?.chainID,
+                transaction?.fromInfo?.tokenAddress
+              ) as Token
+            }
+            destinationToken={
+              tokenAddressToToken(
+                transaction?.toInfo?.chainID,
+                transaction?.toInfo?.tokenAddress
+              ) as Token
+            }
+            destinationAddress={transaction?.fromInfo?.address as Address}
+            isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+            isCompleted={transaction?.toInfo?.time ? true : false}
+            kappa={transaction?.kappa}
+          />
+        </div>
+      )
+    }
 
-  if (
-    !masqueradeActive &&
-    lastHistoricalTransaction &&
-    isLastHistoricalTransactionRecent &&
-    !seenLastHistoricalTransaction
-  ) {
-    transaction = lastHistoricalTransaction as BridgeTransaction
-    return (
-      <div data-test-id="most-recent-transaction" className="mt-6">
-        <PendingTransaction
-          connectedAddress={address as Address}
-          destinationAddress={transaction?.fromInfo?.address as Address}
-          startedTimestamp={transaction?.fromInfo?.time as number}
-          completedTimestamp={transaction?.toInfo?.time as number}
-          transactionHash={transaction?.fromInfo?.txnHash as string}
-          kappa={transaction?.kappa as string}
-          transactionType={TransactionType.PENDING}
-          originValue={transaction?.fromInfo?.formattedValue as number}
-          destinationValue={transaction?.toInfo?.formattedValue as number}
-          originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
-          destinationChain={
-            CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
-          }
-          originToken={
-            tokenAddressToToken(
-              transaction?.fromInfo?.chainID,
-              transaction?.fromInfo?.tokenAddress
-            ) as Token
-          }
-          destinationToken={
-            tokenAddressToToken(
-              transaction?.toInfo?.chainID,
-              transaction?.toInfo?.tokenAddress
-            ) as Token
-          }
-          isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
-          isCompleted={true}
-        />
-      </div>
-    )
-  }
+    if (
+      !masqueradeActive &&
+      lastHistoricalTransaction &&
+      isLastHistoricalTransactionRecent &&
+      !seenLastHistoricalTransaction
+    ) {
+      transaction = lastHistoricalTransaction as BridgeTransaction
+      return (
+        <div data-test-id="most-recent-transaction" className="mt-6">
+          <PendingTransaction
+            connectedAddress={address as Address}
+            destinationAddress={transaction?.fromInfo?.address as Address}
+            startedTimestamp={transaction?.fromInfo?.time as number}
+            completedTimestamp={transaction?.toInfo?.time as number}
+            transactionHash={transaction?.fromInfo?.txnHash as string}
+            kappa={transaction?.kappa as string}
+            transactionType={TransactionType.PENDING}
+            originValue={transaction?.fromInfo?.formattedValue as number}
+            destinationValue={transaction?.toInfo?.formattedValue as number}
+            originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
+            destinationChain={
+              CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
+            }
+            originToken={
+              tokenAddressToToken(
+                transaction?.fromInfo?.chainID,
+                transaction?.fromInfo?.tokenAddress
+              ) as Token
+            }
+            destinationToken={
+              tokenAddressToToken(
+                transaction?.toInfo?.chainID,
+                transaction?.toInfo?.tokenAddress
+              ) as Token
+            }
+            isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
+            isCompleted={true}
+          />
+        </div>
+      )
+    }
+  }, [
+    lastHistoricalTransaction,
+    lastPendingTransaction,
+    masqueradeActive,
+    seenLastHistoricalTransaction,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
+  ])
 }
