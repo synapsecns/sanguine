@@ -30,8 +30,11 @@ export const useFallbackBridgeOriginQuery = ({
   const { fallbackQueryPendingTransactions }: TransactionsState =
     useTransactionsState()
 
-  const [fetchFallbackBridgeOriginQuery, fetchedFallbackQuery] =
-    useLazyGetOriginBridgeTxFallbackQuery({ pollingInterval: 30000 })
+  const [
+    fetchFallbackBridgeOriginQuery,
+    fetchedFallbackQuery,
+    lastFetchedQueryParams,
+  ] = useLazyGetOriginBridgeTxFallbackQuery({ pollingInterval: 30000 })
 
   const validQueryParams: FallbackBridgeOriginQueryProps | null =
     useMemo(() => {
@@ -50,6 +53,9 @@ export const useFallbackBridgeOriginQuery = ({
 
   // Start fallback query
   useEffect(() => {
+    const lastFetchedTxn: boolean = Boolean(
+      lastFetchedQueryParams?.lastArg?.txnHash
+    )
     if (useFallback && validQueryParams) {
       console.log('start origin fallback subscription, txnHash: ', txnHash)
       fetchFallbackBridgeOriginQuery({
@@ -57,7 +63,10 @@ export const useFallbackBridgeOriginQuery = ({
         txnHash: validQueryParams.txnHash,
         bridgeType: validQueryParams.bridgeType,
       })
-    } else if (!useFallback || queryTransactionAlreadyStored) {
+    } else if (
+      (!useFallback || queryTransactionAlreadyStored) &&
+      lastFetchedTxn
+    ) {
       console.log('end origin fallback subscription, txnHash: ', txnHash)
       fetchFallbackBridgeOriginQuery({
         chainId: null,

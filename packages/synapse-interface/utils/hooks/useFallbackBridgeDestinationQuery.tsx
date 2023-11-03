@@ -43,8 +43,11 @@ export const useFallbackBridgeDestinationQuery = ({
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
 
-  const [fetchFallbackBridgeDestinationQuery, fetchedFallbackQuery] =
-    useLazyGetDestinationBridgeTxFallbackQuery({ pollingInterval: 30000 })
+  const [
+    fetchFallbackBridgeDestinationQuery,
+    fetchedFallbackQuery,
+    lastFetchedQueryParams,
+  ] = useLazyGetDestinationBridgeTxFallbackQuery({ pollingInterval: 30000 })
 
   const validQueryParams: FallbackBridgeDestinationQueryProps | null =
     useMemo(() => {
@@ -59,6 +62,9 @@ export const useFallbackBridgeDestinationQuery = ({
 
   // Start fallback query
   useEffect(() => {
+    const lastFetchedAddress: boolean = Boolean(
+      lastFetchedQueryParams?.lastArg?.address
+    )
     if (useFallback && validQueryParams) {
       console.log('start dest fallback subscription, kappa: ', kappa)
       fetchFallbackBridgeDestinationQuery({
@@ -68,7 +74,7 @@ export const useFallbackBridgeDestinationQuery = ({
         timestamp: validQueryParams.timestamp,
         bridgeType: validQueryParams.bridgeType,
       })
-    } else if (!useFallback) {
+    } else if (!useFallback && lastFetchedAddress) {
       console.log('end dest fallback subscription, kappa: ', kappa)
       fetchFallbackBridgeDestinationQuery({
         chainId: null,
