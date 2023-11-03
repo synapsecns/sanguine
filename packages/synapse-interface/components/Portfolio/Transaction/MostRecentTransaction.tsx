@@ -14,6 +14,7 @@ import { TransactionType } from './Transaction'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { PendingTransaction } from './PendingTransaction'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const MostRecentTransaction = () => {
   const { address } = useAccount()
@@ -24,6 +25,8 @@ export const MostRecentTransaction = () => {
     isUserPendingTransactionsLoading,
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
+    fallbackQueryHistoricalTransactions,
+    fallbackQueryPendingTransactions,
   }: TransactionsState = useTransactionsState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
@@ -44,17 +47,70 @@ export const MostRecentTransaction = () => {
     return Object.keys(searchedBalancesAndAllowances).length > 0
   }, [searchedBalancesAndAllowances])
 
+  const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+        transactions = [...pendingAwaitingCompletionTransactions]
+      }
+
+      if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
+        const mergedTransactions = [
+          ...transactions,
+          ...fallbackQueryPendingTransactions,
+        ]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [
+      pendingAwaitingCompletionTransactions,
+      fallbackQueryPendingTransactions,
+    ])
+
+  const userHistoricalTransaactionsWithFallback: BridgeTransaction[] =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(userHistoricalTransactions)) {
+        transactions = [...userHistoricalTransactions]
+      }
+
+      if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+        const mergedTransactions = [
+          ...transactions,
+          ...fallbackQueryHistoricalTransactions,
+        ]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [userHistoricalTransactions, fallbackQueryHistoricalTransactions])
+
   const lastPendingBridgeTransaction: PendingBridgeTransaction = useMemo(() => {
     return pendingBridgeTransactions?.[0]
   }, [pendingBridgeTransactions])
 
   const lastPendingTransaction: BridgeTransaction = useMemo(() => {
-    return pendingAwaitingCompletionTransactions?.[0]
-  }, [pendingAwaitingCompletionTransactions])
+    return pendingAwaitingCompletionTransactionsWithFallback?.[0]
+  }, [pendingAwaitingCompletionTransactionsWithFallback])
 
   const lastHistoricalTransaction: BridgeTransaction = useMemo(() => {
-    return userHistoricalTransactions?.[0]
-  }, [userHistoricalTransactions])
+    return userHistoricalTransaactionsWithFallback?.[0]
+  }, [userHistoricalTransaactionsWithFallback])
 
   const recentMinutesInUnix: number = 15 * 60
 
