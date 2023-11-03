@@ -2,6 +2,7 @@ import { Action, combineReducers } from '@reduxjs/toolkit'
 import { PersistConfig, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
+import application from '@/slices/application/reducer'
 import bridge from '@/slices/bridge/reducer'
 import portfolio from '@/slices/portfolio/reducer'
 import swap from '@/slices/swap/reducer'
@@ -16,6 +17,7 @@ import swapDisplay from '@/slices/swapDisplaySlice'
 import { api } from '@/slices/api/slice'
 
 const persistedReducers = {
+  application,
   bridge,
   transactions,
 }
