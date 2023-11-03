@@ -169,7 +169,7 @@ export const PendingTransaction = ({
     const isStale: boolean =
       !transactionHash &&
       !isSubmitted &&
-      currentTimestamp - startedTimestamp > 60
+      currentTimestamp - startedTimestamp > 180
 
     if (!isSubmitted && isStale) {
       dispatch(removePendingBridgeTransaction(startedTimestamp))
