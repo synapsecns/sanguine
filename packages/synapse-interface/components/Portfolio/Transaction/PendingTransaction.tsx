@@ -119,7 +119,7 @@ export const PendingTransaction = ({
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
-    () => timeRemaining >= -5 && timeRemaining <= 0 && !isCompleted,
+    () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
     [timeRemaining]
   )
 
