@@ -395,15 +395,17 @@ export default function Updater(): null {
   useEffect(() => {
     if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
       fallbackQueryHistoricalTransactions.forEach(
-        (historicalTransaction: BridgeTransaction) => {
+        (fallbackHistoricalTransaction: BridgeTransaction) => {
           const matched: boolean = fallbackQueryPendingTransactions.some(
             (pendingTransaction: BridgeTransaction) =>
-              pendingTransaction.kappa === historicalTransaction.kappa
+              pendingTransaction.kappa === fallbackHistoricalTransaction.kappa
           )
 
           if (matched) {
             dispatch(
-              removeFallbackQueryPendingTransaction(historicalTransaction.kappa)
+              removeFallbackQueryPendingTransaction(
+                fallbackHistoricalTransaction.kappa
+              )
             )
           }
         }

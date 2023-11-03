@@ -40,6 +40,7 @@ export const useFallbackBridgeDestinationQuery = ({
 
   const {
     fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
   }: TransactionsState = useTransactionsState()
 
@@ -114,7 +115,7 @@ export const useFallbackBridgeDestinationQuery = ({
         )
 
       const destinationQueryAlreadySaved: boolean =
-        fallbackQueryPendingTransactions.some(
+        fallbackQueryHistoricalTransactions.some(
           (transaction: BridgeTransaction) =>
             transaction?.toInfo === destinationInfo
         )
@@ -129,7 +130,6 @@ export const useFallbackBridgeDestinationQuery = ({
           'complete fallback transaction: ',
           constructedBridgeTransaction
         )
-        dispatch(removeFallbackQueryPendingTransaction(kappa))
         dispatch(
           addFallbackQueryHistoricalTransaction(constructedBridgeTransaction)
         )

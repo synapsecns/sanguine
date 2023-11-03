@@ -27,8 +27,10 @@ export const useFallbackBridgeOriginQuery = ({
 }: useFallbackBridgeOriginQueryProps) => {
   const dispatch = useAppDispatch()
 
-  const { fallbackQueryPendingTransactions }: TransactionsState =
-    useTransactionsState()
+  const {
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+  }: TransactionsState = useTransactionsState()
 
   const [
     fetchFallbackBridgeOriginQuery,
@@ -90,7 +92,7 @@ export const useFallbackBridgeOriginQuery = ({
       pending,
     } = fallbackQueryData?.getOriginBridgeTx || {}
 
-    if (originInfo && kappa && pending) {
+    if (originInfo && kappa) {
       const constructedBridgeTransaction: BridgeTransaction = {
         fromInfo: originInfo,
         toInfo: null,
