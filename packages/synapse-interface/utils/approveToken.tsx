@@ -35,7 +35,6 @@ export const approveToken = async (
       tokenAddress: tokenAddress as Address,
     })
 
-    console.log('approveTx: ', approveTx)
     if (approveTx?.status === 'success') {
       toast.dismiss(pendingPopup)
 
