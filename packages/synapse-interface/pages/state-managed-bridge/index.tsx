@@ -432,38 +432,14 @@ const StateManagedBridge = () => {
           expectedReceivedAmount: bridgeQuote.outputAmountString,
           slippage: bridgeQuote.exchangeRate,
         })
-        if (
-          checkTransactionsExist(pendingBridgeTransactions) &&
-          pendingBridgeTransactions.some(
-            (transaction: PendingBridgeTransaction) =>
-              transaction.id === currentTimestamp
-          )
-        ) {
-          dispatch(
-            updatePendingBridgeTransaction({
-              id: currentTimestamp,
-              timestamp: undefined,
-              transactionHash: tx,
-              isSubmitted: false,
-            })
-          )
-        } else {
-          dispatch(
-            addPendingBridgeTransaction({
-              id: currentTimestamp,
-              originChain: CHAINS_BY_ID[fromChainId],
-              originToken: fromToken,
-              originValue: debouncedFromValue,
-              destinationChain: CHAINS_BY_ID[toChainId],
-              destinationToken: toToken,
-              timestamp: undefined,
-              transactionHash: tx,
-              isSubmitted: false,
-              estimatedTime: bridgeQuote.estimatedTime,
-              bridgeModuleName: bridgeQuote.bridgeModuleName,
-            })
-          )
-        }
+        dispatch(
+          updatePendingBridgeTransaction({
+            id: currentTimestamp,
+            timestamp: undefined,
+            transactionHash: tx,
+            isSubmitted: false,
+          })
+        )
         dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
