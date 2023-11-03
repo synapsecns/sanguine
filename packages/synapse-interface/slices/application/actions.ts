@@ -7,3 +7,6 @@ export const resetReduxCache = createAction(RootActions.RESET_REDUX_CACHE)
 export const updateLastConnectedAddress = createAction<Address>(
   'application/updateLastConnectedAddress'
 )
+export const updateLastConnectedTime = createAction<number>(
+  'application/updateLastConnectedTime'
+)

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'viem'
 
-import { updateLastConnectedAddress } from './actions'
+import { updateLastConnectedAddress, updateLastConnectedTime } from './actions'
 
 export interface ApplicationState {
   lastConnectedTimestamp: number
@@ -17,12 +17,19 @@ export const applicationSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(
-      updateLastConnectedAddress,
-      (state, action: PayloadAction<Address>) => {
-        state.lastConnectedAddress = action.payload
-      }
-    )
+    builder
+      .addCase(
+        updateLastConnectedAddress,
+        (state, action: PayloadAction<Address>) => {
+          state.lastConnectedAddress = action.payload
+        }
+      )
+      .addCase(
+        updateLastConnectedTime,
+        (state, action: PayloadAction<number>) => {
+          state.lastConnectedTimestamp = action.payload
+        }
+      )
   },
 })
 
