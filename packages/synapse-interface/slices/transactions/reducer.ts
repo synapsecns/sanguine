@@ -119,10 +119,11 @@ export const transactionsSlice = createSlice({
         (state, action: PayloadAction<string>) => {
           const kappa: string = action.payload
 
-          state.fallbackQueryPendingTransactions =
-            state.fallbackQueryPendingTransactions.filter(
+          state.fallbackQueryPendingTransactions = [
+            ...state.fallbackQueryPendingTransactions.filter(
               (transaction: BridgeTransaction) => transaction.kappa !== kappa
-            )
+            ),
+          ]
         }
       )
       .addCase(
@@ -157,12 +158,13 @@ export const transactionsSlice = createSlice({
         (state, action: PayloadAction<BridgeTransaction>) => {
           const fallbackTransaction = action.payload
 
-          state.fallbackQueryHistoricalTransactions =
-            state.fallbackQueryHistoricalTransactions.filter(
+          state.fallbackQueryHistoricalTransactions = [
+            ...state.fallbackQueryHistoricalTransactions.filter(
               (transaction: BridgeTransaction) => {
                 transaction !== fallbackTransaction
               }
-            )
+            ),
+          ]
         }
       )
       .addCase(resetTransactionsState, (state) => {

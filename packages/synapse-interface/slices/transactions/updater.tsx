@@ -411,6 +411,24 @@ export default function Updater(): null {
         }
       )
     }
+    if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
+      fallbackQueryPendingTransactions.forEach(
+        (fallbackPendingTransaction: BridgeTransaction) => {
+          const matched: boolean = userHistoricalTransactions.some(
+            (pendingTransaction: BridgeTransaction) =>
+              pendingTransaction.kappa === fallbackPendingTransaction.kappa
+          )
+
+          if (matched) {
+            dispatch(
+              removeFallbackQueryPendingTransaction(
+                fallbackPendingTransaction.kappa
+              )
+            )
+          }
+        }
+      )
+    }
   }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
 
   return null

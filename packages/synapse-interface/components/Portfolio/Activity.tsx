@@ -32,16 +32,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
 
-  const hasPendingTransactions: boolean = useMemo(() => {
-    if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
-      return true
-    }
-    if (checkTransactionsExist(pendingBridgeTransactions)) {
-      return true
-    }
-    return false
-  }, [pendingBridgeTransactions, pendingAwaitingCompletionTransactions])
-
   const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
     useMemo(() => {
       let transactions: BridgeTransaction[] = []
@@ -67,6 +57,21 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       pendingAwaitingCompletionTransactions,
       fallbackQueryPendingTransactions,
     ])
+
+  const hasPendingTransactions: boolean = useMemo(() => {
+    if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+      return true
+    }
+    if (checkTransactionsExist(pendingBridgeTransactions)) {
+      return true
+    }
+    if (
+      checkTransactionsExist(pendingAwaitingCompletionTransactionsWithFallback)
+    ) {
+      return true
+    }
+    return false
+  }, [pendingBridgeTransactions, pendingAwaitingCompletionTransactions])
 
   const hasHistoricalTransactions: boolean = useMemo(
     () => checkTransactionsExist(userHistoricalTransactions),
