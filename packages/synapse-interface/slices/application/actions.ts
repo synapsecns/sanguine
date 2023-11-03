@@ -1,7 +1,9 @@
 import { createAction } from '@reduxjs/toolkit'
 import { Address } from 'viem'
 
-import { RootActions } from '@/store/reducer'
+export enum RootActions {
+  RESET_REDUX_CACHE = 'reset_redux_cache',
+}
 
 export const resetReduxCache = createAction(RootActions.RESET_REDUX_CACHE)
 export const updateLastConnectedAddress = createAction<Address>(

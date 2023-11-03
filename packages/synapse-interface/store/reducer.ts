@@ -15,6 +15,7 @@ import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import swapDisplay from '@/slices/swapDisplaySlice'
 import { api } from '@/slices/api/slice'
+import { RootActions } from '@/slices/application/actions'
 
 const persistedReducers = {
   application,
@@ -44,10 +45,6 @@ export const appReducer = combineReducers({
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })
-
-export enum RootActions {
-  RESET_REDUX_CACHE = 'reset_redux_cache',
-}
 
 export const rootReducer = (
   state: AppState | undefined,

@@ -4,8 +4,9 @@ import { useApplicationState } from './hooks'
 import { ApplicationState } from './reducer'
 import { updateLastConnectedAddress, updateLastConnectedTime } from './actions'
 import { useAppDispatch } from '@/store/hooks'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { resetReduxCache } from './actions'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
@@ -16,7 +17,13 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (isValidAddress(address)) {
-      dispatch(updateLastConnectedAddress(address))
+      if (
+        isValidAddress(lastConnectedAddress) &&
+        getValidAddress(address) !== getValidAddress(lastConnectedAddress)
+      ) {
+        dispatch(resetReduxCache())
+        dispatch(updateLastConnectedAddress(address))
+      }
       dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
     }
   }, [address, lastConnectedAddress, lastConnectedTimestamp])
