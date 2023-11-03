@@ -67,7 +67,6 @@ export const useFallbackBridgeDestinationQuery = ({
       lastFetchedQueryParams?.lastArg?.address
     )
     if (useFallback && validQueryParams) {
-      console.log('start dest fallback subscription, kappa: ', kappa)
       fetchFallbackBridgeDestinationQuery({
         chainId: validQueryParams.chainId,
         address: validQueryParams.address,
@@ -76,7 +75,6 @@ export const useFallbackBridgeDestinationQuery = ({
         bridgeType: validQueryParams.bridgeType,
       })
     } else if (!useFallback && lastFetchedAddress) {
-      console.log('end dest fallback subscription, kappa: ', kappa)
       fetchFallbackBridgeDestinationQuery({
         chainId: null,
         address: null,
@@ -126,10 +124,6 @@ export const useFallbackBridgeDestinationQuery = ({
           toInfo: destinationInfo,
           kappa: kappa,
         }
-        console.log(
-          'complete fallback transaction: ',
-          constructedBridgeTransaction
-        )
         dispatch(
           addFallbackQueryHistoricalTransaction(constructedBridgeTransaction)
         )

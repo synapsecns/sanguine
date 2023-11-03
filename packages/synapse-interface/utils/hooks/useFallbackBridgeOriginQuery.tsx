@@ -60,7 +60,6 @@ export const useFallbackBridgeOriginQuery = ({
       lastFetchedQueryParams?.lastArg?.txnHash
     )
     if (useFallback && validQueryParams) {
-      console.log('start origin fallback subscription, txnHash: ', txnHash)
       fetchFallbackBridgeOriginQuery({
         chainId: validQueryParams.chainId,
         txnHash: validQueryParams.txnHash,
@@ -70,7 +69,6 @@ export const useFallbackBridgeOriginQuery = ({
       (!useFallback || queryTransactionAlreadyStored) &&
       lastFetchedTxn
     ) {
-      console.log('end origin fallback subscription, txnHash: ', txnHash)
       fetchFallbackBridgeOriginQuery({
         chainId: null,
         txnHash: null,
