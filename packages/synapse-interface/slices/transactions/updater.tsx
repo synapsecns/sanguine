@@ -250,10 +250,7 @@ export default function Updater(): null {
       Array.isArray(pendingBridgeTransactions) &&
       pendingBridgeTransactions.length > 0
 
-    if (
-      hasUserHistoricalTransactions &&
-      activeTab !== PortfolioTabs.PORTFOLIO
-    ) {
+    if (hasUserHistoricalTransactions && activeTab === PortfolioTabs.ACTIVITY) {
       const mostRecentHistoricalTransaction: BridgeTransaction =
         userHistoricalTransactions[0]
 
@@ -327,6 +324,31 @@ export default function Updater(): null {
       )
     }
   }, [userHistoricalTransactions, activeTab])
+
+  useEffect(() => {
+    const hasFallbackQueryHistoricalTransactions: boolean =
+      checkTransactionsExist(fallbackQueryHistoricalTransactions)
+
+    if (
+      hasFallbackQueryHistoricalTransactions &&
+      activeTab === PortfolioTabs.ACTIVITY
+    ) {
+      const mostRecentFallbackHistoricalTransaction: BridgeTransaction =
+        fallbackQueryHistoricalTransactions[0]
+
+      const isTransactionAlreadySeen = seenHistoricalTransactions.some(
+        (transaction: BridgeTransaction) =>
+          transaction.kappa ===
+          (mostRecentFallbackHistoricalTransaction.kappa as BridgeTransaction)
+      )
+
+      if (!isTransactionAlreadySeen) {
+        dispatch(
+          addSeenHistoricalTransaction(mostRecentFallbackHistoricalTransaction)
+        )
+      }
+    }
+  }, [fallbackQueryHistoricalTransactions, activeTab])
 
   /**
    * Handle fallback query returned transactions

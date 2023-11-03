@@ -85,8 +85,8 @@ export const MostRecentTransaction = () => {
 
       if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
         const mergedTransactions = [
-          ...transactions,
           ...fallbackQueryHistoricalTransactions,
+          ...transactions,
         ]
 
         const uniqueMergedTransactions = Array.from(
@@ -145,7 +145,10 @@ export const MostRecentTransaction = () => {
     if (!masqueradeActive && lastPendingBridgeTransaction) {
       transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
       return (
-        <div data-test-id="most-recent-transaction" className="mt-6">
+        <div
+          data-test-id="most-recent-transaction-bridge-pending"
+          className="mt-6"
+        >
           <PendingTransaction
             connectedAddress={address as Address}
             originChain={transaction.originChain as Chain}
@@ -165,7 +168,7 @@ export const MostRecentTransaction = () => {
     if (!masqueradeActive && lastPendingTransaction) {
       transaction = lastPendingTransaction as BridgeTransaction
       return (
-        <div data-test-id="most-recent-transaction" className="mt-6">
+        <div data-test-id="most-recent-transaction-pending" className="mt-6">
           <PendingTransaction
             connectedAddress={address as Address}
             startedTimestamp={transaction?.fromInfo?.time as number}
@@ -205,7 +208,7 @@ export const MostRecentTransaction = () => {
     ) {
       transaction = lastHistoricalTransaction as BridgeTransaction
       return (
-        <div data-test-id="most-recent-transaction" className="mt-6">
+        <div data-test-id="most-recent-transaction-historical" className="mt-6">
           <PendingTransaction
             connectedAddress={address as Address}
             destinationAddress={transaction?.fromInfo?.address as Address}
