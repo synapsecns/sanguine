@@ -44,6 +44,7 @@ import {
 } from './actions'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { getTimeMinutesFromNow } from '@/utils/time'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -172,7 +173,7 @@ export default function Updater(): null {
   }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
 
   /**
-   * Handles removing recent pending unindexed bridge transactions
+   * Handles removing recent pending unindexed bridge transactions + stale unsubmitted pending bridge transactions
    * from Bridge state once Explorer or Fallback query confirms transactions
    */
   useEffect(() => {
@@ -202,7 +203,24 @@ export default function Updater(): null {
     )
 
     if (matchingTransactionHashes.size === 0) {
-      return
+      const currentTimestamp: number = getTimeMinutesFromNow(0)
+      const noStaleTransactions = pendingBridgeTransactions.filter(
+        (recentTx: PendingBridgeTransaction) => {
+          const { timestamp, isSubmitted, id } = recentTx
+          const staleTime: number = 300 // 5 mins
+          const isStale: boolean =
+            !timestamp && !isSubmitted && currentTimestamp - id > staleTime
+
+          return !isStale
+        }
+      )
+      if (
+        checkTransactionsExist(noStaleTransactions) &&
+        checkTransactionsExist(pendingBridgeTransactions) &&
+        noStaleTransactions.length !== pendingBridgeTransactions.length
+      ) {
+        dispatch(updatePendingBridgeTransactions(noStaleTransactions))
+      }
     } else {
       const updatedRecentBridgeTransactions = pendingBridgeTransactions.filter(
         (recentTx: PendingBridgeTransaction) =>
