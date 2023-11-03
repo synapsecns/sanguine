@@ -86,11 +86,8 @@ export const useFallbackBridgeOriginQuery = ({
       data: fallbackQueryData,
     } = fetchedFallbackQuery
 
-    const {
-      bridgeTx: originInfo,
-      kappa,
-      pending,
-    } = fallbackQueryData?.getOriginBridgeTx || {}
+    const { bridgeTx: originInfo, kappa } =
+      fallbackQueryData?.getOriginBridgeTx || {}
 
     if (originInfo && kappa) {
       const constructedBridgeTransaction: BridgeTransaction = {
@@ -99,14 +96,19 @@ export const useFallbackBridgeOriginQuery = ({
         kappa: kappa,
       }
 
-      const alreadyExists: boolean = fallbackQueryPendingTransactions.some(
-        (transaction) => {
+      const alreadyExists: boolean =
+        fallbackQueryPendingTransactions.some((transaction) => {
           return (
             transaction.kappa === constructedBridgeTransaction.kappa ||
             transaction.fromInfo === constructedBridgeTransaction.fromInfo
           )
-        }
-      )
+        }) ||
+        fallbackQueryHistoricalTransactions.some((transaction) => {
+          return (
+            transaction.kappa === constructedBridgeTransaction.kappa ||
+            transaction.fromInfo === constructedBridgeTransaction.fromInfo
+          )
+        })
 
       if (!alreadyExists) {
         dispatch(
