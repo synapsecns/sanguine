@@ -91,18 +91,16 @@ export const PendingTransaction = ({
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
   useEffect(() => {
-    if (isSubmitted) {
-      const interval = setInterval(() => {
-        const currentTime: number = Math.floor(Date.now() / 1000)
-        const elapsedMinutes: number = Math.floor(
-          (currentTime - startedTimestamp) / 60
-        )
-        setElapsedTime(elapsedMinutes)
-      }, 60000)
+    const interval = setInterval(() => {
+      const currentTime: number = Math.floor(Date.now() / 1000)
+      const elapsedMinutes: number = Math.floor(
+        (currentTime - startedTimestamp) / 60
+      )
+      setElapsedTime(elapsedMinutes)
+    }, 60000)
 
-      return () => {
-        clearInterval(interval)
-      }
+    return () => {
+      clearInterval(interval)
     }
   }, [startedTimestamp, isSubmitted])
 
@@ -147,7 +145,6 @@ export const PendingTransaction = ({
           hash: transactionHash as Address,
         }).catch((error) => {
           console.error('resolving transaction failed: ', error)
-
           dispatch(removePendingBridgeTransaction(startedTimestamp))
         })
 
@@ -163,10 +160,21 @@ export const PendingTransaction = ({
           dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
       }
-
       updateResolvedTransaction()
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
+
+  useEffect(() => {
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    const isStale: boolean =
+      !transactionHash &&
+      !isSubmitted &&
+      currentTimestamp - startedTimestamp > 60
+
+    if (!isSubmitted && isStale) {
+      dispatch(removePendingBridgeTransaction(startedTimestamp))
+    }
+  }, [timeRemaining, isSubmitted, startedTimestamp])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">

@@ -67,6 +67,7 @@ import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
+  PendingBridgeTransaction,
 } from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { FetchState } from '@/slices/portfolio/actions'
@@ -75,6 +76,7 @@ import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainL
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -97,11 +99,11 @@ const StateManagedBridge = () => {
     fromValue,
     debouncedFromValue,
     destinationAddress,
-
     fromChainIds,
     toChainIds,
     fromTokens,
     toTokens,
+    pendingBridgeTransactions,
   }: BridgeState = useBridgeState()
 
   const {
@@ -430,14 +432,38 @@ const StateManagedBridge = () => {
           expectedReceivedAmount: bridgeQuote.outputAmountString,
           slippage: bridgeQuote.exchangeRate,
         })
-        dispatch(
-          updatePendingBridgeTransaction({
-            id: currentTimestamp,
-            timestamp: undefined,
-            transactionHash: tx,
-            isSubmitted: false,
-          })
-        )
+        if (
+          checkTransactionsExist(pendingBridgeTransactions) &&
+          pendingBridgeTransactions.some(
+            (transaction: PendingBridgeTransaction) =>
+              transaction.id === currentTimestamp
+          )
+        ) {
+          dispatch(
+            updatePendingBridgeTransaction({
+              id: currentTimestamp,
+              timestamp: undefined,
+              transactionHash: tx,
+              isSubmitted: false,
+            })
+          )
+        } else {
+          dispatch(
+            addPendingBridgeTransaction({
+              id: currentTimestamp,
+              originChain: CHAINS_BY_ID[fromChainId],
+              originToken: fromToken,
+              originValue: debouncedFromValue,
+              destinationChain: CHAINS_BY_ID[toChainId],
+              destinationToken: toToken,
+              timestamp: undefined,
+              transactionHash: tx,
+              isSubmitted: false,
+              estimatedTime: bridgeQuote.estimatedTime,
+              bridgeModuleName: bridgeQuote.bridgeModuleName,
+            })
+          )
+        }
         dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))

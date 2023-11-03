@@ -69,7 +69,7 @@ export default function Updater(): null {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
-  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
+  const [fetchUserHistoricalActivity, fetchedHistoricalActivity, lastInfo] =
     useLazyGetUserHistoricalActivityQuery({ pollingInterval: 30000 })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
@@ -202,26 +202,7 @@ export default function Updater(): null {
         )
     )
 
-    if (matchingTransactionHashes.size === 0) {
-      const currentTimestamp: number = getTimeMinutesFromNow(0)
-      const noStaleTransactions = pendingBridgeTransactions.filter(
-        (recentTx: PendingBridgeTransaction) => {
-          const { timestamp, isSubmitted, id } = recentTx
-          const staleTime: number = 300 // 5 mins
-          const isStale: boolean =
-            !timestamp && !isSubmitted && currentTimestamp - id > staleTime
-
-          return !isStale
-        }
-      )
-      if (
-        checkTransactionsExist(noStaleTransactions) &&
-        checkTransactionsExist(pendingBridgeTransactions) &&
-        noStaleTransactions.length !== pendingBridgeTransactions.length
-      ) {
-        dispatch(updatePendingBridgeTransactions(noStaleTransactions))
-      }
-    } else {
+    if (matchingTransactionHashes.size !== 0) {
       const updatedRecentBridgeTransactions = pendingBridgeTransactions.filter(
         (recentTx: PendingBridgeTransaction) =>
           !matchingTransactionHashes.has(recentTx.transactionHash)
