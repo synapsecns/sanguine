@@ -1,9 +1,11 @@
-import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
-import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
-import { Address, fetchBalance, fetchToken } from '@wagmi/core'
+import { erc20ABI, multicall } from '@wagmi/core'
 import { Token, PoolData } from '@types'
+import { formatBigIntToString } from '@utils/bigint/format'
+import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
+import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
 
-import { getCorePoolData } from './getCorePoolData'
+import lpTokenABI from '@/constants/abis/lpToken.json'
+import { SWAP_ABI } from '@/constants/abis/swap'
 
 export const getBalanceData = async ({
   pool,
@@ -16,46 +18,77 @@ export const getBalanceData = async ({
   address: string
   lpTokenAddress: string
 }) => {
+  const tokens: Token[] = [...pool.poolTokens, pool]
   const tokenBalances = []
   let poolTokenSum = 0n
   let lpTokenBalance = 1n
-  const lpTotalSupply =
-    (
-      await fetchToken({
-        address: lpTokenAddress as Address,
-        chainId,
-      })
-    )?.totalSupply?.value ?? 0n
 
-  const tokens: Token[] = [...pool.poolTokens, pool]
+  const multicallInputs = []
+
+  const one = {
+    address: lpTokenAddress,
+    abi: lpTokenABI,
+    functionName: 'totalSupply',
+    chainId,
+  }
+
+  multicallInputs.push(one)
+
   for (const token of tokens) {
+    multicallInputs.push({
+      address: token.addresses[chainId],
+      abi: erc20ABI,
+      functionName: 'balanceOf',
+      chainId,
+      args: [address],
+    })
+  }
+  const two = {
+    address: pool.swapAddresses[chainId],
+    abi: SWAP_ABI,
+    functionName: 'swapStorage',
+    chainId,
+  }
+
+  const three = {
+    address: pool.swapAddresses[chainId],
+    abi: SWAP_ABI,
+    functionName: 'getVirtualPrice',
+    chainId,
+  }
+
+  multicallInputs.push(two)
+  multicallInputs.push(three)
+
+  const multicallData: any[] = await multicall({
+    contracts: multicallInputs,
+    chainId,
+  }).catch((error) => {
+    console.error('Multicall failed:', error)
+    return []
+  })
+
+  const lpTotalSupply = multicallData[0].result ?? 0n
+
+  tokens.forEach((token, index) => {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
-    const rawBalanceResult = await fetchBalance({
-      address: address as Address,
-      chainId,
-      token: token.addresses[chainId] as Address,
-    })
-
-    // add to balances
     tokenBalances.push({
-      rawBalance: rawBalanceResult?.value ?? 0n,
-      balance: rawBalanceResult?.formatted ?? '0',
+      rawBalance: multicallData[index + 1].result ?? 0n,
+      balance: formatBigIntToString(
+        multicallData[index + 1].result,
+        token.decimals[chainId]
+      ),
       token,
       isLP,
     })
 
-    // set lp variables
     if (isLP) {
-      lpTokenBalance = rawBalanceResult?.value
-      continue
+      lpTokenBalance = multicallData[index + 1].result
     }
-    // running sum of all tokens in the pool
-    if (rawBalanceResult?.formatted) {
-      poolTokenSum =
-        poolTokenSum + BigInt(Math.round(Number(rawBalanceResult?.formatted)))
-    }
-  }
+
+    poolTokenSum = poolTokenSum + multicallData[index + 1].result
+  })
 
   return {
     tokenBalances,
@@ -85,8 +118,6 @@ export const getSinglePoolData = async (
     lpTokenAddress,
   })
 
-  const { swapFee, virtualPrice } = await getCorePoolData(poolAddress, chainId)
-
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
 
@@ -113,7 +144,5 @@ export const getSinglePoolData = async (
     tokens: poolTokensMatured,
     totalLocked: tokenBalancesSum,
     totalLockedUSD: tokenBalancesUSD,
-    virtualPrice,
-    swapFee,
   }
 }

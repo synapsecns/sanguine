@@ -1,31 +1,45 @@
+import { Token } from '@/utils/types'
 import _ from 'lodash'
 import numeral from 'numeral'
+import { memo } from 'react'
 import { LoaderIcon } from 'react-hot-toast'
 
-export const PoolCardBody = ({ pool, poolData, poolApyData }) => {
-  const format = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
-  return (
-    <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
-      <div className="flex items-center space-x-3">
-        <PoolTokenIcons pool={pool} />
-        <div className="text-white">
-          <div className="flex items-center space-x-2 font-medium text-xxl">
-            <div className="">
-              {poolData && numeral(poolData.totalLockedUSD).format(format)}
+export const PoolCardBody = memo(
+  ({
+    pool,
+    poolData,
+    poolApyData,
+  }: {
+    pool: Token
+    poolData: any
+    poolApyData: any
+  }) => {
+    const format = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
+    return (
+      <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
+        <div className="flex items-center space-x-3">
+          <PoolTokenIcons pool={pool} />
+          <div className="text-white">
+            <div className="flex items-center space-x-2 font-medium text-xxl">
+              <div className="">
+                {poolData && numeral(poolData.totalLockedUSD).format(format)}
+              </div>
+              <span className="text-base text-[#BFBCC2]">
+                {pool.priceUnits}
+              </span>
             </div>
-            <span className="text-base text-[#BFBCC2]">{pool.priceUnits}</span>
           </div>
         </div>
-      </div>
 
-      <div className="">
-        <ApyDisplay pool={pool} poolApyData={poolApyData} />
+        <div className="">
+          <ApyDisplay pool={pool} poolApyData={poolApyData} />
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+)
 
-const PoolTokenIcons = ({ pool }) => {
+const PoolTokenIcons = memo(({ pool }: { pool: Token }) => {
   if (pool.poolTokens.length === 3) {
     return (
       <div className="flex flex-col items-center">
@@ -67,7 +81,7 @@ const PoolTokenIcons = ({ pool }) => {
       </div>
     )
   }
-}
+})
 
 const ApyDisplay = ({ pool, poolApyData }) => {
   if (!pool.incentivized) {
