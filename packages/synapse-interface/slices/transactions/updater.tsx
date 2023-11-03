@@ -68,11 +68,11 @@ export default function Updater(): null {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
-  const [fetchUserHistoricalActivity, fetchedHistoricalActivity, lastInfo] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000000 })
-  // 30000
+  const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 30000 })
+
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 30000 })
 
   const { address } = useAccount({
     onDisconnect() {

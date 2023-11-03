@@ -127,7 +127,8 @@ export const MostRecentTransaction = () => {
     } else {
       return seenHistoricalTransactions.some(
         (transaction: BridgeTransaction) =>
-          transaction === (lastHistoricalTransaction as BridgeTransaction)
+          transaction.kappa ===
+          (lastHistoricalTransaction.kappa as BridgeTransaction)
       )
     }
   }, [seenHistoricalTransactions, lastHistoricalTransaction])
