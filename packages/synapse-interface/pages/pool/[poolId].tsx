@@ -37,11 +37,16 @@ const PoolPage = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
+  const [isClient, setIsClient] = useState(false)
 
   const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
 
 
   const dispatch: any = useDispatch()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -62,11 +67,11 @@ const PoolPage = () => {
   }, [chain])
 
   useEffect(() => {
-    if (poolId) {
+    if (poolId && isClient) {
       dispatch(resetPoolData())
       dispatch(fetchPoolData({ poolName: String(poolId) }))
     }
-  }, [poolId, address])
+  }, [poolId, address, isClient])
 
   return (
     <LandingPageWrapper>
