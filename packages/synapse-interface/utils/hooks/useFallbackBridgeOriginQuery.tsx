@@ -30,6 +30,7 @@ export const useFallbackBridgeOriginQuery = ({
   const {
     fallbackQueryPendingTransactions,
     fallbackQueryHistoricalTransactions,
+    userHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
 
   const [
@@ -104,6 +105,12 @@ export const useFallbackBridgeOriginQuery = ({
           )
         }) ||
         fallbackQueryHistoricalTransactions.some((transaction) => {
+          return (
+            transaction.kappa === constructedBridgeTransaction.kappa ||
+            transaction.fromInfo === constructedBridgeTransaction.fromInfo
+          )
+        }) ||
+        userHistoricalTransactions.some((transaction) => {
           return (
             transaction.kappa === constructedBridgeTransaction.kappa ||
             transaction.fromInfo === constructedBridgeTransaction.fromInfo
