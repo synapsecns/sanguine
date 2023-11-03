@@ -92,7 +92,7 @@ const PoolBody = ({
             </div>
             <PoolActionOptions
               pool={pool}
-              options={['Stake', 'Unstake', 'Claim SYN']}
+              options={['Stake', 'Unstake', 'Claim']}
             />
             <div className="flex space-x-4">
               <div className="text-right">

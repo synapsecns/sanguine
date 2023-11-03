@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Address } from '@wagmi/core'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
@@ -10,7 +10,6 @@ import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
-import { usePrices } from '@/utils/actions/getPrices'
 import { Token } from '@/utils/types'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
@@ -26,6 +25,9 @@ import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import { useAppSelector } from '@/store/hooks'
+import { METIS } from '@/constants/chains/master'
+import { hasAllPrices } from '@/utils/hasAllPrices'
 
 interface StakeCardProps {
   address: string
@@ -43,7 +45,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
 
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
 
-  const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bi: 0n })
   const [withdraw, setWithdraw] = useState<string>('')
   const [showStake, setShowStake] = useState<boolean>(true)
@@ -117,12 +118,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
-        address={address}
-        connectedChainId={chainId}
         token={pool}
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
-        prices={prices}
         lpTokenBalance={lpTokenBalance}
       />
       <InfoSectionCard title="Your balances">
@@ -151,12 +149,16 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </div>
         </div>
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">SYN Earned</div>
+          <div className="text-[#EEEDEF]">
+            {pool?.customRewardToken ?? 'SYN'} Earned
+          </div>
           <div className="text-white ">
             {userStakeData.reward === 0n
               ? '\u2212'
               : formatBigIntToString(userStakeData.reward, 18, 5)}{' '}
-            <span className="text-base text-[#A9A5AD]">SYN</span>
+            <span className="text-base text-[#A9A5AD]">
+              {pool?.customRewardToken ?? 'SYN'}
+            </span>
           </div>
         </div>
         {userStakeData.reward === 0n ? null : (
@@ -180,10 +182,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             {isPending ? (
               <div className="flex items-center justify-center space-x-5">
                 <ButtonLoadingDots className="mr-3" />
-                <span className="animate-pulse">Claiming SYN</span>{' '}
+                <span className="animate-pulse">Claiming</span>{' '}
               </div>
             ) : (
-              <div className="font-thin">Claim SYN</div>
+              <div className="font-thin">
+                Claim {pool.customRewardToken ?? 'SYN'}
+              </div>
             )}
           </Button>
         )}

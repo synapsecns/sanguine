@@ -434,7 +434,8 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
-  incentivized: false,
+  incentivized: true,
+  customRewardToken: 'METIS',
 })
 
 export const CANTO_POOL_SWAP_TOKEN = new Token({
@@ -753,7 +754,8 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
-  incentivized: false,
+  incentivized: true,
+  customRewardToken: 'METIS',
 })
 
 export const CANTO_WETH_SWAP_TOKEN = new Token({

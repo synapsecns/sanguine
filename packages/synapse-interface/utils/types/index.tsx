@@ -159,6 +159,7 @@ export class Token {
   priorityRank: number // priority token ordering
   chainId?: number // chain id of swap pool
   incentivized?: boolean // pool is incentivized or not
+  customRewardToken?: string // reward token symbol when pool staking rewards are in something other than SYN
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -209,6 +210,7 @@ export class Token {
     priorityRank,
     chainId,
     incentivized,
+    customRewardToken,
     priorityPool,
     color,
     priceUnits,
@@ -248,6 +250,7 @@ export class Token {
     priorityRank: number
     chainId?: number
     incentivized?: boolean
+    customRewardToken?: string
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -301,6 +304,7 @@ export class Token {
     this.priorityRank = priorityRank
     this.chainId = chainId
     this.incentivized = incentivized
+    this.customRewardToken = customRewardToken
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'

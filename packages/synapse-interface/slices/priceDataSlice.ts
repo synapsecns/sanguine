@@ -4,6 +4,7 @@ import {
   getSynPrices,
   getAvaxPrice,
   getEthPrice,
+  getMetisPrice,
 } from '@/utils/actions/getPrices'
 
 export interface PriceDataState {
@@ -15,9 +16,11 @@ export interface PriceDataState {
   }
   ethPrice: number
   avaxPrice: number
+  metisPrice: number
   isLoadingSynPrices: boolean
   isLoadingEthPrice: boolean
   isLoadingAvaxPrice: boolean
+  isLoadingMetisPrice: boolean
 }
 
 const initialState: PriceDataState = {
@@ -29,9 +32,11 @@ const initialState: PriceDataState = {
   },
   ethPrice: null,
   avaxPrice: null,
+  metisPrice: null,
   isLoadingSynPrices: false,
   isLoadingEthPrice: false,
   isLoadingAvaxPrice: false,
+  isLoadingMetisPrice: false,
 }
 
 export const fetchSynPrices = createAsyncThunk(
@@ -55,6 +60,14 @@ export const fetchAvaxPrice = createAsyncThunk(
   async () => {
     const avaxPrice = await getAvaxPrice()
     return avaxPrice
+  }
+)
+
+export const fetchMetisPrice = createAsyncThunk(
+  'priceData/fetchMetisPrice',
+  async () => {
+    const metisPrice = await getMetisPrice()
+    return metisPrice
   }
 )
 
@@ -98,6 +111,17 @@ export const priceDataSlice = createSlice({
       .addCase(fetchAvaxPrice.rejected, (state) => {
         state.isLoadingAvaxPrice = false
         console.error('Error fetching Avax price')
+      })
+      .addCase(fetchMetisPrice.pending, (state) => {
+        state.isLoadingMetisPrice = true
+      })
+      .addCase(fetchMetisPrice.fulfilled, (state, action) => {
+        state.isLoadingMetisPrice = false
+        state.metisPrice = action.payload
+      })
+      .addCase(fetchMetisPrice.rejected, (state) => {
+        state.isLoadingMetisPrice = false
+        console.error('Error fetching Metis price')
       })
   },
 })
