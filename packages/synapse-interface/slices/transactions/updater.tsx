@@ -51,7 +51,6 @@ const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
-  const isWindowFocused: boolean = useWindowFocus()
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -325,6 +324,7 @@ export default function Updater(): null {
     }
   }, [userHistoricalTransactions, activeTab])
 
+  // Handle adding completed fallback historical transaction to seen list
   useEffect(() => {
     const hasFallbackQueryHistoricalTransactions: boolean =
       checkTransactionsExist(fallbackQueryHistoricalTransactions)
