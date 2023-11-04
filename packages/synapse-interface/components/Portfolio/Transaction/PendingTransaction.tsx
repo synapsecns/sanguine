@@ -27,7 +27,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
-  eventName?: string
+  formattedEventType?: string
   bridgeModuleName?: string
   isSubmitted: boolean
   isCompleted?: boolean
@@ -47,7 +47,7 @@ export const PendingTransaction = ({
   completedTimestamp,
   transactionHash,
   eventType,
-  eventName,
+  formattedEventType,
   bridgeModuleName,
   kappa,
   isSubmitted,
@@ -84,12 +84,12 @@ export const PendingTransaction = ({
     if (
       !estimatedDuration &&
       !bridgeModuleName &&
-      eventName &&
+      formattedEventType &&
       originChain?.id
     ) {
       return synapseSDK.getEstimatedTIme(
         originChain.id,
-        synapseSDK.getBridgeModuleName(eventName)
+        synapseSDK.getBridgeModuleName(formattedEventType)
       )
     }
 
@@ -115,7 +115,13 @@ export const PendingTransaction = ({
     //       1000
     //   : null
     // }, [originChain, eventType, originToken])
-  }, [synapseSDK, eventName, bridgeModuleName, estimatedDuration, originChain])
+  }, [
+    synapseSDK,
+    formattedEventType,
+    bridgeModuleName,
+    estimatedDuration,
+    originChain,
+  ])
 
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 

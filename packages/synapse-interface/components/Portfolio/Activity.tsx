@@ -242,6 +242,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   startedTimestamp={transaction?.fromInfo?.time}
                   transactionHash={transaction?.fromInfo?.txnHash}
                   eventType={transaction?.fromInfo?.eventType}
+                  formattedEventType={transaction?.fromInfo?.formattedEventType}
                   isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                   isCompleted={transaction?.toInfo?.time ? true : false}
                   kappa={transaction?.kappa}
@@ -342,6 +343,7 @@ export const PendingTransactionAwaitingIndexing = () => {
             destinationToken={transaction.destinationToken as Token}
             estimatedDuration={transaction.estimatedTime}
             transactionHash={transaction.transactionHash}
+            bridgeModuleName={transaction.bridgeModuleName}
             isSubmitted={transaction.isSubmitted as boolean}
             startedTimestamp={transaction.timestamp as number}
             transactionType={TransactionType.PENDING}

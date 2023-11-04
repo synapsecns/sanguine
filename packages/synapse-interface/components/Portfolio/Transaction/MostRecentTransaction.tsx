@@ -157,6 +157,7 @@ export const MostRecentTransaction = () => {
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain as Chain}
             destinationToken={transaction.destinationToken as Token}
+            bridgeModuleName={transaction.bridgeModuleName}
             startedTimestamp={transaction.id ?? transaction.startedTimestamp}
             transactionHash={transaction.transactionHash as string}
             isSubmitted={transaction.isSubmitted as boolean}
@@ -192,6 +193,8 @@ export const MostRecentTransaction = () => {
                 transaction?.toInfo?.tokenAddress
               ) as Token
             }
+            formattedEventType={transaction?.formattedEventType}
+            bridgeModuleName={transaction?.bridgeModuleName}
             destinationAddress={transaction?.fromInfo?.address as Address}
             isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
             isCompleted={transaction?.toInfo?.time ? true : false}
