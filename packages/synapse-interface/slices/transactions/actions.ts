@@ -24,6 +24,25 @@ export const addPendingAwaitingCompletionTransaction =
 export const removePendingAwaitingCompletionTransaction = createAction<string>(
   'transactions/removePendingAwaitingCompletionTransaction'
 )
+export const addFallbackQueryPendingTransaction =
+  createAction<BridgeTransaction>(
+    'transactions/addFallbackQueryPendingTransaction'
+  )
+export const updateFallbackQueryPendingTransaction =
+  createAction<BridgeTransaction>(
+    'transactions/updateFallbackQueryPendingTransaction'
+  )
+export const removeFallbackQueryPendingTransaction = createAction<string>(
+  'transactions/removeFallbackQueryPendingTransaction'
+)
+export const addFallbackQueryHistoricalTransaction =
+  createAction<BridgeTransaction>(
+    'transactions/addFallbackQueryHistoricalTransaction'
+  )
+export const removeFallbackQueryHistoricalTransaction =
+  createAction<BridgeTransaction>(
+    'transaction/removeFallbackQueryHistoricalTransaction'
+  )
 export const resetTransactionsState = createAction<void>(
   'transactions/resetTransactionsState'
 )

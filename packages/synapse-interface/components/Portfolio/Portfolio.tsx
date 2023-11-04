@@ -28,6 +28,7 @@ import { isValidAddress } from '@/utils/isValidAddress'
 import { Activity } from './Activity'
 import { ViewSearchAddressBanner } from './SearchBar'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
+import { resetReduxCache } from '@/slices/application/actions'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
@@ -44,6 +45,7 @@ export const Portfolio = () => {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
       dispatch(resetBridgeInputs())
+      dispatch(resetReduxCache())
     },
   })
 
@@ -128,6 +130,7 @@ export const Portfolio = () => {
 
   useEffect(() => {
     dispatch(resetPortfolioState())
+    dispatch(resetBridgeInputs())
   }, [address])
 
   useEffect(() => {

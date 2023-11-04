@@ -67,6 +67,7 @@ import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
+  PendingBridgeTransaction,
 } from '@/slices/bridge/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { FetchState } from '@/slices/portfolio/actions'
@@ -75,6 +76,7 @@ import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainL
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -97,11 +99,11 @@ const StateManagedBridge = () => {
     fromValue,
     debouncedFromValue,
     destinationAddress,
-
     fromChainIds,
     toChainIds,
     fromTokens,
     toTokens,
+    pendingBridgeTransactions,
   }: BridgeState = useBridgeState()
 
   const {
@@ -178,14 +180,21 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
-      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-        await synapseSDK.bridgeQuote(
-          fromChainId,
-          toChainId,
-          fromToken.addresses[fromChainId],
-          toToken.addresses[toChainId],
-          stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
-        )
+      const {
+        feeAmount,
+        routerAddress,
+        maxAmountOut,
+        originQuery,
+        destQuery,
+        estimatedTime,
+        bridgeModuleName,
+      } = await synapseSDK.bridgeQuote(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId])
+      )
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
@@ -279,6 +288,8 @@ const StateManagedBridge = () => {
               originQuery: newOriginQuery,
               destQuery: newDestQuery,
             },
+            estimatedTime: estimatedTime,
+            bridgeModuleName: bridgeModuleName,
           })
         )
 
@@ -365,6 +376,8 @@ const StateManagedBridge = () => {
         transactionHash: undefined,
         timestamp: undefined,
         isSubmitted: false,
+        estimatedTime: bridgeQuote.estimatedTime,
+        bridgeModuleName: bridgeQuote.bridgeModuleName,
       })
     )
     try {

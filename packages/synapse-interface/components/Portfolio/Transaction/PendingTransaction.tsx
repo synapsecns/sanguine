@@ -2,7 +2,11 @@ import { useMemo, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { waitForTransaction, Address } from '@wagmi/core'
 import { useAppDispatch } from '@/store/hooks'
-import { updatePendingBridgeTransaction } from '@/slices/bridge/actions'
+import {
+  removePendingBridgeTransaction,
+  updatePendingBridgeTransaction,
+} from '@/slices/bridge/actions'
+import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
@@ -17,10 +21,15 @@ import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
+import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
+import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
-  isSubmitted?: boolean
+  formattedEventType?: string
+  bridgeModuleName?: string
+  isSubmitted: boolean
   isCompleted?: boolean
 }
 
@@ -33,15 +42,19 @@ export const PendingTransaction = ({
   destinationChain,
   destinationToken,
   destinationValue,
+  estimatedDuration,
   startedTimestamp,
   completedTimestamp,
   transactionHash,
   eventType,
+  formattedEventType,
+  bridgeModuleName,
   kappa,
   isSubmitted,
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
+  const { synapseSDK } = useSynapseContext()
   const dispatch = useAppDispatch()
 
   const transactionStatus: TransactionStatus = useMemo(() => {
@@ -60,6 +73,8 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
+    // Fallback last resort estimated duration calculation
+    // Remove this when fallback origin queries return eventType
     // CCTP Classification
     if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
       const isCCTP: boolean =
@@ -82,15 +97,15 @@ export const PendingTransaction = ({
       : null
   }, [originChain, eventType, originToken])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(0)
+  const currentTime: number = Math.floor(Date.now() / 1000)
 
-  useEffect(() => {
-    const currentTime: number = Math.floor(Date.now() / 1000)
-    const elapsedMinutes: number = Math.floor(
-      (currentTime - startedTimestamp) / 60
-    )
-    setElapsedTime(elapsedMinutes)
+  const elapsedMinutes: number = useMemo(() => {
+    if (startedTimestamp) {
+      return Math.floor((currentTime - startedTimestamp) / 60)
+    }
   }, [startedTimestamp])
+
+  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -104,7 +119,7 @@ export const PendingTransaction = ({
     return () => {
       clearInterval(interval)
     }
-  }, [startedTimestamp])
+  }, [startedTimestamp, isSubmitted])
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
 
@@ -118,11 +133,51 @@ export const PendingTransaction = ({
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
+  // Set fallback period to extend 5 mins past estimated duration
+  const useFallback: boolean = useMemo(
+    () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
+    [timeRemaining, isCompleted]
+  )
+
+  const bridgeType: BridgeType = useMemo(() => {
+    if (synapseSDK && formattedEventType) {
+      const moduleName: string =
+        synapseSDK.getBridgeModuleName(formattedEventType)
+
+      if (moduleName === 'SynapseBridge') return BridgeType.Bridge
+      if (moduleName === 'SynapseCCTP') return BridgeType.Cctp
+    }
+    if (synapseSDK && bridgeModuleName) {
+      if (bridgeModuleName === 'SynapseBridge') return BridgeType.Bridge
+      if (bridgeModuleName === 'SynapseCCTP') return BridgeType.Cctp
+    }
+    return BridgeType.Bridge
+  }, [synapseSDK, bridgeModuleName, formattedEventType])
+
+  const originFallback = useFallbackBridgeOriginQuery({
+    useFallback: isDelayed && useFallback,
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: bridgeType,
+  })
+
+  const destinationFallback = useFallbackBridgeDestinationQuery({
+    useFallback: isDelayed && useFallback,
+    chainId: destinationChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: bridgeType,
+  })
+
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
       const updateResolvedTransaction = async () => {
         const resolvedTransaction = await waitForTransaction({
           hash: transactionHash as Address,
+        }).catch((error) => {
+          console.error('resolving transaction failed: ', error)
+          dispatch(removePendingBridgeTransaction(startedTimestamp))
         })
 
         if (resolvedTransaction) {
@@ -137,10 +192,21 @@ export const PendingTransaction = ({
           dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
       }
-
       updateResolvedTransaction()
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
+
+  useEffect(() => {
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    const isStale: boolean =
+      !transactionHash &&
+      !isSubmitted &&
+      currentTimestamp - startedTimestamp > 100
+
+    if (!isSubmitted && isStale) {
+      dispatch(removePendingBridgeTransaction(startedTimestamp))
+    }
+  }, [timeRemaining, isSubmitted, startedTimestamp])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
