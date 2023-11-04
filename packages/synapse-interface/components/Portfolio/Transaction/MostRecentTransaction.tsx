@@ -104,6 +104,7 @@ export const MostRecentTransaction = () => {
     return pendingBridgeTransactions?.[0]
   }, [pendingBridgeTransactions])
 
+  // console.log('lastPendingBridgeTransaction:', lastPendingBridgeTransaction)
   const lastPendingTransaction: BridgeTransaction = useMemo(() => {
     return pendingAwaitingCompletionTransactionsWithFallback?.[0]
   }, [pendingAwaitingCompletionTransactionsWithFallback])
@@ -145,6 +146,8 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingBridgeTransaction) {
       transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
+
+      console.log('lastPendingBridgeTransaction:', lastPendingBridgeTransaction)
       return (
         <div
           data-test-id="most-recent-transaction-bridge-pending"
@@ -157,7 +160,8 @@ export const MostRecentTransaction = () => {
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain as Chain}
             destinationToken={transaction.destinationToken as Token}
-            bridgeModuleName={transaction.bridgeModuleName}
+            estimatedDuration={transaction?.estimatedTime}
+            bridgeModuleName={transaction?.bridgeModuleName}
             startedTimestamp={transaction.id ?? transaction.startedTimestamp}
             transactionHash={transaction.transactionHash as string}
             isSubmitted={transaction.isSubmitted as boolean}
@@ -169,6 +173,9 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingTransaction) {
       transaction = lastPendingTransaction as BridgeTransaction
+
+      console.log('lastPendingTransaction:', transaction)
+
       return (
         <div data-test-id="most-recent-transaction-pending" className="mt-6">
           <PendingTransaction
@@ -195,6 +202,7 @@ export const MostRecentTransaction = () => {
             }
             formattedEventType={transaction?.formattedEventType}
             bridgeModuleName={transaction?.bridgeModuleName}
+            estimatedDuration={transaction?.estimatedTime}
             destinationAddress={transaction?.fromInfo?.address as Address}
             isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
             isCompleted={transaction?.toInfo?.time ? true : false}

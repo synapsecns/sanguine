@@ -73,55 +73,29 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
-    if (estimatedDuration) {
-      return estimatedDuration
+    // Fallback last resort estimated duration calculation
+    // Remove this when fallback origin queries return eventType
+    // CCTP Classification
+    if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
+      const isCCTP: boolean =
+        originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
+      if ((eventType === 10 || eventType === 11) && isCCTP) {
+        const attestationTime: number = 13 * 60
+        return (
+          (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+            originChain.blockTime) /
+            1000 +
+          attestationTime
+        )
+      }
     }
-
-    if (!estimatedDuration && bridgeModuleName) {
-      return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
-    }
-
-    if (
-      !estimatedDuration &&
-      !bridgeModuleName &&
-      formattedEventType &&
-      originChain?.id
-    ) {
-      return synapseSDK.getEstimatedTIme(
-        originChain.id,
-        synapseSDK.getBridgeModuleName(formattedEventType)
-      )
-    }
-
-    return null
-    // // CCTP Classification
-    // if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
-    //   const isCCTP: boolean =
-    //     originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
-    //   if ((eventType === 10 || eventType === 11) && isCCTP) {
-    //     const attestationTime: number = 13 * 60
-    //     return (
-    //       (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-    //         originChain.blockTime) /
-    //         1000 +
-    //       attestationTime
-    //     )
-    //   }
-    // }
-    // // All other transactions
-    // return originChain
-    //   ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-    //       originChain.blockTime) /
-    //       1000
-    //   : null
-    // }, [originChain, eventType, originToken])
-  }, [
-    synapseSDK,
-    formattedEventType,
-    bridgeModuleName,
-    estimatedDuration,
-    originChain,
-  ])
+    // All other transactions
+    return originChain
+      ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+          originChain.blockTime) /
+          1000
+      : null
+  }, [originChain, eventType, originToken])
 
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
@@ -139,8 +113,7 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, isSubmitted])
 
-  const estimatedMinutes: number =
-    Math.floor(estimatedCompletionInSeconds / 60) + 1
+  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
 
   const timeRemaining: number = useMemo(() => {
     if (!startedTimestamp || !elapsedTime) {
@@ -155,14 +128,28 @@ export const PendingTransaction = ({
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
     () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
-    [timeRemaining]
+    [timeRemaining, isCompleted]
   )
+  console.log('isDelayed: ', isDelayed)
+  console.log('useFallback: ', useFallback)
+  console.log('timeRemaining:', timeRemaining)
+
+  const bridgeType: BridgeType = useMemo(() => {
+    if (bridgeModuleName) {
+      const moduleType: string =
+        synapseSDK.getBridgeModuleName(bridgeModuleName)
+
+      if (moduleType === 'SynapseBridge') return BridgeType.Bridge
+      if (moduleType === 'SynapseCCTP') return BridgeType.Cctp
+    }
+    return BridgeType.Bridge
+  }, [bridgeModuleName])
 
   const originFallback = useFallbackBridgeOriginQuery({
     useFallback: isDelayed && useFallback,
     chainId: originChain?.id,
     txnHash: transactionHash,
-    bridgeType: BridgeType.Bridge,
+    bridgeType: bridgeType,
   })
 
   const destinationFallback = useFallbackBridgeDestinationQuery({
@@ -171,7 +158,7 @@ export const PendingTransaction = ({
     address: destinationAddress,
     kappa: kappa,
     timestamp: startedTimestamp,
-    bridgeType: BridgeType.Bridge,
+    bridgeType: bridgeType,
   })
 
   useEffect(() => {
