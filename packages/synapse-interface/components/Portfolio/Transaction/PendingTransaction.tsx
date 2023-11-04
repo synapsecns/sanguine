@@ -6,6 +6,7 @@ import {
   removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
 } from '@/slices/bridge/actions'
+import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
 import { USDC } from '@/constants/tokens/bridgeable'
@@ -22,10 +23,12 @@ import { getTransactionExplorerLink } from './components/TransactionExplorerLink
 import { Chain } from '@/utils/types'
 import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
 import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
-import { BridgeType } from '@/slices/api/generated'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
+  eventName?: string
+  bridgeModuleName?: string
   isSubmitted: boolean
   isCompleted?: boolean
 }
@@ -44,11 +47,14 @@ export const PendingTransaction = ({
   completedTimestamp,
   transactionHash,
   eventType,
+  eventName,
+  bridgeModuleName,
   kappa,
   isSubmitted,
   isCompleted = false,
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
+  const { synapseSDK } = useSynapseContext()
   const dispatch = useAppDispatch()
 
   const transactionStatus: TransactionStatus = useMemo(() => {
@@ -67,27 +73,49 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
-    // CCTP Classification
-    if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
-      const isCCTP: boolean =
-        originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
-      if ((eventType === 10 || eventType === 11) && isCCTP) {
-        const attestationTime: number = 13 * 60
-        return (
-          (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-            originChain.blockTime) /
-            1000 +
-          attestationTime
-        )
-      }
+    if (estimatedDuration) {
+      return estimatedDuration
     }
-    // All other transactions
-    return originChain
-      ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-          originChain.blockTime) /
-          1000
-      : null
-  }, [originChain, eventType, originToken])
+
+    if (!estimatedDuration && bridgeModuleName) {
+      return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
+    }
+
+    if (
+      !estimatedDuration &&
+      !bridgeModuleName &&
+      eventName &&
+      originChain?.id
+    ) {
+      return synapseSDK.getEstimatedTIme(
+        originChain.id,
+        synapseSDK.getBridgeModuleName(eventName)
+      )
+    }
+
+    return null
+    // // CCTP Classification
+    // if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
+    //   const isCCTP: boolean =
+    //     originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
+    //   if ((eventType === 10 || eventType === 11) && isCCTP) {
+    //     const attestationTime: number = 13 * 60
+    //     return (
+    //       (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+    //         originChain.blockTime) /
+    //         1000 +
+    //       attestationTime
+    //     )
+    //   }
+    // }
+    // // All other transactions
+    // return originChain
+    //   ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
+    //       originChain.blockTime) /
+    //       1000
+    //   : null
+    // }, [originChain, eventType, originToken])
+  }, [synapseSDK, eventName, bridgeModuleName, estimatedDuration, originChain])
 
   const [elapsedTime, setElapsedTime] = useState<number>(0)
 
@@ -105,7 +133,8 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, isSubmitted])
 
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const estimatedMinutes: number =
+    Math.floor(estimatedCompletionInSeconds / 60) + 1
 
   const timeRemaining: number = useMemo(() => {
     if (!startedTimestamp || !elapsedTime) {
