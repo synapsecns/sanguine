@@ -154,20 +154,30 @@ export const PortfolioTokenAsset = ({
     if (isCurrentlyConnected) {
       dispatch(setFromChainId(portfolioChainId as number))
       dispatch(setFromToken(token as Token))
-      await approveToken(
-        tokenRouterAddress,
-        connectedChainId,
-        tokenAddress
-      ).then((success) => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: tokenRouterAddress as Address,
-            tokenAddress: tokenAddress as Address,
-            address: address as Address,
-            chainId: portfolioChainId as number,
-          })
+      try {
+        await approveToken(
+          tokenRouterAddress,
+          connectedChainId,
+          tokenAddress
+        ).then((success) => {
+          dispatch(
+            fetchAndStoreSingleTokenAllowance({
+              routerAddress: tokenRouterAddress as Address,
+              tokenAddress: tokenAddress as Address,
+              address: address as Address,
+              chainId: portfolioChainId as number,
+            })
+          )
+        })
+      } catch (error) {
+        toast.error(
+          `Failed to approve ${token.symbol} token on ${currentChainName} network`,
+          {
+            id: 'approve-in-progress-popup',
+            duration: 5000,
+          }
         )
-      })
+      }
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })

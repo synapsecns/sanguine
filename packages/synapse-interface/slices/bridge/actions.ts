@@ -12,6 +12,8 @@ export interface PendingBridgeTransaction {
   transactionHash?: string
   timestamp: number
   isSubmitted: boolean
+  estimatedTime: number
+  bridgeModuleName: string
 }
 
 export const addPendingBridgeTransaction =

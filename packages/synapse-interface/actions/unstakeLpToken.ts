@@ -29,7 +29,7 @@ export const unstakeLpToken = async ({
     args: [poolId, amount, address],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract({ config })
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

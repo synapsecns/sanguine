@@ -24,10 +24,10 @@ export interface TransactionProps {
   destinationAddress?: Address
   originChain: Chain
   originToken: Token
-  originValue: number
+  originValue: string | number
   destinationChain: Chain
   destinationToken: Token
-  destinationValue?: number
+  destinationValue?: string | number
   startedTimestamp: number
   completedTimestamp?: number
   estimatedDuration?: number
