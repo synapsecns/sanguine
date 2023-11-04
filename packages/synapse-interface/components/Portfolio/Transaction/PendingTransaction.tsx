@@ -105,7 +105,7 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes)
+  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
 
   useEffect(() => {
     const interval = setInterval(() => {

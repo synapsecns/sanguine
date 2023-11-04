@@ -145,6 +145,7 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingBridgeTransaction) {
       transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
+      console.log('hit 1: ', transaction)
       return (
         <div
           data-test-id="most-recent-transaction-bridge-pending"
@@ -172,6 +173,8 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingTransaction) {
       transaction = lastPendingTransaction as BridgeTransaction
+      console.log('hit 2:', transaction)
+
       return (
         <div data-test-id="most-recent-transaction-pending" className="mt-6">
           <PendingTransaction
