@@ -1,0 +1,103 @@
+{{- if .Values.server.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sinner.fullname" . }}-server
+  labels:
+    {{- include "sinner.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.server.autoscaling.enabled }}
+  replicas: {{ .Values.server.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sinner.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- with .Values.server.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sinner.selectorLabels" . | nindent 8 }}
+        {{- include "sinner.commonLabels" . | nindent 8 }}
+        sinner-type: server
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sinner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+    {{- if .Values.files }}
+      initContainers:
+        - name: copy-{{ .Release.Name }}-config
+          image: busybox
+          command: ['sh', '-c', 'cp -v /configmap/* /config/']
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: {{ .Release.Name }}-config
+              mountPath: /config
+        {{- if .Values.server.extraInitContainers }}
+        {{- toYaml .Values.server.extraInitContainers | nindent 8 }}
+        {{- end }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            {{- toYaml .Values.server.args | nindent 12 }}
+          ports:
+          {{- range .Values.service.ports }}
+            - containerPort: {{ .containerPort }}
+              name: {{ .name }}
+          {{- end }}
+          {{- if .Values.server.env }}
+          env:
+            {{- toYaml .Values.server.env | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: http
+        {{- if .Values.files }}
+          volumeMounts:
+            - name: configmap
+              mountPath: /config
+        {{- end }}
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+        {{- if .Values.server.extraContainers }}
+        {{- toYaml .Values.server.extraContainers | nindent 8 }}
+        {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- if .Values.files }}
+        - name: {{ .Release.Name }}-config
+          emptyDir: {}
+        - name: configmap
+          configMap:
+            name: {{ include "sinner.fullname" . }}-{{ .Release.Name }}
+        {{- end }}
+{{- end }}
