@@ -130,20 +130,21 @@ export const PendingTransaction = ({
     () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
     [timeRemaining, isCompleted]
   )
-  console.log('isDelayed: ', isDelayed)
-  console.log('useFallback: ', useFallback)
-  console.log('timeRemaining:', timeRemaining)
 
   const bridgeType: BridgeType = useMemo(() => {
-    if (bridgeModuleName) {
-      const moduleType: string =
-        synapseSDK.getBridgeModuleName(bridgeModuleName)
+    if (synapseSDK && formattedEventType) {
+      const moduleName: string =
+        synapseSDK.getBridgeModuleName(formattedEventType)
 
-      if (moduleType === 'SynapseBridge') return BridgeType.Bridge
-      if (moduleType === 'SynapseCCTP') return BridgeType.Cctp
+      if (moduleName === 'SynapseBridge') return BridgeType.Bridge
+      if (moduleName === 'SynapseCCTP') return BridgeType.Cctp
+    }
+    if (synapseSDK && bridgeModuleName) {
+      if (bridgeModuleName === 'SynapseBridge') return BridgeType.Bridge
+      if (bridgeModuleName === 'SynapseCCTP') return BridgeType.Cctp
     }
     return BridgeType.Bridge
-  }, [bridgeModuleName])
+  }, [synapseSDK, bridgeModuleName, formattedEventType])
 
   const originFallback = useFallbackBridgeOriginQuery({
     useFallback: isDelayed && useFallback,
