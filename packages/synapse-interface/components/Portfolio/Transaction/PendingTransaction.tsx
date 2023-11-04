@@ -97,7 +97,15 @@ export const PendingTransaction = ({
       : null
   }, [originChain, eventType, originToken])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(0)
+  const currentTime: number = Math.floor(Date.now() / 1000)
+
+  const elapsedMinutes: number = useMemo(() => {
+    if (startedTimestamp) {
+      return Math.floor((currentTime - startedTimestamp) / 60)
+    }
+  }, [startedTimestamp])
+
+  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes)
 
   useEffect(() => {
     const interval = setInterval(() => {

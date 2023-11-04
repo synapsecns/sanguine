@@ -104,7 +104,6 @@ export const MostRecentTransaction = () => {
     return pendingBridgeTransactions?.[0]
   }, [pendingBridgeTransactions])
 
-  // console.log('lastPendingBridgeTransaction:', lastPendingBridgeTransaction)
   const lastPendingTransaction: BridgeTransaction = useMemo(() => {
     return pendingAwaitingCompletionTransactionsWithFallback?.[0]
   }, [pendingAwaitingCompletionTransactionsWithFallback])
@@ -160,7 +159,9 @@ export const MostRecentTransaction = () => {
             destinationToken={transaction.destinationToken as Token}
             estimatedDuration={transaction?.estimatedTime}
             bridgeModuleName={transaction?.bridgeModuleName}
-            startedTimestamp={transaction.id ?? transaction.startedTimestamp}
+            startedTimestamp={
+              transaction.timestamp ? transaction.timestamp : transaction.id
+            }
             transactionHash={transaction.transactionHash as string}
             isSubmitted={transaction.isSubmitted as boolean}
             transactionType={TransactionType.PENDING}
