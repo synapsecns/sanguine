@@ -16,6 +16,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewMessageBusDeployer,
 		NewMetaSwapDeployer,
 		NewCCTPDeployer,
+		NewERC20Deployer,
 	)
 
 	return &DeployManager{parentManager}

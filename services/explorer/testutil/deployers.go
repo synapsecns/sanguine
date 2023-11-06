@@ -3,23 +3,24 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
+
+	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
 // BridgeConfigV3Deployer is the type of the bridge config v3 deployer.
@@ -57,6 +58,11 @@ type CCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// ERC20Deployer is the type of the erc20 deployer.
+type ERC20Deployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
@@ -90,6 +96,11 @@ func NewMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend back
 // NewCCTPDeployer creates a new cctp client.
 func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
+}
+
+// NewERC20Deployer creates a new erc20 client.
+func NewERC20Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ERC20Deployer{deployer.NewSimpleDeployer(registry, backend, ERC20Type)}
 }
 
 // Deploy deploys bridge config v3 contract
@@ -132,9 +143,9 @@ func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedC
 //nolint:dupl
 func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return bridge.DeploySynapseBridge(transactOps, backend)
+		return testbridge.DeployTestSynapseBridge(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return bridge.NewBridgeRef(address, backend)
+		return testbridge.NewTestBridgeRef(address, backend)
 	})
 }
 
@@ -143,9 +154,9 @@ func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 //nolint:dupl
 func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return bridgev1.DeploySynapseBridge(transactOps, backend)
+		return testbridgev1.DeployTestSynapseBridgeV1(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return bridgev1.NewBridgeRef(address, backend)
+		return testbridgev1.NewTestBridgeV1Ref(address, backend)
 	})
 }
 
@@ -154,9 +165,9 @@ func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.Deployed
 //nolint:dupl
 func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return swap.DeploySwapFlashLoan(transactOps, backend)
+		return testswap.DeployTestSwapFlashLoan(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return swap.NewSwapRef(address, backend)
+		return testswap.NewTestSwapRef(address, backend)
 	})
 }
 
@@ -165,9 +176,9 @@ func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 //nolint:dupl
 func (n MessageBusDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return messagebus.DeployMessageBusUpgradeable(transactOps, backend)
+		return testmessagebus.DeployTestMessageBusUpgradeable(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return messagebus.NewMessageBusRef(address, backend)
+		return testmessagebus.NewTestMessageBusRef(address, backend)
 	})
 }
 
@@ -176,9 +187,9 @@ func (n MessageBusDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 //nolint:dupl
 func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return metaswap.DeployMetaSwap(transactOps, backend)
+		return testmetaswap.DeployTestMetaSwap(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return metaswap.NewMetaSwapRef(address, backend)
+		return testmetaswap.NewTestMetaSwapRef(address, backend)
 	})
 }
 
@@ -187,9 +198,9 @@ func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 //nolint:dupl
 func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return cctp.DeployMessageTransmitter(transactOps, backend)
+		return testcctp.DeployMessageTransmitter(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return cctp.NewMessageTransmitter(address, backend)
+		return testcctp.NewMessageTransmitter(address, backend)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to deploy tokenMessengerContract %w", err)
@@ -198,9 +209,20 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 		// Create mock owner
 		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
-		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessengerContract.Address(), owner)
+		return testcctp.DeployTestSynapseCCTP(transactOps, backend, tokenMessengerContract.Address(), owner)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return cctp.NewCCTPRef(address, backend)
+		return testcctp.NewTestCCTPRef(address, backend)
+	})
+}
+
+// Deploy deploys ERC20 contract
+//
+//nolint:dupl
+func (n ERC20Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return erc20.DeployTestERC(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return erc20.NewTestERC(address, backend)
 	})
 }
 
@@ -210,3 +232,4 @@ var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &MetaSwapDeployer{}
 var _ deployer.ContractDeployer = &CCTPDeployer{}
+var _ deployer.ContractDeployer = &ERC20Deployer{}

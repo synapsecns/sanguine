@@ -395,9 +395,11 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 	})
 
 	var tokenData tokendata.ImmutableTokenData
+	fmt.Println("tokenData", tokenData)
+
 	g.Go(func() error {
 		// Get Token from BridgeConfig data (for getting token decimal but use this for anything else).
-		tokenData, err = p.tokenDataService.GetTokenData(groupCtx, chainID, iFace.GetToken())
+		tokenData, err = p.tokenDataService.GetBridgeTokenData(groupCtx, chainID, iFace.GetToken())
 		if err != nil {
 			return fmt.Errorf("could not parse get token from bridge config event: %w", err)
 		}
@@ -406,6 +408,7 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 	})
 
 	err = g.Wait()
+	fmt.Println("tokenData", tokenData)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse bridge event: %w", err)
 	}

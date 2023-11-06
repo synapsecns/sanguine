@@ -5,9 +5,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// RetrieveTokenData wraps retrieveTokenData for testing.
-func (t *tokenDataServiceImpl) RetrieveTokenData(parentCtx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
-	return t.retrieveTokenData(parentCtx, chainID, token)
+// RetrieveBridgeTokenData wraps retrieveBridgeTokenData for testing bridge token data retrieval.
+func (t *tokenDataServiceImpl) RetrieveBridgeTokenData(parentCtx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
+	return t.retrieveBridgeTokenData(parentCtx, chainID, token)
 }
 
 // NewImmutableToken creates a new immutable token for testing.

@@ -3,13 +3,14 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
 func init() {
@@ -57,6 +58,8 @@ const (
 	MetaSwapType
 	// CCTPType is cctp contract type.
 	CCTPType
+	// ERC20Type is erc20 contract type.
+	ERC20Type
 )
 
 // ID gets the contract type as an id.
@@ -80,17 +83,19 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case BridgeConfigTypeV3:
 		return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
 	case SynapseBridgeType:
-		return bridge.Contracts["/solidity/SynapseBridgeV2_flat.sol:SynapseBridge"]
+		return testbridge.Contracts["/solidity/TestSynapseBridge.sol:TestSynapseBridge"]
 	case SwapFlashLoanType:
-		return swap.Contracts["/solidity/SwapFlashLoanV1_flat.sol:SwapFlashLoan"]
+		return testswap.Contracts["/solidity/TestSwapFlashLoan.sol:TestSwapFlashLoan"]
 	case SynapseBridgeV1Type:
-		return bridgev1.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
+		return testbridgev1.Contracts["/solidity/TestSynapseBridgeV1.sol:TestSynapseBridgeV1"]
 	case MessageBusType:
-		return messagebus.Contracts["/solidity/MessageBusUpgradeableV1_flat.sol:MessageBusUpgradeable"]
+		return testmessagebus.Contracts["/solidity/TestMessageBusUpgradeable.sol:TestMessageBusUpgradeable"]
 	case MetaSwapType:
-		return metaswap.Contracts["/solidity/MetaSwapV1_flat.sol:MetaSwap"]
+		return testmetaswap.Contracts["/solidity/TestMetaSwapV1.sol:TestMetaSwap"]
 	case CCTPType:
-		return cctp.Contracts["solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
+		return testcctp.Contracts["solidity/TestSynapseCCTPV1.sol:TestSynapseCCTP"]
+	case ERC20Type:
+		return erc20.Contracts["solidity/ERC20_flat.sol:TestERC"]
 	default:
 		panic("not yet implemented")
 	}

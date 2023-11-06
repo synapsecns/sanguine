@@ -3,6 +3,8 @@ package tokendata
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
 	"math/big"
 	"strings"
 	"time"
@@ -17,20 +19,22 @@ import (
 // Service provides data about tokens using either a cache or bridgeconfig
 // cache keys sare always ${KEY_NAME}_CHAIN_ID_ADDRESS so unless a token changes tokenID's
 // (not the other way around), data is guaranteed to be accurate.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name=Service --output=mocks --case=underscore
 type Service interface {
-	// GetTokenData attempts to get token data from the cache otherwise its fetched from the bridge config
-	GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error)
+	// GetBridgeTokenData attempts to get token data from the cache otherwise its fetched from the bridge config
+	GetBridgeTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error)
 	// GetPoolTokenData attempts to get pool token data from the cache otherwise its fetched from the erc20 interface
 	GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error)
 	// GetCCTPTokenData attempts to get the token symbol from the cctp contract
-	GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error)
+	GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, backend bind.ContractBackend) (ImmutableTokenData, error)
 }
 
-const cacheSize = 3000
-
-// maxAttemptTime is how many times we will attempt to get the token data.
-const maxAttemptTime = time.Minute * 5
-const maxAttempt = 10
+const (
+	cacheSize      = 3000
+	maxAttemptTime = time.Minute * 5
+	maxAttempts    = 10
+)
 
 type tokenDataServiceImpl struct {
 	// tokenCache is the tokenCache of the tokenDataServices
@@ -55,60 +59,50 @@ func NewTokenDataService(service fetcher.Service, tokenSymbolToIDs map[string]st
 	}, nil
 }
 
-// GetTokenData attempts to get token data from the cache otherwise it is fetched from the bridge config.
-func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
-	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
+// GetBridgeTokenData attempts to get token data from the cache otherwise it is fetched from the bridge config.
+func (t *tokenDataServiceImpl) GetBridgeTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
+	key := cacheKey(chainID, token)
 	if data, ok := t.tokenCache.Get(key); ok {
 		return data, nil
 	}
 
-	tokenData, err := t.retrieveTokenData(ctx, chainID, token)
-	if err != nil {
-		return nil, fmt.Errorf("could not get token data: %w", err)
-	}
+	tokenData, err := t.fetchAndCacheTokenData(ctx, key, func(ctx context.Context) (ImmutableTokenData, error) {
+		return t.retrieveBridgeTokenData(ctx, chainID, token)
+	})
 
-	t.tokenCache.Add(key, tokenData)
-
-	return tokenData, nil
+	return tokenData, err
 }
 
 // GetPoolTokenData attempts to get pool token data from the cache otherwise it is fetched from the erc20 interface for that token.
 func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
-	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
+	key := cacheKey(chainID, token)
 	if data, ok := t.tokenCache.Get(key); ok {
 		return data, nil
 	}
 
-	tokenData, err := t.retrievePoolTokenData(ctx, token, swapService)
-	if err != nil {
-		return nil, fmt.Errorf("could not get token data: %w", err)
-	}
+	tokenData, err := t.fetchAndCacheTokenData(ctx, key, func(ctx context.Context) (ImmutableTokenData, error) {
+		return t.retrievePoolTokenData(ctx, token, swapService)
+	})
 
-	t.tokenCache.Add(key, tokenData)
-
-	return tokenData, nil
+	return tokenData, err
 }
 
 // GetCCTPTokenData attempts to get cctp token data from the cache otherwise it is fetched using the cctp ref.
-func (t *tokenDataServiceImpl) GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error) {
-	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
+func (t *tokenDataServiceImpl) GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, backend bind.ContractBackend) (ImmutableTokenData, error) {
+	key := cacheKey(chainID, token)
 	if data, ok := t.tokenCache.Get(key); ok {
 		return data, nil
 	}
 
-	tokenData, err := t.retrieveCCTPTokenData(ctx, token, cctpService)
-	if err != nil {
-		return nil, fmt.Errorf("could not get token data: %w", err)
-	}
+	tokenData, err := t.fetchAndCacheTokenData(ctx, key, func(ctx context.Context) (ImmutableTokenData, error) {
+		return t.retrieveCCTPTokenData(ctx, token, chainID, backend)
+	})
 
-	t.tokenCache.Add(key, tokenData)
-
-	return tokenData, nil
+	return tokenData, err
 }
 
-// retrieveTokenData retrieves the token data from the bridge config contract
-// this will retry for maxAttemptTime.
-func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
+// retrieveTokenData retrieves the token data from the bridge config contract.
+func (t *tokenDataServiceImpl) retrieveBridgeTokenData(parentCtx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
 	res := immutableTokenImpl{}
 
 	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
@@ -126,7 +120,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.decimals = tokenData.TokenDecimals
 
 			return nil
-		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempts))
 	})
 
 	g.Go(func() error {
@@ -140,7 +134,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.tokenID = *nullableTokenID
 
 			return nil
-		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempts))
 	})
 
 	err := g.Wait()
@@ -152,85 +146,77 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 	return res, nil
 }
 
-// retrieveTokenData retrieves the token data from the bridge config contract
-// this will retry for maxAttemptTime.
-//
-// nolint:cyclop
-func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
-	res := immutableTokenImpl{}
-
-	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
-	defer cancel()
-
-	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
-		symbol, decimals, err := swapService.GetTokenMetaData(ctx, token)
-		if err != nil {
-			return fmt.Errorf("could not get token data: %w", err)
-		}
-
-		if strings.Contains(strings.ToLower(*symbol), "dai") {
-			*symbol = "dai"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "usdc") {
-			*symbol = "usdc"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "nusd") {
-			*symbol = "nusd"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "usdt") {
-			*symbol = "usdt"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "eth") {
-			*symbol = "eth"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "avax") {
-			*symbol = "avax"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "movr") {
-			*symbol = "movr"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "frax") {
-			*symbol = "frax"
-		}
-		if strings.Contains(strings.ToLower(*symbol), "jewel") {
-			*symbol = "jewel"
-		}
-
-		res.tokenID = t.tokenSymbolToIDs[strings.ToLower(*symbol)]
-		res.decimals = *decimals
-		res.tokenAddress = token.String()
-
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("could not get pool token data: %w", err)
-	}
-
-	return res, nil
-}
-
-func (t *tokenDataServiceImpl) retrieveCCTPTokenData(parentCtx context.Context, tokenAddress common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error) {
-	res := immutableTokenImpl{}
-
-	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
-	defer cancel()
-	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
-		symbol, err := cctpService.GetTokenSymbol(ctx, tokenAddress)
-		if err != nil {
-			return fmt.Errorf("could not get cctp token: %w", err)
-		}
-		if strings.Contains(strings.ToLower(*symbol), "usdc") {
-			*symbol = "usdc"
-		}
-		res.tokenID = t.tokenSymbolToIDs[strings.ToLower(*symbol)]
-		res.decimals = 6 // TODO, as cctp bridging matures, retrieve this data from on chain somehow.
-
-		return nil
-	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+// retrievePoolTokenData retrieves the token data from the bridge config contract.
+func (t *tokenDataServiceImpl) retrievePoolTokenData(ctx context.Context, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
+	symbol, decimals, err := swapService.GetTokenMetaData(ctx, token)
 	if err != nil {
 		return nil, fmt.Errorf("could not get token data: %w", err)
 	}
-	res.tokenAddress = tokenAddress.String()
 
-	return res, nil
+	normalizedSymbol := normalizeSymbol(*symbol)
+	tokenID, exists := t.tokenSymbolToIDs[normalizedSymbol]
+	if !exists {
+		return nil, fmt.Errorf("token ID not found for symbol: %s", normalizedSymbol)
+	}
+
+	return immutableTokenImpl{
+		decimals:     *decimals,
+		tokenID:      tokenID,
+		tokenAddress: token.Hex(),
+	}, nil
+}
+
+// retrieveCCTPTokenData retrieves the token data from the cctp contract.
+func (t *tokenDataServiceImpl) retrieveCCTPTokenData(ctx context.Context, address common.Address, chainID uint32, backend bind.ContractBackend) (ImmutableTokenData, error) {
+	fmt.Println("retrieveCCTPTokenData", address)
+	erc20Contract, err := erc20.NewERC20Ref(address, chainID, backend)
+	fmt.Println("retrieveCCTPTokenData err1", err)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not create erc20: %w", err)
+	}
+	decimal, symbol, err := erc20Contract.GetTokenData(ctx)
+	fmt.Println("retrieveCCTPTokenData err2", err, decimal, symbol)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get token data: %w", err)
+	}
+	normalizedSymbol := normalizeSymbol(symbol)
+	tokenID, exists := t.tokenSymbolToIDs[normalizedSymbol]
+	if !exists {
+		return nil, fmt.Errorf("token ID not found for symbol: %s", normalizedSymbol)
+	}
+
+	return immutableTokenImpl{
+		decimals:     decimal,
+		tokenID:      tokenID,
+		tokenAddress: address.Hex(),
+	}, nil
+}
+
+// fetchAndCacheTokenData fetches the token data and caches it.
+func (t *tokenDataServiceImpl) fetchAndCacheTokenData(ctx context.Context, key string, fetchFunc func(ctx context.Context) (ImmutableTokenData, error)) (ImmutableTokenData, error) {
+	tokenData, err := fetchFunc(ctx)
+	if err != nil {
+		return nil, err // Error already wrapped in fetchFunc
+	}
+	t.tokenCache.Add(key, tokenData)
+	return tokenData, nil
+}
+
+// normalizeSymbol normalizes token symbols to a standard representation.
+func normalizeSymbol(symbol string) string {
+	normalizedSymbols := []string{"dai", "usdc", "nusd", "usdt", "eth", "avax", "movr", "frax", "jewel"}
+	symbolLower := strings.ToLower(symbol)
+	for _, normSymbol := range normalizedSymbols {
+		if strings.Contains(symbolLower, normSymbol) {
+			return normSymbol
+		}
+	}
+	return symbolLower
+}
+
+// cacheKey generates a standardized cache key for a given token.
+func cacheKey(chainID uint32, token common.Address) string {
+	return fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 }

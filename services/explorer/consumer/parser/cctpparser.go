@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"time"
@@ -29,26 +30,25 @@ type CCTPParser struct {
 	cctpAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
 	consumerFetcher fetcher.ScribeFetcher
-	// cctpService is the cctp service for getting token symbol information
-	cctpService fetcher.CCTPService
 	// tokenDataService contains the token data service/cache
 	tokenDataService tokendata.Service
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
+	// backend is the backend for the cctp contract
+	backend bind.ContractBackend
 	// fromAPI is true if the parser is being called from the API.
 	fromAPI bool
 }
 
 const usdcCoinGeckoID = "usd-coin"
-const usdcDecimals = 6
 
 // NewCCTPParser creates a new parser for a cctp event.
-func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher fetcher.ScribeFetcher, cctpService fetcher.CCTPService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service, fromAPI bool) (*CCTPParser, error) {
+func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher fetcher.ScribeFetcher, backend bind.ContractBackend, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service, fromAPI bool) (*CCTPParser, error) {
 	filterer, err := cctp.NewSynapseCCTPFilterer(cctpAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", cctp.SynapseCCTPFilterer{}, err)
 	}
-	return &CCTPParser{consumerDB, filterer, cctpAddress, consumerFetcher, cctpService, tokenDataService, tokenPriceService, fromAPI}, nil
+	return &CCTPParser{consumerDB, filterer, cctpAddress, consumerFetcher, tokenDataService, tokenPriceService, backend, fromAPI}, nil
 }
 
 // ParserType returns the type of parser.
@@ -108,12 +108,12 @@ func (c *CCTPParser) MatureLogs(ctx context.Context, cctpEvent *model.CCTPEvent,
 	timeStampBig := uint64(*timeStamp)
 	cctpEvent.TimeStamp = &timeStampBig
 
-	tokenData, err := c.tokenDataService.GetCCTPTokenData(ctx, chainID, common.HexToAddress(cctpEvent.Token), c.cctpService)
+	tokenData, err := c.tokenDataService.GetCCTPTokenData(ctx, chainID, common.HexToAddress(cctpEvent.Token), c.backend)
 	if err != nil {
 		logger.Errorf("could not get token data: %v", err)
 		return nil, fmt.Errorf("could not get pool token data: %w", err)
 	}
-	decimals := uint8(usdcDecimals)
+	decimals := tokenData.Decimals()
 	cctpEvent.TokenSymbol = tokenData.TokenID()
 	cctpEvent.TokenDecimal = &decimals
 	c.applyPriceData(ctx, cctpEvent, usdcCoinGeckoID)
@@ -156,13 +156,13 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 	}
 
 	if cctpEvent.Amount != nil {
-		amountUSD := GetAmountUSD(cctpEvent.Amount, usdcDecimals, tokenPrice)
+		amountUSD := GetAmountUSD(cctpEvent.Amount, *cctpEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
 			cctpEvent.AmountUSD = *amountUSD
 		}
 	}
 	if cctpEvent.Fee != nil {
-		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
+		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, *cctpEvent.TokenDecimal, tokenPrice)
 	}
 }
 

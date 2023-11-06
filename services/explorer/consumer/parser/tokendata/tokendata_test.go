@@ -31,7 +31,7 @@ func (t *TokenDataSuite) TestTokenDataRetrieve() {
 	tokenService, err := tokendata.NewTokenDataService(testService, nil)
 	Nil(t.T(), err)
 
-	tokenData, err := tokenService.GetTokenData(t.GetTestContext(), 1, common.BigToAddress(big.NewInt(1)))
+	tokenData, err := tokenService.GetBridgeTokenData(t.GetTestContext(), 1, common.BigToAddress(big.NewInt(1)))
 	Nil(t.T(), err)
 
 	Equal(t.T(), testTokenID, tokenData.TokenID())
@@ -39,6 +39,6 @@ func (t *TokenDataSuite) TestTokenDataRetrieve() {
 
 	// if we try to bypass cache, this will break
 	NotPanics(t.T(), func() {
-		_, _ = tokenService.GetTokenData(t.GetTestContext(), 1, common.BigToAddress(big.NewInt(1)))
+		_, _ = tokenService.GetBridgeTokenData(t.GetTestContext(), 1, common.BigToAddress(big.NewInt(1)))
 	})
 }

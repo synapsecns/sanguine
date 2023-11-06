@@ -83,17 +83,12 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 
 	for _, chain := range config.Chains {
 		if chain.Contracts.CCTP != "" {
-			cctpService, err := fetcherpkg.NewCCTPFetcher(common.HexToAddress(chain.Contracts.CCTP), clients[chain.ChainID])
-			if err != nil {
-				return nil, nil, nil, fmt.Errorf("could not create cctp fetcher: %w", err)
-			}
-
 			cctpRef, err := cctp.NewCCTPRef(common.HexToAddress(chain.Contracts.CCTP), clients[chain.ChainID])
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("could not create cctp ref: %w", err)
 			}
 			cctpRefs[chain.ChainID] = cctpRef
-			cctpParser, err := parser.NewCCTPParser(db, common.HexToAddress(chain.Contracts.CCTP), fetcher, cctpService, tokenDataService, priceDataService, true)
+			cctpParser, err := parser.NewCCTPParser(db, common.HexToAddress(chain.Contracts.CCTP), fetcher, clients[chain.ChainID], tokenDataService, priceDataService, true)
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("could not create cctp parser: %w", err)
 			}

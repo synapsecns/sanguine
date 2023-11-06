@@ -69,7 +69,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwa
 		filtererMetaSwap = nil
 	}
 
-	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(swapService, consumerDB)
+	poolTokenDataService, err := tokenpool.NewService(swapService, consumerDB)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data service: %w", err)
 	}
