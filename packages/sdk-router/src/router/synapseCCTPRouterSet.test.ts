@@ -66,6 +66,10 @@ describe('SynapseCCTPRouterSet', () => {
     it('Does not create SynapseCCTPRouter instances for chains without providers', () => {
       expect(routerSet.routers[SupportedChainId.AVALANCHE]).toBeUndefined()
     })
+
+    it('Correct bridge module name', () => {
+      expect(routerSet.bridgeModuleName).toEqual('SynapseCCTP')
+    })
   })
 
   describe('getEstimatedTime', () => {

@@ -71,6 +71,7 @@ export type BridgeQuote = {
   originQuery: Query
   destQuery: Query
   estimatedTime: number
+  bridgeModuleName: string
 }
 
 /**

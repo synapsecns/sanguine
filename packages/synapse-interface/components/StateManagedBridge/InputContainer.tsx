@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { updateFromValue } from '@/slices/bridge/reducer'
+import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -62,14 +62,12 @@ export const InputContainer = () => {
   )?.balance
 
   useEffect(() => {
-    if (
-      fromToken &&
-      fromToken.decimals[fromChainId]
-      // && stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n
-      // stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
-      //   fromTokenBalance
-    ) {
+    if (fromToken && fromToken.decimals[fromChainId]) {
       setShowValue(fromValue)
+    }
+
+    if (fromValue === initialState.fromValue) {
+      setShowValue(initialState.fromValue)
     }
   }, [fromValue, inputRef, fromChainId, fromToken])
 

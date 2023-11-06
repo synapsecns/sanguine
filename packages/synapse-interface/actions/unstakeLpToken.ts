@@ -21,7 +21,7 @@ export const unstakeLpToken = async ({
   amount: bigint
   lpAddress: Address
 }) => {
-  const config = await prepareWriteContract({
+  const { request } = await prepareWriteContract({
     chainId,
     address: lpAddress,
     abi: MINICHEF_ABI,
@@ -29,7 +29,7 @@ export const unstakeLpToken = async ({
     args: [poolId, amount, address],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract(request)
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

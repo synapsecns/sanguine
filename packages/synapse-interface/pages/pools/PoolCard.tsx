@@ -8,7 +8,6 @@ import { Token } from '@types'
 import { STAKE_PATH, getPoolUrl } from '@urls'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
-import { useAppSelector } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -19,13 +18,18 @@ import { PoolCardBody } from '../../components/Pools/PoolCardBody'
 const PoolCard = memo(
   ({
     pool,
-    chainId,
     address,
+    ethPrice,
+    avaxPrice,
+    synPrices,
   }: {
     pool: Token
-    chainId: number
     address: string
+    ethPrice: any
+    avaxPrice: any
+    synPrices: any
   }) => {
+    const [isClient, setIsClient] = useState(false)
     const [poolData, setPoolData] = useState(undefined)
     const [poolApyData, setPoolApyData] = useState(undefined)
     const [stakedBalance, setStakedBalance] = useState({
@@ -33,43 +37,53 @@ const PoolCard = memo(
       reward: 0n,
     })
     const { isDisconnected } = useAccount()
-    const { synPrices, ethPrice, avaxPrice } = useAppSelector(
-      (state) => state.priceData
-    )
 
     let popup: string
+    useEffect(() => {
+      setIsClient(true)
+    }, [])
 
     useEffect(() => {
-      if (chainId && pool) {
+      if (pool && isClient) {
         // TODO - separate the apy and tvl so they load async.
-        getSinglePoolData(chainId, pool, { synPrices, ethPrice, avaxPrice })
+        getSinglePoolData(pool.chainId, pool, {
+          synPrices,
+          ethPrice,
+          avaxPrice,
+        })
           .then((res) => {
             setPoolData(res)
           })
           .catch((err) => {
             console.log('Could not get Pool Data: ', err)
           })
-        getPoolApyData(chainId, pool, { synPrices, ethPrice, avaxPrice })
+        getPoolApyData(pool.chainId, pool, { synPrices, ethPrice, avaxPrice })
           .then((res) => {
             setPoolApyData(res)
           })
           .catch((err) => {
             console.log('Could not get Pool APY Data: ', err)
           })
-
-        if (address) {
-          getStakedBalance(address as Address, chainId, pool.poolId[chainId])
-            .then((res) => {
-              setStakedBalance(res)
-            })
-            .catch((err) => {
-              console.log('Could not get staked balances: ', err)
-            })
-        } else {
-          setStakedBalance({ amount: 0n, reward: 0n })
-        }
       }
-    }, [synPrices, ethPrice, avaxPrice, chainId, pool, address])
+    }, [pool, isClient])
+
+    useEffect(() => {
+      if (address && isClient) {
+        getStakedBalance(
+          address as Address,
+          pool.chainId,
+          pool.poolId[pool.chainId]
+        )
+          .then((res) => {
+            setStakedBalance(res)
+          })
+          .catch((err) => {
+            console.log('Could not get staked balances: ', err)
+          })
+      } else {
+        setStakedBalance({ amount: 0n, reward: 0n })
+      }
+    }, [address, isClient])
 
     /*
   useEffect triggers: address, isDisconnected, popup
@@ -84,20 +98,20 @@ const PoolCard = memo(
     return (
       <div
         className={`
-              border
-              ${
-                pool && pool.incentivized
-                  ? 'bg-bgBase border-transparent'
-                  : 'bg-bgDark border-gray-700'
-              }
-              rounded-md items-center
-              space-y-2
-              whitespace-wrap
-            `}
+          border
+          ${
+            pool && pool.incentivized
+              ? 'bg-bgBase border-transparent'
+              : 'bg-bgDark border-gray-700'
+          }
+          rounded-md items-center
+          space-y-2
+          whitespace-wrap
+        `}
       >
         <div>
           <Link href={getPoolUrl(pool)}>
-            {pool && <PoolHeader pool={pool} address={address} />}
+            {pool && <PoolHeader pool={pool} address={address as Address} />}
             {pool &&
             poolData &&
             poolApyData &&

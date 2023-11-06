@@ -542,6 +542,8 @@ export const bridgeSlice = createSlice({
         state.fromToken = initialState.fromToken
         state.toChainId = initialState.toChainId
         state.toToken = initialState.toToken
+        state.fromValue = initialState.fromValue
+        state.debouncedFromValue = initialState.debouncedFromValue
       })
       .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
         state.toTokensBridgeQuotesStatus = FetchState.LOADING

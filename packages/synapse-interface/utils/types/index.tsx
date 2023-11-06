@@ -46,9 +46,9 @@ export type PoolData = {
   tokens: PoolToken[]
   totalLocked: number
   totalLockedUSD: number
-  virtualPrice: bigint
+  virtualPrice?: bigint
   nativeTokens?: any
-  swapFee: bigint
+  swapFee?: bigint
 }
 
 export type BridgeQuote = {
@@ -60,6 +60,8 @@ export type BridgeQuote = {
   feeAmount: bigint
   delta: bigint
   quotes: { originQuery: any; destQuery: any }
+  estimatedTime: number
+  bridgeModuleName: string
 }
 interface TokensByChain {
   [cID: string]: Token[]

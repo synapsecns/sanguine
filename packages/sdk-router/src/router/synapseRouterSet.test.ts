@@ -53,6 +53,10 @@ describe('SynapseRouterSet', () => {
     it('Does not create SynapseRouter instances for chains without providers', () => {
       expect(routerSet.routers[SupportedChainId.AVALANCHE]).toBeUndefined()
     })
+
+    it('Correct bridge module name', () => {
+      expect(routerSet.bridgeModuleName).toEqual('SynapseBridge')
+    })
   })
 
   describe('getEstimatedTime', () => {

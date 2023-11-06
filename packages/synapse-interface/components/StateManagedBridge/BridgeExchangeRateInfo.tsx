@@ -21,7 +21,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
-  const safeExchangeRate = exchangeRate ?? 0n
+  const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
 
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)

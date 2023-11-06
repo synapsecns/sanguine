@@ -37,14 +37,21 @@ export async function fetchBridgeQuote(
         destinationToken,
         amount,
       }: BridgeQuoteRequest = request
-      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-        await synapseSDK.bridgeQuote(
-          originChainId,
-          destinationChainId,
-          originToken.addresses[originChainId],
-          destinationTokenAddress,
-          amount
-        )
+      const {
+        feeAmount,
+        routerAddress,
+        maxAmountOut,
+        originQuery,
+        destQuery,
+        estimatedTime,
+        bridgeModuleName,
+      } = await synapseSDK.bridgeQuote(
+        originChainId,
+        destinationChainId,
+        originToken.addresses[originChainId],
+        destinationTokenAddress,
+        amount
+      )
 
       const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
       const originTokenDecimals: number = originToken.decimals[originChainId]
@@ -95,6 +102,8 @@ export async function fetchBridgeQuote(
         },
         destinationToken: request.destinationToken,
         destinationChainId: destinationChainId,
+        estimatedTime: estimatedTime,
+        bridgeModuleName: bridgeModuleName,
       }
     } catch (error) {
       console.error('Error fetching bridge quote:', error)

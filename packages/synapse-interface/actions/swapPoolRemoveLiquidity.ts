@@ -26,7 +26,7 @@ export const swapPoolRemoveLiquidity = async ({
 }) => {
   const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  const config = await prepareWriteContract({
+  const { request } = await prepareWriteContract({
     chainId,
     address: poolAddress,
     abi,
@@ -44,7 +44,7 @@ export const swapPoolRemoveLiquidity = async ({
     ],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract(request)
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

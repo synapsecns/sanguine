@@ -25,12 +25,13 @@ export type RouterConstructor = new (
  *
  * The class children should provide the router addresses for each chain, as well as the Router constructor.
  *
- * @property routerName The name of the router set.
+ * @property bridgeModuleName The name of the bridge module used by the routers.
  * @property routers Collection of Router instances indexed by chainId.
  * @property providers Collection of Provider instances indexed by chainId.
  */
 export abstract class RouterSet {
-  abstract readonly routerName: string
+  abstract readonly bridgeModuleName: string
+  abstract readonly allEvents: string[]
 
   public routers: {
     [chainId: number]: Router
@@ -206,6 +207,7 @@ export abstract class RouterSet {
       originQuery,
       destQuery,
       estimatedTime,
+      bridgeModuleName: this.bridgeModuleName,
     }
   }
 }

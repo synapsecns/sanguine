@@ -4,6 +4,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import '@/patch'
 import { Analytics } from '@vercel/analytics/react'
+import { PersistGate } from 'redux-persist/integration/react'
 
 import {
   boba,
@@ -45,12 +46,13 @@ import CustomToaster from '@/components/toast'
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 import { Provider } from 'react-redux'
-import { store } from '@/store/store'
+import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
 
+import ApplicationUpdater from '@/slices/application/updater'
+import BridgeUpdater from '@/slices/bridge/updater'
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
-import BridgeUpdater from '@/slices/bridge/updater'
 
 const rawChains = [
   mainnet,
@@ -132,6 +134,7 @@ export const wagmiConfig = createConfig({
 function Updaters() {
   return (
     <>
+      <ApplicationUpdater />
       <PortfolioUpdater />
       <TransactionsUpdater />
       <BridgeUpdater />
@@ -149,14 +152,16 @@ const App = ({ Component, pageProps }: AppProps) => {
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <SynapseProvider chains={chains}>
             <Provider store={store}>
-              <SegmentAnalyticsProvider>
-                <UserProvider>
-                  <Updaters />
-                  <Component {...pageProps} />
-                  <Analytics />
-                  <CustomToaster />
-                </UserProvider>
-              </SegmentAnalyticsProvider>
+              <PersistGate loading={null} persistor={persistor}>
+                <SegmentAnalyticsProvider>
+                  <UserProvider>
+                    <Updaters />
+                    <Component {...pageProps} />
+                    <Analytics />
+                    <CustomToaster />
+                  </UserProvider>
+                </SegmentAnalyticsProvider>
+              </PersistGate>
             </Provider>
           </SynapseProvider>
         </RainbowKitProvider>

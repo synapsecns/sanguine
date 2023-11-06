@@ -268,6 +268,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -306,6 +307,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -344,6 +346,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -385,6 +388,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -419,6 +423,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -460,6 +465,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -494,6 +500,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
         })
       })
     })
@@ -536,6 +543,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -570,6 +578,7 @@ describe('SynapseSDK', () => {
           expect(result.estimatedTime).toEqual(
             MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
           )
+          expect(result.bridgeModuleName).toEqual('SynapseBridge')
         })
       })
     })
@@ -684,71 +693,119 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('getBridgeModuleName', () => {
+    const synapse = new SynapseSDK([], [])
+
+    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/bridge/SynapseBridge.sol#L63-L121
+    describe('SynapseBridge events', () => {
+      const contractEvents = [
+        'TokenDeposit',
+        'TokenRedeem',
+        'TokenWithdraw',
+        'TokenMint',
+        'TokenDepositAndSwap',
+        'TokenMintAndSwap',
+        'TokenRedeemAndSwap',
+        'TokenRedeemAndRemove',
+        'TokenWithdrawAndRemove',
+        'TokenRedeemV2',
+      ]
+
+      contractEvents.forEach((contractEvent) => {
+        it(contractEvent, () => {
+          // Event naming in contract and explorer is a bit different
+          // schema: TokenDeposit => DepositEvent
+          const explorerEvent = `${contractEvent.slice(5)}Event`
+          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
+            'SynapseBridge'
+          )
+        })
+      })
+    })
+
+    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/cctp/events/SynapseCCTPEvents.sol#L5-L45
+    describe('SynapseCCTP events', () => {
+      const contractEvents = ['CircleRequestSent', 'CircleRequestFulfilled']
+
+      contractEvents.forEach((contractEvent) => {
+        it(contractEvent, () => {
+          // Event naming in contract and explorer is a bit different
+          // schema: CircleRequestSent => CircleRequestSentEvent
+          const explorerEvent = `${contractEvent}Event`
+          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
+            'SynapseCCTP'
+          )
+        })
+      })
+    })
+
+    it('Throws when event name is unknown', () => {
+      expect(() => synapse.getBridgeModuleName('SomeUnknownEvent')).toThrow(
+        'Unknown event'
+      )
+    })
+  })
+
   describe('getEstimatedTime', () => {
     const synapse = new SynapseSDK(
-      [
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.MOONBEAM,
-      ],
-      [ethProvider, arbProvider, moonbeamProvider]
+      [SupportedChainId.ETH, SupportedChainId.MOONBEAM],
+      [ethProvider, moonbeamProvider]
     )
 
-    it('Returns estimated time for SynapseBridge', () => {
-      expect(
-        synapse.getEstimatedTime(
-          SupportedChainId.ETH,
-          ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-        )
-      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ETH])
+    describe('Chain with a provider', () => {
+      it('Returns estimated time for SynapseBridge', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseBridge')
+        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ETH])
 
-      expect(
-        synapse.getEstimatedTime(
-          SupportedChainId.ARBITRUM,
-          ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-        )
-      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM])
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.MOONBEAM, 'SynapseBridge')
+        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.MOONBEAM])
+      })
 
-      expect(
-        synapse.getEstimatedTime(
-          SupportedChainId.MOONBEAM,
-          ROUTER_ADDRESS_MAP[SupportedChainId.MOONBEAM]
-        )
-      ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.MOONBEAM])
+      it('Returns estimated time for SynapseCCTP', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseCCTP')
+        ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
+      })
+
+      it('Throws when bridge module does not exist on a chain', () => {
+        expect(() =>
+          synapse.getEstimatedTime(SupportedChainId.MOONBEAM, 'SynapseCCTP')
+        ).toThrow('No estimated time for chain 1284')
+      })
+
+      it('Throws when bridge module name is invalid', () => {
+        expect(() =>
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseSynapse')
+        ).toThrow('Unknown bridge module')
+      })
     })
 
-    it('Returns estimated time for SynapseCCTP', () => {
-      expect(
-        synapse.getEstimatedTime(
-          SupportedChainId.ETH,
-          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-        )
-      ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
+    describe('Chain without a provider', () => {
+      it('Returns estimated time for SynapseBridge', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseBridge')
+        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.BSC])
+      })
 
-      expect(
-        synapse.getEstimatedTime(
-          SupportedChainId.ARBITRUM,
-          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-        )
-      ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM])
-    })
+      it('Returns estimated time for SynapseCCTP', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ARBITRUM, 'SynapseCCTP')
+        ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM])
+      })
 
-    it('Throws for chain without a provider', () => {
-      expect(() =>
-        synapse.getEstimatedTime(
-          SupportedChainId.AVALANCHE,
-          ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
-        )
-      ).toThrow('Unknown router address')
-    })
+      it('Throws when bridge module does not exist on a chain', () => {
+        expect(() =>
+          synapse.getEstimatedTime(SupportedChainId.DOGECHAIN, 'SynapseCCTP')
+        ).toThrow('No estimated time for chain 2000')
+      })
 
-    it('Throws for unknown router address', () => {
-      expect(() =>
-        synapse.getEstimatedTime(
-          SupportedChainId.MOONBEAM,
-          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-        )
-      ).toThrow('Unknown router address')
+      it('Throws when bridge module name is invalid', () => {
+        expect(() =>
+          synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseSynapse')
+        ).toThrow('Unknown bridge module')
+      })
     })
   })
 

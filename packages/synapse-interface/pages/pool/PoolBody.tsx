@@ -27,6 +27,7 @@ const PoolBody = ({
   address?: Address
   connectedChainId?: number
 }) => {
+  const [isClient, setIsClient] = useState(false)
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
 
@@ -35,19 +36,22 @@ const PoolBody = ({
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
   const [stakedBalance, setStakedBalance] = useState({
     amount: 0n,
     reward: 0n,
   })
 
   useEffect(() => {
-    if (pool) {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (pool && isClient) {
       segmentAnalyticsEvent(`[Pool] arrives`, {
         poolName: pool?.poolName,
       })
     }
-    if (address) {
+    if (address && isClient) {
       getStakedBalance(
         address as Address,
         pool.chainId,
@@ -62,7 +66,7 @@ const PoolBody = ({
     } else {
       setStakedBalance({ amount: 0n, reward: 0n })
     }
-  }, [])
+  }, [isClient, address, pool])
 
   if (!pool) return null
 
