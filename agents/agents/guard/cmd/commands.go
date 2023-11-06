@@ -166,7 +166,7 @@ var GuardRunCommand = &cli.Command{
 			)
 
 			g.Go(func() error {
-				err := embedded.Start(c.Context)
+				err := embedded.Start(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
@@ -184,13 +184,13 @@ var GuardRunCommand = &cli.Command{
 		default:
 			return fmt.Errorf("invalid scribe type: %s", guardConfig.ScribeConfig.Type)
 		}
-		guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, scribeClient, guardDB, handler)
+		guard, err := guard.NewGuard(ctx, guardConfig, baseOmniRPCClient, scribeClient, guardDB, handler)
 		if err != nil {
 			return fmt.Errorf("failed to create guard: %w", err)
 		}
 
 		g.Go(func() error {
-			err = guard.Start(c.Context)
+			err = guard.Start(ctx)
 			if err != nil {
 				fmt.Printf("error running guard: %v\n", err)
 				return fmt.Errorf("failed to run guard: %w", err)
@@ -201,7 +201,7 @@ var GuardRunCommand = &cli.Command{
 		})
 
 		g.Go(func() error {
-			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			err := api.Start(ctx, uint16(c.Uint(metricsPortFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("failed to start api: %w", err)
 			}
