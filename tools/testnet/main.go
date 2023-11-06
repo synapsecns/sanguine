@@ -393,10 +393,13 @@ func main() {
 				err = retry.WithBackoff(ctx, func(context.Context) error {
 					receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
 					return err
-				}, retry.WithMaxTotalTime(300*time.Second))
+				}, retry.WithMaxTotalTime(30*time.Second))
 				if err != nil {
 					fmt.Printf("error getting transaction receipt: %v\n", err)
 					return err
+				}
+				if receipt.Status != ethTypes.ReceiptStatusSuccessful {
+					return fmt.Errorf("receipt status is not successful: %v", receipt.Status)
 				}
 				for _, log := range receipt.Logs {
 					fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
@@ -442,6 +445,9 @@ func main() {
 				time.Sleep(1 * time.Second)
 				return true
 			})
+			if numExecuted >= expectedNumExecuted {
+				return fmt.Errorf("processed %d iterations and %d routes", numIters, numRoutesActual)
+			}
 		}
 	})
 
