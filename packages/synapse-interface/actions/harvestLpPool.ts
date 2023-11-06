@@ -19,7 +19,7 @@ export const harvestLpPool = async ({
   poolId: number
   lpAddress: Address
 }) => {
-  const config = await prepareWriteContract({
+  const { request } = await prepareWriteContract({
     chainId,
     address: lpAddress,
     abi: MINICHEF_ABI,
@@ -27,7 +27,7 @@ export const harvestLpPool = async ({
     args: [poolId, address],
   })
 
-  const { hash } = await writeContract({ config })
+  const { hash } = await writeContract(request)
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt
