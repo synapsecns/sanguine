@@ -183,7 +183,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 	ctx, span := e.handler.Tracer().Start(ctx, "processSnapshot", trace.WithAttributes(
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
-		attribute.String("snapshotRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String("snapRoot", common.BytesToHash(snapshotRoot[:]).String()),
 		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {
@@ -237,7 +237,7 @@ func (e Executor) processAttestation(ctx context.Context, attestation types.Atte
 	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
 		attribute.Int("chainID", int(chainID)),
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
-		attribute.String("snapshotRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String("snapRoot", common.BytesToHash(snapshotRoot[:]).String()),
 		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {

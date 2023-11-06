@@ -174,7 +174,7 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 	fmt.Println("loadNotaryLatestAttestation")
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
-		attribute.String("currentSnapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
 	))
 	defer span.End()
 
@@ -616,9 +616,9 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 }
 
 //nolint:cyclop,unused
-func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation", trace.WithAttributes(
-		attribute.String("currentSnapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
+func (n *Notary) submitAttestation(parentCtx context.Context) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation", trace.WithAttributes(
+		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
 	))
 	defer span.End()
 
@@ -654,7 +654,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	} else {
 		snapRoot := attestation.Attestation().SnapshotRoot()
 		span.AddEvent("Dispatching attestation to submitter", trace.WithAttributes(
-			attribute.String("snapshotRoot", common.BytesToHash(snapRoot[:]).String()),
+			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
 			attribute.Int("attNonce", int(attestation.Attestation().Nonce())),
 		))
 		fmt.Printf("Submitting tx for attestation: %v\n", attestation.Attestation())
@@ -734,7 +734,7 @@ func (n *Notary) Start(parentCtx context.Context) error {
 					didRegisterAgent = n.registerNotaryOnDestination(ctx)
 				}
 				if shouldSendToDestination && didRegisterAgent {
-					n.submitMyLatestAttestation(ctx)
+					n.submitAttestation(ctx)
 				}
 			}
 		}

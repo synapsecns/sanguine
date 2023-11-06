@@ -594,7 +594,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
 		attribute.String("root", root),
-		attribute.String("snapshotRoot", snapshotRoot),
+		attribute.String("snapRoot", snapshotRoot),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
