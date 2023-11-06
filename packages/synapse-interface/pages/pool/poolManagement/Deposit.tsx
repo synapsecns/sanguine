@@ -37,6 +37,7 @@ import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
+import { zeroAddress } from 'viem'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -208,6 +209,7 @@ const Deposit = ({
                 <SerializedDepositInput
                   key={i}
                   tokenObj={tokenObj}
+                  pool={pool}
                   address={address}
                   chainId={chainId}
                   inputValue={inputValue}
@@ -234,6 +236,7 @@ const Deposit = ({
 }
 
 const SerializedDepositInput = ({
+  pool,
   tokenObj,
   address,
   chainId,
@@ -241,7 +244,7 @@ const SerializedDepositInput = ({
   onChangeInputValue,
 }) => {
   const [serializedToken, setSerializedToken] = useState(undefined)
-  const balanceToken = correctToken(tokenObj.token)
+  const balanceToken = getBalanceToken(tokenObj.token, pool)
 
   useEffect(() => {
     const fetchSerializedData = async () => {
@@ -281,12 +284,11 @@ const SerializedDepositInput = ({
   )
 }
 
-const correctToken = (token: Token) => {
+const getBalanceToken = (token: Token, pool: Token) => {
   let balanceToken: Token | undefined
-  if (token.symbol == WETH.symbol) {
+  if (token.symbol == WETH.symbol && !pool.nativeTokens.includes(WETH)) {
     balanceToken = ETH
   } else if (token.symbol == AVWETH.symbol) {
-    // token = WETHE
     balanceToken = WETHE
   } else {
     balanceToken = token
@@ -302,7 +304,7 @@ const serializeToken = async (
 ) => {
   let fetchedBalance
 
-  if (balanceToken === ETH) {
+  if (balanceToken.addresses[chainId] === zeroAddress) {
     fetchedBalance = await fetchBalance({
       address: address as Address,
       chainId,
