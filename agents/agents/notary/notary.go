@@ -251,6 +251,9 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 		))
 		return false, err
 	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int("attNonce", int(attNonce)),
+	))
 
 	return attNonce > 0, nil
 }
