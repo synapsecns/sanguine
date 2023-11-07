@@ -253,7 +253,7 @@ const ShowLabel = () => {
       >
         {formatBigIntToString(
           parsedAllowance,
-          fromToken.decimals[fromChainId],
+          fromToken?.decimals[fromChainId],
           5
         ) ?? '0.0'}
         <span> approved</span>
