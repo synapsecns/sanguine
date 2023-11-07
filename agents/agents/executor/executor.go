@@ -1011,18 +1011,18 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 							fmt.Printf("inserted attempt for %s: %v\n", leafHex, now)
 							continue
 						}
-					} else {
-						destinationDomain := message.DestinationDomain()
-						nonce := message.Nonce()
-						executedMessageMask := db.DBMessage{
-							ChainID:     &chainID,
-							Destination: &destinationDomain,
-							Nonce:       &nonce,
-						}
-						err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-						if err != nil {
-							return fmt.Errorf("could not execute message: %w", err)
-						}
+					}
+
+					destinationDomain := message.DestinationDomain()
+					nonce := message.Nonce()
+					executedMessageMask := db.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
+					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
 					}
 				}
 
