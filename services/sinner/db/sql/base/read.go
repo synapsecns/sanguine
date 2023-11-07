@@ -55,7 +55,6 @@ func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.Mes
 	}
 
 	if err != nil {
-
 		return []*graphqlModel.MessageStatus{}, fmt.Errorf("could not retrieve message status: %w", err)
 	}
 
