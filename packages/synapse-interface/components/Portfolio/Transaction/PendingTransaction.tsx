@@ -196,29 +196,49 @@ export const PendingTransaction = ({
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
+      const maxRetries = 3
+      const retryDelay = 5000
+      let attempt = 0
+
       const updateResolvedTransaction = async () => {
-        const resolvedTransaction = await waitForTransaction({
-          hash: transactionHash as Address,
-        }).catch((error) => {
-          console.error('resolving transaction failed: ', error)
-        })
+        try {
+          const resolvedTransaction = await waitForTransaction({
+            hash: transactionHash as Address,
+          })
 
-        if (resolvedTransaction) {
-          const currentTimestamp: number = getTimeMinutesFromNow(0)
-          const updatedTransaction = {
-            id: startedTimestamp,
-            timestamp: currentTimestamp,
-            transactionHash: transactionHash,
-            isSubmitted: true,
+          if (resolvedTransaction) {
+            const currentTimestamp: number = getTimeMinutesFromNow(0)
+            const updatedTransaction = {
+              id: startedTimestamp,
+              timestamp: currentTimestamp,
+              transactionHash: transactionHash,
+              isSubmitted: true,
+            }
+
+            console.log('resolved transaction:', resolvedTransaction)
+            dispatch(updatePendingBridgeTransaction(updatedTransaction))
           }
-
-          console.log('resolved transaction:', resolvedTransaction)
-          dispatch(updatePendingBridgeTransaction(updatedTransaction))
+        } catch (error) {
+          console.error('resolving transaction failed: ', error)
+          if (attempt < maxRetries) {
+            attempt++
+            console.log(`Retrying (${attempt}/${maxRetries})...`)
+            setTimeout(updateResolvedTransaction, retryDelay)
+          }
         }
       }
+
       updateResolvedTransaction()
     }
-  }, [startedTimestamp, isSubmitted, transactionHash, updatedElapsedTime])
+  }, [
+    startedTimestamp,
+    isSubmitted,
+    transactionHash,
+    dispatch,
+    updatePendingBridgeTransaction,
+    getTimeMinutesFromNow,
+    updatedElapsedTime,
+  ])
 
   useEffect(() => {
     const currentTimestamp: number = getTimeMinutesFromNow(0)
