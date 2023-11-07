@@ -87,8 +87,8 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 
 	query, err := interpol.WithMap(
 		`SELECT * FROM {stTable} WHERE {chainID} = ? AND {snapshotRoot} = (
-                     SELECT {snapshotRoot} FROM {attTable} WHERE {destination} = ? AND ({destBlockNum},{snapshotRoot}) = (
-						SELECT {destBlockNum}, {snapshotRoot} FROM (
+                     SELECT {snapshotRoot} FROM {attTable} WHERE {destination} = ? AND ({snapshotRoot}) = (
+						SELECT attestationTable.{snapshotRoot} FROM (
 							(SELECT {snapshotRoot} FROM {stTable} WHERE {nonce} >= ? AND {nonce} <= ? AND {chainID} = ?) AS stateTable
 							INNER JOIN
 							(SELECT {snapshotRoot}, {destBlockNum} FROM {attTable} WHERE {destination} = ?) as attestationTable
