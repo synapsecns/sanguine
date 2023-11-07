@@ -100,10 +100,14 @@ export const PendingTransaction = ({
   const currentTime: number = Math.floor(Date.now() / 1000)
 
   const elapsedMinutes: number = useMemo(() => {
-    if (startedTimestamp) {
+    if (currentTime < startedTimestamp) {
+      return 0
+    } else if (startedTimestamp > currentTime) {
       return Math.floor((currentTime - startedTimestamp) / 60)
+    } else {
+      return 0
     }
-  }, [startedTimestamp])
+  }, [startedTimestamp, currentTime])
 
   const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
 
