@@ -267,7 +267,7 @@ export const PendingTransaction = ({
     if (!isSubmitted && isStale) {
       dispatch(removePendingBridgeTransaction(startedTimestamp))
     }
-  }, [timeRemaining, isSubmitted, startedTimestamp])
+  }, [timeRemaining, isSubmitted, startedTimestamp, updatedElapsedTime])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
