@@ -73,6 +73,20 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
+    if (bridgeModuleName) {
+      console.log('1 bridgeModuleName: ', bridgeModuleName)
+      return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
+    }
+
+    if (formattedEventType) {
+      const fetchedBridgeModuleName: string =
+        synapseSDK.getBridgeModuleName(formattedEventType)
+      console.log('2 fetchedBridgeModuleName: ', bridgeModuleName)
+      return synapseSDK.getEstimatedTime(
+        originChain?.id,
+        fetchedBridgeModuleName
+      )
+    }
     // Fallback last resort estimated duration calculation
     // Remove this when fallback origin queries return eventType
     // CCTP Classification
@@ -96,6 +110,8 @@ export const PendingTransaction = ({
           1000
       : null
   }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
+
+  console.log('estimatedCompletionInSeconds:', estimatedCompletionInSeconds)
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
