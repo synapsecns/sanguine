@@ -90,6 +90,7 @@ export const PendingTransaction = ({
     // Fallback last resort estimated duration calculation
     // Remove this when fallback origin queries return eventType
     // CCTP Classification
+    console.log('3 Fallback estimated time')
     if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
@@ -411,7 +412,7 @@ const TransactionStatusDetails = ({
               onClick={handleDestinationExplorerClick}
               className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
             >
-              Bridging to {destinationChain.name}.
+              Bridging to {destinationChain.name}...
             </div>
             <TransactionOptions
               connectedAddress={connectedAddress as Address}

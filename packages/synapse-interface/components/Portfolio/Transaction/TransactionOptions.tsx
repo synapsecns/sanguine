@@ -29,6 +29,47 @@ export const TransactionOptions = ({
   transactionStatus: TransactionStatus
   isDelayed: boolean
 }) => {
+  const originExplorerLink: () => void = useCallback(() => {
+    if (originChain && connectedAddress) {
+      const explorerLink: string = getExplorerAddressUrl({
+        chainId: originChain.id,
+        address: connectedAddress,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [originChain, connectedAddress])
+
+  const destinationExplorerLink: () => void = useCallback(() => {
+    if (destinationChain && connectedAddress) {
+      const explorerLink: string = getExplorerAddressUrl({
+        chainId: destinationChain.id,
+        address: connectedAddress,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [destinationChain, connectedAddress])
+
+  const synapseExplorerLink: () => void = useCallback(() => {
+    if (
+      kappa &&
+      originChain &&
+      transactionStatus === TransactionStatus.COMPLETED
+    ) {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+        toChainId: destinationChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    } else {
+      const explorerLink: string = getTransactionExplorerLink({
+        kappa,
+        fromChainId: originChain.id,
+      })
+      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [kappa, originChain, transactionStatus, isDelayed])
+
   const handleExplorerClick: () => void = useCallback(() => {
     if (
       kappa &&
