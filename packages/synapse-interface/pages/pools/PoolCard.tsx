@@ -61,7 +61,8 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
       getStakedBalance(
         address as Address,
         pool.chainId,
-        pool.poolId[pool.chainId]
+        pool.poolId[pool.chainId],
+        pool
       )
         .then((res) => {
           setStakedBalance(res)

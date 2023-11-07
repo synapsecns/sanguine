@@ -12,8 +12,6 @@ import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
 import { Token } from '@/utils/types'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import Button from '@/components/ui/tailwind/Button'
@@ -25,9 +23,6 @@ import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
-import { useAppSelector } from '@/store/hooks'
-import { METIS } from '@/constants/chains/master'
-import { hasAllPrices } from '@/utils/hasAllPrices'
 
 interface StakeCardProps {
   address: string
@@ -58,6 +53,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     reward: 0n,
   })
   const [tx, setTx] = useState(undefined)
+  const miniChefAddress = pool.miniChefAddress
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) {
@@ -67,7 +63,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       })
       return
     }
-    getStakedBalance(address as Address, pool.chainId, stakingPoolId)
+    getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
       .then((data) => {
         setUserStakeData(data)
       })
@@ -86,13 +82,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     }
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
-        MINICHEF_ADDRESSES[chainId],
+        miniChefAddress as Address,
         pool.addresses[chainId] as Address,
         address as Address,
         chainId
       )
       setAllowance(tkAllowance)
-      getStakedBalance(address as Address, pool.chainId, stakingPoolId)
+      getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
         .then((data) => {
           setUserStakeData(data)
         })
@@ -106,7 +102,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     if (!address) return
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
-        MINICHEF_ADDRESSES[chainId],
+        miniChefAddress as Address,
         pool.addresses[chainId] as Address,
         address as Address,
         chainId
@@ -175,7 +171,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             `}
             onClick={() =>
               pendingTxWrapFunc(
-                claimStake(chainId, address as Address, stakingPoolId)
+                claimStake(chainId, address as Address, stakingPoolId, pool)
               )
             }
           >
@@ -307,6 +303,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                           address as Address,
                           chainId,
                           stakingPoolId,
+                          pool,
                           deposit.bi
                         )
                       )
@@ -330,6 +327,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                     address as Address,
                     chainId,
                     stakingPoolId,
+                    pool,
                     stringToBigInt(withdraw, 18)
                   )
                 )

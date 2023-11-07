@@ -39,7 +39,7 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const minichefAddress: Address = MINICHEF_ADDRESSES[chainId]
+  const minichefAddress: Address = poolToken.miniChefAddress as Address
 
   const data = await readContracts({
     contracts: [

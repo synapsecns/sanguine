@@ -1,7 +1,6 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
-
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+import { Token } from '@types'
 
 type UserInfoResult = {
   result: [amount: bigint, rewardDebt: bigint]
@@ -16,9 +15,10 @@ type PendingSynapseResult = {
 export const getStakedBalance = async (
   address: Address,
   chainId: number,
-  poolId: number
+  poolId: number,
+  pool: Token
 ) => {
-  const miniChefContractAddress: Address = MINICHEF_ADDRESSES[chainId]
+  const miniChefContractAddress: Address = pool.miniChefAddress as Address
   try {
     const data: ReadContractResult = await readContracts({
       contracts: [

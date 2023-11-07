@@ -55,7 +55,8 @@ const PoolBody = ({
       getStakedBalance(
         address as Address,
         pool.chainId,
-        pool.poolId[pool.chainId]
+        pool.poolId[pool.chainId],
+        pool
       )
         .then((res) => {
           setStakedBalance(res)

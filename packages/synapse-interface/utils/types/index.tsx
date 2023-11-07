@@ -160,6 +160,7 @@ export class Token {
   chainId?: number // chain id of swap pool
   incentivized?: boolean // pool is incentivized or not
   customRewardToken?: string // reward token symbol when pool staking rewards are in something other than SYN
+  miniChefAddress: string // mini chef address
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -211,6 +212,7 @@ export class Token {
     chainId,
     incentivized,
     customRewardToken,
+    miniChefAddress,
     priorityPool,
     color,
     priceUnits,
@@ -251,6 +253,7 @@ export class Token {
     chainId?: number
     incentivized?: boolean
     customRewardToken?: string
+    miniChefAddress?: string
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -305,6 +308,7 @@ export class Token {
     this.chainId = chainId
     this.incentivized = incentivized
     this.customRewardToken = customRewardToken
+    this.miniChefAddress = miniChefAddress
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
