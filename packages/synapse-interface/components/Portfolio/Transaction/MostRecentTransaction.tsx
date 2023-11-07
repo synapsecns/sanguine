@@ -38,7 +38,7 @@ export const MostRecentTransaction = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(getTimeMinutesBeforeNow(0))
-    }, 60000)
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [])
@@ -139,6 +139,7 @@ export const MostRecentTransaction = () => {
   // console.log('lastPendingTransaction:', lastPendingTransaction)
 
   return useMemo(() => {
+    console.log('re-rendering mostrecenttransaction')
     if (
       isUserHistoricalTransactionsLoading ||
       isUserPendingTransactionsLoading

@@ -107,26 +107,32 @@ export const PendingTransaction = ({
     } else {
       return 0
     }
-  }, [startedTimestamp, isSubmitted])
+  }, [startedTimestamp, currentTime, isSubmitted, transactionHash])
 
   const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes)
 
-  console.log('elapsedMinutes:', elapsedMinutes)
-  console.log('elapsedTime:', elapsedTime)
+  console.log(
+    'elapsedMinutes:',
+    elapsedMinutes,
+    ' and elapsedTime:',
+    elapsedTime,
+    ' and txnHash: ',
+    transactionHash
+  )
 
   useEffect(() => {
-    console.log('startedTimestamp:', startedTimestamp)
-    console.log('isSubmitted:', isSubmitted)
-    console.log('transactionHash:', transactionHash)
-
     const interval = setInterval(() => {
       const currentTime: number = Math.floor(Date.now() / 1000)
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
-      console.log('isSubmitted:', isSubmitted)
       if (isSubmitted) {
-        console.log('setting elapsed time: ', elapsedMinutes)
+        console.log(
+          'setElapsedMinutes:',
+          elapsedMinutes,
+          ' for transactionHash: ',
+          transactionHash
+        )
         setElapsedTime(elapsedMinutes)
       }
     }, 30000)
@@ -135,6 +141,12 @@ export const PendingTransaction = ({
       clearInterval(interval)
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
+
+  useEffect(() => {
+    if (!elapsedMinutes && elapsedTime > elapsedMinutes) {
+      setElapsedTime(0)
+    }
+  }, [elapsedMinutes, elapsedTime])
 
   const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
 
