@@ -1,54 +1,18 @@
-import { useState, useEffect, useMemo } from 'react'
 import { readContract, fetchBalance, Address } from '@wagmi/core'
 import { SYN, WETH } from '@constants/tokens/bridgeable'
 import * as ALL_CHAINS from '@constants/chains/master'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
+  CHAINLINK_METIS_PRICE_ADDRESSES,
 } from '@constants/chainlink'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 
-export const usePrices = (connectedChainId: number) => {
-  const [synPrices, setSynPrices] = useState<any>(undefined)
-  const [ethPrice, setEthPrice] = useState<number>(undefined)
-  const [avaxPrice, setAvaxPrice] = useState<number>(undefined)
-
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const data = await getSynPrices()
-        setSynPrices(data)
-      } catch (err) {
-        console.log('Could not get syn prices', err)
-      }
-
-      try {
-        const data = await getEthPrice()
-        setEthPrice(data)
-      } catch (err) {
-        console.log('Could not get eth prices', err)
-      }
-
-      try {
-        const data = await getAvaxPrice()
-        setAvaxPrice(data)
-      } catch (err) {
-        console.log('Could not get avax prices', err)
-      }
-    })()
-  }, [connectedChainId])
-
-  return useMemo(() => {
-    const prices = { synPrices, ethPrice, avaxPrice }
-    return prices
-  }, [synPrices, ethPrice, avaxPrice])
-}
-
 export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
   const ethPriceResult: bigint = (await readContract({
-    address: `0x${CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
+    address: CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
@@ -78,6 +42,24 @@ export const getAvaxPrice = async (): Promise<number> => {
     return 0
   } else {
     return Number(avaxPriceBigInt) / Math.pow(10, 8)
+  }
+}
+
+export const getMetisPrice = async (): Promise<number> => {
+  // the price result returned by latestAnswer is 8 decimals
+  const metisPriceResult: bigint = (await readContract({
+    address: CHAINLINK_METIS_PRICE_ADDRESSES[ALL_CHAINS.METIS.id] as Address,
+    abi: CHAINLINK_AGGREGATOR_ABI,
+    functionName: 'latestAnswer',
+    chainId: ALL_CHAINS.METIS.id,
+  })) as bigint
+
+  const metisPriceBigInt = metisPriceResult ?? 0n
+
+  if (metisPriceBigInt === 0n) {
+    return 0
+  } else {
+    return Number(metisPriceBigInt) / Math.pow(10, 8)
   }
 }
 

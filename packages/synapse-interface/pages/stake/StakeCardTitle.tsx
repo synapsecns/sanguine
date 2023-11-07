@@ -5,6 +5,8 @@ import { LoaderIcon } from 'react-hot-toast'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import ApyTooltip from '@/components/ApyTooltip'
+import { hasAllPrices } from '@/utils/hasAllPrices'
+import { useAppSelector } from '@/store/hooks'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -22,30 +24,33 @@ const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
 }
 
 interface StakeCardTitleProps {
-  address: string
-  connectedChainId: number
   token: Token
   poolTokens: Token[]
   poolLabel: string
-  prices: any
   lpTokenBalance: bigint
 }
 
 const StakeCardTitle = ({
-  address,
-  connectedChainId,
   token,
   poolTokens,
   poolLabel,
-  prices,
   lpTokenBalance,
 }: StakeCardTitleProps) => {
   const [poolApyData, setPoolApyData] = useState<any>(null)
-  const [baseApyData, setBaseApyData] = useState<any>(null)
+  const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
+    (state) => state.priceData
+  )
+
+  const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 
   useEffect(() => {
-    if (connectedChainId && prices) {
-      getPoolApyData(connectedChainId, token, prices)
+    if (hasAllPrices(prices)) {
+      getPoolApyData(token.chainId, token, {
+        synPrices,
+        ethPrice,
+        avaxPrice,
+        metisPrice,
+      })
         .then((res) => {
           setPoolApyData(res)
         })
@@ -53,12 +58,7 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, prices, lpTokenBalance])
-
-  useEffect(() => {
-    null
-    setBaseApyData(null)
-  }, [connectedChainId])
+  }, [token, hasAllPrices(prices), lpTokenBalance])
 
   const displayPoolApyData = useMemo(() => {
     if (!poolApyData) return null
@@ -66,7 +66,7 @@ const StakeCardTitle = ({
     return poolApyData.fullCompoundedAPY
       ? `${numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}`
       : `-%`
-  }, [connectedChainId, prices, poolApyData])
+  }, [prices, poolApyData])
 
   return (
     <div className="flex items-center justify-between mb-5">

@@ -1,18 +1,20 @@
 import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { unstakeLpToken } from '@/actions/unstakeLpToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { Token } from '@types'
 
 export const withdrawStake = async (
   address: Address,
   chainId: number,
   poolId: number,
+  pool: Token,
   inputValue: bigint
 ) => {
+  const miniChefAddress = pool.miniChefAddress
   try {
     if (!address) throw new Error('Wallet must be connected')
     segmentAnalyticsEvent(`[Withdraw Stake] Attempt`, {
@@ -25,7 +27,7 @@ export const withdrawStake = async (
       chainId,
       poolId,
       amount: inputValue,
-      lpAddress: MINICHEF_ADDRESSES[chainId],
+      lpAddress: miniChefAddress as Address,
     })
 
     const toastContent = (
