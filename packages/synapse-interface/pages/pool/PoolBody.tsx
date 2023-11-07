@@ -55,7 +55,8 @@ const PoolBody = ({
       getStakedBalance(
         address as Address,
         pool.chainId,
-        pool.poolId[pool.chainId]
+        pool.poolId[pool.chainId],
+        pool
       )
         .then((res) => {
           setStakedBalance(res)
@@ -92,7 +93,7 @@ const PoolBody = ({
             </div>
             <PoolActionOptions
               pool={pool}
-              options={['Stake', 'Unstake', 'Claim SYN']}
+              options={['Stake', 'Unstake', 'Claim']}
             />
             <div className="flex space-x-4">
               <div className="text-right">

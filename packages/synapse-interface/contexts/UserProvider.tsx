@@ -10,6 +10,7 @@ import { resetPortfolioState } from '@/slices/portfolio/actions'
 import {
   fetchAvaxPrice,
   fetchEthPrice,
+  fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
 
@@ -50,6 +51,7 @@ export const UserProvider = ({ children }) => {
       dispatch(fetchSynPrices())
       dispatch(fetchEthPrice())
       dispatch(fetchAvaxPrice())
+      dispatch(fetchMetisPrice())
     }
   }, [isClient])
 
