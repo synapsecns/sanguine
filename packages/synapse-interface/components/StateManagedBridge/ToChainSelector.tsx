@@ -17,7 +17,7 @@ export const ToChainSelector = () => {
   const { toChainId } = useBridgeState()
   const { showToChainBorder } = useBridgeShowBorder()
   const toChain = CHAINS_BY_ID[toChainId]
-  const BASE_BUTTON_PROPERTIES = 'bg-transparent p-md border-2 rounded-sm'
+  const BASE_BUTTON_PROPERTIES = 'bg-transparent p-md border rounded-sm'
 
   let buttonContent
   let buttonClassName

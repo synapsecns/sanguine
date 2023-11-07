@@ -363,7 +363,7 @@ const ApproveButton = ({ disabled }) => {
         w-[89px] h-[32px]
         flex items-center mr-2 py-lg px-md justify-center
         text-sm text-secondary
-        border-2 rounded-sm
+        border rounded-sm
         ${borderStyle}
         ${disabled ? 'opacity-50' : 'hover:border-secondary'}
       `}

@@ -70,9 +70,9 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       data-test-id="connect-button"
       className={`
         flex items-center justify-center
-        text-secondary py-lg px-md rounded-sm
+        text-secondary py-lg px-lg rounded-sm
         text-center
-        border-2
+        border
         hover:border-secondary
         ${
           hasInputAmount && hasValidSelections
@@ -126,7 +126,7 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
                         className={`
                           flex items-center mr-2 py-md px-md
                           text-sm text-secondary
-                          border-2 rounded-sm 
+                          border rounded-sm 
                           hover:border-secondary
                           ${
                             highlight

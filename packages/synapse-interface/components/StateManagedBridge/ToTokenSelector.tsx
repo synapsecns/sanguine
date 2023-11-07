@@ -14,7 +14,7 @@ export const ToTokenSelector = () => {
   const { fromToken, toToken } = useBridgeState()
   const { showToTokenBorder } = useBridgeShowBorder()
   const BASE_BUTTON_PROPERTIES =
-    'p-md rounded-sm min-w-[80px] bg-[#565058] border-2'
+    'p-md rounded-sm min-w-[80px] bg-[#565058] border'
 
   let buttonContent
   let buttonClassName
