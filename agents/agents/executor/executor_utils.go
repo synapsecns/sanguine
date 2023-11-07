@@ -174,7 +174,7 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	return nil
 }
 
-// processAttestation processes and stores an attestation.
+// processSnapshot processes and stores a snapshot.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, log ethTypes.Log) (err error) {
 	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
 	if err != nil {
@@ -206,7 +206,6 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 			if err != nil {
 				return fmt.Errorf("could not check validity of state: %w", err)
 			}
-
 			return nil
 		}
 		err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
@@ -216,7 +215,10 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 		if !valid {
 			stateRoot := state.Root()
-			logger.Infof("snapshot has invalid state. Origin: %d. SnapshotRoot: %s", state.Origin(), common.BytesToHash(stateRoot[:]).String())
+			span.AddEvent("snapshot has invalid state", trace.WithAttributes(
+				attribute.Int("origin", int(state.Origin())),
+				attribute.String("stateRoot", common.BytesToHash(stateRoot[:]).String()),
+			))
 			return nil
 		}
 	}
