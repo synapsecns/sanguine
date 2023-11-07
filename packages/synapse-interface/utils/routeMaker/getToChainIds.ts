@@ -194,9 +194,9 @@ export const getToChainIds = ({
     toTokenRouteSymbol
   ) {
     return _.uniq(
-      EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`]?.map(
-        (token) => getTokenAndChainId(token).chainId
-      )
+      EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`]
+        ?.filter((token) => token.startsWith(`${toTokenRouteSymbol}-`))
+        .map((token) => getTokenAndChainId(token).chainId)
     )
   }
 
