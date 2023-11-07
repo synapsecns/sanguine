@@ -240,7 +240,8 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
             <span className="text-white">Earned: </span>
             <span className="text-green-400 hover:underline">
               <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
-                {formatBigIntToString(reward, 18, 5)} SYN
+                {formatBigIntToString(reward, 18, 5)}{' '}
+                {pool?.customRewardToken ?? 'SYN'}
               </Link>
             </span>
           </div>
