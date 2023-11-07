@@ -99,7 +99,7 @@ export const PendingTransaction = ({
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
-  const elapsedMinutes: number = useMemo(() => {
+  const initialElapsedMinutes: number = useMemo(() => {
     if (!isSubmitted || currentTime < startedTimestamp) {
       return 0
     } else if (startedTimestamp < currentTime) {
@@ -109,15 +109,8 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, currentTime, isSubmitted, transactionHash])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes)
-
-  console.log(
-    'elapsedMinutes:',
-    elapsedMinutes,
-    ' and elapsedTime:',
-    elapsedTime,
-    ' and txnHash: ',
-    transactionHash
+  const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
+    initialElapsedMinutes
   )
 
   useEffect(() => {
@@ -127,13 +120,7 @@ export const PendingTransaction = ({
         (currentTime - startedTimestamp) / 60
       )
       if (isSubmitted) {
-        console.log(
-          'setElapsedMinutes:',
-          elapsedMinutes,
-          ' for transactionHash: ',
-          transactionHash
-        )
-        setElapsedTime(elapsedMinutes)
+        setUpdatedElapsedTime(elapsedMinutes)
       }
     }, 30000)
 
@@ -143,22 +130,27 @@ export const PendingTransaction = ({
   }, [startedTimestamp, isSubmitted, transactionHash])
 
   useEffect(() => {
-    if (!elapsedMinutes && elapsedTime > elapsedMinutes) {
-      setElapsedTime(0)
+    if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
+      setUpdatedElapsedTime(0)
     }
-  }, [elapsedMinutes, elapsedTime])
+  }, [initialElapsedMinutes, updatedElapsedTime])
 
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const estimatedCompletionInMinutes: number = Math.floor(
+    estimatedCompletionInSeconds / 60
+  )
 
   const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !elapsedTime) {
-      return estimatedMinutes
+    if (!startedTimestamp || !updatedElapsedTime) {
+      return estimatedCompletionInMinutes
     } else {
-      return estimatedMinutes - elapsedTime
+      return estimatedCompletionInMinutes - updatedElapsedTime
     }
-  }, [estimatedMinutes, elapsedMinutes, elapsedTime, startedTimestamp])
-
-  console.log('timeRemaining:', timeRemaining)
+  }, [
+    estimatedCompletionInMinutes,
+    initialElapsedMinutes,
+    updatedElapsedTime,
+    startedTimestamp,
+  ])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
@@ -224,7 +216,7 @@ export const PendingTransaction = ({
       }
       updateResolvedTransaction()
     }
-  }, [startedTimestamp, isSubmitted, transactionHash, elapsedTime])
+  }, [startedTimestamp, isSubmitted, transactionHash, updatedElapsedTime])
 
   useEffect(() => {
     const currentTimestamp: number = getTimeMinutesFromNow(0)
@@ -253,7 +245,9 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
-        timeRemaining={isSubmitted ? timeRemaining : estimatedMinutes}
+        timeRemaining={
+          isSubmitted ? timeRemaining : estimatedCompletionInMinutes
+        }
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}
