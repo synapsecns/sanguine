@@ -100,19 +100,11 @@ export const PendingTransaction = ({
   const currentTime: number = Math.floor(Date.now() / 1000)
 
   const elapsedMinutes: number = useMemo(() => {
-    if (!isSubmitted) {
-      return 0
-    } else if (currentTime < startedTimestamp) {
-      console.log('1')
+    if (!isSubmitted || currentTime < startedTimestamp) {
       return 0
     } else if (startedTimestamp < currentTime) {
-      console.log('currentTime:', currentTime)
-      console.log('2')
       return Math.floor((currentTime - startedTimestamp) / 60)
     } else {
-      console.log('currentTime:', currentTime)
-      console.log('startedTimestamp: ', startedTimestamp)
-      console.log('3')
       return 0
     }
   }, [startedTimestamp, isSubmitted])
@@ -128,7 +120,9 @@ export const PendingTransaction = ({
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
+      console.log('isSubmitted:', isSubmitted)
       if (isSubmitted) {
+        console.log('setting elapsed time: ', elapsedMinutes)
         setElapsedTime(elapsedMinutes)
       }
     }, 60000)
@@ -206,12 +200,13 @@ export const PendingTransaction = ({
             isSubmitted: true,
           }
 
+          console.log('resolved transaction:', resolvedTransaction)
           dispatch(updatePendingBridgeTransaction(updatedTransaction))
         }
       }
       updateResolvedTransaction()
     }
-  }, [startedTimestamp, isSubmitted, transactionHash])
+  }, [startedTimestamp, isSubmitted, transactionHash, elapsedTime])
 
   useEffect(() => {
     const currentTimestamp: number = getTimeMinutesFromNow(0)
@@ -240,7 +235,7 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
-        timeRemaining={timeRemaining}
+        timeRemaining={isSubmitted ? timeRemaining : estimatedMinutes}
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}

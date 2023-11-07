@@ -257,7 +257,7 @@ export const MostRecentTransaction = () => {
     }
   }, [
     currentTime,
-    lastPendingBridgeTransaction?.id,
+    lastPendingBridgeTransaction,
     lastHistoricalTransaction,
     lastPendingTransaction,
     masqueradeActive,
