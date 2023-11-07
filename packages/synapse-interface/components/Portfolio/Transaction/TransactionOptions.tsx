@@ -29,7 +29,7 @@ export const TransactionOptions = ({
   transactionStatus: TransactionStatus
   isDelayed: boolean
 }) => {
-  const originExplorerLink: () => void = useCallback(() => {
+  const handleOriginExplorerLink: () => void = useCallback(() => {
     if (originChain && connectedAddress) {
       const explorerLink: string = getExplorerAddressUrl({
         chainId: originChain.id,
@@ -39,7 +39,7 @@ export const TransactionOptions = ({
     }
   }, [originChain, connectedAddress])
 
-  const destinationExplorerLink: () => void = useCallback(() => {
+  const handleDestinationExplorerLink: () => void = useCallback(() => {
     if (destinationChain && connectedAddress) {
       const explorerLink: string = getExplorerAddressUrl({
         chainId: destinationChain.id,
@@ -49,7 +49,7 @@ export const TransactionOptions = ({
     }
   }, [destinationChain, connectedAddress])
 
-  const synapseExplorerLink: () => void = useCallback(() => {
+  const handleSynapseExplorerLink: () => void = useCallback(() => {
     if (
       kappa &&
       originChain &&
@@ -141,7 +141,7 @@ export const TransactionOptions = ({
                   />
                 }
                 text={`Check on ${originChain.explorerName}`}
-                onClick={handleExplorerClick}
+                onClick={handleOriginExplorerLink}
               />
             )}
             {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
@@ -155,7 +155,7 @@ export const TransactionOptions = ({
                   />
                 }
                 text={`Check on Synapse Explorer`}
-                onClick={handleExplorerClick}
+                onClick={handleSynapseExplorerLink}
               />
             ) : (
               <OptionButton
@@ -168,7 +168,7 @@ export const TransactionOptions = ({
                   />
                 }
                 text={`Check on ${destinationChain.explorerName}`}
-                onClick={handleExplorerClick}
+                onClick={handleDestinationExplorerLink}
               />
             )}
             {transactionStatus === TransactionStatus.COMPLETED && (
@@ -182,7 +182,7 @@ export const TransactionOptions = ({
                   />
                 }
                 text={`Check on Synapse Explorer`}
-                onClick={handleExplorerClick}
+                onClick={handleSynapseExplorerLink}
               />
             )}
             <OptionButton
