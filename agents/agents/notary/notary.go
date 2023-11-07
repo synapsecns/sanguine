@@ -483,7 +483,10 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 //nolint:cyclop
 func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	fmt.Println("submitLatestSnapshot")
-	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot")
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
+		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int("domain", int(n.destinationDomain.Config().DomainID)),
+	))
 	defer span.End()
 
 	snapshot, statesToSubmit := n.getLatestSnapshot(ctx)
@@ -619,6 +622,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 func (n *Notary) submitAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation", trace.WithAttributes(
 		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int("domain", int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
 
