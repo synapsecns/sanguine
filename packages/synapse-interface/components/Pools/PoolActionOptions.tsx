@@ -96,10 +96,10 @@ export const PoolActionOptions = ({
                 onClick={handleWithdrawClick}
               />
             )}
-            {options.includes('Claim SYN') && (
+            {options.includes('Claim') && (
               <OptionButton
                 icon={<ClaimIcon />}
-                text={'Claim SYN'}
+                text={'Claim'}
                 onClick={handleClaimClick}
               />
             )}

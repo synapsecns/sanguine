@@ -14,90 +14,80 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { PoolActionOptions } from '../../components/Pools/PoolActionOptions'
 import { PoolHeader } from '../../components/Pools/PoolHeader'
 import { PoolCardBody } from '../../components/Pools/PoolCardBody'
+import { useAppSelector } from '@/store/hooks'
 
-const PoolCard = memo(
-  ({
-    pool,
-    address,
-    ethPrice,
-    avaxPrice,
-    synPrices,
-  }: {
-    pool: Token
-    address: string
-    ethPrice: any
-    avaxPrice: any
-    synPrices: any
-  }) => {
-    const [isClient, setIsClient] = useState(false)
-    const [poolData, setPoolData] = useState(undefined)
-    const [poolApyData, setPoolApyData] = useState(undefined)
-    const [stakedBalance, setStakedBalance] = useState({
-      amount: 0n,
-      reward: 0n,
-    })
-    const { isDisconnected } = useAccount()
+const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
+  const [isClient, setIsClient] = useState(false)
+  const [poolData, setPoolData] = useState(undefined)
+  const [poolApyData, setPoolApyData] = useState(undefined)
+  const [stakedBalance, setStakedBalance] = useState({
+    amount: 0n,
+    reward: 0n,
+  })
+  const { isDisconnected } = useAccount()
+  const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
+    (state) => state.priceData
+  )
 
-    let popup: string
-    useEffect(() => {
-      setIsClient(true)
-    }, [])
+  const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 
-    useEffect(() => {
-      if (pool && isClient) {
-        // TODO - separate the apy and tvl so they load async.
-        getSinglePoolData(pool.chainId, pool, {
-          synPrices,
-          ethPrice,
-          avaxPrice,
+  let popup: string
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (pool && isClient) {
+      // TODO - separate the apy and tvl so they load async.
+      getSinglePoolData(pool.chainId, pool, prices)
+        .then((res) => {
+          setPoolData(res)
         })
-          .then((res) => {
-            setPoolData(res)
-          })
-          .catch((err) => {
-            console.log('Could not get Pool Data: ', err)
-          })
-        getPoolApyData(pool.chainId, pool, { synPrices, ethPrice, avaxPrice })
-          .then((res) => {
-            setPoolApyData(res)
-          })
-          .catch((err) => {
-            console.log('Could not get Pool APY Data: ', err)
-          })
-      }
-    }, [pool, isClient])
+        .catch((err) => {
+          console.log('Could not get Pool Data: ', err)
+        })
+      getPoolApyData(pool.chainId, pool, prices)
+        .then((res) => {
+          setPoolApyData(res)
+        })
+        .catch((err) => {
+          console.log('Could not get Pool APY Data: ', err)
+        })
+    }
+  }, [pool, isClient])
 
-    useEffect(() => {
-      if (address && isClient) {
-        getStakedBalance(
-          address as Address,
-          pool.chainId,
-          pool.poolId[pool.chainId]
-        )
-          .then((res) => {
-            setStakedBalance(res)
-          })
-          .catch((err) => {
-            console.log('Could not get staked balances: ', err)
-          })
-      } else {
-        setStakedBalance({ amount: 0n, reward: 0n })
-      }
-    }, [address, isClient])
+  useEffect(() => {
+    if (address && isClient) {
+      getStakedBalance(
+        address as Address,
+        pool.chainId,
+        pool.poolId[pool.chainId],
+        pool
+      )
+        .then((res) => {
+          setStakedBalance(res)
+        })
+        .catch((err) => {
+          console.log('Could not get staked balances: ', err)
+        })
+    } else {
+      setStakedBalance({ amount: 0n, reward: 0n })
+    }
+  }, [address, isClient])
 
-    /*
+  /*
   useEffect triggers: address, isDisconnected, popup
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
-    useEffect(() => {
-      if (address && !isDisconnected && popup) {
-        toast.dismiss(popup)
-      }
-    }, [address, isDisconnected, popup])
+  useEffect(() => {
+    if (address && !isDisconnected && popup) {
+      toast.dismiss(popup)
+    }
+  }, [address, isDisconnected, popup])
 
-    return (
-      <div
-        className={`
+  return (
+    <div
+      className={`
           border
           ${
             pool && pool.incentivized
@@ -108,40 +98,39 @@ const PoolCard = memo(
           space-y-2
           whitespace-wrap
         `}
-      >
-        <div>
-          <Link href={getPoolUrl(pool)}>
-            {pool && <PoolHeader pool={pool} address={address as Address} />}
-            {pool &&
-            poolData &&
-            poolApyData &&
-            poolData.tokens &&
-            poolData.totalLockedUSD ? (
-              <PoolCardBody
-                pool={pool}
-                poolApyData={poolApyData}
-                poolData={poolData}
-              />
-            ) : (
-              <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
-                <LoaderIcon />
-              </div>
-            )}
-          </Link>
-          {pool && (
-            <>
-              <ManageLp
-                pool={pool}
-                stakedBalance={stakedBalance}
-                address={address}
-              />
-            </>
+    >
+      <div>
+        <Link href={getPoolUrl(pool)}>
+          {pool && <PoolHeader pool={pool} address={address as Address} />}
+          {pool &&
+          poolData &&
+          poolApyData &&
+          poolData.tokens &&
+          poolData.totalLockedUSD ? (
+            <PoolCardBody
+              pool={pool}
+              poolApyData={poolApyData}
+              poolData={poolData}
+            />
+          ) : (
+            <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
+              <LoaderIcon />
+            </div>
           )}
-        </div>
+        </Link>
+        {pool && (
+          <>
+            <ManageLp
+              pool={pool}
+              stakedBalance={stakedBalance}
+              address={address}
+            />
+          </>
+        )}
       </div>
-    )
-  }
-)
+    </div>
+  )
+})
 
 const ManageLp = ({ pool, stakedBalance, address }) => {
   const { poolTokenBalances } = usePortfolioState()
@@ -181,7 +170,7 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
         <div className="flex items-center text-xs">
           <PoolActionOptions
             pool={pool}
-            options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim SYN']}
+            options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
           />
         </div>
       </div>
@@ -251,7 +240,8 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
             <span className="text-white">Earned: </span>
             <span className="text-green-400 hover:underline">
               <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
-                {formatBigIntToString(reward, 18, 5)} SYN
+                {formatBigIntToString(reward, 18, 5)}{' '}
+                {pool?.customRewardToken ?? 'SYN'}
               </Link>
             </span>
           </div>
