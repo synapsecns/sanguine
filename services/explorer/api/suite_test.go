@@ -303,7 +303,7 @@ func (g *APISuite) SetupTest() {
 			return nil
 		}
 		return fmt.Errorf("failed to connect to graphql server: %w", err)
-	}, retry.WithMaxAttempts(1000))
+	}, retry.WithMaxAttempts(10))
 
 	g.Require().Nil(err)
 }

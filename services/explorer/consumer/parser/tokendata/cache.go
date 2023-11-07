@@ -156,7 +156,7 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(ctx context.Context, token 
 	normalizedSymbol := normalizeSymbol(*symbol)
 	tokenID, exists := t.tokenSymbolToIDs[normalizedSymbol]
 	if !exists {
-		return nil, fmt.Errorf("token ID not found for symbol: %s", normalizedSymbol)
+		tokenID = normalizedSymbol
 	}
 
 	return immutableTokenImpl{
@@ -168,28 +168,19 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(ctx context.Context, token 
 
 // retrieveCCTPTokenData retrieves the token data from the cctp contract.
 func (t *tokenDataServiceImpl) retrieveCCTPTokenData(ctx context.Context, address common.Address, chainID uint32, backend bind.ContractBackend) (ImmutableTokenData, error) {
-	fmt.Println("retrieveCCTPTokenData", address)
 	erc20Contract, err := erc20.NewERC20Ref(address, chainID, backend)
-	fmt.Println("retrieveCCTPTokenData err1", err)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create erc20: %w", err)
 	}
 	decimal, symbol, err := erc20Contract.GetTokenData(ctx)
-	fmt.Println("retrieveCCTPTokenData err2", err, decimal, symbol)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not get token data: %w", err)
 	}
-	normalizedSymbol := normalizeSymbol(symbol)
-	tokenID, exists := t.tokenSymbolToIDs[normalizedSymbol]
-	if !exists {
-		return nil, fmt.Errorf("token ID not found for symbol: %s", normalizedSymbol)
-	}
-
 	return immutableTokenImpl{
 		decimals:     decimal,
-		tokenID:      tokenID,
+		tokenID:      symbol,
 		tokenAddress: address.Hex(),
 	}, nil
 }

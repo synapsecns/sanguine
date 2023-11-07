@@ -25,9 +25,3 @@ func TestToNullString(t *testing.T) {
 	Equal(t, "", checkInvalid.String)
 	False(t, checkInvalid.Valid)
 }
-
-// func(*ConsumerSuite) TestGetCorrectSwapFee(t *testing.T) {
-//
-//}
-
-// TODO after mock bridge emits events.
