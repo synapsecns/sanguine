@@ -100,16 +100,27 @@ export const PendingTransaction = ({
   const currentTime: number = Math.floor(Date.now() / 1000)
 
   const elapsedMinutes: number = useMemo(() => {
-    if (currentTime < startedTimestamp) {
+    if (!isSubmitted) {
       return 0
-    } else if (startedTimestamp > currentTime) {
+    } else if (currentTime < startedTimestamp) {
+      console.log('1')
+      return 0
+    } else if (startedTimestamp < currentTime) {
+      console.log('currentTime:', currentTime)
+      console.log('2')
       return Math.floor((currentTime - startedTimestamp) / 60)
     } else {
+      console.log('currentTime:', currentTime)
+      console.log('startedTimestamp: ', startedTimestamp)
+      console.log('3')
       return 0
     }
-  }, [startedTimestamp, currentTime])
+  }, [startedTimestamp, isSubmitted])
 
   const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
+
+  console.log('elapsedMinutes:', elapsedMinutes)
+  console.log('elapsedTime:', elapsedTime)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -117,7 +128,9 @@ export const PendingTransaction = ({
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
-      setElapsedTime(elapsedMinutes)
+      if (isSubmitted) {
+        setElapsedTime(elapsedMinutes)
+      }
     }, 60000)
 
     return () => {
