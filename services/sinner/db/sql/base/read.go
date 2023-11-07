@@ -2,10 +2,12 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
 	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+	"gorm.io/gorm"
 )
 
 // RetrieveMessageStatus retrieve message status.
@@ -48,7 +50,12 @@ func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.Mes
 		Where(fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)).
 		First(&records).Error
 
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return []*graphqlModel.MessageStatus{}, nil
+	}
+
 	if err != nil {
+
 		return []*graphqlModel.MessageStatus{}, fmt.Errorf("could not retrieve message status: %w", err)
 	}
 

@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -132,6 +131,5 @@ func (t *APISuite) TestPendingMessageStatus() {
 	desResult, err := t.sinnerAPI.GetPendingMessages(t.GetTestContext())
 	Nil(t.T(), err)
 	NotNil(t.T(), desResult)
-	fmt.Println(desResult, "SS", desResult.Response)
-	Equal(t.T(), 0, len(result.Response))
+	Equal(t.T(), 0, len(desResult.Response))
 }
