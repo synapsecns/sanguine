@@ -2,12 +2,13 @@ package db_test
 
 import (
 	"encoding/json"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
-	"math/big"
 )
 
 func (t *DBSuite) TestStoreRetrieveState() {
@@ -189,7 +190,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 			ChainID: &originA,
 		}
 
-		snapshotRoot, proof, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
+		proof, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
 		Nil(t.T(), err)
 
 		proofBytes, err := json.Marshal(proof)
@@ -198,7 +199,6 @@ func (t *DBSuite) TestGetStateMetadata() {
 		err = json.Unmarshal(proofBytes, &proofABytes)
 		Nil(t.T(), err)
 
-		Equal(t.T(), snapshotRootA, common.BytesToHash((*snapshotRoot)[:]))
 		Equal(t.T(), proofA, proofABytes)
 		Equal(t.T(), indexA, *stateIndex)
 	})

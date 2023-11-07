@@ -1,12 +1,13 @@
 package db_test
 
 import (
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
-	"math/big"
 )
 
 func (t *DBSuite) TestGetTimestampForMessage() {
@@ -154,23 +155,23 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestation2, origin+1, 3, 3)
 		Nil(t.T(), err)
 
-		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5)
+		earliestState, _, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(2), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1)
+		earliestState, _, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5)
+		earliestState, _, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(4), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6)
+		earliestState, _, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5)
+		earliestState, _, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(5), (*earliestState).Nonce())
 	})
