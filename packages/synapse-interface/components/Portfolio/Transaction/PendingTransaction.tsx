@@ -201,7 +201,6 @@ export const PendingTransaction = ({
           hash: transactionHash as Address,
         }).catch((error) => {
           console.error('resolving transaction failed: ', error)
-          dispatch(removePendingBridgeTransaction(startedTimestamp))
         })
 
         if (resolvedTransaction) {
