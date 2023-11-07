@@ -20,11 +20,20 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 
 type Query struct {
 	GetMessageStatus   *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetPendingMessages []*model.MessageStatus   "json:\"getPendingMessages\" graphql:\"getPendingMessages\""
 	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
 	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
 	Response *struct {
+		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
+		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
+		DestinationTxHash *string                     "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
+		MessageHash       *string                     "json:\"messageHash\" graphql:\"messageHash\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetPendingMessages struct {
+	Response []*struct {
 		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
 		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
 		DestinationTxHash *string                     "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
@@ -86,6 +95,27 @@ func (c *Client) GetMessageStatus(ctx context.Context, messageHash *string, orig
 
 	var res GetMessageStatus
 	if err := c.Client.Post(ctx, "GetMessageStatus", GetMessageStatusDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetPendingMessagesDocument = `query GetPendingMessages {
+	response: getPendingMessages {
+		lastSeen
+		originTxHash
+		destinationTxHash
+		messageHash
+	}
+}
+`
+
+func (c *Client) GetPendingMessages(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*GetPendingMessages, error) {
+	vars := map[string]interface{}{}
+
+	var res GetPendingMessages
+	if err := c.Client.Post(ctx, "GetPendingMessages", GetPendingMessagesDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

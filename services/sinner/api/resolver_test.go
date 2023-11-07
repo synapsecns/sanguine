@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -107,4 +108,30 @@ func (t *APISuite) TestMessageStatus() {
 	NotNil(t.T(), desResult)
 	Equal(t.T(), desTxHash, *desResult.Response.DestinationTxHash)
 	Equal(t.T(), graphqlModel.MessageStateLastSeenDestination, *desResult.Response.LastSeen)
+}
+
+func (t *APISuite) TestPendingMessageStatus() {
+	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+
+	err := t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash, messageHash, types.Origin)
+	Nil(t.T(), err)
+
+	result, err := t.sinnerAPI.GetPendingMessages(t.GetTestContext())
+	Nil(t.T(), err)
+	NotNil(t.T(), result)
+	Equal(t.T(), 1, len(result.Response))
+	Equal(t.T(), txHash, *result.Response[0].OriginTxHash)
+	Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *result.Response[0].LastSeen)
+
+	// Add destination
+	err = t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), desTxHash, messageHash, types.Destination)
+	Nil(t.T(), err)
+
+	desResult, err := t.sinnerAPI.GetPendingMessages(t.GetTestContext())
+	Nil(t.T(), err)
+	NotNil(t.T(), desResult)
+	fmt.Println(desResult, "SS", desResult.Response)
+	Equal(t.T(), 0, len(result.Response))
 }

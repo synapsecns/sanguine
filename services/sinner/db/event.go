@@ -35,6 +35,8 @@ type EventDBReader interface {
 	RetrieveMessageStatus(ctx context.Context, messageHash string) (graphqlModel.MessageStatus, error)
 	// RetrieveLastStoredBlock gets the last block stored in sinner.
 	RetrieveLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error)
+	// RetrievePendingMessages gets pending messages.
+	RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.MessageStatus, error)
 }
 
 // EventDB stores events.

@@ -39,6 +39,40 @@ func (s Store) RetrieveMessageStatus(ctx context.Context, messageHash string) (g
 	return payload, nil
 }
 
+// RetrievePendingMessages retrieves pending messages.
+func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.MessageStatus, error) {
+	var records []model.MessageStatus
+
+	err := s.DB().WithContext(ctx).
+		Model(&model.MessageStatus{}).
+		Where(fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)).
+		First(&records).Error
+
+	if err != nil {
+		return []*graphqlModel.MessageStatus{}, fmt.Errorf("could not retrieve message status: %w", err)
+	}
+
+	var payload []*graphqlModel.MessageStatus
+	for _, record := range records {
+		ms := &graphqlModel.MessageStatus{
+			MessageHash:       &record.MessageHash,
+			OriginTxHash:      &record.OriginTxHash,
+			DestinationTxHash: &record.DestinationTxHash,
+		}
+
+		if record.OriginTxHash == "" {
+			ls := graphqlModel.MessageStateLastSeenUnknown
+			ms.LastSeen = &ls
+		} else {
+			ls := graphqlModel.MessageStateLastSeenOrigin
+			ms.LastSeen = &ls
+		}
+		payload = append(payload, ms)
+	}
+
+	return payload, nil
+}
+
 // RetrieveLastStoredBlock gets the last stored block.
 func (s Store) RetrieveLastStoredBlock(ctx context.Context, chainID uint32, address common.Address) (uint64, error) {
 	var lastIndexed model.LastIndexed

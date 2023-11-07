@@ -70,6 +70,38 @@ func (t *DBSuite) TestRetrieveMessageStatus() {
 	})
 }
 
+func (t *DBSuite) TestRetrievePendingMessages() {
+	t.RunOnAllDBs(func(testDB db.TestEventDB) {
+		ctx := t.GetTestContext()
+
+		// Insert a message status record with no destination (pending)
+		messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		originTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		err := testDB.StoreOrUpdateMessageStatus(ctx, originTxHash, messageHash, types.Origin)
+		Nil(t.T(), err)
+
+		// Insert a message status record with a destination (not pending)
+		nonPendingMessageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		nonPendingOriginTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		nonPendingDestinationTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+		err = testDB.StoreOrUpdateMessageStatus(ctx, nonPendingOriginTxHash, nonPendingMessageHash, types.Origin)
+		Nil(t.T(), err)
+		err = testDB.StoreOrUpdateMessageStatus(ctx, nonPendingDestinationTxHash, nonPendingMessageHash, types.Destination)
+		Nil(t.T(), err)
+
+		// Test: Retrieve and validate pending messages
+		pendingMessages, err := testDB.RetrievePendingMessages(ctx)
+		Nil(t.T(), err)
+		NotEqual(t.T(), 0, len(pendingMessages)) // Ensure we have at least one pending message
+
+		// Validate that the retrieved messages are indeed pending (no destination hash)
+		for _, status := range pendingMessages {
+			NotNil(t.T(), status.OriginTxHash)
+			Equal(t.T(), "", *status.DestinationTxHash)
+			Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *status.LastSeen)
+		}
+	})
+}
 func (t *DBSuite) TestRetrieveOriginSent() {
 	t.RunOnAllDBs(func(testDB db.TestEventDB) {
 		// Setup: Insert some dummy data
