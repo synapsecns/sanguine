@@ -13,7 +13,6 @@ import {
   setBridgeQuote,
   setIsLoading,
   setDestinationAddress,
-  addBridgeTxHash,
 } from '@/slices/bridge/reducer'
 
 import {
@@ -440,7 +439,6 @@ const StateManagedBridge = () => {
             isSubmitted: false,
           })
         )
-        dispatch(addBridgeTxHash(tx))
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))

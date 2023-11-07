@@ -19,34 +19,17 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const {
-    fromChainId,
-    fromToken,
-    fromValue,
-    bridgeTxHashes,
-    toChainId,
-    toToken,
-  } = useBridgeState()
+  const { fromChainId, fromToken, fromValue, toChainId, toToken } =
+    useBridgeState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
-  const previousBridgeTxHashesRef = useRef<string[]>([])
 
   const { balancesAndAllowances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
-
-  useEffect(() => {
-    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
-
-    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
-      setShowValue('')
-    }
-
-    previousBridgeTxHashesRef.current = bridgeTxHashes
-  }, [bridgeTxHashes])
 
   const { isConnected } = useAccount()
   const { chain } = useNetwork()
