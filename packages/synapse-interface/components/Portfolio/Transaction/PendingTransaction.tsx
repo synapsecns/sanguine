@@ -99,6 +99,7 @@ export const PendingTransaction = ({
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
+  // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
   const initialElapsedMinutes: number = useMemo(() => {
     if (!isSubmitted || currentTime < startedTimestamp) {
       return 0
@@ -109,6 +110,7 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, currentTime, isSubmitted, transactionHash])
 
+  // Holds most updated value for elapsed time to calculate timeRemaining
   const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
     initialElapsedMinutes
   )
@@ -129,6 +131,7 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
 
+  // Ensures we reset elapsed time so unique transactions track elapsed time accurately
   useEffect(() => {
     if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
       setUpdatedElapsedTime(0)

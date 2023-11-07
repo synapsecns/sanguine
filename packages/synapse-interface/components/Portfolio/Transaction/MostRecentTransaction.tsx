@@ -135,11 +135,7 @@ export const MostRecentTransaction = () => {
 
   let transaction
 
-  // console.log('lastPendingBridgeTransaction:', lastPendingBridgeTransaction)
-  // console.log('lastPendingTransaction:', lastPendingTransaction)
-
   return useMemo(() => {
-    console.log('re-rendering mostrecenttransaction')
     if (
       isUserHistoricalTransactionsLoading ||
       isUserPendingTransactionsLoading
@@ -149,8 +145,6 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingBridgeTransaction) {
       transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
-
-      console.log('lastPendingBridgeTransaction:', lastPendingBridgeTransaction)
       return (
         <div
           data-test-id="most-recent-transaction-bridge-pending"
@@ -178,7 +172,6 @@ export const MostRecentTransaction = () => {
 
     if (!masqueradeActive && lastPendingTransaction) {
       transaction = lastPendingTransaction as BridgeTransaction
-      console.log('lastPendingTransaction:', lastPendingTransaction)
       return (
         <div data-test-id="most-recent-transaction-pending" className="mt-6">
           <PendingTransaction
