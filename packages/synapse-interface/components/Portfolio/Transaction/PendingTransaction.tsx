@@ -95,7 +95,7 @@ export const PendingTransaction = ({
           originChain.blockTime) /
           1000
       : null
-  }, [originChain, eventType, originToken])
+  }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
@@ -115,6 +115,14 @@ export const PendingTransaction = ({
     initialElapsedMinutes
   )
 
+  // Ensures we reset elapsed time so unique transactions track elapsed time accurately
+  useEffect(() => {
+    if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
+      setUpdatedElapsedTime(0)
+    }
+  }, [initialElapsedMinutes, updatedElapsedTime])
+
+  // Update elapsed time in set intervals for countdown
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime: number = Math.floor(Date.now() / 1000)
@@ -130,13 +138,6 @@ export const PendingTransaction = ({
       clearInterval(interval)
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
-
-  // Ensures we reset elapsed time so unique transactions track elapsed time accurately
-  useEffect(() => {
-    if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
-      setUpdatedElapsedTime(0)
-    }
-  }, [initialElapsedMinutes, updatedElapsedTime])
 
   const estimatedCompletionInMinutes: number = Math.floor(
     estimatedCompletionInSeconds / 60
