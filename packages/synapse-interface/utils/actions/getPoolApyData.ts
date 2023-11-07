@@ -78,7 +78,7 @@ export const getPoolApyData = async (
     ],
   })
 
-  console.log(`data`, data)
+  // console.log(`data`, data)
 
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
