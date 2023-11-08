@@ -19,7 +19,6 @@ import { RootActions } from '@/slices/application/actions'
 
 const persistedReducers = {
   application,
-  bridge,
   transactions,
 }
 
@@ -33,6 +32,7 @@ export const persistConfig: PersistConfig<AppState> = {
 }
 
 export const appReducer = combineReducers({
+  bridge,
   portfolio,
   swap,
   bridgeDisplay,
