@@ -2,7 +2,7 @@ import JSBI from 'jsbi'
 import { BigNumber } from '@ethersproject/bignumber'
 
 export * from './addresses'
-export * from './chainIds'
+export * from './supportedChains'
 export * from './medianTime'
 export * from './testValues'
 

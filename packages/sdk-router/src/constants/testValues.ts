@@ -1,4 +1,4 @@
-import { SupportedChainId } from './chainIds'
+import { SupportedChainId } from './supportedChains'
 
 export const PUBLIC_PROVIDER_URLS: { [chainId: number]: string } = {
   [SupportedChainId.ETH]: 'https://eth.llamarpc.com',

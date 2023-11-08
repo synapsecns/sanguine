@@ -1,4 +1,7 @@
-import { CCTP_SUPPORTED_CHAIN_IDS, SUPPORTED_CHAIN_IDS } from './chainIds'
+import {
+  CCTP_SUPPORTED_CHAIN_IDS,
+  SUPPORTED_CHAIN_IDS,
+} from './supportedChains'
 
 export type AddressMap = {
   [chainId: number]: string

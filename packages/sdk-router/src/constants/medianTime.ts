@@ -1,4 +1,4 @@
-import { SupportedChainId } from './chainIds'
+import { SupportedChainId } from './supportedChains'
 
 /**
  * Median time (in seconds) for a SynapseBridge transaction to be completed,
