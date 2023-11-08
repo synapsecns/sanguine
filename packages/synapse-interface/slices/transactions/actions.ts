@@ -18,19 +18,21 @@ export interface PendingBridgeTransaction {
 }
 
 export const addPendingBridgeTransaction =
-  createAction<PendingBridgeTransaction>('bridge/addPendingBridgeTransaction')
+  createAction<PendingBridgeTransaction>(
+    'transactions/addPendingBridgeTransaction'
+  )
 export const updatePendingBridgeTransaction = createAction<{
   id: number
   timestamp: number
   transactionHash: string
   isSubmitted: boolean
-}>('bridge/updatePendingBridgeTransaction')
+}>('transactions/updatePendingBridgeTransaction')
 export const removePendingBridgeTransaction = createAction<number>(
-  'bridge/removePendingBridgeTransaction'
+  'transactions/removePendingBridgeTransaction'
 )
 export const updatePendingBridgeTransactions = createAction<
   PendingBridgeTransaction[]
->('bridge/updatePendingBridgeTransactions')
+>('transactions/updatePendingBridgeTransactions')
 
 export const updateUserHistoricalTransactions = createAction<
   BridgeTransaction[]
