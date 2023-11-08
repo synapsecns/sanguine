@@ -226,6 +226,7 @@ export const transactionsSlice = createSlice({
         }
       )
       .addCase(resetTransactionsState, (state) => {
+        state.pendingBridgeTransactions = initialState.pendingBridgeTransactions
         state.userHistoricalTransactions =
           initialState.userHistoricalTransactions
         state.isUserHistoricalTransactionsLoading =
@@ -237,6 +238,8 @@ export const transactionsSlice = createSlice({
           initialState.pendingAwaitingCompletionTransactions
         state.fallbackQueryPendingTransactions =
           initialState.fallbackQueryPendingTransactions
+        state.fallbackQueryHistoricalTransactions =
+          initialState.fallbackQueryHistoricalTransactions
       })
   },
 })
