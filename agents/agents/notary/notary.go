@@ -433,9 +433,12 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 //nolint:cyclop
 func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
 	fmt.Println("getLatestSnapshot")
+	ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot")
+	defer span.End()
+
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
-		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
+		_, stateSpan := n.handler.Tracer().Start(ctx, "loading state", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
@@ -454,19 +457,19 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 			continue
 		}
 		if !n.isValidOnOrigin(ctx, summitGuardLatest, domain) {
-			span.AddEvent("State not valid on origin", trace.WithAttributes(
+			stateSpan.AddEvent("state not valid on origin", trace.WithAttributes(
 				attribute.Int("nonce", int(summitGuardLatest.Nonce())),
 			))
 			continue
 		}
 		statesToSubmit[originID] = summitGuardLatest
-		span.AddEvent("Registering guard's latest summit state", trace.WithAttributes(
+		stateSpan.AddEvent("registering guard's latest summit state", trace.WithAttributes(
 			attribute.Int("originID", int(originID)),
 			attribute.Int("nonce", int(summitGuardLatest.Nonce())),
 		))
 		fmt.Printf("Got state nonce %v for origin %v\n", summitGuardLatest.Nonce(), originID)
 
-		span.End()
+		stateSpan.End()
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
@@ -477,7 +480,12 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 	}
 	fmt.Printf("Got snapshot states: %v\n", snapshotStates)
 	if len(snapshotStates) > 0 {
-		return types.NewSnapshot(snapshotStates), statesToSubmit
+		snapshot := types.NewSnapshot(snapshotStates)
+		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		span.AddEvent("got snapshot", trace.WithAttributes(
+			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
+		))
+		return snapshot, statesToSubmit
 	}
 	//nolint:nilnil
 	return nil, nil

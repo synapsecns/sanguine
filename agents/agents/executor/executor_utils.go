@@ -191,6 +191,10 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 	}()
 
 	for _, s := range snapshot.States() {
+		span.AddEvent("processing state", trace.WithAttributes(
+			attribute.Int("origin", int(s.Origin())),
+			attribute.Int("nonce", int(s.Nonce())),
+		))
 		state := s
 		statePayload, err := state.Encode()
 		if err != nil {
