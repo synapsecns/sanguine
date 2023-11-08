@@ -378,7 +378,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="pending-status"
-        className={`${sharedClass} p-2 flex justify-between`}
+        className={`${sharedClass} p-2 flex justify-between rounded-b-lg`}
       >
         {isDelayed ? (
           <>

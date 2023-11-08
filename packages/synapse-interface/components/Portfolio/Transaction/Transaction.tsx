@@ -75,7 +75,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col mb-2 overflow-hidden
+        flex flex-col mb-2
         border rounded-lg text-secondary border-surface
         ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
       `}
@@ -83,7 +83,7 @@ export const Transaction = ({
       <div className={`flex flex-row`}>
         <div
           className={`
-            flex items-center p-2
+            flex items-center p-2 rounded-tl-lg
             ${transactionType === TransactionType.PENDING && 'bg-surface'}
           `}
         >
@@ -105,7 +105,7 @@ export const Transaction = ({
         />
         <div
           className={`
-            flex flex-row justify-between flex-1
+            flex flex-row justify-between flex-1 rounded-tr-lg
             ${transactionType === TransactionType.PENDING && 'bg-tint'}
           `}
         >

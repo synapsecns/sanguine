@@ -110,7 +110,7 @@ export const TransactionOptions = ({
     connectedAddress,
   ])
 
-  const handleSupportClick = () => {
+  const handleSupportClick: () => void = () => {
     window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')
   }
 
@@ -130,21 +130,43 @@ export const TransactionOptions = ({
             <DropdownButton open={open} />
           </Popover.Button>
           <TransactionPopoverContainer>
-            {transactionStatus === TransactionStatus.INITIALIZING && (
-              <OptionButton
-                icon={
-                  <Image
-                    className="rounded-full"
-                    height={20}
-                    src={originChain.explorerImg}
-                    alt={`${originChain.explorerName} logo`}
-                  />
-                }
-                text={`Check on ${originChain.explorerName}`}
-                onClick={handleOriginExplorerLink}
-              />
-            )}
-            {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
+            <OptionButton
+              icon={
+                <Image
+                  className="rounded-full"
+                  height={20}
+                  src={originChain.explorerImg}
+                  alt={`${originChain.explorerName} logo`}
+                />
+              }
+              text={`Check on ${originChain.explorerName}`}
+              onClick={handleOriginExplorerLink}
+            />
+            <OptionButton
+              icon={
+                <Image
+                  className="rounded-full"
+                  height={20}
+                  src={destinationChain.explorerImg}
+                  alt={`${destinationChain.explorerName} logo`}
+                />
+              }
+              text={`Check on ${destinationChain.explorerName}`}
+              onClick={handleDestinationExplorerLink}
+            />
+            <OptionButton
+              icon={
+                <Image
+                  className="rounded-full"
+                  height={20}
+                  src={SynapseLogo}
+                  alt="Synapse Logo"
+                />
+              }
+              text={`Check on Synapse Explorer`}
+              onClick={handleSynapseExplorerLink}
+            />
+            {/* {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
               <OptionButton
                 icon={
                   <Image
@@ -184,7 +206,7 @@ export const TransactionOptions = ({
                 text={`Check on Synapse Explorer`}
                 onClick={handleSynapseExplorerLink}
               />
-            )}
+            )} */}
             <OptionButton
               icon={<DiscordIcon height={20} />}
               text={'Contact Support'}
