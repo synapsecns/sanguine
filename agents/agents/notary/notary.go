@@ -195,6 +195,9 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 		))
 		return nil, err
 	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int("nonce", int(attNonce)),
+	))
 
 	// Fetch the attestation and corresponding metadata for the attestation nonce.
 	var attestation types.NotaryAttestation
@@ -213,9 +216,6 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 		))
 		return nil, err
 	}
-	span.AddEvent("got attestation nonce", trace.WithAttributes(
-		attribute.Int("nonce", int(attNonce)),
-	))
 
 	if attNonce == 0 {
 		return nil, nil

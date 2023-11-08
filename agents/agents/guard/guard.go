@@ -329,19 +329,23 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
-			span.AddEvent("Failed calling SuggestLatestState for originID on the Origin contract", trace.WithAttributes(
+			span.AddEvent("failed calling SuggestLatestState for originID on the Origin contract", trace.WithAttributes(
 				attribute.Int("originID", int(originID)),
 				attribute.String("err", err.Error()),
 			))
 		} else if latestState == nil || latestState.Nonce() == uint32(0) {
 			logger.Errorf("No latest state found for origin id %d", originID)
-			span.AddEvent("No latest state found for origin id", trace.WithAttributes(
+			span.AddEvent("no latest state found for origin id", trace.WithAttributes(
 				attribute.Int("originID", int(originID)),
 			))
 		}
 		if latestState != nil {
 			// TODO: if overwriting, end span and start a new one
 			g.originLatestStates[originID] = latestState
+			span.AddEvent("set latest state", trace.WithAttributes(
+				attribute.Int("origin", int(originID)),
+				attribute.Int("nonce", int(latestState.Nonce())),
+			))
 		}
 
 		span.End()
@@ -376,6 +380,10 @@ func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map
 		}
 		// TODO: add event for submitting that state
 		statesToSubmit[originID] = originLatest
+		span.AddEvent("got origin state to submit", trace.WithAttributes(
+			attribute.Int("origin", int(originID)),
+			attribute.Int("nonce", int(originLatest.Nonce())),
+		))
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
@@ -386,7 +394,10 @@ func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map
 	}
 	span.AddEvent("got latest states for snapshot", trace.WithAttributes(stateSliceToAttribute("snapshotStates", snapshotStates)))
 	if len(snapshotStates) > 0 {
-		return types.NewSnapshot(snapshotStates), statesToSubmit
+		snapshot := types.NewSnapshot(snapshotStates)
+		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		span.SetAttributes(attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()))
+		return snapshot, statesToSubmit
 	}
 	//nolint:nilnil
 	return nil, nil
