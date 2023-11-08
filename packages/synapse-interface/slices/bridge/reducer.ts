@@ -481,57 +481,57 @@ export const bridgeSlice = createSlice({
           state.debouncedToTokensFromValue = action.payload
         }
       )
-      .addCase(
-        addPendingBridgeTransaction,
-        (state, action: PayloadAction<PendingBridgeTransaction>) => {
-          state.pendingBridgeTransactions = [
-            action.payload,
-            ...state.pendingBridgeTransactions,
-          ]
-        }
-      )
-      .addCase(
-        updatePendingBridgeTransaction,
-        (
-          state,
-          action: PayloadAction<{
-            id: number
-            timestamp: number
-            transactionHash: string
-            isSubmitted: boolean
-          }>
-        ) => {
-          const { id, timestamp, transactionHash, isSubmitted } = action.payload
-          const transactionIndex = state.pendingBridgeTransactions.findIndex(
-            (transaction) => transaction.id === id
-          )
+      // .addCase(
+      //   addPendingBridgeTransaction,
+      //   (state, action: PayloadAction<PendingBridgeTransaction>) => {
+      //     state.pendingBridgeTransactions = [
+      //       action.payload,
+      //       ...state.pendingBridgeTransactions,
+      //     ]
+      //   }
+      // )
+      // .addCase(
+      //   updatePendingBridgeTransaction,
+      //   (
+      //     state,
+      //     action: PayloadAction<{
+      //       id: number
+      //       timestamp: number
+      //       transactionHash: string
+      //       isSubmitted: boolean
+      //     }>
+      //   ) => {
+      //     const { id, timestamp, transactionHash, isSubmitted } = action.payload
+      //     const transactionIndex = state.pendingBridgeTransactions.findIndex(
+      //       (transaction) => transaction.id === id
+      //     )
 
-          if (transactionIndex !== -1) {
-            state.pendingBridgeTransactions =
-              state.pendingBridgeTransactions.map((transaction, index) =>
-                index === transactionIndex
-                  ? { ...transaction, transactionHash, isSubmitted, timestamp }
-                  : transaction
-              )
-          }
-        }
-      )
-      .addCase(
-        removePendingBridgeTransaction,
-        (state, action: PayloadAction<number>) => {
-          const idTimestampToRemove = action.payload
-          state.pendingBridgeTransactions =
-            state.pendingBridgeTransactions.filter(
-              (transaction) => transaction.id !== idTimestampToRemove
-            )
-        }
-      )
-      .addCase(
-        updatePendingBridgeTransactions,
-        (state, action: PayloadAction<PendingBridgeTransaction[]>) => {
-          state.pendingBridgeTransactions = action.payload
-        }
-      )
+      //     if (transactionIndex !== -1) {
+      //       state.pendingBridgeTransactions =
+      //         state.pendingBridgeTransactions.map((transaction, index) =>
+      //           index === transactionIndex
+      //             ? { ...transaction, transactionHash, isSubmitted, timestamp }
+      //             : transaction
+      //         )
+      //     }
+      //   }
+      // )
+      // .addCase(
+      //   removePendingBridgeTransaction,
+      //   (state, action: PayloadAction<number>) => {
+      //     const idTimestampToRemove = action.payload
+      //     state.pendingBridgeTransactions =
+      //       state.pendingBridgeTransactions.filter(
+      //         (transaction) => transaction.id !== idTimestampToRemove
+      //       )
+      //   }
+      // )
+      // .addCase(
+      //   updatePendingBridgeTransactions,
+      //   (state, action: PayloadAction<PendingBridgeTransaction[]>) => {
+      //     state.pendingBridgeTransactions = action.payload
+      //   }
+      // )
       .addCase(resetBridgeInputs, (state) => {
         state.fromChainId = initialState.fromChainId
         state.fromToken = initialState.fromToken
