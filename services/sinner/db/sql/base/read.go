@@ -47,7 +47,7 @@ func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.Mes
 
 	err := s.DB().WithContext(ctx).
 		Model(&model.MessageStatus{}).
-		Where(fmt.Sprintf("%s = ? OR %s IS NULL", model.DestinationTxHashFieldName, ""), model.DestinationTxHashFieldName).
+		Where(fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)).
 		Find(&records).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
