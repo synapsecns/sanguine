@@ -358,6 +358,8 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
 
+    console.log('originChain.explorerImg:', originChain?.explorerImg)
+
     return (
       <div
         data-test-id="pending-status"
