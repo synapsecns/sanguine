@@ -177,7 +177,7 @@ export const MostRecentTransaction = () => {
             startedTimestamp={transaction?.fromInfo?.time as number}
             transactionHash={transaction?.fromInfo?.txnHash as string}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value as number}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
@@ -223,8 +223,8 @@ export const MostRecentTransaction = () => {
             transactionHash={transaction?.fromInfo?.txnHash as string}
             kappa={transaction?.kappa as string}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
-            destinationValue={transaction?.toInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value as number}
+            destinationValue={transaction?.toInfo?.value as number}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
