@@ -5,6 +5,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"golang.org/x/exp/slices"
+	"reflect"
 	"testing"
 )
 
@@ -127,3 +128,25 @@ chains:
       - rpc: 'https://node.expanse.tech'
         rpc_type: stable
 `
+
+func TestFlattenRPCs(t *testing.T) {
+	// Arrange: Create a slice of RPCConfig with different RPC values
+	rpcConfigs := []config.RPCConfig{
+		{RPC: "http://rpc01.network.com", RPCType: "stable"},
+		{RPC: "http://rpc02.network.com", RPCType: "auxiliary"},
+		{RPC: "http://rpc03.network.com", RPCType: "stable"},
+	}
+
+	// Act: Flatten the RPCs
+	flattenedRPCs := config.FlattenRPCs(rpcConfigs)
+
+	// Assert: Check if the returned slice matches the expected output
+	expectedRPCs := []string{
+		"http://rpc01.network.com",
+		"http://rpc02.network.com",
+		"http://rpc03.network.com",
+	}
+	if !reflect.DeepEqual(flattenedRPCs, expectedRPCs) {
+		t.Errorf("FlattenRPCs() = %v, want %v", flattenedRPCs, expectedRPCs)
+	}
+}
