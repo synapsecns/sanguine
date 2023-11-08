@@ -5,7 +5,7 @@ import { useAppDispatch } from '@/store/hooks'
 import {
   removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
-} from '@/slices/bridge/actions'
+} from '@/slices/transactions/actions'
 import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
