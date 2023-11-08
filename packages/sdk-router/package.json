@@ -49,7 +49,7 @@
     "size-limit": "^8.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.4.0",
-    "typescript": "^4.8.3"
+    "typescript": "5.0.4"
   },
   "dependencies": {
     "@babel/core": "^7.20.12",
@@ -67,6 +67,7 @@
     "jsbi": "^4.3.0",
     "tiny-invariant": "^1.2.0",
     "toformat": "^2.0.0",
-    "ts-xor": "^1.1.0"
+    "ts-xor": "^1.1.0",
+    "viem": "1.18.9"
   }
 }
