@@ -59,15 +59,13 @@ import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
-  PendingBridgeTransaction,
-} from '@/slices/bridge/actions'
+} from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
-import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -93,9 +91,7 @@ const StateManagedBridge = () => {
     toChainIds,
     fromTokens,
     toTokens,
-    pendingBridgeTransactions,
   }: BridgeState = useBridgeState()
-
   const {
     showSettingsSlideOver,
     showDestinationAddress,
