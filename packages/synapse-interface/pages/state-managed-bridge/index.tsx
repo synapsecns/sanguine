@@ -56,26 +56,21 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
   fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
-  PendingBridgeTransaction,
-} from '@/slices/bridge/actions'
+} from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
-import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -102,9 +97,7 @@ const StateManagedBridge = () => {
     toChainIds,
     fromTokens,
     toTokens,
-    pendingBridgeTransactions,
   }: BridgeState = useBridgeState()
-
   const {
     showSettingsSlideOver,
     showDestinationAddress,

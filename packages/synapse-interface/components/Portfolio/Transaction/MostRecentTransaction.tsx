@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAccount, Address } from 'wagmi'
 import { Chain, Token } from '@/utils/types'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { BridgeState } from '@/slices/bridge/reducer'
 import { TransactionsState } from '@/slices/transactions/reducer'
-import { PendingBridgeTransaction } from '@/slices/bridge/actions'
+import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 import { TransactionType } from './Transaction'
@@ -18,7 +16,6 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const MostRecentTransaction = () => {
   const { address } = useAccount()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
@@ -27,6 +24,7 @@ export const MostRecentTransaction = () => {
     pendingAwaitingCompletionTransactions,
     fallbackQueryHistoricalTransactions,
     fallbackQueryPendingTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
@@ -179,7 +177,7 @@ export const MostRecentTransaction = () => {
             startedTimestamp={transaction?.fromInfo?.time as number}
             transactionHash={transaction?.fromInfo?.txnHash as string}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value as number}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
@@ -225,8 +223,8 @@ export const MostRecentTransaction = () => {
             transactionHash={transaction?.fromInfo?.txnHash as string}
             kappa={transaction?.kappa as string}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
-            destinationValue={transaction?.toInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value as number}
+            destinationValue={transaction?.toInfo?.value as number}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
