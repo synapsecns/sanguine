@@ -1,4 +1,3 @@
-import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
@@ -16,35 +15,26 @@ import {
   oneDayInMinutes,
 } from '@/utils/time'
 import {
+  updatePendingBridgeTransactions,
+  removePendingBridgeTransaction,
+  PendingBridgeTransaction,
   addFallbackQueryHistoricalTransaction,
   removeFallbackQueryHistoricalTransaction,
   removeFallbackQueryPendingTransaction,
   resetTransactionsState,
   updateIsUserPendingTransactionsLoading,
-} from './actions'
-import {
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
   updateUserPendingTransactions,
-} from './actions'
-import { useBridgeState } from '../bridge/hooks'
-import { BridgeState } from '../bridge/reducer'
-import { PortfolioState } from '../portfolio/reducer'
-import { usePortfolioState } from '../portfolio/hooks'
-import { PortfolioTabs } from '../portfolio/actions'
-import {
-  updatePendingBridgeTransactions,
-  removePendingBridgeTransaction,
-  PendingBridgeTransaction,
-} from '../bridge/actions'
-import {
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { PortfolioState } from '../portfolio/reducer'
+import { usePortfolioState } from '../portfolio/hooks'
+import { PortfolioTabs } from '../portfolio/actions'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { getTimeMinutesFromNow } from '@/utils/time'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -60,8 +50,8 @@ export default function Updater(): null {
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
     fallbackQueryHistoricalTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     activeTab,
     searchInput,
@@ -178,7 +168,7 @@ export default function Updater(): null {
   useEffect(() => {
     const matchingTransactionHashes = new Set(
       pendingBridgeTransactions
-        .filter(
+        ?.filter(
           (recentTx) =>
             (userPendingTransactions &&
               userPendingTransactions.some(

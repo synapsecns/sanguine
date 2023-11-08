@@ -1,25 +1,18 @@
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import { Address } from '@wagmi/core'
-import { watchPendingTransactions, waitForTransaction } from '@wagmi/core'
 import { useAppDispatch } from '@/store/hooks'
-import { useBridgeState } from '../bridge/hooks'
 import { useTransactionsState } from '../transactions/hooks'
 import { TransactionsState } from '../transactions/reducer'
-import { BridgeState } from '../bridge/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
-
-import { useAccount } from 'wagmi'
-import {
-  PendingBridgeTransaction,
-  updatePendingBridgeTransaction,
-} from '../bridge/actions'
+import { PendingBridgeTransaction } from '../transactions/actions'
 import { BridgeTransaction } from '../api/generated'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
+    pendingBridgeTransactions,
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
