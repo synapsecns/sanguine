@@ -47,7 +47,7 @@ func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.Mes
 
 	err := s.DB().WithContext(ctx).
 		Model(&model.MessageStatus{}).
-		Where(fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)).
+		Where(fmt.Sprintf("%s = ? OR %s IS NULL", model.DestinationTxHashFieldName, ""), model.DestinationTxHashFieldName).
 		Find(&records).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -58,7 +58,7 @@ func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.Mes
 		return []*graphqlModel.MessageStatus{}, fmt.Errorf("could not retrieve message status: %w", err)
 	}
 
-	var payload []*graphqlModel.MessageStatus
+	payload := make([]*graphqlModel.MessageStatus, 0, len(records))
 	for _, record := range records {
 		ms := &graphqlModel.MessageStatus{
 			MessageHash:       &record.MessageHash,
