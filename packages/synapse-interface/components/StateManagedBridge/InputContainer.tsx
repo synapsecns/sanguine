@@ -45,7 +45,7 @@ export const InputContainer = () => {
   )?.balance
 
   useEffect(() => {
-    if (fromToken && fromToken.decimals[fromChainId]) {
+    if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
     }
 

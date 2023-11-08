@@ -19,10 +19,9 @@ export default function Updater(): null {
   /**
    * Record last connected address and timestamp into persisted state
    * Clear redux cache after 7 days
-   * Clear redux cache if new address connects
    */
   useEffect(() => {
-    if (isValidAddress(address) && lastConnectedTimestamp) {
+    if (lastConnectedTimestamp) {
       const sevenDaysInSeconds = 7 * 24 * 60 * 60
       const sevenDaysAgo: number = getTimeMinutesBeforeNow(10080)
 
@@ -35,9 +34,7 @@ export default function Updater(): null {
         isValidAddress(lastConnectedAddress) &&
         getValidAddress(address) !== getValidAddress(lastConnectedAddress)
       ) {
-        console.log('reset cache due to new address connected')
         dispatch(resetTransactionsState())
-        dispatch(resetReduxCache())
       }
 
       dispatch(updateLastConnectedAddress(address))

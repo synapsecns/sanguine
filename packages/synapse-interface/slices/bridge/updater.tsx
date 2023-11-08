@@ -89,7 +89,7 @@ export default function Updater(): null {
                 userInputExists
                   ? debouncedToTokensFromValue
                   : getDefaultBridgeAmount(fromToken),
-                fromToken.decimals[fromChainId]
+                fromToken?.decimals[fromChainId]
               ),
             }
           }
