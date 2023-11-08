@@ -1,4 +1,3 @@
-import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
@@ -16,30 +15,24 @@ import {
   oneDayInMinutes,
 } from '@/utils/time'
 import {
+  updatePendingBridgeTransactions,
+  removePendingBridgeTransaction,
+  PendingBridgeTransaction,
   addFallbackQueryHistoricalTransaction,
   removeFallbackQueryHistoricalTransaction,
   removeFallbackQueryPendingTransaction,
   resetTransactionsState,
   updateIsUserPendingTransactionsLoading,
-} from './actions'
-import {
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
   updateUserPendingTransactions,
-} from './actions'
-import { PortfolioState } from '../portfolio/reducer'
-import { usePortfolioState } from '../portfolio/hooks'
-import { PortfolioTabs } from '../portfolio/actions'
-import {
-  updatePendingBridgeTransactions,
-  removePendingBridgeTransaction,
-  PendingBridgeTransaction,
-} from '../transactions/actions'
-import {
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { PortfolioState } from '../portfolio/reducer'
+import { usePortfolioState } from '../portfolio/hooks'
+import { PortfolioTabs } from '../portfolio/actions'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
