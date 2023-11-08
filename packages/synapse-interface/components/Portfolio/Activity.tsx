@@ -10,8 +10,6 @@ import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { PendingBridgeTransaction } from '@/slices/transactions/actions'
-import { BridgeState } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
@@ -328,7 +326,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
 export const PendingTransactionAwaitingIndexing = () => {
   const { address } = useAccount()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: TransactionsState =
+    useTransactionsState()
   return (
     <>
       {pendingBridgeTransactions.map(
