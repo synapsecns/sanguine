@@ -65,6 +65,8 @@ type chainExecutor struct {
 	merkleTree *merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
+	// boundSummit is a bound summit contract.
+	boundSummit domains.SummitContract
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
 	// boundOrigin is a bound origin contract.
@@ -258,6 +260,12 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 		return fmt.Errorf("could not create chain client: %w", err)
 	}
 
+	boundSummit, err := evm.NewSummitContract(ctx, chainClient, common.HexToAddress(e.config.InboxAddress))
+	if err != nil {
+		fmt.Println(err)
+		return fmt.Errorf("could not bind summit contract: %w", err)
+	}
+
 	boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 	if err != nil {
 		fmt.Println(err)
@@ -291,6 +299,7 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 		logChan:          make(chan *ethTypes.Log, logChanSize),
 		merkleTree:       tree,
 		rpcClient:        evmClient,
+		boundSummit:      boundSummit,
 		boundDestination: boundDestination,
 		boundOrigin:      boundOrigin,
 	}
@@ -892,8 +901,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		return e.processMessage(ctx, datatype, log)
 	case types.Snapshot:
 		return e.processSnapshot(ctx, datatype, log)
-	case types.Attestation:
-		return e.processAttestation(ctx, datatype, chainID, log)
+	case *types.AttestationWithMetadata:
+		return e.processAttestation(ctx, *datatype, chainID, log)
 	default:
 		return fmt.Errorf("type not supported")
 	}

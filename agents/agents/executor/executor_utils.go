@@ -34,31 +34,32 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 }
 
 // logToAttestation converts the log to an attestation.
-func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttestation bool) (types.Attestation, error) {
+func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttestation bool) (*types.AttestationWithMetadata, error) {
 	fmt.Printf("logToAttestation on chain %d and log tx hash %s, summitAttestation %v\n", chainID, log.TxHash.Hex(), summitAttestation)
-	var attestation types.Attestation
-	var ok bool
+	var attestationMetadata *types.AttestationWithMetadata
 
+	var err error
 	if summitAttestation {
-		attestation, ok = e.chainExecutors[chainID].summitParser.ParseAttestationSaved(log)
+		// This is a guard attestation.
+		attestation, ok := e.chainExecutors[chainID].summitParser.ParseAttestationSaved(log)
 		if !ok {
 			return nil, fmt.Errorf("could not parse attestation")
 		}
+		attestationMetadata = &types.AttestationWithMetadata{Attestation: attestation}
 	} else {
-		attestationMetadata, err := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
+		// This is a notary attestation.
+		attestationMetadata, err = e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse attestation: %w", err)
 		}
-
-		attestation = attestationMetadata.Attestation
 	}
 
-	if attestation == nil {
+	if attestationMetadata == nil {
 		//nolint:nilnil
 		return nil, nil
 	}
 
-	return attestation, nil
+	return attestationMetadata, nil
 }
 
 // logToSnapshot converts the log to a snapshot.
@@ -237,9 +238,10 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 }
 
 // processAttestation processes and stores an attestation.
-func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, log ethTypes.Log) (err error) {
-	fmt.Printf("processAttestation on chain %d: %v\n", chainID, attestation)
+func (e Executor) processAttestation(ctx context.Context, attestationMetadata types.AttestationWithMetadata, chainID uint32, log ethTypes.Log) (err error) {
+	attestation := attestationMetadata.Attestation
 	snapshotRoot := attestation.SnapshotRoot()
+	fmt.Printf("processAttestation on chain %d with snaproot %s\n", chainID, snapshotRoot)
 	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
 		attribute.Int("chainID", int(chainID)),
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
@@ -249,6 +251,22 @@ func (e Executor) processAttestation(ctx context.Context, attestation types.Atte
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	// Make sure that we store the states corresponding to this attestation.
+	attPayload := attestationMetadata.AttestationPayload()
+	if attPayload != nil {
+		snapshot, snapErr := e.chainExecutors[e.config.SummitChainID].boundSummit.GetNotarySnapshot(ctx, attPayload)
+		if snapErr != nil {
+			logger.Warnf("could not get snapshot for attestation with snapRoot %v: %v", snapshotRoot, err)
+		} else {
+			_, proofs, snapErr := snapshot.SnapshotRootAndProofs()
+			if snapErr != nil {
+				logger.Warnf("could not get snapshot root and proofs for attestation with snapRoot %v: %v", snapshotRoot, err)
+			} else {
+				e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, log.BlockNumber)
+			}
+		}
+	}
 
 	// If the attestation is on the SynChain, we can directly use its block number and timestamp.
 	if chainID == e.config.SummitChainID {
