@@ -130,7 +130,6 @@ export const Portfolio = () => {
 
   useEffect(() => {
     dispatch(resetPortfolioState())
-    dispatch(resetBridgeInputs())
   }, [address])
 
   useEffect(() => {
