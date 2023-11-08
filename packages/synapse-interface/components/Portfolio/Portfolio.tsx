@@ -44,8 +44,8 @@ export const Portfolio = () => {
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
-      dispatch(resetBridgeInputs())
-      dispatch(resetReduxCache())
+      // dispatch(resetBridgeInputs())
+      // dispatch(resetReduxCache())
     },
   })
 
