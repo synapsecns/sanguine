@@ -27,8 +27,6 @@ import {
   updateUserHistoricalTransactions,
   updateUserPendingTransactions,
 } from './actions'
-import { useBridgeState } from '../bridge/hooks'
-import { BridgeState } from '../bridge/reducer'
 import { PortfolioState } from '../portfolio/reducer'
 import { usePortfolioState } from '../portfolio/hooks'
 import { PortfolioTabs } from '../portfolio/actions'
@@ -36,7 +34,7 @@ import {
   updatePendingBridgeTransactions,
   removePendingBridgeTransaction,
   PendingBridgeTransaction,
-} from '../bridge/actions'
+} from '../transactions/actions'
 import {
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
@@ -44,7 +42,6 @@ import {
 } from './actions'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { getTimeMinutesFromNow } from '@/utils/time'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
@@ -60,8 +57,8 @@ export default function Updater(): null {
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
     fallbackQueryHistoricalTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     activeTab,
     searchInput,

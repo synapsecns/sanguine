@@ -9,7 +9,7 @@ import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { PendingBridgeTransaction } from '@/slices/bridge/actions'
+import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { Transaction, TransactionType } from './Transaction/Transaction'
@@ -27,8 +27,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
     fallbackQueryHistoricalTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
 

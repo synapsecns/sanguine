@@ -47,7 +47,7 @@ export interface BridgeState {
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
-  pendingBridgeTransactions: PendingBridgeTransaction[]
+  // pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
 const {
@@ -85,7 +85,7 @@ export const initialState: BridgeState = {
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
-  pendingBridgeTransactions: [],
+  // pendingBridgeTransactions: [],
 }
 
 export const bridgeSlice = createSlice({
