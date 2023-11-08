@@ -175,7 +175,7 @@ export default function Updater(): null {
   useEffect(() => {
     const matchingTransactionHashes = new Set(
       pendingBridgeTransactions
-        .filter(
+        ?.filter(
           (recentTx) =>
             (userPendingTransactions &&
               userPendingTransactions.some(

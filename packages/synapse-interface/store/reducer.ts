@@ -26,7 +26,7 @@ const persistedReducers = {
 export const storageKey: string = 'synapse-interface'
 
 export const persistConfig: PersistConfig<AppState> = {
-  version: 0, // upgrade to reset cache
+  version: 1, // upgrade to reset cache
   key: storageKey,
   storage,
   whitelist: Object.keys(persistedReducers),
