@@ -74,7 +74,7 @@ export const TransactionOptions = ({
   }
 
   return (
-    <Popover className="relative inline-block">
+    <Popover className="relative inline-block pt-1 mb-auto">
       {({ open }) => (
         <>
           <Popover.Button
