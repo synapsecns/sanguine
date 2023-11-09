@@ -106,6 +106,12 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	for i, tx := range cq.reprocessQueue {
 		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
 	}
+	attributes := []attribute.KeyValue{attribute.Int("numCalls", len(calls))}
+	if len(cq.reprocessQueue) > 0 {
+		attributes = append(attributes, attribute.Int("firstNonce", int(cq.reprocessQueue[0].Nonce())))
+		attributes = append(attributes, attribute.Int("lastNonce", int(cq.reprocessQueue[len(cq.reprocessQueue)-1].Nonce())))
+	}
+	span.AddEvent("built calls", trace.WithAttributes(attributes...))
 
 	cq.storeAndSubmit(ctx, calls, span)
 
@@ -129,6 +135,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 	}()
 
 	go func() {
+		span.SetAttributes(attribute.Int("batchSize", len(calls)))
 		span.AddEvent("submitting batched transactions", trace.WithAttributes(attribute.Int("numCalls", len(calls))))
 		fmt.Println("SUBMITTING")
 		defer wg.Done()
