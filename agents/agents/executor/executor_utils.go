@@ -258,11 +258,14 @@ func (e Executor) processAttestation(ctx context.Context, attestationMetadata ty
 		snapshot, snapErr := e.chainExecutors[e.config.SummitChainID].boundSummit.GetNotarySnapshot(ctx, attPayload)
 		if snapErr != nil {
 			logger.Warnf("could not get snapshot for attestation with snapRoot %v: %v", snapshotRoot, err)
+			span.AddEvent("could not get snapshot")
 		} else {
 			_, proofs, snapErr := snapshot.SnapshotRootAndProofs()
 			if snapErr != nil {
+				span.AddEvent("could not get proofs")
 				logger.Warnf("could not get snapshot root and proofs for attestation with snapRoot %v: %v", snapshotRoot, err)
 			} else {
+				span.AddEvent("storing states", trace.WithAttributes(attribute.Int("num_states", len(snapshot.States()))))
 				e.executorDB.StoreStates(ctx, snapshot.States(), snapshotRoot, proofs, log.BlockNumber)
 			}
 		}
