@@ -128,7 +128,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               : formatBigIntToString(
                   lpTokenBalance,
                   tokenInfo.decimals,
-                  5
+                  18
                 )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
@@ -138,7 +138,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">Staked</div>
           <div className="text-white ">
-            {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 5)}{' '}
+            {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 18)}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
             </span>
@@ -151,7 +151,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <div className="text-white ">
             {userStakeData.reward === 0n
               ? '\u2212'
-              : formatBigIntToString(userStakeData.reward, 18, 5)}{' '}
+              : formatBigIntToString(userStakeData.reward, 18, 18)}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool?.customRewardToken ?? 'SYN'}
             </span>
@@ -218,8 +218,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               isConnected={Boolean(address)}
               balanceStr={
                 lpTokenBalance === 0n
-                  ? formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 5)
-                  : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 5)
+                  ? '0.0'
+                  : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 18)
               }
               onClickBalance={() => {
                 setDeposit({
@@ -242,7 +242,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   bi: stringToBigInt(val, pool.decimals[chainId]),
                 })
               }}
-              disabled={lpTokenBalance === 0n || deposit.str === ''}
+              disabled={lpTokenBalance === 0n}
               icon={pool?.icon?.src}
             />
           ) : (
@@ -252,7 +252,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               balanceStr={formatBigIntToString(
                 userStakeData.amount,
                 tokenInfo.decimals,
-                5
+                18
               )}
               onClickBalance={() => {
                 setWithdraw(
@@ -261,7 +261,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                     : formatBigIntToString(
                         userStakeData.amount,
                         tokenInfo.decimals,
-                        5
+                        18
                       )
                 )
               }}
@@ -271,7 +271,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 let val = cleanNumberInput(e.target.value)
                 setWithdraw(val)
               }}
-              disabled={userStakeData.amount === 0n || withdraw === ''}
+              disabled={userStakeData.amount === 0n}
               icon={pool?.icon?.src}
             />
           )}
