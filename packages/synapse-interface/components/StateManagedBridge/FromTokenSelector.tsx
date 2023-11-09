@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState, useBridgeShowBorder } from '@/slices/bridge/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
@@ -12,7 +12,6 @@ import {
 export const FromTokenSelector = () => {
   const dispatch = useDispatch()
   const { fromToken, toToken } = useBridgeState()
-  const { showFromTokenBorder } = useBridgeShowBorder()
   const BASE_BUTTON_PROPERTIES = 'p-md rounded-sm bg-[#565058] border'
 
   let buttonContent
@@ -43,11 +42,7 @@ export const FromTokenSelector = () => {
   } else {
     buttonClassName = `
       ${BASE_BUTTON_PROPERTIES}
-      ${
-        showFromTokenBorder
-          ? 'border-synapsePurple hover:border-secondary'
-          : 'border-transparent hover:border-secondary'
-      }
+      border-transparent hover:border-secondary
     `
 
     buttonContent = (

@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { useBridgeState, useBridgeShowBorder } from '@/slices/bridge/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
@@ -15,7 +15,6 @@ import {
 export const ToChainSelector = () => {
   const dispatch = useDispatch()
   const { toChainId } = useBridgeState()
-  const { showToChainBorder } = useBridgeShowBorder()
   const toChain = CHAINS_BY_ID[toChainId]
   const BASE_BUTTON_PROPERTIES = 'bg-transparent p-md border rounded-sm'
 
@@ -51,11 +50,7 @@ export const ToChainSelector = () => {
   } else {
     buttonClassName = `
       ${BASE_BUTTON_PROPERTIES}
-      ${
-        showToChainBorder
-          ? 'border-synapsePurple hover:border-secondary'
-          : 'border border-transparent hover:border-secondary'
-      }
+      border border-transparent hover:border-secondary
     `
 
     buttonContent = (

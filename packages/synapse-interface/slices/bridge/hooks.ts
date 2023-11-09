@@ -191,63 +191,6 @@ export const useBridgeDetails = (): {
   }
 }
 
-export const useBridgeShowBorder = () => {
-  const { fromChainId, toChainId, fromToken, toToken }: BridgeState =
-    useBridgeState()
-
-  let showFromChainBorder = false
-  let showFromTokenBorder = false
-  let showToChainBorder = false
-  let showToTokenBorder = false
-
-  if (!fromChainId) {
-    showFromChainBorder = true
-    return {
-      showFromChainBorder,
-      showFromTokenBorder,
-      showToTokenBorder,
-      showToChainBorder,
-    }
-  }
-
-  if (fromChainId && !fromToken) {
-    showFromTokenBorder = true
-    return {
-      showFromChainBorder,
-      showFromTokenBorder,
-      showToTokenBorder,
-      showToChainBorder,
-    }
-  }
-
-  if (!toChainId) {
-    showToChainBorder = true
-    return {
-      showFromChainBorder,
-      showFromTokenBorder,
-      showToTokenBorder,
-      showToChainBorder,
-    }
-  }
-
-  if (toChainId && !toToken) {
-    showToTokenBorder = true
-    return {
-      showFromChainBorder,
-      showFromTokenBorder,
-      showToTokenBorder,
-      showToChainBorder,
-    }
-  }
-
-  return {
-    showFromChainBorder,
-    showFromTokenBorder,
-    showToTokenBorder,
-    showToChainBorder,
-  }
-}
-
 export const fetchAndStoreBridgeQuote = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuote',
   async ({
