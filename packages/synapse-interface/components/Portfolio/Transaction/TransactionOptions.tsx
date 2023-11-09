@@ -139,7 +139,7 @@ export const TransactionOptions = ({
                   alt={`${originChain.explorerName} logo`}
                 />
               }
-              text={`Check on ${originChain.explorerName}`}
+              text={`${originChain.explorerName}`}
               onClick={handleOriginExplorerLink}
             />
             <OptionButton
@@ -151,7 +151,7 @@ export const TransactionOptions = ({
                   alt={`${destinationChain.explorerName} logo`}
                 />
               }
-              text={`Check on ${destinationChain.explorerName}`}
+              text={`${destinationChain.explorerName}`}
               onClick={handleDestinationExplorerLink}
             />
             <OptionButton
@@ -163,7 +163,7 @@ export const TransactionOptions = ({
                   alt="Synapse Logo"
                 />
               }
-              text={`Check on Synapse Explorer`}
+              text={`Synapse Explorer`}
               onClick={handleSynapseExplorerLink}
             />
             {/* {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
@@ -255,11 +255,13 @@ export function TransactionPopoverContainer({
 export function DropdownButton({
   open,
   onClick,
+  isDelayed,
   className,
   ...props
 }: {
   open: boolean
   onClick?: () => void
+  isDelayed?: boolean
   className?: string
   props?: any
 }) {
