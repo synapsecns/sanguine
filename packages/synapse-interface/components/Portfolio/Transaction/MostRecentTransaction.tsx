@@ -123,7 +123,7 @@ export const MostRecentTransaction = () => {
     if (!seenHistoricalTransactions || !userHistoricalTransactions) {
       return false
     } else {
-      return seenHistoricalTransactions.some(
+      return seenHistoricalTransactions?.some(
         (transaction: BridgeTransaction) =>
           transaction.kappa ===
           (lastHistoricalTransaction.kappa as BridgeTransaction)
