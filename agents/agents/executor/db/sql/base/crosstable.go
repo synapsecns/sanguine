@@ -61,7 +61,13 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
 	}
 
-	if dbTx.RowsAffected == 0 {
+	fmt.Printf("got timestamp for message with rowsAffected %d: %d", dbTx.RowsAffected, timestamp)
+
+	// if dbTx.RowsAffected == 0 {
+	// 	//nolint:nilnil
+	// 	return nil, nil
+	// }
+	if timestamp == 0 {
 		//nolint:nilnil
 		return nil, nil
 	}
