@@ -67,6 +67,9 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	}()
 
 	// get all the pendingTxes in the queue
+	span.AddEvent("fetching pendingTxes from db", trace.WithAttributes(
+		attribute.String("address", t.signer.Address().String()),
+	))
 	pendingTxes, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Stored, db.Pending, db.FailedSubmit, db.Submitted)
 	if err != nil {
 		return fmt.Errorf("could not get pendingTxes: %w", err)
