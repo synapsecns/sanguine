@@ -79,6 +79,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 			if err != nil {
 				span.AddEvent("chainPendingQueue error", trace.WithAttributes(
 					attribute.String("error", err.Error()), attribute.Int64("chainID", int64(chainID))))
+				span.SetAttributes(attribute.String(fmt.Sprintf("err_%d", chainID), err.Error()))
 			}
 		}(chainID)
 	}
@@ -142,7 +143,15 @@ func (t *txSubmitterImpl) chainConfirmQueue(parentCtx context.Context, chainID *
 
 // checkAndSetConfirmation checks if the tx is confirmed and sets the status accordingly.
 // note: assumes all txes have the same nonce.
-func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
+func (t *txSubmitterImpl) checkAndSetConfirmation(parentCtx context.Context, chainClient client.EVM, txes []db.TX) (err error) {
+	chainID, _ := chainClient.ChainID(parentCtx)
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.checkAndSetConfirmation", trace.WithAttributes(
+		attribute.Int64("chainID", chainID.Int64()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// nothing do to
 	if len(txes) == 0 {
 		return nil
@@ -163,7 +172,11 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 		calls[i] = eth.TxReceipt(txes[i].Hash()).Returns(&receipts[i])
 	}
 
-	err := chainClient.BatchWithContext(ctx, calls...)
+	err = chainClient.BatchWithContext(ctx, calls...)
+	span.AddEvent("batched calls", trace.WithAttributes(
+		attribute.Int("numCalls", len(calls)),
+		attribute.String("error", fmt.Sprintf("%v", err)),
+	))
 	foundSuccessfulTX := false
 	if err != nil {
 		// there's no way around this type inference
