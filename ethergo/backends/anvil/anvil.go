@@ -179,7 +179,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		select {
 		case <-ctx.Done():
 			err = pool.Purge(resource)
-			logger.Errorf("error purging anvil container: %w", err)
+			if err != nil {
+				logger.Errorf("error purging anvil container: %w", err)
+			}
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
