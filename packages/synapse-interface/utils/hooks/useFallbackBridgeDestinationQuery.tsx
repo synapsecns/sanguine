@@ -113,7 +113,7 @@ export const useFallbackBridgeDestinationQuery = ({
         )
 
       const destinationQueryAlreadySaved: boolean =
-        fallbackQueryHistoricalTransactions.some(
+        fallbackQueryHistoricalTransactions?.some(
           (transaction: BridgeTransaction) =>
             transaction?.toInfo === destinationInfo
         )
