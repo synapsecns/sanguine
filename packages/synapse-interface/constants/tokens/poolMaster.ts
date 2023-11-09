@@ -48,7 +48,7 @@ export const ETH_POOL_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Ethereum Stableswap Pool',
   routerIndex: 'eth3pool',
-  poolId: 0, // 420
+  poolId: 420,
   poolType: 'USD',
   swapAddresses: {
     [CHAINS.ETH.id]: '0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8',
