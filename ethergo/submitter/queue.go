@@ -33,6 +33,11 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 	case <-t.retryNow:
 		err = t.processQueue(ctx)
 	}
+	if err != nil {
+		span.AddEvent("error processing queue", trace.WithAttributes(
+			attribute.String("error", err.Error()),
+		))
+	}
 	return false, err
 }
 
@@ -40,7 +45,7 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 // TODO: add a way to process a confirmation queue.
 func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
-	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*60)
+	deadlineCtx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
 	defer cancel()
 
 	ctx, span := t.metrics.Tracer().Start(deadlineCtx, "submitter.ProcessQueue")
@@ -66,6 +71,9 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not get pendingTxes: %w", err)
 	}
+	span.AddEvent("got pendingTxes", trace.WithAttributes(
+		attribute.Int("numTxes", len(pendingTxes)),
+	))
 
 	// fetch txes into a map by chainid.
 	sortedTXsByChainID := sortTxesByChainID(pendingTxes)
