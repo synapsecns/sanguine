@@ -91,12 +91,12 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			continue
 		}
 
-		cq.updateOldTxStatuses(gCtx)
 		span.AddEvent("bumping tx", trace.WithAttributes(
 			append(txToAttributes(tx.Transaction), attribute.Int("currentNonce", int(currentNonce)))...,
 		))
 		cq.bumpTX(gCtx, tx)
 	}
+	cq.updateOldTxStatuses(gCtx)
 
 	err = cq.g.Wait()
 	if err != nil {
