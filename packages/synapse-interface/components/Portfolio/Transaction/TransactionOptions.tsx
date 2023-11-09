@@ -157,7 +157,7 @@ export function TransactionPopoverContainer({
       <Popover.Panel
         style={{ boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)' }}
         className={`
-          absolute z-10 top-[30px] left-[75px] transform-gpu
+          absolute z-10 top-[25px] left-[20px] transform-gpu
           -translate-x-full border border-separator bg-surface
           w-screen max-w-xs rounded-md overflow-hidden shadow-md
         `}
@@ -199,7 +199,6 @@ export function DropdownButton({
     >
       <div className="space-x-2">
         <div className="flex items-center space-x-1 rounded-md">
-          {isDelayed && <span className="text-primary">Options</span>}
           <DownArrow className="!w-3 !h-3 text-secondary" />
         </div>
       </div>

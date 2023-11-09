@@ -324,7 +324,6 @@ const TransactionStatusDetails = ({
   transactionStatus: TransactionStatus
   isDelayed: boolean
 }) => {
-  console.log('originChain: ', originChain)
   const sharedClass: string =
     'flex bg-tint border-t border-surface text-sm items-center'
 
