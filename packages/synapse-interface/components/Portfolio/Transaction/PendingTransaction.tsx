@@ -24,6 +24,7 @@ import { Chain } from '@/utils/types'
 import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
 import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { DISCORD_URL } from '@/constants/urls'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -196,21 +197,21 @@ export const PendingTransaction = ({
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
-  const originFallback = useFallbackBridgeOriginQuery({
-    useFallback: isDelayed && useFallback,
-    chainId: originChain?.id,
-    txnHash: transactionHash,
-    bridgeType: bridgeType,
-  })
+  // const originFallback = useFallbackBridgeOriginQuery({
+  //   useFallback: isDelayed && useFallback,
+  //   chainId: originChain?.id,
+  //   txnHash: transactionHash,
+  //   bridgeType: bridgeType,
+  // })
 
-  const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback: isDelayed && useFallback,
-    chainId: destinationChain?.id,
-    address: destinationAddress,
-    kappa: kappa,
-    timestamp: startedTimestamp,
-    bridgeType: bridgeType,
-  })
+  // const destinationFallback = useFallbackBridgeDestinationQuery({
+  //   useFallback: isDelayed && useFallback,
+  //   chainId: destinationChain?.id,
+  //   address: destinationAddress,
+  //   kappa: kappa,
+  //   timestamp: startedTimestamp,
+  //   bridgeType: bridgeType,
+  // })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
@@ -376,6 +377,10 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
 
+    const handleSupportClick: () => void = () => {
+      window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')
+    }
+
     return (
       <div
         data-test-id="pending-status"
@@ -404,9 +409,17 @@ const TransactionStatusDetails = ({
                 </div>
               </div>
               <div className="flex items-center p-1 ml-1 rounded-sm cursor-default">
-                <div className="text-[#FFDD33]">
+                <div className="text-[#FFDD33] mr-1.5">
                   Taking longer than expected.
                 </div>
+                <a
+                  href={DISCORD_URL}
+                  target="_blank"
+                  rel="no-referrer no-opener"
+                  className="text-blueText hover:underline"
+                >
+                  Contact support
+                </a>
               </div>
             </div>
             <TransactionOptions
