@@ -125,7 +125,7 @@ export const InputContainer = () => {
                 <input
                   ref={inputRef}
                   pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={!hasValidSelections && !hasInputAmount}
+                  disabled={false}
                   className={`
                   text-white text-opacity-80 text-xl font-medium
                     p-0 border-none bg-transparent max-w-[190px]

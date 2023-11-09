@@ -88,6 +88,7 @@ export const useBridgeStatus = (): {
     )?.allowances[bridgeQuote?.routerAddress]
 
     return (
+      fromToken &&
       approved >= stringToBigInt(fromValue, fromToken?.decimals[fromChainId])
     )
   }, [balancesAndAllowances, bridgeQuote, fromValue, fromToken])

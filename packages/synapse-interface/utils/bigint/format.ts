@@ -151,6 +151,10 @@ export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
 }
 
 export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
+  if (!rawDecimals) {
+    return 0n
+  }
+
   if (typeof rawVal !== 'string' && !rawVal) {
     return 0n
   }
