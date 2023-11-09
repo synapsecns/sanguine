@@ -52,7 +52,8 @@ func (a pingPongClientContract) DoPing(ctx context.Context, signer signer.Signer
 		return tx, fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
-	transactOpts.GasLimit = 200000
+	transactOpts.GasLimit = 1000000
+	a.nonceManager.ClearNonce(transactOpts.From)
 	tx, err = a.contract.DoPing(transactOpts, destination, recipient, pings)
 	if err != nil {
 		return tx, fmt.Errorf("could not send ping: %w", err)
