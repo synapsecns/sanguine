@@ -157,7 +157,7 @@ export function TransactionPopoverContainer({
       <Popover.Panel
         style={{ boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)' }}
         className={`
-          absolute z-10 top-[30px] left-[40px] transform-gpu
+          absolute z-10 top-[30px] left-[75px] transform-gpu
           -translate-x-full border border-separator bg-surface
           w-screen max-w-xs rounded-md overflow-hidden shadow-md
         `}
