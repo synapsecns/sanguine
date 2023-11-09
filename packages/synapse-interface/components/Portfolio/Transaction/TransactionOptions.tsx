@@ -5,7 +5,10 @@ import { Popover, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Chain } from '@/utils/types'
 import { TransactionStatus } from './Transaction'
-import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
+import {
+  getTransactionExplorerLink,
+  getTransactionHashExplorerLink,
+} from './components/TransactionExplorerLink'
 import { getExplorerAddressUrl, getExplorerTxUrl } from '@/constants/urls'
 import { DISCORD_URL } from '@/constants/urls'
 import Button from '../../ui/tailwind/Button'
@@ -50,65 +53,20 @@ export const TransactionOptions = ({
   }, [destinationChain, connectedAddress])
 
   const handleSynapseExplorerLink: () => void = useCallback(() => {
-    if (
-      kappa &&
-      originChain &&
-      transactionStatus === TransactionStatus.COMPLETED
-    ) {
+    if (kappa) {
       const explorerLink: string = getTransactionExplorerLink({
         kappa,
-        fromChainId: originChain.id,
-        toChainId: destinationChain.id,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    } else {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChain.id,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    }
-  }, [kappa, originChain, transactionStatus, isDelayed])
-
-  const handleExplorerClick: () => void = useCallback(() => {
-    if (
-      kappa &&
-      originChain &&
-      transactionStatus === TransactionStatus.COMPLETED
-    ) {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChain.id,
-        toChainId: destinationChain.id,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    } else if (isDelayed) {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChain.id,
+        fromChainId: originChain?.id,
+        toChainId: destinationChain?.id,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     } else if (transactionHash) {
-      const explorerLink: string = getExplorerAddressUrl({
-        chainId: destinationChain.id,
-        address: connectedAddress,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
-    } else {
-      const explorerLink: string = getExplorerAddressUrl({
-        chainId: originChain.id,
-        address: connectedAddress,
+      const explorerLink: string = getTransactionHashExplorerLink({
+        transactionHash: transactionHash,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
-  }, [
-    kappa,
-    originChain,
-    destinationChain,
-    transactionStatus,
-    transactionHash,
-    connectedAddress,
-  ])
+  }, [kappa, originChain, transactionStatus, isDelayed, transactionHash])
 
   const handleSupportClick: () => void = () => {
     window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')
@@ -166,47 +124,6 @@ export const TransactionOptions = ({
               text={`Synapse Explorer`}
               onClick={handleSynapseExplorerLink}
             />
-            {/* {transactionStatus === TransactionStatus.PENDING && isDelayed ? (
-              <OptionButton
-                icon={
-                  <Image
-                    className="rounded-full"
-                    height={20}
-                    src={SynapseLogo}
-                    alt="Synapse Logo"
-                  />
-                }
-                text={`Check on Synapse Explorer`}
-                onClick={handleSynapseExplorerLink}
-              />
-            ) : (
-              <OptionButton
-                icon={
-                  <Image
-                    className="rounded-full"
-                    height={20}
-                    src={destinationChain.explorerImg}
-                    alt={`${destinationChain.explorerName} logo`}
-                  />
-                }
-                text={`Check on ${destinationChain.explorerName}`}
-                onClick={handleDestinationExplorerLink}
-              />
-            )}
-            {transactionStatus === TransactionStatus.COMPLETED && (
-              <OptionButton
-                icon={
-                  <Image
-                    className="rounded-full"
-                    height={20}
-                    src={SynapseLogo}
-                    alt="Synapse Logo"
-                  />
-                }
-                text={`Check on Synapse Explorer`}
-                onClick={handleSynapseExplorerLink}
-              />
-            )} */}
             <OptionButton
               icon={<DiscordIcon height={20} />}
               text={'Contact Support'}

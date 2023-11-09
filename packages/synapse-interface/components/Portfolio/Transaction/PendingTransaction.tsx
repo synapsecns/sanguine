@@ -377,10 +377,6 @@ const TransactionStatusDetails = ({
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
 
-    const handleSupportClick: () => void = () => {
-      window.open(DISCORD_URL, '_blank', 'noopener,noreferrer')
-    }
-
     return (
       <div
         data-test-id="pending-status"
