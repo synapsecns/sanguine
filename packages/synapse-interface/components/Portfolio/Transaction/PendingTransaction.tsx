@@ -384,7 +384,7 @@ const TransactionStatusDetails = ({
         {isDelayed ? (
           <>
             <div className="flex flex-col">
-              <div className="flex">
+              <div className="flex flex-wrap">
                 <div
                   className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
                   onClick={handleOriginExplorerClick}
@@ -394,16 +394,18 @@ const TransactionStatusDetails = ({
                     src={originChain?.explorerImg}
                     alt={`${originChain.explorerName} logo`}
                   />
-                  <div>Confirmed on {originChain.explorerName}.</div>
+                  <div className="whitespace-nowrap">
+                    Confirmed on {originChain.explorerName}.
+                  </div>
                 </div>
                 <div
                   onClick={handleDestinationExplorerClick}
-                  className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
+                  className="whitespace-nowrap mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
                 >
                   Waiting on {destinationChain.name}...
                 </div>
               </div>
-              <div className="flex items-center p-1 ml-1 rounded-sm cursor-default">
+              <div className="flex items-center p-1 rounded-sm cursor-default whitespace-nowrap">
                 <div className="text-[#FFDD33] mr-1.5">
                   Taking longer than expected.
                 </div>
