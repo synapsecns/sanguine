@@ -85,7 +85,7 @@ export const TransactionOptions = ({
               ${open ? 'text-gray-900' : 'text-purple-800'}
             `}
           >
-            <DropdownButton open={open} />
+            <DropdownButton open={open} isDelayed={isDelayed} />
           </Popover.Button>
           <TransactionPopoverContainer>
             <OptionButton
@@ -184,20 +184,22 @@ export function DropdownButton({
 }) {
   return (
     <Button
+      data-test-id="dropdown-button"
       onClick={onClick ? onClick : () => {}}
       className={`
         w-full
-        group rounded-lg p-1
+        group rounded-sm p-1
         border border-[#2F2F2F] hover:border-[#101018]
-        bg-transparent hover:bg-[#101018]
+        bg-surface hover:bg-[#101018]
         focus:bg-transparent
         ${className}
       `}
       {...props}
     >
       <div className="space-x-2">
-        <div className="rounded-md">
-          <ChevronDownIcon className="w-5 h-5 text-white" />
+        <div className="flex space-x-1 rounded-md">
+          {isDelayed && <span className="text-primary">Options</span>}
+          <ChevronDownIcon className="w-5 h-5 text-secondary" />
         </div>
       </div>
     </Button>
