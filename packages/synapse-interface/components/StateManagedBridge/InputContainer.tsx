@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { Address, useAccount, useNetwork } from 'wagmi'
 
@@ -31,8 +31,7 @@ export const InputContainer = () => {
   const dispatch = useDispatch()
   const { chain } = useNetwork()
   const { fromChainId, fromToken, fromValue } = useBridgeState()
-  const { hasInputAmount, hasValidSelections, hasValidRoute, isConnected } =
-    useBridgeStatus()
+  const { hasValidSelections, hasValidRoute, isConnected } = useBridgeStatus()
 
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
@@ -224,7 +223,7 @@ const ShowLabel = () => {
         htmlFor="inputRow"
         onClick={onMaxBalance}
         className={`
-          text-sm transition-all duration-150 transform-gpu
+          text-sm 
           hover:text-opacity-70 hover:cursor-pointer
           text-secondary
           ${
@@ -246,7 +245,7 @@ const ShowLabel = () => {
         htmlFor="inputRow"
         onClick={onMaxApproved}
         className={`
-          text-sm transition-all duration-150 transform-gpu
+          text-sm 
           hover:text-opacity-70 hover:cursor-pointer
           text-secondary
         `}
@@ -366,19 +365,28 @@ const ApproveButton = ({ disabled }) => {
   }, [onSelectedChain, hasEnoughApproved, isApproving])
 
   return (
-    <button
-      style={borderStyle}
-      className={`
-        w-[89px] h-[32px]
-        flex items-center mr-2 py-lg px-md justify-center
-        text-sm text-white
-        border rounded-sm
-        ${disabled ? 'opacity-50' : 'hover:border-secondary'}
-      `}
-      disabled={disabled}
-      onClick={approveTxn}
-    >
-      {isApproving ? <LoaderIcon /> : 'Approve'}
-    </button>
+    <div className="relative">
+      {onSelectedChain && (
+        <div className="absolute -top-8 z-10 -ml-8 flex justify-center items-center bg-[#151315] border border-[#343036] rounded-sm h-[29px] w-[150px]">
+          <div className="text-center text-[#EEEDEF] text-xs">
+            Token approval required
+          </div>
+        </div>
+      )}
+      <button
+        style={borderStyle}
+        className={`
+          w-[89px] h-[32px]
+          flex items-center mr-2 py-lg px-md justify-center
+          text-sm text-white
+          border rounded-sm
+          ${disabled ? 'opacity-50' : 'hover:border-secondary'}
+        `}
+        disabled={disabled}
+        onClick={approveTxn}
+      >
+        {isApproving ? <LoaderIcon /> : 'Approve'}
+      </button>
+    </div>
   )
 }

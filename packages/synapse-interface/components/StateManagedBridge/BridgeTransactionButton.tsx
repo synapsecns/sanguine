@@ -108,6 +108,11 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
       ...buttonProperties,
       toolTipLabel: 'Invalid destination address',
     }
+  } else if (isConnected && bridgeQuote.outputAmount === 0n) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'No route found',
+    }
   } else if (isConnected && !hasEnoughApproved) {
     buttonProperties = {
       ...buttonProperties,
