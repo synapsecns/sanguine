@@ -217,8 +217,6 @@ export const PortfolioTokenAsset = ({
     tokenRouterAddress,
   ])
 
-  console.log('icon:', icon)
-
   return (
     <div
       data-test-id="portfolio-token-asset"
