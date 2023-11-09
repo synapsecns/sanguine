@@ -376,10 +376,17 @@ func main() {
 					panic(fmt.Errorf("could not get contract for chain %d", route[0]))
 				}
 				var tx *ethTypes.Transaction
-				retry.WithBackoff(ctx, func(context.Context) error {
+				err = retry.WithBackoff(ctx, func(context.Context) error {
 					tx, err = contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
+					if err != nil {
+						fmt.Printf("Error doing ping: %v\n", err)
+					}
 					return err
-				})
+				}, retry.WithMaxTotalTime(120*time.Second))
+				if err != nil {
+					fmt.Printf("Error sending message: %v\n", err)
+					return err
+				}
 				fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
 				sentTxes.Store(tx.Hash(), true)
 
@@ -393,12 +400,13 @@ func main() {
 				err = retry.WithBackoff(ctx, func(context.Context) error {
 					receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
 					return err
-				}, retry.WithMaxTotalTime(30*time.Second))
+				}, retry.WithMaxTotalTime(120*time.Second))
 				if err != nil {
 					fmt.Printf("error getting transaction receipt: %v\n", err)
 					return err
 				}
 				if receipt.Status != ethTypes.ReceiptStatusSuccessful {
+					fmt.Printf("status not successful: %v\n", receipt.Status)
 					return fmt.Errorf("receipt status is not successful: %v", receipt.Status)
 				}
 				for _, log := range receipt.Logs {
@@ -442,11 +450,11 @@ func main() {
 					cancel()
 					return false
 				}
-				time.Sleep(1 * time.Second)
+				time.Sleep(2 * time.Second)
 				return true
 			})
 			if numExecuted >= expectedNumExecuted {
-				return fmt.Errorf("processed %d iterations and %d routes", numIters, numRoutesActual)
+				return nil
 			}
 		}
 	})
