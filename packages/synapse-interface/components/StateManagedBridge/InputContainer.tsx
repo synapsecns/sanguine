@@ -347,24 +347,32 @@ const ApproveButton = ({ disabled }) => {
     }
   }
 
-  const borderStyle = useMemo(() => {
+  const borderStyle: {} = useMemo(() => {
     if (isApproving) {
-      return 'border-secondary'
+      return {
+        borderColor: '#D747FF',
+        background:
+          'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+      }
     } else if (onSelectedChain && !hasEnoughApproved) {
-      return 'border-synapsePurple'
+      return {
+        borderColor: '#D747FF',
+        background:
+          'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+      }
     } else {
-      return 'border-secondary'
+      return {}
     }
   }, [onSelectedChain, hasEnoughApproved, isApproving])
 
   return (
     <button
+      style={borderStyle}
       className={`
         w-[89px] h-[32px]
         flex items-center mr-2 py-lg px-md justify-center
-        text-sm text-secondary
+        text-sm text-white
         border rounded-sm
-        ${borderStyle}
         ${disabled ? 'opacity-50' : 'hover:border-secondary'}
       `}
       disabled={disabled}

@@ -1,19 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState, useBridgeStatus } from '@/slices/bridge/hooks'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import {
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getNetworkButtonBorderHover,
-  getNetworkHover,
-} from '@/styles/chains'
+import { useBridgeStatus } from '@/slices/bridge/hooks'
 import { LoaderIcon } from 'react-hot-toast'
 
 export const ConnectedIndicator = () => {
@@ -46,8 +38,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
 
-  const { hasEnoughBalance, hasInputAmount, hasValidSelections } =
-    useBridgeStatus()
+  const { hasInputAmount, hasValidSelections } = useBridgeStatus()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -65,21 +56,31 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     }
   }
 
+  const borderStyle = useMemo(() => {
+    if (hasInputAmount && hasValidSelections && !isConnecting) {
+      return {
+        borderColor: '#D747FF',
+        background:
+          'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+      }
+    } else {
+      return {
+        borderColor: 'transparent',
+        background: '',
+      }
+    }
+  }, [hasInputAmount, hasValidSelections, isConnecting])
+
   return (
     <button
       data-test-id="connect-button"
+      style={borderStyle}
       className={`
         flex items-center justify-center
-        text-secondary py-lg px-lg rounded-sm
+        text-white py-lg px-lg rounded-sm
         text-center
         border
         hover:border-secondary
-        ${
-          hasInputAmount && hasValidSelections
-            ? 'border-synapsePurple border-[1px]'
-            : 'border-separator'
-        } 
-        ${isConnecting ? 'border-transparent' : ''}
         h-8
       `}
       onClick={handleConnectNetwork}
@@ -112,6 +113,21 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
     setClientReady(true)
   }, [])
 
+  const borderStyle: {} = useMemo(() => {
+    if (highlight) {
+      return {
+        borderColor: '#D747FF',
+        background:
+          'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+      }
+    } else {
+      return {
+        borderColor: '#565058',
+        background: '',
+      }
+    }
+  }, [highlight])
+
   return (
     <div data-test-id="connect-wallet-button">
       {clientReady && (
@@ -123,16 +139,12 @@ export function ConnectWalletButton({ highlight }: { highlight?: boolean }) {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
+                        style={borderStyle}
                         className={`
                           flex items-center mr-2 py-md px-md
-                          text-sm text-secondary
+                          text-sm text-white
                           border rounded-sm 
                           hover:border-secondary
-                          ${
-                            highlight
-                              ? 'border-synapsePurple'
-                              : 'border-separator'
-                          }
                         `}
                         onClick={openConnectModal}
                       >
