@@ -2,7 +2,7 @@ import { Fragment, useCallback } from 'react'
 import Image from 'next/image'
 import { Address } from 'viem'
 import { Popover, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/outline'
+import { PlayIcon } from '@heroicons/react/outline'
 import { Chain } from '@/utils/types'
 import { TransactionStatus } from './Transaction'
 import {
@@ -14,6 +14,7 @@ import { DISCORD_URL } from '@/constants/urls'
 import Button from '../../ui/tailwind/Button'
 import SynapseLogo from '@assets/icons/syn.svg'
 import DiscordIcon from '../../icons/DiscordIcon'
+import { DownArrow } from '@/components/icons/DownArrow'
 
 export const TransactionOptions = ({
   connectedAddress,
@@ -197,9 +198,9 @@ export function DropdownButton({
       {...props}
     >
       <div className="space-x-2">
-        <div className="flex space-x-1 rounded-md">
+        <div className="flex items-center space-x-1 rounded-md">
           {isDelayed && <span className="text-primary">Options</span>}
-          <ChevronDownIcon className="w-5 h-5 text-secondary" />
+          <DownArrow className="!w-3 !h-3 text-secondary" />
         </div>
       </div>
     </Button>
