@@ -181,7 +181,7 @@ export const POLYGON: Chain = {
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
   explorerName: 'PolygonScan',
-  explorerImg: polygonImg,
+  explorerImg: polygonExplorerImg,
   color: 'purple',
 }
 
