@@ -388,7 +388,7 @@ const TransactionStatusDetails = ({
             >
               <Image
                 className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
-                blurDataURL={originChain?.explorerImg?.src}
+                placeholder="empty"
                 src={originChain?.explorerImg}
                 alt={`${originChain.explorerName} logo`}
               />
