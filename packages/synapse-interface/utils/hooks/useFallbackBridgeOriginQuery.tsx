@@ -49,7 +49,7 @@ export const useFallbackBridgeOriginQuery = ({
     }, [chainId, txnHash, bridgeType])
 
   const queryTransactionAlreadyStored: boolean = useMemo(() => {
-    return fallbackQueryPendingTransactions.some((transaction) => {
+    return fallbackQueryPendingTransactions?.some((transaction) => {
       return transaction?.fromInfo?.txnHash === txnHash
     })
   }, [fallbackQueryPendingTransactions, txnHash])
@@ -96,17 +96,17 @@ export const useFallbackBridgeOriginQuery = ({
       }
 
       const alreadyExists: boolean =
-        fallbackQueryPendingTransactions.some(
+        fallbackQueryPendingTransactions?.some(
           (transaction) =>
             transaction.kappa === constructedBridgeTransaction.kappa ||
             transaction.fromInfo === constructedBridgeTransaction.fromInfo
         ) ||
-        fallbackQueryHistoricalTransactions.some(
+        fallbackQueryHistoricalTransactions?.some(
           (transaction) =>
             transaction.kappa === constructedBridgeTransaction.kappa ||
             transaction.fromInfo === constructedBridgeTransaction.fromInfo
         ) ||
-        userHistoricalTransactions.some(
+        userHistoricalTransactions?.some(
           (transaction) =>
             transaction.kappa === constructedBridgeTransaction.kappa ||
             transaction.fromInfo === constructedBridgeTransaction.fromInfo

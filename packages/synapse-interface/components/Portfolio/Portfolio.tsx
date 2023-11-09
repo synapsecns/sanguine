@@ -25,7 +25,6 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
-import { resetReduxCache } from '@/slices/application/actions'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { ViewSearchAddressBanner } from './SearchBar'
 import { Activity } from './Activity'
@@ -45,7 +44,6 @@ export const Portfolio = () => {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
       dispatch(resetBridgeInputs())
-      dispatch(resetReduxCache())
     },
   })
 
@@ -130,7 +128,6 @@ export const Portfolio = () => {
 
   useEffect(() => {
     dispatch(resetPortfolioState())
-    dispatch(resetBridgeInputs())
   }, [address])
 
   useEffect(() => {
