@@ -1,0 +1,47 @@
+chains:
+  - chain_id: 42
+    required_confirmations: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
+    store_concurrency_threshold: 100000
+    contracts:
+      - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+        start_block: 1
+      - address: 0x1EC96ab1Fdb92565A0839b12d42c13c8135f6c11
+        start_block: 1
+      - address: 0x2eB68A0C21413aA78055F6F7F262De56979aFBEa
+        start_block: 1
+      - address: 0x7219284B26F44B2A584827034422a33450635f7A
+        start_block: 1
+      - address: 0x27006519C5786863fAE35612Da9E0f0622ff8c58
+        start_block: 1
+  - chain_id: 43
+    required_confirmations: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
+    store_concurrency_threshold: 100000
+    contracts:
+      - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+        start_block: 1
+      - address: 0x7219284B26F44B2A584827034422a33450635f7A
+        start_block: 1
+      - address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+        start_block: 1
+      - address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
+        start_block: 1
+  - chain_id: 44
+    required_confirmations: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
+    store_concurrency_threshold: 100000
+    contracts:
+      - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+        start_block: 1
+      - address: 0x7219284B26F44B2A584827034422a33450635f7A
+        start_block: 1
+      - address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+        start_block: 1
+      - address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
+        start_block: 1
+rpc_url: 'http://omnirpc:9001/confirmations'
+refresh_rate: 0

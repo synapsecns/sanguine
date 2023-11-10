@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 10s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: services
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - 'prometheus:9090'
+          - 'scribe-indexer:8080'
+          - 'scribe:8080'
+          - 'omnirpc:8080'
+          - 'notary-43:8080'
+          - 'notary-44:8080'
+          - 'executor:8080'
+
