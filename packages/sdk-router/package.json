@@ -43,6 +43,7 @@
   },
   "module": "dist/sdk-v2.esm.js",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.23.3",
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
     "husky": "^8.0.1",
