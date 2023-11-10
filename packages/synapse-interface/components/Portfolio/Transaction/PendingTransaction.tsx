@@ -174,6 +174,7 @@ export const PendingTransaction = ({
     initialElapsedMinutes,
     updatedElapsedTime,
     startedTimestamp,
+    transactionHash,
   ])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
@@ -280,6 +281,13 @@ export const PendingTransaction = ({
     }
   }, [timeRemaining, isSubmitted, startedTimestamp, updatedElapsedTime])
 
+  console.log(
+    'timeRemaining from PendingTrasaction: ',
+    timeRemaining,
+    'txnHash:',
+    transactionHash
+  )
+
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
       <Transaction
@@ -298,6 +306,7 @@ export const PendingTransaction = ({
         timeRemaining={
           isSubmitted ? timeRemaining : estimatedCompletionInMinutes
         }
+        transactionHash={transactionHash}
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}
