@@ -424,6 +424,11 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
+		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		span.AddEvent("submitting snapshot", trace.WithAttributes(
+			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
+			stateSliceToAttribute("snapshotStates", snapshot.States()),
+		))
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
