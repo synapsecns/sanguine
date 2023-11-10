@@ -47,6 +47,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
         localDomain = uint32(block.chainid);
         deploymentSalt = keccak256("Messaging003");
+        setupDevnetIfEnabled();
     }
 
     /// @dev Function to exclude script from coverage report
@@ -86,6 +87,8 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         globalConfig = loadGlobalDeployConfig("Messaging003");
         synapseDomain = globalConfig.readUint(".chainidSummit");
         startBroadcast(_isBroadcasted);
+        // assert this is the first thing deployed
+        getFactory();
         // Predict deployments
         agentManager = predictFactoryDeployment(agentManagerName());
         statementInbox = predictFactoryDeployment(statementInboxName());
