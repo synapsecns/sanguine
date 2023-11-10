@@ -418,8 +418,9 @@ const TransactionStatusDetails = ({
                 </div>
               </div>
               <p className="items-center p-1 rounded-sm">
-                Arbitrum confirmations are slower than usual, transactions are
-                still being processed. Questions?
+                {destinationChain?.name ?? 'Destination network'} confirmations
+                are slower than usual, transactions are still being processed.
+                Questions?
                 <a
                   href={DISCORD_URL}
                   target="_blank"
