@@ -171,7 +171,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 		span.AddEvent("Got nonce", trace.WithAttributes(
 			attribute.Int("nonce", int(nonce)),
 			attribute.Int("onChainNonce", int(onChainNonce)),
-			attribute.Int("nonce", int(dbNonce)),
+			attribute.Int("dbNonce", int(dbNonce)),
 		))
 		metrics.EndSpanWithErr(span, err)
 	}()
