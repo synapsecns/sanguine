@@ -9,7 +9,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // handleSnapshotAccepted checks a snapshot for invalid states.
@@ -484,12 +487,20 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 // and open dispute on remote chain.
 //
 //nolint:cyclop,gocognit
-func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
+func (g Guard) updateAgentStatus(parentCtx context.Context, chainID uint32) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "updateAgentStatus", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	eligibleAgentTrees, err := g.guardDB.GetRelayableAgentStatuses(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get update agent status parameters: %w", err)
 	}
 
+	span.AddEvent("got eligible agent trees", trace.WithAttributes(
+		attribute.Int("numAgentTrees", len(eligibleAgentTrees)),
+	))
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
@@ -508,10 +519,16 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
 
+	span.AddEvent("got local root", trace.WithAttributes(
+		attribute.String("localRoot", common.BytesToHash(localRoot[:]).String()),
+	))
 	localRootBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, common.BytesToHash(localRoot[:]).String())
 	if err != nil {
 		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
+	span.AddEvent("got local root block number", trace.WithAttributes(
+		attribute.Int("localRootBlockNumber", int(localRootBlockNumber)),
+	))
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, t := range eligibleAgentTrees {
@@ -523,7 +540,12 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		}
 		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
+			span.AddEvent("updating agent status", trace.WithAttributes(
+				attribute.Int("chainID", int(chainID)),
+				attribute.String("agentAddress", tree.AgentAddress.String()),
+			))
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
+
 			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.getAgentStatus(ctx, g.summitDomainID, tree.AgentAddress)
 			if err != nil {
