@@ -2,18 +2,18 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ CONTRACT IMPORTS ══════════════════════════════
-import {AgentSecured, MessagingBase} from "../contracts/base/AgentSecured.sol";
-import {BondingManager} from "../contracts/manager/BondingManager.sol";
-import {Destination} from "../contracts/Destination.sol";
-import {GasOracle} from "../contracts/GasOracle.sol";
-import {Origin} from "../contracts/Origin.sol";
-import {Summit} from "../contracts/Summit.sol";
+import { AgentSecured, MessagingBase } from "../contracts/base/AgentSecured.sol";
+import { BondingManager } from "../contracts/manager/BondingManager.sol";
+import { Destination } from "../contracts/Destination.sol";
+import { GasOracle } from "../contracts/GasOracle.sol";
+import { Origin } from "../contracts/Origin.sol";
+import { Summit } from "../contracts/Summit.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {DeployerUtils} from "./utils/DeployerUtils.sol";
+import { DeployerUtils } from "./utils/DeployerUtils.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {console, stdJson} from "forge-std/Script.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import { console, stdJson } from "forge-std/Script.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-console
 // solhint-disable ordering
@@ -45,7 +45,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
         localDomain = uint32(block.chainid);
-        deploymentSalt = keccak256("Messaging003");
+        deploymentSalt = keccak256("Messaging003-02");
     }
 
     /// @dev Function to exclude script from coverage report
@@ -94,9 +94,24 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
             summit = predictFactoryDeployment(SUMMIT);
         }
         // Deploy and initialize contracts
-        _deployAndCheckAddress(agentManagerName(), _deployAgentManager, _initializeAgentManager, agentManager);
-        _deployAndCheckAddress(statementInboxName(), _deployStatementInbox, _initializeStatementInbox, statementInbox);
-        _deployAndCheckAddress(DESTINATION, _deployDestination, _initializeDestination, destination);
+        _deployAndCheckAddress(
+            agentManagerName(),
+            _deployAgentManager,
+            _initializeAgentManager,
+            agentManager
+        );
+        _deployAndCheckAddress(
+            statementInboxName(),
+            _deployStatementInbox,
+            _initializeStatementInbox,
+            statementInbox
+        );
+        _deployAndCheckAddress(
+            DESTINATION,
+            _deployDestination,
+            _initializeDestination,
+            destination
+        );
         _deployAndCheckAddress(GAS_ORACLE, _deployGasOracle, _initializeGasOracle, gasOracle);
         _deployAndCheckAddress(ORIGIN, _deployOrigin, _initializeOrigin, origin);
         if (isSynapseChain()) {
@@ -118,20 +133,26 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         function(address) internal initFunc,
         address predictedDeployment
     ) internal {
-        (address deployment,) = deployContract(contractName, deployFunc, initFunc);
+        (address deployment, ) = deployContract(contractName, deployFunc, initFunc);
         require(deployment == predictedDeployment, string.concat(contractName, ": wrong address"));
     }
 
     /// @dev Deploys BondingManager or LightManager
     /// Note: requires Origin, Destination, StatementInbox (and Summit for BondingManager) addresses to be set
-    function _deployAgentManager() internal virtual returns (address deployment, bytes memory constructorArgs);
+    function _deployAgentManager()
+        internal
+        virtual
+        returns (address deployment, bytes memory constructorArgs);
 
     /// @dev Initializes BondingManager or LightManager
     function _initializeAgentManager(address deployment) internal virtual;
 
     /// @dev Deploys Inbox or LightInbox
     /// Note: requires AgentManager, Origin, Destination (and Summit for Inbox) addresses to be set
-    function _deployStatementInbox() internal virtual returns (address deployment, bytes memory constructorArgs);
+    function _deployStatementInbox()
+        internal
+        virtual
+        returns (address deployment, bytes memory constructorArgs);
 
     /// @dev Initializes Inbox or LightInbox
     function _initializeStatementInbox(address deployment) internal virtual;
@@ -144,7 +165,10 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     /// @dev Deploys Destination.
     /// Note: requires AgentManager and StatementInbox addresses to have been set.
     /// Note: requires AgentManager to have been deployed.
-    function _deployDestination() internal returns (address deployment, bytes memory constructorArgs) {
+    function _deployDestination()
+        internal
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new Destination(domain, agentManager, statementInbox)
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
@@ -165,7 +189,10 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
 
     /// @dev Deploys GasOracle.
     /// Note: requires Destination address to have been set.
-    function _deployGasOracle() internal returns (address deployment, bytes memory constructorArgs) {
+    function _deployGasOracle()
+        internal
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new GasOracle(domain, destination)
         require(destination != address(0), "Destination not set");
         constructorArgs = abi.encode(localDomain, destination);
@@ -238,7 +265,11 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     }
 
     /// @dev Transfers ownership of a given contract to a new owner.
-    function _transferOwnership(string memory name, address deployment, address newOwner) internal {
+    function _transferOwnership(
+        string memory name,
+        address deployment,
+        address newOwner
+    ) internal {
         if (deployment == address(0)) {
             console.log("   %s: skipped (not deployed)", name);
             return;
@@ -312,7 +343,10 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     /// - .owner()
     function _checkMessagingBase(string memory name, address deployment) internal {
         _logCheckedGetter(name, "localDomain", deployment, localDomain);
-        require(MessagingBase(deployment).localDomain() == localDomain, string.concat("Wrong localDomain: ", name));
+        require(
+            MessagingBase(deployment).localDomain() == localDomain,
+            string.concat("Wrong localDomain: ", name)
+        );
         address owner = globalConfig.readAddress(".owner");
         _logCheckedGetter(name, "owner", deployment, owner);
         require(Ownable(deployment).owner() == owner, string.concat("Wrong owner: ", name));
@@ -321,53 +355,75 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     /// @dev Checks .agentManager() getter
     function _checkGetterAgentManager(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "agentManager", deployment, agentManager);
-        require(AgentSecured(deployment).agentManager() == agentManager, string.concat("Wrong agentManager: ", name));
+        require(
+            AgentSecured(deployment).agentManager() == agentManager,
+            string.concat("Wrong agentManager: ", name)
+        );
     }
 
     /// @dev Checks .inbox() getter
     function _checkGetterInbox(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "inbox", deployment, statementInbox);
-        require(AgentSecured(deployment).inbox() == statementInbox, string.concat("Wrong statementInbox: ", name));
+        require(
+            AgentSecured(deployment).inbox() == statementInbox,
+            string.concat("Wrong statementInbox: ", name)
+        );
     }
 
     /// @dev Checks .destination() getter
     function _checkGetterDestination(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "destination", deployment, destination);
-        require(GasOracle(deployment).destination() == destination, string.concat("Wrong destination: ", name));
+        require(
+            GasOracle(deployment).destination() == destination,
+            string.concat("Wrong destination: ", name)
+        );
     }
 
     /// @dev Checks .gasOracle() getter
     function _checkGetterGasOracle(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "gasOracle", deployment, gasOracle);
-        require(Origin(deployment).gasOracle() == gasOracle, string.concat("Wrong gasOracle: ", name));
+        require(
+            Origin(deployment).gasOracle() == gasOracle,
+            string.concat("Wrong gasOracle: ", name)
+        );
     }
 
     /// @dev Checks .origin() getter
     function _checkGetterOrigin(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "origin", deployment, origin);
-        require(BondingManager(deployment).origin() == origin, string.concat("Wrong origin: ", name));
+        require(
+            BondingManager(deployment).origin() == origin,
+            string.concat("Wrong origin: ", name)
+        );
     }
 
     /// @dev Checks .summit() getter
     function _checkGetterSummit(string memory name, address deployment) internal view {
         _logCheckedGetter(name, "summit", deployment, summit);
-        require(BondingManager(deployment).summit() == summit, string.concat("Wrong summit: ", name));
+        require(
+            BondingManager(deployment).summit() == summit,
+            string.concat("Wrong summit: ", name)
+        );
     }
 
     /// @dev Shortcut for logging
-    function _logCheckedGetter(string memory name, string memory getter, address deployment, address expectedValue)
-        internal
-        view
-    {
+    function _logCheckedGetter(
+        string memory name,
+        string memory getter,
+        address deployment,
+        address expectedValue
+    ) internal view {
         console.log("       [%s][%s]: checking .%s()", name, deployment, getter);
         console.log("           expecting value: %s", expectedValue);
     }
 
     /// @dev Shortcut for logging
-    function _logCheckedGetter(string memory name, string memory getter, address deployment, uint32 expectedValue)
-        internal
-        view
-    {
+    function _logCheckedGetter(
+        string memory name,
+        string memory getter,
+        address deployment,
+        uint32 expectedValue
+    ) internal view {
         console.log("       [%s][%s]: checking .%s()", name, deployment, getter);
         console.log("           expecting value: %s", expectedValue);
     }

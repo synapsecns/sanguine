@@ -27,6 +27,7 @@ op_goerli = "${RPC_OP_GOERLI}"
 sepolia = "${RPC_SEPOLIA}"
 arb_sepolia = "${RPC_ARB_SEPOLIA}"
 synapse_sepolia = "${RPC_SYNAPSE_SEPOLIA}"
+optimism_sepolia = "${RPC_OP_SEPOLIA}"
 
 [etherscan]
 # avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }

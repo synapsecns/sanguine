@@ -29,7 +29,7 @@ contract DeployerUtils is Script {
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
     // ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
-    // TODO: this is only deployed on Arb Sepolia, Sepolia, and Synapse Sepolia.
+    // TODO: this is only deployed on Arb Sepolia, Sepolia, Synapse Sepolia, Optimism Sepolia
     ICreate3Factory internal constant FACTORY =
         ICreate3Factory(0x3bA9E3Fa083133222026614C8023810c2e15aA22);
 

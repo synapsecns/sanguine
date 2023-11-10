@@ -1,6 +1,6 @@
 {
-  "address": "0x042f995893490e0fb68cd150A7861dEeC6B13a3A",
-  "args": "0x0000000000000000000000000000000000000000000000000000000000066eee000000000000000000000000ddba7af427f89a8973fb4eb4467c0f52b6c5b53c0000000000000000000000003deff39c49f8d30329be6af079299b0ef8ff6884000000000000000000000000494dfe06eb5456912546ea67d1d7b7f5a95e24aa",
+  "address": "0x3b5f86FAEb6521a6474234c538Ad335224947BdC",
+  "args": "0x0000000000000000000000000000000000000000000000000000000000aa37dc000000000000000000000000ddba7af427f89a8973fb4eb4467c0f52b6c5b53c0000000000000000000000003deff39c49f8d30329be6af079299b0ef8ff6884",
   "abi": [
     {
       "inputs": [
@@ -18,15 +18,20 @@
           "internalType": "address",
           "name": "inbox_",
           "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "gasOracle_",
-          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyExecuted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyFailed",
+      "type": "error"
     },
     {
       "inputs": [],
@@ -35,12 +40,12 @@
     },
     {
       "inputs": [],
-      "name": "ContentLengthTooBig",
+      "name": "CallerNotInbox",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "EthTransferFailed",
+      "name": "DuplicatedSnapshotRoot",
       "type": "error"
     },
     {
@@ -50,7 +55,27 @@
     },
     {
       "inputs": [],
-      "name": "IncorrectOriginDomain",
+      "name": "GasLimitTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "GasSuppliedTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectDestinationDomain",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectMagicValue",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectSnapshotRoot",
       "type": "error"
     },
     {
@@ -60,37 +85,47 @@
     },
     {
       "inputs": [],
+      "name": "IndexOutOfRange",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "IndexedTooMuch",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "InsufficientEthBalance",
+      "name": "MessageOptimisticPeriod",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "MerkleTreeFull",
+      "name": "NotaryInDispute",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "NotEnoughLeafs",
+      "name": "OccupiedMemory",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "TipsOverflow",
+      "name": "PrecompileOutOfGas",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "TipsValueTooLow",
+      "name": "TreeHeightTooLow",
       "type": "error"
     },
     {
       "inputs": [],
       "name": "UnallocatedMemory",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnformattedAttestation",
       "type": "error"
     },
     {
@@ -105,12 +140,17 @@
     },
     {
       "inputs": [],
+      "name": "UnformattedCallDataPrefix",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "UnformattedMessage",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "UnformattedState",
+      "name": "UnformattedReceipt",
       "type": "error"
     },
     {
@@ -122,31 +162,38 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "agentRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AgentRootAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "remoteDomain",
+          "type": "uint32"
+        },
+        {
           "indexed": true,
           "internalType": "bytes32",
           "name": "messageHash",
           "type": "bytes32"
         },
         {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "message",
-          "type": "bytes"
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
         }
       ],
-      "name": "Dispatched",
+      "name": "Executed",
       "type": "event"
     },
     {
@@ -185,45 +232,59 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32",
           "name": "messageHash",
           "type": "bytes32"
         },
         {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "message",
-          "type": "bytes"
+          "internalType": "uint256",
+          "name": "paddedTips",
+          "type": "uint256"
         }
       ],
-      "name": "Sent",
+      "name": "TipsRecorded",
       "type": "event"
     },
     {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "internalType": "uint32",
+          "name": "notaryIndex",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "sigIndex",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes",
-          "name": "state",
+          "name": "attPayload",
           "type": "bytes"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "agentRoot",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "ChainGas[]",
+          "name": "snapGas",
+          "type": "uint128[]"
         }
       ],
-      "name": "StateSaved",
-      "type": "event"
+      "name": "acceptAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "wasAccepted",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -276,15 +337,71 @@
     },
     {
       "inputs": [],
-      "name": "gasOracle",
+      "name": "attestationsAmount",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "destStatus",
+      "outputs": [
+        {
+          "internalType": "uint40",
+          "name": "snapRootTime",
+          "type": "uint40"
+        },
+        {
+          "internalType": "uint40",
+          "name": "agentRootTime",
+          "type": "uint40"
+        },
+        {
+          "internalType": "uint32",
+          "name": "notaryIndex",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "msgPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "originProof",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "snapProof",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "stateIndex",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "gasLimit",
+          "type": "uint64"
+        }
+      ],
+      "name": "execute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -331,26 +448,64 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
           "internalType": "uint256",
-          "name": "paddedRequest",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "contentLength",
+          "name": "index",
           "type": "uint256"
         }
       ],
-      "name": "getMinimumTipsValue",
+      "name": "getAttestation",
       "outputs": [
         {
+          "internalType": "bytes",
+          "name": "attPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "attSignature",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "snapRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getAttestationNonce",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "attNonce",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "getGasData",
+      "outputs": [
+        {
+          "internalType": "GasData",
+          "name": "gasData",
+          "type": "uint96"
+        },
+        {
           "internalType": "uint256",
-          "name": "tipsValue",
+          "name": "dataMaturity",
           "type": "uint256"
         }
       ],
@@ -371,7 +526,13 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "agentRoot",
+          "type": "bytes32"
+        }
+      ],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -381,11 +542,11 @@
       "inputs": [
         {
           "internalType": "bytes",
-          "name": "statePayload",
+          "name": "rcptPayload",
           "type": "bytes"
         }
       ],
-      "name": "isValidState",
+      "name": "isValidReceipt",
       "outputs": [
         {
           "internalType": "bool",
@@ -404,6 +565,44 @@
           "internalType": "uint32",
           "name": "",
           "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "messageHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "messageReceipt",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "rcptPayload",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "messageHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "messageStatus",
+      "outputs": [
+        {
+          "internalType": "enum MessageStatus",
+          "name": "status",
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",
@@ -453,6 +652,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "nextAgentRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint32",
@@ -485,6 +697,24 @@
     },
     {
       "inputs": [],
+      "name": "passAgentRoot",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "rootPassed",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "rootPending",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -511,129 +741,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "recipient",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "optimisticPeriod",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "paddedRequest",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "content",
-          "type": "bytes"
-        }
-      ],
-      "name": "sendBaseMessage",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "messageNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "optimisticPeriod",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "payload",
-          "type": "bytes"
-        }
-      ],
-      "name": "sendManagerMessage",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "messageNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "statesAmount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "suggestLatestState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "stateData",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        }
-      ],
-      "name": "suggestState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "stateData",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "newOwner",
           "type": "address"
@@ -655,24 +762,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "withdrawTips",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]
