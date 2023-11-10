@@ -123,7 +123,6 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
 func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
-	fmt.Printf("storeAndSubmit: %v\n", calls)
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -140,20 +139,15 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 	go func() {
 		span.SetAttributes(attribute.Int("batchSize", len(calls)))
 		span.AddEvent("submitting batched transactions", trace.WithAttributes(attribute.Int("numCalls", len(calls))))
-		fmt.Println("SUBMITTING")
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
 		span.AddEvent("submitted batched transactions", trace.WithAttributes(attribute.String("err", errToString(err))))
-		fmt.Printf("batch err: %v\n", err)
-		fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
 		cancelStore()
 		for i := range c.reprocessQueue {
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
-				fmt.Printf("failed submit: %v\n", c.reprocessQueue[i].Transaction.Hash())
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
-				fmt.Printf("submitted: %v\n", c.reprocessQueue[i].Transaction.Hash())
 			}
 		}
 

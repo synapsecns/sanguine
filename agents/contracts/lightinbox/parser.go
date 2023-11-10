@@ -32,7 +32,6 @@ func NewParser(lightInboxAddress common.Address) (Parser, error) {
 }
 
 func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
-	fmt.Printf("parse EventType for log with hash %s\n", log.TxHash.Hex())
 	for _, logTopic := range log.Topics {
 		eventType := eventTypeFromTopic(logTopic)
 		if eventType == nil {
@@ -42,7 +41,6 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 		return *eventType, true
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
-	fmt.Println("returning unknown event")
 	return EventType(len(topicMap()) + 2), false
 }
 

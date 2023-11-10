@@ -52,7 +52,6 @@ func (s Store) ExecuteMessage(ctx context.Context, messageMask db.DBMessage) err
 
 // SetMinimumTime sets the minimum time of a message.
 func (s Store) SetMinimumTime(ctx context.Context, messageMask db.DBMessage, minimumTime uint64) error {
-	fmt.Printf("SetMinimumTime: %v, %v\n", minimumTime, messageMask)
 	dbMessageMask := DBMessageToMessage(messageMask)
 	update := Message{MinimumTime: minimumTime, MinimumTimeSet: true}
 	dbTx := s.DB().WithContext(ctx).

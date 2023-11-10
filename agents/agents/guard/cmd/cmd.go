@@ -26,7 +26,6 @@ func Start(args []string, buildInfo config.BuildInfo) {
 
 	err := app.Run(args)
 	if err != nil {
-		fmt.Printf("error running guard app: %v\n", err)
 		panic(err)
 	}
 }

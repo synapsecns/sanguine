@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -201,11 +199,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 
 	for _, chain := range config.Chains {
 		err = retry.WithBackoff(ctx, func(ctx context.Context) error {
-			err := exec.setupChain(ctx, exec, chain, omniRPCClient)
-			if err != nil {
-				fmt.Printf("error setting up chain: %v\n", err)
-			}
-			return err
+			return exec.setupChain(ctx, exec, chain, omniRPCClient)
 		}, exec.retryConfig...)
 		if err != nil {
 			return nil, err
@@ -218,13 +212,11 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor.ChainConfig, omniRPCClient omnirpcClient.RPCClient) error {
 	originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not create origin parser: %w", err)
 	}
 
 	lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not create destination parser: %w", err)
 	}
 
@@ -234,13 +226,11 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 	if exec.config.SummitChainID == chain.ChainID {
 		inboxParser, err = inbox.NewParser(common.HexToAddress(exec.config.InboxAddress))
 		if err != nil {
-			fmt.Println(err)
 			return fmt.Errorf("could not create inbox parser: %w", err)
 		}
 
 		summitParser, err = summit.NewParser(common.HexToAddress(exec.config.SummitAddress))
 		if err != nil {
-			fmt.Println(err)
 			return fmt.Errorf("could not create summit parser: %w", err)
 		}
 	} else {
@@ -250,37 +240,31 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 
 	evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not get evm client: %w", err)
 	}
 
 	chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not create chain client: %w", err)
 	}
 
 	boundSummit, err := evm.NewSummitContract(ctx, chainClient, common.HexToAddress(e.config.InboxAddress))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not bind summit contract: %w", err)
 	}
 
 	boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not bind destination contract: %w", err)
 	}
 
 	boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
 	tree, err := newTreeFromDB(ctx, chain.ChainID, exec.executorDB)
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("could not get tree from db: %w", err)
 	}
 
@@ -394,7 +378,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
-		fmt.Println("nonce is nil")
+		span.AddEvent("nonce is nil")
 		return false, nil
 	}
 
@@ -405,12 +389,12 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if state == nil {
-		fmt.Println("state is nil")
+		span.AddEvent("state is nil")
 		return false, nil
 	}
 
 	if snapshotRoot == nil {
-		fmt.Println("snapshotRoot is nil")
+		span.AddEvent("snapshotRoot is nil")
 		return false, nil
 	}
 
@@ -437,7 +421,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	if !verifiedMessageProof {
 		span.AddEvent("message proof not verified")
-		fmt.Println("message proof not verified")
 		return false, nil
 	}
 
@@ -448,7 +431,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if !verifiedStateProof {
-		fmt.Println("state proof not verified")
 		span.AddEvent("state proof not verified")
 		return false, nil
 	}
@@ -474,9 +456,13 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
 
-	if snapshotProof == nil || stateIndex == nil {
-		span.AddEvent("snapshot proof or state index is nil")
-		fmt.Printf("snapshot proof or state index is nil (%v, %v)", snapshotProof, snapshotProof)
+	if snapshotProof == nil {
+		span.AddEvent("snapshot proof is nil")
+		return false, nil
+	}
+
+	if stateIndex == nil {
+		span.AddEvent("state indexis nil")
 		return false, nil
 	}
 
@@ -493,7 +479,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	if !originProofValid {
 		span.AddEvent("origin proof not valid")
-		fmt.Println("origin proof not valid")
 		return false, nil
 	}
 
@@ -510,7 +495,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
-	fmt.Println("EXECUTING")
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		leafBytes, _ := message.ToLeaf()
 		leafHex := common.Bytes2Hex(leafBytes[:])
@@ -524,7 +508,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			attribute.Int("stateNonce", int(stateNonce)),
 			attribute.String("stateHash", common.BytesToHash(stateHash[:]).String()),
 		))
-		fmt.Printf("submitting for execution on domain %d\n", destinationDomain)
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -550,7 +533,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	fmt.Println("execute success")
 	return true, nil
 }
 
@@ -690,7 +672,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 
 	if messageMinimumTime == nil {
 		//nolint:nilnil
-		fmt.Println("messageMinimumTime is nil")
+		span.AddEvent("messageMinimumTime is nil")
 		return nil, nil
 	}
 
@@ -716,7 +698,10 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	}
 
 	if *messageMinimumTime > currentTime {
-		fmt.Printf("message minimum time %v greater than current time %v\n", messageMinimumTime, currentTime)
+		span.AddEvent("message minimum time greater than current time", trace.WithAttributes(
+			attribute.Int("messageMinimumTime", int(*messageMinimumTime)),
+			attribute.Int("currentTime", int(currentTime)),
+		))
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -803,7 +788,6 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 //
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
-	fmt.Printf("streamLogs on chain %d, address %s, contract type %s\n", chainID, address, contractType.String())
 	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -813,7 +797,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 	toBlock := "latest"
 
-	fmt.Printf("stream from block %v to %v\n", fromBlock, toBlock)
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -829,7 +812,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	for {
 		select {
 		case <-e.chainExecutors[chainID].closeConnection:
-			fmt.Println("close stream conn")
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -851,7 +833,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
-			fmt.Printf("received raw log on chain %d, addr %s with tx hash: %v\n", chainID, address, log.TxHash)
 
 			// We do not use a span context here because this is just meant to track transactions coming in.
 			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
@@ -877,7 +858,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
-	fmt.Printf("processLog on chain %d with hash %s [blockNumber=%d]\n", chainID, log.TxHash.Hex(), log.BlockNumber)
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
@@ -885,7 +865,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	if datatypeInterface == nil {
 		return nil
 	}
-	fmt.Printf("data type: %v\n", reflect.TypeOf(datatypeInterface))
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
@@ -957,7 +936,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				for _, msg := range messages {
 					msgStrs = append(msgStrs, types.MessageToString(msg))
 				}
-				fmt.Printf("Got executable messages: %v\n", msgStrs)
 
 				if len(messages) == 0 {
 					break
@@ -981,12 +959,9 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						continue
 					}
 					lastExecuteTime, ok := e.lastExecuteAttempts[leafHex]
-					fmt.Printf("loaded attempt for %s: %v [retryInterval=%d]\n", leafHex, lastExecuteTime, e.config.ExecuteRetryInterval)
 					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
 					now := uint64(e.NowFunc().Unix())
-					fmt.Printf("nextExecuteTime: %v, now: %v\n", nextExecuteTime, now)
 					if ok && nextExecuteTime > now {
-						fmt.Printf("nextExecuteTime %v <= now: %v; not executing\n", nextExecuteTime, now)
 						continue
 					}
 
@@ -1005,19 +980,15 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						e.numExecuteAttempts[leafHex]++
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
-							fmt.Printf("execute err: %v\n", err)
 							logger.Errorf("could not execute message, retrying: %s", err)
 							continue
 						}
-						fmt.Printf("executed: %v\n", executed)
 
 						if executed {
 							delete(e.lastExecuteAttempts, leafHex)
-							fmt.Printf("removed attempt for %s\n", leafHex)
 						} else {
 							now := uint64(e.NowFunc().Unix())
 							e.lastExecuteAttempts[leafHex] = now
-							fmt.Printf("inserted attempt for %s: %v\n", leafHex, now)
 							continue
 						}
 					}
@@ -1047,7 +1018,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
-	fmt.Printf("setMinimumTime on chain %d\n", chainID)
 	backoffInterval := time.Duration(0)
 
 	for {
@@ -1074,7 +1044,6 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				for _, msg := range messages {
 					msgStrs = append(msgStrs, types.MessageToString(msg))
 				}
-				fmt.Printf("Got unset min time msgs: %v\n", strings.Join(msgStrs, ", "))
 
 				if len(messages) == 0 {
 					break
@@ -1103,7 +1072,6 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
-				fmt.Printf("Got timestamp for message: %v, %v\n", minimumTimestamp, types.MessageToString(message))
 
 				if minimumTimestamp == nil {
 					continue

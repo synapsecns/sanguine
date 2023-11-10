@@ -123,7 +123,6 @@ var NotaryRunCommand = &cli.Command{
 		g.Go(func() error {
 			err = notary.Start(c.Context)
 			if err != nil {
-				fmt.Printf("error running notary: %v\n", err)
 				return fmt.Errorf("error running notary: %w", err)
 			}
 			return nil

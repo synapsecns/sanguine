@@ -35,7 +35,6 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 
 // logToAttestation converts the log to an attestation.
 func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttestation bool) (*types.AttestationWithMetadata, error) {
-	fmt.Printf("logToAttestation on chain %d and log tx hash %s, summitAttestation %v\n", chainID, log.TxHash.Hex(), summitAttestation)
 	var attestationMetadata *types.AttestationWithMetadata
 
 	var err error
@@ -88,7 +87,6 @@ func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) 
 	case e.isAttestationSavedEvent(log, chainID):
 		return e.logToAttestation(log, chainID, true)
 	default:
-		fmt.Printf("logToInterface: unknown event type on chain %d with log tx hash %s\n", chainID, log.TxHash.Hex())
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -113,14 +111,11 @@ func (e Executor) isSentEvent(log ethTypes.Log, chainID uint32) bool {
 }
 
 func (e Executor) isAttestationAcceptedEvent(log ethTypes.Log, chainID uint32) bool {
-	fmt.Printf("isAttestationAcceptedEvent on chain %d with log tx hash %s\n", chainID, log.TxHash.Hex())
-	fmt.Printf("lightinboxparser: %v\n", e.chainExecutors[chainID].lightInboxParser)
 	if e.chainExecutors[chainID].lightInboxParser == nil {
 		return false
 	}
 
 	lightManagerEvent, ok := e.chainExecutors[chainID].lightInboxParser.EventType(log)
-	fmt.Printf("ok: %v, lightManagerEvent: %v\n", ok, lightManagerEvent)
 	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
 }
 
@@ -241,7 +236,6 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 func (e Executor) processAttestation(ctx context.Context, attestationMetadata types.AttestationWithMetadata, chainID uint32, log ethTypes.Log) (err error) {
 	attestation := attestationMetadata.Attestation
 	snapshotRoot := attestation.SnapshotRoot()
-	fmt.Printf("processAttestation on chain %d with snaproot %s\n", chainID, snapshotRoot)
 	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
 		attribute.Int("chainID", int(chainID)),
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
@@ -301,7 +295,6 @@ func (e Executor) processAttestation(ctx context.Context, attestationMetadata ty
 		return fmt.Errorf("could not get log header")
 	}
 
-	fmt.Printf("storing attestation: %v\n", attestation)
 	span.AddEvent("storing remote attestation", trace.WithAttributes(attribute.Int("time", int(logHeader.Time))))
 	err = e.executorDB.StoreAttestation(ctx, attestation, chainID, log.BlockNumber, logHeader.Time)
 	if err != nil {

@@ -2,7 +2,6 @@ package lightinbox
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -39,9 +38,7 @@ func topicMap() map[EventType]common.Hash {
 // eventTypeFromTopic gets the event type from the topic
 // returns nil if the topic is not found.
 func eventTypeFromTopic(ogTopic common.Hash) *EventType {
-	fmt.Printf("eventTypeFromTopic on topic %s\n", ogTopic.Hex())
 	for eventType, topic := range topicMap() {
-		fmt.Printf("checking eventType %v and topic %v\n", eventType, topic.Hex())
 		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
 			return &eventType
 		}

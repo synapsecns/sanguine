@@ -192,11 +192,9 @@ var GuardRunCommand = &cli.Command{
 		g.Go(func() error {
 			err = guard.Start(ctx)
 			if err != nil {
-				fmt.Printf("error running guard: %v\n", err)
 				return fmt.Errorf("failed to run guard: %w", err)
 			}
 
-			fmt.Println("guard exiting")
 			return nil
 		})
 
@@ -206,13 +204,11 @@ var GuardRunCommand = &cli.Command{
 				return fmt.Errorf("failed to start api: %w", err)
 			}
 
-			fmt.Println("api exiting")
 			return nil
 		})
 
 		err = g.Wait()
 		if err != nil {
-			fmt.Printf("outer guard err: %v\n", err)
 			return fmt.Errorf("failed to run guard: %w", err)
 		}
 

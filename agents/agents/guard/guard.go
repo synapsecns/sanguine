@@ -221,7 +221,6 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 
 		select {
 		case <-ctx.Done():
-			fmt.Printf("context done on chain %d addr %s\n", chainID, address)
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -232,7 +231,6 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 				return fmt.Errorf("could not close connection: %w", err)
 			}
 
-			fmt.Printf("exiting on chain %d addr %s\n", chainID, address)
 			return fmt.Errorf("context done: %w", ctx.Err())
 		case g.logChans[chainID] <- log:
 			logger.Info("Received log with topic: %s", log.Topics[0].String())
@@ -245,7 +243,6 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("exiting receiveLogs on chainID %d\n", chainID)
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case log := <-g.logChans[chainID]:
 			if log == nil {
@@ -307,7 +304,6 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
-	fmt.Println("loadOriginLatestStates")
 	for _, d := range g.domains {
 		domain := d
 		ctx, span := g.handler.Tracer().Start(parentCtx, "loadOriginLatestStates", trace.WithAttributes(
@@ -354,7 +350,6 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 
 //nolint:cyclop
 func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
-	fmt.Println("getLatestSnapshot")
 	_, span := g.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
 		stateMapToAttribute("summitLatestStates", g.summitLatestStates),
 		stateMapToAttribute("originLatestStates", g.originLatestStates),
@@ -405,7 +400,6 @@ func (g Guard) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map
 
 //nolint:cyclop
 func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
-	fmt.Println("submitLatestSnapshot")
 	summitDomain := g.domains[g.summitDomainID]
 
 	ctx, span := g.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
@@ -430,8 +424,6 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		snapshotRoot, _, _ := snapshot.SnapshotRootAndProofs()
-		fmt.Printf("submitting guard snapshot with root: %v\n", common.BytesToHash(snapshotRoot[:]).String())
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
@@ -503,7 +495,6 @@ func (g Guard) Start(parentCtx context.Context) error {
 	}
 
 	group.Go(func() error {
-		fmt.Println("starting guard parent loop")
 		for {
 			select {
 			// parent loop terminated
@@ -515,7 +506,6 @@ func (g Guard) Start(parentCtx context.Context) error {
 				g.submitLatestSnapshot(ctx)
 				err := g.updateAgentStatuses(ctx)
 				if err != nil {
-					fmt.Println("exiting refresh loop")
 					return err
 				}
 			}
@@ -524,10 +514,8 @@ func (g Guard) Start(parentCtx context.Context) error {
 
 	err := group.Wait()
 	if err != nil {
-		fmt.Printf("guard exiting with error: %v\n", err)
 		return fmt.Errorf("guard error: %w", err)
 	}
 
-	fmt.Println("guard exiting")
 	return nil
 }

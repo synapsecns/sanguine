@@ -107,13 +107,11 @@ var ExecutorRunCommand = &cli.Command{
 
 		handler, err := metrics.NewFromEnv(ctx, metadata.BuildInfo())
 		if err != nil {
-			fmt.Printf("cmderr: %v\n", err)
 			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
 
 		executorConfig, executorDB, err := createExecutorParameters(ctx, c, handler)
 		if err != nil {
-			fmt.Printf("cmderr: %v\n", err)
 			return err
 		}
 
@@ -127,7 +125,6 @@ var ExecutorRunCommand = &cli.Command{
 				false,
 			)
 			if err != nil {
-				fmt.Printf("cmderr: %v\n", err)
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
@@ -137,7 +134,6 @@ var ExecutorRunCommand = &cli.Command{
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
 					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
-						fmt.Printf("cmderr: %v\n", err)
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.ScribeConfig.EmbeddedScribeConfig.RPCURL, client.ChainID))
 					}
 
@@ -147,14 +143,12 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribe, err := service.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
-				fmt.Printf("cmderr: %v\n", err)
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
 
 			g.Go(func() error {
 				err := scribe.Start(ctx)
 				if err != nil {
-					fmt.Printf("cmderr: %v\n", err)
 					return fmt.Errorf("failed to start scribe: %w", err)
 				}
 
@@ -170,7 +164,6 @@ var ExecutorRunCommand = &cli.Command{
 			g.Go(func() error {
 				err := embedded.Start(ctx)
 				if err != nil {
-					fmt.Printf("cmderr: %v\n", err)
 					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
 
@@ -185,7 +178,6 @@ var ExecutorRunCommand = &cli.Command{
 				handler,
 			).ScribeClient
 		default:
-			fmt.Printf("cmderr: %v\n", err)
 			return fmt.Errorf("invalid scribe type: %s", executorConfig.ScribeConfig.Type)
 		}
 
@@ -198,14 +190,12 @@ var ExecutorRunCommand = &cli.Command{
 
 		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, baseOmniRPCClient, handler)
 		if err != nil {
-			fmt.Printf("cmderr: %v\n", err)
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
 		g.Go(func() error {
 			err := api.Start(ctx, uint16(c.Uint(metricsPortFlag.Name)))
 			if err != nil {
-				fmt.Printf("cmderr: %v\n", err)
 				return fmt.Errorf("failed to start api: %w", err)
 			}
 
@@ -215,7 +205,6 @@ var ExecutorRunCommand = &cli.Command{
 		g.Go(func() error {
 			err := executor.Run(ctx)
 			if err != nil {
-				fmt.Printf("cmderr: %v\n", err)
 				return fmt.Errorf("failed to run executor: %w", err)
 			}
 
@@ -223,7 +212,6 @@ var ExecutorRunCommand = &cli.Command{
 		})
 
 		if err := g.Wait(); err != nil {
-			fmt.Printf("waiterr: %v\n", err)
 			return fmt.Errorf("failed to run executor: %w", err)
 		}
 
