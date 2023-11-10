@@ -4,3 +4,15 @@
 plugins:
   editorconfig:
     enabled: false
+  tflint:
+    enabled: true
+  markdownlint:
+    enabled: true
+  stylelint:
+    enabled: true
+  gofmt:
+    enabled: true
+  golint:
+    enabled: true
+  govet:
+    enabled: true
