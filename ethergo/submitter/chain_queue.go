@@ -83,9 +83,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			continue
 		}
 
-		cq.updateOldTxStatuses(gCtx)
 		cq.bumpTX(gCtx, tx)
 	}
+    cq.updateOldTxStatuses(gCtx)
 
 	err = cq.g.Wait()
 	if err != nil {
