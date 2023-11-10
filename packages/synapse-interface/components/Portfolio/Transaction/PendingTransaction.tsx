@@ -157,9 +157,11 @@ export const PendingTransaction = ({
     }
   }, [startedTimestamp, isSubmitted, transactionHash])
 
-  const estimatedCompletionInMinutes: number = Math.floor(
+  const estimatedCompletionInMinutes: number = Math.ceil(
     estimatedCompletionInSeconds / 60
   )
+
+  console.log('estimatedCompletionInMinutes: ', estimatedCompletionInMinutes)
 
   const timeRemaining: number = useMemo(() => {
     if (!startedTimestamp || !updatedElapsedTime) {
@@ -175,6 +177,13 @@ export const PendingTransaction = ({
   ])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+
+  const isSignificantlyDelayed: boolean = useMemo(() => {
+    if (isDelayed) {
+      return timeRemaining < -5
+    }
+    return false
+  }, [timeRemaining, estimatedCompletionInMinutes, isDelayed])
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
@@ -300,6 +309,7 @@ export const PendingTransaction = ({
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
           isDelayed={isDelayed}
+          isSignificantlyDelayed={isSignificantlyDelayed}
           kappa={kappa}
         />
       </Transaction>
@@ -315,6 +325,7 @@ const TransactionStatusDetails = ({
   transactionHash,
   transactionStatus,
   isDelayed,
+  isSignificantlyDelayed,
 }: {
   connectedAddress: Address
   originChain: Chain
@@ -323,6 +334,7 @@ const TransactionStatusDetails = ({
   transactionHash?: string
   transactionStatus: TransactionStatus
   isDelayed: boolean
+  isSignificantlyDelayed: boolean
 }) => {
   const sharedClass: string =
     'flex bg-tint border-t border-surface text-sm items-center'
@@ -381,7 +393,49 @@ const TransactionStatusDetails = ({
         data-test-id="pending-status"
         className={`${sharedClass} p-2 flex justify-between rounded-b-lg`}
       >
-        {isDelayed ? (
+        {isDelayed && isSignificantlyDelayed && (
+          <>
+            <div className="flex flex-col">
+              <div className="flex flex-wrap">
+                <div
+                  className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
+                  onClick={handleOriginExplorerClick}
+                >
+                  <Image
+                    className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
+                    src={originChain?.explorerImg}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                  <div className="whitespace-nowrap">
+                    Confirmed on {originChain.explorerName}.
+                  </div>
+                </div>
+                <div
+                  onClick={handleDestinationExplorerClick}
+                  className="whitespace-nowrap mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
+                >
+                  Waiting on {destinationChain.name}...
+                </div>
+              </div>
+              <div className="flex items-center p-1 rounded-sm">
+                Arbitrum confirmations are slower than usual, transactions are
+                still being processed. Questions? Contact support on our Discord
+                channel.
+              </div>
+            </div>
+            <TransactionOptions
+              connectedAddress={connectedAddress as Address}
+              originChain={originChain}
+              destinationChain={destinationChain}
+              kappa={kappa}
+              transactionHash={transactionHash}
+              transactionStatus={transactionStatus}
+              isDelayed={isDelayed}
+            />
+          </>
+        )}
+
+        {isDelayed && !isSignificantlyDelayed && (
           <>
             <div className="flex flex-col">
               <div className="flex flex-wrap">
@@ -429,7 +483,9 @@ const TransactionStatusDetails = ({
               isDelayed={isDelayed}
             />
           </>
-        ) : (
+        )}
+
+        {!isDelayed && !isSignificantlyDelayed && (
           <>
             <div
               className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
