@@ -10,6 +10,7 @@ import {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from './actions'
+import { resetBridgeQuote } from './reducer'
 import { Token } from '@/utils/types'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -25,6 +26,7 @@ export default function Updater(): null {
     toToken,
     toTokens,
     fromValue,
+    bridgeQuote,
     debouncedFromValue,
     debouncedToTokensFromValue,
   }: BridgeState = useBridgeState()
@@ -87,7 +89,7 @@ export default function Updater(): null {
                 userInputExists
                   ? debouncedToTokensFromValue
                   : getDefaultBridgeAmount(fromToken),
-                fromToken.decimals[fromChainId]
+                fromToken?.decimals[fromChainId]
               ),
             }
           }
@@ -105,6 +107,13 @@ export default function Updater(): null {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [debouncedToTokensFromValue, toTokens])
+
+  // Clear bridge quote if input is empty
+  useEffect(() => {
+    if (debouncedFromValue === initialState.debouncedFromValue) {
+      dispatch(resetBridgeQuote())
+    }
+  }, [debouncedFromValue, bridgeQuote])
 
   return null
 }

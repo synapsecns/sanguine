@@ -28,13 +28,15 @@ export const SUPPORTED_CHAIN_IDS: number[] = Object.values(SupportedChainId)
   .filter((chainId) => !isNaN(chainId))
 
 /**
- * List of chain ids where SynapseCCTP is deployed.
+ * List of chain ids where SynapseCCTP is deployed, ordered by CCTP's domain:
+ * https://developers.circle.com/stablecoin/docs/cctp-protocol-contract#mainnet-contract-addresses
  *
  * Note: This is a subset of SUPPORTED_CHAIN_IDS.
  */
 export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
-  SupportedChainId.ARBITRUM,
   SupportedChainId.AVALANCHE,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
 ]

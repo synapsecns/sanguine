@@ -90,7 +90,6 @@ contract DeployerUtils is Script {
         devnetEnabled = vm.envOr(DEVNET_ENABLED_VAR, false);
 
         if (devnetEnabled) {
-            console.log("DEVNET ENABLED");
             devnetEnabled = true;
             // setup the chains
             setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
@@ -149,10 +148,8 @@ contract DeployerUtils is Script {
 
     /// @notice Predicts the deployment address for a contract.
     function predictFactoryDeployment(string memory contractName) internal returns (address) {
-        console.log("predictFactoryDeployment: %s", contractName);
         ICreate3Factory _factory = getFactory();
-        console.log("factory: %s", address(_factory));
-        require(Address.isContract(address(_factory)), "Factory not deployed [predicted]");
+        require(Address.isContract(address(_factory)), "Factory not deployed");
         return _factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 

@@ -2,8 +2,10 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {DISPUTE_TIMEOUT_NOTARY} from "../libs/Constants.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
-import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {AgentStatus, DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
@@ -29,8 +31,8 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    // (agent index => their dispute flag: None/Pending/Slashed)
-    mapping(uint32 => DisputeFlag) internal _disputes;
+    // (agent index => their dispute status: flag, openedAt, resolvedAt)
+    mapping(uint32 => DisputeStatus) internal _disputes;
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -56,14 +58,23 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
 
     /// @inheritdoc IAgentSecured
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyAgentManager {
-        _disputes[guardIndex] = DisputeFlag.Pending;
-        _disputes[notaryIndex] = DisputeFlag.Pending;
+        uint40 openedAt = ChainContext.blockTimestamp();
+        DisputeStatus memory status = DisputeStatus({flag: DisputeFlag.Pending, openedAt: openedAt, resolvedAt: 0});
+        _disputes[guardIndex] = status;
+        _disputes[notaryIndex] = status;
     }
 
     /// @inheritdoc IAgentSecured
-    function resolveDispute(uint32 slashedIndex, uint32 honestIndex) external onlyAgentManager {
-        _disputes[slashedIndex] = DisputeFlag.Slashed;
-        if (honestIndex != 0) delete _disputes[honestIndex];
+    function resolveDispute(uint32 slashedIndex, uint32 rivalIndex) external onlyAgentManager {
+        // Update the dispute status of the slashed agent first.
+        uint40 resolvedAt = ChainContext.blockTimestamp();
+        _disputes[slashedIndex].flag = DisputeFlag.Slashed;
+        _disputes[slashedIndex].resolvedAt = resolvedAt;
+        // Mark the rival agent as not disputed, if there was an ongoing dispute.
+        if (rivalIndex != 0) {
+            _disputes[rivalIndex].flag = DisputeFlag.None;
+            _disputes[rivalIndex].resolvedAt = resolvedAt;
+        }
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -78,6 +89,11 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
         return _getAgent(index);
     }
 
+    /// @inheritdoc IAgentSecured
+    function latestDisputeStatus(uint32 agentIndex) external view returns (DisputeStatus memory) {
+        return _disputes[agentIndex];
+    }
+
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns status of the given agent: (flag, domain, index).
@@ -90,8 +106,27 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
         return IAgentManager(agentManager).getAgent(index);
     }
 
-    /// @dev Checks if the agent with the given index is in a dispute.
-    function _isInDispute(uint32 agentIndex) internal view returns (bool) {
-        return _disputes[agentIndex] != DisputeFlag.None;
+    /// @dev Checks if a Dispute exists for the given Notary. This function returns true, if
+    /// Notary is in ongoing Dispute, or if Dispute was resolved not in Notary's favor.
+    /// In both cases we can't trust Notary's data.
+    /// Note: Agent-Secured contracts can trust Notary data only if both `_notaryDisputeExists` and
+    /// `_notaryDisputeTimeout` return false.
+    function _notaryDisputeExists(uint32 notaryIndex) internal view returns (bool) {
+        return _disputes[notaryIndex].flag != DisputeFlag.None;
+    }
+
+    /// @dev Checks if a Notary recently won a Dispute and is still in the "post-dispute" timeout period.
+    /// In this period we still can't trust Notary's data, though we can optimistically assume that
+    /// that the data will be correct after the timeout (assuming no new Disputes are opened).
+    /// Note: Agent-Secured contracts can trust Notary data only if both `_notaryDisputeExists` and
+    /// `_notaryDisputeTimeout` return false.
+    function _notaryDisputeTimeout(uint32 notaryIndex) internal view returns (bool) {
+        DisputeStatus memory status = _disputes[notaryIndex];
+        // Exit early if Notary is in ongoing Dispute / slashed.
+        if (status.flag != DisputeFlag.None) return false;
+        // Check if Notary has been in any Dispute at all.
+        if (status.openedAt == 0) return false;
+        // Otherwise check if the Dispute timeout is still active.
+        return block.timestamp < status.resolvedAt + DISPUTE_TIMEOUT_NOTARY;
     }
 }

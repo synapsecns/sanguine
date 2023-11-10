@@ -3,6 +3,7 @@ import { formatAmount } from '@utils/formatAmount'
 import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'
 import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { addressToDecimals } from '@utils/addressToDecimals'
 
 export function IconAndAmount({
   formattedValue,
@@ -24,13 +25,19 @@ export function IconAndAmount({
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
 
+  let amount
   let showToken
   if (tokenSymbol) {
     const displaySymbol = addressToSymbol({ tokenAddress, chainId })
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
+    amount = formattedValue
   } else {
-    showToken = <span className={`${textSize} text-slate-400`}>--</span>
+    const displaySymbol = addressToSymbol({ tokenAddress, chainId })
+    showToken = displaySymbol ? <div className={styledCoinClass}>{displaySymbol}</div> : <span className={`${textSize} text-slate-400`}>--</span>
+    const dec = 10**addressToDecimals({tokenAddress, chainId})
+    amount = formattedValue / (dec/10**6)
   }
+
   return (
     <div className="flex justify-between items-center ">
       <div className="flex flex-row items-center ">
@@ -40,7 +47,7 @@ export function IconAndAmount({
           className={`${iconSize} inline mr-1 rounded-lg hover:opacity-[0.8] transition-all ease-in-out`}
         />
         <div className={`${textSize} pl-1 whitespace-nowrap text-white`}>
-          {formatAmount(formattedValue)}
+          {formatAmount(amount)}
         </div>
       </div>
       {showToken}

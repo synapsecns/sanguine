@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Chain, useAccount, useNetwork } from 'wagmi'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
@@ -10,6 +10,7 @@ import { resetPortfolioState } from '@/slices/portfolio/actions'
 import {
   fetchAvaxPrice,
   fetchEthPrice,
+  fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
 
@@ -18,6 +19,7 @@ const WalletStatusContext = createContext(undefined)
 export const UserProvider = ({ children }) => {
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { query, pathname } = router
   const { address, connector } = useAccount({
@@ -39,6 +41,19 @@ export const UserProvider = ({ children }) => {
     prevChainRef.current = chain
   }, [chain])
   const prevChain = prevChainRef.current
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (isClient) {
+      dispatch(fetchSynPrices())
+      dispatch(fetchEthPrice())
+      dispatch(fetchAvaxPrice())
+      dispatch(fetchMetisPrice())
+    }
+  }, [isClient])
 
   useEffect(() => {
     if (chain) {
@@ -65,7 +80,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
-      if (address && chain?.id) {
+      if (isClient && address && chain?.id) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
@@ -77,13 +92,7 @@ export const UserProvider = ({ children }) => {
         dispatch(resetPortfolioState())
       }
     })()
-  }, [chain, address])
-
-  useEffect(() => {
-    dispatch(fetchSynPrices())
-    dispatch(fetchEthPrice())
-    dispatch(fetchAvaxPrice())
-  }, [])
+  }, [chain, address, isClient])
 
   return (
     <WalletStatusContext.Provider value={null}>

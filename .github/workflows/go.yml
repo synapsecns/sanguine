@@ -183,7 +183,7 @@ jobs:
       - name: Test
         run: |
           set -e
-          max_num_retries=5
+          max_num_retries=3
           echo "mode: atomic" > coverage.txt
 
           # Loop through each package and run tests, with package level retries
@@ -192,13 +192,19 @@ jobs:
             retries=0
 
             while [ $retries -lt $max_num_retries ]; do
-              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=5 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
+              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
                 break
               else
                 retries=$((retries+1))
                 echo "Retry #$retries: 'gotestsum' command failed for $pkg"
               fi
             done
+
+            # Check if max retries is exceeded for this package.
+            if [ $retries -eq $max_num_retries ]; then
+                echo "Max retries exceeded for $pkg"
+                exit 1
+            fi
 
             if [ -f profile.cov ]; then
               tail -n +2 profile.cov >> coverage.txt

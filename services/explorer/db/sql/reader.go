@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/benbjohnson/immutable"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
@@ -281,4 +282,28 @@ func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, 
 	}
 
 	return builder.Map(), nil
+}
+
+func (s *Store) GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error) {
+	var res []*LastBlock
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get block heights: %w", dbTx.Error)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	var formatted []*model.BlockHeight
+	for _, block := range res {
+		chainID := int(block.ChainID)
+		blockNumber := int(block.BlockNumber)
+		formatted = append(formatted, &model.BlockHeight{
+			ChainID:     &chainID,
+			Type:        core.PtrTo(contractTypeMap[block.ContractAddress]),
+			BlockNumber: &blockNumber,
+		})
+	}
+
+	return formatted, nil
 }

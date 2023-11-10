@@ -1,4 +1,3 @@
-import useWindowFocus from 'use-window-focus'
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
@@ -16,37 +15,32 @@ import {
   oneDayInMinutes,
 } from '@/utils/time'
 import {
-  resetTransactionsState,
-  updateIsUserPendingTransactionsLoading,
-} from './actions'
-import {
-  updateIsUserHistoricalTransactionsLoading,
-  updateUserHistoricalTransactions,
-  updateUserPendingTransactions,
-} from './actions'
-import { useBridgeState } from '../bridge/hooks'
-import { BridgeState } from '../bridge/reducer'
-import { PortfolioState } from '../portfolio/reducer'
-import { usePortfolioState } from '../portfolio/hooks'
-import { PortfolioTabs } from '../portfolio/actions'
-import {
   updatePendingBridgeTransactions,
   removePendingBridgeTransaction,
   PendingBridgeTransaction,
-} from '../bridge/actions'
-import {
+  addFallbackQueryHistoricalTransaction,
+  removeFallbackQueryHistoricalTransaction,
+  removeFallbackQueryPendingTransaction,
+  resetTransactionsState,
+  updateIsUserPendingTransactionsLoading,
+  updateIsUserHistoricalTransactionsLoading,
+  updateUserHistoricalTransactions,
+  updateUserPendingTransactions,
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
 } from './actions'
+import { PortfolioState } from '../portfolio/reducer'
+import { usePortfolioState } from '../portfolio/hooks'
+import { PortfolioTabs } from '../portfolio/actions'
 import { getValidAddress } from '@/utils/isValidAddress'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
-  const isWindowFocused: boolean = useWindowFocus()
   const {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
@@ -54,8 +48,10 @@ export default function Updater(): null {
     userPendingTransactions,
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     activeTab,
     searchInput,
@@ -63,10 +59,10 @@ export default function Updater(): null {
   }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 10000 })
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 30000 })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 10000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 30000 })
 
   const { address } = useAccount({
     onDisconnect() {
@@ -78,9 +74,13 @@ export default function Updater(): null {
     return Object.keys(searchedBalancesAndAllowances).length > 0
   }, [searchedBalancesAndAllowances])
 
-  // Start fetch when connected address exists
+  /**
+   * Handle fetching for historical and pending activity by polling Explorer endpoint
+   * Will retrigger fetching for Masquerade Mode address when active
+   * Will unsubscribe when no valid address provided
+   */
   useEffect(() => {
-    if (address && isWindowFocused && !masqueradeActive) {
+    if (address && !masqueradeActive) {
       fetchUserHistoricalActivity({
         address: address,
         startTime: queryHistoricalTime,
@@ -89,11 +89,7 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (
-      masqueradeActive &&
-      isWindowFocused &&
-      searchedBalancesAndAllowances
-    ) {
+    } else if (masqueradeActive && searchedBalancesAndAllowances) {
       const queriedAddress: Address = Object.keys(
         searchedBalancesAndAllowances
       )[0] as Address
@@ -105,20 +101,7 @@ export default function Updater(): null {
         address: getValidAddress(queriedAddress),
         startTime: queryPendingTime,
       })
-    }
-  }, [
-    address,
-    masqueradeActive,
-    searchedBalancesAndAllowances,
-    isWindowFocused,
-  ])
-
-  // Unsubscribe when address is unconnected/disconnected
-  useEffect(() => {
-    const isLoading: boolean =
-      isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading
-
-    if ((!isLoading || masqueradeActive) && !isWindowFocused) {
+    } else {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
@@ -129,13 +112,9 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [
-    isWindowFocused,
-    masqueradeActive,
-    isUserHistoricalTransactionsLoading,
-    isUserPendingTransactionsLoading,
-  ])
+  }, [address, masqueradeActive, searchedBalancesAndAllowances])
 
+  // Load fetched historical transactions into state along with fetch status
   useEffect(() => {
     const {
       isLoading,
@@ -162,6 +141,7 @@ export default function Updater(): null {
     masqueradeActive,
   ])
 
+  // Load fetched pending transactions into state along with fetch status
   useEffect(() => {
     const {
       isLoading,
@@ -181,31 +161,40 @@ export default function Updater(): null {
     }
   }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
 
-  // Remove Recent Bridge Transaction from Bridge State when picked up by indexer
+  /**
+   * Handles removing recent pending unindexed bridge transactions + stale unsubmitted pending bridge transactions
+   * from Bridge state once Explorer or Fallback query confirms transactions
+   */
   useEffect(() => {
     const matchingTransactionHashes = new Set(
       pendingBridgeTransactions
-        .filter(
+        ?.filter(
           (recentTx) =>
             (userPendingTransactions &&
-              userPendingTransactions.some(
-                (pendingTx) =>
+              userPendingTransactions?.some(
+                (pendingTx: BridgeTransaction) =>
                   pendingTx.fromInfo.txnHash === recentTx.transactionHash
               )) ||
             (userHistoricalTransactions &&
-              userHistoricalTransactions.some(
-                (historicalTx) =>
+              userHistoricalTransactions?.some(
+                (historicalTx: BridgeTransaction) =>
                   historicalTx.fromInfo.txnHash === recentTx.transactionHash
+              )) ||
+            (fallbackQueryPendingTransactions &&
+              fallbackQueryPendingTransactions?.some(
+                (pendingTx: BridgeTransaction) =>
+                  pendingTx.fromInfo.txnHash === recentTx.transactionHash
               ))
         )
-        .map((matchingTx) => matchingTx.transactionHash)
+        .map(
+          (matchingTx: PendingBridgeTransaction) => matchingTx.transactionHash
+        )
     )
 
-    if (matchingTransactionHashes.size === 0) {
-      return
-    } else {
+    if (matchingTransactionHashes.size !== 0) {
       const updatedRecentBridgeTransactions = pendingBridgeTransactions.filter(
-        (recentTx) => !matchingTransactionHashes.has(recentTx.transactionHash)
+        (recentTx: PendingBridgeTransaction) =>
+          !matchingTransactionHashes.has(recentTx.transactionHash)
       )
       dispatch(updatePendingBridgeTransactions(updatedRecentBridgeTransactions))
     }
@@ -213,9 +202,10 @@ export default function Updater(): null {
     pendingBridgeTransactions,
     userHistoricalTransactions,
     userPendingTransactions,
+    fallbackQueryPendingTransactions,
   ])
 
-  // Store pending transactions until completed based on subgraph query
+  // Store pending transactions until completed based on Explorer query
   useEffect(() => {
     const hasUserPendingTransactions: boolean =
       Array.isArray(userPendingTransactions) &&
@@ -224,10 +214,11 @@ export default function Updater(): null {
     if (hasUserPendingTransactions) {
       userPendingTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isStored: boolean = pendingAwaitingCompletionTransactions.some(
+          const isStored: boolean = pendingAwaitingCompletionTransactions?.some(
             (storedTransaction: BridgeTransaction) =>
               storedTransaction.kappa === pendingTransaction.kappa
           )
+
           if (!isStored) {
             dispatch(
               addPendingAwaitingCompletionTransaction(pendingTransaction)
@@ -248,14 +239,11 @@ export default function Updater(): null {
       Array.isArray(pendingBridgeTransactions) &&
       pendingBridgeTransactions.length > 0
 
-    if (
-      hasUserHistoricalTransactions &&
-      activeTab !== PortfolioTabs.PORTFOLIO
-    ) {
+    if (hasUserHistoricalTransactions && activeTab === PortfolioTabs.ACTIVITY) {
       const mostRecentHistoricalTransaction: BridgeTransaction =
         userHistoricalTransactions[0]
 
-      const isTransactionAlreadySeen = seenHistoricalTransactions.some(
+      const isTransactionAlreadySeen = seenHistoricalTransactions?.some(
         (transaction: BridgeTransaction) =>
           transaction === (mostRecentHistoricalTransaction as BridgeTransaction)
       )
@@ -268,11 +256,17 @@ export default function Updater(): null {
     if (hasUserHistoricalTransactions) {
       pendingAwaitingCompletionTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isCompleted: boolean = userHistoricalTransactions.some(
-            (historicalTransaction: BridgeTransaction) => {
-              return historicalTransaction.kappa === pendingTransaction.kappa
-            }
-          )
+          const isCompleted: boolean =
+            userHistoricalTransactions?.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return historicalTransaction.kappa === pendingTransaction.kappa
+              }
+            ) ||
+            fallbackQueryHistoricalTransactions?.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return historicalTransaction.kappa === pendingTransaction.kappa
+              }
+            )
 
           if (isCompleted) {
             dispatch(
@@ -280,22 +274,35 @@ export default function Updater(): null {
                 pendingTransaction.kappa
               )
             )
+            dispatch(
+              removeFallbackQueryPendingTransaction(pendingTransaction.kappa)
+            )
           }
         }
       )
     }
 
+    // Handle updating initial bridge transaction (unindexed) if completed
     if (hasPendingBridgeTransactions && hasUserHistoricalTransactions) {
       pendingBridgeTransactions.forEach(
         (pendingBridgeTransaction: PendingBridgeTransaction) => {
-          const isCompleted: boolean = userHistoricalTransactions.some(
-            (historicalTransaction: BridgeTransaction) => {
-              return (
-                historicalTransaction.fromInfo.txnHash ===
-                pendingBridgeTransaction.transactionHash
-              )
-            }
-          )
+          const isCompleted: boolean =
+            userHistoricalTransactions?.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return (
+                  historicalTransaction.fromInfo.txnHash ===
+                  pendingBridgeTransaction.transactionHash
+                )
+              }
+            ) ||
+            fallbackQueryHistoricalTransactions?.some(
+              (historicalTransaction: BridgeTransaction) => {
+                return (
+                  historicalTransaction.fromInfo.txnHash ===
+                  pendingBridgeTransaction.transactionHash
+                )
+              }
+            )
 
           if (isCompleted) {
             dispatch(
@@ -306,6 +313,135 @@ export default function Updater(): null {
       )
     }
   }, [userHistoricalTransactions, activeTab])
+
+  // Handle adding completed fallback historical transaction to seen list
+  useEffect(() => {
+    const hasFallbackQueryHistoricalTransactions: boolean =
+      checkTransactionsExist(fallbackQueryHistoricalTransactions)
+
+    if (
+      hasFallbackQueryHistoricalTransactions &&
+      activeTab === PortfolioTabs.ACTIVITY
+    ) {
+      const mostRecentFallbackHistoricalTransaction: BridgeTransaction =
+        fallbackQueryHistoricalTransactions[0]
+
+      const isTransactionAlreadySeen = seenHistoricalTransactions?.some(
+        (transaction: BridgeTransaction) =>
+          transaction.kappa ===
+          (mostRecentFallbackHistoricalTransaction.kappa as BridgeTransaction)
+      )
+
+      if (!isTransactionAlreadySeen) {
+        dispatch(
+          addSeenHistoricalTransaction(mostRecentFallbackHistoricalTransaction)
+        )
+      }
+    }
+  }, [fallbackQueryHistoricalTransactions, activeTab])
+
+  /**
+   * Handle fallback query returned transactions
+   * If transaction is finalized (require destination Info and kappa),
+   * move transaction into historical state to display in Activity
+   */
+  useEffect(() => {
+    fallbackQueryPendingTransactions.forEach(
+      (transaction: BridgeTransaction) => {
+        const { fromInfo, toInfo, kappa } = transaction
+
+        const alreadyMovedToHistorical: boolean =
+          fallbackQueryHistoricalTransactions?.some(
+            (historicalTransaction: BridgeTransaction) =>
+              historicalTransaction !== transaction
+          ) ||
+          userHistoricalTransactions?.some(
+            (historicalTransaction: BridgeTransaction) =>
+              historicalTransaction !== transaction
+          )
+
+        if (fromInfo && toInfo && kappa && !alreadyMovedToHistorical) {
+          dispatch(addFallbackQueryHistoricalTransaction(transaction))
+          dispatch(removeFallbackQueryPendingTransaction(kappa))
+          dispatch(removePendingAwaitingCompletionTransaction(kappa))
+        }
+      }
+    )
+  }, [fallbackQueryPendingTransactions, userHistoricalTransactions])
+
+  /**
+   * Handle removing fallback historical transaction from state
+   * when identical transaction gets picked up by Explorer
+   */
+  useEffect(() => {
+    const hasUserHistoricalTransactions: boolean =
+      Array.isArray(userHistoricalTransactions) &&
+      !isUserHistoricalTransactionsLoading
+
+    if (
+      hasUserHistoricalTransactions &&
+      checkTransactionsExist(fallbackQueryHistoricalTransactions)
+    ) {
+      fallbackQueryHistoricalTransactions.forEach(
+        (fallbackTransaction: BridgeTransaction) => {
+          if (
+            userHistoricalTransactions?.some(
+              (historicalTransaction: BridgeTransaction) =>
+                historicalTransaction.kappa === fallbackTransaction.kappa
+            )
+          ) {
+            console.log('removed this transaction: ', fallbackTransaction)
+            dispatch(
+              removeFallbackQueryHistoricalTransaction(fallbackTransaction)
+            )
+          }
+        }
+      )
+    }
+  }, [fallbackQueryHistoricalTransactions, userHistoricalTransactions])
+
+  /**
+   * Handle removing fallback pending transaction from state
+   * when completed fallback transaction appears in Historical Fallback Transactions
+   */
+  useEffect(() => {
+    if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+      fallbackQueryHistoricalTransactions.forEach(
+        (fallbackHistoricalTransaction: BridgeTransaction) => {
+          const matched: boolean = fallbackQueryPendingTransactions?.some(
+            (pendingTransaction: BridgeTransaction) =>
+              pendingTransaction.kappa === fallbackHistoricalTransaction.kappa
+          )
+
+          if (matched) {
+            dispatch(
+              removeFallbackQueryPendingTransaction(
+                fallbackHistoricalTransaction.kappa
+              )
+            )
+          }
+        }
+      )
+    }
+    if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
+      fallbackQueryPendingTransactions.forEach(
+        (fallbackPendingTransaction: BridgeTransaction) => {
+          const matched: boolean = userHistoricalTransactions?.some(
+            (pendingTransaction: BridgeTransaction) =>
+              pendingTransaction.kappa === fallbackPendingTransaction.kappa
+          )
+
+          if (matched) {
+            dispatch(
+              removeFallbackQueryPendingTransaction(
+                fallbackPendingTransaction.kappa
+              )
+            )
+          }
+        }
+      )
+    }
+  }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
 
   return null
 }

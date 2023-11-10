@@ -30,6 +30,12 @@ contract GasOracleGasDataTest is GasOracleTest {
         assertEq(GasOracle(gasOracle).summitTipWei(), 0.01 ether);
     }
 
+    function test_setSummitTip_emitsEvent() public {
+        vm.expectEmit(gasOracle);
+        emit SummitTipUpdated(1337);
+        GasOracle(gasOracle).setSummitTip(1337);
+    }
+
     function test_setSummitTip_revert_higherThanUpperBound() public {
         vm.expectRevert(SummitTipTooHigh.selector);
         GasOracle(gasOracle).setSummitTip(0.01 ether + 1 wei);

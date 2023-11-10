@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -8,6 +8,12 @@ import {
   setToToken,
 } from '@/slices/bridge/reducer'
 import { Chain, Token } from '@/utils/types'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+
+function isObject(object): boolean {
+  return typeof object === 'object' && object !== null
+}
 
 export const TransactionPayloadDetail = ({
   chain,
@@ -17,7 +23,7 @@ export const TransactionPayloadDetail = ({
 }: {
   chain?: Chain
   token?: Token
-  tokenAmount?: number
+  tokenAmount?: string | number
   isOrigin: boolean
 }) => {
   const dispatch = useAppDispatch()
@@ -39,6 +45,14 @@ export const TransactionPayloadDetail = ({
       dispatch(setToToken(token as Token))
     }
   }, [isOrigin, token, chain])
+
+  const tokenDecimals = useMemo(() => {
+    if (token && chain) {
+      const storedAsObject: boolean = isObject(token?.decimals)
+      return storedAsObject ? token.decimals[chain?.id] : token.decimals
+    }
+    return null
+  }, [tokenAmount, token, chain])
 
   return (
     <div
@@ -77,7 +91,13 @@ export const TransactionPayloadDetail = ({
             className="items-center w-4 h-4 mr-1.5 rounded-full"
             alt={`${token?.name} icon`}
           />
-          {typeof tokenAmount === 'number' ? (
+          {typeof tokenAmount === 'string' && tokenDecimals ? (
+            <div className="mr-1">
+              {trimTrailingZeroesAfterDecimal(
+                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
+              )}
+            </div>
+          ) : typeof tokenAmount === 'number' ? (
             <div className="mr-1">{tokenAmount}</div>
           ) : (
             <div className="mr-1">...</div>

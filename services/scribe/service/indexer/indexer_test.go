@@ -467,7 +467,7 @@ func (x *IndexerSuite) TestTxTypeNotSupported() {
 	}
 
 	var backendClient backend.ScribeBackend
-	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+	omnirpcURL := "https://arbitrum.llamarpc.com"
 	backendClient, err := backend.DialBackend(x.GetTestContext(), omnirpcURL, x.metrics)
 	Nil(x.T(), err)
 

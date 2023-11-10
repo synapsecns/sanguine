@@ -168,13 +168,13 @@ services:
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-  # TODO, consider re-enabling.
-  #    healthcheck:
-  #      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
-  #      interval: 1s
-  #      timeout: 20s
-  #      retries: 10
-  #      start_period: 5s
+# TODO, consider re-enabling.
+#    healthcheck:
+#      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
+#      interval: 1s
+#      timeout: 20s
+#      retries: 10
+#      start_period: 5s
 
   chain_a:
     restart: unless-stopped

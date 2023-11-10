@@ -42,6 +42,12 @@ type AddressRanking struct {
 	Count   *int    `json:"count,omitempty"`
 }
 
+type BlockHeight struct {
+	ChainID     *int          `json:"chainID,omitempty"`
+	Type        *ContractType `json:"type,omitempty"`
+	BlockNumber *int          `json:"blockNumber,omitempty"`
+}
+
 // BridgeTransaction represents an entire bridge transaction, including both
 // to and from transactions. If a `from` transaction does not have a corresponding
 // `to` transaction, `pending` will be true.
@@ -60,6 +66,11 @@ type BridgeWatcherTx struct {
 	Type        *BridgeTxType `json:"type,omitempty"`
 	Kappa       *string       `json:"kappa,omitempty"`
 	KappaStatus *KappaStatus  `json:"kappaStatus,omitempty"`
+}
+
+type ContractQuery struct {
+	ChainID int          `json:"chainID"`
+	Type    ContractType `json:"type"`
 }
 
 // DateResult is a given statistic for a given date.
@@ -279,6 +290,47 @@ func (e *BridgeType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e BridgeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ContractType string
+
+const (
+	ContractTypeBridge ContractType = "BRIDGE"
+	ContractTypeCctp   ContractType = "CCTP"
+)
+
+var AllContractType = []ContractType{
+	ContractTypeBridge,
+	ContractTypeCctp,
+}
+
+func (e ContractType) IsValid() bool {
+	switch e {
+	case ContractTypeBridge, ContractTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e ContractType) String() string {
+	return string(e)
+}
+
+func (e *ContractType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContractType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContractType", str)
+	}
+	return nil
+}
+
+func (e ContractType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

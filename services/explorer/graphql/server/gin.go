@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/interceptor"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
 	"github.com/synapsecns/sanguine/services/explorer/types"
 	"time"
@@ -46,6 +47,7 @@ func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher
 	)
 	// TODO; investigate WithCreateSpanFromFields(predicate)
 	server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(handler.GetTracerProvider())))
+	server.Use(interceptor.SqlSanitizerMiddleware())
 
 	engine.GET(GraphqlEndpoint, graphqlHandler(server))
 	engine.POST(GraphqlEndpoint, graphqlHandler(server))

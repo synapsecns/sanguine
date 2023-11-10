@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {DISPUTE_TIMEOUT_NOTARY} from "../../contracts/libs/Constants.sol";
 import {
     AgentNotNotary,
     CallerNotInbox,
+    DisputeTimeoutNotOver,
     IncorrectSnapshotRoot,
     IncorrectTipsProof,
     NotaryInDispute,
@@ -125,6 +127,19 @@ contract SummitTipsTest is AgentSecuredTest {
         Summit(localContract()).initialize();
     }
 
+    function prepareNotaryInDisputeTest() internal {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        address guard = domains[0].agent;
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+    }
+
+    /// @dev Resolves test dispute above in favor of the Notary.
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
 
     function test_submitReceipt(
@@ -183,6 +198,35 @@ contract SummitTipsTest is AgentSecuredTest {
         inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
     }
 
+    function test_submitReceipt_revert_notaryWonDisputeTimeout() public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Put DOMAIN_REMOTE notary in Dispute
+        prepareNotaryInDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+    }
+
+    function test_submitReceipt_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Put DOMAIN_REMOTE notary in Dispute
+        prepareNotaryInDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        bool wasAccepted =
+            inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+        assertTrue(wasAccepted);
+    }
+
     function test_submitReceipt_revert_unknownSnapRoot() public {
         (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
         prepareReceipt(re, tips, rtp, false, 0, false);
@@ -238,8 +282,9 @@ contract SummitTipsTest is AgentSecuredTest {
     ) public checkQueueLength(0) {
         test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, true);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = rcptNotary;
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: true, isFinal: true});
+        assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, true);
     }
 
@@ -253,8 +298,9 @@ contract SummitTipsTest is AgentSecuredTest {
     ) public checkQueueLength(0) {
         test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, false);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = address(0);
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: true, isFinal: false});
+        assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, false);
     }
 
@@ -276,6 +322,7 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
         inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
         skip(BONDING_OPTIMISTIC_PERIOD);
+        expectAwardedTipsEvents({re: re, tips: tips, isFirst: false, isFinal: true});
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, tips, true);
     }
@@ -292,6 +339,32 @@ contract SummitTipsTest is AgentSecuredTest {
         timePassed = timePassed % BONDING_OPTIMISTIC_PERIOD;
         skip(timePassed);
         assertFalse(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev When Notary in "Dispute Won Timeout" mode, the receipt is moved to the end of the queue,
+    /// therefore two receipts in the queue are expected in the modifier.
+    function test_distributeTips_attestationNotary_wonDisputeTimeout() public checkQueueLength(2) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        prepareTwoReceiptTest(1, 0);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev Should distribute tips if the "dispute won" timeout is over.
+    function test_distributeTips_attestationNotary_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        prepareTwoReceiptTest(1, 0);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        vm.recordLogs();
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        // Should end up emitting TipsAwarded logs (TODO: better way to check this)
+        assertGt(vm.getRecordedLogs().length, 0);
     }
 
     function test_distributeTips_attestationNotaryDispute() public checkQueueLength(2) {
@@ -331,6 +404,32 @@ contract SummitTipsTest is AgentSecuredTest {
         // Put DOMAIN_REMOTE agents[0] in Dispute
         openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev When Notary in "Dispute Won Timeout" mode, the receipt is moved to the end of the queue,
+    /// therefore two receipts in the queue are expected in the modifier.
+    function test_distributeTips_receiptNotary_wonDisputeTimeout() public checkQueueLength(2) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    /// @dev Should distribute tips if the "dispute won" timeout is over.
+    function test_distributeTips_receiptNotary_afterNotaryDisputeTimeout() public checkQueueLength(1) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        prepareNotaryInDisputeTest();
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        vm.recordLogs();
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        // Should end up emitting TipsAwarded logs (TODO: better way to check this)
+        assertGt(vm.getRecordedLogs().length, 0);
     }
 
     function test_distributeTips_receiptNotaryFraudulent() public checkQueueLength(1) {
@@ -374,33 +473,33 @@ contract SummitTipsTest is AgentSecuredTest {
         if (rcptNotary == rcptNotaryFinal) {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == rcptNotaryFinal == attNotary
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + tips.attestationTip);
             } else {
                 // rcptNotary == rcptNotaryFinal != attNotary
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal, 0);
-                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal);
+                checkEarnedActorTips(re.attNotary, re.origin, tips.attestationTip);
             }
         } else if (re.attNotary == rcptNotaryFinal) {
             // rcptNotaryFinal == attNotary != rcptNotary
-            checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
-            checkActorTips(re.attNotary, re.origin, receiptTipFinal + tips.attestationTip, 0);
+            checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst);
+            checkEarnedActorTips(re.attNotary, re.origin, receiptTipFinal + tips.attestationTip);
         } else {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst + tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst + tips.attestationTip);
             } else {
                 // rcptNotary != attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
-                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
+                checkEarnedActorTips(rcptNotary, re.origin, receiptTipFirst);
+                checkEarnedActorTips(re.attNotary, re.origin, tips.attestationTip);
             }
-            if (isFinal) checkActorTips(rcptNotaryFinal, re.origin, receiptTipFinal, 0);
+            if (isFinal) checkEarnedActorTips(rcptNotaryFinal, re.origin, receiptTipFinal);
         }
         // Check non-bonded actors
         if (re.firstExecutor == re.finalExecutor) {
-            checkActorTips(re.firstExecutor, re.origin, tips.executionTip + (isFinal ? tips.deliveryTip : 0), 0);
+            checkEarnedActorTips(re.firstExecutor, re.origin, tips.executionTip + (isFinal ? tips.deliveryTip : 0));
         } else {
-            checkActorTips(re.firstExecutor, re.origin, tips.executionTip, 0);
-            if (isFinal) checkActorTips(re.finalExecutor, re.origin, tips.deliveryTip, 0);
+            checkEarnedActorTips(re.firstExecutor, re.origin, tips.executionTip);
+            if (isFinal) checkEarnedActorTips(re.finalExecutor, re.origin, tips.deliveryTip);
         }
     }
 
@@ -409,21 +508,94 @@ contract SummitTipsTest is AgentSecuredTest {
         if (re.origin == origin0) {
             // Tips for origin0 go to guard0 and notary0 (they were first to use it),
             // regardless of what attestation was used
-            checkActorTips(guard0, re.origin, snapshotTip, 0);
-            checkActorTips(snapNotary0, re.origin, snapshotTip, 0);
+            checkEarnedActorTips(guard0, re.origin, snapshotTip);
+            checkEarnedActorTips(snapNotary0, re.origin, snapshotTip);
         } else if (re.origin == origin1) {
             // Tips for origin1 go to guard1 and notary1 (they were first to use it)
-            checkActorTips(guard1, re.origin, snapshotTip, 0);
-            checkActorTips(snapNotary1, re.origin, snapshotTip, 0);
+            checkEarnedActorTips(guard1, re.origin, snapshotTip);
+            checkEarnedActorTips(snapNotary1, re.origin, snapshotTip);
         } else {
             revert("Incorrect origin value");
         }
     }
 
-    function checkActorTips(address actor, uint32 origin_, uint128 earned, uint128 claimed) public {
-        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, origin_);
-        assertEq(earned_, earned, "!earned");
-        assertEq(claimed_, claimed, "!claimed");
+    function expectAwardedTipsEvents(RawExecReceipt memory re, RawTips memory tips, bool isFirst, bool isFinal)
+        public
+    {
+        if (isFirst) {
+            expectAwardedTipsEventsFirstSubmit(re, tips);
+        }
+        expectAwardedTipsEventsReceiptTips(re, tips, isFirst, isFinal);
+        if (isFinal) {
+            expectAwardedTipsEventsFinalSubmit(re, tips);
+        }
+    }
+
+    function expectAwardedTipsEventsFirstSubmit(RawExecReceipt memory re, RawTips memory tips) public {
+        // In the first submit, tips are awarded to
+        // 1. The Guard and Notary who submitted snapshot (summit tips)
+        // 2. Notary who submitted attestation (attestation tips)
+        // 3. First Executor (execution tips)
+        uint64 snapshotTip = splitTip({tip: tips.summitTip, parts: 3, roundUp: false});
+        if (re.origin == origin0) {
+            // Tips for origin0 go to guard0 and notary0 (they were first to use it),
+            // regardless of what attestation was used
+            expectAwardedTipsEvent(guard0, re.origin, snapshotTip);
+            expectAwardedTipsEvent(snapNotary0, re.origin, snapshotTip);
+        } else if (re.origin == origin1) {
+            // Tips for origin1 go to guard1 and notary1 (they were first to use it)
+            expectAwardedTipsEvent(guard1, re.origin, snapshotTip);
+            expectAwardedTipsEvent(snapNotary1, re.origin, snapshotTip);
+        } else {
+            revert("Incorrect origin value");
+        }
+        expectAwardedTipsEvent(re.attNotary, re.origin, tips.attestationTip);
+        expectAwardedTipsEvent(re.firstExecutor, re.origin, tips.executionTip);
+    }
+
+    function expectAwardedTipsEventsReceiptTips(
+        RawExecReceipt memory re,
+        RawTips memory tips,
+        bool isFirst,
+        bool isFinal
+    ) public {
+        // The receipt tips are awarded to Notary who submitted receipt
+        // The receipt tips are 1/3 of the snapshot tips (rounded up). These are then split:
+        // - First half (rounded down) of receipt  tips are awarded to Receipt Notary who submitted first receipt
+        // - Second half (rounded up) of receipt tips are awarded to Receipt Notary who submitted final receipt
+        uint64 receiptTipFull = splitTip({tip: tips.summitTip, parts: 3, roundUp: true});
+        uint64 receiptTip;
+        address notary = rcptNotary;
+        if (isFirst && isFinal) {
+            receiptTip = receiptTipFull;
+        } else if (isFirst) {
+            receiptTip = splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
+        } else if (isFinal) {
+            receiptTip = splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
+            notary = rcptNotaryFinal;
+        } else {
+            revert("Incorrect isFirst and isFinal values");
+        }
+        expectAwardedTipsEvent(notary, re.origin, receiptTip);
+    }
+
+    function expectAwardedTipsEventsFinalSubmit(RawExecReceipt memory re, RawTips memory tips) public {
+        // In the final submit (successful execution) tips are awarded to
+        // 1. Final Executor (delivery tips)
+        expectAwardedTipsEvent(re.finalExecutor, re.origin, tips.deliveryTip);
+    }
+
+    function expectAwardedTipsEvent(address actor, uint32 origin_, uint128 earnedScaledDown) public {
+        uint256 earnedTips = 2 ** 32 * earnedScaledDown;
+        vm.expectEmit(summit);
+        emit TipAwarded(actor, origin_, earnedTips);
+    }
+
+    /// @dev We calculate the "scaled down" version of earned tips, i.e. divided by 2^32
+    /// `Summit` is supposed to store the full value, so we scale calculated value up by 2^32.
+    function checkEarnedActorTips(address actor, uint32 origin_, uint128 earnedScaledDown) public {
+        (uint256 earnedTips,) = InterfaceSummit(summit).actorTips(actor, origin_);
+        assertEq(earnedTips, 2 ** 32 * earnedScaledDown);
     }
 
     function logTips(RawTips memory tips) public {
@@ -448,6 +620,8 @@ contract SummitTipsTest is AgentSecuredTest {
         SummitCheats(summit).setActorTips(actor, domain, earned, claimed);
         bytes memory expectedCall = abi.encodeWithSelector(bondingManager.withdrawTips.selector, actor, domain, amount);
         vm.expectCall(address(bondingManager), expectedCall);
+        vm.expectEmit(summit);
+        emit TipWithdrawalInitiated(actor, domain, amount);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
         (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, domain);

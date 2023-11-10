@@ -32,7 +32,6 @@ import cantoImg from '@assets/networks/canto.png'
 import dogeImg from '@assets/networks/doge.png'
 import terraImg from '@assets/networks/terra.png'
 import baseImg from '@assets/networks/base.svg'
-
 import { toHexStr } from '@utils/toHexStr'
 
 export const NetworkContextName = 'DEFAULT_NETWORK'
@@ -294,7 +293,7 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.MOONRIVER]: 'https://moonriver.moonscan.io',
   [ChainId.ARBITRUM]: 'https://arbiscan.io',
   [ChainId.OPTIMISM]: 'https://optimistic.etherscan.io',
-  [ChainId.AVALANCHE]: 'https://snowtrace.io',
+  [ChainId.AVALANCHE]: 'https://avascan.info/',
   [ChainId.DFK]:
     'https://subnets.avax.network/defi-kingdoms/dfk-chain/explorer',
   [ChainId.FANTOM]: 'https://ftmscan.com',
@@ -550,7 +549,6 @@ export const CHAIN_BLOCK_TIME = {
   [ChainId.HARMONY]: 10000,
   [ChainId.KLAYTN]: 10000,
   [ChainId.BASE]: 10000,
-
 }
 
 export const CHAIN_ENUM_BY_ID = {
@@ -573,7 +571,6 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.CANTO]: 'canto',
   [ChainId.DOGECHAIN]: 'dogechain',
   [ChainId.BASE]: 'base',
-
 }
 
 export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(
@@ -606,4 +603,5 @@ export const CCTP_CONTRACTS = {
   [ChainId.ETH]: '0xD359bc471554504f683fbd4f6e36848612349DDF',
   [ChainId.ARBITRUM]: '0xD359bc471554504f683fbd4f6e36848612349DDF',
   [ChainId.AVALANCHE]: '0xD359bc471554504f683fbd4f6e36848612349DDF',
+  [ChainId.BASE]: '0xD359bc471554504f683fbd4f6e36848612349DDF',
 }

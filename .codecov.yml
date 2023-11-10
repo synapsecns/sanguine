@@ -69,6 +69,10 @@ flags:
     paths:
       - services/scribe/
     carryforward: true
+  sinner:
+    paths:
+      - services/sinner/
+    carryforward: true
   solidity:
     paths:
       - packages/contracts-core/

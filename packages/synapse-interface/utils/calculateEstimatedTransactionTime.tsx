@@ -21,7 +21,7 @@ export const calculateEstimatedTransactionTime = ({
     originTokenAddress
   )
   const baseEstimatedCompletionInSeconds: number =
-    (BRIDGE_REQUIRED_CONFIRMATIONS[originChainId] * originChain.blockTime) /
+    (BRIDGE_REQUIRED_CONFIRMATIONS[originChainId] * originChain?.blockTime) /
     1000
 
   let estimatedCompletionInSeconds: number

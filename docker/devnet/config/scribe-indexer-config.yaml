@@ -1,6 +1,8 @@
 chains:
   - chain_id: 42
-    livefill_threshold: 0
+    required_confirmations: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
@@ -13,10 +15,10 @@ chains:
         start_block: 1
       - address: 0x27006519C5786863fAE35612Da9E0f0622ff8c58
         start_block: 1
-      - address: 0x521F44132489CDD54c9ceC8167CfC377CbAEa351
-        start_block: 1
   - chain_id: 43
-    livefill_threshold: 0
+    required_confirmations: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
@@ -26,12 +28,11 @@ chains:
       - address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
         start_block: 1
       - address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
-        start_block: 1
-      - address: 0x521F44132489CDD54c9ceC8167CfC377CbAEa351
         start_block: 1
   - chain_id: 44
     required_confirmations: 0
-    livefill_threshold: 0
+    contract_sub_chunk_size: 512
+    contract_chunk_size: 512
     store_concurrency_threshold: 100000
     contracts:
       - address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
@@ -41,8 +42,6 @@ chains:
       - address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
         start_block: 1
       - address: 0x807A8d4469DD803B9b2c9e3568D5E83784bec25D
-        start_block: 1
-      - address: 0x521F44132489CDD54c9ceC8167CfC377CbAEa351
         start_block: 1
 rpc_url: 'http://omnirpc:9001/confirmations'
 refresh_rate: 0

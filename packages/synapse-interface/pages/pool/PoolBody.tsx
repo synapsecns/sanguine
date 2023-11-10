@@ -27,6 +27,7 @@ const PoolBody = ({
   address?: Address
   connectedChainId?: number
 }) => {
+  const [isClient, setIsClient] = useState(false)
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
 
@@ -35,23 +36,27 @@ const PoolBody = ({
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
   const [stakedBalance, setStakedBalance] = useState({
     amount: 0n,
     reward: 0n,
   })
 
   useEffect(() => {
-    if (pool) {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (pool && isClient) {
       segmentAnalyticsEvent(`[Pool] arrives`, {
         poolName: pool?.poolName,
       })
     }
-    if (address) {
+    if (address && isClient) {
       getStakedBalance(
         address as Address,
         pool.chainId,
-        pool.poolId[pool.chainId]
+        pool.poolId[pool.chainId],
+        pool
       )
         .then((res) => {
           setStakedBalance(res)
@@ -62,7 +67,7 @@ const PoolBody = ({
     } else {
       setStakedBalance({ amount: 0n, reward: 0n })
     }
-  }, [])
+  }, [isClient, address, pool])
 
   if (!pool) return null
 
@@ -88,7 +93,7 @@ const PoolBody = ({
             </div>
             <PoolActionOptions
               pool={pool}
-              options={['Stake', 'Unstake', 'Claim SYN']}
+              options={['Stake', 'Unstake', 'Claim']}
             />
             <div className="flex space-x-4">
               <div className="text-right">

@@ -90,7 +90,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     function setSummitTip(uint256 summitTipWei_) external onlyOwner {
         if (summitTipWei_ > MAX_SUMMIT_TIP) revert SummitTipTooHigh();
         summitTipWei = summitTipWei_;
-        // TODO: emit event
+        emit SummitTipUpdated(summitTipWei_);
     }
 
     /// @inheritdoc InterfaceGasOracle

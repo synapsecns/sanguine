@@ -9,15 +9,18 @@ import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {
     AlreadyExecuted,
     AlreadyFailed,
+    DisputeTimeoutNotOver,
     DuplicatedSnapshotRoot,
     IncorrectDestinationDomain,
     IncorrectMagicValue,
+    IncorrectOriginDomain,
     IncorrectSnapshotRoot,
     GasLimitTooLow,
     GasSuppliedTooLow,
     MessageOptimisticPeriod,
     NotaryInDispute
 } from "../libs/Errors.sol";
+import {SafeCall} from "../libs/SafeCall.sol";
 import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/memory/Message.sol";
 import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
@@ -25,6 +28,7 @@ import {Request} from "../libs/stack/Request.sol";
 import {SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/stack/Tips.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
@@ -34,6 +38,7 @@ import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /// @notice `ExecutionHub` is a parent contract for `Destination`. It is responsible for the following:
@@ -49,6 +54,8 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
     using ByteString for MemView;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
+    using SafeCall for address;
+    using SafeCast for uint256;
     using TypeCasts for bytes32;
 
     /// @notice Struct representing stored data for the snapshot root
@@ -112,7 +119,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex,
+        uint8 stateIndex,
         uint64 gasLimit
     ) external nonReentrant {
         // This will revert if payload is not a formatted message payload
@@ -121,6 +128,8 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes32 msgLeaf = message.leaf();
         // Ensure message was meant for this domain
         if (header.destination() != localDomain) revert IncorrectDestinationDomain();
+        // Ensure message was not sent from this domain
+        if (header.origin() == localDomain) revert IncorrectOriginDomain();
         // Check that message has not been executed before
         ReceiptData memory rcptData = _receiptData[msgLeaf];
         if (rcptData.executor != address(0)) revert AlreadyExecuted();
@@ -145,7 +154,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
             // This is the first valid attempt to execute the message => save origin and snapshot proof
             rcptData.origin = header.origin();
             rcptData.rootIndex = rootData.index;
-            rcptData.stateIndex = uint8(stateIndex);
+            rcptData.stateIndex = stateIndex;
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
                 rcptData.executor = msg.sender;
@@ -218,18 +227,20 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
         if (gasleft() <= gasLimit) revert GasSuppliedTooLow();
-        try IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}({
-            origin: header.origin(),
-            nonce: header.nonce(),
-            sender: baseMessage.sender(),
-            proofMaturity: proofMaturity,
-            version: request.version(),
-            content: baseMessage.content().clone()
-        }) {
-            return true;
-        } catch {
-            return false;
-        }
+        // receiveBaseMessage(origin, nonce, sender, proofMaturity, version, content)
+        bytes memory payload = abi.encodeCall(
+            IMessageRecipient.receiveBaseMessage,
+            (
+                header.origin(),
+                header.nonce(),
+                baseMessage.sender(),
+                proofMaturity,
+                request.version(),
+                baseMessage.content().clone()
+            )
+        );
+        // Pass the base message to the recipient, return the success status of the call
+        return recipient.safeCall({gasLimit: gasLimit, msgValue: 0, payload: payload});
     }
 
     /// @dev Uses message body for a call to AgentManager, and checks the returned magic value to ensure that
@@ -277,13 +288,14 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
     function _saveAttestation(Attestation att, uint32 notaryIndex, uint256 sigIndex) internal {
         bytes32 root = att.snapRoot();
         if (_rootData[root].submittedAt != 0) revert DuplicatedSnapshotRoot();
+        // TODO: consider using more than 32 bits for the root index
         _rootData[root] = SnapRootData({
             notaryIndex: notaryIndex,
             attNonce: att.nonce(),
             attBN: att.blockNumber(),
             attTS: att.timestamp(),
-            index: uint32(_roots.length),
-            submittedAt: uint40(block.timestamp),
+            index: _roots.length.toUint32(),
+            submittedAt: ChainContext.blockTimestamp(),
             sigIndex: sigIndex
         });
         _roots.push(root);
@@ -340,7 +352,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex
+        uint8 stateIndex
     ) internal view returns (SnapRootData memory rootData) {
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
@@ -356,7 +368,9 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         // Check if snapshot root has been submitted
         if (rootData.submittedAt == 0) revert IncorrectSnapshotRoot();
         // Check that Notary who submitted the attestation is not in dispute
-        if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeExists(rootData.notaryIndex)) revert NotaryInDispute();
+        // Check that Notary who submitted the attestation isn't in post-dispute timeout
+        if (_notaryDisputeTimeout(rootData.notaryIndex)) revert DisputeTimeoutNotOver();
     }
 
     /// @dev Formats the message execution receipt payload for the given hash and receipt data.

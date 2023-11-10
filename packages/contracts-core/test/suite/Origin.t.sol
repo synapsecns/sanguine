@@ -4,7 +4,12 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
-import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
+import {
+    EthTransferFailed,
+    IncorrectDestinationDomain,
+    InsufficientEthBalance,
+    TipsValueTooLow
+} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
@@ -58,6 +63,12 @@ contract OriginTest is AgentSecuredTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Origin({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3), gasOracle_: address(4)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = uint32(block.chainid);
         address caller = random.nextAddress();
@@ -80,6 +91,24 @@ contract OriginTest is AgentSecuredTest {
         Origin(localContract()).initialize();
     }
 
+    function test_sendBaseMessage_revert_blockTimestampOverflow() public {
+        vm.warp(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendBaseMessage_revert_blockNumberOverflow() public {
+        vm.roll(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
     function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
         minTips.boundTips(1 ** 32);
         minTips.floorTips(1);
@@ -96,6 +125,20 @@ contract OriginTest is AgentSecuredTest {
         InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
             DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
         );
+    }
+
+    function test_sendBaseMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage(
+            localDomain(), addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendManagementMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(localAgentManager());
+        InterfaceOrigin(origin).sendManagerMessage(localDomain(), period, "test payload");
     }
 
     function test_getMinimumTipsValue(
@@ -409,6 +452,8 @@ contract OriginTest is AgentSecuredTest {
 
     function test_withdrawTips(uint256 amount) public {
         vm.deal(origin, amount);
+        vm.expectEmit(origin);
+        emit TipWithdrawalCompleted(recipient, amount);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         assertEq(recipient.balance, amount);

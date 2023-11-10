@@ -20,6 +20,9 @@ import noteLogo from '@assets/icons/note.svg'
 import klaytnLogo from '@assets/networks/klaytn.jpeg'
 import pepeLogo from '@assets/icons/pepe.webp'
 import maticLogo from '@assets/icons/matic.svg'
+import crvusdLogo from '@assets/icons/crvusd.svg'
+import ftmLogo from '@assets/icons/ftm.svg'
+import susdLogo from '@assets/icons/susd.svg'
 import { ChainId } from '@constants/networks'
 import { Token } from '@utils/classes/Token'
 import {
@@ -106,11 +109,15 @@ export const CCTP_USDC = new Token({
   addresses: {
     [ChainId.AVALANCHE]: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
     [ChainId.ARBITRUM]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+    [ChainId.BASE]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    [ChainId.OPTIMISM]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
   },
   decimals: {
     [ChainId.ETH]: 6,
     [ChainId.AVALANCHE]: 6,
     [ChainId.ARBITRUM]: 6,
+    [ChainId.BASE]: 6,
+    [ChainId.OPTIMISM]: 6,
   },
   symbol: 'USDC',
   name: 'USD Circle',
@@ -212,7 +219,7 @@ export const USDT = new Token({
     [ChainId.ETH]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     [ChainId.CRONOS]: '0x66e428c3f67a68878562e79a0234c1f83c208770',
     [ChainId.POLYGON]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
-    [ChainId.AVALANCHE]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
+    [ChainId.AVALANCHE]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     [ChainId.HARDHAT]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
     [ChainId.ARBITRUM]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [ChainId.FANTOM]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
@@ -221,6 +228,7 @@ export const USDT = new Token({
     [ChainId.AURORA]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
     [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
+    [ChainId.OPTIMISM]: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -234,6 +242,7 @@ export const USDT = new Token({
     [ChainId.AURORA]: 6,
     [ChainId.CRONOS]: 6,
     [ChainId.CANTO]: 6,
+    [ChainId.OPTIMISM]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -243,6 +252,17 @@ export const USDT = new Token({
     The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal
     to the number of USDT in circulation.
     `,
+  swapableType: 'USD',
+})
+
+export const USDTE = new Token({
+  addresses: {
+    [ChainId.AVALANCHE]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
+  },
+  decimals: 6,
+  symbol: 'USDT.e',
+  name: 'Avalanche Bridged USDT.e',
+  logo: usdtLogo,
   swapableType: 'USD',
 })
 
@@ -257,11 +277,46 @@ export const DAI = new Token({
     [ChainId.HARMONY]: '0xef977d2f931c1978db5f6747666fa1eacb0d0339',
     [ChainId.BOBA]: '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
     [ChainId.KLAYTN]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
+    [ChainId.BASE]: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+    [ChainId.OPTIMISM]: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
   },
   decimals: 18,
   symbol: 'DAI',
   name: 'Dai',
   logo: daiLogo,
+  swapableType: 'USD',
+})
+
+export const SUSD = new Token({
+  addresses: {
+    [ChainId.OPTIMISM]: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
+  },
+  decimals: 18,
+  symbol: 'sUSD',
+  name: 'Synth USD',
+  logo: susdLogo,
+  swapableType: 'USD',
+})
+
+export const CRVUSD = new Token({
+  addresses: {
+    [ChainId.BASE]: '0x417ac0e078398c154edfadd9ef675d30be60af93',
+  },
+  decimals: 18,
+  symbol: 'crvUSD',
+  name: 'Curve.fi USD',
+  logo: crvusdLogo,
+  swapableType: 'USD',
+})
+
+export const USDBC = new Token({
+  addresses: {
+    [ChainId.BASE]: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
+  },
+  decimals: 6,
+  symbol: 'USDbC',
+  name: 'USD Base Coin',
+  logo: usdcLogo,
   swapableType: 'USD',
 })
 
@@ -278,6 +333,21 @@ export const WBTC = new Token({
   },
   symbol: 'WBTC',
   name: 'Wrapped BTC',
+  logo: wbtcLogo,
+  swapableType: 'WBTC',
+})
+
+export const BTCB = new Token({
+  addresses: {
+    [ChainId.AVALANCHE]: '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
+    [ChainId.DFK]: '0x7516EB8B8Edfa420f540a162335eACF3ea05a247',
+  },
+  decimals: {
+    [ChainId.AVALANCHE]: 8,
+    [ChainId.DFK]: 8,
+  },
+  symbol: 'BTC.b',
+  name: 'Bridged Bitcoin on Avalanche',
   logo: wbtcLogo,
   swapableType: 'WBTC',
 })
@@ -406,6 +476,19 @@ export const FTMETH = new Token({
   swapableType: 'ETH',
 })
 
+export const WFTM = new Token({
+  addresses: {
+    [ChainId.FANTOM]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
+    [ChainId.DFK]: '0x2Df041186C844F8a2e2b63F16145Bc6Ff7d23E25',
+  },
+  decimals: 18,
+  symbol: 'WFTM ',
+  name: 'Wrapped Fantom',
+  logo: ftmLogo,
+  description: 'Fantom Wrapped form of Fantom',
+  swapableType: 'FTM',
+})
+
 export const CANTOETH = new Token({
   addresses: {
     [ChainId.CANTO]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
@@ -465,6 +548,7 @@ export const FRAX = new Token({
     [ChainId.MOONBEAM]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
     [ChainId.HARMONY]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [ChainId.DOGECHAIN]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
+    [ChainId.ARBITRUM]: '0x17fc002b466eec40dae837fc4be5c67993ddbd6f',
   },
   decimals: 18,
   symbol: 'FRAX',
@@ -591,6 +675,8 @@ export const ETH = new Token({
     [ChainId.ARBITRUM]: '',
     [ChainId.OPTIMISM]: '',
     [ChainId.BASE]: '',
+    [ChainId.DFK]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
+    [ChainId.CANTO]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -617,6 +703,7 @@ export const MOVR = new Token({
 export const AVAX = new Token({
   addresses: {
     [ChainId.AVALANCHE]: '',
+    [ChainId.KLAYTN]: '0xcd8fe44a29db9159db36f96570d7a4d91986f528',
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -917,6 +1004,8 @@ export const BASIC_TOKENS_BY_CHAIN = {
     // UST,
     SDT,
     USDB,
+    WFTM,
+    UNIDX,
   ],
   [ChainId.BOBA]: [
     SYN,
@@ -975,11 +1064,13 @@ export const BASIC_TOKENS_BY_CHAIN = {
     AGEUR,
     UNIDX,
     PEPE,
+    FRAX,
   ],
   [ChainId.AVALANCHE]: [
     USDC,
     USDT,
     CCTP_USDC,
+    // Note that this is Dai.e on Avalanche
     DAI,
     WETHE,
     NETH,
@@ -997,10 +1088,23 @@ export const BASIC_TOKENS_BY_CHAIN = {
     USDB,
     SFI,
     AVWETH,
+    USDTE,
+    BTCB,
 
     SYNJEWEL,
   ],
-  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, UST, KLAY],
+  [ChainId.DFK]: [
+    JEWEL,
+    WJEWEL,
+    XJEWEL,
+    WAVAX,
+    DFK_USDC,
+    UST,
+    KLAY,
+    WFTM,
+    ETH,
+    BTCB,
+  ],
   [ChainId.AURORA]: [
     USDC,
     USDT,
@@ -1041,6 +1145,11 @@ export const BASIC_TOKENS_BY_CHAIN = {
     L2DAO,
     PLS,
     AGEUR,
+    USDT,
+    CCTP_USDC,
+    UNIDX,
+    SUSD,
+    DAI,
   ],
   [ChainId.TERRA]: [UST],
   [ChainId.CRONOS]: [
@@ -1064,6 +1173,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     WJEWEL,
     WAVAX,
     WKLAY,
+    AVAX,
   ],
   [ChainId.DOGECHAIN]: [
     SYN,
@@ -1081,8 +1191,14 @@ export const BASIC_TOKENS_BY_CHAIN = {
     ETH,
     NETH,
     WETH,
+    // USDC,
+    DAI,
+    USDBC,
+    CRVUSD,
+    CCTP_USDC,
+    UNIDX,
   ],
-  [ChainId.CANTO]: [SYN, NUSD, CANTOETH, NETH, NOTE, USDC, USDT],
+  [ChainId.CANTO]: [SYN, NUSD, CANTOETH, NETH, NOTE, USDC, USDT, ETH],
 }
 
 const TOKEN_HASH_MAP = {}

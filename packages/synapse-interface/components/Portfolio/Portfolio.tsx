@@ -24,10 +24,10 @@ import { resetTransactionsState } from '@/slices/transactions/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
-import { isValidAddress } from '@/utils/isValidAddress'
-import { Activity } from './Activity'
-import { ViewSearchAddressBanner } from './SearchBar'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
+import { isValidAddress } from '@/utils/isValidAddress'
+import { ViewSearchAddressBanner } from './SearchBar'
+import { Activity } from './Activity'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()

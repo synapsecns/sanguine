@@ -53,6 +53,7 @@ library HeaderLib {
         uint32 destination_,
         uint32 optimisticPeriod_
     ) internal pure returns (Header) {
+        // All casts below are upcasts, so they are safe
         // forgefmt: disable-next-item
         return Header.wrap(
             uint136(uint8(flag_)) << SHIFT_FLAG |
@@ -77,6 +78,7 @@ library HeaderLib {
     function wrapPadded(uint256 paddedHeader) internal pure returns (Header) {
         // Check that flag is within range
         if (!isHeader(paddedHeader)) revert FlagOutOfRange();
+        // Casting to uint136 will truncate the highest bits, which is the behavior we want
         return Header.wrap(uint136(paddedHeader));
     }
 

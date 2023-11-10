@@ -46,7 +46,7 @@ export const approve = async (
       return
     }
 
-    if (token.symbol === WETH.symbol) {
+    if (token.addresses[pool.chainId] === zeroAddress) {
       toast.dismiss(requestingApprovalPopup)
       return
     }

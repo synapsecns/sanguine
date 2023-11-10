@@ -15,16 +15,13 @@ const PoolCards = memo(
               <React.Fragment key={chainId}>
                 {pools[chainId] &&
                   pools[chainId]?.length > 0 &&
-                  pools[chainId].map((pool, i) => {
+                  pools[chainId].map((pool) => {
                     return (
-                      <div key={i}>
-                        <PoolCard
-                          key={pool?.poolName}
-                          pool={pool}
-                          chainId={Number(chainId)}
-                          address={address}
-                        />
-                      </div>
+                      <PoolCard
+                        key={pool?.poolName}
+                        pool={pool}
+                        address={address}
+                      />
                     )
                   })}
               </React.Fragment>

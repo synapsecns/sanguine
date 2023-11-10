@@ -96,12 +96,6 @@ If you need to make a new go module, here are the steps to follow:
           - goos: windows
             format: zip
         name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
-        replacements:
-          amd64: x86_64
-          arm64: ARM64
-          darwin: macOS
-          linux: Linux
-          windows: Windows
         files:
           - README.md
 

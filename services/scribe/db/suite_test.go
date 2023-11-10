@@ -43,7 +43,6 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-
 	t.logIndex.Store(0)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)

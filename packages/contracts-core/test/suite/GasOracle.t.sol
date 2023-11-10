@@ -26,6 +26,12 @@ contract GasOracleTest is MessagingBaseTest {
         assertEq(cleanContract.destination(), destination_, "!destination");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new GasOracle({synapseDomain_: 1, destination_: address(2)});
+    }
+
     function initializeLocalContract() public override {
         testedGO().initialize();
     }

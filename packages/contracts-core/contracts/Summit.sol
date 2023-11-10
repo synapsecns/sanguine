@@ -4,12 +4,19 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
-import {BONDING_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
-import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
+import {BONDING_OPTIMISTIC_PERIOD, TIPS_GRANULARITY} from "./libs/Constants.sol";
+import {
+    MustBeSynapseDomain,
+    DisputeTimeoutNotOver,
+    NotaryInDispute,
+    TipsClaimMoreThanEarned,
+    TipsClaimZero
+} from "./libs/Errors.sol";
 import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
+import {ChainContext} from "./libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
@@ -61,6 +68,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint64 deliveryTip;
     }
 
+    /// @notice Struct for storing the actor tips for a given origin domain.
+    /// @param earned   Total amount of tips earned by the actor, denominated in domain's wei
+    /// @param claimed  Total amount of tips claimed by the actor, denominated in domain's wei
     struct ActorTips {
         uint128 earned;
         uint128 claimed;
@@ -108,7 +118,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 paddedTips,
         bytes memory rcptPayload
     ) external onlyInbox returns (bool wasAccepted) {
-        if (_isInDispute(rcptNotaryIndex)) revert NotaryInDispute();
+        // Check that we can trust the receipt Notary data: they are not in dispute, and the dispute timeout is over.
+        if (_notaryDisputeExists(rcptNotaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeTimeout(rcptNotaryIndex)) revert DisputeTimeoutNotOver();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcpt: rcptPayload.castToReceipt(),
@@ -134,7 +146,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         onlyInbox
         returns (bytes memory attPayload)
     {
-        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
+        // Check that we can trust the snapshot Notary data: they are not in dispute, and the dispute timeout is over.
+        if (_notaryDisputeExists(notaryIndex)) revert NotaryInDispute();
+        if (_notaryDisputeTimeout(notaryIndex)) revert DisputeTimeoutNotOver();
         // This will revert if payload is not a snapshot
         return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
@@ -175,6 +189,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         // Guaranteed to fit into uint128, as the sum is lower than `earned`
         actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
         InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);
+        emit TipWithdrawalInitiated(msg.sender, origin, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -206,15 +221,17 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// - Notary was slashed => receipt is invalided and deleted
     /// - Notary is in Dispute => receipt handling is postponed
     function _checkNotaryDisputed(bytes32 messageHash, uint32 notaryIndex) internal returns (bool queuePopped) {
-        DisputeFlag flag = _disputes[notaryIndex];
+        // TODO: add timeout for Notaries that just won the dispute.
+        DisputeFlag flag = _disputes[notaryIndex].flag;
         if (flag == DisputeFlag.Slashed) {
             // Notary has been slashed, so we can't trust their statement.
             // Honest Notaries are incentivized to resubmit the Receipt or Attestation if it was in fact valid.
             _deleteFromQueue(messageHash);
             queuePopped = true;
-        } else if (flag == DisputeFlag.Pending) {
-            // Notary is not slashed, but is in Dispute. To keep the tips flow going we add the receipt to the back of
-            // the queue, hoping that by the next interaction the dispute will have been resolved.
+        } else if (flag == DisputeFlag.Pending || _notaryDisputeTimeout(notaryIndex)) {
+            // Notary is in the ongoing Dispute, or has recently won one. We postpone the receipt handling.
+            // To keep the tips flow going we add the receipt to the back of the queue,
+            // hoping that by the next interaction the dispute will have been resolved.
             _moveToBack();
             queuePopped = true;
         }
@@ -272,7 +289,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
             pending: true,
             tipsAwarded: savedRcpt.tipsAwarded,
             receiptNotaryIndex: rcptNotaryIndex,
-            submittedAt: uint40(block.timestamp)
+            submittedAt: ChainContext.blockTimestamp()
         });
         // Save receipt tips
         _receiptTips[messageHash] = ReceiptTips({
@@ -326,8 +343,12 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Award tip to any actor whether bonded or unbonded
     function _awardActorTip(address actor, uint32 origin, uint64 tip) internal {
-        actorTips[actor][origin].earned += tip;
-        emit TipAwarded(actor, origin, tip);
+        // We need to do a shit here, as we operate with "scaled down" tips everywhere,
+        // but Summit is supposed to store the "full tip value".
+        // Tip fits into 64 bits, so it's safe to do a 32 bit shift without risk of overflow
+        uint128 tipAwarded = uint128(tip) << uint128(TIPS_GRANULARITY);
+        actorTips[actor][origin].earned += tipAwarded;
+        emit TipAwarded(actor, origin, tipAwarded);
     }
 
     /// @dev Award tip for posting Receipt to Summit contract.

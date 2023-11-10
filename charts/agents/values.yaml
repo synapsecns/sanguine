@@ -412,7 +412,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        rpc_url: "https://mainnet.optimism.io"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
@@ -491,7 +491,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        rpc_url: "https://mainnet.optimism.io"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
@@ -570,7 +570,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        rpc_url: "https://mainnet.optimism.io"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
@@ -653,7 +653,7 @@ guard_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        rpc_url: "https://mainnet.optimism.io"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
@@ -747,7 +747,7 @@ executor_remote_fresh_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
-        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
+        temp_rpc: "https://mainnet.optimism.io"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114

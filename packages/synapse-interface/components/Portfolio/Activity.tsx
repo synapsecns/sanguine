@@ -9,21 +9,12 @@ import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { PendingBridgeTransaction } from '@/slices/bridge/actions'
-import { BridgeState } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
-
-export function checkTransactionsExist(
-  transactions: any[] | undefined | null
-): boolean {
-  const exists: boolean =
-    transactions && Array.isArray(transactions) && transactions.length > 0
-  return exists
-}
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -32,16 +23,49 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     isUserHistoricalTransactionsLoading,
     isUserPendingTransactionsLoading,
     pendingAwaitingCompletionTransactions,
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
+
+  const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+        transactions = [...pendingAwaitingCompletionTransactions]
+      }
+
+      if (checkTransactionsExist(fallbackQueryPendingTransactions)) {
+        const fallbackTransactions = [...fallbackQueryPendingTransactions]
+        const mergedTransactions = [...transactions, ...fallbackTransactions]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [
+      pendingAwaitingCompletionTransactions,
+      fallbackQueryPendingTransactions,
+    ])
 
   const hasPendingTransactions: boolean = useMemo(() => {
     if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
       return true
     }
     if (checkTransactionsExist(pendingBridgeTransactions)) {
+      return true
+    }
+    if (
+      checkTransactionsExist(pendingAwaitingCompletionTransactionsWithFallback)
+    ) {
       return true
     }
     return false
@@ -140,13 +164,39 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       isUserHistoricalTransactionsLoading,
     ])
 
+  const filteredHistoricalTransactionsBySearchInputWithFallback =
+    useMemo(() => {
+      let transactions: BridgeTransaction[] = []
+
+      if (checkTransactionsExist(filteredHistoricalTransactionsBySearchInput)) {
+        transactions = filteredHistoricalTransactionsBySearchInput
+      }
+
+      if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+        const fallbackTransactions = [...fallbackQueryHistoricalTransactions]
+        const mergedTransactions = [...fallbackTransactions, ...transactions]
+
+        const uniqueMergedTransactions = Array.from(
+          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+        ).map((kappa) =>
+          mergedTransactions.find((item) => item.kappa === kappa)
+        )
+        return uniqueMergedTransactions
+      }
+
+      return transactions
+    }, [
+      filteredHistoricalTransactionsBySearchInput,
+      fallbackQueryHistoricalTransactions,
+    ])
+
   const hasFilteredSearchResults: boolean = useMemo(() => {
-    if (filteredHistoricalTransactionsBySearchInput) {
-      return filteredHistoricalTransactionsBySearchInput.length > 0
+    if (filteredHistoricalTransactionsBySearchInputWithFallback) {
+      return filteredHistoricalTransactionsBySearchInputWithFallback.length > 0
     } else {
       return false
     }
-  }, [filteredHistoricalTransactionsBySearchInput])
+  }, [filteredHistoricalTransactionsBySearchInputWithFallback])
 
   const viewingAddress: string | null = useMemo(() => {
     if (masqueradeActive) {
@@ -180,23 +230,23 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
-          {pendingAwaitingCompletionTransactions &&
-            pendingAwaitingCompletionTransactions.map(
-              (transaction: BridgeTransaction) => (
+          {pendingAwaitingCompletionTransactionsWithFallback &&
+            pendingAwaitingCompletionTransactionsWithFallback.map(
+              (transaction: BridgeTransaction, key: number) => (
                 <PendingTransaction
+                  key={key}
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
-                  startedTimestamp={transaction?.fromInfo?.time as number}
-                  transactionHash={transaction?.fromInfo?.txnHash as string}
-                  eventType={transaction?.fromInfo?.eventType as number}
+                  startedTimestamp={transaction?.fromInfo?.time}
+                  transactionHash={transaction?.fromInfo?.txnHash}
+                  eventType={transaction?.fromInfo?.eventType}
+                  formattedEventType={transaction?.fromInfo?.formattedEventType}
                   isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
                   isCompleted={transaction?.toInfo?.time ? true : false}
-                  kappa={transaction?.kappa as string}
+                  kappa={transaction?.kappa}
                   transactionType={TransactionType.PENDING}
-                  originValue={transaction?.fromInfo?.formattedValue as number}
-                  destinationValue={
-                    transaction?.toInfo?.formattedValue as number
-                  }
+                  originValue={transaction?.fromInfo?.value}
+                  destinationValue={transaction?.toInfo?.value}
                   originChain={
                     CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                   }
@@ -227,23 +277,21 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
-            filteredHistoricalTransactionsBySearchInput
+            filteredHistoricalTransactionsBySearchInputWithFallback
               .slice(0, searchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction.kappa}
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
-                  startedTimestamp={transaction?.fromInfo?.time as number}
-                  completedTimestamp={transaction?.toInfo?.time as number}
-                  transactionHash={transaction?.fromInfo?.txnHash as string}
+                  startedTimestamp={transaction?.fromInfo?.time}
+                  completedTimestamp={transaction?.toInfo?.time}
+                  transactionHash={transaction?.fromInfo?.txnHash}
                   kappa={transaction?.kappa}
                   isCompleted={true}
                   transactionType={TransactionType.HISTORICAL}
-                  originValue={transaction?.fromInfo?.formattedValue as number}
-                  destinationValue={
-                    transaction?.toInfo?.formattedValue as number
-                  }
+                  originValue={transaction?.fromInfo?.value}
+                  destinationValue={transaction?.toInfo?.value}
                   originChain={
                     CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
                   }
@@ -278,19 +326,23 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
 export const PendingTransactionAwaitingIndexing = () => {
   const { address } = useAccount()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
+  const { pendingBridgeTransactions }: TransactionsState =
+    useTransactionsState()
   return (
     <>
       {pendingBridgeTransactions.map(
-        (transaction: PendingBridgeTransaction) => (
+        (transaction: PendingBridgeTransaction, key: number) => (
           <PendingTransaction
+            key={key}
             connectedAddress={address as Address}
             originChain={transaction.originChain as Chain}
             originToken={transaction.originToken as Token}
             originValue={Number(transaction.originValue)}
             destinationChain={transaction.destinationChain as Chain}
             destinationToken={transaction.destinationToken as Token}
+            estimatedDuration={transaction.estimatedTime}
             transactionHash={transaction.transactionHash}
+            bridgeModuleName={transaction.bridgeModuleName}
             isSubmitted={transaction.isSubmitted as boolean}
             startedTimestamp={transaction.timestamp as number}
             transactionType={TransactionType.PENDING}

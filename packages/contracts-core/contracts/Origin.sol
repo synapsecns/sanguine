@@ -4,7 +4,12 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {BaseMessageLib} from "./libs/memory/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
-import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
+import {
+    ContentLengthTooBig,
+    EthTransferFailed,
+    IncorrectDestinationDomain,
+    InsufficientEthBalance
+} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {MemView, MemViewLib} from "./libs/memory/MemView.sol";
 import {Header, MessageLib, MessageFlag} from "./libs/memory/Message.sol";
@@ -35,6 +40,11 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
 
     address public immutable gasOracle;
 
+    modifier onlyRemoteDestination(uint32 destination) {
+        if (destination == localDomain) revert IncorrectDestinationDomain();
+        _;
+    }
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     // solhint-disable-next-line no-empty-blocks
@@ -63,7 +73,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         uint32 optimisticPeriod,
         uint256 paddedRequest,
         bytes memory content
-    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
+    ) external payable onlyRemoteDestination(destination) returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
         if (content.length > MAX_CONTENT_BYTES) revert ContentLengthTooBig();
         // This will revert if msg.value is lower than value of minimum tips
@@ -85,6 +95,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
         external
         onlyAgentManager
+        onlyRemoteDestination(destination)
         returns (uint32 messageNonce, bytes32 messageHash)
     {
         // AgentManager (checked via modifier) is responsible for constructing the calldata payload correctly.
@@ -96,6 +107,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         if (address(this).balance < amount) revert InsufficientEthBalance();
         (bool success,) = recipient.call{value: amount}("");
         if (!success) revert EthTransferFailed();
+        emit TipWithdrawalCompleted(recipient, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

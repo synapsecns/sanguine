@@ -259,10 +259,10 @@ export const base = {
     },
   },
   blockExplorers: {
-    blockscout: {
-      name: 'Basescout',
-      url: 'https://base.blockscout.com',
-    },
+    // blockscout: {
+    //   name: 'Basescout',
+    //   url: 'https://base.blockscout.com',
+    // },
     default: {
       name: 'Basescan',
       url: 'https://basescan.org',

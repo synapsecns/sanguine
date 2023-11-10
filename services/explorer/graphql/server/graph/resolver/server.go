@@ -72,6 +72,12 @@ type ComplexityRoot struct {
 		Count   func(childComplexity int) int
 	}
 
+	BlockHeight struct {
+		BlockNumber func(childComplexity int) int
+		ChainID     func(childComplexity int) int
+		Type        func(childComplexity int) int
+	}
+
 	BridgeTransaction struct {
 		FromInfo    func(childComplexity int) int
 		Kappa       func(childComplexity int) int
@@ -190,6 +196,7 @@ type ComplexityRoot struct {
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
+		GetBlockHeight         func(childComplexity int, contracts []*model.ContractQuery) int
 		GetDestinationBridgeTx func(childComplexity int, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) int
 		GetOriginBridgeTx      func(childComplexity int, chainID int, txnHash string, bridgeType model.BridgeType) int
 		Leaderboard            func(childComplexity int, duration *model.Duration, chainID *int, useMv *bool, page *int) int
@@ -240,6 +247,7 @@ type QueryResolver interface {
 	Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error)
 	GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error)
 	GetDestinationBridgeTx(ctx context.Context, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error)
+	GetBlockHeight(ctx context.Context, contracts []*model.ContractQuery) ([]*model.BlockHeight, error)
 }
 
 type executableSchema struct {
@@ -375,6 +383,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AddressRanking.Count(childComplexity), true
+
+	case "BlockHeight.blockNumber":
+		if e.complexity.BlockHeight.BlockNumber == nil {
+			break
+		}
+
+		return e.complexity.BlockHeight.BlockNumber(childComplexity), true
+
+	case "BlockHeight.chainID":
+		if e.complexity.BlockHeight.ChainID == nil {
+			break
+		}
+
+		return e.complexity.BlockHeight.ChainID(childComplexity), true
+
+	case "BlockHeight.type":
+		if e.complexity.BlockHeight.Type == nil {
+			break
+		}
+
+		return e.complexity.BlockHeight.Type(childComplexity), true
 
 	case "BridgeTransaction.fromInfo":
 		if e.complexity.BridgeTransaction.FromInfo == nil {
@@ -999,6 +1028,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["duration"].(*model.Duration), args["useCache"].(*bool), args["useMv"].(*bool)), true
 
+	case "Query.getBlockHeight":
+		if e.complexity.Query.GetBlockHeight == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getBlockHeight_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetBlockHeight(childComplexity, args["contracts"].([]*model.ContractQuery)), true
+
 	case "Query.getDestinationBridgeTx":
 		if e.complexity.Query.GetDestinationBridgeTx == nil {
 			break
@@ -1143,7 +1184,9 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputContractQuery,
+	)
 	first := true
 
 	switch rc.Operation.Operation {
@@ -1404,6 +1447,13 @@ Ranked chainIDs by volume
     historical:  Boolean = false
   ): BridgeWatcherTx
 
+
+  """
+  GetBlockHeight gets block heights from the current bridge. Returns results in an array of increased block heights.
+  """
+  getBlockHeight(
+    contracts: [ContractQuery]
+  ): [BlockHeight]
 }
 
 
@@ -1624,7 +1674,6 @@ type Leaderboard {
   rank: Int
   avgVolumeUSD: Float
 }
-
 enum BridgeType{
   BRIDGE
   CCTP
@@ -1635,6 +1684,24 @@ enum KappaStatus{
   PENDING
   UNKNOWN
 }
+
+input ContractQuery {
+  chainID: Int!
+  type: ContractType!
+}
+
+enum ContractType{
+  BRIDGE
+  CCTP
+}
+
+type BlockHeight {
+  chainID: Int
+  type: ContractType
+  blockNumber: Int
+}
+
+
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -2075,6 +2142,21 @@ func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.
 		}
 	}
 	args["useMv"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getBlockHeight_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*model.ContractQuery
+	if tmp, ok := rawArgs["contracts"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contracts"))
+		arg0, err = ec.unmarshalOContractQuery2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractQuery(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contracts"] = arg0
 	return args, nil
 }
 
@@ -3063,6 +3145,129 @@ func (ec *executionContext) _AddressRanking_count(ctx context.Context, field gra
 func (ec *executionContext) fieldContext_AddressRanking_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AddressRanking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BlockHeight_chainID(ctx context.Context, field graphql.CollectedField, obj *model.BlockHeight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BlockHeight_chainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BlockHeight_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BlockHeight",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BlockHeight_type(ctx context.Context, field graphql.CollectedField, obj *model.BlockHeight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BlockHeight_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ContractType)
+	fc.Result = res
+	return ec.marshalOContractType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BlockHeight_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BlockHeight",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ContractType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BlockHeight_blockNumber(ctx context.Context, field graphql.CollectedField, obj *model.BlockHeight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BlockHeight_blockNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BlockHeight_blockNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BlockHeight",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -7173,6 +7378,66 @@ func (ec *executionContext) fieldContext_Query_getDestinationBridgeTx(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getBlockHeight(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getBlockHeight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetBlockHeight(rctx, fc.Args["contracts"].([]*model.ContractQuery))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.BlockHeight)
+	fc.Result = res
+	return ec.marshalOBlockHeight2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBlockHeight(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getBlockHeight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chainID":
+				return ec.fieldContext_BlockHeight_chainID(ctx, field)
+			case "type":
+				return ec.fieldContext_BlockHeight_type(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_BlockHeight_blockNumber(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BlockHeight", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getBlockHeight_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -9535,6 +9800,44 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputContractQuery(ctx context.Context, obj interface{}) (model.ContractQuery, error) {
+	var it model.ContractQuery
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"chainID", "type"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "chainID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ChainID = data
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -9727,6 +10030,46 @@ func (ec *executionContext) _AddressRanking(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._AddressRanking_address(ctx, field, obj)
 		case "count":
 			out.Values[i] = ec._AddressRanking_count(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var blockHeightImplementors = []string{"BlockHeight"}
+
+func (ec *executionContext) _BlockHeight(ctx context.Context, sel ast.SelectionSet, obj *model.BlockHeight) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, blockHeightImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BlockHeight")
+		case "chainID":
+			out.Values[i] = ec._BlockHeight_chainID(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._BlockHeight_type(ctx, field, obj)
+		case "blockNumber":
+			out.Values[i] = ec._BlockHeight_blockNumber(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10540,6 +10883,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getBlockHeight":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getBlockHeight(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -11157,6 +11519,16 @@ func (ec *executionContext) marshalNBridgeType2githubᚗcomᚋsynapsecnsᚋsangu
 	return v
 }
 
+func (ec *executionContext) unmarshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, v interface{}) (model.ContractType, error) {
+	var res model.ContractType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNContractType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, sel ast.SelectionSet, v model.ContractType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -11601,6 +11973,54 @@ func (ec *executionContext) marshalOAddressRanking2ᚖgithubᚗcomᚋsynapsecns�
 	return ec._AddressRanking(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOBlockHeight2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBlockHeight(ctx context.Context, sel ast.SelectionSet, v []*model.BlockHeight) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOBlockHeight2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBlockHeight(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOBlockHeight2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBlockHeight(ctx context.Context, sel ast.SelectionSet, v *model.BlockHeight) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BlockHeight(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -11696,6 +12116,50 @@ func (ec *executionContext) marshalOBridgeWatcherTx2ᚖgithubᚗcomᚋsynapsecns
 		return graphql.Null
 	}
 	return ec._BridgeWatcherTx(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOContractQuery2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractQuery(ctx context.Context, v interface{}) ([]*model.ContractQuery, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.ContractQuery, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOContractQuery2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractQuery(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOContractQuery2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractQuery(ctx context.Context, v interface{}) (*model.ContractQuery, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputContractQuery(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOContractType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, v interface{}) (*model.ContractType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ContractType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOContractType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐContractType(ctx context.Context, sel ast.SelectionSet, v *model.ContractType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx context.Context, v interface{}) (*model.DailyStatisticType, error) {

@@ -11,4 +11,11 @@ abstract contract OriginEvents {
      * @param message       Raw bytes of message
      */
     event Sent(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message);
+
+    /**
+     * @notice Emitted when a tip withdrawal is completed.
+     * @param actor     Actor address
+     * @param tip       Tip value, denominated in local domain's wei
+     */
+    event TipWithdrawalCompleted(address actor, uint256 tip);
 }

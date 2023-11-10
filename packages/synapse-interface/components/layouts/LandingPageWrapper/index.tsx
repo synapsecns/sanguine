@@ -185,7 +185,7 @@ export function PopoverPanelContainer({
           mt-3 w-screen max-w-xs sm:px-0
         `}
       >
-        <div className="overflow-hidden shadow-xl rounded-md">
+        <div className="overflow-hidden rounded-md shadow-xl">
           <div className="relative grid gap-3 bg-bgLight px-2.5 py-3  sm:p-2">
             {children}
           </div>

@@ -145,6 +145,13 @@ Ranked chainIDs by volume
     historical:  Boolean = false
   ): BridgeWatcherTx
 
+
+  """
+  GetBlockHeight gets block heights from the current bridge. Returns results in an array of increased block heights.
+  """
+  getBlockHeight(
+    contracts: [ContractQuery]
+  ): [BlockHeight]
 }
 
 

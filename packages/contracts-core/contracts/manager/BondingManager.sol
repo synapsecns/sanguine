@@ -7,15 +7,17 @@ import {
     AgentCantBeAdded,
     CallerNotDestination,
     CallerNotSummit,
+    DisputeAlreadyResolved,
+    DisputeNotOpened,
     IncorrectAgentDomain,
+    IncorrectOriginDomain,
     IndexOutOfRange,
-    MerkleTreeFull,
     MustBeSynapseDomain,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../libs/Errors.sol";
 import {DynamicTree, MerkleMath} from "../libs/merkle/MerkleTree.sol";
-import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -23,6 +25,8 @@ import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice BondingManager keeps track of all existing agents on the Synapse Chain.
 /// It utilizes a dynamic Merkle Tree to store the agent information. This enables passing only the
@@ -38,6 +42,8 @@ import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 /// - Accepting Manager Message from remote `LightManager` to slash agents on the Synapse Chain, when their fraud
 ///   is proven on the remote chain.
 contract BondingManager is AgentManager, InterfaceBondingManager {
+    using SafeCast for uint256;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // The address of the Summit contract.
@@ -88,8 +94,8 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         if (status.flag == AgentFlag.Unknown) {
             // Unknown address could be added to any domain
             // New agent will need to be added to `_agents` list: could not have more than 2**32 agents
-            if (_agents.length >= type(uint32).max) revert MerkleTreeFull();
-            index = uint32(_agents.length);
+            // TODO: consider using more than 32 bits for agent indexes
+            index = _agents.length.toUint32();
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
             _agents.push(agent);
             _domainAgents[domain].push(agent);
@@ -143,6 +149,17 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Resting, domain, status.index), agent);
     }
 
+    // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function resolveDisputeWhenStuck(uint32 domain, address slashedAgent) external onlyOwner onlyWhenStuck {
+        AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
+        if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
+        if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        // This will revert if domain doesn't match the agent's domain.
+        _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
+    }
+
     // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceBondingManager
@@ -171,8 +188,9 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         // Check that merkle proof is mature enough
         // TODO: separate constant for slashing optimistic period
         if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert SlashAgentOptimisticPeriod();
-        // TODO: do we need to save this?
-        msgOrigin;
+        // TODO: do we need to save domain where the agent was slashed?
+        // Message needs to be sent from the remote chain
+        if (msgOrigin == localDomain) revert IncorrectOriginDomain();
         // Slash agent and notify local AgentSecured contracts
         _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function

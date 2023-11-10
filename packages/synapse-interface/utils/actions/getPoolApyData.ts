@@ -1,10 +1,12 @@
 import { formatUnits } from '@ethersproject/units'
-import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import { MINICHEF_ADDRESSES } from '@constants/minichef'
+import { readContracts, Address, erc20ABI } from '@wagmi/core'
 import { Token } from '@types'
-import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
-import { getSynPrices } from '@utils/actions/getPrices'
+
+import { getMetisPrice, getSynPrices } from '@/utils/actions/getPrices'
+import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+import { METIS } from '@/constants/chains/master'
 
 type PoolInfoResult = readonly [
   accSynapsePerShare: bigint,
@@ -12,10 +14,22 @@ type PoolInfoResult = readonly [
   allocPoint: bigint
 ]
 
+type Prices = {
+  synPrices: {
+    ethBalanceNumber: number
+    ethPrice: number
+    synBalanceNumber: number
+    synPrice: number
+  }
+  ethPrice: number
+  avaxPrice: number
+  metisPrice: number
+}
+
 export const getPoolApyData = async (
   chainId: number,
   poolToken: Token,
-  prices?: any
+  prices?: Prices
 ) => {
   if (!MINICHEF_ADDRESSES?.[chainId]) {
     console.log('no minichef address found for chainId', chainId)
@@ -25,7 +39,7 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const minichefAddress: Address = MINICHEF_ADDRESSES[chainId]
+  const minichefAddress: Address = poolToken.miniChefAddress as Address
 
   const data = await readContracts({
     contracts: [
@@ -48,31 +62,33 @@ export const getPoolApyData = async (
         chainId,
         args: [poolToken.poolId[chainId]],
       },
+      {
+        address: poolToken.addresses[chainId] as Address,
+        abi: erc20ABI,
+        functionName: 'balanceOf',
+        chainId,
+        args: [minichefAddress],
+      },
+      {
+        address: poolToken.addresses[chainId] as Address,
+        abi: erc20ABI,
+        functionName: 'totalSupply',
+        chainId,
+      },
     ],
   })
+
+  // console.log(`data`, data)
 
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
   const poolInfoResult: PoolInfoResult = data[2].result
-
-  const lpTokenBalanceResult =
-    (
-      await fetchBalance({
-        address: minichefAddress,
-        chainId,
-        token: poolToken.addresses[chainId] as Address,
-      })
-    )?.value ?? 0n
-
-  const lpTokenSupplyResult =
-    (
-      await fetchToken({
-        address: poolToken.addresses[chainId] as Address,
-        chainId,
-      })
-    )?.totalSupply?.value ?? 0n
+  const lpTokenBalanceResult: bigint = data[3].result ?? 0n
+  const lpTokenSupplyResult: bigint = data[4].result ?? 0n
 
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
+  const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
+
   const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n
   const totalAllocPoints: bigint = totalAllocPointsResult ?? 1n
   const allocPoints: bigint = poolInfoResult?.[2] ?? 1n
@@ -115,7 +131,15 @@ export const getPoolApyData = async (
     stakedTvl = 0
   }
 
-  const usdPerWeek = poolRewardsPerWeek * synPriceData.synPrice
+  let usePrice
+
+  if (poolToken.chainId === METIS.id) {
+    usePrice = metisPrice
+  } else {
+    usePrice = synPriceData.synPrice
+  }
+
+  const usdPerWeek = poolRewardsPerWeek * usePrice
 
   const weeklyAPR = (usdPerWeek / stakedTvl) * 100
   const yearlyAPR = weeklyAPR * 52

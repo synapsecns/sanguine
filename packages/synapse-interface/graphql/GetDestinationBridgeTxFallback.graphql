@@ -1,0 +1,34 @@
+query GetDestinationBridgeTxFallback(
+  $chainId: Int!
+  $kappa: String!
+  $address: String!
+  $timestamp: Int!
+  $bridgeType: BridgeType!
+) {
+  getDestinationBridgeTx(
+    chainID: $chainId
+    kappa: $kappa
+    address: $address
+    timestamp: $timestamp
+    bridgeType: $bridgeType
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+      formattedEventType
+      eventType
+    }
+    kappa
+    pending
+  }
+}
