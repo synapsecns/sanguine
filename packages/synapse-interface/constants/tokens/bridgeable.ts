@@ -1178,7 +1178,7 @@ export const WETH = new Token({
   routeSymbol: 'WETH',
 })
 
-export const CRVUSDC = new Token({
+export const CRVUSD = new Token({
   visibilityRank: 101,
   addresses: {
     [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
