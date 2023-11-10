@@ -417,11 +417,19 @@ const TransactionStatusDetails = ({
                   Waiting on {destinationChain.name}...
                 </div>
               </div>
-              <div className="flex items-center p-1 rounded-sm">
+              <p className="items-center p-1 rounded-sm">
                 Arbitrum confirmations are slower than usual, transactions are
-                still being processed. Questions? Contact support on our Discord
-                channel.
-              </div>
+                still being processed. Questions?
+                <a
+                  href={DISCORD_URL}
+                  target="_blank"
+                  rel="no-referrer no-opener"
+                  className="px-1 text-blueText hover:underline"
+                >
+                  Contact support
+                </a>
+                on our Discord channel.
+              </p>
             </div>
             <TransactionOptions
               connectedAddress={connectedAddress as Address}
