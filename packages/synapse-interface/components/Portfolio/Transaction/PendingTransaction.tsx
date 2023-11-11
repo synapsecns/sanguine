@@ -115,8 +115,6 @@ export const PendingTransaction = ({
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
-  console.log('currentTime:', currentTime)
-
   // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
   const initialElapsedMinutes: number = useMemo(() => {
     if (!isSubmitted || currentTime < startedTimestamp) {
