@@ -110,7 +110,7 @@ export const PendingTransaction = ({
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
           originChain.blockTime) /
           1000
-      : null
+      : 0
   }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
   const currentTime: number = Math.floor(Date.now() / 1000)
