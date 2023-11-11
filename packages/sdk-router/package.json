@@ -45,6 +45,7 @@
   "devDependencies": {
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
+    "@vitest/coverage-v8": "^0.34.6",
     "husky": "^8.0.1",
     "size-limit": "^8.1.0",
     "tsdx": "^0.14.1",
