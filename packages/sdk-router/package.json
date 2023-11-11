@@ -19,7 +19,7 @@
   "scripts": {
     "start": "tsup --watch",
     "build": "tsup",
-    "test": "vitest",
+    "test": "vitest run",
     "lint": "npm run lint:fix && npm run lint:check",
     "lint:check": "eslint . --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "ci:lint": "npm run lint:check",
