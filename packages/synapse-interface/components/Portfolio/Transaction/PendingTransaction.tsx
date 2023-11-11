@@ -130,7 +130,9 @@ export const PendingTransaction = ({
   const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
     initialElapsedMinutes
   )
-  const [updatedCurrentTime, setUpdatedCurrentTime] = useState<number>()
+  const [updatedCurrentTime, setUpdatedCurrentTime] =
+    useState<number>(currentTime)
+
   // Ensures we reset elapsed time so unique transactions track elapsed time accurately
   useEffect(() => {
     if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
@@ -186,8 +188,8 @@ export const PendingTransaction = ({
   )
 
   const isReconnectedAndRetryFallback: boolean = useMemo(() => {
-    return currentTime - lastConnectedTimestamp < 300
-  }, [lastConnectedTimestamp, currentTime])
+    return updatedCurrentTime - lastConnectedTimestamp < 300
+  }, [lastConnectedTimestamp, updatedCurrentTime])
 
   const bridgeType: BridgeType = useMemo(() => {
     if (synapseSDK && formattedEventType) {
