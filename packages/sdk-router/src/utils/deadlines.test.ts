@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   calculateDeadline,
@@ -8,7 +9,7 @@ import {
 
 describe('deadlines', () => {
   // Something good happened on this day
-  Date.now = jest.fn(() => Date.parse('2021-08-29'))
+  Date.now = vi.fn(() => Date.parse('2021-08-29'))
 
   it('calculates correct deadlines', () => {
     const seconds = 1337

@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { providers } from 'ethers'
+import { describe, expect, it } from 'vitest'
 
 import {
   PUBLIC_PROVIDER_URLS,

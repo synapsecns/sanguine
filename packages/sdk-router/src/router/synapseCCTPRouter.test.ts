@@ -1,6 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
+import { describe, expect, it } from 'vitest'
 
 import {
   PUBLIC_PROVIDER_URLS,
