@@ -12,7 +12,6 @@ export const PortfolioTabManager = () => {
     dispatch(setActiveTab(newTab))
   }
 
-  console.log('PortfolioTabManager re-render')
   return (
     <div data-test-id="portfolio-tab-manager" className="flex flex-col">
       <div className="flex items-center">

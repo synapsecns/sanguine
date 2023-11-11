@@ -61,8 +61,6 @@ export const Transaction = React.memo(
     children,
     isCompleted,
   }: TransactionProps) => {
-    console.log('timeRemaining:', timeRemaining, 'txnHash: ', transactionHash)
-
     const handleExplorerClick: () => void = useCallback(() => {
       if (kappa && originChain && destinationChain) {
         const explorerLink: string = getTransactionExplorerLink({

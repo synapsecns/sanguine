@@ -16,6 +16,7 @@ import {
   TransactionType,
   TransactionStatus,
 } from './Transaction'
+import { ApplicationState } from '@/slices/application/reducer'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
@@ -25,6 +26,7 @@ import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOri
 import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { DISCORD_URL } from '@/constants/urls'
+import { useApplicationState } from '@/slices/application/hooks'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -56,6 +58,7 @@ export const PendingTransaction = ({
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
   const { synapseSDK } = useSynapseContext()
+  const { lastConnectedTimestamp }: ApplicationState = useApplicationState()
   const dispatch = useAppDispatch()
 
   const transactionStatus: TransactionStatus = useMemo(() => {
@@ -75,14 +78,12 @@ export const PendingTransaction = ({
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
     if (bridgeModuleName) {
-      console.log('1 bridgeModuleName: ', bridgeModuleName)
       return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
     }
 
     if (formattedEventType) {
       const fetchedBridgeModuleName: string =
         synapseSDK.getBridgeModuleName(formattedEventType)
-      console.log('2 fetchedBridgeModuleName: ', bridgeModuleName)
       return synapseSDK.getEstimatedTime(
         originChain?.id,
         fetchedBridgeModuleName
@@ -91,7 +92,6 @@ export const PendingTransaction = ({
     // Fallback last resort estimated duration calculation
     // Remove this when fallback origin queries return eventType
     // CCTP Classification
-    console.log('3 Fallback estimated time')
     if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
@@ -115,6 +115,8 @@ export const PendingTransaction = ({
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
+  console.log('currentTime:', currentTime)
+
   // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
   const initialElapsedMinutes: number = useMemo(() => {
     if (!isSubmitted || currentTime < startedTimestamp) {
@@ -130,7 +132,7 @@ export const PendingTransaction = ({
   const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
     initialElapsedMinutes
   )
-
+  const [updatedCurrentTime, setUpdatedCurrentTime] = useState<number>()
   // Ensures we reset elapsed time so unique transactions track elapsed time accurately
   useEffect(() => {
     if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
@@ -145,6 +147,7 @@ export const PendingTransaction = ({
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
+      setUpdatedCurrentTime(currentTime)
       if (isSubmitted) {
         setUpdatedElapsedTime(elapsedMinutes)
       }
@@ -183,6 +186,10 @@ export const PendingTransaction = ({
     () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
     [timeRemaining, isCompleted]
   )
+
+  const isReconnectedAndRetryFallback: boolean = useMemo(() => {
+    return currentTime - lastConnectedTimestamp < 300
+  }, [lastConnectedTimestamp, currentTime])
 
   const bridgeType: BridgeType = useMemo(() => {
     if (synapseSDK && formattedEventType) {
