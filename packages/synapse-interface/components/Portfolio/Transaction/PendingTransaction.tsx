@@ -113,8 +113,6 @@ export const PendingTransaction = ({
       : null
   }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
-  console.log('estimatedCompletionInSeconds:', estimatedCompletionInSeconds)
-
   const currentTime: number = Math.floor(Date.now() / 1000)
 
   // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
@@ -138,7 +136,7 @@ export const PendingTransaction = ({
     if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
       setUpdatedElapsedTime(0)
     }
-  }, [initialElapsedMinutes, updatedElapsedTime])
+  }, [initialElapsedMinutes, updatedElapsedTime, transactionHash, isSubmitted])
 
   // Update elapsed time in set intervals for countdown
   useEffect(() => {
@@ -155,20 +153,14 @@ export const PendingTransaction = ({
     return () => {
       clearInterval(interval)
     }
-  }, [startedTimestamp, isSubmitted, transactionHash])
+  }, [startedTimestamp, isSubmitted, transactionHash, initialElapsedMinutes])
 
   const estimatedCompletionInMinutes: number = Math.ceil(
     estimatedCompletionInSeconds / 60
   )
 
-  console.log('estimatedCompletionInMinutes: ', estimatedCompletionInMinutes)
-
   const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !updatedElapsedTime) {
-      return estimatedCompletionInMinutes
-    } else {
-      return estimatedCompletionInMinutes - updatedElapsedTime
-    }
+    return estimatedCompletionInMinutes - initialElapsedMinutes
   }, [
     estimatedCompletionInMinutes,
     initialElapsedMinutes,
@@ -280,13 +272,6 @@ export const PendingTransaction = ({
       dispatch(removePendingBridgeTransaction(startedTimestamp))
     }
   }, [timeRemaining, isSubmitted, startedTimestamp, updatedElapsedTime])
-
-  console.log(
-    'timeRemaining from PendingTrasaction: ',
-    timeRemaining,
-    'txnHash:',
-    transactionHash
-  )
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
