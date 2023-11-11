@@ -1,5 +1,5 @@
 module.exports = {
-  entryPoints: ['src/index.ts'],
+  entry: ['src/index.ts'],
   minify: true,
   sourcemap: true,
   clean: true,
