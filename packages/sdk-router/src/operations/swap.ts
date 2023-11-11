@@ -3,9 +3,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
 import { Query, SwapQuote } from '../router'
-import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
-import { getOriginDeadline } from '../utils/deadlines'
+import { getOriginDeadline, handleNativeToken } from '../utils'
 
 /**
  * Performs a swap through a Synapse Router.

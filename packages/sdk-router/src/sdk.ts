@@ -9,7 +9,7 @@ import {
   PoolToken,
 } from './router'
 import * as operations from './operations'
-import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
 
 class SynapseSDK {
   public synapseRouterSet: SynapseRouterSet

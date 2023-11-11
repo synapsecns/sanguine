@@ -3,7 +3,7 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
-import { handleNativeToken } from '../utils/handleNativeToken'
+import { handleNativeToken } from '../utils'
 import { BridgeQuote, Query, RouterSet, findBestRoute } from '../router'
 
 /**

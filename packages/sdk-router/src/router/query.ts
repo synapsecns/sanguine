@@ -3,7 +3,7 @@ import { AddressZero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 import { XOR } from 'ts-xor'
 
-import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils/handleNativeToken'
+import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils'
 
 /**
  * Matches SwapQuery passed to/returned by SynapseRouter (V1).

@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant'
 import { Router } from './router'
 import { AddressMap, BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, DestRequest } from './types'
-import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
+import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils'
 import { hasComplexBridgeAction } from './query'
 
 export type ChainProvider = {
