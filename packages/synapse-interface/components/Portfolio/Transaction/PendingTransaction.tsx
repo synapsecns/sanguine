@@ -206,21 +206,21 @@ export const PendingTransaction = ({
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
-  // const originFallback = useFallbackBridgeOriginQuery({
-  //   useFallback: isDelayed && useFallback,
-  //   chainId: originChain?.id,
-  //   txnHash: transactionHash,
-  //   bridgeType: bridgeType,
-  // })
+  const originFallback = useFallbackBridgeOriginQuery({
+    useFallback: (isDelayed && useFallback) || isReconnectedAndRetryFallback,
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: bridgeType,
+  })
 
-  // const destinationFallback = useFallbackBridgeDestinationQuery({
-  //   useFallback: isDelayed && useFallback,
-  //   chainId: destinationChain?.id,
-  //   address: destinationAddress,
-  //   kappa: kappa,
-  //   timestamp: startedTimestamp,
-  //   bridgeType: bridgeType,
-  // })
+  const destinationFallback = useFallbackBridgeDestinationQuery({
+    useFallback: (isDelayed && useFallback) || isReconnectedAndRetryFallback,
+    chainId: destinationChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: bridgeType,
+  })
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
