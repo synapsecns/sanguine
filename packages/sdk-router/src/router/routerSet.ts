@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant'
 import { Router } from './router'
 import { AddressMap, BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, DestRequest } from './types'
-import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils'
+import { getDestinationDeadline, getOriginDeadline } from '../utils'
 import { hasComplexBridgeAction } from './query'
 
 export type ChainProvider = {
@@ -188,10 +188,10 @@ export abstract class RouterSet {
     const destRouter = this.routers[bridgeRoute.destChainId]
     invariant(originRouter && destRouter, 'Route not supported')
     const { originQuery, destQuery, bridgeToken } = bridgeRoute
-    // Set origin deadline to 10 mins if not provided
-    originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
-    // Destination deadline is always 1 week
-    destQuery.deadline = calculateDeadline(ONE_WEEK)
+    // Use default deadline for origin chain, if not provided (10 mins)
+    originQuery.deadline = deadline ?? getOriginDeadline()
+    // Use default deadline for destination chain (1 week)
+    destQuery.deadline = getDestinationDeadline()
     // Get fee data: for some Bridge contracts it will depend on the complexity of the bridge action
     const { feeAmount, feeConfig } = await destRouter.getBridgeFees(
       bridgeToken.token,
