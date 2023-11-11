@@ -26,7 +26,7 @@
     "lint:fix": "eslint . --fix --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "test:coverage": "tsdx test --coverage",
     "prepare": "tsup",
-    "preinstall": "echo TODO: do we need a preinstall script?",
+    "preinstall": "command -v tsup >/dev/null 2>&1 && tsup || echo 'tsup not found'",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "build:go": " ",
