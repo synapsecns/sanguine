@@ -51,7 +51,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.5
 	github.com/vektah/gqlparser/v2 v2.5.8
 	github.com/vektra/mockery/v2 v2.14.0
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.0
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
