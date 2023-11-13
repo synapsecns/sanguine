@@ -628,7 +628,7 @@ export const FRAX = new Token({
   logo: fraxLogo,
   swapableType: 'FRAX',
   color: 'gray',
-  priorityRank: 6,
+  priorityRank: 1,
   routeSymbol: 'FRAX',
 })
 
@@ -1181,11 +1181,10 @@ export const WETH = new Token({
 export const CRVUSD = new Token({
   visibilityRank: 101,
   addresses: {
+    [CHAINS.ETH.id]: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
     [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
   },
-  decimals: {
-    [CHAINS.BASE.id]: 18,
-  },
+  decimals: 18,
   swapExceptions: {},
   symbol: 'crvUSD',
   name: 'Curve.fi USD',
