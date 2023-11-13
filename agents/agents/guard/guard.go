@@ -412,6 +412,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 
 	snapshot, statesToSubmit := g.getLatestSnapshot(ctx)
 	if snapshot == nil {
+		span.AddEvent("not submitting snapshot")
 		return
 	}
 
