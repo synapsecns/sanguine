@@ -105,7 +105,11 @@ func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Call
 		metrics.EndSpanWithErr(span, err)
 	}()
 	//nolint: wrapcheck
-	return c.getW3Client().CallCtx(ctx, calls...)
+	err = c.getW3Client().CallCtx(ctx, calls...)
+	if err != nil {
+		span.SetAttributes(attribute.String("batchError", err.Error()))
+	}
+	return err
 }
 
 // BatchCallContext calls BatchCallContext on the underlying client. Note: this will bypass the rate-limiter.
