@@ -207,14 +207,18 @@ export const PendingTransaction = ({
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
   const originFallback = useFallbackBridgeOriginQuery({
-    useFallback: (isDelayed && useFallback) || isReconnectedAndRetryFallback,
+    useFallback:
+      (isDelayed && useFallback) ||
+      (isDelayed && isReconnectedAndRetryFallback),
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: bridgeType,
   })
 
   const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback: (isDelayed && useFallback) || isReconnectedAndRetryFallback,
+    useFallback:
+      (isDelayed && useFallback) ||
+      (isDelayed && isReconnectedAndRetryFallback),
     chainId: destinationChain?.id,
     address: destinationAddress,
     kappa: kappa,
