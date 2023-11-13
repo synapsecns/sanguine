@@ -7,8 +7,11 @@ type Query {
     originTxHash: String
   ): MessageStatus
 
-  """ Gets pending messages. Can filter by chain id. """
-  getPendingMessages: [MessageStatus]
+  """ Gets Messages by status (Pending/Completed). """
+  getMessagesByStatus(
+    messageStatus: MessageState!
+    page: Int! = 1
+  ): [MessageStatus]
 
   """ Gets sent events on origin. Resolvers can be used find correlating events throughout the message lifecycle. """
   getOriginInfo(

@@ -19,10 +19,10 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	GetMessageStatus   *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
-	GetPendingMessages []*model.MessageStatus   "json:\"getPendingMessages\" graphql:\"getPendingMessages\""
-	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
-	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
+	GetMessageStatus    *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetMessagesByStatus []*model.MessageStatus   "json:\"getMessagesByStatus\" graphql:\"getMessagesByStatus\""
+	GetOriginInfo       []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
+	GetDestinationInfo  []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
 	Response *struct {
@@ -32,7 +32,7 @@ type GetMessageStatus struct {
 		MessageHash       *string                     "json:\"messageHash\" graphql:\"messageHash\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetPendingMessages struct {
+type GetMessagesByStatus struct {
 	Response []*struct {
 		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
 		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
@@ -101,8 +101,8 @@ func (c *Client) GetMessageStatus(ctx context.Context, messageHash *string, orig
 	return &res, nil
 }
 
-const GetPendingMessagesDocument = `query GetPendingMessages {
-	response: getPendingMessages {
+const GetMessagesByStatusDocument = `query GetMessagesByStatus ($messageStatus: MessageState!, $page: Int! = 1) {
+	response: getMessagesByStatus(messageStatus: $messageStatus, page: $page) {
 		lastSeen
 		originTxHash
 		destinationTxHash
@@ -111,11 +111,14 @@ const GetPendingMessagesDocument = `query GetPendingMessages {
 }
 `
 
-func (c *Client) GetPendingMessages(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*GetPendingMessages, error) {
-	vars := map[string]interface{}{}
+func (c *Client) GetMessagesByStatus(ctx context.Context, messageStatus model.MessageState, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetMessagesByStatus, error) {
+	vars := map[string]interface{}{
+		"messageStatus": messageStatus,
+		"page":          page,
+	}
 
-	var res GetPendingMessages
-	if err := c.Client.Post(ctx, "GetPendingMessages", GetPendingMessagesDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res GetMessagesByStatus
+	if err := c.Client.Post(ctx, "GetMessagesByStatus", GetMessagesByStatusDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

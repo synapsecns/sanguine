@@ -89,8 +89,7 @@ func (t *DBSuite) TestRetrievePendingMessages() {
 		err = testDB.StoreOrUpdateMessageStatus(ctx, nonPendingDestinationTxHash, nonPendingMessageHash, types.Destination)
 		Nil(t.T(), err)
 
-		// Test: Retrieve and validate pending messages
-		pendingMessages, err := testDB.RetrievePendingMessages(ctx)
+		pendingMessages, err := testDB.RetrieveMessagesByStatus(ctx, graphqlModel.MessageStatePending, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 1, len(pendingMessages)) // Ensure we have at least one pending message
 
@@ -105,9 +104,13 @@ func (t *DBSuite) TestRetrievePendingMessages() {
 		destinationTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 		err = testDB.StoreOrUpdateMessageStatus(ctx, destinationTxHash, messageHash, types.Destination)
 		Nil(t.T(), err)
-		noPendingMessages, err := testDB.RetrievePendingMessages(ctx)
+		noPendingMessages, err := testDB.RetrieveMessagesByStatus(ctx, graphqlModel.MessageStatePending, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 0, len(noPendingMessages))
+
+		completedMessages, err := testDB.RetrieveMessagesByStatus(ctx, graphqlModel.MessageStateCompleted, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 2, len(completedMessages))
 	})
 }
 func (t *DBSuite) TestRetrieveOriginSent() {

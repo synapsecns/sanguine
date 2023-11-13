@@ -41,13 +41,23 @@ func (s Store) RetrieveMessageStatus(ctx context.Context, messageHash string) (g
 	return payload, nil
 }
 
-// RetrievePendingMessages retrieves pending messages.
-func (s Store) RetrievePendingMessages(ctx context.Context) ([]*graphqlModel.MessageStatus, error) {
+// RetrieveMessagesByStatus retrieves pending messages.
+func (s Store) RetrieveMessagesByStatus(ctx context.Context, messageStatus graphqlModel.MessageState, page int) ([]*graphqlModel.MessageStatus, error) {
 	var records []model.MessageStatus
+
+	var queryStr string
+	switch messageStatus {
+	case graphqlModel.MessageStatePending:
+		queryStr = fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)
+	case graphqlModel.MessageStateCompleted:
+		queryStr = fmt.Sprintf("%s != '' AND %s IS NOT NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)
+	}
 
 	err := s.DB().WithContext(ctx).
 		Model(&model.MessageStatus{}).
-		Where(fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)).
+		Where(queryStr).
+		Offset((page - 1) * model.PageSize).
+		Limit(model.PageSize).
 		Find(&records).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {

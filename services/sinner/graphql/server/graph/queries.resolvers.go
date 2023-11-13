@@ -47,9 +47,9 @@ func (r *queryResolver) GetMessageStatus(ctx context.Context, messageHash *strin
 	return nil, fmt.Errorf("if messageHash is not provided, both originChainID and originTxHash must be provided")
 }
 
-// GetPendingMessages is the resolver for the getPendingMessages field.
-func (r *queryResolver) GetPendingMessages(ctx context.Context) ([]*model.MessageStatus, error) {
-	messageStatuses, err := r.DB.RetrievePendingMessages(ctx)
+// GetMessagesByStatus is the resolver for the getMessagesByStatus field.
+func (r *queryResolver) GetMessagesByStatus(ctx context.Context, messageStatus model.MessageState, page int) ([]*model.MessageStatus, error) {
+	messageStatuses, err := r.DB.RetrieveMessagesByStatus(ctx, messageStatus, page)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving pending data: %w", err)
 	}

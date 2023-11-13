@@ -93,10 +93,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetDestinationInfo func(childComplexity int, messageHash *string, txHash *string, chainID *int) int
-		GetMessageStatus   func(childComplexity int, messageHash *string, originChainID *int, originTxHash *string) int
-		GetOriginInfo      func(childComplexity int, messageHash *string, txHash *string, chainID *int) int
-		GetPendingMessages func(childComplexity int) int
+		GetDestinationInfo  func(childComplexity int, messageHash *string, txHash *string, chainID *int) int
+		GetMessageStatus    func(childComplexity int, messageHash *string, originChainID *int, originTxHash *string) int
+		GetMessagesByStatus func(childComplexity int, messageStatus model.MessageState, page int) int
+		GetOriginInfo       func(childComplexity int, messageHash *string, txHash *string, chainID *int) int
 	}
 }
 
@@ -114,7 +114,7 @@ type OriginInfoResolver interface {
 }
 type QueryResolver interface {
 	GetMessageStatus(ctx context.Context, messageHash *string, originChainID *int, originTxHash *string) (*model.MessageStatus, error)
-	GetPendingMessages(ctx context.Context) ([]*model.MessageStatus, error)
+	GetMessagesByStatus(ctx context.Context, messageStatus model.MessageState, page int) ([]*model.MessageStatus, error)
 	GetOriginInfo(ctx context.Context, messageHash *string, txHash *string, chainID *int) ([]*model.OriginInfo, error)
 	GetDestinationInfo(ctx context.Context, messageHash *string, txHash *string, chainID *int) ([]*model.DestinationInfo, error)
 }
@@ -417,6 +417,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetMessageStatus(childComplexity, args["messageHash"].(*string), args["originChainID"].(*int), args["originTxHash"].(*string)), true
 
+	case "Query.getMessagesByStatus":
+		if e.complexity.Query.GetMessagesByStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getMessagesByStatus_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetMessagesByStatus(childComplexity, args["messageStatus"].(model.MessageState), args["page"].(int)), true
+
 	case "Query.getOriginInfo":
 		if e.complexity.Query.GetOriginInfo == nil {
 			break
@@ -428,13 +440,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetOriginInfo(childComplexity, args["messageHash"].(*string), args["txHash"].(*string), args["chainID"].(*int)), true
-
-	case "Query.getPendingMessages":
-		if e.complexity.Query.GetPendingMessages == nil {
-			break
-		}
-
-		return e.complexity.Query.GetPendingMessages(childComplexity), true
 
 	}
 	return 0, false
@@ -544,8 +549,11 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     originTxHash: String
   ): MessageStatus
 
-  """ Gets pending messages. Can filter by chain id. """
-  getPendingMessages: [MessageStatus]
+  """ Gets Messages by status (Pending/Completed). """
+  getMessagesByStatus(
+    messageStatus: MessageState!
+    page: Int! = 1
+  ): [MessageStatus]
 
   """ Gets sent events on origin. Resolvers can be used find correlating events throughout the message lifecycle. """
   getOriginInfo(
@@ -577,7 +585,13 @@ type MessageStatus {
   destinationInfo: [DestinationInfo] @goField(forceResolver: true)
 }
 
-
+"""
+MessageState gives the current state of a message.
+"""
+enum MessageState{
+  PENDING
+  COMPLETED
+}
 
 
 
@@ -630,6 +644,7 @@ enum MessageStateLastSeen{
   DESTINATION
   UNKNOWN
 }
+
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -716,6 +731,30 @@ func (ec *executionContext) field_Query_getMessageStatus_args(ctx context.Contex
 		}
 	}
 	args["originTxHash"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getMessagesByStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.MessageState
+	if tmp, ok := rawArgs["messageStatus"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageStatus"))
+		arg0, err = ec.unmarshalNMessageState2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageState(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["messageStatus"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg1
 	return args, nil
 }
 
@@ -2533,8 +2572,8 @@ func (ec *executionContext) fieldContext_Query_getMessageStatus(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getPendingMessages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getPendingMessages(ctx, field)
+func (ec *executionContext) _Query_getMessagesByStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getMessagesByStatus(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2547,7 +2586,7 @@ func (ec *executionContext) _Query_getPendingMessages(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPendingMessages(rctx)
+		return ec.resolvers.Query().GetMessagesByStatus(rctx, fc.Args["messageStatus"].(model.MessageState), fc.Args["page"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2561,7 +2600,7 @@ func (ec *executionContext) _Query_getPendingMessages(ctx context.Context, field
 	return ec.marshalOMessageStatus2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getPendingMessages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getMessagesByStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2584,6 +2623,17 @@ func (ec *executionContext) fieldContext_Query_getPendingMessages(ctx context.Co
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MessageStatus", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getMessagesByStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -5068,7 +5118,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getPendingMessages":
+		case "getMessagesByStatus":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -5077,7 +5127,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getPendingMessages(ctx, field)
+				res = ec._Query_getMessagesByStatus(ctx, field)
 				return res
 			}
 
@@ -5495,6 +5545,31 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNMessageState2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageState(ctx context.Context, v interface{}) (model.MessageState, error) {
+	var res model.MessageState
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMessageState2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋsinnerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageState(ctx context.Context, sel ast.SelectionSet, v model.MessageState) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

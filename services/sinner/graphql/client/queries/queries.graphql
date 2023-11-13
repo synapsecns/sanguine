@@ -12,8 +12,8 @@ query GetMessageStatus($messageHash: String, $originChainID: Int, $originTxHash:
   }
 }
 
-query GetPendingMessages {
-  response: getPendingMessages {
+query GetMessagesByStatus ($messageStatus: MessageState!, $page: Int! = 1) {
+  response: getMessagesByStatus (messageStatus: $messageStatus, page: $page) {
     lastSeen
     originTxHash
     destinationTxHash
