@@ -1,0 +1,66 @@
+# The `db_config` field specifies the database type and the source (either a path or a connection string).
+db_config:
+  # Must be mysql or sqlite.
+  type: sqlite
+  # Source is either a path (for sqlite) or a connection string (for mysql).
+  source: '/data/synapse.db'
+
+# The base omnirpc url which each chain's collection of RPC's will be proxied through.
+base_omnirpc_url: http://omnirpc:9001
+refresh_interval_seconds: 5
+
+# For each chain (domain), specify the necessary contracts. ***** TODO: Update this *****
+domains:
+  domain_client1:
+    domain_id: 43
+    type: EVM
+    required_confirmations: 0
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+  domain_client2:
+    domain_id: 42
+    type: EVM
+    required_confirmations: 0
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    summit_address: 0x1EC96ab1Fdb92565A0839b12d42c13c8135f6c11
+    inbox_address: 0x2eB68A0C21413aA78055F6F7F262De56979aFBEa
+  domain_client3:
+    domain_id: 44
+    type: EVM
+    required_confirmations: 0
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+
+# Specify the summit domain id
+summit_domain_id: 42
+# Guards have a `domain_id` of 0.
+domain_id: 0
+
+# The `unbonded_signer` field specifies the path to the file containing the private key of the signer
+unbonded_signer:
+  type: 'File'
+  file: '/config/guard-bonded-signer.txt'
+
+# The `bonded_signer` is the account that will post a bond to the Summit contract. Specify its path to
+# the file containing the private key of the signer
+bonded_signer:
+  type: 'File'
+  file: '/config/guard-bonded-signer.txt'
+
+# The `submitter_config` field specifies how the submitter should submit messages to the chains.
+submitter_config:
+  chains:
+    42:
+      supports_eip_1559: true
+      gas_estimate: 7500000
+    43:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000
+    44:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000
+
+scribe_config:
+  type: 'remote'
+  port: 9002
+  url: 'scribe'

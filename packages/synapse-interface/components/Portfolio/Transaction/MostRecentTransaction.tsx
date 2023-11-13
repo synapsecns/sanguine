@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAccount, Address } from 'wagmi'
 import { Chain, Token } from '@/utils/types'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { BridgeState } from '@/slices/bridge/reducer'
 import { TransactionsState } from '@/slices/transactions/reducer'
-import { PendingBridgeTransaction } from '@/slices/bridge/actions'
+import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 import { TransactionType } from './Transaction'
@@ -18,7 +16,6 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const MostRecentTransaction = () => {
   const { address } = useAccount()
-  const { pendingBridgeTransactions }: BridgeState = useBridgeState()
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
@@ -27,6 +24,7 @@ export const MostRecentTransaction = () => {
     pendingAwaitingCompletionTransactions,
     fallbackQueryHistoricalTransactions,
     fallbackQueryPendingTransactions,
+    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
   const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
     usePortfolioState()
@@ -38,7 +36,7 @@ export const MostRecentTransaction = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(getTimeMinutesBeforeNow(0))
-    }, 60000)
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [])
@@ -125,7 +123,7 @@ export const MostRecentTransaction = () => {
     if (!seenHistoricalTransactions || !userHistoricalTransactions) {
       return false
     } else {
-      return seenHistoricalTransactions.some(
+      return seenHistoricalTransactions?.some(
         (transaction: BridgeTransaction) =>
           transaction.kappa ===
           (lastHistoricalTransaction.kappa as BridgeTransaction)
@@ -162,8 +160,8 @@ export const MostRecentTransaction = () => {
             startedTimestamp={
               transaction.timestamp ? transaction.timestamp : transaction.id
             }
-            transactionHash={transaction.transactionHash as string}
-            isSubmitted={transaction.isSubmitted as boolean}
+            transactionHash={transaction.transactionHash}
+            isSubmitted={transaction.isSubmitted}
             transactionType={TransactionType.PENDING}
           />
         </div>
@@ -176,10 +174,10 @@ export const MostRecentTransaction = () => {
         <div data-test-id="most-recent-transaction-pending" className="mt-6">
           <PendingTransaction
             connectedAddress={address as Address}
-            startedTimestamp={transaction?.fromInfo?.time as number}
-            transactionHash={transaction?.fromInfo?.txnHash as string}
+            startedTimestamp={transaction?.fromInfo?.time}
+            transactionHash={transaction?.fromInfo?.txnHash}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain
@@ -220,13 +218,13 @@ export const MostRecentTransaction = () => {
           <PendingTransaction
             connectedAddress={address as Address}
             destinationAddress={transaction?.fromInfo?.address as Address}
-            startedTimestamp={transaction?.fromInfo?.time as number}
-            completedTimestamp={transaction?.toInfo?.time as number}
-            transactionHash={transaction?.fromInfo?.txnHash as string}
-            kappa={transaction?.kappa as string}
+            startedTimestamp={transaction?.fromInfo?.time}
+            completedTimestamp={transaction?.toInfo?.time}
+            transactionHash={transaction?.fromInfo?.txnHash}
+            kappa={transaction?.kappa}
             transactionType={TransactionType.PENDING}
-            originValue={transaction?.fromInfo?.formattedValue as number}
-            destinationValue={transaction?.toInfo?.formattedValue as number}
+            originValue={transaction?.fromInfo?.value}
+            destinationValue={transaction?.toInfo?.value}
             originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain}
             destinationChain={
               CHAINS_BY_ID[transaction?.fromInfo?.destinationChainID] as Chain

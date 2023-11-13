@@ -206,8 +206,10 @@ export const getToTokens = ({
   }
 
   if (fromChainId && fromTokenRouteSymbol && toChainId && toTokenRouteSymbol) {
-    return EXISTING_BRIDGE_ROUTES[
-      `${fromTokenRouteSymbol}-${fromChainId}`
-    ]?.filter((value) => value.endsWith(`-${toChainId}`))
+    return _.uniq(
+      EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`]?.filter(
+        (value) => value.endsWith(`-${toChainId}`)
+      )
+    )
   }
 }

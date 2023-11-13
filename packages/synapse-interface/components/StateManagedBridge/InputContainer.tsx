@@ -4,7 +4,7 @@ import { useAccount, useNetwork } from 'wagmi'
 
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
@@ -19,8 +19,7 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue, toChainId, toToken } =
-    useBridgeState()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -45,7 +44,7 @@ export const InputContainer = () => {
   )?.balance
 
   useEffect(() => {
-    if (fromToken && fromToken.decimals[fromChainId]) {
+    if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
     }
 
@@ -76,7 +75,7 @@ export const InputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(balance, fromToken.decimals[fromChainId])
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
       )
     )
   }, [balance, fromChainId, fromToken])

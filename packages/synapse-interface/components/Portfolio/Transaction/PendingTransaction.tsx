@@ -5,7 +5,7 @@ import { useAppDispatch } from '@/store/hooks'
 import {
   removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
-} from '@/slices/bridge/actions'
+} from '@/slices/transactions/actions'
 import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
@@ -95,41 +95,66 @@ export const PendingTransaction = ({
           originChain.blockTime) /
           1000
       : null
-  }, [originChain, eventType, originToken])
+  }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
-  const elapsedMinutes: number = useMemo(() => {
-    if (startedTimestamp) {
+  // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
+  const initialElapsedMinutes: number = useMemo(() => {
+    if (!isSubmitted || currentTime < startedTimestamp) {
+      return 0
+    } else if (startedTimestamp < currentTime) {
       return Math.floor((currentTime - startedTimestamp) / 60)
+    } else {
+      return 0
     }
-  }, [startedTimestamp])
+  }, [startedTimestamp, currentTime, isSubmitted, transactionHash])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
+  // Holds most updated value for elapsed time to calculate timeRemaining
+  const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
+    initialElapsedMinutes
+  )
 
+  // Ensures we reset elapsed time so unique transactions track elapsed time accurately
+  useEffect(() => {
+    if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
+      setUpdatedElapsedTime(0)
+    }
+  }, [initialElapsedMinutes, updatedElapsedTime])
+
+  // Update elapsed time in set intervals for countdown
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime: number = Math.floor(Date.now() / 1000)
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
-      setElapsedTime(elapsedMinutes)
-    }, 60000)
+      if (isSubmitted) {
+        setUpdatedElapsedTime(elapsedMinutes)
+      }
+    }, 30000)
 
     return () => {
       clearInterval(interval)
     }
-  }, [startedTimestamp, isSubmitted])
+  }, [startedTimestamp, isSubmitted, transactionHash])
 
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const estimatedCompletionInMinutes: number = Math.floor(
+    estimatedCompletionInSeconds / 60
+  )
 
   const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !elapsedTime) {
-      return estimatedMinutes
+    if (!startedTimestamp || !updatedElapsedTime) {
+      return estimatedCompletionInMinutes
     } else {
-      return estimatedMinutes - elapsedTime
+      return estimatedCompletionInMinutes - updatedElapsedTime
     }
-  }, [estimatedMinutes, elapsedTime, startedTimestamp])
+  }, [
+    estimatedCompletionInMinutes,
+    initialElapsedMinutes,
+    updatedElapsedTime,
+    startedTimestamp,
+  ])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
 
@@ -172,29 +197,49 @@ export const PendingTransaction = ({
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
+      const maxRetries = 3
+      const retryDelay = 5000
+      let attempt = 0
+
       const updateResolvedTransaction = async () => {
-        const resolvedTransaction = await waitForTransaction({
-          hash: transactionHash as Address,
-        }).catch((error) => {
-          console.error('resolving transaction failed: ', error)
-          dispatch(removePendingBridgeTransaction(startedTimestamp))
-        })
+        try {
+          const resolvedTransaction = await waitForTransaction({
+            hash: transactionHash as Address,
+          })
 
-        if (resolvedTransaction) {
-          const currentTimestamp: number = getTimeMinutesFromNow(0)
-          const updatedTransaction = {
-            id: startedTimestamp,
-            timestamp: currentTimestamp,
-            transactionHash: transactionHash,
-            isSubmitted: true,
+          if (resolvedTransaction) {
+            const currentTimestamp: number = getTimeMinutesFromNow(0)
+            const updatedTransaction = {
+              id: startedTimestamp,
+              timestamp: currentTimestamp,
+              transactionHash: transactionHash,
+              isSubmitted: true,
+            }
+
+            console.log('resolved transaction:', resolvedTransaction)
+            dispatch(updatePendingBridgeTransaction(updatedTransaction))
           }
-
-          dispatch(updatePendingBridgeTransaction(updatedTransaction))
+        } catch (error) {
+          console.error('resolving transaction failed: ', error)
+          if (attempt < maxRetries) {
+            attempt++
+            console.log(`Retrying (${attempt}/${maxRetries})...`)
+            setTimeout(updateResolvedTransaction, retryDelay)
+          }
         }
       }
+
       updateResolvedTransaction()
     }
-  }, [startedTimestamp, isSubmitted, transactionHash])
+  }, [
+    startedTimestamp,
+    isSubmitted,
+    transactionHash,
+    dispatch,
+    updatePendingBridgeTransaction,
+    getTimeMinutesFromNow,
+    updatedElapsedTime,
+  ])
 
   useEffect(() => {
     const currentTimestamp: number = getTimeMinutesFromNow(0)
@@ -223,7 +268,9 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
-        timeRemaining={timeRemaining}
+        timeRemaining={
+          isSubmitted ? timeRemaining : estimatedCompletionInMinutes
+        }
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}
@@ -339,7 +386,7 @@ const TransactionStatusDetails = ({
             >
               <Image
                 className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
-                src={originChain.explorerImg}
+                src={originChain?.explorerImg}
                 alt={`${originChain.explorerName} logo`}
               />
               <div>Confirmed on {originChain.explorerName}.</div>
