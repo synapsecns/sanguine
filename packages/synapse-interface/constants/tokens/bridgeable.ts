@@ -17,6 +17,7 @@ import hyperjumpLogo from '@assets/icons/hyperjump.svg'
 import jewelLogo from '@assets/icons/jewel.svg'
 import klayLogo from '@assets/icons/klay.svg'
 import l2daoLogo from '@assets/icons/l2dao.svg'
+import lusdLogo from '@assets/icons/lusd.svg'
 import maticLogo from '@assets/icons/matic.svg'
 import movrLogo from '@assets/icons/movr.svg'
 import nethLogo from '@assets/icons/neth.svg'
@@ -1194,6 +1195,23 @@ export const CRVUSD = new Token({
   color: 'yellow',
   priorityRank: 1,
   routeSymbol: 'crvUSD',
+})
+
+export const LUSD = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.ETH.id]: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+  },
+  decimals: 18,
+  swapExceptions: {},
+  symbol: 'LUSD',
+  name: 'Liquidity USD',
+  logo: lusdLogo,
+  swapableType: 'USD',
+  swapableOn: [],
+  color: 'blue',
+  priorityRank: 1,
+  routeSymbol: 'LUSD',
 })
 
 export const USDBC = new Token({
