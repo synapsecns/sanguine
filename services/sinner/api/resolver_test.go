@@ -133,7 +133,7 @@ func (t *APISuite) TestPendingMessageStatus() {
 	NotNil(t.T(), desResult)
 	Equal(t.T(), 0, len(desResult.Response))
 
-	// Check if completed messages query gets two messages.
+	// Ensure completed messages query gets two messages.
 	completedMessagesResult, err := t.sinnerAPI.GetMessagesByStatus(t.GetTestContext(), graphqlModel.MessageStateCompleted, 1)
 	Nil(t.T(), err)
 	NotNil(t.T(), desResult)
