@@ -547,7 +547,9 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 
 //nolint:cyclop
 func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
+	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
 	defer span.End()
 
 	var agentProof [][32]byte
@@ -587,6 +589,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	span.AddEvent("Dispatching notary registration to submitter", trace.WithAttributes(
 		attribute.String("agentStatus", agentStatus.Flag().String()),
+		attribute.String("agent", n.bondedSigner.Address().String()),
 	))
 	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
