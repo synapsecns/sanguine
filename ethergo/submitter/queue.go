@@ -45,7 +45,7 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 // TODO: add a way to process a confirmation queue.
 func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
-	deadlineCtx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
+	deadlineCtx, cancel := context.WithTimeout(parentCtx, 1*time.Minute)
 	defer cancel()
 
 	ctx, span := t.metrics.Tracer().Start(deadlineCtx, "submitter.ProcessQueue")
