@@ -275,6 +275,7 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 	contractCall = func(ctx context.Context) (err error) {
 		destinationLightManagerAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
 		if err != nil {
+			fmt.Printf("could not get agent root: %f\n", err)
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
 
