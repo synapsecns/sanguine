@@ -31,6 +31,7 @@ import (
 type Notary struct {
 	bondedSigner            signer.Signer
 	unbondedSigner          signer.Signer
+	ownerSigner             signer.Signer
 	domains                 []domains.DomainClient
 	summitDomain            domains.DomainClient
 	destinationDomain       domains.DomainClient
@@ -62,6 +63,9 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
+
+	// ownerSigner is optional
+	notary.ownerSigner, _ = signerConfig.SignerFromConfig(ctx, cfg.OwnerSigner)
 
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
@@ -141,6 +145,11 @@ func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
 func (n *Notary) addAgent(parentCtx context.Context) (err error) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "addAgent")
 	defer metrics.EndSpanWithErr(span, err)
+
+	// make sure we have access to the owner
+	if n.ownerSigner == nil {
+		return fmt.Errorf("cannot add agent without owner signer")
+	}
 
 	// fetch the agent proof
 	var proof [][32]byte

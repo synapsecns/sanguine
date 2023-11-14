@@ -33,6 +33,8 @@ type AgentConfig struct {
 	UnbondedSigner config.SignerConfig `yaml:"unbonded_signer"`
 	// BondedSigner contains the bonded signer config for agents
 	BondedSigner config.SignerConfig `yaml:"bonded_signer"`
+	// OwnerSigner contains the owner signer config for agents (optional).
+	OwnerSigner config.SignerConfig `yaml:"owner_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
 	// BaseOmnirpcURL is the base url for omnirpc.
