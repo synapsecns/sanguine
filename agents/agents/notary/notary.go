@@ -109,6 +109,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 // ensureNotaryActive returns without error if the notary is active on the Summit.
 // If Unknown, the notary is registered on the Summit.
 // Otherwise, an error is returned.
+// TODO: should do this for all agents
 func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "ensureNotaryActive", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
@@ -166,18 +167,19 @@ func (n *Notary) addAgent(parentCtx context.Context) (err error) {
 	}
 	span.AddEvent("got agent proof")
 
-	// add the agent
-	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		tx, err = n.summitDomain.BondingManager().AddAgent(transactor, n.destinationDomain.Config().DomainID, n.bondedSigner.Address(), proof)
-		if err != nil {
-			return nil, fmt.Errorf("could not add agent: %w", err)
-		}
-		span.AddEvent("submitted addAgent() tx", trace.WithAttributes(
-			attribute.String("tx", tx.Hash().Hex()),
-		))
-		types.LogTx("NOTARY", "Called addAgent()", n.summitDomain.Config().DomainID, tx)
-		return
-	})
+	// add the agent; we don't use submitter for now because of onlyOwner constraint
+	transactor, err := n.ownerSigner.GetTransactor(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)))
+	if err != nil {
+		return fmt.Errorf("could not get owner transactor: %w", err)
+	}
+	tx, err := n.summitDomain.BondingManager().AddAgent(transactor, n.destinationDomain.Config().DomainID, n.bondedSigner.Address(), proof)
+	if err != nil {
+		return fmt.Errorf("could not add agent: %w", err)
+	}
+	span.AddEvent("submitted addAgent() tx", trace.WithAttributes(
+		attribute.String("tx", tx.Hash().Hex()),
+	))
+	types.LogTx("NOTARY", "Called addAgent()", n.summitDomain.Config().DomainID, tx)
 	return nil
 }
 
