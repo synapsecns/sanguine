@@ -39,7 +39,6 @@ type Notary struct {
 	summitGuardLatestStates map[uint32]types.State
 	currentSnapRoot         [32]byte
 	summitParser            summit.Parser
-	lastSummitBlock         uint64
 	handler                 metrics.Handler
 	retryConfig             []retry.WithBackoffConfigurator
 	txSubmitter             submitter.TransactionSubmitter
@@ -768,22 +767,8 @@ func (n *Notary) Start(parentCtx context.Context) error {
 
 	logger.Info("Starting the notary")
 
-	// Setting latestBlock on summit chain
-	latestBlockNUmber, err := n.summitDomain.BlockNumber(ctx)
-	if err != nil {
-		return fmt.Errorf("could not get latest block number from Summit: %w", err)
-	}
-
-	// Try starting from previous day
-	n.lastSummitBlock = uint64(latestBlockNUmber)
-	if n.lastSummitBlock > 3000 {
-		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
-	} else {
-		n.lastSummitBlock = uint64(0)
-	}
-
-	// Register the agent on Summit, if necessary
-	err = n.ensureNotaryActive(ctx)
+	// Ensure that this notary is active on the Summit
+	err := n.ensureNotaryActive(ctx)
 	if err != nil {
 		return err
 	}
