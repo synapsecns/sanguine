@@ -92,6 +92,8 @@ type InboxContract interface {
 
 // BondingManagerContract contains the interface for the bonding manager.
 type BondingManagerContract interface {
+	// AddAgent adds an agent to the bonding manager.
+	AddAgent(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root

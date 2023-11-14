@@ -103,6 +103,76 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 	return notary, nil
 }
 
+// ensureNotaryActive returns without error if the notary is active on the Summit.
+// If Unknown, the notary is registered on the Summit.
+// Otherwise, an error is returned.
+func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "ensureNotaryActive", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String("agent", n.bondedSigner.Address().String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
+	var agentStatus types.AgentStatus
+	contractCall := func(ctx context.Context) (err error) {
+		agentStatus, err = n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		return fmt.Errorf("could not get agent status: %w", err)
+	}
+	span.AddEvent("got agent status", trace.WithAttributes(
+		attribute.String("agentStatus", agentStatus.Flag().String()),
+	))
+
+	if agentStatus.Flag() == types.AgentFlagActive {
+		return nil
+	} else if agentStatus.Flag() == types.AgentFlagUnknown {
+		return n.addAgent(ctx)
+	}
+
+	return fmt.Errorf("notary is not active on summit")
+}
+
+// addAgent calls addAgent on the BondingManager after fetching agent proof.
+func (n *Notary) addAgent(parentCtx context.Context) (err error) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "addAgent")
+	defer metrics.EndSpanWithErr(span, err)
+
+	// fetch the agent proof
+	var proof [][32]byte
+	contractCall := func(ctx context.Context) (err error) {
+		proof, err = n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent proof: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		return err
+	}
+	span.AddEvent("got agent proof")
+
+	// add the agent
+	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		tx, err = n.summitDomain.BondingManager().AddAgent(transactor, n.destinationDomain.Config().DomainID, n.bondedSigner.Address(), proof)
+		if err != nil {
+			return nil, fmt.Errorf("could not add agent: %w", err)
+		}
+		span.AddEvent("submitted addAgent() tx", trace.WithAttributes(
+			attribute.String("tx", tx.Hash().Hex()),
+		))
+		types.LogTx("NOTARY", "Called addAgent()", n.summitDomain.Config().DomainID, tx)
+		return
+	})
+	return nil
+}
+
 //nolint:cyclop
 func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
@@ -703,6 +773,7 @@ func (n *Notary) Start(parentCtx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not get latest block number from Summit: %w", err)
 	}
+
 	// Try starting from previous day
 	n.lastSummitBlock = uint64(latestBlockNUmber)
 	if n.lastSummitBlock > 3000 {
@@ -711,7 +782,13 @@ func (n *Notary) Start(parentCtx context.Context) error {
 		n.lastSummitBlock = uint64(0)
 	}
 
-	logger.Infof("Notary loadSummitMyLatestStates")
+	// Register the agent on Summit, if necessary
+	err = n.ensureNotaryActive(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load latest states from Summit
 	n.loadSummitMyLatestStates(ctx)
 
 	g.Go(func() error {

@@ -45,6 +45,15 @@ type bondingManagerContract struct {
 	nonceManager nonce.Manager
 }
 
+func (a bondingManagerContract) AddAgent(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.AddAgent(transactor, domain, agent, proof)
+	if err != nil {
+		return nil, fmt.Errorf("could not add agent: %w", err)
+	}
+
+	return tx, nil
+}
+
 //nolint:dupl
 func (a bondingManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
 	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
