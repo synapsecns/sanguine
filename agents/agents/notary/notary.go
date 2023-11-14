@@ -155,7 +155,8 @@ func (n *Notary) addAgent(parentCtx context.Context) (err error) {
 	// fetch the agent proof
 	var proof [][32]byte
 	contractCall := func(ctx context.Context) (err error) {
-		proof, err = n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
+		// use empty leaf for Unknown agent
+		proof, err = n.summitDomain.BondingManager().GetProof(ctx, common.Address{})
 		if err != nil {
 			return fmt.Errorf("could not get agent proof: %w", err)
 		}
