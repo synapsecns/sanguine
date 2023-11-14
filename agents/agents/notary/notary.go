@@ -329,14 +329,21 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 	return attNonce > 0, nil
 }
 
-func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) (bool, bool) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldNotaryRegisteredOnDestination", trace.WithAttributes(
+func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (shouldRegisterNotary bool, shouldSendToDestination bool) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldRegisterNotaryOnDestination", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
-	defer span.End()
-	var bondingManagerAgentRoot [32]byte
+	defer func() {
+		span.SetAttributes(
+			attribute.Bool("shouldRegisterNotary", shouldRegisterNotary),
+			attribute.Bool("shouldSendToDestination", shouldSendToDestination),
+		)
+		span.End()
+	}()
+
+	var summitAgentRoot [32]byte
 	contractCall := func(ctx context.Context) (err error) {
-		bondingManagerAgentRoot, err = n.summitDomain.BondingManager().GetAgentRoot(ctx)
+		summitAgentRoot, err = n.summitDomain.BondingManager().GetAgentRoot(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
@@ -349,12 +356,15 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 			attribute.String("err", err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary, shouldSendToDestination
 	}
+	span.AddEvent("got summit agent root", trace.WithAttributes(
+		attribute.String("summitAgentRoot", common.Bytes2Hex(summitAgentRoot[:])),
+	))
 
-	var destinationLightManagerAgentRoot [32]byte
+	var destinationAgentRoot [32]byte
 	contractCall = func(ctx context.Context) (err error) {
-		destinationLightManagerAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
+		destinationAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
 		if err != nil {
 			fmt.Printf("could not get agent root: %f\n", err)
 			return fmt.Errorf("could not get agent root: %w", err)
@@ -368,12 +378,16 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 			attribute.String("err", err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary, shouldSendToDestination
 	}
+	span.AddEvent("got destination agent root", trace.WithAttributes(
+		attribute.String("destinationAgentRoot", common.Bytes2Hex(destinationAgentRoot[:])),
+	))
 
-	if bondingManagerAgentRoot != destinationLightManagerAgentRoot {
+	if summitAgentRoot != destinationAgentRoot {
+		span.AddEvent("roots do not match")
 		// We need to wait until destination has same agent root as the synapse chain.
-		return false, false
+		return shouldRegisterNotary, shouldSendToDestination
 	}
 
 	var agentStatus types.AgentStatus
@@ -391,17 +405,23 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 			attribute.String("err", err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary, shouldSendToDestination
 	}
+	span.AddEvent("got agent status", trace.WithAttributes(
+		attribute.String("agentStatus", agentStatus.Flag().String()),
+	))
 
 	if agentStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
-		return true, true
+		shouldRegisterNotary = true
+		shouldSendToDestination = true
+		return shouldRegisterNotary, shouldSendToDestination
 	} else if agentStatus.Flag() == types.AgentFlagActive {
 		// Here we already added the Notary and can proceed with sending to destination
-		return false, true
+		shouldSendToDestination = true
+		return shouldRegisterNotary, shouldSendToDestination
 	}
-	return false, false
+	return shouldRegisterNotary, shouldSendToDestination
 }
 
 //nolint:cyclop
@@ -806,7 +826,7 @@ func (n *Notary) Start(parentCtx context.Context) error {
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
-				shouldRegisterNotary, shouldSendToDestination := n.shouldNotaryRegisteredOnDestination(ctx)
+				shouldRegisterNotary, shouldSendToDestination := n.shouldRegisterNotaryOnDestination(ctx)
 				didRegisterAgent := true
 				if shouldRegisterNotary {
 					didRegisterAgent = n.registerNotaryOnDestination(ctx)
