@@ -384,11 +384,11 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 		attribute.String("destinationAgentRoot", common.Bytes2Hex(destinationAgentRoot[:])),
 	))
 
-	if summitAgentRoot != destinationAgentRoot {
-		span.AddEvent("roots do not match")
-		// We need to wait until destination has same agent root as the synapse chain.
-		return shouldRegisterNotary, shouldSendToDestination
-	}
+	// if summitAgentRoot != destinationAgentRoot {
+	// 	span.AddEvent("roots do not match")
+	// 	// We need to wait until destination has same agent root as the synapse chain.
+	// 	return shouldRegisterNotary, shouldSendToDestination
+	// }
 
 	var agentStatus types.AgentStatus
 	contractCall = func(ctx context.Context) (err error) {
