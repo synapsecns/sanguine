@@ -21,11 +21,11 @@ version: 0.2.15
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "1.16.0"
+appVersion: "1.17.0"
 
 dependencies:
   - name: omnirpc
-    version: "0.2.91"
+    version: "0.2.92"
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
   - name: clickhouse
