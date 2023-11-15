@@ -21,4 +21,16 @@ const (
 	Contract = "contract"
 	// MessageExecuted is the metric name for the message executed.
 	MessageExecuted = "message_executed"
+	// SnapRoot is the metric name for the snap root.
+	SnapRoot = "snap_root"
+	// StateRoot is the metric name for the state root.
+	StateRoot = "state_root"
+	// StateNonce is the metric name for the state nonce.
+	StateNonce = "state_nonce"
+	// AttestationNonce is the metric name for the attestation nonce.
+	AttestationNonce = "attestation_nonce"
+	// MessageLeaf is the metric name for the message leaf.
+	MessageLeaf = "message_leaf"
+	// Error is the metric name for the error.
+	Error = "error"
 )

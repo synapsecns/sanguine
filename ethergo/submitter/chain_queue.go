@@ -136,7 +136,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		defer wg.Done()
 		err := c.db.PutTXS(storeCtx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		}
 	}()
 
@@ -146,7 +146,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		fmt.Println("SUBMITTING")
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
-		span.AddEvent("submitted batched transactions", trace.WithAttributes(attribute.String("err", errToString(err))))
+		span.AddEvent("submitted batched transactions", trace.WithAttributes(attribute.String(metrics.Error, errToString(err))))
 		fmt.Printf("batch err: %v\n", err)
 		fmt.Printf("reprocessQueue: %v\n", c.reprocessQueue)
 		cancelStore()
@@ -162,7 +162,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 
 		err = c.db.PutTXS(ctx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		}
 	}()
 	wg.Wait()

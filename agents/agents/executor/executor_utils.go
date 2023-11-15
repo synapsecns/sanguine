@@ -184,7 +184,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 	ctx, span := e.handler.Tracer().Start(ctx, "processSnapshot", trace.WithAttributes(
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
-		attribute.String("snapRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapshotRoot[:]).String()),
 		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {
@@ -193,7 +193,7 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 	for _, s := range snapshot.States() {
 		span.AddEvent("processing state", trace.WithAttributes(
-			attribute.Int("origin", int(s.Origin())),
+			attribute.Int(metrics.Origin, int(s.Origin())),
 			attribute.Int("nonce", int(s.Nonce())),
 		))
 		state := s
@@ -221,8 +221,8 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 		if !valid {
 			stateRoot := state.Root()
 			span.AddEvent("snapshot has invalid state", trace.WithAttributes(
-				attribute.Int("origin", int(state.Origin())),
-				attribute.String("stateRoot", common.BytesToHash(stateRoot[:]).String()),
+				attribute.Int(metrics.Origin, int(state.Origin())),
+				attribute.String(metrics.StateRoot, common.BytesToHash(stateRoot[:]).String()),
 			))
 			return nil
 		}
@@ -245,7 +245,7 @@ func (e Executor) processAttestation(ctx context.Context, attestationMetadata ty
 	ctx, span := e.handler.Tracer().Start(ctx, "processAttestation", trace.WithAttributes(
 		attribute.Int("chainID", int(chainID)),
 		attribute.Int("logBlockNumber", int(log.BlockNumber)),
-		attribute.String("snapRoot", common.BytesToHash(snapshotRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapshotRoot[:]).String()),
 		attribute.String("txHash", log.TxHash.String()),
 	))
 	defer func() {
