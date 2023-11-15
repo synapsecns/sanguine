@@ -45,7 +45,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
         localDomain = uint32(block.chainid);
-        deploymentSalt = keccak256("Messaging003-03");
+        deploymentSalt = keccak256("Messaging003-07");
     }
 
     /// @dev Function to exclude script from coverage report
