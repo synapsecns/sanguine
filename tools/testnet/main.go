@@ -370,16 +370,17 @@ func main() {
 		for _, r := range routes {
 			route := r
 			g.Go(func() error {
+				origin := route[0]
 				destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
-				contract, ok := messageContracts[route[0]]
+				contract, ok := messageContracts[origin]
 				if !ok {
-					panic(fmt.Errorf("could not get contract for chain %d", route[0]))
+					panic(fmt.Errorf("could not get contract for chain %d", origin))
 				}
 				var tx *ethTypes.Transaction
 				err = retry.WithBackoff(ctx, func(context.Context) error {
 					tx, err = contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
 					if err != nil {
-						fmt.Printf("Error doing ping: %v\n", err)
+						fmt.Printf("Error doing ping: %v [chain=%d]\n", err, origin)
 					}
 					return err
 				}, retry.WithMaxTotalTime(120*time.Second))
@@ -396,13 +397,13 @@ func main() {
 				}
 
 				var receipt *ethTypes.Receipt
-				origin := route[0]
+				var rcptErr error
 				err = retry.WithBackoff(ctx, func(context.Context) error {
-					receipt, err = chainClient.TransactionReceipt(ctx, tx.Hash())
-					return err
-				}, retry.WithMaxTotalTime(120*time.Second))
+					receipt, rcptErr = chainClient.TransactionReceipt(ctx, tx.Hash())
+					return rcptErr
+				}, retry.WithMaxTotalTime(300*time.Second))
 				if err != nil {
-					fmt.Printf("error getting transaction receipt: %v\n", err)
+					fmt.Printf("error getting transaction receipt: %v: %v [chain=%d, txHash=%s]\n", err, rcptErr, origin, tx.Hash())
 					return err
 				}
 				if receipt.Status != ethTypes.ReceiptStatusSuccessful {

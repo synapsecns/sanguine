@@ -4,15 +4,19 @@ omnirpc_url: https://rpc.interop-staging.com
 
 chains:
   444:
-    message_contract_addr: 0xc2CB15896884Bda4D38ED439E1E6710A2256D377
-    origin_addr: 0x042f995893490e0fb68cd150A7861dEeC6B13a3A
-    destination_addr: 0x3b5f86FAEb6521a6474234c538Ad335224947BdC
+    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
+    origin_addr: 0x445cd82e637a984Be7bC1ab9856C442F13F5e511
+    destination_addr: 0xc8eA2409A5Bf3135C139e80596B3f192A2D47230
   421614:
-    message_contract_addr: 0xc2CB15896884Bda4D38ED439E1E6710A2256D377
-    origin_addr: 0x042f995893490e0fb68cd150A7861dEeC6B13a3A
-    destination_addr: 0x3b5f86FAEb6521a6474234c538Ad335224947BdC
+    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
+    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
+    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
   11155111:
-    message_contract_addr: 0xc2CB15896884Bda4D38ED439E1E6710A2256D377
-    origin_addr: 0x042f995893490e0fb68cd150A7861dEeC6B13a3A
-    destination_addr: 0x3b5f86FAEb6521a6474234c538Ad335224947BdC
+    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
+    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
+    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
+  11155420:
+    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
+    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
+    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
 

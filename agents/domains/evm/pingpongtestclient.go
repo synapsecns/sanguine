@@ -53,6 +53,7 @@ func (a pingPongClientContract) DoPing(ctx context.Context, signer signer.Signer
 	}
 
 	transactOpts.GasLimit = 1000000
+	// transactOpts.GasPrice = big.NewInt(50000000000)
 	a.nonceManager.ClearNonce(transactOpts.From)
 	tx, err = a.contract.DoPing(transactOpts, destination, recipient, pings)
 	if err != nil {
