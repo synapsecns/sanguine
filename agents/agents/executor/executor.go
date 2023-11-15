@@ -394,26 +394,35 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
-		fmt.Println("nonce is nil")
+		span.AddEvent("nonce is nil")
 		return false, nil
 	}
 
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
+	span.AddEvent("getting earliest state in range", trace.WithAttributes(
+		attribute.Int(metrics.Nonce, int(*nonce)),
+		attribute.Int("maximum_nonce", int(maximumNonce)),
+	))
 	state, snapshotRoot, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
 
 	if state == nil {
-		fmt.Println("state is nil")
+		span.AddEvent("state is nil")
 		return false, nil
 	}
 
 	if snapshotRoot == nil {
-		fmt.Println("snapshotRoot is nil")
+		span.AddEvent("snapshot root is nil")
 		return false, nil
 	}
 
+	stateRoot := (*state).Root()
+	span.AddEvent("getting proof from origin", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, *snapshotRoot),
+		attribute.String(metrics.StateRoot, common.BytesToHash(stateRoot[:]).String()),
+	))
 	var originProofRaw [][]byte
 	contractCall := func(ctx context.Context) error {
 		originProofRaw, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
@@ -453,7 +462,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		return false, nil
 	}
 
-	stateRoot := (*state).Root()
 	stateRootString := common.BytesToHash(stateRoot[:]).String()
 	origin := (*state).Origin()
 	stateNonce := (*state).Nonce()
@@ -1097,6 +1105,13 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 			for _, message := range unsetMessages {
 				nonce := message.Nonce()
 				destinationDomain := message.DestinationDomain()
+				leaf, _ := message.ToLeaf()
+				_, msgSpan := e.handler.Tracer().Start(ctx, "setMinimumTimeForMessage", trace.WithAttributes(
+					attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
+					attribute.Int(metrics.ChainID, int(chainID)),
+					attribute.Int(metrics.Destination, int(destinationDomain)),
+					attribute.Int(metrics.Nonce, int(nonce)),
+				))
 
 				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce)
 				if err != nil {
@@ -1105,8 +1120,12 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				fmt.Printf("Got timestamp for message: %v, %v\n", minimumTimestamp, types.MessageToString(message))
 
 				if minimumTimestamp == nil {
+					msgSpan.AddEvent("message timestamp is nil")
 					continue
 				}
+				msgSpan.AddEvent("got timestamp for message", trace.WithAttributes(
+					attribute.Int("timestamp", int(*minimumTimestamp)),
+				))
 
 				setMessageMask := db.DBMessage{
 					ChainID:     &chainID,
@@ -1114,7 +1133,12 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp+uint64(message.OptimisticSeconds()))
+				minimumTime := *minimumTimestamp + uint64(message.OptimisticSeconds())
+				span.AddEvent("setting minimum time", trace.WithAttributes(
+					attribute.Int("minimum_time", int(minimumTime)),
+				))
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, minimumTime)
+				metrics.EndSpanWithErr(msgSpan, err)
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
