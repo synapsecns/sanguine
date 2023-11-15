@@ -7,9 +7,9 @@ dependencies:
   version: 0.2.91
 - name: scribe
   repository: file://../scribe/
-  version: 0.2.15
+  version: 0.2.16
 - name: jaeger
   repository: https://jaegertracing.github.io/helm-charts
   version: 0.69.1
-digest: sha256:7b9ac6625ebd1bbb31b539dda69c5399b3285ad05287fba122e355e57a434bed
-generated: "2023-11-01T00:44:48.396983-05:00"
+digest: sha256:4d984e64a67528903ae3e8be7733e10a3a4a6fc3e901e338cf25ec6cf164d84d
+generated: "2023-11-14T21:26:04.007449-06:00"
