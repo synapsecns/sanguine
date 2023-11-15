@@ -199,15 +199,15 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 		if err != nil {
 			myLatestState = nil
 			span.AddEvent("GetLatestAgentState failed", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+				attribute.String(metrics.Error, err.Error()),
 			))
 			continue
 		}
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
 			n.summitMyLatestStates[originID] = myLatestState
-			span.AddEvent("Got my summit latest state", trace.WithAttributes(
-				attribute.Int("nonce", int(myLatestState.Nonce())),
-				attribute.Int("originID", int(originID)),
+			span.AddEvent("got latest summit state", trace.WithAttributes(
+				attribute.Int(metrics.StateNonce, int(myLatestState.Nonce())),
+				attribute.Int(metrics.Origin, int(originID)),
 			))
 		}
 
@@ -229,15 +229,15 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil
-			span.AddEvent("GetLatestState failed", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			span.AddEvent("could not get latest guard state", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
 		}
 		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
 			n.summitGuardLatestStates[originID] = guardLatestState
 			span.AddEvent("Got guard latest state", trace.WithAttributes(
-				attribute.Int("nonce", int(guardLatestState.Nonce())),
-				attribute.Int("originID", int(originID)),
+				attribute.Int(metrics.StateNonce, int(guardLatestState.Nonce())),
+				attribute.Int(metrics.Origin, int(originID)),
 			))
 		}
 
@@ -249,7 +249,7 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.NotaryAttestation, error) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
-		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 	))
 	defer span.End()
 
@@ -264,13 +264,13 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetLatestNotaryAttestation failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get latest notary attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return nil, err
 	}
 	span.AddEvent("got attestation nonce", trace.WithAttributes(
-		attribute.Int("nonce", int(attNonce)),
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
 	))
 
 	// Fetch the attestation and corresponding metadata for the attestation nonce.
@@ -284,8 +284,8 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetLatestNotaryAttestation failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get latest notary attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return nil, err
 	}
@@ -302,7 +302,7 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 	snapRoot := attestation.Attestation().SnapshotRoot()
 	ctx, span := n.handler.Tracer().Start(parentCtx, "isAlreadySubmitted", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
-		attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 	))
 	defer span.End()
 
@@ -317,13 +317,13 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("isAlreadySubmitted failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get latest attestation nonce", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return false, err
 	}
 	span.AddEvent("got attestation nonce", trace.WithAttributes(
-		attribute.Int("attNonce", int(attNonce)),
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
 	))
 
 	return attNonce > 0, nil
@@ -352,8 +352,8 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentRoot failed on bonding manager", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent root on summit", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return shouldRegisterNotary, shouldSendToDestination
@@ -374,8 +374,8 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentRoot failed on destination light manager", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent root on remote", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return shouldRegisterNotary, shouldSendToDestination
@@ -401,8 +401,8 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent status on remote", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return shouldRegisterNotary, shouldSendToDestination
@@ -434,7 +434,7 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidOnOrigin", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		attribute.Int(metrics.Nonce, int(state.Nonce())),
-		attribute.String("stateRoot", common.Bytes2Hex(stateRoot[:])),
+		attribute.String(metrics.StateRoot, common.Bytes2Hex(stateRoot[:])),
 	))
 
 	defer span.End()
@@ -450,72 +450,95 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("SuggestState failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not suggest state", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		// return false since we weren't able to validate the state on the origin
 		return false
 	}
 
-	if stateOnOrigin.Root() != state.Root() {
-		span.AddEvent("State roots do not equal")
+	stateOnOriginRoot := stateOnOrigin.Root()
+	if stateOnOriginRoot != stateRoot {
+		span.AddEvent("state roots are not equal", trace.WithAttributes(
+			attribute.String("state_on_origin", common.Bytes2Hex(stateOnOriginRoot[:])),
+			attribute.String(metrics.StateRoot, common.Bytes2Hex(stateRoot[:])),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Origin() != state.Origin() {
-		span.AddEvent("State origins do not equal")
+		span.AddEvent("state origins are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_origin", int(stateOnOrigin.Origin())),
+			attribute.Int("state_origin", int(state.Origin())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Nonce() != state.Nonce() {
-		span.AddEvent("State nonces do not equal")
+		span.AddEvent("state nonces are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_nonce", int(stateOnOrigin.Nonce())),
+			attribute.Int(metrics.StateNonce, int(state.Nonce())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber() == nil {
-		span.AddEvent("State on origin had nil block number")
+		span.AddEvent("state on origin has nil block number")
 		return false
 	}
 
 	if state.BlockNumber() == nil {
-		span.AddEvent("State to validate had nil block number")
+		span.AddEvent("state has nil block number")
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber().Uint64() != state.BlockNumber().Uint64() {
-		span.AddEvent("State block numbers do not equal")
+		span.AddEvent("state block numbers are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_block_number", int(stateOnOrigin.BlockNumber().Uint64())),
+			attribute.Int("state_block_number", int(state.BlockNumber().Uint64())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Timestamp() == nil {
-		span.AddEvent("State on origin had nil time stamp")
+		span.AddEvent("state on origin has nil timestamp")
 		return false
 	}
 
 	if state.Timestamp() == nil {
-		span.AddEvent("State to validate had nil time stamp")
+		span.AddEvent("state has nil timestamp")
 		return false
 	}
 
 	if stateOnOrigin.Timestamp().Uint64() != state.Timestamp().Uint64() {
-		span.AddEvent("State timestamps do not equal")
+		span.AddEvent("state timestamps are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_timestamp", int(stateOnOrigin.Timestamp().Uint64())),
+			attribute.Int("state_timestamp", int(state.Timestamp().Uint64())),
+		))
 		return false
 	}
 
 	stateOnOriginHash, err := stateOnOrigin.Hash()
 	if err != nil {
-		span.AddEvent("Error computing state on origin hash")
+		span.AddEvent("could not compute state on origin hash", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false
 	}
 
 	stateHash, err := state.Hash()
 	if err != nil {
-		span.AddEvent("Error computing state on summit hash")
+		span.AddEvent("could not compute state hash", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false
 	}
 
 	if stateOnOriginHash != stateHash {
-		span.AddEvent("State hashes do not equal")
+		span.AddEvent("state hashes are not equal", trace.WithAttributes(
+			attribute.String("state_on_origin_hash", common.Bytes2Hex(stateOnOriginHash[:])),
+			attribute.String("state_hash", common.Bytes2Hex(stateHash[:])),
+		))
 		return false
 	}
 
@@ -549,14 +572,14 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		}
 		if !n.isValidOnOrigin(ctx, summitGuardLatest, domain) {
 			stateSpan.AddEvent("state not valid on origin", trace.WithAttributes(
-				attribute.Int("nonce", int(summitGuardLatest.Nonce())),
+				attribute.Int(metrics.StateNonce, int(summitGuardLatest.Nonce())),
 			))
 			continue
 		}
 		statesToSubmit[originID] = summitGuardLatest
 		stateSpan.AddEvent("registering guard's latest summit state", trace.WithAttributes(
-			attribute.Int("originID", int(originID)),
-			attribute.Int("nonce", int(summitGuardLatest.Nonce())),
+			attribute.Int(metrics.Origin, int(originID)),
+			attribute.Int(metrics.StateNonce, int(summitGuardLatest.Nonce())),
 		))
 
 		stateSpan.End()
@@ -572,7 +595,7 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		snapshot := types.NewSnapshot(snapshotStates)
 		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
 		span.AddEvent("got snapshot", trace.WithAttributes(
-			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 		))
 		return snapshot, statesToSubmit
 	}
@@ -583,8 +606,8 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 //nolint:cyclop
 func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
-		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
-		attribute.Int("domain", int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
 
@@ -597,13 +620,14 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	n.currentSnapRoot, _, _ = snapshot.SnapshotRootAndProofs()
 	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
 	if err != nil {
-		span.AddEvent(fmt.Sprintf("Could not get attestation nonce for snapRoot: %s", common.BytesToHash(n.currentSnapRoot[:])), trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent(fmt.Sprintf("could not get attestation nonce"), trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return
 	}
 	span.AddEvent("got attestation nonce", trace.WithAttributes(
-		attribute.Int("attNonce", int(attNonce)),
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
 	))
 
 	// if the snapshot root has a corresponding attestation, no need to submit it
@@ -614,8 +638,8 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, n.bondedSigner)
 	//nolint:nestif
 	if err != nil {
-		span.AddEvent("Error signing snapshot", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not sign snapshot", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
 		snapshotRoot, _, _ := snapshot.SnapshotRootAndProofs()
@@ -628,15 +652,15 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
-			span.AddEvent("Submitted snapshot tx", trace.WithAttributes(
-				attribute.String("tx", tx.Hash().Hex()),
+			span.AddEvent("submitted snapshot tx", trace.WithAttributes(
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
 			))
 			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.summitDomain.Config().DomainID, tx)
 			return
 		})
 		if err != nil {
-			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			span.AddEvent("could not submit snapshot", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
 			return
 		}
@@ -665,8 +689,8 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetProof on bonding manager failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get proof", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return false
@@ -683,15 +707,14 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent status", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return false
 	}
-	span.AddEvent("Dispatching notary registration to submitter", trace.WithAttributes(
-		attribute.String("agentStatus", agentStatus.Flag().String()),
-		attribute.String("agent", n.bondedSigner.Address().String()),
+	span.AddEvent("dispatching notary registration to submitter", trace.WithAttributes(
+		attribute.String("agent_status", agentStatus.Flag().String()),
 	))
 	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
@@ -704,16 +727,16 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 			return nil, fmt.Errorf("could not update agent status: %w", err)
 		}
 		if tx != nil {
-			span.AddEvent("Submitted notary registration tx", trace.WithAttributes(
-				attribute.String("tx", tx.Hash().Hex()),
+			span.AddEvent("submitted notary registration tx", trace.WithAttributes(
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
 			))
 		}
 
 		return
 	})
 	if err != nil {
-		span.AddEvent("Error updating agent status", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not update agent status", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return false
 	}
@@ -723,8 +746,8 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 //nolint:cyclop,unused
 func (n *Notary) submitAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation", trace.WithAttributes(
-		attribute.String("snapRoot", common.BytesToHash(n.currentSnapRoot[:]).String()),
-		attribute.Int("domain", int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
 
@@ -746,7 +769,7 @@ func (n *Notary) submitAttestation(parentCtx context.Context) {
 	if alreadySubmitted {
 		snapRoot := attestation.Attestation().SnapshotRoot()
 		span.AddEvent("attestation already submitted on destination", trace.WithAttributes(
-			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 		))
 		return
 	}
@@ -754,14 +777,14 @@ func (n *Notary) submitAttestation(parentCtx context.Context) {
 	attestationSignature, _, _, err := attestation.Attestation().SignAttestation(ctx, n.bondedSigner, true)
 	if err != nil {
 		logger.Errorf("Error signing attestation: %v", err)
-		span.AddEvent("Error signing attestation", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not sign attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
 		snapRoot := attestation.Attestation().SnapshotRoot()
 		span.AddEvent("dispatching attestation to submitter", trace.WithAttributes(
-			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
-			attribute.Int("attNonce", int(attestation.Attestation().Nonce())),
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+			attribute.Int(metrics.AttestationNonce, int(attestation.Attestation().Nonce())),
 		))
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
@@ -777,14 +800,14 @@ func (n *Notary) submitAttestation(parentCtx context.Context) {
 			snapRootStr := common.BytesToHash(snapRoot[:]).String()
 			types.LogTx("NOTARY", fmt.Sprintf("Submitted attestation with snapRoot: %s", snapRootStr), n.destinationDomain.Config().DomainID, tx)
 			span.AddEvent("Submitted transaction", trace.WithAttributes(
-				attribute.String("tx", tx.Hash().Hex()),
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
 			))
 
 			return
 		})
 		if err != nil {
-			span.AddEvent("Error submitting attestation", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			span.AddEvent("could not submit attestation", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
 			return
 		}

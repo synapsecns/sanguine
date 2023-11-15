@@ -293,7 +293,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
 	if err != nil {
-		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 	}
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
@@ -386,7 +386,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	if prevTx != nil {
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
-			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
+			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 			return err
 		}
 
@@ -444,7 +444,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		gasBlock, ok = t.lastGasBlockCache.Load(chainID)
 		if ok {
 			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
-				attribute.String("error", err.Error()),
+				attribute.String(metrics.Error, err.Error()),
 				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
 			))
 		} else {
@@ -484,7 +484,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
 		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 			// fallback to default
 			return t.config.GetGasEstimate(chainID), nil
 		}

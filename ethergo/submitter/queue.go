@@ -35,7 +35,7 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 	}
 	if err != nil {
 		span.AddEvent("error processing queue", trace.WithAttributes(
-			attribute.String("error", err.Error()),
+			attribute.String(metrics.Error, err.Error()),
 		))
 	}
 	return false, err
@@ -62,7 +62,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 		err := t.processConfirmedQueue(ctx)
 		if err != nil {
 			span.AddEvent("processConfirmedQueue error", trace.WithAttributes(
-				attribute.String("error", err.Error())))
+				attribute.String(metrics.Error, err.Error())))
 		}
 	}()
 
@@ -89,7 +89,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 			err := t.chainPendingQueue(ctx, new(big.Int).SetUint64(chainID), sortedTXsByChainID[chainID])
 			if err != nil {
 				span.AddEvent("chainPendingQueue error", trace.WithAttributes(
-					attribute.String("error", err.Error()), attribute.Int64("chainID", int64(chainID))))
+					attribute.String(metrics.Error, err.Error()), attribute.Int64("chainID", int64(chainID))))
 				span.SetAttributes(attribute.String(fmt.Sprintf("err_%d", chainID), err.Error()))
 			}
 		}(chainID)
@@ -121,7 +121,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 			err := t.chainConfirmQueue(ctx, new(big.Int).SetUint64(chainID), sortedTXsByChainID[chainID])
 			if err != nil {
 				span.AddEvent("chainPendingQueue error", trace.WithAttributes(
-					attribute.String("error", err.Error()), attribute.Int64("chainID", int64(chainID))))
+					attribute.String(metrics.Error, err.Error()), attribute.Int64("chainID", int64(chainID))))
 			}
 		}(chainID)
 	}
@@ -186,7 +186,7 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(parentCtx context.Context, cha
 	err = chainClient.BatchWithContext(ctx, calls...)
 	span.AddEvent("batched calls", trace.WithAttributes(
 		attribute.Int("numCalls", len(calls)),
-		attribute.String("error", fmt.Sprintf("%v", err)),
+		attribute.String(metrics.Error, fmt.Sprintf("%v", err)),
 	))
 	foundSuccessfulTX := false
 	if err != nil {

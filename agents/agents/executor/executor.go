@@ -365,7 +365,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(originDomain)),
 		attribute.Int(metrics.Destination, int(destinationDomain)),
-		attribute.String("messageLeaf", common.BytesToHash(leaf[:]).String()),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
 	))
 
 	defer func() {
@@ -409,13 +409,15 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
 	if err != nil {
-		span.AddEvent("could not get merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not get merkle proof", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verifiedMessageProof, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
-		span.AddEvent("could not verify merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not verify merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
@@ -426,7 +428,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	verifiedStateProof, err := e.verifyStateMerkleProof(ctx, *state, *snapshotRoot)
 	if err != nil {
-		span.AddEvent("could not verify state merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not verify state merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		return false, fmt.Errorf("could not verify state merkle proof: %w", err)
 	}
 
@@ -446,13 +448,15 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		Nonce:        &stateNonce,
 	}
 	span.AddEvent("got state data", trace.WithAttributes(
-		attribute.String("stateRoot", stateRootString),
-		attribute.Int("stateNonce", int(stateNonce)),
+		attribute.String(metrics.StateRoot, stateRootString),
+		attribute.Int(metrics.StateNonce, int(stateNonce)),
 	))
 
 	snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
-		span.AddEvent("could not get state index", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not get state index", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
 
@@ -462,7 +466,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if stateIndex == nil {
-		span.AddEvent("state indexis nil")
+		span.AddEvent("state index is nil")
 		return false, nil
 	}
 
@@ -473,7 +477,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 
 	originProofValid, err := e.verifyOriginMerkleProof(ctx, originProofRaw, leaf, uint32(message.Nonce()-1), stateRoot)
 	if err != nil {
-		span.AddEvent("could not verify origin merkle proof", trace.WithAttributes(attribute.String("error", err.Error())))
+		span.AddEvent("could not verify origin merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		return false, fmt.Errorf("could not verify origin merkle proof: %w", err)
 	}
 
@@ -500,12 +504,12 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		leafHex := common.Bytes2Hex(leafBytes[:])
 		stateHash, _ := (*state).Hash()
 		span.AddEvent("Submitting execute()", trace.WithAttributes(
-			attribute.Int("origin", int(message.OriginDomain())),
-			attribute.Int("destination", int(destinationDomain)),
-			attribute.String("leaf", leafHex),
-			attribute.String("stateRoot", stateRootString),
+			attribute.Int(metrics.Origin, int(message.OriginDomain())),
+			attribute.Int(metrics.Destination, int(destinationDomain)),
+			attribute.String(metrics.MessageLeaf, leafHex),
+			attribute.String(metrics.StateRoot, stateRootString),
 			attribute.Int("stateIndex", int(*stateIndex)),
-			attribute.Int("stateNonce", int(stateNonce)),
+			attribute.Int(metrics.StateNonce, int(stateNonce)),
 			attribute.String("stateHash", common.BytesToHash(stateHash[:]).String()),
 		))
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
@@ -584,8 +588,8 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 	chainID := state.Origin()
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
-		attribute.String("root", root),
-		attribute.String("snapRoot", snapshotRoot),
+		attribute.String(metrics.StateRoot, root),
+		attribute.String(metrics.SnapRoot, snapshotRoot),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
@@ -629,8 +633,8 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 func (e Executor) verifyOriginMerkleProof(parentCtx context.Context, originProof [][]byte, messageLeaf [32]byte, index uint32, stateRoot [32]byte) (_ bool, err error) {
 	_, span := e.handler.Tracer().Start(parentCtx, "verifyOriginMerkleProof", trace.WithAttributes(
 		attribute.Int("index", int(index)),
-		attribute.String("messageLeaf", common.BytesToHash(messageLeaf[:]).String()),
-		attribute.String("stateRoot", common.BytesToHash(stateRoot[:]).String()),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(messageLeaf[:]).String()),
+		attribute.String(metrics.StateRoot, common.BytesToHash(stateRoot[:]).String()),
 	))
 
 	defer func() {
@@ -655,7 +659,9 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	))
 
 	defer func() {
-		span.AddEvent("Determine execution status", trace.WithAttributes(attribute.Bool("should_execute", msgNonce != nil)))
+		span.AddEvent("determine execution status", trace.WithAttributes(
+			attribute.Bool("should_execute", msgNonce != nil),
+		))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
