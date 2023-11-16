@@ -98,35 +98,9 @@ files:
   config.yml: |-
     client_type: resty
     chains:
-      11155111:
+      1:
         rpcs:
-          - rpc: https://ethereum-sepolia.publicnode.com
-            rpc_type: atable
-          - rpc: https://rpc.sepolia.org
-            rpc_type: auxiliary
-          - rpc: https://endpoints.omniatech.io/v1/eth/sepolia/public
-            rpc_type: auxiliary
-        confirmations: 1
-      421614:
-        rpcs:
-          - rpc: https://arbitrum-sepolia.blockpi.network/v1/rpc/public
-            rpc_type: stable
-          - rpc: https://sepolia-rollup.arbitrum.io/rpc
-            rpc_type: auxiliary
-        confirmations: 1
-      444:
-        rpcs:
-          - rpc: https://l2-synapse-sepolia-testnet-1mdqkm651f.t.conduit.xyz
-            rpc_type: stable
-        confirmations: 1
-      43113:
-        rpcs:
-          - rpc: https://api.avax-test.network/ext/bc/C/rpc
-            rpc_type: stable
-          - rpc: https://avalanche-fuji.blockpi.network/v1/rpc/public
-            rpc_type: auxiliary
-          - rpc: https://endpoints.omniatech.io/v1/avax/fuji/public
-            rpc_type: auxiliary
+          - https://eth.llamarpc.com
         confirmations: 1
 
 env:
