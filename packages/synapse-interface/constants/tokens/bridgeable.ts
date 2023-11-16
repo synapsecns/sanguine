@@ -43,6 +43,17 @@ import wethLogo from '@assets/icons/weth.svg'
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
+// Priority ranks:
+// 100: chain's major stablecoins (DAI, USDC, USDT)
+// 150: ETH (WETH if chain's native asset is ETH)
+// 200: rest of the chain's stablecoins
+// 250: SYN, biggest partner tokens (GMX, JEWEL, etc)
+// 300: chain's native asset (AVAX, FTM, MATIC, KLAY, etc)
+// 350: wrapped versions of native asset (WAVAX, WFTM, etc)
+// 400: synAssets
+// 500: nAssets
+// 600: everything else
+
 export const GOHM = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
@@ -198,7 +209,7 @@ export const GMX = new Token({
   logo: gmxLogo,
   docUrl: '',
   swapableType: 'GMX',
-  priorityRank: 600,
+  priorityRank: 250,
   color: 'blue',
   routeSymbol: 'GMX',
 })
@@ -449,7 +460,7 @@ export const METISUSDC = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.METIS.id],
   color: 'blue',
-  priorityRank: 300,
+  priorityRank: 100,
   routeSymbol: 'm.USDC',
 })
 
@@ -567,7 +578,7 @@ export const WETHE = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.AVALANCHE.id],
   color: 'sky',
-  priorityRank: 200,
+  priorityRank: 150,
   routeSymbol: 'WETH.e',
 })
 
@@ -582,7 +593,7 @@ export const ONEETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'sky',
-  priorityRank: 200,
+  priorityRank: 600,
   routeSymbol: '1ETH',
 })
 
@@ -613,7 +624,7 @@ export const SYN = new Token({
   swapableType: 'SYN',
   color: 'purple',
   visibilityRank: 90,
-  priorityRank: 200,
+  priorityRank: 250,
   routeSymbol: 'SYN',
 })
 
@@ -629,7 +640,7 @@ export const FRAX = new Token({
   logo: fraxLogo,
   swapableType: 'FRAX',
   color: 'gray',
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'FRAX',
 })
 
@@ -703,7 +714,7 @@ export const NOTE = new Token({
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
   visibilityRank: 90,
-  priorityRank: 300,
+  priorityRank: 100,
   routeSymbol: 'NOTE',
 })
 
@@ -758,7 +769,7 @@ export const ETH = new Token({
   swapableType: 'ETH',
   color: 'sky',
   visibilityRank: 101,
-  priorityRank: 200,
+  priorityRank: 150,
   swapableOn: [
     CHAINS.ARBITRUM.id,
     CHAINS.BASE.id,
@@ -814,7 +825,7 @@ export const WMOVR = new Token({
   logo: movrLogo,
   swapableType: 'MOVR',
   color: 'purple',
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WMOVR',
 })
 
@@ -829,7 +840,7 @@ export const WAVAX = new Token({
   swapableType: 'AVAX',
   color: 'red',
   visibilityRank: 90,
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WAVAX',
 })
 
@@ -847,7 +858,7 @@ export const JEWEL = new Token({
   color: 'lime',
   isNative: true,
   swapableType: 'JEWEL',
-  priorityRank: 300,
+  priorityRank: 250,
   routeSymbol: 'JEWEL',
 })
 
@@ -862,7 +873,7 @@ export const WJEWEL = new Token({
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WJEWEL',
 })
 
@@ -892,7 +903,7 @@ export const XJEWEL = new Token({
   logo: jewelLogo,
   swapableType: 'XJEWEL',
   color: 'lime',
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'xJEWEL',
 })
 
@@ -911,7 +922,7 @@ export const USDCe = new Token({
   color: 'blue',
   swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id, CHAINS.OPTIMISM.id],
   visibilityRank: 100,
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'USDC.e',
 })
 
@@ -928,7 +939,7 @@ export const USDTe = new Token({
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
   color: 'green',
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'USDT.e',
 })
 
@@ -946,7 +957,7 @@ export const SUSD = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.OPTIMISM.id],
   visibilityRank: 100,
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'sUSD',
 })
 
@@ -1090,7 +1101,7 @@ export const WKLAY = new Token({
   logo: klayLogo,
   swapableType: 'WKLAY',
   color: 'red',
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WKLAY',
 })
 
@@ -1122,7 +1133,7 @@ export const WMATIC = new Token({
   swapableType: 'MATIC',
   color: 'blue',
   visibilityRank: 90,
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WMATIC',
 })
 
@@ -1138,7 +1149,7 @@ export const FTM = new Token({
   swapableType: 'FTM',
   swapableOn: [CHAINS.FANTOM.id],
   color: 'blue',
-  priorityRank: 500,
+  priorityRank: 300,
   routeSymbol: 'FTM',
 })
 
@@ -1153,7 +1164,7 @@ export const WFTM = new Token({
   swapableType: 'FTM',
   swapableOn: [CHAINS.FANTOM.id],
   color: 'blue',
-  priorityRank: 500,
+  priorityRank: 350,
   routeSymbol: 'WFTM',
 })
 
@@ -1175,7 +1186,7 @@ export const WETH = new Token({
   logo: wethLogo,
   swapableType: 'ETH',
   color: 'sky',
-  priorityRank: 300,
+  priorityRank: 350,
   routeSymbol: 'WETH',
 })
 
@@ -1193,7 +1204,7 @@ export const CRVUSD = new Token({
   swapableType: 'USD',
   swapableOn: [],
   color: 'yellow',
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'crvUSD',
 })
 
@@ -1210,7 +1221,7 @@ export const LUSD = new Token({
   swapableType: 'USD',
   swapableOn: [],
   color: 'blue',
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'LUSD',
 })
 
