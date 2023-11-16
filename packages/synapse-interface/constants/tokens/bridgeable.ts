@@ -44,7 +44,8 @@ import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
 // Priority ranks:
-// 100: chain's major stablecoins (DAI, USDC, USDT)
+// 100: chain's major stablecoins (native DAI, USDC, USDT)
+// 125: chain's major stablecoins (bridged)
 // 150: ETH (WETH if chain's native asset is ETH)
 // 200: rest of the chain's stablecoins
 // 250: SYN, biggest partner tokens (GMX, JEWEL, etc)
@@ -460,7 +461,7 @@ export const METISUSDC = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.METIS.id],
   color: 'blue',
-  priorityRank: 100,
+  priorityRank: 125,
   routeSymbol: 'm.USDC',
 })
 
@@ -922,7 +923,7 @@ export const USDCe = new Token({
   color: 'blue',
   swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id, CHAINS.OPTIMISM.id],
   visibilityRank: 100,
-  priorityRank: 200,
+  priorityRank: 125,
   routeSymbol: 'USDC.e',
 })
 
@@ -939,7 +940,7 @@ export const USDTe = new Token({
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
   color: 'green',
-  priorityRank: 200,
+  priorityRank: 125,
   routeSymbol: 'USDT.e',
 })
 
@@ -1066,7 +1067,7 @@ export const DAIE = new Token({
   swapableOn: [CHAINS.AVALANCHE.id],
   color: 'yellow',
   visibilityRank: 100,
-  priorityRank: 200,
+  priorityRank: 125,
   routeSymbol: 'DAI.e',
 })
 
@@ -1240,6 +1241,6 @@ export const USDBC = new Token({
   swapableType: 'USD',
   swapableOn: [],
   color: 'blue',
-  priorityRank: 100,
+  priorityRank: 125,
   routeSymbol: 'USDbC',
 })
