@@ -107,14 +107,14 @@ type logOrderInfo struct {
 
 const (
 	logChanSize                 = 1000
-	scribeConnectTimeout        = 30 * time.Second
+	scribeConnectTimeoutSeconds = 30
 	defaultMaxRetrySeconds      = 30
 	defaultExecuteRetryInterval = 300
 	defaultMaxExecuteAttempts   = 5
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
-	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
+	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeoutSeconds*time.Second)
 	defer cancel()
 
 	conn, err := grpc.DialContext(ctx, url,
