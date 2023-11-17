@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
@@ -39,9 +41,10 @@ type loadConfig struct {
 }
 
 type chainConfig struct {
-	MessageAddr     string `yaml:"message_contract_addr"`
-	OriginAddr      string `yaml:"origin_addr"`
-	DestinationAddr string `yaml:"destination_addr"`
+	MessageAddr     string            `yaml:"message_contract_addr"`
+	OriginAddr      string            `yaml:"origin_addr"`
+	DestinationAddr string            `yaml:"destination_addr"`
+	Signers         map[string]string `yaml:"signers"`
 }
 
 func getLoadConfig(path string) (cfg loadConfig, err error) {
@@ -245,6 +248,48 @@ func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 	return nil
 }
 
+func getBalance(ctx context.Context, omniRPCClient omniClient.RPCClient, pk string, chainID int) (balance *big.Int, addr common.Address, err error) {
+	wallet, err := wallet.FromHex(pk)
+	if err != nil {
+		err = fmt.Errorf("could not get wallet from hex: %w", err)
+		return
+	}
+	client, err := omniRPCClient.GetChainClient(ctx, chainID)
+	if err != nil {
+		err = fmt.Errorf("could not get chain client: %w", err)
+		return
+	}
+	balance, err = client.BalanceAt(ctx, wallet.Address(), nil)
+	if err != nil {
+		err = fmt.Errorf("could not get balance: %w", err)
+		return
+	}
+	addr = wallet.Address()
+	return
+}
+
+const balanceThreshold = 0.05
+
+func printAgentBalances(ctx context.Context, omniRPCClient omniClient.RPCClient, chains map[int]chainConfig) error {
+	fmt.Println("Printing agent balances...")
+	for chainID, chainCfg := range chains {
+		for agent, pk := range chainCfg.Signers {
+			balance, addr, err := getBalance(ctx, omniRPCClient, pk, chainID)
+			if err != nil {
+				return err
+			}
+			balanceFlt := new(big.Float).SetInt(balance)
+			balanceFlt.Quo(balanceFlt, new(big.Float).SetInt(big.NewInt(params.Ether)))
+			balanceFlt64, _ := balanceFlt.Float64()
+			if balanceFlt64 < balanceThreshold {
+				return fmt.Errorf("balance for %s on chain %d is below threshold of %f: %f [%s]", agent, chainID, balanceThreshold, balanceFlt64, addr)
+			}
+			fmt.Printf("Balance for %s on chain %d: %s [%s]\n", agent, chainID, balanceFlt.String(), addr)
+		}
+	}
+	return nil
+}
+
 var pingPongParser *pingpongclient.PingPongClientFilterer
 var originParser origin.Parser
 var destinationParser *destination.DestinationFilterer
@@ -278,6 +323,15 @@ func main() {
 
 	// Load the chain configs.
 	loadCfg, err := getLoadConfig(loadConfigPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Connect to OmniRPC.
+	omniRPCClient := omniClient.NewOmnirpcClient(loadCfg.OmniRPCUrl, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
+
+	// Check agent balances.
+	err = printAgentBalances(ctx, omniRPCClient, loadCfg.Chains)
 	if err != nil {
 		panic(err)
 	}
@@ -321,9 +375,6 @@ func main() {
 	// if err != nil {
 	// 	panic(err)
 	// }
-
-	// Connect to OmniRPC.
-	omniRPCClient := omniClient.NewOmnirpcClient(loadCfg.OmniRPCUrl, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
 
 	// Listen for messages.
 	g, _ := errgroup.WithContext(ctx)
