@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {ISequentialFactory} from "../interfaces/ISequentialFactory.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {LibRLP} from "solmate/utils/LibRLP.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SequentialFactory is Ownable, ISequentialFactory {
@@ -42,7 +43,7 @@ contract SequentialFactory is Ownable, ISequentialFactory {
 
     /// @inheritdoc ISequentialFactory
     function predictDeployment(uint256 nonce) public view returns (address deployedAt) {
-        // TODO: complete
+        return LibRLP.computeAddress(address(this), nonce);
     }
 
     /// @inheritdoc ISequentialFactory
