@@ -50,6 +50,8 @@ type EVMClient interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchContext uses w3 as a helper method for batch calls
 	BatchContext(ctx context.Context, calls ...w3types.Caller) error
+	// this is added for interface compatibility
+	BatchWithContext(ctx context.Context, calls ...w3types.Caller) error
 }
 
 // clientImpl is a client implementation for an ethclient.
@@ -72,6 +74,11 @@ type clientImpl struct {
 }
 
 func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+	//nolint:wrapcheck
+	return c.w3Client.CallCtx(ctx, calls...)
+}
+
+func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
 	//nolint:wrapcheck
 	return c.w3Client.CallCtx(ctx, calls...)
 }
