@@ -14,3 +14,7 @@
 [submodule "packages/contracts-core/lib/create3-factory"]
 	path = packages/contracts-core/lib/create3-factory
 	url = https://github.com/zeframlou/create3-factory
+[submodule "packages/contracts-core/lib/solmate"]
+	path = packages/contracts-core/lib/solmate
+	url = https://github.com/transmissions11/solmate.git
+	branch = v7
