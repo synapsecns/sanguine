@@ -10,9 +10,11 @@ import {Test} from "forge-std/Test.sol";
 contract SequentialFactoryTest is Test {
     SequentialFactory public factory;
     address public owner;
+    address public attacker;
 
     function setUp() public {
         owner = makeAddr("Owner");
+        attacker = makeAddr("Attacker");
         factory = new SequentialFactory(owner);
     }
 
@@ -169,5 +171,59 @@ contract SequentialFactoryTest is Test {
             address deployedAt = deploy(getCodeTenDeployments(i));
             assertEq(predicted, deployedAt);
         }
+    }
+
+    // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
+
+    function test_deploy_nonceOne_reverts_whenCallerNotOwner() public {
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(attacker);
+        factory.deploy(1, type(A).creationCode);
+    }
+
+    function test_deploy_nonceEleven_reverts_whenCallerNotOwner() public {
+        deployTenContracts();
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(attacker);
+        factory.deploy(11, type(A).creationCode);
+    }
+
+    function test_deploy_nonceOne_reverts_whenNonceIsLower() public {
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__InvalidNonce.selector, 0, 1));
+        vm.prank(owner);
+        factory.deploy(0, type(A).creationCode);
+    }
+
+    function test_deploy_nonceOne_reverts_whenNonceIsHigher() public {
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__InvalidNonce.selector, 2, 1));
+        vm.prank(owner);
+        factory.deploy(2, type(A).creationCode);
+    }
+
+    function test_deploy_nonceEleven_reverts_whenNonceIsLower() public {
+        deployTenContracts();
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__InvalidNonce.selector, 10, 11));
+        vm.prank(owner);
+        factory.deploy(10, type(A).creationCode);
+    }
+
+    function test_deploy_nonceEleven_reverts_whenNonceIsHigher() public {
+        deployTenContracts();
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__InvalidNonce.selector, 12, 11));
+        vm.prank(owner);
+        factory.deploy(12, type(A).creationCode);
+    }
+
+    function test_deploy_nonceOne_revert_whenDeploymentFails() public {
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__DeploymentFailed.selector, 1));
+        vm.prank(owner);
+        factory.deploy(1, type(UnDeployable).creationCode);
+    }
+
+    function test_deploy_nonceEleven_revert_whenDeploymentFails() public {
+        deployTenContracts();
+        vm.expectRevert(abi.encodeWithSelector(SequentialFactory.SequentialFactory__DeploymentFailed.selector, 11));
+        vm.prank(owner);
+        factory.deploy(11, type(UnDeployable).creationCode);
     }
 }
