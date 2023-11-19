@@ -21,8 +21,6 @@ jobs:
       NODE_ENV: 'production'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
         with:
