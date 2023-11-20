@@ -109,10 +109,15 @@ func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) 
 // attest to a snapshot that contains an invalid state.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleValidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
+func (g Guard) handleValidAttestation(parentCtx context.Context, attestationData *types.AttestationWithMetadata) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleValidAttestation", trace.WithAttributes(
+		attribute.String(metrics.Agent, attestationData.Agent().String()),
+		attribute.Int(metrics.AgentDomain, int(attestationData.AgentDomain())),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Fetch the attested snapshot.
 	var snapshot types.Snapshot
-	var err error
 	contractCall := func(ctx context.Context) error {
 		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, attestationData.AttestationPayload())
 		if err != nil {
@@ -143,13 +148,20 @@ func (g Guard) handleValidAttestation(ctx context.Context, attestationData *type
 
 // handleSnapshot handles a snapshot by validating each state in the snapshot.
 // If an invalid state is found, initiate slashing and submit state reports on eligible chains.
-func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data types.StateValidationData) error {
+func (g Guard) handleSnapshot(parentCtx context.Context, snapshot types.Snapshot, data types.StateValidationData) (err error) {
+	snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleSnapshot", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Process each state in the snapshot.
 	for si, s := range snapshot.States() {
 		stateIndex, state := si, s
 		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
-			return fmt.Errorf("could not handle state: %w", err)
+			err = fmt.Errorf("could not handle state: %w", err)
+			return err
 		}
 		if !isSlashable {
 			continue
@@ -158,13 +170,15 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		// Initiate slashing on origin.
 		err = g.verifyState(ctx, state, stateIndex, data)
 		if err != nil {
-			return fmt.Errorf("could not verify state: %w", err)
+			err = fmt.Errorf("could not verify state: %w", err)
+			return err
 		}
 
 		// Evaluate which chains need a state report.
 		stateReportChains, err := g.getStateReportChains(ctx, data.AgentDomain(), data.Agent())
 		if err != nil {
-			return fmt.Errorf("could not get state report chains: %w", err)
+			err = fmt.Errorf("could not get state report chains: %w", err)
+			return err
 		}
 
 		// Submit the state report on each eligible chain.
@@ -173,7 +187,8 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		for _, chainID := range stateReportChains {
 			err = g.submitStateReport(ctx, chainID, state, stateIndex, data)
 			if err != nil {
-				return fmt.Errorf("could not submit state report: %w", err)
+				err = fmt.Errorf("could not submit state report: %w", err)
+				return err
 			}
 		}
 	}
@@ -182,9 +197,15 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
 // then submitting an attestation fraud report on the accused agent's Domain.
-func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
+func (g Guard) handleInvalidAttestation(parentCtx context.Context, attestationData *types.AttestationWithMetadata) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleInvalidAttestation", trace.WithAttributes(
+		attribute.String(metrics.Agent, attestationData.Agent().String()),
+		attribute.Int(metrics.AgentDomain, int(attestationData.AgentDomain())),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Initiate slashing for invalid attestation.
-	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 			transactor,
 			attestationData.AttestationPayload(),
@@ -197,7 +218,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 		return
 	})
 	if err != nil {
-		return fmt.Errorf("could not submit VerifyAttestation tx: %w", err)
+		err = fmt.Errorf("could not submit VerifyAttestation tx: %w", err)
+		return err
 	}
 
 	// Submit a fraud report by calling `submitAttestationReport()` on the remote chain.
@@ -223,7 +245,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 		return
 	})
 	if err != nil {
-		return fmt.Errorf("could not submit SubmitAttestationReport tx: %w", err)
+		err = fmt.Errorf("could not submit SubmitAttestationReport tx: %w", err)
+		return err
 	}
 
 	return nil

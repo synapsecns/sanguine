@@ -33,4 +33,8 @@ const (
 	MessageLeaf = "message_leaf"
 	// Error is the metric name for the error.
 	Error = "error"
+	// Agent is the metric name for the agent.
+	Agent = "agent"
+	// AgentDomain is the metric name for the agent domain.
+	AgentDomain = "agent_domain"
 )
