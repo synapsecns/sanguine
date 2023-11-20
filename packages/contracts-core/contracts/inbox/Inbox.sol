@@ -58,13 +58,13 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @notice Initializes `Inbox` contract:
-    /// - Sets `msg.sender` as the owner of the contract
+    /// - Sets `owner_` as the owner of the contract
     /// - Sets `agentManager`, `origin`, `destination` and `summit` addresses
-    function initialize(address agentManager_, address origin_, address destination_, address summit_)
+    function initialize(address agentManager_, address origin_, address destination_, address summit_, address owner_)
         external
         initializer
     {
-        __StatementInbox_init(agentManager_, origin_, destination_);
+        __StatementInbox_init(agentManager_, origin_, destination_, owner_);
         summit = summit_;
     }
 

@@ -64,9 +64,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         if (localDomain == synapseDomain_) revert SynapseDomainForbidden();
     }
 
-    function initialize(address origin_, address destination_, address inbox_) external initializer {
-        __AgentManager_init(origin_, destination_, inbox_);
-        __Ownable2Step_init();
+    function initialize(address origin_, address destination_, address inbox_, address owner_) external initializer {
+        __AgentManager_init(origin_, destination_, inbox_, owner_);
     }
 
     // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════

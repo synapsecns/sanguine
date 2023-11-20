@@ -69,11 +69,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
-    /// - msg.sender is set as contract owner
-    function initialize(bytes32 agentRoot) external initializer {
-        // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable2Step_init();
-        // Initialize ReeentrancyGuard
+    /// - `owner_` is set as contract owner
+    /// - `agentRoot` is set as the initial Agent Merkle Root in LightManager (if not on Synapse Chain)
+    function initialize(bytes32 agentRoot, address owner_) external initializer {
+        __MessagingBase_init(owner_);
         __ReentrancyGuard_init();
         // Set Agent Merkle Root in Light Manager
         if (localDomain != synapseDomain) {

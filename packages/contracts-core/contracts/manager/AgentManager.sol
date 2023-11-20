@@ -74,7 +74,11 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AgentManager_init(address origin_, address destination_, address inbox_) internal onlyInitializing {
+    function __AgentManager_init(address origin_, address destination_, address inbox_, address owner_)
+        internal
+        onlyInitializing
+    {
+        __MessagingBase_init(owner_);
         origin = origin_;
         destination = destination_;
         inbox = inbox_;

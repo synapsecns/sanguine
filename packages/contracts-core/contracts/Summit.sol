@@ -101,9 +101,11 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 
-    function initialize() external initializer {
-        // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable2Step_init();
+    /// @notice Initializes Summit contract:
+    /// - `owner_` is set as contract owner
+    /// - Empty snapshot and attestation are saved, so that the attestation nonce starts from 1
+    function initialize(address owner_) external initializer {
+        __MessagingBase_init(owner_);
         _initializeAttestations();
     }
 

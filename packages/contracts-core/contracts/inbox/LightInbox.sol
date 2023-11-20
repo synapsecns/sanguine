@@ -27,10 +27,13 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
     }
 
     /// @notice Initializes `LightInbox` contract:
-    /// - Sets `msg.sender` as the owner of the contract
+    /// - Sets `owner_` as the owner of the contract
     /// - Sets `agentManager`, `origin` and `destination` addresses
-    function initialize(address agentManager_, address origin_, address destination_) external initializer {
-        __StatementInbox_init(agentManager_, origin_, destination_);
+    function initialize(address agentManager_, address origin_, address destination_, address owner_)
+        external
+        initializer
+    {
+        __StatementInbox_init(agentManager_, origin_, destination_, owner_);
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════

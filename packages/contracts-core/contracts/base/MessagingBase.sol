@@ -33,6 +33,10 @@ abstract contract MessagingBase is MultiCallable, Versioned, Ownable2StepUpgrade
         synapseDomain = synapseDomain_;
     }
 
+    function __MessagingBase_init(address owner_) internal onlyInitializing {
+        _transferOwnership(owner_);
+    }
+
     // TODO: Implement pausing
 
     /**

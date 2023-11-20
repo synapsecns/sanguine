@@ -69,10 +69,12 @@ contract BondingManager is AgentManager, InterfaceBondingManager {
         if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 
-    function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
-        __AgentManager_init(origin_, destination_, inbox_);
+    function initialize(address origin_, address destination_, address inbox_, address summit_, address owner_)
+        external
+        initializer
+    {
+        __AgentManager_init(origin_, destination_, inbox_, owner_);
         summit = summit_;
-        __Ownable2Step_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
         _agents.push(address(0));
