@@ -38,7 +38,6 @@ type Notary struct {
 	refreshInterval         time.Duration
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
-	currentSnapRoot         [32]byte
 	summitParser            summit.Parser
 	handler                 metrics.Handler
 	retryConfig             []retry.WithBackoffConfigurator
@@ -246,17 +245,17 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.NotaryAttestation, error) {
+func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context, snapRoot [32]byte) (types.NotaryAttestation, error) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
-		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 	))
 	defer span.End()
 
 	// Fetch the attestation nonce corresponding to the current snapRoot.
 	var attNonce uint32
 	contractCall := func(ctx context.Context) (err error) {
-		attNonce, err = n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
+		attNonce, err = n.summitDomain.Destination().GetAttestationNonce(ctx, snapRoot)
 		if err != nil {
 			return fmt.Errorf("could not get attestation nonce: %w", err)
 		}
@@ -294,7 +293,7 @@ func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context) (types.N
 		return nil, nil
 	}
 
-	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
+	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(snapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
 	return attestation, nil
 }
 
@@ -604,9 +603,8 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 }
 
 //nolint:cyclop
-func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
+func (n *Notary) submitLatestSnapshot(parentCtx context.Context) (snapRoot [32]byte) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
-		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
@@ -617,11 +615,13 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		return
 	}
 
-	n.currentSnapRoot, _, _ = snapshot.SnapshotRootAndProofs()
-	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
+	snapRoot, _, _ = snapshot.SnapshotRootAndProofs()
+	span.AddEvent("got snapshot", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+	))
+	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, snapRoot)
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("could not get attestation nonce"), trace.WithAttributes(
-			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 			attribute.String(metrics.Error, err.Error()),
 		))
 		return
@@ -655,7 +655,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			span.AddEvent("submitted snapshot tx", trace.WithAttributes(
 				attribute.String(metrics.TxHash, tx.Hash().Hex()),
 			))
-			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.summitDomain.Config().DomainID, tx)
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(snapRoot[:]).String()), n.summitDomain.Config().DomainID, tx)
 			return
 		})
 		if err != nil {
@@ -669,6 +669,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			n.summitMyLatestStates[originID] = state
 		}
 	}
+	return snapRoot
 }
 
 //nolint:cyclop
@@ -744,14 +745,14 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 }
 
 //nolint:cyclop,unused
-func (n *Notary) submitAttestation(parentCtx context.Context) {
+func (n *Notary) submitAttestation(parentCtx context.Context, snapRoot [32]byte) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation", trace.WithAttributes(
-		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer span.End()
 
-	attestation, err := n.loadLatestSummitAttestation(ctx)
+	attestation, err := n.loadLatestSummitAttestation(ctx, snapRoot)
 	if err != nil {
 		logger.Warnf("Error loading latest summit attestation: %v\n", err)
 		return
@@ -848,14 +849,14 @@ func (n *Notary) Start(parentCtx context.Context) error {
 				return nil
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
-				n.submitLatestSnapshot(ctx)
+				snapRoot := n.submitLatestSnapshot(ctx)
 				shouldRegisterNotary, shouldSendToDestination := n.shouldRegisterNotaryOnDestination(ctx)
 				didRegisterAgent := true
 				if shouldRegisterNotary {
 					didRegisterAgent = n.registerNotaryOnDestination(ctx)
 				}
 				if shouldSendToDestination && didRegisterAgent {
-					n.submitAttestation(ctx)
+					n.submitAttestation(ctx, snapRoot)
 				}
 			}
 		}
