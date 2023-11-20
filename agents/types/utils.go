@@ -39,6 +39,9 @@ var EtherscanTxURLs = map[uint32]string{
 	444:      "https://explorerl2-synapse-sepolia-testnet-1mdqkm651f.t.conduit.xyz/tx",
 	421614:   "https://sepolia-explorer.arbitrum.io/tx",
 	11155111: "https://sepolia.etherscan.io/tx",
+	1115420:  "https://optimism-sepolia.blockscout.com/tx",
+	534351:   "https://sepolia.scrollscan.dev/tx",
+	80001:    "https://mumbai.polygonscan.com/tx",
 }
 
 func LogTx(agent, msg string, chainID uint32, tx *ethTypes.Transaction) {
