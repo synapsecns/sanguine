@@ -32,7 +32,12 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     function _initializeAgentManager(address deployment) internal override {
         if (LightManager(deployment).owner() == address(0)) {
             console.log("   %s: initializing", agentManagerName());
-            LightManager(deployment).initialize({origin_: origin, destination_: destination, inbox_: statementInbox});
+            LightManager(deployment).initialize({
+                origin_: origin,
+                destination_: destination,
+                inbox_: statementInbox,
+                owner_: broadcasterAddress
+            });
         } else {
             console.log("   %s: already initialized", agentManagerName());
         }
@@ -53,7 +58,12 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     function _initializeStatementInbox(address deployment) internal override {
         if (LightInbox(deployment).owner() == address(0)) {
             console.log("   %s: initializing", statementInboxName());
-            LightInbox(deployment).initialize({agentManager_: agentManager, origin_: origin, destination_: destination});
+            LightInbox(deployment).initialize({
+                agentManager_: agentManager,
+                origin_: origin,
+                destination_: destination,
+                owner_: broadcasterAddress
+            });
         } else {
             console.log("   %s: already initialized", statementInboxName());
         }

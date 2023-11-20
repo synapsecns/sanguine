@@ -37,7 +37,8 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
                 origin_: origin,
                 destination_: destination,
                 inbox_: statementInbox,
-                summit_: summit
+                summit_: summit,
+                owner_: broadcasterAddress
             });
         } else {
             console.log("   %s: already initialized", agentManagerName());
@@ -64,7 +65,8 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
                 agentManager_: agentManager,
                 origin_: origin,
                 destination_: destination,
-                summit_: summit
+                summit_: summit,
+                owner_: broadcasterAddress
             });
         } else {
             console.log("   %s: already initialized", statementInboxName());

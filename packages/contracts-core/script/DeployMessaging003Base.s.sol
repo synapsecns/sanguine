@@ -162,7 +162,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     function _initializeDestination(address deployment) internal {
         if (Destination(deployment).owner() == address(0)) {
             console.log("   %s: initializing", DESTINATION);
-            Destination(deployment).initialize(_getInitialAgentRoot());
+            Destination(deployment).initialize(_getInitialAgentRoot(), broadcasterAddress);
         } else {
             console.log("   %s: already initialized", DESTINATION);
         }
@@ -181,7 +181,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     function _initializeGasOracle(address deployment) internal {
         if (GasOracle(deployment).owner() == address(0)) {
             console.log("   %s: initializing", GAS_ORACLE);
-            GasOracle(deployment).initialize();
+            GasOracle(deployment).initialize(broadcasterAddress);
         } else {
             console.log("   %s: already initialized", GAS_ORACLE);
         }
@@ -202,7 +202,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     function _initializeOrigin(address deployment) internal {
         if (Origin(deployment).owner() == address(0)) {
             console.log("   %s: initializing", ORIGIN);
-            Origin(deployment).initialize();
+            Origin(deployment).initialize(broadcasterAddress);
         } else {
             console.log("   %s: already initialized", ORIGIN);
         }
@@ -222,7 +222,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     function _initializeSummit(address deployment) internal {
         if (Summit(deployment).owner() == address(0)) {
             console.log("   %s: initializing", SUMMIT);
-            Summit(deployment).initialize();
+            Summit(deployment).initialize(broadcasterAddress);
         } else {
             console.log("   %s: already initialized", SUMMIT);
         }
