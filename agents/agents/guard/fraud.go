@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
@@ -256,20 +257,20 @@ func (g Guard) handleInvalidAttestation(parentCtx context.Context, attestationDa
 //
 //nolint:cyclop
 func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) error {
-	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
+	event, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
 	}
 
 	// Validate the receipt.
-	receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
+	receipt, err := types.DecodeReceipt(event.RcptPayload)
 	if err != nil {
 		return fmt.Errorf("could not decode receipt: %w", err)
 	}
 
 	var isValid bool
 	contractCall := func(ctx context.Context) error {
-		isValid, err = g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+		isValid, err = g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, event.RcptPayload)
 		if err != nil {
 			return fmt.Errorf("could not check validity of attestation: %w", err)
 		}
@@ -284,14 +285,31 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		return nil
 	}
 
+	err = g.handleInvalidReceipt(ctx, receipt, event)
+	if err != nil {
+		return fmt.Errorf("could not handle invalid receipt: %w", err)
+	}
+
+	return nil
+}
+
+func (g Guard) handleInvalidReceipt(parentCtx context.Context, receipt types.Receipt, event *inbox.InboxReceiptAccepted) (err error) {
+	leaf := receipt.MessageHash()
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleInvalidReceipt", trace.WithAttributes(
+		attribute.String("attestation_notary", receipt.AttestationNotary().String()),
+		attribute.Int(metrics.Destination, int(receipt.Destination())),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Initiate slashing for an invalid receipt, and optionally submit a fraud report.
 	//nolint:nestif
 	if receipt.Destination() == g.summitDomainID {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(receipt.Destination())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not verify receipt: %w", err)
@@ -306,8 +324,8 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(receipt.Destination())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[receipt.Destination()].LightInbox().VerifyReceipt(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not verify receipt: %w", err)
@@ -330,8 +348,8 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 				rrReceiptBytes,
 			)
 			if err != nil {
@@ -341,10 +359,10 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 			return
 		})
 		if err != nil {
-			return fmt.Errorf("could not submit SubmitReceiptReport tx: %w", err)
+			err = fmt.Errorf("could not submit SubmitReceiptReport tx: %w", err)
+			return err
 		}
 	}
-
 	return nil
 }
 
