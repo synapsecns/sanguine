@@ -245,8 +245,8 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadLatestSummitAttestation(parentCtx context.Context, snapRoot [32]byte) (types.NotaryAttestation, error) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
+func (n *Notary) loadSummitAttestation(parentCtx context.Context, snapRoot [32]byte) (types.NotaryAttestation, error) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 	))
@@ -326,6 +326,28 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 	))
 
 	return attNonce > 0, nil
+}
+
+func (n *Notary) isValidAttestation(parentCtx context.Context, attestation types.NotaryAttestation) (bool, error) {
+	snapRoot := attestation.Attestation().SnapshotRoot()
+	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidAttestation", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+	))
+	defer span.End()
+
+	valid, err := n.summitDomain.Summit().IsValidAttestation(ctx, attestation.AttPayload())
+	if err != nil {
+		span.AddEvent("could not validate attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return false, err
+	}
+	span.AddEvent("checked attestation validity", trace.WithAttributes(
+		attribute.Bool("valid", valid),
+	))
+
+	return valid, nil
 }
 
 func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (shouldRegisterNotary bool, shouldSendToDestination bool) {
@@ -752,7 +774,8 @@ func (n *Notary) submitAttestation(parentCtx context.Context, snapRoot [32]byte)
 	))
 	defer span.End()
 
-	attestation, err := n.loadLatestSummitAttestation(ctx, snapRoot)
+	// Load the attestation from summit corresponding to our snapshot root.
+	attestation, err := n.loadSummitAttestation(ctx, snapRoot)
 	if err != nil {
 		logger.Warnf("Error loading latest summit attestation: %v\n", err)
 		return
@@ -762,6 +785,7 @@ func (n *Notary) submitAttestation(parentCtx context.Context, snapRoot [32]byte)
 		return
 	}
 
+	// Make sure we have not already submitted this attestation.
 	alreadySubmitted, err := n.isAlreadySubmitted(ctx, attestation)
 	if err != nil {
 		logger.Warnf("Error checking if attestation already submitted: %v\n", err)
@@ -772,6 +796,17 @@ func (n *Notary) submitAttestation(parentCtx context.Context, snapRoot [32]byte)
 		span.AddEvent("attestation already submitted on destination", trace.WithAttributes(
 			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 		))
+		return
+	}
+
+	// Sanity check that we are submitting a valid attestation.
+	valid, err := n.isValidAttestation(ctx, attestation)
+	if err != nil {
+		logger.Warnf("Error verifying attestation: %v\n", err)
+		return
+	}
+	if !valid {
+		span.AddEvent("not submitting invalid attestation")
 		return
 	}
 
