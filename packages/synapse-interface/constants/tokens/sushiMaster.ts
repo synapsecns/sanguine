@@ -2,6 +2,7 @@ import sushiLogo from '@assets/icons/sushi.svg'
 import * as CHAINS from '@constants/chains/master'
 
 import { Token } from '@/utils/types'
+import { MINICHEF_ADDRESSES } from '../minichef'
 
 export const SYN_ETH_SUSHI_TOKEN = new Token({
   addresses: {
@@ -17,6 +18,7 @@ export const SYN_ETH_SUSHI_TOKEN = new Token({
   description: 'The SYN/ETH Sushiswap LP Token',
   priorityRank: 6,
   chainId: CHAINS.ETH.id,
+  miniChefAddress: MINICHEF_ADDRESSES[CHAINS.ETH.id],
 })
 
 export const ETH_USDC_SUSHI_TOKEN = new Token({

@@ -6,6 +6,7 @@ import {
   LANDING_PATH,
   BRIDGE_PATH,
   INTERCHAIN_LINK,
+  SOLANA_LINK
 } from './urls'
 
 export interface RouteObject {
@@ -55,4 +56,9 @@ export const NAVIGATION: RouteObject = {
     text: 'Interchain Network',
     match: null,
   },
+  Solana: {
+    path: SOLANA_LINK,
+    text: 'Solana Bridge',
+    match: null,
+  }
 }
