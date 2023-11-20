@@ -425,7 +425,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			message,
 			originProof,
 			snapshotProofB32,
-			big.NewInt(int64(*stateIndex)),
+			uint8(*stateIndex),
 			uint64(1000000),
 		)
 		if err != nil {
