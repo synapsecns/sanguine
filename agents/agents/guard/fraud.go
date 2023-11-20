@@ -20,7 +20,9 @@ import (
 // If an invalid state is found, initiate slashing and submit a state report.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleSnapshotAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleSnapshotAccepted")
+
 	snapshotData, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
@@ -79,7 +81,9 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, e
 
 // handleAttestationAccepted checks whether an attestation is valid.
 // If invalid, initiate slashing and/or submit a fraud report.
-func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleAttestationAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleAttestationAccepted")
+
 	attestationData, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
@@ -256,7 +260,9 @@ func (g Guard) handleInvalidAttestation(parentCtx context.Context, attestationDa
 // handleReceiptAccepted checks whether a receipt is valid and submits a receipt report if not.
 //
 //nolint:cyclop
-func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleReceiptAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleReceiptAccepted")
+
 	event, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
@@ -369,7 +375,9 @@ func (g Guard) handleInvalidReceipt(parentCtx context.Context, receipt types.Rec
 // handleStatusUpdated stores models related to a StatusUpdated event.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleStatusUpdated(parentCtx context.Context, log ethTypes.Log, chainID uint32) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleStatusAccepted")
+
 	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
@@ -489,7 +497,9 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 }
 
 // handleRootUpdated stores models related to a RootUpdated event.
-func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleRootUpdated(parentCtx context.Context, log ethTypes.Log, chainID uint32) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleRootUpdated")
+
 	if chainID == g.summitDomainID {
 		newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
 		if err != nil || newRoot == nil {

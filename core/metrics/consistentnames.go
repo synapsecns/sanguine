@@ -5,6 +5,8 @@ const (
 	ChainID = "chain_id"
 	// EOAAddress is the metric name for an eoa address.
 	EOAAddress = "eoa_address"
+	// BlockNumber is the metric name for the block number.
+	BlockNumber = "block_number"
 	// ContractAddress is the metric name for the contract address.
 	ContractAddress = "contract_address"
 	// Origin is the metric name for the origin chain ID.
