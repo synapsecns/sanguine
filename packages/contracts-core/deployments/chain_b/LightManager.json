@@ -1,28 +1,13 @@
 {
-  "address": "0xF1777e069F89b9C73F874b9D9e41fbe6FC2779D5",
-  "args": "0x000000000000000000000000000000000000000000000000000000000000008900000000000000000000000019d49b378fd2ae1e92a92383200776f57a480ef6000000000000000000000000aebd008e03b1904c14c83eaa8a348ab6af82cb9200000000000000000000000058d11431bf750cf2ec5d328ca9309b9b86ee6993",
+  "address": "0x807A8d4469DD803B9b2c9e3568D5E83784bec25D",
+  "args": "0x000000000000000000000000000000000000000000000000000000000000002a",
   "abi": [
     {
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "domain",
+          "name": "synapseDomain_",
           "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "agentManager_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "inbox_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "gasOracle_",
-          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -30,27 +15,52 @@
     },
     {
       "inputs": [],
-      "name": "CallerNotAgentManager",
+      "name": "AgentNotActiveNorUnstaking",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "ContentLengthTooBig",
+      "name": "CallerNotDestination",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "EthTransferFailed",
+      "name": "CallerNotInbox",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "FlagOutOfRange",
+      "name": "DisputeAlreadyResolved",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "IncorrectOriginDomain",
+      "name": "DisputeNotOpened",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DisputeNotStuck",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "GuardInDispute",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectAgentDomain",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectAgentIndex",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectAgentProof",
       "type": "error"
     },
     {
@@ -60,93 +70,88 @@
     },
     {
       "inputs": [],
-      "name": "IndexedTooMuch",
+      "name": "IndexOutOfRange",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "InsufficientEthBalance",
+      "name": "MustBeSynapseDomain",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "MerkleTreeFull",
+      "name": "NotaryInDispute",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "NotEnoughLeafs",
+      "name": "SynapseDomainForbidden",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "TipsOverflow",
+      "name": "TreeHeightTooLow",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "TipsValueTooLow",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnallocatedMemory",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedBaseMessage",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedCallData",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedMessage",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedState",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ViewOverrun",
+      "name": "WithdrawTipsOptimisticPeriod",
       "type": "error"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "disputeIndex",
+          "type": "uint256"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "destination",
+          "name": "guardIndex",
           "type": "uint32"
         },
         {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "message",
-          "type": "bytes"
+          "internalType": "uint32",
+          "name": "notaryIndex",
+          "type": "uint32"
         }
       ],
-      "name": "Dispatched",
+      "name": "DisputeOpened",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "disputeIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "slashedIndex",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "rivalIndex",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
+        }
+      ],
+      "name": "DisputeResolved",
       "type": "event"
     },
     {
@@ -185,31 +190,13 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "message",
-          "type": "bytes"
+          "internalType": "bytes32",
+          "name": "newRoot",
+          "type": "bytes32"
         }
       ],
-      "name": "Sent",
+      "name": "RootUpdated",
       "type": "event"
     },
     {
@@ -217,22 +204,34 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "state",
-          "type": "bytes"
+          "internalType": "enum AgentFlag",
+          "name": "flag",
+          "type": "uint8"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
         }
       ],
-      "name": "StateSaved",
+      "name": "StatusUpdated",
       "type": "event"
     },
     {
       "inputs": [],
-      "name": "agentManager",
+      "name": "agentRoot",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "bytes32",
           "name": "",
-          "type": "address"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -267,7 +266,7 @@
             }
           ],
           "internalType": "struct AgentStatus",
-          "name": "",
+          "name": "status",
           "type": "tuple"
         }
       ],
@@ -276,12 +275,46 @@
     },
     {
       "inputs": [],
-      "name": "gasOracle",
+      "name": "destination",
       "outputs": [
         {
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        }
+      ],
+      "name": "disputeStatus",
+      "outputs": [
+        {
+          "internalType": "enum DisputeFlag",
+          "name": "flag",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "rival",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "disputePtr",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -331,26 +364,54 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
           "internalType": "uint256",
-          "name": "paddedRequest",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "contentLength",
+          "name": "index",
           "type": "uint256"
         }
       ],
-      "name": "getMinimumTipsValue",
+      "name": "getDispute",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "guard",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "notary",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "slashedAgent",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "reportPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "reportSignature",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDisputesAmount",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "tipsValue",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -371,29 +432,26 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "origin_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "destination_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "inbox_",
+          "type": "address"
+        }
+      ],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "statePayload",
-          "type": "bytes"
-        }
-      ],
-      "name": "isValidState",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "isValid",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -472,6 +530,19 @@
     },
     {
       "inputs": [],
+      "name": "origin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "owner",
       "outputs": [
         {
@@ -481,6 +552,40 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "msgOrigin",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "proofMaturity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "remoteWithdrawTips",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "magicValue",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -494,16 +599,29 @@
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "slashedIndex",
+          "name": "domain",
           "type": "uint32"
         },
         {
-          "internalType": "uint32",
-          "name": "honestIndex",
-          "type": "uint32"
+          "internalType": "address",
+          "name": "slashedAgent",
+          "type": "address"
         }
       ],
-      "name": "resolveDispute",
+      "name": "resolveStuckDispute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "agentRoot_",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setAgentRoot",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -512,120 +630,33 @@
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "destination",
+          "name": "domain",
           "type": "uint32"
         },
         {
-          "internalType": "bytes32",
-          "name": "recipient",
-          "type": "bytes32"
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
         },
         {
-          "internalType": "uint32",
-          "name": "optimisticPeriod",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "paddedRequest",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "content",
-          "type": "bytes"
+          "internalType": "address",
+          "name": "prover",
+          "type": "address"
         }
       ],
-      "name": "sendBaseMessage",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "messageNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "optimisticPeriod",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "payload",
-          "type": "bytes"
-        }
-      ],
-      "name": "sendManagerMessage",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "messageNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        }
-      ],
+      "name": "slashAgent",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "statesAmount",
+      "name": "synapseDomain",
       "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "suggestLatestState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "stateData",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
         {
           "internalType": "uint32",
-          "name": "nonce",
+          "name": "",
           "type": "uint32"
-        }
-      ],
-      "name": "suggestState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "stateData",
-          "type": "bytes"
         }
       ],
       "stateMutability": "view",
@@ -645,6 +676,46 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "enum AgentFlag",
+              "name": "flag",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "domain",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "index",
+              "type": "uint32"
+            }
+          ],
+          "internalType": "struct AgentStatus",
+          "name": "status",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "updateAgentStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "version",
       "outputs": [
@@ -655,24 +726,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "withdrawTips",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]

@@ -28,6 +28,8 @@ sepolia = "${RPC_SEPOLIA}"
 arb_sepolia = "${RPC_ARB_SEPOLIA}"
 synapse_sepolia = "${RPC_SYNAPSE_SEPOLIA}"
 optimism_sepolia = "${RPC_OP_SEPOLIA}"
+polygon_mumbai = "${RPC_POLYGON_MUMBAI}"
+scroll_sepolia = "${RPC_SCROLL_SEPOLIA}"
 
 [etherscan]
 # avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }

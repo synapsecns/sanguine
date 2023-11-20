@@ -26,7 +26,7 @@ contract DeployClients003Script is DeployerUtils {
 
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
-        deploymentSalt = keccak256("Messaging003-07");
+        deploymentSalt = keccak256("Messaging003-08");
     }
 
     /// @dev Function to exclude script from coverage report
