@@ -1,41 +1,54 @@
 summit_domain_id: 444
 scribe_url: scribe:80
 omnirpc_url: https://rpc.interop-staging.com
-bonding_manager_addr: 0x04ceAd2F88E0FA74b3bB0C3E4b885dB5550d27B9
+bonding_manager_addr: 0x3D67fe9f80c6728A8eA5cc6bAe487cc28DA4872e
 
 chains:
   444:
-    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
-    origin_addr: 0x445cd82e637a984Be7bC1ab9856C442F13F5e511
-    destination_addr: 0xc8eA2409A5Bf3135C139e80596B3f192A2D47230
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
       guard: 0x342E2018071e73754285803e82E77cf8d4bA306C
       client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
   421614:
-    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
-    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
-    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      guard: 0x342E2018071e73754285803e82E77cf8d4bA306C
       client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
       notary: 0xc77514451fe973c4B4330Cf654beb1da7014e6cb
   11155111:
-    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
-    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
-    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      guard: 0x342E2018071e73754285803e82E77cf8d4bA306C
       client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
       notary: 0xbFb161171246667DC713a9333A9ff8DAe75703CB
   11155420:
-    message_contract_addr: 0xEAfAdbC99226d1B5b3694775734cd94B0858e33B
-    origin_addr: 0x26FeD341E2D3db703dAF62Ec4F54Ce33e8aF31c8
-    destination_addr: 0xDA19cEC050314FA1e95167C39f91D10819e13193
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      guard: 0x342E2018071e73754285803e82E77cf8d4bA306C
       client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
       notary: 0xDCE669afd6F84f73CCaE273d8794c16f7aD9e30b
+  534351:
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
+    agents:
+      executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
+      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      notary: 0xCFcaEB90961feF591cD0197B0C2968EfC63a46DA
+  80001:
+    message_contract_addr: 0x54cFFF85593eF333094dffa1677fd291f4AdF1e3
+    origin_addr: 0xfF1B751941C3A395a0910D7722037Ac062Ea9c39
+    destination_addr: 0x981661205Efd6d54A2e04f0c59137F593694D9FB
+    agents:
+      executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
+      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      notary: 0x6F2EBe46578eB898FD75f340a4004fb7bcE74369
