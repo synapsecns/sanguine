@@ -44,12 +44,13 @@ contract DestinationSynapseTest is ExecutionHubTest {
         BondingManager manager = new BondingManager(domain);
         address inbox_ = random.nextAddress();
         bytes32 agentRoot = random.next();
+        address owner_ = random.nextAddress();
         Destination cleanContract = new Destination(DOMAIN_SYNAPSE, address(manager), inbox_);
-        manager.initialize(address(0), address(cleanContract), inbox_, address(0));
+        manager.initialize(address(0), address(cleanContract), inbox_, address(0), owner_);
         // agentRoot should be ignored on Synapse Chain
         vm.prank(caller);
-        cleanContract.initialize(agentRoot);
-        assertEq(cleanContract.owner(), caller, "!owner");
+        cleanContract.initialize(agentRoot, owner_);
+        assertEq(cleanContract.owner(), owner_, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), address(manager), "!agentManager");
         assertEq(cleanContract.inbox(), inbox_, "!inbox");
@@ -57,7 +58,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
     }
 
     function initializeLocalContract() public override {
-        Destination(localContract()).initialize(0);
+        Destination(localContract()).initialize(0, address(0));
     }
 
     function test_getAttestation(Random memory random) public {

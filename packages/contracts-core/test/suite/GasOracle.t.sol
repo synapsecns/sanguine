@@ -18,10 +18,11 @@ contract GasOracleTest is MessagingBaseTest {
         vm.chainId(domain);
         address caller = random.nextAddress();
         address destination_ = random.nextAddress();
+        address owner_ = random.nextAddress();
         GasOracle cleanContract = new GasOracle(DOMAIN_SYNAPSE, destination_);
         vm.prank(caller);
-        cleanContract.initialize();
-        assertEq(cleanContract.owner(), caller, "!owner");
+        cleanContract.initialize(owner_);
+        assertEq(cleanContract.owner(), owner_, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.destination(), destination_, "!destination");
     }
@@ -33,7 +34,7 @@ contract GasOracleTest is MessagingBaseTest {
     }
 
     function initializeLocalContract() public override {
-        testedGO().initialize();
+        testedGO().initialize(address(0));
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

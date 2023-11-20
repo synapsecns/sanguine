@@ -43,10 +43,11 @@ contract InboxTest is StatementInboxTest {
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
         address summit_ = random.nextAddress();
+        address owner_ = random.nextAddress();
         Inbox inbox_ = new Inbox(domain);
         vm.prank(caller);
-        inbox_.initialize(agentManager, origin_, destination_, summit_);
-        assertEq(inbox_.owner(), caller);
+        inbox_.initialize(agentManager, origin_, destination_, summit_, owner_);
+        assertEq(inbox_.owner(), owner_);
         assertEq(inbox_.localDomain(), domain);
         assertEq(inbox_.origin(), origin_);
         assertEq(inbox_.destination(), destination_);
@@ -74,7 +75,7 @@ contract InboxTest is StatementInboxTest {
     }
 
     function initializeLocalContract() public override {
-        Inbox(localContract()).initialize(address(0), address(0), address(0), address(0));
+        Inbox(localContract()).initialize(address(0), address(0), address(0), address(0), address(0));
     }
 
     // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════

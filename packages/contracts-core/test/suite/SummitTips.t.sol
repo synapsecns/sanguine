@@ -114,17 +114,18 @@ contract SummitTipsTest is AgentSecuredTest {
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address caller = random.nextAddress();
+        address owner_ = random.nextAddress();
         Summit cleanContract = new Summit(domain, agentManager, inbox_);
         vm.prank(caller);
-        cleanContract.initialize();
-        assertEq(cleanContract.owner(), caller, "!owner");
+        cleanContract.initialize(owner_);
+        assertEq(cleanContract.owner(), owner_, "!owner");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
         assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
     }
 
     function initializeLocalContract() public override {
-        Summit(localContract()).initialize();
+        Summit(localContract()).initialize(address(0));
     }
 
     function prepareNotaryInDisputeTest() internal {

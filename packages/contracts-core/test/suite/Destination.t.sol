@@ -59,11 +59,12 @@ contract DestinationTest is ExecutionHubTest {
         LightManager agentManager = new LightManager(DOMAIN_SYNAPSE);
         address inbox_ = random.nextAddress();
         bytes32 agentRoot = random.next();
+        address owner_ = random.nextAddress();
         Destination cleanContract = new Destination(DOMAIN_SYNAPSE, address(agentManager), inbox_);
-        agentManager.initialize(address(0), address(cleanContract), inbox_);
+        agentManager.initialize(address(0), address(cleanContract), inbox_, owner_);
         vm.prank(caller);
-        cleanContract.initialize(agentRoot);
-        assertEq(cleanContract.owner(), caller, "!owner");
+        cleanContract.initialize(agentRoot, owner_);
+        assertEq(cleanContract.owner(), owner_, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), address(agentManager), "!agentManager");
         assertEq(cleanContract.inbox(), inbox_, "!inbox");
@@ -71,7 +72,7 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function initializeLocalContract() public override {
-        Destination(localContract()).initialize(0);
+        Destination(localContract()).initialize(0, address(0));
     }
 
     // ════════════════════════════════════════════════ OTHER TESTS ════════════════════════════════════════════════════

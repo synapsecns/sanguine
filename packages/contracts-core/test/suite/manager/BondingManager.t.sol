@@ -42,11 +42,12 @@ contract BondingManagerTest is AgentManagerTest {
         address destination_ = random.nextAddress();
         address summit_ = random.nextAddress();
         address inbox_ = random.nextAddress();
+        address owner_ = random.nextAddress();
         BondingManager cleanContract = new BondingManager(domain);
         vm.prank(caller);
-        cleanContract.initialize(origin_, destination_, inbox_, summit_);
+        cleanContract.initialize(origin_, destination_, inbox_, summit_, owner_);
         assertEq(cleanContract.localDomain(), domain);
-        assertEq(cleanContract.owner(), caller);
+        assertEq(cleanContract.owner(), owner_);
         assertEq(cleanContract.origin(), origin_);
         assertEq(cleanContract.destination(), destination_);
         assertEq(cleanContract.inbox(), inbox_);
@@ -55,7 +56,7 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function initializeLocalContract() public override {
-        BondingManager(localContract()).initialize(address(0), address(0), address(0), address(0));
+        BondingManager(localContract()).initialize(address(0), address(0), address(0), address(0), address(0));
     }
 
     function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
@@ -174,7 +175,7 @@ contract BondingManagerTest is AgentManagerTest {
         // Deploy fresh instance of BondingManager
         vm.chainId(DOMAIN_SYNAPSE);
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
-        bondingManager.initialize(originSynapse, destinationSynapse, address(inbox), summit);
+        bondingManager.initialize(originSynapse, destinationSynapse, address(inbox), summit, address(this));
         // Try to add all agents one by one
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];

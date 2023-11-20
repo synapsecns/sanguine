@@ -36,18 +36,19 @@ contract LightManagerTest is AgentManagerTest {
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
         address inbox_ = random.nextAddress();
+        address owner_ = random.nextAddress();
         LightManager cleanContract = new LightManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        cleanContract.initialize(origin_, destination_, inbox_);
+        cleanContract.initialize(origin_, destination_, inbox_, owner_);
         assertEq(cleanContract.localDomain(), domain);
-        assertEq(cleanContract.owner(), caller);
+        assertEq(cleanContract.owner(), owner_);
         assertEq(cleanContract.origin(), origin_);
         assertEq(cleanContract.destination(), destination_);
         assertEq(cleanContract.inbox(), inbox_);
     }
 
     function initializeLocalContract() public override {
-        LightManager(localContract()).initialize(address(0), address(0), address(0));
+        LightManager(localContract()).initialize(address(0), address(0), address(0), address(0));
     }
 
     function test_constructor_revert_chainIdOverflow() public {

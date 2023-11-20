@@ -36,10 +36,11 @@ contract LightInboxTest is StatementInboxTest {
         address agentManager = random.nextAddress();
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
+        address owner_ = random.nextAddress();
         LightInbox lightInbox_ = new LightInbox(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        lightInbox_.initialize(agentManager, origin_, destination_);
-        assertEq(lightInbox_.owner(), caller);
+        lightInbox_.initialize(agentManager, origin_, destination_, owner_);
+        assertEq(lightInbox_.owner(), owner_);
         assertEq(lightInbox_.localDomain(), domain);
         assertEq(lightInbox_.origin(), origin_);
         assertEq(lightInbox_.destination(), destination_);
@@ -64,7 +65,7 @@ contract LightInboxTest is StatementInboxTest {
     }
 
     function initializeLocalContract() public override {
-        LightInbox(lightInbox).initialize(address(0), address(0), address(0));
+        LightInbox(lightInbox).initialize(address(0), address(0), address(0), address(0));
     }
 
     // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════

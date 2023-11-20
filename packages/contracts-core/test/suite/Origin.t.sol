@@ -75,11 +75,12 @@ contract OriginTest is AgentSecuredTest {
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address gasOracle_ = address(new GasOracle(DOMAIN_SYNAPSE, random.nextAddress()));
+        address owner_ = random.nextAddress();
 
         Origin cleanContract = new Origin(DOMAIN_SYNAPSE, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
-        cleanContract.initialize();
-        assertEq(cleanContract.owner(), caller, "!owner");
+        cleanContract.initialize(owner_);
+        assertEq(cleanContract.owner(), owner_, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
         assertEq(cleanContract.inbox(), inbox_, "!inbox");
@@ -88,7 +89,7 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function initializeLocalContract() public override {
-        Origin(localContract()).initialize();
+        Origin(localContract()).initialize(address(0));
     }
 
     function test_sendBaseMessage_revert_blockTimestampOverflow() public {
