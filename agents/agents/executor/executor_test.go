@@ -797,6 +797,10 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 //nolint:maintidx
 func (e *ExecutorSuite) TestSendManagerMessage() {
+	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
+	// set up the backends with anvil.
+	e.SetupBackends(true)
+
 	testDone := false
 	defer func() {
 		testDone = true
