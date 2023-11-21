@@ -1,6 +1,7 @@
-export const DownArrow = () => {
+export const DownArrow = ({ ...props }) => {
   return (
     <svg
+      {...props}
       width="9"
       height="9"
       viewBox="0 0 12 12"
