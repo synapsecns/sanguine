@@ -18,7 +18,7 @@ export const getBalanceData = async ({
   address: string
   lpTokenAddress: string
 }) => {
-  const tokens: Token[] = [...pool.poolTokens, pool]
+  const tokens: Token[] = [...pool?.poolTokens, pool]
   const tokenBalances = []
   let poolTokenSum = 0n
   let lpTokenBalance = 1n
