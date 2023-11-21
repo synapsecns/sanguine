@@ -34,15 +34,28 @@ export const getBalanceData = async ({
 
   multicallInputs.push(one)
 
-  for (const token of tokens) {
-    multicallInputs.push({
-      address: token.addresses[chainId],
-      abi: erc20ABI,
-      functionName: 'balanceOf',
-      chainId,
-      args: [address],
-    })
-  }
+  tokens.forEach((token, index) => {
+    const isLP = token.addresses[chainId] === lpTokenAddress
+    // Use pool's getTokenBalance for pool tokens, if the address is the pool itself
+    // to exclude the unclaimed admin fees
+    if (address === pool.swapAddresses[chainId] && !isLP) {
+      multicallInputs.push({
+        address: pool.swapAddresses[chainId],
+        abi: SWAP_ABI,
+        functionName: 'getTokenBalance',
+        chainId,
+        args: [index],
+      })
+    } else {
+      multicallInputs.push({
+        address: token.addresses[chainId],
+        abi: erc20ABI,
+        functionName: 'balanceOf',
+        chainId,
+        args: [address],
+      })
+    }
+  })
   const two = {
     address: pool.swapAddresses[chainId],
     abi: SWAP_ABI,
