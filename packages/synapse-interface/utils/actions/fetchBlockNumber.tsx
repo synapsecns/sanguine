@@ -14,7 +14,7 @@ export const getCurrentBlockNumber = async (
   }
 }
 
-const getChainsBlockNumber = async (chains: number[]) => {
+export const getChainsBlockNumber = async () => {
   const record = {}
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
 
