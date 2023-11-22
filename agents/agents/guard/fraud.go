@@ -185,6 +185,13 @@ func (g Guard) handleSnapshot(parentCtx context.Context, snapshot types.Snapshot
 			err = fmt.Errorf("could not get state report chains: %w", err)
 			return err
 		}
+		stateReportChainsInt := make([]int, len(stateReportChains))
+		for i, chainID := range stateReportChains {
+			stateReportChainsInt[i] = int(chainID)
+		}
+		span.AddEvent("got state report chains", trace.WithAttributes(
+			attribute.IntSlice("state_report_chains", stateReportChainsInt),
+		))
 
 		// Submit the state report on each eligible chain.
 		// If a notary has not been reported anywhere,
