@@ -326,7 +326,7 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 		attribute.Int(metrics.AttestationNonce, int(attNonce)),
 	))
 
-	return attNonce > 0, nil
+	return attNonce >= 0, nil
 }
 
 func (n *Notary) isValidAttestation(parentCtx context.Context, attestation types.NotaryAttestation) (bool, error) {
