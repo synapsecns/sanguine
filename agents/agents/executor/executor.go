@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -883,6 +884,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.String(metrics.TxHash, log.TxHash.String()),
+		attribute.String("datatype", reflect.TypeOf(datatypeInterface).String()),
 	))
 
 	defer func() {

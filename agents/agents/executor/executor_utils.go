@@ -132,20 +132,28 @@ func (e Executor) isAttestationSavedEvent(log ethTypes.Log, chainID uint32) bool
 func (e Executor) processMessage(ctx context.Context, message types.Message, log ethTypes.Log) (err error) {
 	types.LogTx("EXECUTOR", fmt.Sprintf("Processing message: %s", types.MessageToString(message)), message.OriginDomain(), nil)
 	ctx, span := e.handler.Tracer().Start(ctx, "processMessage", trace.WithAttributes(
-		attribute.String("txHash", log.TxHash.String()),
-		attribute.Int("logBlockNumber", int(log.BlockNumber)),
+		attribute.String(metrics.TxHash, log.TxHash.String()),
+		attribute.Int(metrics.BlockNumber, int(log.BlockNumber)),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
+	span.AddEvent("got merkle index", trace.WithAttributes(
+		attribute.Int("merkle_index", int(merkleIndex)),
+	))
+
 	leaf, err := message.ToLeaf()
 	if err != nil {
 		return fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
 	// Make sure the nonce of the message is being inserted at the right index.
+	span.AddEvent("validating message nonce", trace.WithAttributes(
+		attribute.Int(metrics.Nonce, int(message.Nonce())),
+		attribute.Int("merkle_index_plus_1", int(merkleIndex+1)),
+	))
 	switch {
 	case merkleIndex+1 > message.Nonce():
 		return nil
