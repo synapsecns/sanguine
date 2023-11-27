@@ -21,7 +21,15 @@ import (
 //
 //nolint:cyclop,gocognit
 func (g Guard) handleSnapshotAccepted(parentCtx context.Context, log ethTypes.Log) error {
-	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleSnapshotAccepted")
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleSnapshotAccepted")
+
+	// Sanity check to make sure we are processing a snapshot corresponding to the current messaging deployment.
+	if log.Address != common.HexToAddress(g.domains[g.summitDomainID].Config().InboxAddress) {
+		span.AddEvent("dropping snapshot for wrong inbox address", trace.WithAttributes(
+			attribute.String("inbox_address", g.domains[g.summitDomainID].Config().InboxAddress),
+			attribute.String("log_address", log.Address.String()),
+		))
+	}
 
 	snapshotData, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
