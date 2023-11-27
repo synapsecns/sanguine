@@ -60,7 +60,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	// if we have a global jaegerResource env var, don't setup a local one
 	ctx, cancel := context.WithCancel(parentCtx)
 
-	// create the pool
+	// create the swap
 	var err error
 	tj.pool, err = dockertest.NewPool("")
 	assert.Nil(tb, err)

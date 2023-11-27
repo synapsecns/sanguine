@@ -19,7 +19,7 @@ export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
-export const POOL_PATH = '/pool'
+export const POOL_PATH = '/swap'
 export const BRIDGE_PATH = '/'
 export const CONTRACTS_PATH =
   'https://docs.synapseprotocol.com/reference/contract-addresses'

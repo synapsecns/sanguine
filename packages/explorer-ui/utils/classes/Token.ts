@@ -36,7 +36,7 @@ export class Token {
    * @param {string} [obj.symbol] - symbol of the currency
    * @param {string} [obj.name] - human readable name of the currency
    * @param {string} [obj.logo] - logo path
-   * @param {string} [obj.poolName] - poolName for pool
+   * @param {string} [obj.poolName] - poolName for swap
    * @param {Object.<number,string>} [obj.swapAddresses] - standard
    * @param {Object.<number,string>} [obj.swapDepositAddresses] - for (metaswap)
    * @param {Object.<number,string>} [obj.swapEthAddresses] - for (eth/native)

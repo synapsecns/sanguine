@@ -4,7 +4,7 @@ import (
 	etherClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/types"
@@ -19,7 +19,7 @@ import (
 //go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib/client
 type Resolver struct {
 	DB          db.ConsumerDB
-	Fetcher     fetcher.ScribeFetcher
+	Fetcher     scribe.IScribeFetcher
 	Cache       cache.Service
 	Clients     map[uint32]etherClient.EVM
 	Parsers     *types.ServerParsers

@@ -824,7 +824,7 @@ contract ERC20 is Context, IERC20 {
 
 
 interface ISwap {
-    // pool data view functions
+    // swap data view functions
     function getA() external view returns (uint256);
 
     function getToken(uint8 index) external view returns (IERC20);
@@ -2229,7 +2229,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
     }
 
     /**
-     * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes execute a swap through a liquidity pool on behalf of the user.
+     * @notice Relays to nodes to both transfer an ERC20 token cross-chain, and then have the nodes execute a swap through a liquidity swap on behalf of the user.
      * @param to address on other chain to bridge assets to
      * @param chainId which chain to bridge assets onto
      * @param token ERC20 compatible token to deposit into the bridge
@@ -2308,8 +2308,8 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
      * @param token ERC20 compatible token to deposit into the bridge
      * @param amount Amount in native token decimals to transfer cross-chain post-fees
      * @param fee Amount in native token decimals to save to the contract as fees
-     * @param pool Destination chain's pool to use to swap SynERC20 -> Asset. The nodes determine this by using PoolConfig.sol.
-     * @param tokenIndexFrom Index of the SynERC20 asset in the pool
+     * @param swap Destination chain's swap to use to swap SynERC20 -> Asset. The nodes determine this by using PoolConfig.sol.
+     * @param tokenIndexFrom Index of the SynERC20 asset in the swap
      * @param tokenIndexTo Index of the desired final asset
      * @param minDy Minumum amount (in final asset decimals) that must be swapped for, otherwise the user will receive the SynERC20.
      * @param deadline Epoch time of the deadline that the swap is allowed to be executed.
@@ -2418,7 +2418,7 @@ contract SynapseBridge is Initializable, AccessControlUpgradeable, ReentrancyGua
      * @param token ERC20 compatible token to withdraw from the bridge
      * @param amount Amount in native token decimals to withdraw
      * @param fee Amount in native token decimals to save to the contract as fees
-     * @param pool Destination chain's pool to use to swap SynERC20 -> Asset. The nodes determine this by using PoolConfig.sol.
+     * @param swap Destination chain's swap to use to swap SynERC20 -> Asset. The nodes determine this by using PoolConfig.sol.
      * @param swapTokenIndex Specifies which of the underlying LP assets the nodes should attempt to redeem for
      * @param swapMinAmount Specifies the minimum amount of the underlying asset needed for the nodes to execute the redeem/swap
      * @param swapDeadline Specificies the deadline that the nodes are allowed to try to redeem/swap the LP token

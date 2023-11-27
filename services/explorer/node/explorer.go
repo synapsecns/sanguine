@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/swap"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/token"
 	"net/http"
 	"time"
 
@@ -11,11 +15,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
-	gqlClient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/price"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/static"
@@ -45,16 +46,16 @@ func NewExplorerBackfiller(consumerDB db.ConsumerDB, config indexerConfig.Config
 			ResponseHeaderTimeout: 10 * time.Second,
 		},
 	}
-	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL), handler)
+	fetcher := scribe.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL), handler)
 	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), clients[config.BridgeConfigChainID])
 	if err != nil || bridgeConfigRef == nil {
-		return nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)
+		return nil, fmt.Errorf("could not create bridge config scribe.IScribeFetcher: %w", err)
 	}
-	priceDataService, err := tokenprice.NewPriceDataService()
+	priceDataService, err := price.NewPriceFetcher()
 	if err != nil {
 		return nil, fmt.Errorf("could not create price data service: %w", err)
 	}
-	newConfigFetcher, err := fetcherpkg.NewBridgeConfigFetcher(common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
+	newConfigFetcher, err := token.NewBridgeConfigFetcher(common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
 	if err != nil || newConfigFetcher == nil {
 		return nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
@@ -62,7 +63,7 @@ func NewExplorerBackfiller(consumerDB db.ConsumerDB, config indexerConfig.Config
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %w", err)
 	}
-	tokenDataService, err := tokendata.NewTokenDataService(newConfigFetcher, tokenSymbolToIDs)
+	tokenDataService, err := token.NewTokenFetcher(newConfigFetcher, tokenSymbolToIDs)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data service: %w", err)
 	}
@@ -119,12 +120,12 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context, livefill bool) error {
 }
 
 // nolint gocognit,cyclop
-func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.ChainConfig, fetcher fetcherpkg.ScribeFetcher, client bind.ContractBackend, tokenDataService tokendata.Service, priceDataService tokenprice.Service) (*backfill.ChainBackfiller, error) {
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.ChainConfig, fetcher scribe.IScribeFetcher, client bind.ContractBackend, tokenDataService token.ITokenFetcher, priceDataService price.IPriceFetcher) (*backfill.ChainBackfiller, error) {
 	var err error
 	var bridgeParser *parser.BridgeParser
 	var messageBusParser *parser.MessageBusParser
 	var cctpParser *parser.CCTPParser
-	var swapService fetcherpkg.SwapService
+	var swapService swap.ISwapFetcher
 
 	swapParsers := make(map[common.Address]*parser.SwapParser)
 
@@ -136,7 +137,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.Chai
 				return nil, fmt.Errorf("could not create bridge parser: %w", err)
 			}
 		case "swap":
-			swapService, err = fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client, false)
+			swapService, err = swap.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client, false)
 			if err != nil || swapService == nil {
 				return nil, fmt.Errorf("could not create swapService: %w", err)
 			}
@@ -148,7 +149,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.Chai
 			swapParsers[common.HexToAddress(chainConfig.Contracts[i].Address)] = swapParser
 		case "metaswap":
 			if swapService == nil {
-				swapService, err := fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client, true)
+				swapService, err := swap.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client, true)
 				if err != nil || swapService == nil {
 					return nil, fmt.Errorf("could not create swapService: %w", err)
 				}

@@ -50,7 +50,7 @@ type meteredEVMClientImpl struct {
 	concurrency uint32
 	// chainID is the chain id used for the client
 	chainID *big.Int
-	// clientID is a unique identifier used for metrics across a pool.
+	// clientID is a unique identifier used for metrics across a swap.
 	// this can be the wsurl in many cases (if metrics are private/authentication on rpc server)
 	// is properly secured without a token based url
 	clientID string

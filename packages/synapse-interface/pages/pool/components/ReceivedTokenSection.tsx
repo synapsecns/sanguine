@@ -15,7 +15,7 @@ const ReceivedTokenSection = ({
   if (!withdrawQuote || !withdrawQuote.outputs) return null;
 
   // Cannot handle nativeTokens currently without state reworking to make accessible the pools object
-  // const tokensArray = poolTokens ? poolTokens : pool.nativeTokens;  // Using the appropriate tokens array
+  // const tokensArray = poolTokens ? poolTokens : swap.nativeTokens;  // Using the appropriate tokens array
   const tokensArray = poolTokens
   // If the "ALL" key exists, use its array. Otherwise, convert the outputs object into an array
   const outputsArray = withdrawQuote.outputs.ALL ? withdrawQuote.outputs.ALL : Object.values(withdrawQuote.outputs);

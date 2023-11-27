@@ -3,12 +3,14 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/swap"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/token"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/price"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 
@@ -19,9 +21,8 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
-	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
+	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
@@ -331,14 +332,14 @@ func (b *BackfillSuite) TestBackfill() {
 	}
 
 	// Set up a ChainBackfiller
-	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
+	bcf, err := token.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 
 	tokenSymbolToIDs, err := parser.ParseYaml(static.GetTokenSymbolToTokenIDConfig())
 	Nil(b.T(), err)
-	tokenDataService, err := tokendata.NewTokenDataService(bcf, tokenSymbolToIDs)
+	tokenDataService, err := token.NewTokenFetcher(bcf, tokenSymbolToIDs)
 	Nil(b.T(), err)
-	tokenPriceService, err := tokenprice.NewPriceDataService()
+	tokenPriceService, err := price.NewPriceFetcher()
 	Nil(b.T(), err)
 
 	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
@@ -347,19 +348,19 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
+	srA, err := swap.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
 	Nil(b.T(), err)
 	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, srA, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
+	srB, err := swap.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
 	Nil(b.T(), err)
 	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, srB, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// msr is the meta swap ref for getting token data
-	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
+	msr, err := swap.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
 	Nil(b.T(), err)
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
@@ -371,7 +372,7 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	spMap[metaSwapContract.Address()] = msp
-	f := fetcher.NewFetcher(b.gqlClient, b.metrics)
+	f := scribe.NewFetcher(b.gqlClient, b.metrics)
 
 	// Set up message bus parser
 	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)

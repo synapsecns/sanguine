@@ -837,7 +837,7 @@ describe('SynapseSDK', () => {
       expect(pools[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
     })
 
-    it('Get pool info', async () => {
+    it('Get swap info', async () => {
       const poolInfo = await synapse.getPoolInfo(
         SupportedChainId.ARBITRUM,
         ARB_POOL_NUSD
@@ -849,7 +849,7 @@ describe('SynapseSDK', () => {
       expect(poolInfo.tokens).toEqual(BigNumber.from(3))
     })
 
-    it('Get pool tokens', async () => {
+    it('Get swap tokens', async () => {
       const poolTokens = await synapse.getPoolTokens(
         SupportedChainId.ARBITRUM,
         ARB_POOL_NUSD
@@ -868,7 +868,7 @@ describe('SynapseSDK', () => {
       [arbProvider, ethProvider]
     )
 
-    it('Arbitrum nETH pool', async () => {
+    it('Arbitrum nETH swap', async () => {
       const amounts: Record<string, BigNumber> = {}
       amounts[ARB_NETH] = BigNumber.from(10).pow(18)
       amounts[ARB_WETH] = BigNumber.from(10).pow(18).mul(2)
@@ -958,7 +958,7 @@ describe('SynapseSDK', () => {
       expect(result).toEqual(expectedResult)
     })
 
-    it('Ethereum nUSD pool', async () => {
+    it('Ethereum nUSD swap', async () => {
       const amounts: Record<string, BigNumber> = {}
       amounts[ETH_USDC] = BigNumber.from(10).pow(6)
       amounts[ETH_DAI] = BigNumber.from(10).pow(18).mul(2)

@@ -9,7 +9,7 @@ import (
 
 // BlockBroadcaster handles communications between block subcribers and
 // clients. It Differs from BlockHeightWatcher in that it does not handle actually
-// feteching heights from the rpc or reconnecting. We expose this for client/pool
+// feteching heights from the rpc or reconnecting. We expose this for client/swap
 // to allow multi-rpc block boradcasters.
 //
 //nolint:containedctx

@@ -5,11 +5,11 @@ import { Pool, PoolInfo, PoolToken } from '../router'
 import { SynapseSDK } from '../sdk'
 
 /**
- * Gets pool tokens for a pool address.
+ * Gets swap tokens for a swap address.
  *
  * @param chainId The chain ID
- * @param poolAddress The pool address
- * @returns The pool tokens
+ * @param poolAddress The swap address
+ * @returns The swap tokens
  * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getPoolTokens(
@@ -23,11 +23,11 @@ export async function getPoolTokens(
 }
 
 /**
- * Gets info for a pool (number of tokens and LP token).
+ * Gets info for a swap (number of tokens and LP token).
  *
  * @param chainId The chain ID
- * @param poolAddress The pool address
- * @returns The pool info (number of tokens and LP token)
+ * @param poolAddress The swap address
+ * @returns The swap info (number of tokens and LP token)
  * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
  */
 export async function getPoolInfo(
@@ -58,7 +58,7 @@ export async function getAllPools(
  * Calculates the amount required to add liquidity for amounts of each token.
  *
  * @param chainId The chain ID
- * @param poolAddress The pool address
+ * @param poolAddress The swap address
  * @param amounts The amounts of each token to add
  * @returns The amount of LP tokens needed and router address
  * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
@@ -78,7 +78,7 @@ export async function calculateAddLiquidity(
   Object.keys(amounts).forEach((key) => {
     lowerCaseAmounts[key.toLowerCase()] = amounts[key]
   })
-  // Populate amounts array by combining amounts map and pool tokens, preserving tokens order
+  // Populate amounts array by combining amounts map and swap tokens, preserving tokens order
   // and adding 0 for tokens not in the map
   const amountsArray: BigNumber[] = poolTokens.map(
     (poolToken) => lowerCaseAmounts[poolToken.token.toLowerCase()] ?? Zero
@@ -94,7 +94,7 @@ export async function calculateAddLiquidity(
  * Calculates the amounts received when removing liquidity.
  *
  * @param chainId The chain ID
- * @param poolAddress The pool address
+ * @param poolAddress The swap address
  * @param amount The amount of LP tokens to remove
  * @returns The amounts of each token received and router address
  * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
@@ -120,7 +120,7 @@ export async function calculateRemoveLiquidity(
  * Calculates the amount of one token received when removing liquidity.
  *
  * @param chainId The chain ID
- * @param poolAddress The pool address
+ * @param poolAddress The swap address
  * @param amount The amount of LP tokens to remove
  * @param poolIndex The index of the token to receive
  * @returns The amount received and router address

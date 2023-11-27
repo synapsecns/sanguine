@@ -165,9 +165,9 @@ type BridgeEvent struct {
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
 	// Kappa is the keccak256 hash of the transaction.
 	Kappa sql.NullString `gorm:"column:kappa"`
-	// TokenIndexFrom is the index of the from token in the pool.
+	// TokenIndexFrom is the index of the from token in the swap.
 	TokenIndexFrom *big.Int `gorm:"column:token_index_from;type:UInt256"`
-	// TokenIndexTo is the index of the to token in the pool.
+	// TokenIndexTo is the index of the to token in the swap.
 	TokenIndexTo *big.Int `gorm:"column:token_index_to;type:UInt256"`
 	// MinDy is the minimum amount of tokens to receive.
 	MinDy *big.Int `gorm:"column:min_dy;type:UInt256"`
@@ -175,7 +175,7 @@ type BridgeEvent struct {
 	Deadline *big.Int `gorm:"column:deadline;type:UInt256"`
 	// SwapSuccess is whether the swap was successful.
 	SwapSuccess *big.Int `gorm:"column:swap_success;type:UInt256"`
-	// SwapTokenIndex is the index of the token in the pool.
+	// SwapTokenIndex is the index of the token in the swap.
 	SwapTokenIndex *big.Int `gorm:"column:swap_token_index;type:UInt256"`
 	// SwapMinAmount is the minimum amount of tokens to receive.
 	SwapMinAmount *big.Int `gorm:"column:swap_min_amount;type:UInt256"`
@@ -238,7 +238,7 @@ type SwapEvent struct {
 	BoughtID *big.Int `gorm:"column:bought_id;type:UInt256"`
 	// Provider is the address of the provider.
 	Provider sql.NullString `gorm:"column:provider"`
-	// Invariant is the invariant of the pool.
+	// Invariant is the invariant of the swap.
 	Invariant *big.Int `gorm:"column:invariant;type:UInt256"`
 	// LPTokenAmount is the amount of LP tokens.
 	LPTokenAmount *big.Int `gorm:"column:lp_token_amount;type:UInt256"`
@@ -288,7 +288,7 @@ type LastBlock struct {
 type TokenIndex struct {
 	// ChainID is the chain id of the chain.
 	ChainID uint32 `gorm:"column:chain_id"`
-	// TokenIndex is the token index in the pool.
+	// TokenIndex is the token index in the swap.
 	TokenIndex uint8 `gorm:"column:token_index"`
 	// TokenAddress is the address of the token.
 	TokenAddress string `gorm:"column:token_address"`
@@ -396,9 +396,9 @@ type HybridBridgeEvent struct {
 	FFee *big.Int `gorm:"column:ffee;type:UInt256"`
 	// FKappa is theFee keccak256 hash of the transaction.
 	FKappa sql.NullString `gorm:"column:fkappa"`
-	// FTokenIndexFrom is the index of the from token in the pool.
+	// FTokenIndexFrom is the index of the from token in the swap.
 	FTokenIndexFrom *big.Int `gorm:"column:ftoken_index_from;type:UInt256"`
-	// FTokenIndexTo is the index of the to token in the pool.
+	// FTokenIndexTo is the index of the to token in the swap.
 	FTokenIndexTo *big.Int `gorm:"column:ftoken_index_to;type:UInt256"`
 	// FMinDy is the minimum amount of tokens to receive.
 	FMinDy *big.Int `gorm:"column:fmin_dy;type:UInt256"`
@@ -406,7 +406,7 @@ type HybridBridgeEvent struct {
 	FDeadline *big.Int `gorm:"column:fdeadline;type:UInt256"`
 	// FSwapSuccess is whether the swap was successful.
 	FSwapSuccess *big.Int `gorm:"column:fswap_success;type:UInt256"`
-	// FSwapTokenIndex is the index of the token in the pool.
+	// FSwapTokenIndex is the index of the token in the swap.
 	FSwapTokenIndex *big.Int `gorm:"column:fswap_token_index;type:UInt256"`
 	// FSwapMinAmount is the minimum amount of tokens to receive.
 	FSwapMinAmount *big.Int `gorm:"column:fswap_min_amount;type:UInt256"`
@@ -457,9 +457,9 @@ type HybridBridgeEvent struct {
 	TFee *big.Int `gorm:"column:tfee;type:UInt256"`
 	// TKappa is theFee keccak256 hash of the transaction.
 	TKappa sql.NullString `gorm:"column:tkappa"`
-	// TTokenIndexFrom is the index of the from token in the pool.
+	// TTokenIndexFrom is the index of the from token in the swap.
 	TTokenIndexFrom *big.Int `gorm:"column:ttoken_index_from;type:UInt256"`
-	// TTokenIndexTo is the index of the to token in the pool.
+	// TTokenIndexTo is the index of the to token in the swap.
 	TTokenIndexTo *big.Int `gorm:"column:ttoken_index_to;type:UInt256"`
 	// TMinDy is the minimum amount of tokens to receive.
 	TMinDy *big.Int `gorm:"column:tmin_dy;type:UInt256"`
@@ -467,7 +467,7 @@ type HybridBridgeEvent struct {
 	TDeadline *big.Int `gorm:"column:tdeadline;type:UInt256"`
 	// TSwapSuccess is whether the swap was successful.
 	TSwapSuccess *big.Int `gorm:"column:tswap_success;type:UInt256"`
-	// TSwapTokenIndex is the index of the token in the pool.
+	// TSwapTokenIndex is the index of the token in the swap.
 	TSwapTokenIndex *big.Int `gorm:"column:tswap_token_index;type:UInt256"`
 	// TSwapMinAmount is the minimum amount of tokens to receive.
 	TSwapMinAmount *big.Int `gorm:"column:tswap_min_amount;type:UInt256"`

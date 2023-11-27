@@ -95,26 +95,26 @@ const getBridgeOriginMap = async (chainId) => {
   Object.keys(allTokenSymbols).forEach((bridgeToken) => {
     tokensToSymbols[bridgeToken] = new Set(allTokenSymbols[bridgeToken])
   })
-  // List of sets of tokens in each pool
+  // List of sets of tokens in each swap
   const poolSets = []
   pools.forEach((pool) => {
-    // Collect set of bridge token symbols that are present in the pool
+    // Collect set of bridge token symbols that are present in the swap
     const bridgeSymbols = getBridgeSymbolsSet(
       allTokenSymbols,
       pool.tokens.map((token) => token.token).concat(pool.lpToken)
     )
     const poolSet = new Set()
-    // Add collected set to tokensToSymbols for each token in the pool
+    // Add collected set to tokensToSymbols for each token in the swap
     pool.tokens.forEach((token) => {
       addSetToMap(tokensToSymbols, token.token, bridgeSymbols)
       poolSet.add(token.token)
     })
-    // Add collected set to tokensToSymbols for the pool lpToken (if it is a bridge token)
+    // Add collected set to tokensToSymbols for the swap lpToken (if it is a bridge token)
     if (bridgeTokens.includes(pool.lpToken)) {
       addSetToMap(tokensToSymbols, pool.lpToken, bridgeSymbols)
       poolSet.add(pool.lpToken)
     }
-    // Save set of tokens in the pool
+    // Save set of tokens in the swap
     poolSets.push(poolSet)
   })
   // If WETH is present in the map, add ETH with the same set of bridge token symbols
@@ -203,7 +203,7 @@ const getCCTPBridgeSymbols = async (chainId) => {
   return cctpTokenToSymbol
 }
 
-// Function to get a list of tokens in a pool
+// Function to get a list of tokens in a swap
 const getPoolTokens = async (chainId, poolAddress) => {
   const pool = new ethers.Contract(
     poolAddress,
@@ -293,7 +293,7 @@ const printMaps = async () => {
 const extractSwappable = (poolSets, token) => {
   const tokenSet = new Set()
   poolSets.forEach((poolSet) => {
-    // If token is in the pool, add all tokens except token to tokenSet
+    // If token is in the swap, add all tokens except token to tokenSet
     if (poolSet.has(token)) {
       poolSet.forEach((poolToken) => {
         if (poolToken !== token) {

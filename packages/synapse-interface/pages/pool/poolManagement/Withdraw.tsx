@@ -48,7 +48,7 @@ const Withdraw = ({ address }: { address: string }) => {
 
   const dispatch: any = useDispatch()
 
-  // An ETH swap pool has nativeTokens vs. most other pools have poolTokens
+  // An ETH swap swap has nativeTokens vs. most other pools have poolTokens
   const poolSpecificTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
 
   const isApproved = useMemo(() => {

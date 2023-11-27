@@ -28,11 +28,11 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		}
 		return nil, nil, fmt.Errorf("port %d is already in use: %w", port, err)
 	}
-	fmt.Println("Starting clickhouse docker pool on port: ", portStr)
+	fmt.Println("Starting clickhouse docker swap on port: ", portStr)
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not create docker pool: %w", err)
+		return nil, nil, fmt.Errorf("could not create docker swap: %w", err)
 	}
 	// pulls an image, creates a container based on it and runs it
 	runOptions := &dockertest.RunOptions{

@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -9,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"

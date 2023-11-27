@@ -2,7 +2,7 @@
 package types
 
 import (
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	bridgeContract "github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	cctpContract "github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 )

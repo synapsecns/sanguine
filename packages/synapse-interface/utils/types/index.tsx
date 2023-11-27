@@ -128,15 +128,15 @@ export class Token {
   name?: string // token name
   logo?: any // token logo
   icon?: any // token icon
-  poolName?: string // token pool name
+  poolName?: string // token swap name
   swapAddresses?: Record<number, string> // list of swap addresses on each chain
   swapWrapperAddresses?: Record<number, string> // list of swap wrapper addresses on each chain
   swapDepositAddresses?: Record<number, string> // list of swap deposit addresses on each chain
   swapEthAddresses?: Record<number, string> // list of swap eth addresses on each chain
   routerIndex?: string // router index
-  poolId: number | Record<number, number> = {} // list of pool ids on each chain
-  poolType?: string // pool type
-  poolTokens?: Token[] // list of pool tokens
+  poolId: number | Record<number, number> = {} // list of swap ids on each chain
+  poolType?: string // swap type
+  poolTokens?: Token[] // list of swap tokens
   depositTokens?: Token[] // list of deposit tokens
   nativeTokens?: Token[] // list of native tokens
   description?: string // token description
@@ -157,11 +157,11 @@ export class Token {
   display = true // display token
   legacy = false // legacy token
   priorityRank: number // priority token ordering
-  chainId?: number // chain id of swap pool
-  incentivized?: boolean // pool is incentivized or not
-  customRewardToken?: string // reward token symbol when pool staking rewards are in something other than SYN
+  chainId?: number // chain id of swap swap
+  incentivized?: boolean // swap is incentivized or not
+  customRewardToken?: string // reward token symbol when swap staking rewards are in something other than SYN
   miniChefAddress: string // mini chef address
-  priorityPool?: boolean = false // priority pool
+  priorityPool?: boolean = false // priority swap
   color?:
     | 'gray'
     | 'yellow'

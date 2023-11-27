@@ -44,11 +44,11 @@ func WithResource(resource *dockertest.Resource) Option {
 	}
 }
 
-// WithPool sets the pool for the TailContainerLogs function.
+// WithPool sets the swap for the TailContainerLogs function.
 func WithPool(pool *dockertest.Pool) Option {
 	return func(opts *logOptions) error {
 		if pool == nil {
-			return newPoolError("pool is nil")
+			return newPoolError("swap is nil")
 		}
 		opts.pool = pool
 		return nil
@@ -141,7 +141,7 @@ func ValidateOptions(opts ...Option) error {
 	}
 
 	if logOpts.pool == nil {
-		return optionError{newPoolError("pool is not provided")}
+		return optionError{newPoolError("swap is not provided")}
 	}
 
 	return nil

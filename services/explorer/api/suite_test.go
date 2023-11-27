@@ -5,6 +5,7 @@ import (
 	gosql "database/sql"
 	"fmt"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
+	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 	"math/big"
 	"net/http"
 	"testing"
@@ -19,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
-	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/client"
@@ -68,9 +68,9 @@ type MvBridgeEvent struct {
 	FFee *big.Int `gorm:"column:ffee;type:UInt256"`
 	// FKappa is theFee keccak256 hash of the transaction.
 	FKappa gosql.NullString `gorm:"column:fkappa"`
-	// FTokenIndexFrom is the index of the from token in the pool.
+	// FTokenIndexFrom is the index of the from token in the swap.
 	FTokenIndexFrom *big.Int `gorm:"column:ftoken_index_from;type:UInt256"`
-	// FTokenIndexTo is the index of the to token in the pool.
+	// FTokenIndexTo is the index of the to token in the swap.
 	FTokenIndexTo *big.Int `gorm:"column:ftoken_index_to;type:UInt256"`
 	// FMinDy is the minimum amount of tokens to receive.
 	FMinDy *big.Int `gorm:"column:fmin_dy;type:UInt256"`
@@ -78,7 +78,7 @@ type MvBridgeEvent struct {
 	FDeadline *big.Int `gorm:"column:fdeadline;type:UInt256"`
 	// FSwapSuccess is whether the swap was successful.
 	FSwapSuccess *big.Int `gorm:"column:fswap_success;type:UInt256"`
-	// FSwapTokenIndex is the index of the token in the pool.
+	// FSwapTokenIndex is the index of the token in the swap.
 	FSwapTokenIndex *big.Int `gorm:"column:fswap_token_index;type:UInt256"`
 	// FSwapMinAmount is the minimum amount of tokens to receive.
 	FSwapMinAmount *big.Int `gorm:"column:fswap_min_amount;type:UInt256"`
@@ -129,9 +129,9 @@ type MvBridgeEvent struct {
 	TFee *big.Int `gorm:"column:tfee;type:UInt256"`
 	// TKappa is theFee keccak256 hash of the transaction.
 	TKappa gosql.NullString `gorm:"column:tkappa"`
-	// TTokenIndexFrom is the index of the from token in the pool.
+	// TTokenIndexFrom is the index of the from token in the swap.
 	TTokenIndexFrom *big.Int `gorm:"column:ttoken_index_from;type:UInt256"`
-	// TTokenIndexTo is the index of the to token in the pool.
+	// TTokenIndexTo is the index of the to token in the swap.
 	TTokenIndexTo *big.Int `gorm:"column:ttoken_index_to;type:UInt256"`
 	// TMinDy is the minimum amount of tokens to receive.
 	TMinDy *big.Int `gorm:"column:tmin_dy;type:UInt256"`
@@ -139,7 +139,7 @@ type MvBridgeEvent struct {
 	TDeadline *big.Int `gorm:"column:tdeadline;type:UInt256"`
 	// TSwapSuccess is whether the swap was successful.
 	TSwapSuccess *big.Int `gorm:"column:tswap_success;type:UInt256"`
-	// TSwapTokenIndex is the index of the token in the pool.
+	// TSwapTokenIndex is the index of the token in the swap.
 	TSwapTokenIndex *big.Int `gorm:"column:tswap_token_index;type:UInt256"`
 	// TSwapMinAmount is the minimum amount of tokens to receive.
 	TSwapMinAmount *big.Int `gorm:"column:tswap_min_amount;type:UInt256"`

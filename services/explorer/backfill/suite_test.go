@@ -2,6 +2,8 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,9 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
@@ -39,7 +38,7 @@ type BackfillSuite struct {
 	testBackend          backends.SimulatedTestBackend
 	deployManager        *testutil.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
-	consumerFetcher      fetcher.ScribeFetcher
+	consumerFetcher      scribe.IScribeFetcher
 	metrics              metrics.Handler
 }
 
@@ -109,7 +108,7 @@ func (b *BackfillSuite) SetupTest() {
 	chainID := big.NewInt(1)
 	b.testBackend = geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
 
-	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient, b.metrics)
+	b.consumerFetcher = scribe.NewFetcher(b.gqlClient, b.metrics)
 	var deployInfo contracts.DeployedContract
 	deployInfo, b.bridgeConfigContract = b.deployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
 

@@ -20,7 +20,7 @@ func TestValidateOptions(t *testing.T) {
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		t.Fatalf("failed to create docker pool: %s", err)
+		t.Fatalf("failed to create docker swap: %s", err)
 	}
 
 	tests := []struct {
@@ -57,13 +57,13 @@ func TestValidateOptions(t *testing.T) {
 			err: dockerutil.NewOptionError(dockerutil.NewResourceError("resource is not provided")),
 		},
 		{
-			name: "missing pool",
+			name: "missing swap",
 			options: []dockerutil.Option{
 				dockerutil.WithContext(ctx),
 				dockerutil.WithResource(resource),
 				dockerutil.WithStdout(true),
 			},
-			err: dockerutil.NewOptionError(dockerutil.NewPoolError("pool is not provided")),
+			err: dockerutil.NewOptionError(dockerutil.NewPoolError("swap is not provided")),
 		},
 		{
 			name: "missing callback",

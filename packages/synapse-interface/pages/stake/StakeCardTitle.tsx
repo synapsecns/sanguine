@@ -55,7 +55,7 @@ const StakeCardTitle = ({
           setPoolApyData(res)
         })
         .catch((err) => {
-          console.log('Could not get pool data', err)
+          console.log('Could not get swap data', err)
         })
     }
   }, [token, hasAllPrices(prices), lpTokenBalance])

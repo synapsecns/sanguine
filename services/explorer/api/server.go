@@ -11,9 +11,11 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	etherClient "github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/price"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/token"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
@@ -33,8 +35,6 @@ import (
 
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	fetcherpkg "github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/graphql/client"
@@ -48,7 +48,7 @@ const cacheRehydrationInterval = 1800
 var logger = log.Logger("explorer-api")
 
 // nolint:gocognit,cyclop
-func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.ScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[string]*swap.SwapFlashLoanFilterer, error) {
+func createParsers(ctx context.Context, db db.ConsumerDB, fetcher scribe.IScribeFetcher, clients map[uint32]etherClient.EVM, config serverConfig.Config) (*types.ServerParsers, *types.ServerRefs, map[string]*swap.SwapFlashLoanFilterer, error) {
 	ethClient, err := ethclient.DialContext(ctx, config.RPCURL+fmt.Sprintf("%d", 1))
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not create client: %w", err)
@@ -58,11 +58,11 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 	if err != nil || bridgeConfigRef == nil {
 		return nil, nil, nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)
 	}
-	priceDataService, err := tokenprice.NewPriceDataService()
+	priceDataService, err := price.NewPriceFetcher()
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not create price data service: %w", err)
 	}
-	newConfigFetcher, err := fetcherpkg.NewBridgeConfigFetcher(common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
+	newConfigFetcher, err := token.NewBridgeConfigFetcher(common.HexToAddress(config.BridgeConfigAddress), bridgeConfigRef)
 	if err != nil || newConfigFetcher == nil {
 		return nil, nil, nil, fmt.Errorf("could not get bridge abi: %w", err)
 	}
@@ -70,7 +70,7 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not open yaml file: %w", err)
 	}
-	tokenDataService, err := tokendata.NewTokenDataService(newConfigFetcher, tokenSymbolToIDs)
+	tokenDataService, err := token.NewTokenFetcher(newConfigFetcher, tokenSymbolToIDs)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not create token data service: %w", err)
 	}
@@ -150,7 +150,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 	handler.ConfigureHTTPClient(httpClient)
 
 	//  get the fetcher
-	fetcher := fetcherpkg.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
+	fetcher := scribe.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
 
 	// response cache
 	responseCache, err := cache.NewAPICacheService()

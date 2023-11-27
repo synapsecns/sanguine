@@ -23,7 +23,7 @@ explorer
 ├── <a href="./cmd">cmd</a>: CLI commands
 ├── <a href="./config">config</a>: Configuration files
 ├── <a href="./consumer">consumer</a>: Consumes data from Scribe and populates the Explorer database
-│   ├── <a href="./consumer/client">client</a>: Client for the Scribe consumer
+│   ├── <a href="consumer/fetchers/scribe/client">client</a>: Client for the Scribe consumer
 │   ├── <a href="./consumer/fetcher">fetcher</a>: Fetches data from Scribe, BridgeConfig contract, and Swap contract
 │   └── <a href="./consumer/parser">parser</a>: Parses and stores events
 ├── <a href="./contracts">contracts</a>: Smart contracts and their generated interfaces/utils

@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 	"math/big"
 	"testing"
 
@@ -20,7 +21,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"go.uber.org/atomic"

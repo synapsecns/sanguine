@@ -108,7 +108,7 @@ type feeHistoryResultMarshaling struct {
 //
 //nolint:gocognit,cyclop
 func standardizeResponse(ctx context.Context, req *rpc.Request, rpcMessage JSONRPCMessage) (out []byte, err error) {
-	// TODO: use a sync.pool for acquiring/releasing these structs
+	// TODO: use a sync.swap for acquiring/releasing these structs
 	method := req.Method
 
 OUTER:

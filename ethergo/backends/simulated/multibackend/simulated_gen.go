@@ -248,7 +248,7 @@ func (b *SimulatedBackend) TransactionReceipt(ctx context.Context, txHash common
 	return receipt, nil
 }
 
-// TransactionByHash checks the pool of pending transactions in addition to the
+// TransactionByHash checks the swap of pending transactions in addition to the
 // blockchain. The isPending return value indicates whether the transaction has been
 // mined yet. Note that the transaction may not be part of the canonical chain even if
 // it's not pending.
