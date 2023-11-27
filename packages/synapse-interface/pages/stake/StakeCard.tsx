@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Address } from '@wagmi/core'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
@@ -10,10 +10,7 @@ import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
-import { usePrices } from '@/utils/actions/getPrices'
 import { Token } from '@/utils/types'
-
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
@@ -43,7 +40,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
 
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
 
-  const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bi: 0n })
   const [withdraw, setWithdraw] = useState<string>('')
   const [showStake, setShowStake] = useState<boolean>(true)
@@ -57,6 +53,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     reward: 0n,
   })
   const [tx, setTx] = useState(undefined)
+  const miniChefAddress = pool.miniChefAddress
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) {
@@ -66,7 +63,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       })
       return
     }
-    getStakedBalance(address as Address, pool.chainId, stakingPoolId)
+    getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
       .then((data) => {
         setUserStakeData(data)
       })
@@ -85,13 +82,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     }
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
-        MINICHEF_ADDRESSES[chainId],
+        miniChefAddress as Address,
         pool.addresses[chainId] as Address,
         address as Address,
         chainId
       )
       setAllowance(tkAllowance)
-      getStakedBalance(address as Address, pool.chainId, stakingPoolId)
+      getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
         .then((data) => {
           setUserStakeData(data)
         })
@@ -105,7 +102,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     if (!address) return
     ;(async () => {
       const tkAllowance = await getTokenAllowance(
-        MINICHEF_ADDRESSES[chainId],
+        miniChefAddress as Address,
         pool.addresses[chainId] as Address,
         address as Address,
         chainId
@@ -117,12 +114,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
-        address={address}
-        connectedChainId={chainId}
         token={pool}
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
-        prices={prices}
         lpTokenBalance={lpTokenBalance}
       />
       <InfoSectionCard title="Your balances">
@@ -151,12 +145,16 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </div>
         </div>
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">SYN Earned</div>
+          <div className="text-[#EEEDEF]">
+            {pool?.customRewardToken ?? 'SYN'} Earned
+          </div>
           <div className="text-white ">
             {userStakeData.reward === 0n
               ? '\u2212'
               : formatBigIntToString(userStakeData.reward, 18, 5)}{' '}
-            <span className="text-base text-[#A9A5AD]">SYN</span>
+            <span className="text-base text-[#A9A5AD]">
+              {pool?.customRewardToken ?? 'SYN'}
+            </span>
           </div>
         </div>
         {userStakeData.reward === 0n ? null : (
@@ -173,17 +171,19 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             `}
             onClick={() =>
               pendingTxWrapFunc(
-                claimStake(chainId, address as Address, stakingPoolId)
+                claimStake(chainId, address as Address, stakingPoolId, pool)
               )
             }
           >
             {isPending ? (
               <div className="flex items-center justify-center space-x-5">
                 <ButtonLoadingDots className="mr-3" />
-                <span className="animate-pulse">Claiming SYN</span>{' '}
+                <span className="animate-pulse">Claiming</span>{' '}
               </div>
             ) : (
-              <div className="font-thin">Claim SYN</div>
+              <div className="font-thin">
+                Claim {pool.customRewardToken ?? 'SYN'}
+              </div>
             )}
           </Button>
         )}
@@ -303,6 +303,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                           address as Address,
                           chainId,
                           stakingPoolId,
+                          pool,
                           deposit.bi
                         )
                       )
@@ -326,6 +327,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                     address as Address,
                     chainId,
                     stakingPoolId,
+                    pool,
                     stringToBigInt(withdraw, 18)
                   )
                 )

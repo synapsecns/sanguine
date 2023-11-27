@@ -19,6 +19,10 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { PageHeader } from '@/components/PageHeader'
 import Grid from '@/components/ui/tailwind/Grid'
+import {
+  METIS_POOL_SWAP_TOKEN_MIGRATED,
+  METIS_WETH_SWAP_TOKEN_MIGRATED,
+} from '@/constants/tokens/poolMaster'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
@@ -28,13 +32,22 @@ const PoolsPage = () => {
 
   const router = useRouter()
 
+  const migratedPools = {
+    1088: [METIS_POOL_SWAP_TOKEN_MIGRATED, METIS_WETH_SWAP_TOKEN_MIGRATED],
+  }
+
   const incentivizedPools = useMemo(
     () => filterPoolsByIncentivization(true),
     [DISPLAY_POOLS_BY_CHAIN]
   )
-  const unIncentivizedPools = useMemo(
+  let unIncentivizedPools = useMemo(
     () => filterPoolsByIncentivization(false),
     [DISPLAY_POOLS_BY_CHAIN]
+  )
+  unIncentivizedPools[1088] = unIncentivizedPools[1088].filter(
+    (pool) =>
+      pool !== METIS_POOL_SWAP_TOKEN_MIGRATED &&
+      pool !== METIS_WETH_SWAP_TOKEN_MIGRATED
   )
 
   useEffect(() => {
@@ -75,6 +88,15 @@ const PoolsPage = () => {
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
           <PoolCards address={address} pools={unIncentivizedPools} />
+        </Grid>
+        <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
+          <PageHeader
+            title="Migrated Pools"
+            subtitle="Pools migrated to new reward contracts."
+          />
+        </div>
+        <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
+          <PoolCards address={address} pools={migratedPools} />
         </Grid>
       </StandardPageContainer>
     </LandingPageWrapper>

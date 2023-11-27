@@ -24,7 +24,6 @@ import {
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
-import { InterruptedServiceBanner } from '@/components/Banner'
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
@@ -35,7 +34,6 @@ export function LandingPageWrapper({ children }: { children: any }) {
           'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
       }}
     >
-      <InterruptedServiceBanner />
       <LandingNav />
 
       <div

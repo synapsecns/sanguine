@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Address, useNetwork } from 'wagmi'
 
@@ -11,9 +11,14 @@ import { Token } from '@/utils/types'
 
 export const PoolHeader = memo(
   ({ pool, address }: { pool: Token; address: Address }) => {
+    const [mounted, setMounted] = useState(false)
     const { chain: connectedChain } = useNetwork()
     const chain = CHAINS_BY_ID[pool.chainId]
     const { balancesAndAllowances } = usePortfolioState()
+
+    useEffect(() => {
+      setMounted(true)
+    }, [])
     const canDeposit = useMemo(() => {
       const balancesForChain = _(balancesAndAllowances[pool.chainId])
         .pickBy((value, _key) => value.balance > 0n)
@@ -43,7 +48,7 @@ export const PoolHeader = memo(
           />
           <div className="mr-2 text-white text-md">{chain.name}</div>
           <div className="text-sm text-[#BFBCC2] mr-4">{pool.symbol}</div>
-          {connectedChain && connectedChain.id === pool.chainId && (
+          {mounted && connectedChain && connectedChain.id === pool.chainId && (
             <ConnectedIndicator />
           )}
         </div>

@@ -1,19 +1,21 @@
 import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { Token } from '@types'
 
 export const claimStake = async (
   chainId: number,
   address: Address,
-  poolId: number
+  poolId: number,
+  pool: Token
 ) => {
   let pendingPopup: any
   let successPopup: any
+  let miniChefAddress = pool.miniChefAddress
 
   pendingPopup = toast(`Starting your claim...`, {
     id: 'claim-in-progress-popup',
@@ -29,7 +31,7 @@ export const claimStake = async (
       address,
       chainId,
       poolId,
-      lpAddress: MINICHEF_ADDRESSES[chainId],
+      lpAddress: miniChefAddress as Address,
     })
 
     toast.dismiss(pendingPopup)

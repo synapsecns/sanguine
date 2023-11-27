@@ -16,6 +16,8 @@ coverage:
 
 # from go.work file
 flags:
+  # note: go.work flags should be in order of the directory structure
+  # also, if you're using multiple module names, you're doing something wrong
   agents:
     paths:
       - agents/

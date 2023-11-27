@@ -4,7 +4,6 @@ import toast from 'react-hot-toast'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import { Token } from '../types'
 import { TransactionReceipt, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
@@ -17,6 +16,7 @@ export const approve = async (
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
+  const miniChefAddress = pool.miniChefAddress
   let pendingPopup: any
   let successPopup: any
 
@@ -33,7 +33,7 @@ export const approve = async (
     const txReceipt: TransactionReceipt = await approveErc20Token({
       chainId,
       tokenAddress: pool.addresses[chainId] as Address,
-      spender: MINICHEF_ADDRESSES[chainId],
+      spender: miniChefAddress as Address,
       amount: inputValue,
     })
 
@@ -68,10 +68,13 @@ export const stake = async (
   address: Address,
   chainId: number,
   poolId: number,
+  pool: Token,
   inputValue: bigint
 ) => {
   let pendingPopup: any
   let successPopup: any
+
+  const miniChefAddress = pool.miniChefAddress
 
   pendingPopup = toast(`Starting your deposit...`, {
     id: 'deposit-in-progress-popup',
@@ -80,7 +83,7 @@ export const stake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
-    
+
     segmentAnalyticsEvent(`[Stake] Attempt`, {
       poolId,
       inputValue,
@@ -91,7 +94,7 @@ export const stake = async (
       chainId,
       poolId,
       amount: inputValue,
-      lpAddress: MINICHEF_ADDRESSES[chainId],
+      lpAddress: miniChefAddress as Address,
     })
 
     toast.dismiss(pendingPopup)

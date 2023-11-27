@@ -5,7 +5,7 @@ import { useAppDispatch } from '@/store/hooks'
 import {
   removePendingBridgeTransaction,
   updatePendingBridgeTransaction,
-} from '@/slices/bridge/actions'
+} from '@/slices/transactions/actions'
 import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { ARBITRUM, ETH } from '@/constants/chains/master'
@@ -16,6 +16,7 @@ import {
   TransactionType,
   TransactionStatus,
 } from './Transaction'
+import { ApplicationState } from '@/slices/application/reducer'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
@@ -24,6 +25,8 @@ import { Chain } from '@/utils/types'
 import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
 import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { DISCORD_URL } from '@/constants/urls'
+import { useApplicationState } from '@/slices/application/hooks'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -55,6 +58,7 @@ export const PendingTransaction = ({
   transactionType = TransactionType.PENDING,
 }: PendingTransactionProps) => {
   const { synapseSDK } = useSynapseContext()
+  const { lastConnectedTimestamp }: ApplicationState = useApplicationState()
   const dispatch = useAppDispatch()
 
   const transactionStatus: TransactionStatus = useMemo(() => {
@@ -73,6 +77,18 @@ export const PendingTransaction = ({
   }, [transactionHash, isSubmitted, isCompleted])
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
+    if (bridgeModuleName) {
+      return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
+    }
+
+    if (formattedEventType) {
+      const fetchedBridgeModuleName: string =
+        synapseSDK.getBridgeModuleName(formattedEventType)
+      return synapseSDK.getEstimatedTime(
+        originChain?.id,
+        fetchedBridgeModuleName
+      )
+    }
     // Fallback last resort estimated duration calculation
     // Remove this when fallback origin queries return eventType
     // CCTP Classification
@@ -94,50 +110,86 @@ export const PendingTransaction = ({
       ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
           originChain.blockTime) /
           1000
-      : null
-  }, [originChain, eventType, originToken])
+      : 0
+  }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 
-  const elapsedMinutes: number = useMemo(() => {
-    if (startedTimestamp) {
+  // Tracks initial elapsed minutes when transaction mounts to populate updatedElapsedTime
+  const initialElapsedMinutes: number = useMemo(() => {
+    if (!isSubmitted || currentTime < startedTimestamp) {
+      return 0
+    } else if (startedTimestamp < currentTime) {
       return Math.floor((currentTime - startedTimestamp) / 60)
+    } else {
+      return 0
     }
-  }, [startedTimestamp])
+  }, [startedTimestamp, currentTime, isSubmitted, transactionHash])
 
-  const [elapsedTime, setElapsedTime] = useState<number>(elapsedMinutes ?? 0)
+  // Holds most updated value for elapsed time to calculate timeRemaining
+  const [updatedElapsedTime, setUpdatedElapsedTime] = useState<number>(
+    initialElapsedMinutes
+  )
+  const [updatedCurrentTime, setUpdatedCurrentTime] =
+    useState<number>(currentTime)
 
+  // Ensures we reset elapsed time so unique transactions track elapsed time accurately
+  useEffect(() => {
+    if (!initialElapsedMinutes && updatedElapsedTime > initialElapsedMinutes) {
+      setUpdatedElapsedTime(0)
+    }
+  }, [initialElapsedMinutes, updatedElapsedTime, transactionHash, isSubmitted])
+
+  // Update elapsed time in set intervals for countdown
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime: number = Math.floor(Date.now() / 1000)
       const elapsedMinutes: number = Math.floor(
         (currentTime - startedTimestamp) / 60
       )
-      setElapsedTime(elapsedMinutes)
-    }, 60000)
+      setUpdatedCurrentTime(currentTime)
+      if (isSubmitted) {
+        setUpdatedElapsedTime(elapsedMinutes)
+      }
+    }, 30000)
 
     return () => {
       clearInterval(interval)
     }
-  }, [startedTimestamp, isSubmitted])
+  }, [startedTimestamp, isSubmitted, transactionHash, initialElapsedMinutes])
 
-  const estimatedMinutes: number = Math.floor(estimatedCompletionInSeconds / 60)
+  const estimatedCompletionInMinutes: number = Math.ceil(
+    estimatedCompletionInSeconds / 60
+  )
 
   const timeRemaining: number = useMemo(() => {
-    if (!startedTimestamp || !elapsedTime) {
-      return estimatedMinutes
-    } else {
-      return estimatedMinutes - elapsedTime
-    }
-  }, [estimatedMinutes, elapsedTime, startedTimestamp])
+    return estimatedCompletionInMinutes - initialElapsedMinutes
+  }, [
+    estimatedCompletionInMinutes,
+    initialElapsedMinutes,
+    updatedElapsedTime,
+    startedTimestamp,
+    transactionHash,
+  ])
 
   const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+
+  const isSignificantlyDelayed: boolean = useMemo(() => {
+    if (isDelayed) {
+      return timeRemaining < -5
+    }
+    return false
+  }, [timeRemaining, estimatedCompletionInMinutes, isDelayed])
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
     () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
     [timeRemaining, isCompleted]
   )
+
+  const isReconnectedAndRetryFallback: boolean = useMemo(() => {
+    return updatedCurrentTime - lastConnectedTimestamp < 300
+  }, [lastConnectedTimestamp, updatedCurrentTime])
 
   const bridgeType: BridgeType = useMemo(() => {
     if (synapseSDK && formattedEventType) {
@@ -155,14 +207,18 @@ export const PendingTransaction = ({
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
   const originFallback = useFallbackBridgeOriginQuery({
-    useFallback: isDelayed && useFallback,
+    useFallback:
+      (isDelayed && useFallback) ||
+      (isDelayed && isReconnectedAndRetryFallback),
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: bridgeType,
   })
 
   const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback: isDelayed && useFallback,
+    useFallback:
+      (isDelayed && useFallback) ||
+      (isDelayed && isReconnectedAndRetryFallback),
     chainId: destinationChain?.id,
     address: destinationAddress,
     kappa: kappa,
@@ -172,29 +228,49 @@ export const PendingTransaction = ({
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
+      const maxRetries = 3
+      const retryDelay = 5000
+      let attempt = 0
+
       const updateResolvedTransaction = async () => {
-        const resolvedTransaction = await waitForTransaction({
-          hash: transactionHash as Address,
-        }).catch((error) => {
-          console.error('resolving transaction failed: ', error)
-          dispatch(removePendingBridgeTransaction(startedTimestamp))
-        })
+        try {
+          const resolvedTransaction = await waitForTransaction({
+            hash: transactionHash as Address,
+          })
 
-        if (resolvedTransaction) {
-          const currentTimestamp: number = getTimeMinutesFromNow(0)
-          const updatedTransaction = {
-            id: startedTimestamp,
-            timestamp: currentTimestamp,
-            transactionHash: transactionHash,
-            isSubmitted: true,
+          if (resolvedTransaction) {
+            const currentTimestamp: number = getTimeMinutesFromNow(0)
+            const updatedTransaction = {
+              id: startedTimestamp,
+              timestamp: currentTimestamp,
+              transactionHash: transactionHash,
+              isSubmitted: true,
+            }
+
+            console.log('resolved transaction:', resolvedTransaction)
+            dispatch(updatePendingBridgeTransaction(updatedTransaction))
           }
-
-          dispatch(updatePendingBridgeTransaction(updatedTransaction))
+        } catch (error) {
+          console.error('resolving transaction failed: ', error)
+          if (attempt < maxRetries) {
+            attempt++
+            console.log(`Retrying (${attempt}/${maxRetries})...`)
+            setTimeout(updateResolvedTransaction, retryDelay)
+          }
         }
       }
+
       updateResolvedTransaction()
     }
-  }, [startedTimestamp, isSubmitted, transactionHash])
+  }, [
+    startedTimestamp,
+    isSubmitted,
+    transactionHash,
+    dispatch,
+    updatePendingBridgeTransaction,
+    getTimeMinutesFromNow,
+    updatedElapsedTime,
+  ])
 
   useEffect(() => {
     const currentTimestamp: number = getTimeMinutesFromNow(0)
@@ -206,7 +282,7 @@ export const PendingTransaction = ({
     if (!isSubmitted && isStale) {
       dispatch(removePendingBridgeTransaction(startedTimestamp))
     }
-  }, [timeRemaining, isSubmitted, startedTimestamp])
+  }, [timeRemaining, isSubmitted, startedTimestamp, updatedElapsedTime])
 
   return (
     <div data-test-id="pending-transaction" className="flex flex-col">
@@ -223,7 +299,10 @@ export const PendingTransaction = ({
         completedTimestamp={completedTimestamp}
         transactionType={TransactionType.PENDING}
         estimatedDuration={estimatedCompletionInSeconds}
-        timeRemaining={timeRemaining}
+        timeRemaining={
+          isSubmitted ? timeRemaining : estimatedCompletionInMinutes
+        }
+        transactionHash={transactionHash}
         transactionStatus={transactionStatus}
         isCompleted={isCompleted}
         kappa={kappa}
@@ -235,6 +314,7 @@ export const PendingTransaction = ({
           transactionHash={transactionHash}
           transactionStatus={transactionStatus}
           isDelayed={isDelayed}
+          isSignificantlyDelayed={isSignificantlyDelayed}
           kappa={kappa}
         />
       </Transaction>
@@ -250,6 +330,7 @@ const TransactionStatusDetails = ({
   transactionHash,
   transactionStatus,
   isDelayed,
+  isSignificantlyDelayed,
 }: {
   connectedAddress: Address
   originChain: Chain
@@ -258,6 +339,7 @@ const TransactionStatusDetails = ({
   transactionHash?: string
   transactionStatus: TransactionStatus
   isDelayed: boolean
+  isSignificantlyDelayed: boolean
 }) => {
   const sharedClass: string =
     'flex bg-tint border-t border-surface text-sm items-center'
@@ -314,12 +396,46 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="pending-status"
-        className={`${sharedClass} p-2 flex justify-between`}
+        className={`${sharedClass} p-2 flex justify-between rounded-b-lg`}
       >
-        {isDelayed ? (
+        {isDelayed && isSignificantlyDelayed && (
           <>
-            <div className="flex items-center p-1 ml-1 rounded-sm cursor-default">
-              <div className="text-[#FFDD33]">Taking longer than expected.</div>
+            <div className="flex flex-col">
+              <div className="flex flex-wrap">
+                <div
+                  className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
+                  onClick={handleOriginExplorerClick}
+                >
+                  <Image
+                    className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
+                    src={originChain?.explorerImg}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                  <div className="whitespace-nowrap">
+                    Confirmed on {originChain.explorerName}.
+                  </div>
+                </div>
+                <div
+                  onClick={handleDestinationExplorerClick}
+                  className="whitespace-nowrap mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
+                >
+                  Waiting on {destinationChain.name}...
+                </div>
+              </div>
+              <p className="items-center p-1 rounded-sm">
+                {destinationChain?.name ?? 'Destination network'} confirmations
+                are slower than usual, transactions are still being processed.
+                Questions?
+                <a
+                  href={DISCORD_URL}
+                  target="_blank"
+                  rel="no-referrer no-opener"
+                  className="px-1 text-blueText hover:underline"
+                >
+                  Contact support
+                </a>
+                on our Discord channel.
+              </p>
             </div>
             <TransactionOptions
               connectedAddress={connectedAddress as Address}
@@ -331,7 +447,59 @@ const TransactionStatusDetails = ({
               isDelayed={isDelayed}
             />
           </>
-        ) : (
+        )}
+
+        {isDelayed && !isSignificantlyDelayed && (
+          <>
+            <div className="flex flex-col">
+              <div className="flex flex-wrap">
+                <div
+                  className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
+                  onClick={handleOriginExplorerClick}
+                >
+                  <Image
+                    className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
+                    src={originChain?.explorerImg}
+                    alt={`${originChain.explorerName} logo`}
+                  />
+                  <div className="whitespace-nowrap">
+                    Confirmed on {originChain.explorerName}.
+                  </div>
+                </div>
+                <div
+                  onClick={handleDestinationExplorerClick}
+                  className="whitespace-nowrap mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
+                >
+                  Waiting on {destinationChain.name}...
+                </div>
+              </div>
+              <div className="flex items-center p-1 rounded-sm cursor-default whitespace-nowrap">
+                <div className="text-[#FFDD33] mr-1.5">
+                  Taking longer than expected.
+                </div>
+                <a
+                  href={DISCORD_URL}
+                  target="_blank"
+                  rel="no-referrer no-opener"
+                  className="text-blueText hover:underline"
+                >
+                  Contact support
+                </a>
+              </div>
+            </div>
+            <TransactionOptions
+              connectedAddress={connectedAddress as Address}
+              originChain={originChain}
+              destinationChain={destinationChain}
+              kappa={kappa}
+              transactionHash={transactionHash}
+              transactionStatus={transactionStatus}
+              isDelayed={isDelayed}
+            />
+          </>
+        )}
+
+        {!isDelayed && !isSignificantlyDelayed && (
           <>
             <div
               className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1 items-center"
@@ -339,7 +507,7 @@ const TransactionStatusDetails = ({
             >
               <Image
                 className="w-4 h-4 mx-1 ml-1 mr-1.5 rounded-full"
-                src={originChain.explorerImg}
+                src={originChain?.explorerImg}
                 alt={`${originChain.explorerName} logo`}
               />
               <div>Confirmed on {originChain.explorerName}.</div>
@@ -348,7 +516,7 @@ const TransactionStatusDetails = ({
               onClick={handleDestinationExplorerClick}
               className="mr-auto cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
             >
-              Bridging to {destinationChain.name}.
+              Bridging to {destinationChain.name}...
             </div>
             <TransactionOptions
               connectedAddress={connectedAddress as Address}

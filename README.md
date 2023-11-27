@@ -113,3 +113,10 @@ Use the above commands to recompile the packages.
 ## Dealing with submodules
 
 This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). To avoid issues when checking out different branches, you can use `git submodule update --init --recursive` after switching to a branch or `git checkout feat/branch-name --recurse-submodules` when switching branches.
+
+# Building Agents Locally
+
+<!-- TODO: we need to move this thing into an ops docs package. Given that the docs are still a work in progress, I'm leaving this here for now. -->
+<!-- Actually, it's unclear if this belongs in a contributing.md file, the docs or both. Maybe a symlink? -->
+
+In order to minimize risks coming from extraneous dependencies or supply chain attacks in a production like enviornment, all distributed images are built as [scratch](https://hub.docker.com/_/scratch) or [distroless](https://github.com/GoogleContainerTools/distroless#distroless-container-images) images. Builder containers are also not used to restrict the build enviornment to the [goreleaser container](https://github.com/synapsecns/sanguine/pkgs/container/sanguine-goreleaser). All production images are kept in the `docker/` file as `[dir].Dockerfile`. Local

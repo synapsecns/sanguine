@@ -272,7 +272,7 @@ export const ToTokenListOverlay = () => {
                       bridgeQuotesMatchDestination &&
                       calculateEstimatedTransactionTime({
                         originChainId: fromChainId,
-                        originTokenAddress: fromToken.addresses[
+                        originTokenAddress: fromToken?.addresses[
                           fromChainId
                         ] as Address,
                       })

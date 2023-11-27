@@ -13,12 +13,7 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import {
-  PendingBridgeTransaction,
-  addPendingBridgeTransaction,
-  removePendingBridgeTransaction,
   resetFetchedBridgeQuotes,
-  updatePendingBridgeTransaction,
-  updatePendingBridgeTransactions,
   resetBridgeInputs,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
@@ -47,8 +42,6 @@ export interface BridgeState {
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
-  bridgeTxHashes: string[] | null
-  pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
 const {
@@ -86,8 +79,6 @@ export const initialState: BridgeState = {
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
-  bridgeTxHashes: [],
-  pendingBridgeTransactions: [],
 }
 
 export const bridgeSlice = createSlice({
@@ -289,7 +280,7 @@ export const bridgeSlice = createSlice({
         fromChainId: state.fromChainId ?? null,
         fromTokenRouteSymbol: state.fromToken?.routeSymbol ?? null,
         toChainId: incomingToChainId ?? null,
-        toTokenRouteSymbol: null,
+        toTokenRouteSymbol: state.toToken?.routeSymbol ?? null,
       })
         ?.map(getSymbol)
         .map((s) => findTokenByRouteSymbol(s))
@@ -468,9 +459,6 @@ export const bridgeSlice = createSlice({
     setDestinationAddress: (state, action: PayloadAction<Address | null>) => {
       state.destinationAddress = action.payload
     },
-    addBridgeTxHash: (state, action: PayloadAction<string>) => {
-      state.bridgeTxHashes = [...state.bridgeTxHashes, action.payload]
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -484,57 +472,6 @@ export const bridgeSlice = createSlice({
         updateDebouncedToTokensFromValue,
         (state, action: PayloadAction<string>) => {
           state.debouncedToTokensFromValue = action.payload
-        }
-      )
-      .addCase(
-        addPendingBridgeTransaction,
-        (state, action: PayloadAction<PendingBridgeTransaction>) => {
-          state.pendingBridgeTransactions = [
-            action.payload,
-            ...state.pendingBridgeTransactions,
-          ]
-        }
-      )
-      .addCase(
-        updatePendingBridgeTransaction,
-        (
-          state,
-          action: PayloadAction<{
-            id: number
-            timestamp: number
-            transactionHash: string
-            isSubmitted: boolean
-          }>
-        ) => {
-          const { id, timestamp, transactionHash, isSubmitted } = action.payload
-          const transactionIndex = state.pendingBridgeTransactions.findIndex(
-            (transaction) => transaction.id === id
-          )
-
-          if (transactionIndex !== -1) {
-            state.pendingBridgeTransactions =
-              state.pendingBridgeTransactions.map((transaction, index) =>
-                index === transactionIndex
-                  ? { ...transaction, transactionHash, isSubmitted, timestamp }
-                  : transaction
-              )
-          }
-        }
-      )
-      .addCase(
-        removePendingBridgeTransaction,
-        (state, action: PayloadAction<number>) => {
-          const idTimestampToRemove = action.payload
-          state.pendingBridgeTransactions =
-            state.pendingBridgeTransactions.filter(
-              (transaction) => transaction.id !== idTimestampToRemove
-            )
-        }
-      )
-      .addCase(
-        updatePendingBridgeTransactions,
-        (state, action: PayloadAction<PendingBridgeTransaction[]>) => {
-          state.pendingBridgeTransactions = action.payload
         }
       )
       .addCase(resetBridgeInputs, (state) => {
@@ -577,7 +514,6 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
-  addBridgeTxHash,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
