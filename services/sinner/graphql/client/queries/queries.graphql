@@ -1,10 +1,19 @@
 
 query GetMessageStatus($messageHash: String, $originChainID: Int, $originTxHash: String) {
   response: getMessageStatus(
-  messageHash: $messageHash
-  originChainID: $originChainID
-  originTxHash: $originTxHash
+    messageHash: $messageHash
+    originChainID: $originChainID
+    originTxHash: $originTxHash
   ) {
+    lastSeen
+    originTxHash
+    destinationTxHash
+    messageHash
+  }
+}
+
+query GetMessagesByStatus ($messageStatus: MessageState!, $page: Int! = 1) {
+  response: getMessagesByStatus (messageStatus: $messageStatus, page: $page) {
     lastSeen
     originTxHash
     destinationTxHash
