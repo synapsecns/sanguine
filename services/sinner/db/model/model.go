@@ -6,6 +6,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// PageSize is the size of the page when returning graphql responses.
+const PageSize = 100
+
 // GetAllModels gets all models to migrate.
 func GetAllModels() (allModels []interface{}) {
 	return []interface{}{&OriginSent{}, &Executed{}, &MessageStatus{}, &LastIndexed{}}
