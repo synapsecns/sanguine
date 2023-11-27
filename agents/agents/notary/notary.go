@@ -664,10 +664,9 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
-		snapshotRoot, _, _ := snapshot.SnapshotRootAndProofs()
 		span.AddEvent("submitting snapshot", trace.WithAttributes(
-			attribute.Int("numStates", len(statesToSubmit)),
-			attribute.String("snapRoot", common.BytesToHash(snapshotRoot[:]).String()),
+			attribute.Int("num_states", len(statesToSubmit)),
+			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 		))
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
