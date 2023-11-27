@@ -748,7 +748,7 @@ contract ERC20 is Context, IERC20 {
 }
 
 interface ISwap {
-  // pool data view functions
+  // swap data view functions
   function getA() external view returns (uint256);
 
   function getToken(uint8 index) external view returns (IERC20);
@@ -2837,7 +2837,7 @@ library SwapUtils {
     // for example, TBTC has 18 decimals, so the multiplier should be 1. WBTC
     // has 8, so the multiplier should be 10 ** 18 / 10 ** 8 => 10 ** 10
     uint256[] tokenPrecisionMultipliers;
-    // the pool balance of each token, in the token's precision
+    // the swap balance of each token, in the token's precision
     // the contract's actual token balance might differ
     uint256[] balances;
   }
@@ -2893,7 +2893,7 @@ library SwapUtils {
   /**
    * @notice Calculate the dy, the amount of selected token that user receives and
    * the fee of withdrawing in one token
-   * @param tokenAmount the amount to withdraw in the pool's precision
+   * @param tokenAmount the amount to withdraw in the swap's precision
    * @param tokenIndex which token will be withdrawn
    * @param self Swap struct to read from
    * @return the amount of token user will receive
@@ -3008,7 +3008,7 @@ library SwapUtils {
   }
 
   /**
-   * @notice Calculate the price of a token in the pool with given
+   * @notice Calculate the price of a token in the swap with given
    * precision-adjusted balances and a particular D.
    *
    * @dev This is accomplished via solving the invariant iteratively.
@@ -3020,8 +3020,8 @@ library SwapUtils {
    *
    * @param a the amplification coefficient * n * (n - 1). See the StableSwap paper for details.
    * @param tokenIndex Index of token we are calculating for.
-   * @param xp a precision-adjusted set of pool balances. Array should be
-   * the same cardinality as the pool.
+   * @param xp a precision-adjusted set of swap balances. Array should be
+   * the same cardinality as the swap.
    * @param d the stableswap invariant
    * @return the price of the token, in the same precision as in xp
    */
@@ -3064,11 +3064,11 @@ library SwapUtils {
 
   /**
    * @notice Get D, the StableSwap invariant, based on a set of balances and a particular A.
-   * @param xp a precision-adjusted set of pool balances. Array should be the same cardinality
-   * as the pool.
+   * @param xp a precision-adjusted set of swap balances. Array should be the same cardinality
+   * as the swap.
    * @param a the amplification coefficient * n * (n - 1) in A_PRECISION.
    * See the StableSwap paper for details
-   * @return the invariant, at the precision of the pool
+   * @return the invariant, at the precision of the swap
    */
   function getD(uint256[] memory xp, uint256 a)
     internal
@@ -3115,7 +3115,7 @@ library SwapUtils {
     }
 
     // Convergence should occur in 4 loops or less. If this is reached, there may be something wrong
-    // with the pool. If this were to occur repeatedly, LPs should withdraw via `removeLiquidity()`
+    // with the swap. If this were to occur repeatedly, LPs should withdraw via `removeLiquidity()`
     // function which does not rely on D.
     revert('D does not converge');
   }
@@ -3129,9 +3129,9 @@ library SwapUtils {
    *
    * @param precisionMultipliers an array of multipliers, corresponding to
    * the amounts in the balances array. When multiplied together they
-   * should yield amounts at the pool's precision.
+   * should yield amounts at the swap's precision.
    *
-   * @return an array of amounts "scaled" to the pool's precision
+   * @return an array of amounts "scaled" to the swap's precision
    */
   function _xp(uint256[] memory balances, uint256[] memory precisionMultipliers)
     internal
@@ -3151,9 +3151,9 @@ library SwapUtils {
   }
 
   /**
-   * @notice Return the precision-adjusted balances of all tokens in the pool
+   * @notice Return the precision-adjusted balances of all tokens in the swap
    * @param self Swap struct to read from
-   * @return the pool balances "scaled" to the pool's precision, allowing
+   * @return the swap balances "scaled" to the swap's precision, allowing
    * them to be more easily compared.
    */
   function _xp(Swap storage self) internal view returns (uint256[] memory) {
@@ -3185,8 +3185,8 @@ library SwapUtils {
    * @param tokenIndexFrom index of FROM token
    * @param tokenIndexTo index of TO token
    * @param x the new total amount of FROM token
-   * @param xp balances of the tokens in the pool
-   * @return the amount of TO token that should remain in the pool
+   * @param xp balances of the tokens in the swap
+   * @return the amount of TO token that should remain in the swap
    */
   function getY(
     uint256 preciseA,
@@ -3415,7 +3415,7 @@ library SwapUtils {
   /*** STATE MODIFYING FUNCTIONS ***/
 
   /**
-   * @notice swap two tokens in the pool
+   * @notice swap two tokens in the swap
    * @param self Swap struct to read from and write to
    * @param tokenIndexFrom the token the user wants to sell
    * @param tokenIndexTo the token the user wants to buy
@@ -3473,12 +3473,12 @@ library SwapUtils {
   }
 
   /**
-   * @notice Add liquidity to the pool
+   * @notice Add liquidity to the swap
    * @param self Swap struct to read from and write to
    * @param amounts the amounts of each token to add, in their native precision
    * @param minToMint the minimum LP tokens adding this amount of liquidity
    * should mint, otherwise revert. Handy for front-running mitigation
-   * allowed addresses. If the pool is not in the guarded launch phase, this parameter will be ignored.
+   * allowed addresses. If the swap is not in the guarded launch phase, this parameter will be ignored.
    * @return amount of LP token user received
    */
   function addLiquidity(
@@ -3581,11 +3581,11 @@ library SwapUtils {
   }
 
   /**
-   * @notice Burn LP tokens to remove liquidity from the pool.
-   * @dev Liquidity can always be removed, even when the pool is paused.
+   * @notice Burn LP tokens to remove liquidity from the swap.
+   * @dev Liquidity can always be removed, even when the swap is paused.
    * @param self Swap struct to read from and write to
    * @param amount the amount of LP tokens to burn
-   * @param minAmounts the minimum amounts of each token in the pool
+   * @param minAmounts the minimum amounts of each token in the swap
    * acceptable for this burn. Useful as a front-running mitigation
    * @return amounts of tokens the user received
    */
@@ -3625,7 +3625,7 @@ library SwapUtils {
   }
 
   /**
-   * @notice Remove liquidity from the pool all in one token.
+   * @notice Remove liquidity from the swap all in one token.
    * @param self Swap struct to read from and write to
    * @param tokenAmount the amount of the lp tokens to burn
    * @param tokenIndex the index of the token you want to receive
@@ -3673,8 +3673,8 @@ library SwapUtils {
   }
 
   /**
-   * @notice Remove liquidity from the pool, weighted differently than the
-   * pool's current balances.
+   * @notice Remove liquidity from the swap, weighted differently than the
+   * swap's current balances.
    *
    * @param self Swap struct to read from and write to
    * @param amounts how much of each token to withdraw
@@ -3806,14 +3806,14 @@ library SwapUtils {
  * @title Swap - A StableSwap implementation in solidity.
  * @notice This contract is responsible for custody of closely pegged assets (eg. group of stablecoins)
  * and automatic market making system. Users become an LP (Liquidity Provider) by depositing their tokens
- * in desired ratios for an exchange of the pool token that represents their share of the pool.
- * Users can burn pool tokens and withdraw their share of token(s).
+ * in desired ratios for an exchange of the swap token that represents their share of the swap.
+ * Users can burn swap tokens and withdraw their share of token(s).
  *
  * Each time a swap between the pooled tokens happens, a set fee incurs which effectively gets
  * distributed to the LPs.
  *
  * In case of emergencies, admin can pause additional deposits, swaps, or single-asset withdraws - which
- * stops the ratio of the tokens in the pool from changing.
+ * stops the ratio of the tokens in the swap from changing.
  * Users can always withdraw their tokens via multi-asset withdraws.
  *
  * @dev Most of the logic is stored as a library `SwapUtils` for the sake of reducing contract's
@@ -3829,7 +3829,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   // access this data, this contract uses SwapUtils library. For more details, see SwapUtils.sol
   SwapUtils.Swap public swapStorage;
 
-  // Maps token address to an index in the pool. Used to prevent duplicate tokens in the pool.
+  // Maps token address to an index in the swap. Used to prevent duplicate tokens in the swap.
   // getTokenIndex function also relies on this mapping to retrieve token index.
   mapping(address => uint8) private tokenIndexes;
 
@@ -3886,7 +3886,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
    * LP positions. The owner of LPToken will be this contract - which means
    * only this contract is allowed to mint/burn tokens.
    *
-   * @param _pooledTokens an array of ERC20s this pool will accept
+   * @param _pooledTokens an array of ERC20s this swap will accept
    * @param decimals the decimals to use for each pooled token,
    * eg 8 for WBTC. Cannot be larger than POOL_PRECISION_DECIMALS
    * @param lpTokenName the long-form name of the token to be deployed
@@ -4135,7 +4135,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   /*** STATE MODIFYING FUNCTIONS ***/
 
   /**
-   * @notice Swap two tokens using this pool
+   * @notice Swap two tokens using this swap
    * @param tokenIndexFrom the token the user wants to swap from
    * @param tokenIndexTo the token the user wants to swap to
    * @param dx the amount of tokens the user wants to swap from
@@ -4160,7 +4160,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   }
 
   /**
-   * @notice Add liquidity to the pool with the given amounts of tokens
+   * @notice Add liquidity to the swap with the given amounts of tokens
    * @param amounts the amounts of each token to add, in their native precision
    * @param minToMint the minimum LP tokens adding this amount of liquidity
    * should mint, otherwise revert. Handy for front-running mitigation
@@ -4183,11 +4183,11 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   }
 
   /**
-   * @notice Burn LP tokens to remove liquidity from the pool. Withdraw fee that decays linearly
+   * @notice Burn LP tokens to remove liquidity from the swap. Withdraw fee that decays linearly
    * over period of 4 weeks since last deposit will apply.
-   * @dev Liquidity can always be removed, even when the pool is paused.
+   * @dev Liquidity can always be removed, even when the swap is paused.
    * @param amount the amount of LP tokens to burn
-   * @param minAmounts the minimum amounts of each token in the pool
+   * @param minAmounts the minimum amounts of each token in the swap
    *        acceptable for this burn. Useful as a front-running mitigation
    * @param deadline latest timestamp to accept this transaction
    * @return amounts of tokens user received
@@ -4207,7 +4207,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   }
 
   /**
-   * @notice Remove liquidity from the pool all in one token. Withdraw fee that decays linearly
+   * @notice Remove liquidity from the swap all in one token. Withdraw fee that decays linearly
    * over period of 4 weeks since last deposit will apply.
    * @param tokenAmount the amount of the token you want to receive
    * @param tokenIndex the index of the token you want to receive
@@ -4233,8 +4233,8 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
   }
 
   /**
-   * @notice Remove liquidity from the pool, weighted differently than the
-   * pool's current balances. Withdraw fee that decays linearly
+   * @notice Remove liquidity from the swap, weighted differently than the
+   * swap's current balances. Withdraw fee that decays linearly
    * over period of 4 weeks since last deposit will apply.
    * @param amounts how much of each token to withdraw
    * @param maxBurnAmount the max LP token provider is willing to pay to
@@ -4305,14 +4305,14 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
  * @title Swap - A StableSwap implementation in solidity.
  * @notice This contract is responsible for custody of closely pegged assets (eg. group of stablecoins)
  * and automatic market making system. Users become an LP (Liquidity Provider) by depositing their tokens
- * in desired ratios for an exchange of the pool token that represents their share of the pool.
- * Users can burn pool tokens and withdraw their share of token(s).
+ * in desired ratios for an exchange of the swap token that represents their share of the swap.
+ * Users can burn swap tokens and withdraw their share of token(s).
  *
  * Each time a swap between the pooled tokens happens, a set fee incurs which effectively gets
  * distributed to the LPs.
  *
  * In case of emergencies, admin can pause additional deposits, swaps, or single-asset withdraws - which
- * stops the ratio of the tokens in the pool from changing.
+ * stops the ratio of the tokens in the swap from changing.
  * Users can always withdraw their tokens via multi-asset withdraws.
  *
  * @dev Most of the logic is stored as a library `SwapUtils` for the sake of reducing contract's
@@ -4320,10 +4320,10 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
  */
 contract SwapFlashLoan is Swap {
   // Total fee that is charged on all flashloans in BPS. Borrowers must repay the amount plus the flash loan fee.
-  // This fee is split between the protocol and the pool.
+  // This fee is split between the protocol and the swap.
   uint256 public flashLoanFeeBPS;
   // Share of the flash loan fee that goes to the protocol in BPS. A portion of each flash loan fee is allocated
-  // to the protocol rather than the pool.
+  // to the protocol rather than the swap.
   uint256 public protocolFeeShareBPS;
   // Max BPS for limiting flash loan fee settings.
   uint256 public constant MAX_BPS = 10000;
@@ -4343,7 +4343,7 @@ contract SwapFlashLoan is Swap {
    * LP positions. The owner of LPToken will be this contract - which means
    * only this contract is allowed to mint/burn tokens.
    *
-   * @param _pooledTokens an array of ERC20s this pool will accept
+   * @param _pooledTokens an array of ERC20s this swap will accept
    * @param decimals the decimals to use for each pooled token,
    * eg 8 for WBTC. Cannot be larger than POOL_PRECISION_DECIMALS
    * @param lpTokenName the long-form name of the token to be deployed
@@ -4381,7 +4381,7 @@ contract SwapFlashLoan is Swap {
   /*** STATE MODIFYING FUNCTIONS ***/
 
   /**
-   * @notice Borrow the specified token from this pool for this transaction only. This function will call
+   * @notice Borrow the specified token from this swap for this transaction only. This function will call
    * `IFlashLoanReceiver(receiver).executeOperation` and the `receiver` must return the full amount of the token
    * and the associated fee by the end of the callback transaction. If the conditions are not met, this call
    * is reverted.
@@ -4404,7 +4404,7 @@ contract SwapFlashLoan is Swap {
     );
     require(amount > 0 && availableLiquidityBefore >= amount, 'invalid amount');
 
-    // Calculate the additional amount of tokens the pool should end up with
+    // Calculate the additional amount of tokens the swap should end up with
     uint256 amountFee = amount.mul(flashLoanFeeBPS).div(10000);
     // Calculate the portion of the fee that will go to the protocol
     uint256 protocolFee = amountFee.mul(protocolFeeShareBPS).div(10000);

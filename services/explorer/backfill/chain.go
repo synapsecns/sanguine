@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
 	"math/big"
 	"time"
 
@@ -12,8 +13,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	indexerconfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"golang.org/x/sync/errgroup"
 )
@@ -31,7 +31,7 @@ type ChainBackfiller struct {
 	// cctpParser is the parser to use to parse cctp events.
 	cctpParser *parser.CCTPParser
 	// Fetcher is the Fetcher to use to fetch logs.
-	Fetcher fetcher.ScribeFetcher
+	Fetcher scribe.IScribeFetcher
 	// chainConfig is the chain config for the chain.
 	chainConfig indexerconfig.ChainConfig
 }
@@ -43,7 +43,7 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher scribe.IScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,

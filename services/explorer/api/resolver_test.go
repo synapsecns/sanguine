@@ -761,5 +761,4 @@ func (g APISuite) TestGetBlockHeight() {
 	Equal(g.T(), 2, len(results.Response))
 	Equal(g.T(), int(block1), *results.Response[0].BlockNumber)
 	Equal(g.T(), int(block2), *results.Response[1].BlockNumber)
-
 }

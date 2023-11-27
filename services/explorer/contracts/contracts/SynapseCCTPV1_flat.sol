@@ -11,8 +11,8 @@ struct BridgeToken {
     address token;
 }
 
-/// @notice Struct used by IPoolHandler to represent a token in a pool
-/// @param index    Token index in the pool
+/// @notice Struct used by IPoolHandler to represent a token in a swap
+/// @param index    Token index in the swap
 /// @param token    Token address
 struct IndexedToken {
     uint8 index;
@@ -27,7 +27,7 @@ struct LimitedToken {
     address token;
 }
 
-/// @notice Struct representing how pool tokens are stored by `SwapQuoter`.
+/// @notice Struct representing how swap tokens are stored by `SwapQuoter`.
 /// @param isWeth   Whether the token represents Wrapped ETH.
 /// @param token    Token address.
 struct PoolToken {
@@ -35,10 +35,10 @@ struct PoolToken {
     address token;
 }
 
-/// @notice Struct representing a liquidity pool. Used as the return value in view functions.
-/// @param pool         Pool address.
-/// @param lpToken      Address of pool's LP token.
-/// @param tokens       List of pool's tokens.
+/// @notice Struct representing a liquidity swap. Used as the return value in view functions.
+/// @param swap         Pool address.
+/// @param lpToken      Address of swap's LP token.
+/// @param tokens       List of swap's tokens.
 struct Pool {
     address pool;
     address lpToken;
@@ -99,7 +99,7 @@ library SwapQueryLib {
 
 /// @notice Struct representing parameters for swapping via DefaultAdapter.
 /// @param action           Action that DefaultAdapter needs to perform.
-/// @param pool             Liquidity pool that will be used for Swap/AddLiquidity/RemoveLiquidity actions.
+/// @param swap             Liquidity swap that will be used for Swap/AddLiquidity/RemoveLiquidity actions.
 /// @param tokenIndexFrom   Token index to swap from. Used for swap/addLiquidity actions.
 /// @param tokenIndexTo     Token index to swap to. Used for swap/removeLiquidity actions.
 struct DefaultParams {
@@ -112,8 +112,8 @@ struct DefaultParams {
 /// @notice All possible actions that DefaultAdapter could perform.
 enum Action {
     Swap, // swap between two pools tokens
-    AddLiquidity, // add liquidity in a form of a single pool token
-    RemoveLiquidity, // remove liquidity in a form of a single pool token
+    AddLiquidity, // add liquidity in a form of a single swap token
+    RemoveLiquidity, // remove liquidity in a form of a single swap token
     HandleEth // ETH <> WETH interaction
 }
 
@@ -1518,7 +1518,7 @@ interface ISynapseCCTP {
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @notice Returns the whitelisted liquidity pool for a given Circle token.
+    /// @notice Returns the whitelisted liquidity swap for a given Circle token.
     /// @dev Returns address(0) if the token bridge+swap is not supported.
     function circleTokenPool(address token) external view returns (address pool);
 
@@ -1547,8 +1547,8 @@ interface ISynapseCCTP {
 ///
 /// | Field          | Type    | Description                                                   |
 /// | -------------- | ------- | ------------------------------------------------------------- |
-/// | tokenIndexFrom | uint8   | Index of the minted Circle token in the pool                  |
-/// | tokenIndexTo   | uint8   | Index of the final token in the pool                          |
+/// | tokenIndexFrom | uint8   | Index of the minted Circle token in the swap                  |
+/// | tokenIndexTo   | uint8   | Index of the final token in the swap                          |
 /// | deadline       | uint256 | Latest timestamp to execute the swap                          |
 /// | minAmountOut   | uint256 | Minimum amount of tokens to receive from the swap             |
 library RequestLib {
@@ -1583,8 +1583,8 @@ library RequestLib {
     }
 
     /// @notice Formats the swap parameters part of the swap request into a bytes array.
-    /// @param tokenIndexFrom       Index of the minted Circle token in the pool
-    /// @param tokenIndexTo         Index of the final token in the pool
+    /// @param tokenIndexFrom       Index of the minted Circle token in the swap
+    /// @param tokenIndexTo         Index of the final token in the swap
     /// @param deadline             Latest timestamp to execute the swap
     /// @param minAmountOut         Minimum amount of tokens to receive from the swap
     /// @return formattedSwapParams Properly formatted swap parameters
@@ -1654,8 +1654,8 @@ library RequestLib {
     /// @notice Decodes the swap parameters from a bytes array.
     /// @dev Will revert if the swap parameters are not properly formatted.
     /// @param swapParams           Formatted swap parameters
-    /// @return tokenIndexFrom      Index of the minted Circle token in the pool
-    /// @return tokenIndexTo        Index of the final token in the pool
+    /// @return tokenIndexFrom      Index of the minted Circle token in the swap
+    /// @return tokenIndexTo        Index of the final token in the swap
     /// @return deadline            Latest timestamp to execute the swap
     /// @return minAmountOut        Minimum amount of tokens to receive from the swap
     function decodeSwapParams(bytes memory swapParams)
@@ -2216,7 +2216,7 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
 
     // (chainId => configuration of the remote chain)
     mapping(uint256 => DomainConfig) public remoteDomainConfig;
-    // (Circle token => liquidity pool with the token)
+    // (Circle token => liquidity swap with the token)
     mapping(address => address) public circleTokenPool;
 
     constructor(ITokenMessenger tokenMessenger_, address owner_) {
@@ -2245,7 +2245,7 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
         remoteDomainConfig[remoteChainId] = DomainConfig(remoteDomain, remoteSynapseCCTP);
     }
 
-    /// @notice Sets the liquidity pool for the given Circle token.
+    /// @notice Sets the liquidity swap for the given Circle token.
     function setCircleTokenPool(address circleToken, address pool) external onlyOwner {
         if (circleToken == address(0)) revert CCTPZeroAddress();
         if (!_bridgeTokens.contains(circleToken)) revert CCTPTokenNotFound();
@@ -2441,7 +2441,7 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
         // We checked request version to be a valid value when wrapping into `request`,
         // so this could only be `RequestLib.REQUEST_SWAP`.
         address pool = circleTokenPool[token];
-        // Fallback to Base Request if no pool is found
+        // Fallback to Base Request if no swap is found
         if (pool == address(0)) {
             IERC20(token).safeTransfer(recipient, amount);
             return (token, amount);
@@ -2454,7 +2454,7 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
             IERC20(token).safeTransfer(recipient, amount);
             return (token, amount);
         }
-        // Approve the pool to spend the token, if needed.
+        // Approve the swap to spend the token, if needed.
         _approveToken(token, pool, amount);
         amountOut = _trySwap(pool, tokenIndexFrom, tokenIndexTo, amount, deadline, minAmountOut);
         // Fallback to Base Request if failed to swap
@@ -2496,10 +2496,10 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
         if (token == address(0)) revert CCTPTokenNotFound();
     }
 
-    /// @dev Tries to get the token address from the pool.
+    /// @dev Tries to get the token address from the swap.
     /// Instead of reverting, returns 0 if the getToken failed.
     function _tryGetToken(address pool, uint8 tokenIndex) internal view returns (address token) {
-        // Issue a low level static call instead of IDefaultPool(pool).getToken(tokenIndex)
+        // Issue a low level static call instead of IDefaultPool(swap).getToken(tokenIndex)
         // to ensure this never reverts
         (bool success, bytes memory returnData) = pool.staticcall(
             abi.encodeWithSelector(IDefaultPool.getToken.selector, tokenIndex)
@@ -2508,7 +2508,7 @@ contract SynapseCCTP is SynapseCCTPFees, Pausable, SynapseCCTPEvents, ISynapseCC
             // Do the casting instead of using abi.decode to discard the dirty highest bits if there are any
             token = bytes32(returnData).bytes32ToAddress();
         } else {
-            // Return 0 on revert or if pool returned something unexpected
+            // Return 0 on revert or if swap returned something unexpected
             token = address(0);
         }
     }

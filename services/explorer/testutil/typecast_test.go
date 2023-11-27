@@ -1,6 +1,9 @@
 package testutil_test
 
-import . "github.com/stretchr/testify/assert"
+import (
+	"fmt"
+	. "github.com/stretchr/testify/assert"
+)
 
 // TestTypecast tests the typecast.
 func (s SimulatedSuite) TestTypecast() {
@@ -19,5 +22,8 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), metaSwapHandle)
 		_, cctpHandle := s.deployManager.GetCCTP(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), cctpHandle)
+		_, erc20Handle := s.deployManager.GetERC20(s.GetTestContext(), s.testBackend)
+		fmt.Println("SSS", erc20Handle)
+		NotNil(s.T(), erc20Handle)
 	})
 }

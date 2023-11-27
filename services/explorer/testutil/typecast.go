@@ -5,13 +5,14 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
 // GetBridgeConfigV3 gets a typecast bridgeconfig contract.
@@ -22,43 +23,49 @@ func (d *DeployManager) GetBridgeConfigV3(ctx context.Context, backend backends.
 }
 
 // GetSynapseBridge gets a typecast bridge contract.
-func (d *DeployManager) GetSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridge.BridgeRef) {
+func (d *DeployManager) GetSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridge.TestBridgeRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*bridge.BridgeRef](ctx, d.T(), d, backend, SynapseBridgeType)
+	return manager.GetContract[*testbridge.TestBridgeRef](ctx, d.T(), d, backend, SynapseBridgeType)
 }
 
 // GetSynapseBridgeV1 gets a typecast bridge v1 contract.
-func (d *DeployManager) GetSynapseBridgeV1(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgev1.BridgeRef) {
+func (d *DeployManager) GetSynapseBridgeV1(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridgev1.TestBridgeV1Ref) {
 	d.T().Helper()
 
-	return manager.GetContract[*bridgev1.BridgeRef](ctx, d.T(), d, backend, SynapseBridgeV1Type)
+	return manager.GetContract[*testbridgev1.TestBridgeV1Ref](ctx, d.T(), d, backend, SynapseBridgeV1Type)
 }
 
 // GetSwapFlashLoan gets a typecast swap contract.
-func (d *DeployManager) GetSwapFlashLoan(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *swap.SwapRef) {
+func (d *DeployManager) GetSwapFlashLoan(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testswap.TestSwapRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*swap.SwapRef](ctx, d.T(), d, backend, SwapFlashLoanType)
+	return manager.GetContract[*testswap.TestSwapRef](ctx, d.T(), d, backend, SwapFlashLoanType)
 }
 
 // GetMessageBus gets a typecast message bus contract.
-func (d *DeployManager) GetMessageBus(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *messagebus.MessageBusRef) {
+func (d *DeployManager) GetMessageBus(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmessagebus.TestMessageBusRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*messagebus.MessageBusRef](ctx, d.T(), d, backend, MessageBusType)
+	return manager.GetContract[*testmessagebus.TestMessageBusRef](ctx, d.T(), d, backend, MessageBusType)
 }
 
 // GetMetaSwap gets a typecast meta swap.
-func (d *DeployManager) GetMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *metaswap.MetaSwapRef) {
+func (d *DeployManager) GetMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmetaswap.TestMetaSwapRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*metaswap.MetaSwapRef](ctx, d.T(), d, backend, MetaSwapType)
+	return manager.GetContract[*testmetaswap.TestMetaSwapRef](ctx, d.T(), d, backend, MetaSwapType)
 }
 
 // GetCCTP gets a typecast cctp.
-func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *cctp.CCTPRef) {
+func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcctp.TestCCTPRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*cctp.CCTPRef](ctx, d.T(), d, backend, CCTPType)
+	return manager.GetContract[*testcctp.TestCCTPRef](ctx, d.T(), d, backend, CCTPType)
+}
+
+// GetERC20 gets a typecast erc20.
+func (d *DeployManager) GetERC20(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *erc20.TestERC) {
+	d.T().Helper()
+	return manager.GetContract[*erc20.TestERC](ctx, d.T(), d, backend, ERC20Type)
 }

@@ -36,7 +36,6 @@ func (s sqlSanitizerImpl) InterceptResponse(ctx context.Context, next graphql.Re
 		case string:
 			oc.Variables[key] = dbcommon.MysqlRealEscapeString(marshalledVal)
 		}
-
 	}
 	graphql.WithOperationContext(ctx, oc)
 

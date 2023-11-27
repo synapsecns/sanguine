@@ -5013,7 +5013,7 @@ func (_IERC20Upgradeable *IERC20UpgradeableFilterer) ParseTransfer(log types.Log
 
 // IFlashLoanReceiverMetaData contains all meta data concerning the IFlashLoanReceiver contract.
 var IFlashLoanReceiverMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\"}],\"name\":\"executeOperation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"swap\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\"}],\"name\":\"executeOperation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"405b019d": "executeOperation(address,address,uint256,uint256,bytes)",
 	},
@@ -5171,21 +5171,21 @@ func (_IFlashLoanReceiver *IFlashLoanReceiverTransactorRaw) Transact(opts *bind.
 
 // ExecuteOperation is a paid mutator transaction binding the contract method 0x405b019d.
 //
-// Solidity: function executeOperation(address pool, address token, uint256 amount, uint256 fee, bytes params) returns()
+// Solidity: function executeOperation(address swap, address token, uint256 amount, uint256 fee, bytes params) returns()
 func (_IFlashLoanReceiver *IFlashLoanReceiverTransactor) ExecuteOperation(opts *bind.TransactOpts, pool common.Address, token common.Address, amount *big.Int, fee *big.Int, params []byte) (*types.Transaction, error) {
 	return _IFlashLoanReceiver.contract.Transact(opts, "executeOperation", pool, token, amount, fee, params)
 }
 
 // ExecuteOperation is a paid mutator transaction binding the contract method 0x405b019d.
 //
-// Solidity: function executeOperation(address pool, address token, uint256 amount, uint256 fee, bytes params) returns()
+// Solidity: function executeOperation(address swap, address token, uint256 amount, uint256 fee, bytes params) returns()
 func (_IFlashLoanReceiver *IFlashLoanReceiverSession) ExecuteOperation(pool common.Address, token common.Address, amount *big.Int, fee *big.Int, params []byte) (*types.Transaction, error) {
 	return _IFlashLoanReceiver.Contract.ExecuteOperation(&_IFlashLoanReceiver.TransactOpts, pool, token, amount, fee, params)
 }
 
 // ExecuteOperation is a paid mutator transaction binding the contract method 0x405b019d.
 //
-// Solidity: function executeOperation(address pool, address token, uint256 amount, uint256 fee, bytes params) returns()
+// Solidity: function executeOperation(address swap, address token, uint256 amount, uint256 fee, bytes params) returns()
 func (_IFlashLoanReceiver *IFlashLoanReceiverTransactorSession) ExecuteOperation(pool common.Address, token common.Address, amount *big.Int, fee *big.Int, params []byte) (*types.Transaction, error) {
 	return _IFlashLoanReceiver.Contract.ExecuteOperation(&_IFlashLoanReceiver.TransactOpts, pool, token, amount, fee, params)
 }

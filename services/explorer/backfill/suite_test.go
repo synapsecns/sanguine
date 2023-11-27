@@ -2,6 +2,8 @@ package backfill_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,12 +16,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
-	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
@@ -38,9 +37,8 @@ type BackfillSuite struct {
 	cleanup              func()
 	testBackend          backends.SimulatedTestBackend
 	deployManager        *testutil.DeployManager
-	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
-	consumerFetcher      fetcher.ScribeFetcher
+	consumerFetcher      scribe.IScribeFetcher
 	metrics              metrics.Handler
 }
 
@@ -110,12 +108,15 @@ func (b *BackfillSuite) SetupTest() {
 	chainID := big.NewInt(1)
 	b.testBackend = geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
 
-	b.testDeployManager = testcontracts.NewDeployManager(b.T())
-	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient, b.metrics)
+	b.consumerFetcher = scribe.NewFetcher(b.gqlClient, b.metrics)
 	var deployInfo contracts.DeployedContract
-	deployInfo, b.bridgeConfigContract = b.testDeployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
+	deployInfo, b.bridgeConfigContract = b.deployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
+
+	var testERC20Info contracts.DeployedContract
+	testERC20Info, _ = b.deployManager.GetERC20(b.GetTestContext(), b.testBackend)
 
 	for _, token := range testTokens {
+		token.TokenAddress = testERC20Info.Address().String()
 		auth := b.testBackend.GetTxContext(b.GetTestContext(), deployInfo.OwnerPtr())
 		tx, err := token.SetTokenConfig(b.bridgeConfigContract, auth)
 		b.Require().NoError(err)

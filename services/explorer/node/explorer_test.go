@@ -9,14 +9,13 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/mocks"
 	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/node"
-	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
+	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"math/big"
 	"os"
 )
@@ -32,11 +31,13 @@ func (c NodeSuite) TestLive() {
 	backends := make(map[uint32]bind.ContractBackend)
 	// ethclient.DialContext(ctx, chainConfig.RPCURL)
 	for k := range c.testBackends {
+		var testERC20Info contracts.DeployedContract
+		testERC20Info, _ = c.deployManager.GetERC20(c.GetTestContext(), c.testBackends[k])
 		testTokens[k] = TestToken{
 			tokenID: gofakeit.FirstName(),
 			BridgeConfigV3Token: bridgeconfig.BridgeConfigV3Token{
 				ChainId:       big.NewInt(int64(k)),
-				TokenAddress:  mocks.MockAddress().String(),
+				TokenAddress:  testERC20Info.Address().String(),
 				TokenDecimals: gofakeit.Uint8(),
 				MaxSwap:       new(big.Int).SetUint64(gofakeit.Uint64()),
 				// TODO: this should probably be smaller than maxswap
@@ -59,10 +60,10 @@ func (c NodeSuite) TestLive() {
 	}
 	for k := range c.testBackends {
 		backends[k] = c.testBackends[k]
-		bridgeContract, bridgeRef := c.testDeployManager.GetTestSynapseBridge(c.GetTestContext(), c.testBackends[k])
-		swapContractA, swapRefA := c.testDeployManager.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackends[k])
-		testDeployManagerB := testcontracts.NewDeployManager(c.T())
-		swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackends[k])
+		bridgeContract, bridgeRef := c.deployManager.GetSynapseBridge(c.GetTestContext(), c.testBackends[k])
+		swapContractA, swapRefA := c.deployManager.GetSwapFlashLoan(c.GetTestContext(), c.testBackends[k])
+		testDeployManagerB := testutil.NewDeployManager(c.T())
+		swapContractB, swapRefB := testDeployManagerB.GetSwapFlashLoan(c.GetTestContext(), c.testBackends[k])
 		transactOpts := c.testBackends[k].GetTxContext(c.GetTestContext(), nil)
 
 		contracts := []indexerConfig.ContractConfig{

@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe/client"
 	"math/big"
 	"testing"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/metadata"
-	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 
@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 
-	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"go.uber.org/atomic"
@@ -30,14 +29,13 @@ import (
 // NodeSuite is the config test suite.
 type NodeSuite struct {
 	*testsuite.TestSuite
-	db                db.ConsumerDB
-	eventDB           scribedb.EventDB
-	gqlClient         *client.Client
-	logIndex          atomic.Int64
-	cleanup           func()
-	testBackends      map[uint32]backends.SimulatedTestBackend
-	deployManager     *testutil.DeployManager
-	testDeployManager *testcontracts.DeployManager
+	db            db.ConsumerDB
+	eventDB       scribedb.EventDB
+	gqlClient     *client.Client
+	logIndex      atomic.Int64
+	cleanup       func()
+	testBackends  map[uint32]backends.SimulatedTestBackend
+	deployManager *testutil.DeployManager
 	// blockConfigChainID is the chain ID of the block config.
 	blockConfigChainID uint32
 	scribeMetrics      metrics.Handler
@@ -82,7 +80,6 @@ func (c *NodeSuite) SetupTest() {
 	backends[c.blockConfigChainID] = backend4
 
 	c.testBackends = backends
-	c.testDeployManager = testcontracts.NewDeployManager(c.T())
 }
 
 func (c *NodeSuite) SetupSuite() {

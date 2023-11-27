@@ -3,12 +3,14 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/swap"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/scribe"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/token"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetchers/price"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 
@@ -19,11 +21,10 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
 	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
-	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parser"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
+	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parsers"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
-	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
+	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
@@ -41,15 +42,15 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
 
-	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
-	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
-	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
-	metaSwapContract, metaSwapRef := b.testDeployManager.GetTestMetaSwap(b.GetTestContext(), b.testBackend)
-	messageBusContract, messageBusRef := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
-	cctpContract, cctpRef := b.testDeployManager.GetTestCCTP(b.GetTestContext(), b.testBackend)
-	testDeployManagerB := testcontracts.NewDeployManager(b.T())
+	bridgeContract, bridgeRef := b.deployManager.GetSynapseBridge(b.GetTestContext(), b.testBackend)
+	bridgeV1Contract, bridgeV1Ref := b.deployManager.GetSynapseBridgeV1(b.GetTestContext(), b.testBackend)
+	swapContractA, swapRefA := b.deployManager.GetSwapFlashLoan(b.GetTestContext(), b.testBackend)
+	metaSwapContract, metaSwapRef := b.deployManager.GetMetaSwap(b.GetTestContext(), b.testBackend)
+	messageBusContract, messageBusRef := b.deployManager.GetMessageBus(b.GetTestContext(), b.testBackend)
+	cctpContract, cctpRef := b.deployManager.GetCCTP(b.GetTestContext(), b.testBackend)
+	testDeployManagerB := testutil.NewDeployManager(b.T())
 
-	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
+	swapContractB, swapRefB := testDeployManagerB.GetSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
 	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
@@ -306,13 +307,13 @@ func (b *BackfillSuite) TestBackfill() {
 	requestIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String())
 	copy(requestID[:], requestIDBytes)
 
-	requestSentTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), requestID)
+	requestSentTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), requestID)
 	Nil(b.T(), err)
 	b.storeEthTx(requestSentTx, testChainID, big.NewInt(int64(5)), 5)
 	requestSentLog, err := b.storeTestLog(requestSentTx, uint32(testChainID.Uint64()), 5)
 	Nil(b.T(), err)
 
-	requestFulfilledTx, err := cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), requestID)
+	requestFulfilledTx, err := cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(gofakeit.Int64()), requestID)
 	Nil(b.T(), err)
 	b.storeEthTx(requestFulfilledTx, testChainID, big.NewInt(int64(6)), 6)
 	requestFulfilledLog, err := b.storeTestLog(requestFulfilledTx, uint32(testChainID.Uint64()), 6)
@@ -331,14 +332,14 @@ func (b *BackfillSuite) TestBackfill() {
 	}
 
 	// Set up a ChainBackfiller
-	bcf, err := fetcher.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
+	bcf, err := token.NewBridgeConfigFetcher(b.bridgeConfigContract.Address(), b.bridgeConfigContract)
 	Nil(b.T(), err)
 
 	tokenSymbolToIDs, err := parser.ParseYaml(static.GetTokenSymbolToTokenIDConfig())
 	Nil(b.T(), err)
-	tokenDataService, err := tokendata.NewTokenDataService(bcf, tokenSymbolToIDs)
+	tokenDataService, err := token.NewTokenFetcher(bcf, tokenSymbolToIDs)
 	Nil(b.T(), err)
-	tokenPriceService, err := tokenprice.NewPriceDataService()
+	tokenPriceService, err := price.NewPriceFetcher()
 	Nil(b.T(), err)
 
 	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
@@ -347,34 +348,31 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
+	srA, err := swap.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
 	Nil(b.T(), err)
 	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, srA, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
+	srB, err := swap.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
 	Nil(b.T(), err)
 	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, srB, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// msr is the meta swap ref for getting token data
-	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
+	msr, err := swap.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
 	Nil(b.T(), err)
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
-	// msr is the meta swap ref for getting token data
-	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
-	Nil(b.T(), err)
-	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService, false)
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, b.testBackend, tokenDataService, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	spMap[metaSwapContract.Address()] = msp
-	f := fetcher.NewFetcher(b.gqlClient, b.metrics)
+	f := scribe.NewFetcher(b.gqlClient, b.metrics)
 
 	// Set up message bus parser
 	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)
