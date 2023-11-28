@@ -44,3 +44,21 @@ export const getEstimatedBridgeTime = ({
     1000
   )
 }
+
+export const getEstimatedBridgeTimeInMinutes = ({
+  bridgeOriginChain,
+  bridgeModuleName,
+  formattedEventType,
+}: {
+  bridgeOriginChain: Chain
+  bridgeModuleName?: string
+  formattedEventType?: string
+}) => {
+  const estimatedBridgeTime = getEstimatedBridgeTime({
+    bridgeOriginChain,
+    bridgeModuleName,
+    formattedEventType,
+  })
+
+  return estimatedBridgeTime ? estimatedBridgeTime / 60 : null
+}
