@@ -11,7 +11,7 @@ chains:
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
       guard: 0x822A96184e70dAd1D6EDfac783CaEfC8a2698C44
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-arbitrum-sepolia: 0x9E3938015d468d778becfc73F264691Bf962E279
       notary-sepolia: 0x7D4AA3a2f52c513aDbE809C0BbBd6D0B708F0fD4
       notary-optimism-sepolia: 0x043076C77197539Da61ddE368a1d6Aae2e9D9D55
@@ -23,7 +23,7 @@ chains:
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-arbitrum-sepolia: 0x9E3938015d468d778becfc73F264691Bf962E279
   11155111:
     message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
@@ -31,7 +31,7 @@ chains:
     destination_addr: 0xC237A7487eC017f161570aA5FF2Bb0Db6312f4Af
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-sepolia: 0x7D4AA3a2f52c513aDbE809C0BbBd6D0B708F0fD4
   11155420:
     message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
@@ -39,7 +39,7 @@ chains:
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-optimism-sepolia: 0x043076C77197539Da61ddE368a1d6Aae2e9D9D55
   534351:
     message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
@@ -47,7 +47,7 @@ chains:
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-scroll-sepolia: 0xE86aE27a98Da68F7c02A96A8c99D729784B1096b
   80001:
     message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
@@ -55,5 +55,5 @@ chains:
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
       executor: 0x88Bb9C52DC6E9AdEA56d3edf97B95772d0dcd486
-      client: 0xbCbd1123Bd08493be447fFf65112F29528ef4043
+      client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-mumbai: 0x0105B9A713842656f45747D9d5Df2E15aCCF16A7
