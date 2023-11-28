@@ -95,7 +95,28 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
         )}
       </div>
 
-      <div className="flex justify-between">
+      <DetailRow
+        leftContent={
+          <div className="flex space-x-1">
+            <p>Expected Price on</p>
+            {expectedToChain}
+          </div>
+        }
+        rightContent={
+          <span className="text-primary">
+            {safeFromAmount != '0' ? (
+              <>
+                {formattedExchangeRate}{' '}
+                <span className="text-secondary">{toToken?.symbol}</span>
+              </>
+            ) : (
+              '—'
+            )}
+          </span>
+        }
+      />
+
+      {/* <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
           <p>Expected Price on</p>
           {expectedToChain}
@@ -110,34 +131,15 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
             '—'
           )}
         </span>
-      </div>
+      </div> */}
 
-      {showGasDrop && (
-        <div
-          className={
-            isGasDropped
-              ? 'flex items-center justify-between'
-              : 'flex justify-end'
-          }
-        >
+      {isGasDropped && (
+        <div className="flex justify-between">
+          <div className="flex space-x-2 text-[#88818C]">
+            <p>Gas bonus</p>
+          </div>
           {memoizedGasDropLabel}
         </div>
-
-        // <div className="flex justify-between">
-        //   <div className="flex space-x-2 text-[#88818C]">
-        //     <p>Gas bonus</p>
-        //   </div>
-        //   <span className="text-[#88818C]">
-        //     {safeFromAmount != '0' ? (
-        //       <>
-        //         {formattedExchangeRate}{' '}
-        //         <span className="text-white">{toToken?.symbol}</span>
-        //       </>
-        //     ) : (
-        //       '—'
-        //     )}
-        //   </span>
-        // </div>
       )}
 
       <div className="flex justify-between">
@@ -148,6 +150,21 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
           <span className="text-[#88818C]">—</span>
         )}
       </div>
+    </div>
+  )
+}
+
+export const DetailRow = ({
+  leftContent,
+  rightContent,
+}: {
+  leftContent: any
+  rightContent: any
+}) => {
+  return (
+    <div className="flex justify-between text-secondary">
+      <div>{leftContent}</div>
+      <div>{rightContent}</div>
     </div>
   )
 }
@@ -182,6 +199,7 @@ const GasDropLabel = ({
 
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
+  // @TO-DO: Remove commented out lines when new gas label approved
   return (
     // <div className="flex justify-between text-[#88818C]">
     //   <span className="text-[#88818C]">
@@ -195,7 +213,10 @@ const GasDropLabel = ({
     //     </span>
     //   </span>
     // </div>
-    <div className="flex justify-between space-x-1">
+    <div
+      data-test-id="gas-drop-label"
+      className="flex justify-between space-x-1"
+    >
       <span className="text-primary">+{formattedGasDropAmount}</span>
       <span className="text-secondary">{symbol}</span>
       <Image
