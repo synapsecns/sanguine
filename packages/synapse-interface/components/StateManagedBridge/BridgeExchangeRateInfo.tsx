@@ -9,6 +9,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
+import { getEstimatedBridgeTime } from '@/utils/getEstimatedBridgeTime'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
@@ -73,6 +74,12 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
           {memoizedGasDropLabel}
         </div>
       )}
+
+      <div className="flex justify-between">
+        <p className="text-[#88818C] ">Est. time</p>
+        <span className="text-[#88818C]">- min</span>
+      </div>
+
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
           <p>Expected Price on</p>
@@ -89,6 +96,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
           )}
         </span>
       </div>
+
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
         {safeFromAmount != '0' && !underFee ? (
