@@ -8,7 +8,10 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { useDispatch, useSelector } from 'react-redux'
 import { Token } from '@/utils/types'
 import { RootState } from '../../store/store'
-import { getEstimatedBridgeTime } from '@/utils/getEstimatedBridgeTime'
+import {
+  getEstimatedBridgeTime,
+  getEstimatedBridgeTimeInMinutes,
+} from '@/utils/getEstimatedBridgeTime'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -88,9 +91,13 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
-        <span className="text-[#88818C]">
-          {getEstimatedBridgeTime({ bridgeOriginChain })} min
-        </span>
+        {fromChainId && toChainId ? (
+          <span className="text-[#88818C]">
+            {getEstimatedBridgeTimeInMinutes({ bridgeOriginChain })} min
+          </span>
+        ) : (
+          <span className="text-[#88818C]">-</span>
+        )}
       </div>
 
       <div className="flex justify-between">

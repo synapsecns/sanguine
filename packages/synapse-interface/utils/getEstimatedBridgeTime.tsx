@@ -60,5 +60,5 @@ export const getEstimatedBridgeTimeInMinutes = ({
     formattedEventType,
   })
 
-  return estimatedBridgeTime ? estimatedBridgeTime / 60 : null
+  return estimatedBridgeTime ? Math.ceil(estimatedBridgeTime / 60) : null
 }
