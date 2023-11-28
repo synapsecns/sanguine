@@ -83,7 +83,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
-        {fromChainId && toChainId && bridgeModuleName ? (
+        {fromChainId && toChainId ? (
           <span className="text-[#88818C]">
             {getEstimatedBridgeTimeInMinutes({
               bridgeOriginChain,
