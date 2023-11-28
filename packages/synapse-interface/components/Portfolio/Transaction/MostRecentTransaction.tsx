@@ -194,8 +194,7 @@ export const MostRecentTransaction = () => {
                 transaction?.toInfo?.tokenAddress
               ) as Token
             }
-            formattedEventType={transaction?.formattedEventType}
-            bridgeModuleName={transaction?.bridgeModuleName}
+            formattedEventType={transaction?.fromInfo?.formattedEventType}
             estimatedDuration={transaction?.estimatedTime}
             destinationAddress={transaction?.fromInfo?.address as Address}
             isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
@@ -241,6 +240,7 @@ export const MostRecentTransaction = () => {
                 transaction?.toInfo?.tokenAddress
               ) as Token
             }
+            formattedEventType={transaction?.fromInfo?.formattedEventType}
             isSubmitted={transaction?.fromInfo?.txnHash ? true : false}
             isCompleted={true}
           />
@@ -252,6 +252,14 @@ export const MostRecentTransaction = () => {
     lastPendingBridgeTransaction,
     lastHistoricalTransaction,
     lastPendingTransaction,
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+    isUserPendingTransactionsLoading,
+    seenHistoricalTransactions,
+    pendingAwaitingCompletionTransactions,
+    fallbackQueryHistoricalTransactions,
+    fallbackQueryPendingTransactions,
+    pendingBridgeTransactions,
     masqueradeActive,
     seenLastHistoricalTransaction,
     isUserHistoricalTransactionsLoading,

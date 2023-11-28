@@ -69,7 +69,11 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       return true
     }
     return false
-  }, [pendingBridgeTransactions, pendingAwaitingCompletionTransactions])
+  }, [
+    pendingBridgeTransactions,
+    pendingAwaitingCompletionTransactions,
+    pendingAwaitingCompletionTransactionsWithFallback,
+  ])
 
   const hasHistoricalTransactions: boolean = useMemo(
     () => checkTransactionsExist(userHistoricalTransactions),

@@ -293,7 +293,7 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.MOONRIVER]: 'https://moonriver.moonscan.io',
   [ChainId.ARBITRUM]: 'https://arbiscan.io',
   [ChainId.OPTIMISM]: 'https://optimistic.etherscan.io',
-  [ChainId.AVALANCHE]: 'https://avascan.info/',
+  [ChainId.AVALANCHE]: 'https://avascan.info/blockchain/c/',
   [ChainId.DFK]:
     'https://subnets.avax.network/defi-kingdoms/dfk-chain/explorer',
   [ChainId.FANTOM]: 'https://ftmscan.com',
