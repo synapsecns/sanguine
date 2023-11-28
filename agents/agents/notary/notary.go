@@ -664,11 +664,11 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
-		span.AddEvent("submitting snapshot", trace.WithAttributes(
+		snapCtx, snapSpan := n.handler.Tracer().Start(ctx, "submitSnapshot", trace.WithAttributes(
 			attribute.Int("num_states", len(statesToSubmit)),
 			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 		))
-		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		_, err := n.txSubmitter.SubmitTransaction(snapCtx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
@@ -680,7 +680,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 			return
 		})
 		if err != nil {
-			span.AddEvent("could not submit snapshot", trace.WithAttributes(
+			snapSpan.AddEvent("could not submit snapshot", trace.WithAttributes(
 				attribute.String(metrics.Error, err.Error()),
 			))
 			return

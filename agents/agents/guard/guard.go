@@ -430,11 +430,11 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 		))
 	} else {
 		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
-		span.AddEvent("submitting snapshot", trace.WithAttributes(
-			attribute.String("snapRoot", common.BytesToHash(snapRoot[:]).String()),
-			stateSliceToAttribute("snapshotStates", snapshot.States()),
+		snapCtx, snapSpan := g.handler.Tracer().Start(ctx, "submitSnapshot", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+			stateSliceToAttribute("snapshot_states", snapshot.States()),
 		))
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		_, err = g.txSubmitter.SubmitTransaction(snapCtx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
@@ -445,7 +445,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 		})
 		if err != nil {
 			logger.Errorf("Failed to submit snapshot to inbox: %v", err)
-			span.AddEvent("Failed to submit snapshot to inbox", trace.WithAttributes(
+			snapSpan.AddEvent("Failed to submit snapshot to inbox", trace.WithAttributes(
 				attribute.String(metrics.Error, err.Error()),
 			))
 		} else {
