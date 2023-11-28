@@ -1,21 +1,15 @@
 import { useState, useMemo, useEffect } from 'react'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { useDispatch, useSelector } from 'react-redux'
-import { Token } from '@/utils/types'
-import { RootState } from '../../store/store'
-import {
-  getEstimatedBridgeTime,
-  getEstimatedBridgeTimeInMinutes,
-} from '@/utils/getEstimatedBridgeTime'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
-import { CHAINS_BY_ID } from '@constants/chains'
+import { getEstimatedBridgeTimeInMinutes } from '@/utils/getEstimatedBridgeTime'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { Chain } from '@/utils/types'
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
@@ -28,11 +22,8 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
     bridgeQuote,
   }: BridgeState = useBridgeState()
 
-  // const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
-  // const toToken = useSelector((state: RootState) => state.bridge.toToken)
-  // const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
   const bridgeOriginChain: Chain = CHAINS_BY_ID[fromChainId]
-  const exchangeRate = bridgeQuote?.exchangeRate
+  const exchangeRate: bigint = bridgeQuote?.exchangeRate
 
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
