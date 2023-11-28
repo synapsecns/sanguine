@@ -70,18 +70,6 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
-      {showGasDrop && (
-        <div
-          className={
-            isGasDropped
-              ? 'flex items-center justify-between'
-              : 'flex justify-end'
-          }
-        >
-          {memoizedGasDropLabel}
-        </div>
-      )}
-
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
         {fromChainId && toChainId ? (
@@ -124,6 +112,34 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
         </span>
       </div>
 
+      {showGasDrop && (
+        <div
+          className={
+            isGasDropped
+              ? 'flex items-center justify-between'
+              : 'flex justify-end'
+          }
+        >
+          {memoizedGasDropLabel}
+        </div>
+
+        // <div className="flex justify-between">
+        //   <div className="flex space-x-2 text-[#88818C]">
+        //     <p>Gas bonus</p>
+        //   </div>
+        //   <span className="text-[#88818C]">
+        //     {safeFromAmount != '0' ? (
+        //       <>
+        //         {formattedExchangeRate}{' '}
+        //         <span className="text-white">{toToken?.symbol}</span>
+        //       </>
+        //     ) : (
+        //       '—'
+        //     )}
+        //   </span>
+        // </div>
+      )}
+
       <div className="flex justify-between">
         <p className="text-[#88818C]">Slippage</p>
         {safeFromAmount != '0' && !underFee ? (
@@ -144,7 +160,9 @@ const GasDropLabel = ({
   toChainId: number
 }) => {
   let decimalsToDisplay
-  const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
+  const chain: Chain = CHAINS_BY_ID[toChainId]
+  const symbol: string = chain?.nativeCurrency.symbol
+  const icon = chain?.chainImg
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
     decimalsToDisplay = 2
@@ -165,17 +183,27 @@ const GasDropLabel = ({
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
   return (
-    <div className="flex justify-between text-[#88818C]">
-      <span className="text-[#88818C]">
-        Will also receive {formattedGasDropAmount}{' '}
-      </span>
-      <span className="ml-1 font-medium text-white">
-        {' '}
-        {symbol}{' '}
-        <span className="text-[#88818C] font-normal">
-          {airdropInDollars && `($${airdropInDollars})`}
-        </span>
-      </span>
+    // <div className="flex justify-between text-[#88818C]">
+    //   <span className="text-[#88818C]">
+    //     Will also receive {formattedGasDropAmount}{' '}
+    //   </span>
+    //   <span className="ml-1 font-medium text-white">
+    //     {' '}
+    //     {symbol}{' '}
+    //     <span className="text-[#88818C] font-normal">
+    //       {airdropInDollars && `($${airdropInDollars})`}
+    //     </span>
+    //   </span>
+    // </div>
+    <div className="flex justify-between space-x-1">
+      <span className="text-primary">+{formattedGasDropAmount}</span>
+      <span className="text-secondary">{symbol}</span>
+      <Image
+        loading="lazy"
+        alt={`${symbol} img`}
+        className="w-4 h-4 m-auto rounded-md"
+        src={icon}
+      />
     </div>
   )
 }
