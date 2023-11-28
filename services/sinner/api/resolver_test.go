@@ -108,3 +108,34 @@ func (t *APISuite) TestMessageStatus() {
 	Equal(t.T(), desTxHash, *desResult.Response.DestinationTxHash)
 	Equal(t.T(), graphqlModel.MessageStateLastSeenDestination, *desResult.Response.LastSeen)
 }
+
+func (t *APISuite) TestPendingMessageStatus() {
+	txHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	desTxHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+
+	err := t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), txHash, messageHash, types.Origin)
+	Nil(t.T(), err)
+
+	result, err := t.sinnerAPI.GetMessagesByStatus(t.GetTestContext(), graphqlModel.MessageStatePending, 1)
+	Nil(t.T(), err)
+	NotNil(t.T(), result)
+	Equal(t.T(), 1, len(result.Response))
+	Equal(t.T(), txHash, *result.Response[0].OriginTxHash)
+	Equal(t.T(), graphqlModel.MessageStateLastSeenOrigin, *result.Response[0].LastSeen)
+
+	// Add destination
+	err = t.db.StoreOrUpdateMessageStatus(t.GetTestContext(), desTxHash, messageHash, types.Destination)
+	Nil(t.T(), err)
+
+	desResult, err := t.sinnerAPI.GetMessagesByStatus(t.GetTestContext(), graphqlModel.MessageStatePending, 1)
+	Nil(t.T(), err)
+	NotNil(t.T(), desResult)
+	Equal(t.T(), 0, len(desResult.Response))
+
+	// Ensure completed messages query gets two messages.
+	completedMessagesResult, err := t.sinnerAPI.GetMessagesByStatus(t.GetTestContext(), graphqlModel.MessageStateCompleted, 1)
+	Nil(t.T(), err)
+	NotNil(t.T(), desResult)
+	Equal(t.T(), 2, len(completedMessagesResult.Response))
+}
