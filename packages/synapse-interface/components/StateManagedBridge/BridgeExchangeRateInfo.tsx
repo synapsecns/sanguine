@@ -70,39 +70,40 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
-      <div className="flex justify-between">
-        <p className="text-[#88818C] ">Est. time</p>
-        {fromChainId && toChainId ? (
-          <div className="inline-flex space-x-1">
-            <span className="text-[#88818C]">
-              {getEstimatedBridgeTimeInMinutes({
-                bridgeOriginChain,
-                bridgeModuleName,
-              })}{' '}
-              min
-            </span>
-
-            <PieChart
-              activeAmount={getEstimatedBridgeTimeInMinutes({
-                bridgeOriginChain,
-                bridgeModuleName,
-              })}
-              totalAmount={60}
-            />
-          </div>
-        ) : (
-          <span className="text-[#88818C]">—</span>
-        )}
-      </div>
+      <DetailRow
+        label={<p>Est. time</p>}
+        content={
+          fromChainId && toChainId ? (
+            <div className="inline-flex space-x-1">
+              <span className="text-primary">
+                {getEstimatedBridgeTimeInMinutes({
+                  bridgeOriginChain,
+                  bridgeModuleName,
+                })}
+              </span>
+              <span> min</span>
+              <PieChart
+                activeAmount={getEstimatedBridgeTimeInMinutes({
+                  bridgeOriginChain,
+                  bridgeModuleName,
+                })}
+                totalAmount={60}
+              />
+            </div>
+          ) : (
+            <span className="text-[#88818C]">—</span>
+          )
+        }
+      />
 
       <DetailRow
-        leftContent={
+        label={
           <div className="flex space-x-1">
             <p>Expected Price on</p>
             {expectedToChain}
           </div>
         }
-        rightContent={
+        content={
           <span className="text-primary">
             {safeFromAmount != '0' ? (
               <>
@@ -116,55 +117,29 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
         }
       />
 
-      {/* <div className="flex justify-between">
-        <div className="flex space-x-2 text-[#88818C]">
-          <p>Expected Price on</p>
-          {expectedToChain}
-        </div>
-        <span className="text-[#88818C]">
-          {safeFromAmount != '0' ? (
-            <>
-              {formattedExchangeRate}{' '}
-              <span className="text-white">{toToken?.symbol}</span>
-            </>
-          ) : (
-            '—'
-          )}
-        </span>
-      </div> */}
-
       {isGasDropped && (
-        <div className="flex justify-between">
-          <div className="flex space-x-2 text-[#88818C]">
-            <p>Gas bonus</p>
-          </div>
-          {memoizedGasDropLabel}
-        </div>
+        <DetailRow label={<p>Gas bonus</p>} content={memoizedGasDropLabel} />
       )}
 
-      <div className="flex justify-between">
-        <p className="text-[#88818C]">Slippage</p>
-        {safeFromAmount != '0' && !underFee ? (
-          <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
-        ) : (
-          <span className="text-[#88818C]">—</span>
-        )}
-      </div>
+      <DetailRow
+        label={<p>Slippage</p>}
+        content={
+          safeFromAmount != '0' && !underFee ? (
+            <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+          ) : (
+            <span className="text-[#88818C]">—</span>
+          )
+        }
+      />
     </div>
   )
 }
 
-export const DetailRow = ({
-  leftContent,
-  rightContent,
-}: {
-  leftContent: any
-  rightContent: any
-}) => {
+export const DetailRow = ({ label, content }: { label: any; content: any }) => {
   return (
     <div className="flex justify-between text-secondary">
-      <div>{leftContent}</div>
-      <div>{rightContent}</div>
+      <div>{label}</div>
+      <div>{content}</div>
     </div>
   )
 }
@@ -176,10 +151,11 @@ const GasDropLabel = ({
   gasDropAmount: bigint
   toChainId: number
 }) => {
-  let decimalsToDisplay
   const chain: Chain = CHAINS_BY_ID[toChainId]
   const symbol: string = chain?.nativeCurrency.symbol
   const icon = chain?.chainImg
+
+  let decimalsToDisplay
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
     decimalsToDisplay = 2
@@ -199,20 +175,7 @@ const GasDropLabel = ({
 
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
-  // @TO-DO: Remove commented out lines when new gas label approved
   return (
-    // <div className="flex justify-between text-[#88818C]">
-    //   <span className="text-[#88818C]">
-    //     Will also receive {formattedGasDropAmount}{' '}
-    //   </span>
-    //   <span className="ml-1 font-medium text-white">
-    //     {' '}
-    //     {symbol}{' '}
-    //     <span className="text-[#88818C] font-normal">
-    //       {airdropInDollars && `($${airdropInDollars})`}
-    //     </span>
-    //   </span>
-    // </div>
     <div
       data-test-id="gas-drop-label"
       className="flex justify-between space-x-1"
