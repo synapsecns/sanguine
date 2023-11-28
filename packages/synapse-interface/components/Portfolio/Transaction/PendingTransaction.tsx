@@ -117,16 +117,11 @@ export const PendingTransaction = ({
   //     : 0
   // }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
-  console.log('bridgeModuleName:', bridgeModuleName)
-  console.log('formattedEventType:', formattedEventType)
-
   const estimatedCompletionInSeconds = getEstimatedBridgeTime({
     bridgeOriginChain: originChain,
     bridgeModuleName,
     formattedEventType,
   })
-
-  console.log('estimatedCompletionInSeconds:', estimatedCompletionInSeconds)
 
   const currentTime: number = Math.floor(Date.now() / 1000)
 

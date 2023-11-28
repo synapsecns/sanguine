@@ -37,10 +37,6 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
   const underFee = safeExchangeRate === 0n && safeFromAmount != '0'
 
-  console.log(
-    'getEstimatedBridgeTimeInMinutes({ bridgeOriginChain }):',
-    getEstimatedBridgeTimeInMinutes({ bridgeOriginChain })
-  )
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
       return 'text-green-500'
