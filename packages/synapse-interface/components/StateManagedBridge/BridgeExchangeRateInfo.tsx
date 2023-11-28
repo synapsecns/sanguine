@@ -90,6 +90,13 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
               bridgeModuleName,
             })}{' '}
             min
+            <PieChart
+              activeAmount={getEstimatedBridgeTimeInMinutes({
+                bridgeOriginChain,
+                bridgeModuleName,
+              })}
+              totalAmount={60}
+            />
           </span>
         ) : (
           <span className="text-[#88818C]">—</span>
@@ -209,23 +216,17 @@ export const PieChart = ({
   activeAmount: number
   totalAmount: number
 }) => {
-  const calculatedActivePercentage: number = activeAmount / totalAmount
-  const calculatedInactivePercentage: number = 100 - calculatedActivePercentage
+  const calculatedActiveDegrees: number = (activeAmount / totalAmount) * 360
+  const calculatedInactiveDegrees: number = 360 - calculatedActiveDegrees
 
   return (
     <div
       data-test-id="pie-chart"
       className="w-4 h-4 rounded-[50%]"
       style={{
-        backgroundImage: `conic-gradient(#99E6FF ${calculatedActivePercentage}, #343036 ${calculatedInactivePercentage})`,
+        backgroundImage: `
+          conic-gradient(#99E6FF 0deg, #99E6FF ${calculatedActiveDegrees}deg, #343036 ${calculatedActiveDegrees}deg, #343036 ${calculatedInactiveDegrees}deg)`,
       }}
     ></div>
   )
 }
-
-// .pie {
-//   width: 400px;
-//   height: 400px;
-//   background-image: conic-gradient(orange 64%, blue 64%, blue 81%, black 81%);
-//   border-radius: 50%
-// }
