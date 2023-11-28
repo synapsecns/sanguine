@@ -23,7 +23,8 @@ export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
 export const CONTRACTS_PATH =
   'https://docs.synapseprotocol.com/reference/contract-addresses'
-export const INTERCHAIN_LINK = "https://interchain.synapseprotocol.com/"
+export const INTERCHAIN_LINK = 'https://interchain.synapseprotocol.com/'
+export const SOLANA_LINK = 'https://solana.synapseprotocol.com/'
 export const STATISTICS_PATH = '/statistics'
 export const LANDING_PATH = '/landing'
 export const TERMS_OF_SERVICE_PATH =
@@ -82,7 +83,8 @@ export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 
-export const BUILD_ON_URL = "https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network"
+export const BUILD_ON_URL =
+  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
 export const MIRROR_URL = 'https://synapse.mirror.xyz/'
