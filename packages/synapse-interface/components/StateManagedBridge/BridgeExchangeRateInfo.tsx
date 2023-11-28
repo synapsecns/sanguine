@@ -199,4 +199,33 @@ const getAirdropInDollars = (
     return undefined
   }
 }
+
 export default BridgeExchangeRateInfo
+
+export const PieChart = ({
+  activeAmount,
+  totalAmount,
+}: {
+  activeAmount: number
+  totalAmount: number
+}) => {
+  const calculatedActivePercentage: number = activeAmount / totalAmount
+  const calculatedInactivePercentage: number = 100 - calculatedActivePercentage
+
+  return (
+    <div
+      data-test-id="pie-chart"
+      className="w-4 h-4 rounded-[50%]"
+      style={{
+        backgroundImage: `conic-gradient(#99E6FF ${calculatedActivePercentage}, #343036 ${calculatedInactivePercentage})`,
+      }}
+    ></div>
+  )
+}
+
+// .pie {
+//   width: 400px;
+//   height: 400px;
+//   background-image: conic-gradient(orange 64%, blue 64%, blue 81%, black 81%);
+//   border-radius: 50%
+// }
