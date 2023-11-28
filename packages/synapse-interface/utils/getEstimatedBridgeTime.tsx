@@ -43,7 +43,7 @@ export const getEstimatedBridgeTime = ({
   }
 
   // Fallback estimated time when inputs invalid
-  console.log('hit fallback')
+  console.log('hit estimated time fallback')
   return synapseSDK.getEstimatedTime(
     bridgeOriginChain.id,
     SynapseBridgeModule.BRIDGE
