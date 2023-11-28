@@ -8,8 +8,6 @@ import {
 } from '@/slices/transactions/actions'
 import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { ARBITRUM, ETH } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/bridgeable'
 import {
   Transaction,
   TransactionProps,
@@ -17,7 +15,6 @@ import {
   TransactionStatus,
 } from './Transaction'
 import { ApplicationState } from '@/slices/application/reducer'
-import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
@@ -27,10 +24,7 @@ import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBrid
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { DISCORD_URL } from '@/constants/urls'
 import { useApplicationState } from '@/slices/application/hooks'
-import {
-  getEstimatedBridgeTimeInMinutes,
-  getEstimatedBridgeTime,
-} from '@/utils/getEstimatedBridgeTime'
+import { getEstimatedBridgeTime } from '@/utils/getEstimatedBridgeTime'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -79,43 +73,6 @@ export const PendingTransaction = ({
       return TransactionStatus.COMPLETED
     }
   }, [transactionHash, isSubmitted, isCompleted])
-
-  // const estimatedCompletionInSeconds: number = useMemo(() => {
-  //   if (bridgeModuleName) {
-  //     return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
-  //   }
-
-  //   if (formattedEventType) {
-  //     const fetchedBridgeModuleName: string =
-  //       synapseSDK.getBridgeModuleName(formattedEventType)
-  //     return synapseSDK.getEstimatedTime(
-  //       originChain?.id,
-  //       fetchedBridgeModuleName
-  //     )
-  //   }
-  //   // Fallback last resort estimated duration calculation
-  //   // Remove this when fallback origin queries return eventType
-  //   // CCTP Classification
-  //   if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
-  //     const isCCTP: boolean =
-  //       originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
-  //     if ((eventType === 10 || eventType === 11) && isCCTP) {
-  //       const attestationTime: number = 13 * 60
-  //       return (
-  //         (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-  //           originChain.blockTime) /
-  //           1000 +
-  //         attestationTime
-  //       )
-  //     }
-  //   }
-  //   // All other transactions
-  //   return originChain
-  //     ? (BRIDGE_REQUIRED_CONFIRMATIONS[originChain.id] *
-  //         originChain.blockTime) /
-  //         1000
-  //     : 0
-  // }, [originChain, eventType, originToken, bridgeModuleName, transactionHash])
 
   const estimatedCompletionInSeconds = getEstimatedBridgeTime({
     bridgeOriginChain: originChain,
