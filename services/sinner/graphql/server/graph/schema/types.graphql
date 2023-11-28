@@ -10,7 +10,13 @@ type MessageStatus {
   destinationInfo: [DestinationInfo] @goField(forceResolver: true)
 }
 
-
+"""
+MessageState gives the current state of a message.
+"""
+enum MessageState{
+  PENDING
+  COMPLETED
+}
 
 
 
@@ -63,3 +69,4 @@ enum MessageStateLastSeen{
   DESTINATION
   UNKNOWN
 }
+

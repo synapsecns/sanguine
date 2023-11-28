@@ -57,6 +57,48 @@ type OriginInfo struct {
 	DestinationInfo    []*DestinationInfo `json:"destinationInfo,omitempty"`
 }
 
+// MessageState gives the current state of a message.
+type MessageState string
+
+const (
+	MessageStatePending   MessageState = "PENDING"
+	MessageStateCompleted MessageState = "COMPLETED"
+)
+
+var AllMessageState = []MessageState{
+	MessageStatePending,
+	MessageStateCompleted,
+}
+
+func (e MessageState) IsValid() bool {
+	switch e {
+	case MessageStatePending, MessageStateCompleted:
+		return true
+	}
+	return false
+}
+
+func (e MessageState) String() string {
+	return string(e)
+}
+
+func (e *MessageState) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MessageState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MessageState", str)
+	}
+	return nil
+}
+
+func (e MessageState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type MessageStateLastSeen string
 
 const (

@@ -26,7 +26,7 @@ export const Completed = ({
   return (
     <div
       data-test-id="completed"
-      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm"
+      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
       onClick={handleExplorerClick}
     >
       {!destinationIsSender && (

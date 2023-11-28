@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const BANNER_VERSION = '2'
+const BANNER_VERSION = '3'
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -50,11 +50,11 @@ export const Banner = () => {
               {/* TODO: replace w/ tweetlink directly */}
               <a
                 href={
-                  'https://twitter.com/SynapseProtocol/status/1701315115692466220'
+                  'https://twitter.com/SynapseProtocol/status/1726659540551352387'
                 }
                 target={'_blank'}
               >
-                Synapse Interchain Network & Synapse Chain are live on testnet.
+                Synapse now supports Solana at solana.synapseprotocol.com
               </a>
             </p>
           </div>
