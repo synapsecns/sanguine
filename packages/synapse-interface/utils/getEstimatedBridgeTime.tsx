@@ -2,14 +2,22 @@ import { useSynapseContext } from './providers/SynapseProvider'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { Chain } from './types'
 
+/**
+ * Fetches estimated duration of Bridge Transaction from Synapse SDK
+ *
+ * @param bridgeOriginChain - The selected origin chain.
+ * @param bridgeModuleName - The name of the bridge module. e.g 'Bridge' or 'CCTP'.
+ * @param formattedEventType - The name of the bridge event.
+ * @returns - The estimated time for a bridge operation, in seconds.
+ */
 export const getEstimatedBridgeTime = ({
   bridgeOriginChain,
   bridgeModuleName,
   formattedEventType,
 }: {
   bridgeOriginChain: Chain
-  bridgeModuleName: string
-  formattedEventType: string
+  bridgeModuleName?: string
+  formattedEventType?: string
 }) => {
   const { synapseSDK } = useSynapseContext()
 

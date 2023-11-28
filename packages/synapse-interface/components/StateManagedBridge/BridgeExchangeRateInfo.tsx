@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
@@ -12,6 +11,8 @@ import { RootState } from '../../store/store'
 import { getEstimatedBridgeTime } from '@/utils/getEstimatedBridgeTime'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
+import { CHAINS_BY_ID } from '@constants/chains'
+import { Chain } from '@/utils/types'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
@@ -27,7 +28,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   // const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
   // const toToken = useSelector((state: RootState) => state.bridge.toToken)
   // const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
-
+  const bridgeOriginChain: Chain = CHAINS_BY_ID[fromChainId]
   const exchangeRate = bridgeQuote?.exchangeRate
 
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
@@ -87,7 +88,9 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
-        <span className="text-[#88818C]">- min</span>
+        <span className="text-[#88818C]">
+          {getEstimatedBridgeTime({ bridgeOriginChain })} min
+        </span>
       </div>
 
       <div className="flex justify-between">
