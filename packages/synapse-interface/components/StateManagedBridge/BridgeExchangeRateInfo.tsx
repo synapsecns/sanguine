@@ -24,6 +24,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
   const bridgeOriginChain: Chain = CHAINS_BY_ID[fromChainId]
   const exchangeRate: bigint = bridgeQuote?.exchangeRate
+  const bridgeModuleName: string = bridgeQuote?.bridgeModuleName
 
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
@@ -36,6 +37,10 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
   const underFee = safeExchangeRate === 0n && safeFromAmount != '0'
 
+  console.log(
+    'getEstimatedBridgeTimeInMinutes({ bridgeOriginChain }):',
+    getEstimatedBridgeTimeInMinutes({ bridgeOriginChain })
+  )
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
       return 'text-green-500'
@@ -82,12 +87,16 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
-        {fromChainId && toChainId ? (
+        {fromChainId && toChainId && bridgeModuleName ? (
           <span className="text-[#88818C]">
-            {getEstimatedBridgeTimeInMinutes({ bridgeOriginChain })} min
+            {getEstimatedBridgeTimeInMinutes({
+              bridgeOriginChain,
+              bridgeModuleName,
+            })}{' '}
+            min
           </span>
         ) : (
-          <span className="text-[#88818C]">-</span>
+          <span className="text-[#88818C]">—</span>
         )}
       </div>
 
@@ -109,7 +118,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
       </div>
 
       <div className="flex justify-between">
-        <p className="text-[#88818C] ">Slippage</p>
+        <p className="text-[#88818C]">Slippage</p>
         {safeFromAmount != '0' && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (

@@ -38,6 +38,7 @@ export const getEstimatedBridgeTime = ({
   }
 
   // Fallback estimated time when inputs invalid
+  console.log('hit fallback')
   return (
     (BRIDGE_REQUIRED_CONFIRMATIONS[bridgeOriginChain.id] *
       bridgeOriginChain.blockTime) /
