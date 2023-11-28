@@ -11,7 +11,7 @@ export const PieChart = ({
   return (
     <div
       data-test-id="pie-chart"
-      className="w-4 h-4 rounded-[50%]"
+      className="w-4 h-4 rounded-[50%] m-auto"
       style={{
         backgroundImage: `
           conic-gradient(#99E6FF 0deg, #99E6FF ${calculatedActiveDegrees}deg, #343036 ${calculatedActiveDegrees}deg, #343036 ${calculatedInactiveDegrees}deg)`,

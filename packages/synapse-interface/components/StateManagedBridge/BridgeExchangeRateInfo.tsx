@@ -85,12 +85,15 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Est. time</p>
         {fromChainId && toChainId ? (
-          <span className="text-[#88818C]">
-            {getEstimatedBridgeTimeInMinutes({
-              bridgeOriginChain,
-              bridgeModuleName,
-            })}{' '}
-            min
+          <div className="inline-flex space-x-1">
+            <span className="text-[#88818C]">
+              {getEstimatedBridgeTimeInMinutes({
+                bridgeOriginChain,
+                bridgeModuleName,
+              })}{' '}
+              min
+            </span>
+
             <PieChart
               activeAmount={getEstimatedBridgeTimeInMinutes({
                 bridgeOriginChain,
@@ -98,7 +101,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
               })}
               totalAmount={60}
             />
-          </span>
+          </div>
         ) : (
           <span className="text-[#88818C]">—</span>
         )}
