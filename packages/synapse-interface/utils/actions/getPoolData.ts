@@ -34,7 +34,7 @@ export const getBalanceData = async ({
 
   multicallInputs.push(one)
 
-  tokens.forEach((token, index) => {
+  tokens?.forEach((token, index) => {
     const isLP = token.addresses[chainId] === lpTokenAddress
     // Use pool's getTokenBalance for pool tokens, if the address is the pool itself
     // to exclude the unclaimed admin fees
