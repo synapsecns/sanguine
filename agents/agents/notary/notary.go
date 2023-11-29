@@ -38,11 +38,14 @@ type Notary struct {
 	refreshInterval         time.Duration
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
-	currentSnapRoot         [32]byte
-	summitParser            summit.Parser
-	handler                 metrics.Handler
-	retryConfig             []retry.WithBackoffConfigurator
-	txSubmitter             submitter.TransactionSubmitter
+	// currentSnapRoot is the snapRoot corresponding to the last snapshot submitted by the notary.
+	currentSnapRoot [32]byte
+	// attestedSnapRoot is the snapRoot corresponding to the last attestation submitted by the notary.
+	attestedSnapRoot [32]byte
+	summitParser     summit.Parser
+	handler          metrics.Handler
+	retryConfig      []retry.WithBackoffConfigurator
+	txSubmitter      submitter.TransactionSubmitter
 }
 
 // NewNotary creates a new notary.
@@ -305,6 +308,15 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 	))
 	defer span.End()
+
+	// Check if we already submitted this attestation.
+	if snapRoot == n.attestedSnapRoot {
+		span.AddEvent("snap root matches attested snap root", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+			attribute.String("attested_snap_root", common.BytesToHash(n.attestedSnapRoot[:]).String()),
+		))
+		return true, nil
+	}
 
 	// Fetch the attestation nonce corresponding to the given snapRoot.
 	var attNonce uint32
@@ -817,6 +829,7 @@ func (n *Notary) submitAttestation(parentCtx context.Context) {
 			attribute.Int(metrics.AttestationNonce, int(attestation.Attestation().Nonce())),
 		))
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			n.attestedSnapRoot = snapRoot
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
 				attestation.AttPayload(),
