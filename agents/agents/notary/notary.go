@@ -318,18 +318,46 @@ func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types
 		return true, nil
 	}
 
-	// Fetch the attestation nonce corresponding to the given snapRoot.
-	var attNonce uint32
+	// Make sure that we are submitting a fresh attestation.
+	var lastAttNonce uint32
 	contractCall := func(ctx context.Context) (err error) {
+		lastAttNonce, err = n.destinationDomain.Destination().LastAttestationNonce(ctx, n.notaryStatus.Index())
+		if err != nil {
+			return fmt.Errorf("could not get last attestation nonce: %w", err)
+		}
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		span.AddEvent("could not get last attestation nonce", trace.WithAttributes(
+			attribute.Int("agent_index", int(n.notaryStatus.Index())),
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return false, err
+	}
+	span.AddEvent("got last nonce", trace.WithAttributes(
+		attribute.Int("last_attestation_nonce", int(lastAttNonce)),
+	))
+	if attestation.Attestation().Nonce() <= lastAttNonce {
+		span.AddEvent("attestation is not fresh", trace.WithAttributes(
+			attribute.Int("current_attestation_nonce", int(attestation.Attestation().Nonce())),
+			attribute.Int("last_attestation_nonce", int(lastAttNonce)),
+		))
+	}
+
+	// Fetch the attestation nonce corresponding to the given snapRoot.
+	// TODO: is this redundant considering the above check?
+	var attNonce uint32
+	contractCall = func(ctx context.Context) (err error) {
 		attNonce, err = n.destinationDomain.Destination().GetAttestationNonce(ctx, snapRoot)
 		if err != nil {
 			return fmt.Errorf("could not get attestation nonce: %w", err)
 		}
 		return nil
 	}
-	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("could not get latest attestation nonce", trace.WithAttributes(
+		span.AddEvent("could not get attestation nonce", trace.WithAttributes(
 			attribute.String(metrics.Error, err.Error()),
 		))
 		return false, err
