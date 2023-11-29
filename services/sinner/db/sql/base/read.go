@@ -2,10 +2,12 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/sinner/db/model"
 	graphqlModel "github.com/synapsecns/sanguine/services/sinner/graphql/server/graph/model"
+	"gorm.io/gorm"
 )
 
 // RetrieveMessageStatus retrieve message status.
@@ -34,6 +36,54 @@ func (s Store) RetrieveMessageStatus(ctx context.Context, messageHash string) (g
 	} else {
 		ls := graphqlModel.MessageStateLastSeenDestination
 		payload.LastSeen = &ls
+	}
+
+	return payload, nil
+}
+
+// RetrieveMessagesByStatus retrieves pending messages.
+func (s Store) RetrieveMessagesByStatus(ctx context.Context, messageStatus graphqlModel.MessageState, page int) ([]*graphqlModel.MessageStatus, error) {
+	var records []model.MessageStatus
+
+	var queryStr string
+	switch messageStatus {
+	case graphqlModel.MessageStatePending:
+		queryStr = fmt.Sprintf("%s = '' OR %s IS NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)
+	case graphqlModel.MessageStateCompleted:
+		queryStr = fmt.Sprintf("%s != '' AND %s IS NOT NULL", model.DestinationTxHashFieldName, model.DestinationTxHashFieldName)
+	}
+
+	err := s.DB().WithContext(ctx).
+		Model(&model.MessageStatus{}).
+		Where(queryStr).
+		Offset((page - 1) * model.PageSize).
+		Limit(model.PageSize).
+		Find(&records).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return []*graphqlModel.MessageStatus{}, nil
+	}
+
+	if err != nil {
+		return []*graphqlModel.MessageStatus{}, fmt.Errorf("could not retrieve message status: %w", err)
+	}
+
+	payload := make([]*graphqlModel.MessageStatus, 0, len(records))
+	for _, record := range records {
+		ms := &graphqlModel.MessageStatus{
+			MessageHash:       &record.MessageHash,
+			OriginTxHash:      &record.OriginTxHash,
+			DestinationTxHash: &record.DestinationTxHash,
+		}
+
+		if record.OriginTxHash == "" {
+			ls := graphqlModel.MessageStateLastSeenUnknown
+			ms.LastSeen = &ls
+		} else {
+			ls := graphqlModel.MessageStateLastSeenOrigin
+			ms.LastSeen = &ls
+		}
+		payload = append(payload, ms)
 	}
 
 	return payload, nil

@@ -52,6 +52,7 @@ import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
 import { DEFAULT_FROM_CHAIN, EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -61,6 +62,8 @@ const StateManagedSwap = () => {
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
+
+  useSyncQueryParamsWithSwapState()
 
   const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
