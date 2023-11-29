@@ -119,8 +119,10 @@ type DestinationContract interface {
 	Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index uint8, gasLimit uint64) (tx *ethTypes.Transaction, err error) // AttestationsAmount retrieves the number of attestations submitted to the destination.
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
-	// GetAttestationNonce gets the nonce of the attestation by snap root
+	// GetAttestationNonce gets the nonce of the attestation by snap root.
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
+	// LastAttestationNonce gets the last attestation nonce for a given agent index.
+	LastAttestationNonce(ctx context.Context, index uint32) (uint32, error)
 	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
 	// IsValidReceipt checks if the given receipt is valid on the destination
