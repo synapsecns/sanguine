@@ -276,6 +276,10 @@ func (n *Notary) loadSummitAttestation(parentCtx context.Context) (types.NotaryA
 		attribute.Int(metrics.AttestationNonce, int(attNonce)),
 	))
 
+	if attNonce == 0 {
+		return nil, nil
+	}
+
 	// Fetch the attestation and corresponding metadata for the attestation nonce.
 	var attestation types.NotaryAttestation
 	contractCall = func(ctx context.Context) (err error) {
@@ -291,10 +295,6 @@ func (n *Notary) loadSummitAttestation(parentCtx context.Context) (types.NotaryA
 			attribute.String(metrics.Error, err.Error()),
 		))
 		return nil, err
-	}
-
-	if attNonce == 0 {
-		return nil, nil
 	}
 
 	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
