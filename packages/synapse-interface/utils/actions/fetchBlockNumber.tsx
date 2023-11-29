@@ -5,7 +5,7 @@ export const getCurrentBlockNumber = async (
   chainId: number
 ): Promise<bigint> => {
   try {
-    const blockNumber = await fetchBlockNumber({
+    const blockNumber: bigint = await fetchBlockNumber({
       chainId: chainId,
     })
     return blockNumber
@@ -15,7 +15,7 @@ export const getCurrentBlockNumber = async (
 }
 
 export const getChainsBlockNumber = async () => {
-  const record = {}
+  const record: Record<string, number> = {}
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
 
   const filteredChains: string[] = availableChains.filter((chain: string) => {
@@ -23,7 +23,7 @@ export const getChainsBlockNumber = async () => {
   })
 
   try {
-    const getBlockNumberPromises = filteredChains.map(
+    const getBlockNumberPromises: Promise<bigint>[] = filteredChains.map(
       async (chainId: string) => {
         const currentChainId = Number(chainId)
         const currentBlockNumber = await getCurrentBlockNumber(currentChainId)
@@ -31,7 +31,7 @@ export const getChainsBlockNumber = async () => {
       }
     )
 
-    const blockNumbers = await Promise.all(getBlockNumberPromises)
+    const blockNumbers: bigint[] = await Promise.all(getBlockNumberPromises)
     blockNumbers.forEach((blockNumber: bigint, index: number) => {
       record[filteredChains[index]] = Number(blockNumber.toString())
     })
