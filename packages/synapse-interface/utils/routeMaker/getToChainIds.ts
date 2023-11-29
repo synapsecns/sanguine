@@ -4,6 +4,15 @@ import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
 import { RouteQueryFields } from './generateRoutePossibilities'
 import { getTokenAndChainId } from './getTokenAndChainId'
 
+export const getAllToChainIds = () => {
+  return _(EXISTING_BRIDGE_ROUTES)
+    .values()
+    .flatten()
+    .map((token) => getTokenAndChainId(token).chainId)
+    .uniq()
+    .value()
+}
+
 export const getToChainIds = ({
   fromChainId,
   fromTokenRouteSymbol,
