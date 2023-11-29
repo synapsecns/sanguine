@@ -38,6 +38,7 @@ type Notary struct {
 	refreshInterval         time.Duration
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
+	notaryStatus            types.AgentStatus
 	// currentSnapRoot is the snapRoot corresponding to the last snapshot submitted by the notary.
 	currentSnapRoot [32]byte
 	// attestedSnapRoot is the snapRoot corresponding to the last attestation submitted by the notary.
@@ -120,9 +121,8 @@ func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
 	))
 	defer metrics.EndSpanWithErr(span, err)
 
-	var agentStatus types.AgentStatus
 	contractCall := func(ctx context.Context) (err error) {
-		agentStatus, err = n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		n.notaryStatus, err = n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 		if err != nil {
 			return fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -133,12 +133,12 @@ func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not get agent status: %w", err)
 	}
 	span.AddEvent("got agent status", trace.WithAttributes(
-		attribute.String("agentStatus", agentStatus.Flag().String()),
+		attribute.String(metrics.AgentStatus, n.notaryStatus.Flag().String()),
 	))
 
-	if agentStatus.Flag() == types.AgentFlagActive {
+	if n.notaryStatus.Flag() == types.AgentFlagActive {
 		return nil
-	} else if agentStatus.Flag() == types.AgentFlagUnknown {
+	} else if n.notaryStatus.Flag() == types.AgentFlagUnknown {
 		return n.addAgent(ctx)
 	}
 
@@ -423,9 +423,8 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 		return shouldRegisterNotary
 	}
 
-	var agentStatus types.AgentStatus
 	contractCall = func(ctx context.Context) (err error) {
-		agentStatus, err = n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		n.notaryStatus, err = n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 		if err != nil {
 			return fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -441,14 +440,14 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 		return shouldRegisterNotary
 	}
 	span.AddEvent("got agent status", trace.WithAttributes(
-		attribute.String("agentStatus", agentStatus.Flag().String()),
+		attribute.String(metrics.AgentStatus, n.notaryStatus.Flag().String()),
 	))
 
-	if agentStatus.Flag() == types.AgentFlagUnknown {
+	if n.notaryStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
 		shouldRegisterNotary = true
 		return shouldRegisterNotary
-	} else if agentStatus.Flag() == types.AgentFlagActive {
+	} else if n.notaryStatus.Flag() == types.AgentFlagActive {
 		// Here we already added the Notary and can proceed with sending to destination
 		return shouldRegisterNotary
 	}

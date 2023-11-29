@@ -23,6 +23,8 @@ const (
 	Contract = "contract"
 	// MessageExecuted is the metric name for the message executed.
 	MessageExecuted = "message_executed"
+	// AgentStatus is the metric name for the agent status.
+	AgentStatus = "agent_status"
 	// SnapRoot is the metric name for the snap root.
 	SnapRoot = "snap_root"
 	// StateRoot is the metric name for the state root.
