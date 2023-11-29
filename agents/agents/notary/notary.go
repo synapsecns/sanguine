@@ -351,14 +351,13 @@ func (n *Notary) isValidAttestation(parentCtx context.Context, attestation types
 	return valid, nil
 }
 
-func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (shouldRegisterNotary bool, shouldSendToDestination bool) {
+func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (shouldRegisterNotary bool) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldRegisterNotaryOnDestination", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
 	defer func() {
 		span.SetAttributes(
 			attribute.Bool("shouldRegisterNotary", shouldRegisterNotary),
-			attribute.Bool("shouldSendToDestination", shouldSendToDestination),
 		)
 		span.End()
 	}()
@@ -378,7 +377,7 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	}
 	span.AddEvent("got summit agent root", trace.WithAttributes(
 		attribute.String("summitAgentRoot", common.Bytes2Hex(summitAgentRoot[:])),
@@ -400,7 +399,7 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	}
 	span.AddEvent("got destination agent root", trace.WithAttributes(
 		attribute.String("destinationAgentRoot", common.Bytes2Hex(destinationAgentRoot[:])),
@@ -409,7 +408,7 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 	if summitAgentRoot != destinationAgentRoot {
 		span.AddEvent("roots do not match")
 		// We need to wait until destination has same agent root as the synapse chain.
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	}
 
 	var agentStatus types.AgentStatus
@@ -427,7 +426,7 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	}
 	span.AddEvent("got agent status", trace.WithAttributes(
 		attribute.String("agentStatus", agentStatus.Flag().String()),
@@ -436,14 +435,12 @@ func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (s
 	if agentStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
 		shouldRegisterNotary = true
-		shouldSendToDestination = true
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	} else if agentStatus.Flag() == types.AgentFlagActive {
 		// Here we already added the Notary and can proceed with sending to destination
-		shouldSendToDestination = true
-		return shouldRegisterNotary, shouldSendToDestination
+		return shouldRegisterNotary
 	}
-	return shouldRegisterNotary, shouldSendToDestination
+	return shouldRegisterNotary
 }
 
 //nolint:cyclop
@@ -882,12 +879,12 @@ func (n *Notary) Start(parentCtx context.Context) error {
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
-				shouldRegisterNotary, shouldSendToDestination := n.shouldRegisterNotaryOnDestination(ctx)
-				didRegisterAgent := true
+				shouldRegisterNotary := n.shouldRegisterNotaryOnDestination(ctx)
+				notaryRegistered := true
 				if shouldRegisterNotary {
-					didRegisterAgent = n.registerNotaryOnDestination(ctx)
+					notaryRegistered = n.registerNotaryOnDestination(ctx)
 				}
-				if shouldSendToDestination && didRegisterAgent {
+				if notaryRegistered {
 					n.submitAttestation(ctx)
 				}
 			}
