@@ -2,6 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "baseUrl": "src",
+    "rootDir": "src",
     "paths": {
       "@/components/*": ["components/*"],
       "@/constants/*": ["constants/*"],
