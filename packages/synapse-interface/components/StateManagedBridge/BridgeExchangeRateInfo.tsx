@@ -7,10 +7,11 @@ import { getEstimatedBridgeTimeInMinutes } from '@/utils/getEstimatedBridgeTime'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { Chain } from '@/utils/types'
+import { Chain, Token } from '@/utils/types'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { PieChart } from '../PieChart'
+import { tokenSymbolToToken } from '@/constants/tokens'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
@@ -153,7 +154,8 @@ const GasDropLabel = ({
 }) => {
   const chain: Chain = CHAINS_BY_ID[toChainId]
   const symbol: string = chain?.nativeCurrency.symbol
-  const icon = chain?.chainImg
+  const token: Token = tokenSymbolToToken(toChainId, symbol)
+  const icon = token?.icon
 
   let decimalsToDisplay
 
