@@ -24,12 +24,16 @@ export const BRIDGE_MAP = {
     '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
       decimals: 18,
       symbol: 'nUSD',
-      origin: ['DAI', 'USDC', 'USDT', 'nUSD'],
-      destination: ['nUSD'],
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
+      destination: ['CCTP.USDC', 'nUSD'],
       swappable: [
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
         '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
         '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
         '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
       ],
     },
     '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599': {
@@ -46,6 +50,21 @@ export const BRIDGE_MAP = {
       destination: ['LINK'],
       swappable: [],
     },
+    '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
+      decimals: 18,
+      symbol: 'LUSD',
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
+      destination: ['CCTP.USDC'],
+      swappable: [
+        '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
+      ],
+    },
     '0x6982508145454Ce325dDbE47a25d4ec3d2311933': {
       decimals: 18,
       symbol: 'PEPE',
@@ -56,12 +75,31 @@ export const BRIDGE_MAP = {
     '0x6B175474E89094C44Da98b954EedeAC495271d0F': {
       decimals: 18,
       symbol: 'DAI',
-      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD'],
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
       destination: ['CCTP.USDC', 'DAI', 'nUSD'],
       swappable: [
         '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
         '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
         '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
+      ],
+    },
+    '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8': {
+      decimals: 6,
+      symbol: 'PYUSD',
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
+      destination: ['CCTP.USDC'],
+      swappable: [
+        '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
       ],
     },
     '0x71Ab77b7dbB4fa7e017BC15090b2163221420282': {
@@ -81,9 +119,17 @@ export const BRIDGE_MAP = {
     '0x853d955aCEf822Db058eb8505911ED77F175b99e': {
       decimals: 18,
       symbol: 'FRAX',
-      origin: ['synFRAX'],
-      destination: ['synFRAX'],
-      swappable: [],
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
+      destination: ['CCTP.USDC', 'synFRAX'],
+      swappable: [
+        '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
+      ],
     },
     '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96': {
       decimals: 18,
@@ -95,12 +141,16 @@ export const BRIDGE_MAP = {
     '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48': {
       decimals: 6,
       symbol: 'USDC',
-      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD'],
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
       destination: ['CCTP.USDC', 'USDC', 'nUSD'],
       swappable: [
         '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
         '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
         '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
       ],
     },
     '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb': {
@@ -141,12 +191,16 @@ export const BRIDGE_MAP = {
     '0xdAC17F958D2ee523a2206206994597C13D831ec7': {
       decimals: 6,
       symbol: 'USDT',
-      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD'],
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
       destination: ['CCTP.USDC', 'USDT', 'nUSD'],
       swappable: [
         '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
         '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
         '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
       ],
     },
     '0xf0655DcEE37E5C0b70Fffd70D85f88F8eDf0AfF6': {
@@ -155,6 +209,21 @@ export const BRIDGE_MAP = {
       origin: ['UNIDX'],
       destination: ['UNIDX'],
       swappable: [],
+    },
+    '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
+      decimals: 18,
+      symbol: 'crvUSD',
+      origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
+      destination: ['CCTP.USDC'],
+      swappable: [
+        '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8',
+        '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      ],
     },
   },
   '10': {
