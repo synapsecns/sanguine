@@ -1,3 +1,4 @@
+import './index.css'
 import { useState } from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { fetchBridgeQuote } from './utils/fetchBridgeQuote'
@@ -38,7 +39,7 @@ export const Bridge = ({ chainIds, providers }) => {
   }
 
   return (
-    <div>
+    <div className="bg-red-500 w-[200px] h-[200px]">
       <div>Bridge</div>
       <div>origin chainId: {originChainId}</div>
       <div>origin originTokenAddress: {originTokenAddress}</div>

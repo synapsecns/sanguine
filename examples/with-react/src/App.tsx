@@ -1,4 +1,3 @@
-import './App.css'
 import { Bridge } from 'synapse-widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
@@ -14,8 +13,6 @@ function App() {
 
   const providers = [ethersProvider, aribtrumProvider]
   const chainIds = [1, 42161]
-
-  console.log(`providres`, providers)
 
   return (
     <div className="App">
