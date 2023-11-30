@@ -11,7 +11,13 @@ const originTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const destinationChainId = 42161
 const destinationTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 
-export const Bridge = ({ chainIds, providers }) => {
+export const Bridge = ({
+  chainIds,
+  providers,
+}: {
+  chainIds: number[]
+  providers: any[]
+}) => {
   const synapseSDK = new SynapseSDK(chainIds, providers)
   const [quote, setQuote] = useState<any>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -59,10 +65,10 @@ export const Bridge = ({ chainIds, providers }) => {
   }, [quote])
 
   return (
-    <div className="w-[374px] bg-[#F5F5F5] p-2">
-      <div className="mb-2 bg-white border border-[#DCDCDC] rounded-md">
+    <div className="w-[374px] bg-widget-primary p-2">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>Ethereum</div>
             <ArrowSvg />
           </div>
@@ -75,15 +81,15 @@ export const Bridge = ({ chainIds, providers }) => {
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>USDC</div>
             <ArrowSvg />
           </div>
         </div>
       </div>
-      <div className="bg-white border border-[#DCDCDC] rounded-md mb-2">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>Arbitrum</div>
             <ArrowSvg />
           </div>
@@ -95,7 +101,7 @@ export const Bridge = ({ chainIds, providers }) => {
             value={isLoading ? '...' : maxAmountOut}
             className="text-xl"
           />
-          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>USDC</div>
             <ArrowSvg />
           </div>
@@ -103,7 +109,7 @@ export const Bridge = ({ chainIds, providers }) => {
       </div>
       {quote ? <Receipt quote={quote} /> : null}
       <button
-        className="h-[43px] rounded-md w-full bg-white border border-[#DCDCDC] mt-2"
+        className="h-[43px] rounded-md w-full bg-widget-surface border border-widget-separator mt-2"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
@@ -125,17 +131,17 @@ const Receipt = ({ quote }) => {
     <div>
       <div className="flex items-center justify-end">
         <div className="text-sm">
-          {estTime} min via <span className="text-[#0000FF]">Synapse</span>
+          {estTime} min via <span className="text-widget-accent">Synapse</span>
         </div>
         <div onClick={handleToggle}>
           {isExpanded ? <DoubleArrowUp /> : <DoubleArrowDown />}
         </div>
       </div>
       {isExpanded && (
-        <div className="border border-[#DCDCDC] p-2 text-sm mt-2">
+        <div className="p-2 mt-2 text-sm border border-widget-separator">
           <div className="flex items-center justify-between">
             <div>Router</div>
-            <div className="text-[#0000FF]">{quote.bridgeModuleName}</div>
+            <div className="text-widget-accent">{quote.bridgeModuleName}</div>
           </div>
           <div className="flex items-center justify-between">
             <div>Origin</div>
