@@ -34,8 +34,6 @@ export async function fetchBridgeQuote(
     amount
   )
 
-  const x = BigInt(maxAmountOut.toString()) ?? 0n
-
   return {
     feeAmount,
     routerAddress,
@@ -44,6 +42,5 @@ export async function fetchBridgeQuote(
     destQuery,
     estimatedTime,
     bridgeModuleName,
-    x,
   }
 }
