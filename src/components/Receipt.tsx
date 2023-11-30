@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
-import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { DoubleUpArrow } from '@/components/DoubleUpArrow'
 import { DoubleDownArrow } from '@/components/DoubleDownArrow'
 
-export const Receipt = ({ quote }) => {
+export const Receipt = ({ quote, send, receive }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const estTime = useMemo(() => {
     return quote.estimatedTime / 60
@@ -12,6 +11,7 @@ export const Receipt = ({ quote }) => {
   const handleToggle = () => {
     setIsExpanded(!isExpanded)
   }
+
   return (
     <div>
       <div className="flex items-center justify-end">
@@ -38,23 +38,11 @@ export const Receipt = ({ quote }) => {
           </div>
           <div className="flex items-center justify-between">
             <div>Send</div>
-            <div>
-              {formatBigIntToString(
-                quote.originQuery.minAmountOut.toString(),
-                6,
-                4
-              )}
-            </div>
+            <div>{send}</div>
           </div>
           <div className="flex items-center justify-between">
             <div>Receive</div>
-            <div>
-              {formatBigIntToString(
-                quote.destQuery.minAmountOut.toString(),
-                6,
-                4
-              )}
-            </div>
+            <div>{receive}</div>
           </div>
         </div>
       )}

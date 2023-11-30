@@ -12,25 +12,39 @@ import { CustomTheme } from 'types'
 import { nightTheme } from './constants'
 
 const originChainId = 1
-const originTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const destinationChainId = 42161
-const destinationTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+
+interface TokenMetaData {
+  tokenAddress: string
+  symbol: string
+  chainId: number
+  decimals: number
+}
 
 export const Bridge = ({
   chainIds,
   providers,
   theme,
   customTheme,
+  tokens,
 }: {
   chainIds: number[]
   providers: any[]
   theme?: 'day' | 'night'
   customTheme?: CustomTheme
+  tokens: TokenMetaData[]
 }) => {
   const synapseSDK = new SynapseSDK(chainIds, providers)
   const [quote, setQuote] = useState<any>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [inputAmount, setInputAmount] = useState<string>('')
+
+  const [originToken, setOriginToken] = useState(
+    tokens.find((token) => token.chainId === originChainId)
+  )
+  const [destinationToken, setDestinationToken] = useState(
+    tokens.find((token) => token.chainId === destinationChainId)
+  )
 
   if (theme === 'night') {
     useCustomTheme(nightTheme)
@@ -46,11 +60,11 @@ export const Bridge = ({
     try {
       const result = await fetchBridgeQuote(
         {
-          originChainId,
-          originTokenAddress,
-          destinationChainId,
-          destinationTokenAddress,
-          amount: stringToBigInt(inputAmount, 6),
+          originChainId: originToken.chainId,
+          originTokenAddress: originToken.tokenAddress,
+          destinationChainId: destinationToken.chainId,
+          destinationTokenAddress: destinationToken.tokenAddress,
+          amount: stringToBigInt(inputAmount, originToken.decimals),
         },
         synapseSDK
       )
@@ -78,12 +92,12 @@ export const Bridge = ({
 
     const max = BigInt(quote.maxAmountOut.toString())
 
-    return formatBigIntToString(max, 6, 4)
+    return formatBigIntToString(max, destinationToken.decimals, 4)
   }, [quote])
 
   return (
     <div className="w-[374px] bg-widget-primary p-2 text-widget-primary">
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-background">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>Ethereum</div>
@@ -99,12 +113,31 @@ export const Bridge = ({
             onChange={handleInputAmountChange}
           />
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
-            <div>USDC</div>
-            <DownArrow />
+            <select
+              className="bg-transparent hover:cursor-pointer focus:outline-none"
+              value={originToken.tokenAddress}
+              onChange={(e) => {
+                setOriginToken(
+                  tokens.find((token) => token.tokenAddress === e.target.value)
+                )
+                setQuote(null)
+              }}
+            >
+              {tokens
+                .filter((token) => token.chainId === originChainId)
+                .map((token, index) => (
+                  <option key={index} value={token.tokenAddress}>
+                    <div className="flex items-center">
+                      <div>{token.symbol}</div>
+                      <DownArrow />
+                    </div>
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
       </div>
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-background">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>Arbitrum</div>
@@ -120,14 +153,43 @@ export const Bridge = ({
             value={isLoading ? '...' : maxAmountOut}
           />
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
-            <div>USDC</div>
-            <DownArrow />
+            <select
+              className="bg-transparent hover:cursor-pointer focus:outline-none"
+              value={destinationToken.tokenAddress}
+              onChange={(e) => {
+                setDestinationToken(
+                  tokens.find((token) => token.tokenAddress === e.target.value)
+                )
+                setQuote(null)
+              }}
+            >
+              {tokens
+                .filter((token) => token.chainId === destinationChainId)
+                .map((token, index) => (
+                  <option key={index} value={token.tokenAddress}>
+                    <div className="flex items-center">
+                      <div>{token.symbol}</div>
+                      <DownArrow />
+                    </div>
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
       </div>
-      {quote ? <Receipt quote={quote} /> : null}
+      {quote ? (
+        <Receipt
+          quote={quote}
+          send={formatBigIntToString(
+            stringToBigInt(inputAmount, originToken.decimals),
+            originToken.decimals,
+            4
+          )}
+          receive={maxAmountOut}
+        />
+      ) : null}
       <button
-        className="h-[43px] rounded-md w-full bg-widget-surface  border border-widget-background mt-2"
+        className="h-[43px] rounded-md w-full bg-widget-surface font-semibold border border-widget-separator mt-2"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
