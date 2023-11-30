@@ -8,6 +8,8 @@ import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { DoubleUpArrow } from '@/components/DoubleUpArrow'
 import { DoubleDownArrow } from '@/components/DoubleDownArrow'
 import { DownArrow } from '@/components/DownArrow'
+import { useCustomTheme } from './hooks/useCustomTheme'
+import { CustomTheme } from 'types'
 
 const originChainId = 1
 const originTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
@@ -17,14 +19,18 @@ const destinationTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 export const Bridge = ({
   chainIds,
   providers,
+  customTheme,
 }: {
   chainIds: number[]
   providers: any[]
+  customTheme?: CustomTheme
 }) => {
   const synapseSDK = new SynapseSDK(chainIds, providers)
   const [quote, setQuote] = useState<any>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [inputAmount, setInputAmount] = useState<string>('')
+
+  useCustomTheme(customTheme)
 
   const handleFetchQuote = async () => {
     setIsLoading(true)
@@ -71,7 +77,7 @@ export const Bridge = ({
     <div className="w-[374px] bg-widget-primary p-2">
       <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
             <div>Ethereum</div>
             <DownArrow />
           </div>
@@ -84,7 +90,7 @@ export const Bridge = ({
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
             <div>USDC</div>
             <DownArrow />
           </div>
@@ -92,7 +98,7 @@ export const Bridge = ({
       </div>
       <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
             <div>Arbitrum</div>
             <DownArrow />
           </div>
@@ -104,7 +110,7 @@ export const Bridge = ({
             value={isLoading ? '...' : maxAmountOut}
             className="text-xl"
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
             <div>USDC</div>
             <DownArrow />
           </div>
@@ -112,7 +118,7 @@ export const Bridge = ({
       </div>
       {quote ? <Receipt quote={quote} /> : null}
       <button
-        className="h-[43px] rounded-md w-full bg-widget-surface border border-widget-separator mt-2"
+        className="h-[43px] rounded-md w-full bg-widget-surface  border border-widget-separator mt-2"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
