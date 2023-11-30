@@ -5,11 +5,11 @@ import { fetchBridgeQuote } from '@/utils/fetchBridgeQuote'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { DoubleUpArrow } from '@/components/DoubleUpArrow'
-import { DoubleDownArrow } from '@/components/DoubleDownArrow'
 import { DownArrow } from '@/components/DownArrow'
-import { useCustomTheme } from './hooks/useCustomTheme'
+import { Receipt } from '@/components/Receipt'
+import { useCustomTheme } from '@/hooks/useCustomTheme'
 import { CustomTheme } from 'types'
+import { nightTheme } from './constants'
 
 const originChainId = 1
 const originTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
@@ -19,10 +19,12 @@ const destinationTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 export const Bridge = ({
   chainIds,
   providers,
+  theme,
   customTheme,
 }: {
   chainIds: number[]
   providers: any[]
+  theme?: 'day' | 'night'
   customTheme?: CustomTheme
 }) => {
   const synapseSDK = new SynapseSDK(chainIds, providers)
@@ -30,7 +32,13 @@ export const Bridge = ({
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [inputAmount, setInputAmount] = useState<string>('')
 
-  useCustomTheme(customTheme)
+  if (theme === 'night') {
+    useCustomTheme(nightTheme)
+  } else if (customTheme) {
+    useCustomTheme(customTheme)
+  } else {
+    useCustomTheme({})
+  }
 
   const handleFetchQuote = async () => {
     setIsLoading(true)
@@ -64,8 +72,8 @@ export const Bridge = ({
   }
 
   const maxAmountOut = useMemo(() => {
-    if (!quote) {
-      return null
+    if (!quote || !quote.maxAmountOut) {
+      return 0
     }
 
     const max = BigInt(quote.maxAmountOut.toString())
@@ -74,10 +82,10 @@ export const Bridge = ({
   }, [quote])
 
   return (
-    <div className="w-[374px] bg-widget-primary p-2">
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
+    <div className="w-[374px] bg-widget-primary p-2 text-widget-primary">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-background">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>Ethereum</div>
             <DownArrow />
           </div>
@@ -85,20 +93,20 @@ export const Bridge = ({
         </div>
         <div className="flex items-center justify-between p-2">
           <input
+            className="text-xl font-semibold bg-widget-surface focus:outline-none"
             placeholder=""
-            className="text-xl"
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>USDC</div>
             <DownArrow />
           </div>
         </div>
       </div>
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
+      <div className="mb-2 border rounded-md bg-widget-surface border-widget-background">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>Arbitrum</div>
             <DownArrow />
           </div>
@@ -106,11 +114,12 @@ export const Bridge = ({
         </div>
         <div className="flex items-center justify-between p-2">
           <input
+            className="text-xl font-semibold bg-widget-surface"
+            disabled={true}
             placeholder=""
             value={isLoading ? '...' : maxAmountOut}
-            className="text-xl"
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-separator">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
             <div>USDC</div>
             <DownArrow />
           </div>
@@ -118,70 +127,11 @@ export const Bridge = ({
       </div>
       {quote ? <Receipt quote={quote} /> : null}
       <button
-        className="h-[43px] rounded-md w-full bg-widget-surface  border border-widget-separator mt-2"
+        className="h-[43px] rounded-md w-full bg-widget-surface  border border-widget-background mt-2"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
       </button>
-    </div>
-  )
-}
-
-const Receipt = ({ quote }) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false)
-  const estTime = useMemo(() => {
-    return quote.estimatedTime / 60
-  }, [quote])
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded)
-  }
-  return (
-    <div>
-      <div className="flex items-center justify-end">
-        <div className="text-sm">
-          {estTime} min via <span className="text-widget-accent">Synapse</span>
-        </div>
-        <div onClick={handleToggle}>
-          {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
-        </div>
-      </div>
-      {isExpanded && (
-        <div className="p-2 mt-2 text-sm border border-widget-separator">
-          <div className="flex items-center justify-between">
-            <div>Router</div>
-            <div className="text-widget-accent">{quote.bridgeModuleName}</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>Origin</div>
-            <div>Ethereum</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>Destination</div>
-            <div>Arbitrum</div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>Send</div>
-            <div>
-              {formatBigIntToString(
-                quote.originQuery.minAmountOut.toString(),
-                6,
-                4
-              )}
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>Receive</div>
-            <div>
-              {formatBigIntToString(
-                quote.destQuery.minAmountOut.toString(),
-                6,
-                4
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

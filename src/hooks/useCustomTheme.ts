@@ -31,8 +31,13 @@ export const useCustomTheme = (customTheme: CustomTheme) => {
       )
     customTheme?.surface &&
       document.documentElement.style.setProperty(
-        '--synapse-widget-on-surface-color',
+        '--synapse-widget-surface-color',
         formatRGB(customTheme.surface)
+      )
+    customTheme?.small &&
+      document.documentElement.style.setProperty(
+        '--synapse-widget-small-color',
+        formatRGB(customTheme.small)
       )
   }, [customTheme])
 }

@@ -26,6 +26,7 @@ export default {
       },
       borderColor: {
         widget: {
+          background: withOpacity('--synapse-widget-background-color'),
           separator: withOpacity('--synapse-widget-separator-color'),
         },
       },

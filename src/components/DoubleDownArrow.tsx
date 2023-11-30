@@ -10,16 +10,16 @@ export const DoubleDownArrow = () => {
       <path
         d="M6 5.5L10 9.5L14 5.5"
         stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M6 11.5L10 15.5L14 11.5"
         stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )
