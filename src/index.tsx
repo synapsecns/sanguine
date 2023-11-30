@@ -39,14 +39,90 @@ export const Bridge = ({ chainIds, providers }) => {
   }
 
   return (
-    <div className="bg-red-500 w-[200px] h-[200px]">
-      <div>Bridge</div>
-      <div>origin chainId: {originChainId}</div>
-      <div>origin originTokenAddress: {originTokenAddress}</div>
-      <div>destination chainId: {destinationChainId}</div>
-      <div>destinationTokenAddress: {destinationTokenAddress}</div>
-      <button onClick={handleFetchQuote}>Fetch Bridge Quote</button>
-      {isLoading && <div>Loading...</div>}
+    <div className="w-[374px] bg-[#F5F5F5] p-2">
+      <div className="mb-2 bg-white border border-[#DCDCDC] rounded-md">
+        <div className="flex items-center justify-between p-2">
+          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+            <div>Ethereum</div>
+            <svg
+              width="10"
+              height="9"
+              viewBox="0 0 10 9"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0.497159 0.727273H9.58807L5.04261 8.45455L0.497159 0.727273Z"
+                fill="#696969"
+              />
+            </svg>
+          </div>
+          <div className="text-sm"></div>
+        </div>
+        <div className="flex items-center justify-between p-2">
+          <input placeholder="Enter value" className="text-xl" />
+          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+            <div>USDC</div>
+            <svg
+              width="10"
+              height="9"
+              viewBox="0 0 10 9"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0.497159 0.727273H9.58807L5.04261 8.45455L0.497159 0.727273Z"
+                fill="#696969"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div className="mb-2 bg-white border border-[#DCDCDC] rounded-md">
+        <div className="flex items-center justify-between p-2">
+          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+            <div>Arbitrum</div>
+            <svg
+              width="10"
+              height="9"
+              viewBox="0 0 10 9"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0.497159 0.727273H9.58807L5.04261 8.45455L0.497159 0.727273Z"
+                fill="#696969"
+              />
+            </svg>
+          </div>
+          <div className="text-sm"></div>
+        </div>
+        <div className="flex items-center justify-between p-2">
+          <input placeholder="" value="100" className="text-xl" />
+          <div className="flex items-center space-x-1 rounded-lg bg-[#F5F5F5] pb-1 pl-2 pr-2 pt-1">
+            <div>USDC</div>
+            <svg
+              width="10"
+              height="9"
+              viewBox="0 0 10 9"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0.497159 0.727273H9.58807L5.04261 8.45455L0.497159 0.727273Z"
+                fill="#696969"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <button
+        className="h-[43px] rounded-md w-full bg-white border border-[#DCDCDC]"
+        onClick={handleFetchQuote}
+      >
+        Fetch Bridge Quote
+      </button>
+      {isLoading && <div>Loading...</div>}{' '}
       {quote && <div>{quote.routerAddress}</div>}
     </div>
   )
