@@ -134,15 +134,14 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	ctx, span := e.handler.Tracer().Start(ctx, "processMessage", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.String()),
 		attribute.Int(metrics.BlockNumber, int(log.BlockNumber)),
+		attribute.Int(metrics.Origin, int(message.OriginDomain())),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	span.AddEvent("got merkle index", trace.WithAttributes(
-		attribute.Int("merkle_index", int(merkleIndex)),
-	))
+	span.SetAttributes(attribute.Int("merkle_index", int(merkleIndex)))
 
 	leaf, err := message.ToLeaf()
 	if err != nil {
