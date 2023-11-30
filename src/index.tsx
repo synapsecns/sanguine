@@ -5,6 +5,9 @@ import { fetchBridgeQuote } from '@/utils/fetchBridgeQuote'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
+import { DoubleUpArrow } from '@/components/DoubleUpArrow'
+import { DoubleDownArrow } from '@/components/DoubleDownArrow'
+import { DownArrow } from '@/components/DownArrow'
 
 const originChainId = 1
 const originTokenAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
@@ -70,7 +73,7 @@ export const Bridge = ({
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>Ethereum</div>
-            <ArrowSvg />
+            <DownArrow />
           </div>
           <div className="text-sm"></div>
         </div>
@@ -83,7 +86,7 @@ export const Bridge = ({
           />
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>USDC</div>
-            <ArrowSvg />
+            <DownArrow />
           </div>
         </div>
       </div>
@@ -91,7 +94,7 @@ export const Bridge = ({
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>Arbitrum</div>
-            <ArrowSvg />
+            <DownArrow />
           </div>
           <div className="text-sm"></div>
         </div>
@@ -103,7 +106,7 @@ export const Bridge = ({
           />
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 rounded-lg bg-widget-primary">
             <div>USDC</div>
-            <ArrowSvg />
+            <DownArrow />
           </div>
         </div>
       </div>
@@ -134,7 +137,7 @@ const Receipt = ({ quote }) => {
           {estTime} min via <span className="text-widget-accent">Synapse</span>
         </div>
         <div onClick={handleToggle}>
-          {isExpanded ? <DoubleArrowUp /> : <DoubleArrowDown />}
+          {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
         </div>
       </div>
       {isExpanded && (
@@ -174,76 +177,5 @@ const Receipt = ({ quote }) => {
         </div>
       )}
     </div>
-  )
-}
-
-const ArrowSvg = () => {
-  return (
-    <svg
-      width="10"
-      height="9"
-      viewBox="0 0 10 9"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M0.497159 0.727273H9.58807L5.04261 8.45455L0.497159 0.727273Z"
-        fill="#696969"
-      />
-    </svg>
-  )
-}
-
-const DoubleArrowDown = () => {
-  return (
-    <svg
-      width="20"
-      height="21"
-      viewBox="0 0 20 21"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M6 5.5L10 9.5L14 5.5"
-        stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-      <path
-        d="M6 11.5L10 15.5L14 11.5"
-        stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-  )
-}
-
-const DoubleArrowUp = () => {
-  return (
-    <svg
-      width="20"
-      height="21"
-      viewBox="0 0 20 21"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M6 15.5L10 11.5L14 15.5"
-        stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-      <path
-        d="M6 9.5L10 5.5L14 9.5"
-        stroke="#A9A9A9"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
   )
 }
