@@ -18,7 +18,7 @@ chains:
       notary-scroll-sepolia: 0xE86aE27a98Da68F7c02A96A8c99D729784B1096b
       notary-mumbai: 0x0105B9A713842656f45747D9d5Df2E15aCCF16A7
   421614:
-    message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
+    message_contract_addr: 0x82D0ed2C5a168D065Fe47F6df733512048CE3eF7
     origin_addr: 0xB45ac68BAA85aA55018E8C15eDB8B44B04F0DB83
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
@@ -34,7 +34,7 @@ chains:
       client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-sepolia: 0x7D4AA3a2f52c513aDbE809C0BbBd6D0B708F0fD4
   11155420:
-    message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
+    message_contract_addr: 0x82D0ed2C5a168D065Fe47F6df733512048CE3eF7
     origin_addr: 0xB45ac68BAA85aA55018E8C15eDB8B44B04F0DB83
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
@@ -42,7 +42,7 @@ chains:
       client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-optimism-sepolia: 0x043076C77197539Da61ddE368a1d6Aae2e9D9D55
   534351:
-    message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
+    message_contract_addr: 0x82D0ed2C5a168D065Fe47F6df733512048CE3eF7
     origin_addr: 0xB45ac68BAA85aA55018E8C15eDB8B44B04F0DB83
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
@@ -50,7 +50,7 @@ chains:
       client: 0x82541eB993aa7b17FF346ac0b07e5E496540133e
       notary-scroll-sepolia: 0xE86aE27a98Da68F7c02A96A8c99D729784B1096b
   80001:
-    message_contract_addr: 0x770795270464e72EFfDEC122eD9f20a98756ceA9
+    message_contract_addr: 0x82D0ed2C5a168D065Fe47F6df733512048CE3eF7
     origin_addr: 0xB45ac68BAA85aA55018E8C15eDB8B44B04F0DB83
     destination_addr: 0x3Cb9081Fa99a5a20ca561Eb947e93140Cc9F36cd
     agents:
