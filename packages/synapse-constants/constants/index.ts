@@ -1,13 +1,9 @@
-import * as BRIDGEABLE from './tokens/bridgeable'
-import * as CHAINS from './chains/master'
-
-export const BRIDGEABLE_TOKENS = BRIDGEABLE
-export const ALL_CHAIN = CHAINS
+import * as TOKENS from './tokens'
+import * as CHAINS from './chains'
+import { Token, Chain } from './types'
 
 // Customizable lists
-export const CUSTOM_BRIDGEABLE_TOKENS = [
-  BRIDGEABLE.ETH,
-  BRIDGEABLE.USDC,
-  BRIDGEABLE.USDCe,
-]
+export const CUSTOM_BRIDGEABLE_TOKENS = [TOKENS.ETH, TOKENS.USDC, TOKENS.USDCe]
 export const CUSTOM_CHAINS = [CHAINS.ETH, CHAINS.ARBITRUM, CHAINS.OPTIMISM]
+
+export { Token, Chain, TOKENS, CHAINS }

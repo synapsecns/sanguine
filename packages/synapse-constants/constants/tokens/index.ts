@@ -9,6 +9,8 @@ import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 
 const allSwap = [WETH, USDC, USDT]
 
+export * from './bridgeable'
+
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
