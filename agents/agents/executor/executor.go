@@ -96,7 +96,7 @@ type Executor struct {
 	lastExecuteAttempts map[string]uint64
 	// numExecuteAttempts is a map from message hash -> number of execute attempts.
 	numExecuteAttempts map[string]int
-	// NowFunc returns the current time.
+	// NowFunc returns the current time. This is exposed for testing.
 	NowFunc func() time.Time
 }
 
