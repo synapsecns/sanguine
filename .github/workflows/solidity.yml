@@ -29,7 +29,8 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          # TODO: get back to nightly once `forge doc` is working with it
+          version: nightly-09fe3e041369a816365a020f715ad6f94dbce9f2
       - name: Install Vercel CLI
         run: npm install --global vercel@30.1.0
       - name: Set Project Env
