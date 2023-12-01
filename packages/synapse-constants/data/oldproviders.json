@@ -1,0 +1,20 @@
+{
+  "10": "https://mainnet.optimism.io",
+  "25": "https://evm.cronos.org",
+  "56": "https://binance.llamarpc.com",
+  "137": "https://polygon.llamarpc.com",
+  "250": "https://rpc3.fantom.network",
+  "288": "https://replica.boba.network",
+  "1088": "https://andromeda.metis.io/?owner=1088",
+  "1284": "https://moonbeam.public.blastapi.io",
+  "1285": "https://moonriver.public.blastapi.io",
+  "2000": "https://rpc.dogechain.dog",
+  "7700": "https://rpc.omnirpc.io/confirmations/1/rpc/7700",
+  "8217": "https://rpc.omnirpc.io/confirmations/1/rpc/8217",
+  "8453": "https://developer-access-mainnet.base.org",
+  "42161": "https://arbitrum.llamarpc.com",
+  "43114": "https://api.avax.network/ext/bc/C/rpc",
+  "53935": "https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc",
+  "1313161554": "https://mainnet.aurora.dev",
+  "1666600000": "https://rpc.omnirpc.io/confirmations/1/rpc/1666600000"
+}

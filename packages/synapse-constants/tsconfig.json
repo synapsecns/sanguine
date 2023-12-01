@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "paths": {
+      "@types": [
+        "./constants/types/"
+      ],
+      "@assets/*": [
+        "./constants/assets/*"
+      ]
+    },
+    "module": "commonjs",
+    "esModuleInterop": true,
+    // "preserveSymlinks": true,
+    "forceConsistentCasingInFileNames": true,
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
