@@ -21,6 +21,7 @@
     "@synapsecns/sdk-router": "^0.2.23",
     "ethers": "5.7.2",
     "lodash": "^4.17.21",
-    "viem": "^1.19.11"
+    "viem": "^1.19.11",
+    "wagmi": "^1.4.7"
   }
 }

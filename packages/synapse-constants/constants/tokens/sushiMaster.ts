@@ -1,7 +1,7 @@
 import sushiLogo from '@assets/icons/sushi.svg'
-import * as CHAINS from '@constants/chains/master'
+import { Token } from '@types'
 
-import { Token } from '@/utils/types'
+import * as CHAINS from '../chains/master'
 import { MINICHEF_ADDRESSES } from '../minichef'
 
 export const SYN_ETH_SUSHI_TOKEN = new Token({

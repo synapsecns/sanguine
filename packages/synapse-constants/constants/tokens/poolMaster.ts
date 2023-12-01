@@ -1,4 +1,7 @@
-import * as CHAINS from '@constants/chains/master'
+import synapseLogo from '@assets/icons/syn.svg'
+import { Token } from '@types'
+
+import * as CHAINS from '../chains/master'
 import {
   BUSD,
   USDC,
@@ -21,7 +24,7 @@ import {
   ONEUSDC,
   ONEUSDT,
   WETH,
-} from '@constants/tokens/bridgeable'
+} from '..//tokens/bridgeable'
 import {
   AVWETH,
   FANTOMETH,
@@ -30,11 +33,8 @@ import {
   KLAYTN_oUSDT,
   MIM,
   MULTIAVAX,
-} from '@constants/tokens/auxilliary'
-import synapseLogo from '@assets/icons/syn.svg'
-
-import { Token } from '@/utils/types'
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+} from '../tokens/auxilliary'
+import { MINICHEF_ADDRESSES } from '../minichef'
 
 // @dev: Reassign correct priorityRanking
 
