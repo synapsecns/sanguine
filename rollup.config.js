@@ -32,6 +32,9 @@ export default [
         plugins: [],
       }),
     ],
+    watch: {
+      buildDelay: 200,
+    },
   },
   {
     input: 'dist/esm/index.d.ts',

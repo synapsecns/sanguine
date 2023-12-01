@@ -5,6 +5,7 @@
   "description": "Synapse Protocol Bridge Widget",
   "scripts": {
     "rollup-build-lib": "rollup -c --bundleConfigAsCjs",
+    "watch": "rollup -c -w --bundleConfigAsCjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
