@@ -73,7 +73,7 @@ export const TransactionPayloadDetail = ({
             className="w-4 h-4 mr-1.5 rounded-full"
             alt={`${chain.name} icon`}
           />
-          <div>{chain.name}</div>
+          <div className="whitespace-nowrap">{chain.name}</div>
         </div>
       )}
 

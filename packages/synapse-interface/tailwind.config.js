@@ -119,6 +119,7 @@ module.exports = {
         tint: '#252226',
         background: '#151315',
         synapsePurple: '#D747FF',
+        blueText: '#99E6FF',
         // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',
