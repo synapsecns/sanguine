@@ -1,4 +1,5 @@
-require('dotenv').config()
+import { config } from 'dotenv'
+config()
 
 export const getTestProviderUrl = (chainId: number): string => {
   // Get the RPC schema from env variables
