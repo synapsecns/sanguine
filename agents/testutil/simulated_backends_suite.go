@@ -137,6 +137,7 @@ type SimulatedBackendsTestSuite struct {
 	GuardMetrics                        metrics.Handler
 	ContractMetrics                     metrics.Handler
 	TestOmniRPC                         string
+	UseAnvil                            bool
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -366,7 +367,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupNotaryOnOrigin()
 	a.SetupNotaryOnDestination()
 	a.SetupExecutor()
-	a.SetupBackends(false)
+	a.SetupBackends(a.UseAnvil)
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)

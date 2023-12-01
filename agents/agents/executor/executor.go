@@ -91,6 +91,8 @@ type Executor struct {
 	retryConfig []retry.WithBackoffConfigurator
 	// NowFunc returns the current time.
 	NowFunc func() time.Time
+	// GetChainTimeFunc gets the chain time.
+	GetChainTimeFunc func(ctx context.Context, backend Backend) (uint64, error)
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -240,16 +242,17 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	}
 
 	return &Executor{
-		config:         config,
-		executorDB:     executorDB,
-		grpcConn:       conn,
-		grpcClient:     grpcClient,
-		signer:         executorSigner,
-		chainExecutors: chainExecutors,
-		handler:        handler,
-		txSubmitter:    txSubmitter,
-		retryConfig:    retryConfig,
-		NowFunc:        time.Now,
+		config:           config,
+		executorDB:       executorDB,
+		grpcConn:         conn,
+		grpcClient:       grpcClient,
+		signer:           executorSigner,
+		chainExecutors:   chainExecutors,
+		handler:          handler,
+		txSubmitter:      txSubmitter,
+		retryConfig:      retryConfig,
+		NowFunc:          time.Now,
+		GetChainTimeFunc: getChainTime,
 	}, nil
 }
 
@@ -560,33 +563,50 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 		return nil, nil
 	}
 
-	var currentTime uint64
-	chainCall := func(ctx context.Context) error {
-		var err error
-		latestHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, nil)
+	var chainTime uint64
+	call := func(ctx context.Context) error {
+		chainTime, err = e.GetChainTimeFunc(ctx, e.chainExecutors[chainID].rpcClient)
 		if err != nil {
-			return fmt.Errorf("could not get latest header: %w", err)
+			return fmt.Errorf("could not get chain time: %w", err)
 		}
-
-		if latestHeader == nil {
-			return fmt.Errorf("latest header is nil")
-		}
-
-		currentTime = latestHeader.Time
-
 		return nil
 	}
-	err = retry.WithBackoff(ctx, chainCall, e.retryConfig...)
+	err = retry.WithBackoff(ctx, call, e.retryConfig...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get latest header: %w", err)
 	}
+	fmt.Printf("Got chain time: %v\n", chainTime)
 
-	if *messageMinimumTime > currentTime {
+	span.AddEvent("got current time", trace.WithAttributes(
+		attribute.Int("chain_time", int(chainTime)),
+	))
+
+	if *messageMinimumTime > chainTime {
+		span.AddEvent("message is not old enough", trace.WithAttributes(
+			attribute.Int("message_minimum_time", int(*messageMinimumTime)),
+			attribute.Int("chain_time", int(chainTime)),
+		))
 		//nolint:nilnil
 		return nil, nil
 	}
 
 	return &nonce, nil
+}
+
+func getChainTime(ctx context.Context, backend Backend) (uint64, error) {
+	var chainTime uint64
+	latestHeader, err := backend.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return chainTime, fmt.Errorf("could not get latest header: %w", err)
+	}
+
+	if latestHeader == nil {
+		return chainTime, fmt.Errorf("latest header is nil")
+	}
+
+	chainTime = latestHeader.Time
+	fmt.Printf("got new block with number %s, time %d", latestHeader.Number.String(), latestHeader.Time)
+	return chainTime, nil
 }
 
 // newTreeFromDB creates a new merkle tree from the database's messages.
