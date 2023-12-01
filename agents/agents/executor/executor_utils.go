@@ -140,6 +140,15 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// Sanity check to make sure that the message has come from Origin.
+	if log.Address.String() != e.config.Chains[message.OriginDomain()].OriginAddress {
+		span.AddEvent("message is not from origin", trace.WithAttributes(
+			attribute.String("log_address", log.Address.String()),
+			attribute.String("origin_address", e.config.Chains[message.OriginDomain()].OriginAddress),
+		))
+		return nil
+	}
+
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	span.SetAttributes(attribute.Int("merkle_index", int(merkleIndex)))
 
