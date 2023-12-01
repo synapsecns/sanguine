@@ -305,7 +305,7 @@ export const LUSD = new Token({
   },
   decimals: 18,
   symbol: 'LUSD',
-  name: 'Liquidity USD',
+  name: 'Liquity USD',
   logo: lusdLogo,
   swapableType: 'USD',
 })
