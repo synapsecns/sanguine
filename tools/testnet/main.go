@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -120,71 +119,7 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 
 var startBlocks map[int]uint64 = map[int]uint64{}
 
-// streamLogs uses the grpcConnection to Scribe, with a chainID and address to get all logs from that address.
-func streamLogs(ctx context.Context, chainID uint32, address string, conn pbscribe.ScribeServiceClient, omniRPCClient omniClient.RPCClient) error {
-	chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
-	if err != nil {
-		return err
-	}
-	startBlocks[int(chainID)], err = chainClient.BlockNumber(ctx)
-	if err != nil {
-		return err
-	}
-	fromBlock := 0
-	toBlock := "latest"
-	fmt.Printf("Streaming logs for chain %d on addr %s from %v to %v.\n", chainID, address, fromBlock, toBlock)
-	stream, err := conn.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
-		Filter: &pbscribe.LogFilter{
-			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
-			ChainId:         chainID,
-		},
-		FromBlock: strconv.Itoa(int(fromBlock)),
-		ToBlock:   toBlock,
-	})
-	if err != nil {
-		fmt.Println("could not stream")
-		return fmt.Errorf("could not stream logs: %w", err)
-	}
-
-	for {
-		response, err := stream.Recv()
-		if err != nil {
-			return fmt.Errorf("could not receive: %w", err)
-		}
-
-		log := response.Log.ToLog()
-		if log == nil {
-			return fmt.Errorf("could not convert log")
-		}
-
-		select {
-		case <-ctx.Done():
-			fmt.Println("context done")
-			err := stream.CloseSend()
-			if err != nil {
-				return fmt.Errorf("could not close stream: %w", err)
-			}
-
-			return fmt.Errorf("context done: %w", ctx.Err())
-		default:
-			err = handleLog(log, chainID)
-			if err != nil {
-				return err
-			}
-		}
-	}
-}
-
 func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
-	// drop logs that are before the start block for this chain
-	// startBlock, ok := startBlocks[int(chainID)]
-	// if !ok {
-	// 	return fmt.Errorf("could not get start block for chain %d", chainID)
-	// }
-	// if log.BlockNumber < startBlock {
-	// 	return nil
-	// }
-
 	// parse the log and print output
 	var event interface{}
 	if event, err = pingPongParser.ParsePingSent(*log); err == nil {
@@ -330,9 +265,6 @@ var numIters, numExecuted, numRoutes, numSent int
 var messages = &sync.Map{}
 var sentTxes = &sync.Map{}
 
-// var messages = map[common.Hash]types.Message{}
-// var sentTxes = map[common.Hash]bool{}
-
 const eventBufferSize = 1000
 
 func main() {
@@ -415,12 +347,6 @@ func main() {
 		fmt.Printf("--- %d -> %d\n", route[0], route[1])
 	}
 
-	// // Connect to Scribe.
-	// _, scribeClient, err := makeScribeClient(ctx, metrics.NewNullHandler(), loadCfg.ScribeURL)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	// Listen for messages.
 	g, _ := errgroup.WithContext(ctx)
 	messageContracts := map[int]domains.PingPongClientContract{}
@@ -443,21 +369,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-
-		// messageAddr := chainCfg.MessageAddr
-		// g.Go(func() error {
-		// 	return streamLogs(ctx, uint32(chainID), messageAddr, scribeClient, omniRPCClient)
-		// })
-
-		// originAddr := chainCfg.OriginAddr
-		// g.Go(func() error {
-		// 	return streamLogs(ctx, uint32(chainID), originAddr, scribeClient, omniRPCClient)
-		// })
-
-		// destinationAddr := chainCfg.DestinationAddr
-		// g.Go(func() error {
-		// 	return streamLogs(ctx, uint32(chainID), destinationAddr, scribeClient, omniRPCClient)
-		// })
 	}
 
 	// Send messages.
