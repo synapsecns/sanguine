@@ -1,4 +1,4 @@
-import { Bridge } from 'synapse-widget'
+import { Bridge } from '@synapsecns/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 const tokens = [

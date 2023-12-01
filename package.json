@@ -1,5 +1,5 @@
 {
-  "name": "synapse-widget",
+  "name": "@synapsecns/widget",
   "type": "module",
   "version": "0.0.1",
   "description": "Synapse Protocol Bridge Widget",
