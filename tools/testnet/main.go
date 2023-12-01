@@ -257,15 +257,27 @@ func checkAgentStatuses(ctx context.Context, omniRPCClient omniClient.RPCClient,
 	return ok, nil
 }
 
+func clearMaps() {
+	messages.Range(func(key, value interface{}) bool {
+		messages.Delete(key)
+		return true
+	})
+	sentTxes.Range(func(key, value interface{}) bool {
+		sentTxes.Delete(key)
+		return true
+	})
+}
+
 var pingPongParser *pingpongclient.PingPongClientFilterer
 var originParser origin.Parser
 var bondingManagerParser bondingmanager.Parser
 var destinationParser *destination.DestinationFilterer
-var numIters, numExecuted, numRoutes, numSent int
+var numIters, numExecuted, executeInterval, numRoutes, numSent, totalExecuted int
 var messages = &sync.Map{}
 var sentTxes = &sync.Map{}
 
 const eventBufferSize = 1000
+const executionTimeout = 1800
 
 func main() {
 	var loadConfigPath string
@@ -273,7 +285,8 @@ func main() {
 	flag.StringVar(&loadConfigPath, "c", "", "path to load config")
 	flag.StringVar(&privateKey, "p", "", "private key")
 	flag.IntVar(&numIters, "n", 1, "number of message route iterations")
-	flag.IntVar(&numIters, "r", 0, "number of routes")
+	flag.IntVar(&numRoutes, "r", 0, "number of routes")
+	flag.IntVar(&executeInterval, "i", 30, "execution interval (seconds)")
 	flag.Parse()
 	if len(loadConfigPath) == 0 {
 		panic("expected load config path to be set (use c flag)")
@@ -371,104 +384,134 @@ func main() {
 		}
 	}
 
-	// Send messages.
-	fmt.Printf("Running %d iterations.\n\n", numIters)
-	for i := 0; i < numIters; i++ {
-		for _, r := range routes {
-			route := r
-			g.Go(func() error {
-				origin := route[0]
-				destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
-				contract, ok := messageContracts[origin]
-				if !ok {
-					panic(fmt.Errorf("could not get contract for chain %d", origin))
-				}
-				var tx *ethTypes.Transaction
-				err = retry.WithBackoff(ctx, func(context.Context) error {
-					tx, err = contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
-					if err != nil {
-						fmt.Printf("Error doing ping: %v [chain=%d]\n", err, origin)
+	runRoutes := func() {
+		// Send messages.
+		fmt.Printf("Running %d iterations.\n\n", numIters)
+		for i := 0; i < numIters; i++ {
+			for _, r := range routes {
+				route := r
+				g.Go(func() error {
+					origin := route[0]
+					destPingPongAddr := common.HexToAddress(loadCfg.Chains[route[1]].MessageAddr)
+					contract, ok := messageContracts[origin]
+					if !ok {
+						panic(fmt.Errorf("could not get contract for chain %d", origin))
 					}
-					return err
-				}, retry.WithMaxTotalTime(120*time.Second))
-				if err != nil {
-					fmt.Printf("Error sending message: %v\n", err)
-					return err
-				}
-				fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
-				sentTxes.Store(tx.Hash(), true)
+					var tx *ethTypes.Transaction
+					err = retry.WithBackoff(ctx, func(context.Context) error {
+						tx, err = contract.DoPing(ctx, signer, uint32(route[1]), destPingPongAddr, 0)
+						if err != nil {
+							fmt.Printf("Error doing ping: %v [chain=%d]\n", err, origin)
+						}
+						return err
+					}, retry.WithMaxTotalTime(120*time.Second))
+					if err != nil {
+						fmt.Printf("Error sending message: %v\n", err)
+						return err
+					}
+					fmt.Printf("Sent message from %d to %d: %s\n", route[0], route[1], types.GetTxLink(uint32(route[0]), tx))
+					sentTxes.Store(tx.Hash(), true)
 
-				chainClient, err := omniRPCClient.GetChainClient(ctx, int(route[0]))
-				if err != nil {
-					panic(err)
-				}
+					chainClient, err := omniRPCClient.GetChainClient(ctx, int(route[0]))
+					if err != nil {
+						panic(err)
+					}
 
-				var receipt *ethTypes.Receipt
-				var rcptErr error
-				err = retry.WithBackoff(ctx, func(context.Context) error {
-					receipt, rcptErr = chainClient.TransactionReceipt(ctx, tx.Hash())
-					return rcptErr
-				}, retry.WithMaxTotalTime(300*time.Second))
-				if err != nil {
-					fmt.Printf("error getting transaction receipt: %v: %v [chain=%d, txHash=%s]\n", err, rcptErr, origin, tx.Hash())
-					return err
+					var receipt *ethTypes.Receipt
+					var rcptErr error
+					err = retry.WithBackoff(ctx, func(context.Context) error {
+						receipt, rcptErr = chainClient.TransactionReceipt(ctx, tx.Hash())
+						return rcptErr
+					}, retry.WithMaxTotalTime(300*time.Second))
+					if err != nil {
+						fmt.Printf("error getting transaction receipt: %v: %v [chain=%d, txHash=%s]\n", err, rcptErr, origin, tx.Hash())
+						return err
+					}
+					if receipt.Status != ethTypes.ReceiptStatusSuccessful {
+						fmt.Printf("status not successful: %v\n", receipt.Status)
+						return fmt.Errorf("receipt status is not successful: %v", receipt.Status)
+					}
+					for _, log := range receipt.Logs {
+						fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
+						handleLog(log, uint32(origin))
+					}
+					return nil
+				})
+				time.Sleep(250 * time.Millisecond)
+			}
+		}
+
+		g.Go(func() error {
+			startTime := time.Now()
+			numRoutesActual := len(routes)
+			expectedNumExecuted := 1 * numRoutesActual * numIters
+			numExecuted := 0
+			executedMap := map[common.Hash]bool{}
+			for {
+				messages.Range(func(key, value interface{}) bool {
+					leaf := key.(common.Hash)
+					message := value.(types.Message)
+					_, ok := executedMap[leaf]
+					if !ok {
+						contract, ok := destinationContracts[int(message.DestinationDomain())]
+						if !ok {
+							panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
+						}
+						status, err := contract.MessageStatus(ctx, message)
+						if err != nil {
+							fmt.Printf("error getting message status [leaf=%s]: %v\n", leaf, err)
+							return true
+						}
+						if status == 2 {
+							executedMap[leaf] = true
+							numExecuted++
+							totalExecuted++
+							fmt.Printf("Verified message %s was executed. [total=%d]\n", leaf, numExecuted)
+						}
+					}
+					if numExecuted >= expectedNumExecuted {
+						fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
+						return false
+					}
+					time.Sleep(2 * time.Second)
+					return true
+				})
+				if numExecuted >= expectedNumExecuted {
+					return nil
 				}
-				if receipt.Status != ethTypes.ReceiptStatusSuccessful {
-					fmt.Printf("status not successful: %v\n", receipt.Status)
-					return fmt.Errorf("receipt status is not successful: %v", receipt.Status)
+				elapsed := time.Since(startTime).Seconds()
+				if elapsed > executionTimeout {
+					return fmt.Errorf("timed out waiting for messages to be executed: %f", elapsed)
 				}
-				for _, log := range receipt.Logs {
-					fmt.Printf("Passing log from %d to handleLog with txHash %s.\n", origin, tx.Hash())
-					handleLog(log, uint32(origin))
-				}
-				return nil
-			})
-			time.Sleep(250 * time.Millisecond)
+			}
+		})
+
+		err = g.Wait()
+		if err != nil {
+			fmt.Printf("%v\n", err)
 		}
 	}
 
-	g.Go(func() error {
-		numRoutesActual := len(routes)
-		expectedNumExecuted := 1 * numRoutesActual * numIters
-		numExecuted := 0
-		executedMap := map[common.Hash]bool{}
-		for {
-			messages.Range(func(key, value interface{}) bool {
-				leaf := key.(common.Hash)
-				message := value.(types.Message)
-				_, ok := executedMap[leaf]
-				if !ok {
-					contract, ok := destinationContracts[int(message.DestinationDomain())]
-					if !ok {
-						panic(fmt.Errorf("no destination contract found for chain: %d", message.DestinationDomain()))
-					}
-					status, err := contract.MessageStatus(ctx, message)
-					if err != nil {
-						fmt.Printf("error getting message status [leaf=%s]: %v\n", leaf, err)
-						return true
-					}
-					if status == 2 {
-						executedMap[leaf] = true
-						numExecuted++
-						fmt.Printf("Verified message %s was executed. [total=%d]\n", leaf, numExecuted)
-					}
-				}
-				if numExecuted >= expectedNumExecuted {
-					fmt.Printf("Processed %d iterations and %d routes.\n", numIters, numRoutesActual)
-					cancel()
-					return false
-				}
-				time.Sleep(2 * time.Second)
-				return true
-			})
-			if numExecuted >= expectedNumExecuted {
-				return nil
-			}
-		}
-	})
+	interval := time.Duration(executeInterval) * time.Second
+	for {
+		start := time.Now()
+		runRoutes()
+		elapsed := time.Since(start)
 
-	err = g.Wait()
-	if err != nil {
-		fmt.Printf("%v\n", err)
+		// Calculate remaining time to wait
+		waitTime := interval - elapsed
+		if waitTime < 0 {
+			waitTime = 0
+			fmt.Printf("Completed routes [total_executed=%d].\n", totalExecuted)
+		} else {
+			fmt.Printf("Completed routes [total_executed=%d]. Waiting for %f seconds...\n", totalExecuted, waitTime.Seconds())
+		}
+
+		// Non-blocking wait
+		select {
+		case <-time.After(waitTime):
+			clearMaps()
+			// Continue to the next iteration
+		}
 	}
 }
