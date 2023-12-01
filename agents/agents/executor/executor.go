@@ -76,6 +76,8 @@ type chainExecutor struct {
 type Executor struct {
 	// config is the executor agent config.
 	config executor.Config
+	// chainConfigs is a map of chain configs for easy access.
+	chainConfigs map[uint32]executor.ChainConfig
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
 	// grpcClient is the gRPC client.
@@ -211,6 +213,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 }
 
 func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor.ChainConfig, omniRPCClient omnirpcClient.RPCClient) error {
+	exec.chainConfigs[chain.ChainID] = chain
 	originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 	if err != nil {
 		return fmt.Errorf("could not create origin parser: %w", err)
