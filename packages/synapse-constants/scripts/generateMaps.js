@@ -22,6 +22,7 @@ const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 // Format is { chainId: providerUrl }
 // Replace providerUrl with new ethers.providers.JsonRpcProvider(providerUrl)
 Object.keys(providers).forEach((chainId) => {
+  console.log(providers[1])
   providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
 })
 
@@ -286,7 +287,7 @@ const printMaps = async () => {
       console.log('Finished chain: ', chainId)
     })
   )
-  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', '../constants/tokens/bridgeMap.ts')
+  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/tokens/bridgeMap.ts')
 }
 
 // Extracts the list of tokens that can be swapped into a token via single on-chain swap

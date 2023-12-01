@@ -7,17 +7,12 @@ This package contains the Synapse Protocol Token and Chain Constants
 
 #
 
-The Synapse SDK allows you to interact with [Synapse Protocol](https://synapseprotocol.com/) routers and bridges. It handles:
 
-- Getting bridge quotes, performing bridging operations
-- Getting swap quotes, performing swaps
-- Getting liquidity pool information
-- Calculating add/remove liquidity amounts
 
 ## Installation
 
 ```bash
-npm install @synapsecs/sdk-router
+npm install @synapsecs/
 ```
 
 ## Usage
