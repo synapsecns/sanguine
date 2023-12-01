@@ -16,17 +16,17 @@ export const Receipt = ({ quote, send, receive }) => {
     <div>
       <div className="flex items-center justify-end">
         <div className="text-sm">
-          {estTime} min via <span className="text-widget-accent">Synapse</span>
+          {estTime} min via <span className="text-[--primary]">Synapse</span>
         </div>
         <div onClick={handleToggle}>
           {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
         </div>
       </div>
       {isExpanded && (
-        <div className="p-2 mt-2 text-sm border border-widget-separator">
+        <div className="p-2 mt-2 text-sm border border-[--separator]">
           <div className="flex items-center justify-between">
             <div>Router</div>
-            <div className="text-widget-accent">{quote.bridgeModuleName}</div>
+            <div className="text-[--primary]">{quote.bridgeModuleName}</div>
           </div>
           <div className="flex items-center justify-between">
             <div>Origin</div>
