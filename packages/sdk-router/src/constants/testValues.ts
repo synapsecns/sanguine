@@ -1,5 +1,14 @@
 import { SupportedChainId } from './chainIds'
 
+export const getTestProviderUrl = (chainId: number): string => {
+  // Get the RPC schema from env variables
+  const sdkRpcUrl = process.env.SDK_RPC_URL
+  if (!sdkRpcUrl) {
+    throw new Error('SDK_RPC_URL is not set')
+  }
+  return `${sdkRpcUrl}${chainId}`
+}
+
 export const PUBLIC_PROVIDER_URLS: { [chainId: number]: string } = {
   [SupportedChainId.ETH]: 'https://eth.llamarpc.com',
   [SupportedChainId.OPTIMISM]: 'https://mainnet.optimism.io',
