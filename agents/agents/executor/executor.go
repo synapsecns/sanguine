@@ -187,6 +187,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 
 	exec := &Executor{
 		config:              config,
+		chainConfigs:        make(map[uint32]executor.ChainConfig),
 		executorDB:          executorDB,
 		grpcConn:            conn,
 		grpcClient:          grpcClient,
