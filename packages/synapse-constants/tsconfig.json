@@ -1,19 +1,27 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "es2016",
     "paths": {
       "@types": [
         "./constants/types/"
       ],
+      "@assets/": [
+        "./constants/assets/"
+      ],
+      "@assets/icons/": [
+        "./constants/assets/icons"
+      ],
+      "@assets/chains/": [
+        "./constants/assets/chains"
+      ],
       "@assets/*": [
         "./constants/assets/*"
-      ]
+      ],
     },
     "module": "commonjs",
     "esModuleInterop": true,
-    // "preserveSymlinks": true,
     "forceConsistentCasingInFileNames": true,
-    /* Type Checking */
     "strict": true,
     "skipLibCheck": true
   }

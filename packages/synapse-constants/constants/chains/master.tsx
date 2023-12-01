@@ -17,7 +17,6 @@ import moonbeamImg from '@assets/chains/moonbeam.svg'
 import moonriverImg from '@assets/chains/moonriver.svg'
 import optimismImg from '@assets/chains/optimism.svg'
 import polygonImg from '@assets/chains/polygon.svg'
-
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbitrum.svg'
 import bnbExplorerImg from '@assets/explorer/bscscan.svg'
@@ -36,9 +35,7 @@ import harmonyExplorerImg from '@assets/explorer/harmony.svg'
 import moonbeamExplorerImg from '@assets/explorer/moonbeam.svg'
 import moonriverExplorerImg from '@assets/explorer/moonriver.svg'
 import dogeExplorerImg from '@assets/explorer/dogecoin.svg'
-import baseExplorerImg from '../../constants/assets/explorer/basescan.svg'
-
-
+import baseExplorerImg from '@assets/explorer/basescan.svg'
 import { Chain } from '@types'
 
 export const ETH: Chain = {
