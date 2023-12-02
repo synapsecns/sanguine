@@ -252,7 +252,7 @@ export class Token {
     this.poolId = makeMultiChainObj(poolId)
     this.poolType = poolType
     this.visibilityRank = visibilityRank ?? 0
-    this.isMeta = isMeta
+    this.isMeta = isMeta ?? false
     this.isEthSwap = swapEthAddresses ? true : false
     this.isNative = isNative ?? false
     this.swapableType = swapableType
@@ -265,7 +265,7 @@ export class Token {
     this.chainId = chainId
     this.incentivized = incentivized
     this.customRewardToken = customRewardToken
-    this.miniChefAddress = miniChefAddress
+    this.miniChefAddress = miniChefAddress ?? ''
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
@@ -274,11 +274,11 @@ export class Token {
   }
 }
 
-const makeMultiChainObj = (valOrObj) => {
+const makeMultiChainObj = (valOrObj: any) => {
   if (typeof valOrObj === 'object') {
     return valOrObj
   } else {
-    const obj = {}
+    const obj: { [key: number]: any } = {}
     for (const chain of Object.values(CHAINS)) {
       obj[chain.id] = valOrObj
     }

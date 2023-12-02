@@ -1,8 +1,8 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This is an npm package that maintains all synapse constants",
-  "main": "index.js",
+  "main": "dist/index.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

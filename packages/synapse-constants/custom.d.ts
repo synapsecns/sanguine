@@ -1,5 +1,5 @@
 //Enable us to import svg files cleanly
-declare module '*.svg' {
-  const content: any
-  return content
+declare module "*.svg" {
+  const content: any;
+  export default content;
 }

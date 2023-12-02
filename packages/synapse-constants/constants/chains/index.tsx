@@ -8,30 +8,30 @@ export type ChainsByChainID = {
   [cID: number]: Chain
 }
 export const sortChains = (chains: Chain[]) =>
-  Object.values(chains).sort((a, b) => b.priorityRank - a.priorityRank)
+  Object.values(chains).sort((a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0))
 
 export const CHAINS_ARR = Object.values(all).sort(
-  (a, b) => b.priorityRank - a.priorityRank
+  (a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0)
 )
 
 const getChainEnumById = () => {
   const outObj: Record<number, string> = {}
-  CHAINS_ARR.map((chain) => {
+  CHAINS_ARR.map((chain: any) => {
     outObj[chain.id] = chain.codeName
   })
   return outObj
 }
 
 const getids = () => {
-  const outObj = {}
-  CHAINS_ARR.map((chain) => {
+  const outObj: { [key: string]: any } = {}
+  CHAINS_ARR.map((chain: any) => {
     outObj[chain.chainSymbol] = chain.id
   })
   return outObj
 }
 const getChainsByID = (): ChainsByChainID => {
   const outObj: ChainsByChainID = {}
-  CHAINS_ARR.map((chain) => {
+  CHAINS_ARR.map((chain: any) => {
     outObj[chain.id] = chain
   })
   return outObj
@@ -40,7 +40,7 @@ const getChainsByID = (): ChainsByChainID => {
 export const CHAIN_ENUM_BY_ID = getChainEnumById()
 export const CHAIN_IDS = getids() // used to be ids
 export const CHAINS_BY_ID = getChainsByID()
-export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => String(chain.id))
+export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain: Chain) => String(chain.id))
 
 export const PAUSED_FROM_CHAIN_IDS = []
 export const PAUSED_TO_CHAIN_IDS = [all.DOGE.id]
