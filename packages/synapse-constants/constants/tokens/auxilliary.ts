@@ -5,8 +5,8 @@ import mimLogo from '@assets/icons/mim.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
 
-import { Token } from '@/utils/types'
-import * as CHAINS from '@/constants/chains/master'
+import { Token } from '@types'
+import * as CHAINS from '../chains/master'
 
 export const AVWETH = new Token({
   addresses: {
