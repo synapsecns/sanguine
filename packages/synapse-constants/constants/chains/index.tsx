@@ -1,4 +1,4 @@
-import { Chain } from '@types'
+import { Chain } from '../types'
 
 import * as all from './master'
 

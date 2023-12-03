@@ -1,5 +1,5 @@
-import sushiLogo from '@assets/icons/sushi.svg'
-import { Token } from '@types'
+import sushiLogo from '../assets/icons/sushi.svg'
+import { Token } from '../types'
 
 import * as CHAINS from '../chains/master'
 import { MINICHEF_ADDRESSES } from '../minichef'

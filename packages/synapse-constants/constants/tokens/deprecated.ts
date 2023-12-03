@@ -1,6 +1,6 @@
-import usdbLogo from '@assets/icons/usdc.svg'
-import fusdtLogo from '@assets/icons/usdt.svg'
-import { Token } from '@types'
+import usdbLogo from '../assets/icons/usdc.svg'
+import fusdtLogo from '../assets/icons/usdt.svg'
+import { Token } from '../types'
 
 import * as CHAINS from '../chains/master'
 
