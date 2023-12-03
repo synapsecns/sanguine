@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/index.js",
   "types": "index.d.ts",
@@ -13,19 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ethersproject/abi": "5.7.0",
-    "@ethersproject/address": "5.7.0",
-    "@ethersproject/bignumber": "5.7.0",
-    "@ethersproject/bytes": "5.7.0",
-    "@ethersproject/constants": "5.7.0",
-    "@ethersproject/contracts": "5.7.0",
-    "@ethersproject/hash": "5.7.0",
-    "@ethersproject/providers": "5.7.2",
-    "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.2.23",
     "ethers": "5.7.2",
     "lodash": "^4.17.21",
-    "viem": "^1.19.11",
-    "wagmi": "^1.4.7"
+    "viem": "1.18.1"
   }
 }

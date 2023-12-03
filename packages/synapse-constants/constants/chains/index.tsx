@@ -10,9 +10,9 @@ export type ChainsByChainID = {
 export const sortChains = (chains: Chain[]) =>
   Object.values(chains).sort((a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0))
 
-export const CHAINS_ARR = Object.values(all).sort(
-  (a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0)
-)
+  export const CHAINS_ARR = Object.values(all)
+  .filter((item): item is Chain => typeof item !== 'number')
+  .sort((a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0))
 
 const getChainEnumById = () => {
   const outObj: Record<number, string> = {}

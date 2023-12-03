@@ -24,7 +24,7 @@ import {
   ONEUSDC,
   ONEUSDT,
   WETH,
-} from '..//tokens/bridgeable'
+} from '../tokens/bridgeable'
 import {
   AVWETH,
   FANTOMETH,

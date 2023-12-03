@@ -3,7 +3,7 @@
     "outDir": "./dist",
     "rootDir": "./",
     "jsx": "react",
-    "target": "es2016",
+    "target": "es2019",
     "baseUrl": ".",
     "paths": {
       "@types": [
