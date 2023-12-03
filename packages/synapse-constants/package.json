@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/index.js",
   "types": "index.d.ts",
@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node scripts/generateMaps.js",
     "prepublish": "tsc",
-    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist"
+    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist"
   },
   "author": "",
   "license": "ISC",

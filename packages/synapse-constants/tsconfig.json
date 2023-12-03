@@ -13,6 +13,8 @@
   },
   "include": [
     "./constants/**/*",
+    "./constants/assets/index.ts",
+    "./constants/assets/**/*",
     "./custom.d.ts",
     "./index.ts",
     "./index.d.ts"
