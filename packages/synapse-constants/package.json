@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/index.js",
   "types": "index.d.ts",
@@ -14,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "ethers": "5.7.2",
-    "lodash": "^4.17.21",
-    "viem": "1.18.1"
+    "lodash": "^4.17.21"
   }
 }

@@ -1,4 +1,3 @@
-import { zeroAddress } from 'viem'
 import ageurLogo from '../assets/icons/ageur.svg'
 import avaxLogo from '../assets/icons/avax.svg'
 import btcLogo from '../assets/icons/btc.svg'
@@ -41,6 +40,8 @@ import wethLogo from '../assets/icons/weth.svg'
 import { Token } from '../types'
 
 import * as CHAINS from '../chains/master'
+
+const zeroAddress = '0x0000000000000000000000000000000000000000'
 
 export const GOHM = new Token({
   addresses: {
