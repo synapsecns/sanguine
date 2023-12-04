@@ -45,6 +45,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@synapsecns/sdk-router": "^0.2.23"
+    "@synapsecns/sdk-router": "^0.2.23",
+    "ethers": "^6.9.0",
+    "viem": "^1.19.11",
+    "wagmi": "^1.4.7"
   }
 }

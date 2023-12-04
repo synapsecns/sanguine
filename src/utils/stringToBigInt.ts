@@ -30,4 +30,4 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
   } catch (error) {
     console.log(error)
   }
-}
+} 

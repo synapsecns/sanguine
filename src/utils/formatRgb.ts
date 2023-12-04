@@ -4,3 +4,4 @@ export function formatRGB(color: string) {
     .map((x) => x.replace(/[^0-9.]/g, ''))
     .join(',')
 }
+ 

@@ -24,7 +24,7 @@ export const formatBigIntToString = (
       bi = -bi
     }
     // Convert to string and add padding zeros if necessary
-    let str = bi.toString().padStart(nativePrecision, '0')
+    let str = bi.toString().padStart(nativePrecision, '0') 
 
     // Insert decimal point
     const idx = str.length - nativePrecision

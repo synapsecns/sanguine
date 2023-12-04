@@ -25,7 +25,7 @@ export async function fetchBridgeQuote(
     originQuery,
     destQuery,
     estimatedTime,
-    bridgeModuleName,
+    bridgeModuleName, 
   } = await synapseSDK.bridgeQuote(
     originChainId,
     destinationChainId,

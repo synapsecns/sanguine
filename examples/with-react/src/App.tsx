@@ -1,5 +1,6 @@
 import { Bridge } from '@synapsecns/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, useState } from 'react'
 
 const tokens = [
@@ -133,6 +134,13 @@ function App() {
     '--accent': 'gray',
   }
 
+  const { web3Provider, connectedAddress, connectedNetwork } =
+    useEthereumWallet()
+
+  console.log('Consumer address:', connectedAddress)
+  console.log('Consumer web3 provider: ', web3Provider)
+  console.log('Consumer connectedNetwork: ', connectedNetwork)
+
   return (
     <>
       <header>
@@ -154,7 +162,8 @@ function App() {
 
         <Bridge
           chainIds={chainIds}
-          providers={providers}
+          web3Provider={web3Provider}
+          networkProviders={providers}
           tokens={tokens}
           customTheme={Object.keys(customTheme).length && customTheme}
         />

@@ -19,7 +19,7 @@ export const darkThemeVariables: CustomThemeVariables = {
   '--secondary':  'hsl(var(--h), var(--s), 86%)',
   '--small':      'hsl(var(--h), var(--s), 66%)',
   '--accent':     'hsl(var(--h), var(--s), 29%)',
-  '--separator':  'hsl(var(--h), var(--s), 13%)',
+  '--separator':  'hsl(var(--h), var(--s), 13%)', 
   '--surface':    'hsl(var(--h), var(--s), 13%)',
   '--background': 'hsl(var(--h), var(--s), 7%)',
 }

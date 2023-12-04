@@ -1,6 +1,7 @@
 export const DoubleUpArrow = () => {
   return (
-    <svg className="stroke-[--primary] stroke-2 fill-none"
+    <svg
+      className="stroke-[--primary] stroke-2 fill-none"
       width="20"
       height="21"
       viewBox="0 0 20 21"
