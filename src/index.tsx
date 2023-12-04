@@ -9,7 +9,7 @@ import { DownArrow } from '@/components/DownArrow'
 import { Receipt } from '@/components/Receipt'
 import { useCustomTheme } from '@/hooks/useCustomTheme'
 import { CustomTheme } from 'types'
-import { nightTheme } from './constants'
+import { lightThemeVariables, darkThemeVariables, nightTheme } from './constants'
 
 const originChainId = 1
 const destinationChainId = 42161
@@ -46,13 +46,11 @@ export const Bridge = ({
     tokens.find((token) => token.chainId === destinationChainId)
   )
 
-  if (theme === 'night') {
-    useCustomTheme(nightTheme)
-  } else if (customTheme) {
-    useCustomTheme(customTheme)
-  } else {
-    useCustomTheme({})
-  }
+  const themeVariables = (() => {
+    if (theme === 'night') return darkThemeVariables as React.CSSProperties
+    if (customTheme) return customTheme as React.CSSProperties
+    return lightThemeVariables as React.CSSProperties
+  })()
 
   const handleFetchQuote = async () => {
     setIsLoading(true)
@@ -96,10 +94,10 @@ export const Bridge = ({
   }, [quote])
 
   return (
-    <div className="w-[374px] bg-widget-primary p-2 text-widget-primary">
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
+    <div style={themeVariables} className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg">
+      <div className="mb-2 border rounded-md bg-[--surface] border-[--separator]">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
             <div>Ethereum</div>
             <DownArrow />
           </div>
@@ -107,12 +105,12 @@ export const Bridge = ({
         </div>
         <div className="flex items-center justify-between p-2">
           <input
-            className="text-xl font-semibold bg-widget-surface focus:outline-none"
+            className="text-xl font-semibold bg-[--surface] focus:outline-none"
             placeholder=""
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
             <select
               className="bg-transparent hover:cursor-pointer focus:outline-none"
               value={originToken.tokenAddress}
@@ -137,9 +135,9 @@ export const Bridge = ({
           </div>
         </div>
       </div>
-      <div className="mb-2 border rounded-md bg-widget-surface border-widget-separator">
+      <div className="mb-2 border rounded-md bg-[--surface] border-[--separator]">
         <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
             <div>Arbitrum</div>
             <DownArrow />
           </div>
@@ -147,12 +145,12 @@ export const Bridge = ({
         </div>
         <div className="flex items-center justify-between p-2">
           <input
-            className="text-xl font-semibold bg-widget-surface"
+            className="text-xl font-semibold bg-[--surface]"
             disabled={true}
             placeholder=""
             value={isLoading ? '...' : maxAmountOut}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-xl bg-widget-primary border-widget-background">
+          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
             <select
               className="bg-transparent hover:cursor-pointer focus:outline-none"
               value={destinationToken.tokenAddress}
@@ -189,7 +187,7 @@ export const Bridge = ({
         />
       ) : null}
       <button
-        className="h-[43px] rounded-md w-full bg-widget-surface font-semibold border border-widget-separator mt-2"
+        className="h-[43px] rounded-md w-full bg-[--surface] font-semibold border border-[--separator] mt-2"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
