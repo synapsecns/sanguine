@@ -328,6 +328,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(originDomain)),
 		attribute.Int(metrics.Destination, int(destinationDomain)),
+		attribute.Int("message_type", int(message.Header().Flag())),
 	))
 
 	defer func() {

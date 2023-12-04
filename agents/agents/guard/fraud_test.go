@@ -1036,9 +1036,9 @@ func (g AnvilGuardSuite) TestUpdateAgentStatusOnRemote() {
 		headerPreIncrease, err := client.HeaderByNumber(g.GetTestContext(), nil)
 		Nil(g.T(), err)
 		// targetTimestamp := int64(headerPreIncrease.Time) + seconds
-		// err = anvilClient.SetNextBlockTimestamp(g.GetTestContext(), targetTimestamp)
-		targetTimestamp := 0
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
+		// targetTimestamp := 0
+		// err = anvilClient.SetBlockTimestampInterval(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 		err = anvilClient.Mine(g.GetTestContext(), 1)
 		Nil(g.T(), err)

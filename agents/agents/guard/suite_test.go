@@ -37,7 +37,7 @@ type AnvilGuardSuite struct {
 	*GuardSuite
 }
 
-// NewAnvilGuardSuite creates a new guard suite.
+// NewAnvilGuardSuite creates a new guard suite using anvil for simulated backends.
 func NewAnvilGuardSuite(tb testing.TB) *AnvilGuardSuite {
 	tb.Helper()
 
