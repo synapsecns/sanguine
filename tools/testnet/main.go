@@ -308,24 +308,6 @@ func main() {
 	// Connect to OmniRPC.
 	omniRPCClient := omniClient.NewOmnirpcClient(loadCfg.OmniRPCUrl, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
 
-	// Check agent balances.
-	ok, err := checkAgentBalances(ctx, omniRPCClient, loadCfg.Chains)
-	if err != nil {
-		panic(err)
-	}
-	if !ok {
-		panic("agent balances are below threshold")
-	}
-
-	// Check agent statuses.
-	ok, err = checkAgentStatuses(ctx, omniRPCClient, loadCfg)
-	if err != nil {
-		panic(err)
-	}
-	if !ok {
-		panic("agent statuses are not active")
-	}
-
 	pingPongAddr := loadCfg.Chains[loadCfg.SummitDomainID].MessageAddr
 	pingPongParser, err = pingpongclient.NewPingPongClientFilterer(common.HexToAddress(pingPongAddr), nil)
 	if err != nil {
@@ -360,7 +342,7 @@ func main() {
 		fmt.Printf("--- %d -> %d\n", route[0], route[1])
 	}
 
-	// Listen for messages.
+	// Connect to contracts.
 	g, _ := errgroup.WithContext(ctx)
 	messageContracts := map[int]domains.PingPongClientContract{}
 	destinationContracts := map[int]domains.DestinationContract{}
@@ -381,6 +363,26 @@ func main() {
 		destinationContracts[chainID], err = evm.NewDestinationContract(ctx, cClient, common.HexToAddress(c.DestinationAddr))
 		if err != nil {
 			panic(err)
+		}
+	}
+
+	validateAgents := func() {
+		// Check agent balances.
+		ok, err := checkAgentBalances(ctx, omniRPCClient, loadCfg.Chains)
+		if err != nil {
+			panic(err)
+		}
+		if !ok {
+			panic("agent balances are below threshold")
+		}
+
+		// Check agent statuses.
+		ok, err = checkAgentStatuses(ctx, omniRPCClient, loadCfg)
+		if err != nil {
+			panic(err)
+		}
+		if !ok {
+			panic("agent statuses are not active")
 		}
 	}
 
@@ -502,6 +504,8 @@ func main() {
 
 	interval := time.Duration(executeInterval) * time.Second
 	for {
+		validateAgents()
+
 		start := time.Now()
 		runRoutes()
 		elapsed := time.Since(start)
