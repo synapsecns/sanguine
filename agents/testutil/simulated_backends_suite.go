@@ -137,7 +137,6 @@ type SimulatedBackendsTestSuite struct {
 	GuardMetrics                        metrics.Handler
 	ContractMetrics                     metrics.Handler
 	TestOmniRPC                         string
-	UseAnvil                            bool
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -357,6 +356,21 @@ func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.ExecutorUnbondedWallet.PrivateKey())
 }
 
+// Tests included here will use an anvil backend (instead of ethergo).
+var anvilTests = []string{
+	"TestGuardSuite/TestUpdateAgentStatusOnRemote",
+	"TestExecutorSuite/TestSendManagerMessage",
+}
+
+func (a *SimulatedBackendsTestSuite) shouldUseAnvil() bool {
+	for _, test := range anvilTests {
+		if a.T().Name() == test {
+			return true
+		}
+	}
+	return false
+}
+
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
@@ -367,7 +381,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupNotaryOnOrigin()
 	a.SetupNotaryOnDestination()
 	a.SetupExecutor()
-	a.SetupBackends(a.UseAnvil)
+	a.SetupBackends()
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
@@ -393,7 +407,8 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 }
 
 // SetupBackends sets up the simulated backends.
-func (a *SimulatedBackendsTestSuite) SetupBackends(useAnvil bool) {
+func (a *SimulatedBackendsTestSuite) SetupBackends() {
+	useAnvil := a.shouldUseAnvil()
 	a.TestDeployManager = NewDeployManager(a.T())
 
 	var wg sync.WaitGroup

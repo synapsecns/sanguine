@@ -32,25 +32,3 @@ func (g *GuardSuite) SetupTest() {
 func TestGuardSuite(t *testing.T) {
 	suite.Run(t, NewGuardSuite(t))
 }
-
-type AnvilGuardSuite struct {
-	*GuardSuite
-}
-
-// NewAnvilGuardSuite creates a new guard suite using anvil for simulated backends.
-func NewAnvilGuardSuite(tb testing.TB) *AnvilGuardSuite {
-	tb.Helper()
-
-	return &AnvilGuardSuite{
-		GuardSuite: NewGuardSuite(tb),
-	}
-}
-
-func (g *AnvilGuardSuite) SetupTest() {
-	g.UseAnvil = true
-	g.GuardSuite.SetupTest()
-}
-
-func TestAnvilGuardSuite(t *testing.T) {
-	suite.Run(t, NewAnvilGuardSuite(t))
-}

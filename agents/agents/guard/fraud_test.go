@@ -721,10 +721,9 @@ func (g GuardSuite) TestInvalidReceipt() {
 }
 
 //nolint:maintidx,cyclop
-func (g AnvilGuardSuite) TestUpdateAgentStatusOnRemote() {
+func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
 	// set up the backends with anvil.
-	// g.SetupBackends(true)
 
 	testDone := false
 	defer func() {
