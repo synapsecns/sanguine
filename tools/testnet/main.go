@@ -26,11 +26,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v2"
 )
 
@@ -86,38 +82,6 @@ func getMessageRoutes(chainConfigs map[int]chainConfig, numRoutes int) (routes [
 	}
 	return routes, nil
 }
-
-const scribeConnectTimeout = 30 * time.Second
-
-func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
-	fmt.Printf("Connecting to scribe with URL %v...\n", url)
-	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
-	defer cancel()
-
-	conn, err := grpc.DialContext(ctx, url,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-	)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not dial grpc: %w", err)
-	}
-
-	scribeClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := scribeClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return nil, nil, fmt.Errorf("not serving: %s", healthCheck.Status)
-	}
-
-	return conn, scribeClient, nil
-}
-
-var startBlocks map[int]uint64 = map[int]uint64{}
 
 func handleLog(log *ethTypes.Log, chainID uint32) (err error) {
 	// parse the log and print output
