@@ -56,46 +56,60 @@ function App() {
 
   const [customTheme, setCustomTheme] = useState({})
 
-    function colorInputHandler(e: BaseSyntheticEvent) {
+  function colorInputHandler(e: BaseSyntheticEvent) {
     function hexToRgb(hex: string) {
       // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? { r: parseInt(result[1], 16) / 255, g: parseInt(result[2], 16) / 255, b: parseInt(result[3], 16) / 255, } : null;
+      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+      return result
+        ? {
+            r: parseInt(result[1], 16) / 255,
+            g: parseInt(result[2], 16) / 255,
+            b: parseInt(result[3], 16) / 255,
+          }
+        : null
     }
     function rgb2hsl({ r, g, b, a = 1 }: any) {
       // in: r,g,b in [0,1], out: h in [0,360) and s,l in [0,100] // https://stackoverflow.com/a/54071699
-      let v = Math.max(r, g, b), c = v - Math.min(r, g, b), f = 1 - Math.abs(v + v - c - 1)
-      let h = c && ((v === r) ? (g - b) / c : ((v === g) ? 2 + (b - r) / c : 4 + (r - g) / c))
-      return { h: 60 * (h < 0 ? h + 6 : h), s: f ? 100 * c / f : 0, l: 100 * (v + v - c) / 2, a }
+      let v = Math.max(r, g, b),
+        c = v - Math.min(r, g, b),
+        f = 1 - Math.abs(v + v - c - 1)
+      let h =
+        c &&
+        (v === r ? (g - b) / c : v === g ? 2 + (b - r) / c : 4 + (r - g) / c)
+      return {
+        h: 60 * (h < 0 ? h + 6 : h),
+        s: f ? (100 * c) / f : 0,
+        l: (100 * (v + v - c)) / 2,
+        a,
+      }
     }
     const hsla = rgb2hsl(hexToRgb(e.target.value))
     console.log(hsla)
 
-    setCustomTheme(hsla.l < 50
-      ?
-        {
-          '--h': hsla.h,
-          '--s': `${hsla.s}%`,
-          '--primary':    'hsl(var(--h), var(--s), 96%)',
-          '--secondary':  'hsl(var(--h), var(--s), 86%)',
-          '--small':      'hsl(var(--h), var(--s), 66%)',
-          '--accent':     'hsl(var(--h), var(--s), 29%)',
-          '--separator':  'hsl(var(--h), var(--s), 13%)',
-          '--surface':    'hsl(var(--h), var(--s), 13%)',
-          '--background': 'hsl(var(--h), var(--s), 7%)',
-        }
-      : 
-        {
-          '--h': hsla.h,
-          '--s': `${hsla.s}%`,
-          '--primary':    'hsl(var(--h), var(--s), 7%)',
-          '--secondary':  'hsl(var(--h), var(--s), 41%)',
-          '--small':      'hsl(var(--h), var(--s), 66%)',
-          '--accent':     'hsl(var(--h), var(--s), 96%)',
-          '--separator':  'hsl(var(--h), var(--s), 86%)',
-          '--surface':    'hsl(var(--h), var(--s), 100%)',
-          '--background': 'hsl(var(--h), var(--s), 96%)',
-        }
+    setCustomTheme(
+      hsla.l < 50
+        ? {
+            '--h': hsla.h,
+            '--s': `${hsla.s}%`,
+            '--primary': 'hsl(var(--h), var(--s), 96%)',
+            '--secondary': 'hsl(var(--h), var(--s), 86%)',
+            '--small': 'hsl(var(--h), var(--s), 66%)',
+            '--accent': 'hsl(var(--h), var(--s), 29%)',
+            '--separator': 'hsl(var(--h), var(--s), 13%)',
+            '--surface': 'hsl(var(--h), var(--s), 13%)',
+            '--background': 'hsl(var(--h), var(--s), 7%)',
+          }
+        : {
+            '--h': hsla.h,
+            '--s': `${hsla.s}%`,
+            '--primary': 'hsl(var(--h), var(--s), 7%)',
+            '--secondary': 'hsl(var(--h), var(--s), 41%)',
+            '--small': 'hsl(var(--h), var(--s), 66%)',
+            '--accent': 'hsl(var(--h), var(--s), 96%)',
+            '--separator': 'hsl(var(--h), var(--s), 86%)',
+            '--surface': 'hsl(var(--h), var(--s), 100%)',
+            '--background': 'hsl(var(--h), var(--s), 96%)',
+          }
     )
   }
 
@@ -123,17 +137,27 @@ function App() {
     <>
       <header>
         <img width="160" src="/synapse-logo.svg" alt="Synapse logo" />
-        <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">EVM Bridge</a>
+        <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">
+          EVM Bridge
+        </a>
       </header>
-      
+
       <main>
         <header>
           <h1>Synapse Widget</h1>
           <code>npm synapse-widget</code>
-          <p>Easily onboard new users by adding a custom instance of the Synapse Bridge to your React project</p>
+          <p>
+            Easily onboard new users by adding a custom instance of the Synapse
+            Bridge to your React project
+          </p>
         </header>
 
-        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={Object.keys(customTheme).length && customTheme }/>
+        <Bridge
+          chainIds={chainIds}
+          providers={providers}
+          tokens={tokens}
+          customTheme={Object.keys(customTheme).length && customTheme}
+        />
 
         <h2>Customize</h2>
         <input id="color-picker" type="color" onInput={colorInputHandler} />
@@ -142,9 +166,7 @@ function App() {
         <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={customThemeDFK}/> */}
       </main>
 
-      <footer>
-        
-      </footer>
+      <footer></footer>
     </>
   )
 }

@@ -7,9 +7,8 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { DownArrow } from '@/components/DownArrow'
 import { Receipt } from '@/components/Receipt'
-import { useCustomTheme } from '@/hooks/useCustomTheme'
 import { CustomTheme } from 'types'
-import { lightThemeVariables, darkThemeVariables, nightTheme } from './constants'
+import { lightThemeVariables, darkThemeVariables } from './constants'
 
 const originChainId = 1
 const destinationChainId = 42161
@@ -94,7 +93,10 @@ export const Bridge = ({
   }, [quote])
 
   return (
-    <div style={themeVariables} className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg">
+    <div
+      style={themeVariables}
+      className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg"
+    >
       <div className="mb-2 border rounded-md bg-[--surface] border-[--separator]">
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
