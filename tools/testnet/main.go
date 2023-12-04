@@ -422,7 +422,7 @@ func main() {
 					err = retry.WithBackoff(ctx, func(context.Context) error {
 						receipt, rcptErr = chainClient.TransactionReceipt(ctx, tx.Hash())
 						return rcptErr
-					}, retry.WithMaxTotalTime(300*time.Second))
+					}, retry.WithMaxTotalTime(executionTimeout*time.Second))
 					if err != nil {
 						fmt.Printf("error getting transaction receipt: %v: %v [chain=%d, txHash=%s]\n", err, rcptErr, origin, tx.Hash())
 						return err
@@ -481,7 +481,15 @@ func main() {
 				}
 				elapsed := time.Since(startTime).Seconds()
 				if elapsed > executionTimeout {
-					return fmt.Errorf("timed out waiting for messages to be executed: %f", elapsed)
+					unexecutedMsgs := []string{}
+					messages.Range(func(key, value interface{}) bool {
+						_, ok := executedMap[key.(common.Hash)]
+						if !ok {
+							unexecutedMsgs = append(unexecutedMsgs, key.(common.Hash).String())
+						}
+						return true
+					})
+					return fmt.Errorf("Timed out waiting for messages to be executed: %f; %v", elapsed, unexecutedMsgs)
 				}
 			}
 		})
