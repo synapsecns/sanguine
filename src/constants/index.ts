@@ -1,4 +1,4 @@
-import { CustomTheme, CustomThemeVariables } from 'types'
+import { CustomThemeVariables } from 'types'
 
 export const lightThemeVariables: CustomThemeVariables = {
   '--h': '30',

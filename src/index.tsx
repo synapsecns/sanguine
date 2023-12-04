@@ -7,7 +7,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { DownArrow } from '@/components/DownArrow'
 import { Receipt } from '@/components/Receipt'
-import { CustomTheme } from 'types'
+import { CustomThemeVariables } from 'types'
 import { lightThemeVariables, darkThemeVariables } from './constants'
 
 const originChainId = 1
@@ -30,7 +30,7 @@ export const Bridge = ({
   chainIds: number[]
   providers: any[]
   theme?: 'day' | 'night'
-  customTheme?: CustomTheme
+  customTheme?: CustomThemeVariables
   tokens: TokenMetaData[]
 }) => {
   const synapseSDK = new SynapseSDK(chainIds, providers)
