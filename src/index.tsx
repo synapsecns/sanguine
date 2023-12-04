@@ -52,14 +52,6 @@ export const Bridge = ({
     return lightThemeVariables as React.CSSProperties
   })()
 
-  // if (theme === 'night') {
-  //   useCustomTheme(nightTheme)
-  // } else if (customTheme) {
-  //   useCustomTheme(customTheme)
-  // } else {
-  //   useCustomTheme({})
-  // }
-
   const handleFetchQuote = async () => {
     setIsLoading(true)
     setQuote(null)

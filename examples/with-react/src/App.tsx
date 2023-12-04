@@ -122,31 +122,28 @@ function App() {
   return (
     <>
       <header>
-        <h1>Synapse Widget</h1>
+        <img width="160" src="/synapse-logo.svg" alt="Synapse logo" />
+        <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">EVM Bridge</a>
       </header>
       
       <main>
-        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} />
-        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} theme="night" />
-        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={customThemeDFK}/>
+        <header>
+          <h1>Synapse Widget</h1>
+          <code>npm synapse-widget</code>
+          <p>Easily onboard new users by adding a custom instance of the Synapse Bridge to your React project</p>
+        </header>
+
         <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={Object.keys(customTheme).length && customTheme }/>
-        {/* <Bridge
-          chainIds={chainIds}
-          providers={providers}
-          theme="night"
-          tokens={tokens}
-        /> */}
-        {/* <Bridge
-          chainIds={chainIds}
-          providers={providers}
-          customTheme={customTheme}
-          tokens={tokens}
-        /> */}
-      {/* </header> */}
+
+        <h2>Customize</h2>
+        <input id="color-picker" type="color" onInput={colorInputHandler} />
+        {/* <Bridge chainIds={chainIds} providers={providers} tokens={tokens} /> */}
+        {/* <Bridge chainIds={chainIds} providers={providers} tokens={tokens} theme="night" />
+        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={customThemeDFK}/> */}
       </main>
 
       <footer>
-        <input id="color-picker" type="color" onInput={colorInputHandler} />
+        
       </footer>
     </>
   )

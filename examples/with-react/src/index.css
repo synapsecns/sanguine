@@ -1,3 +1,28 @@
+:root {
+  --strong: hsl(240, 100%, 99.5%);
+  --primary: hsl(240, 100%, 96%);
+  --secondary: hsl(240, 20%, 80%);
+  --separator: hsl(240, 20%, 30%);
+  --surface: hsl(240, 20%, 18%);
+  --tint: hsl(240, 20%, 13%);
+  --background: hsl(240, 20%, 8%);
+
+  background: var(--background);
+  color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --strong: hsl(240, 100%, 99.5%);
+    --primary: hsl(240, 100%, 96%);
+    --secondary: hsl(240, 20%, 80%);
+    --separator: hsl(240, 20%, 30%);
+    --surface: hsl(240, 20%, 18%);
+    --tint: hsl(240, 20%, 13%);
+    --background: hsl(240, 20%, 8%);
+  }  
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,6 +30,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--strong)
+}
+
+:root h1 {
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 code {
@@ -26,18 +60,10 @@ code {
   color: black;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    background: #282c34;
-    color: white
-  }
-}
-
 #root > header,
 #root > footer,
 #root > main {
   padding: 1rem;
-  display: flex;
   flex-direction: column;
   gap: 1rem;
 }
