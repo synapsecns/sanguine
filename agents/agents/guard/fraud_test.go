@@ -802,6 +802,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())
+	fmt.Printf("omnirpc: %v", omniRPCClient.GetDefaultEndpoint(int(summit)))
 
 	excCfg := execConfig.Config{
 		SummitChainID: summit,
@@ -887,6 +888,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
+
+	fmt.Printf("BondedNotaryAddress: %v\n", g.NotaryBondedSigner.Address())
 
 	// Submit the snapshot with a guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)

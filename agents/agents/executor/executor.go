@@ -435,6 +435,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
+		fmt.Printf("submitted execute() tx: %v\n", tx.Hash())
 
 		return
 	})
