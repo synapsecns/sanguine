@@ -24,3 +24,5 @@ export const Bridge = ({
     </Web3Provider>
   )
 }
+
+function Input() {}

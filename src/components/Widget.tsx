@@ -127,26 +127,25 @@ export const Widget = ({
   return (
     <div
       style={themeVariables}
-      className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg"
+      className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg font-medium flex flex-col gap-2"
     >
-      <div className="mb-2 border rounded-md bg-[--surface] border-[--separator]">
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
-            <div>Ethereum</div>
-            <DownArrow />
-          </div>
-          <div className="text-sm"></div>
+      <div className="border rounded-md bg-[--surface] border-[--separator] p-2 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <Select label="Ethereum" />
         </div>
-        <div className="flex items-center justify-between p-2">
+        <div className="flex pb-2">
           <input
-            className="text-xl font-semibold bg-[--surface] focus:outline-none"
-            placeholder=""
+            className="text-3xl w-full font-semibold bg-[--surface] focus:outline-none"
+            placeholder="0"
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
+          <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+            <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
+              <DownArrow />
+            </span>
             <select
-              className="bg-transparent hover:cursor-pointer focus:outline-none"
+              className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7"
               value={originToken.tokenAddress}
               onChange={(e) => {
                 setOriginToken(
@@ -169,24 +168,23 @@ export const Widget = ({
           </div>
         </div>
       </div>
-      <div className="mb-2 border rounded-md bg-[--surface] border-[--separator]">
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
-            <div>Arbitrum</div>
-            <DownArrow />
-          </div>
-          <div className="text-sm"></div>
+      <div className="border rounded-md bg-[--surface] border-[--separator] p-2 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <Select />
         </div>
-        <div className="flex items-center justify-between p-2">
+        <div className="flex items-center justify-between pb-1">
           <input
-            className="text-xl font-semibold bg-[--surface]"
+            className="text-3xl w-full font-semibold bg-[--surface] focus:outline-none cursor-not-allowed"
             disabled={true}
-            placeholder=""
+            placeholder="0"
             value={isLoading ? '...' : maxAmountOut}
           />
-          <div className="flex items-center pt-1 pb-1 pl-2 pr-2 space-x-1 border rounded-full bg-[--accent] border-[--separator]">
+          <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+            <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
+              <DownArrow />
+            </span>
             <select
-              className="bg-transparent hover:cursor-pointer focus:outline-none"
+              className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7"
               value={destinationToken.tokenAddress}
               onChange={(e) => {
                 setDestinationToken(
@@ -209,30 +207,40 @@ export const Widget = ({
           </div>
         </div>
       </div>
-      {quote ? (
-        <Receipt
-          quote={quote}
-          send={formatBigIntToString(
-            stringToBigInt(inputAmount, originToken.decimals),
-            originToken.decimals,
-            4
-          )}
-          receive={maxAmountOut}
-        />
-      ) : null}
+      <Receipt
+        quote={quote ?? null}
+        send={formatBigIntToString(
+          stringToBigInt(inputAmount, originToken.decimals),
+          originToken.decimals,
+          4
+        )}
+        receive={maxAmountOut}
+      />
       <button
-        className="h-[43px] rounded-md w-full bg-[--surface] font-semibold border border-[--separator] mt-2"
+        className="rounded-md w-full bg-[--surface] font-semibold border border-[--separator] p-2 hover:bg-[--surface] hover:border-[--brand] active:opacity-40"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
       </button>
-
-      <button
-        className="h-[43px] rounded-md w-full bg-[--surface] font-semibold border border-[--separator] mt-2"
-        onClick={handleBridge}
-      >
-        {isLoading ? 'Awaiting Quote' : 'Bridge'}
-      </button>
     </div>
   )
 }
+
+type SelectProps = {
+  label?: string
+}
+
+function Select({ label }: SelectProps) {
+  return (
+    <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+      <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
+        <DownArrow />
+      </span>
+      <select className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
+        <option>{label ?? 'Network'}</option>
+      </select>
+    </div>
+  )
+}
+
+function Input() {}

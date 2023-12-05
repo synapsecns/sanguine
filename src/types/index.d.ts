@@ -4,6 +4,17 @@ export interface TokenMetaData {
   chainId: number
   decimals: number
 }
+
+export interface CustomTheme {
+  primary?: string
+  secondary?: string
+  accent?: string
+  small?: string
+  separator?: string
+  background?: string
+  surface?: string
+}
+
 export interface CustomThemeVariables {
   '--h'?: string
   '--s'?: string
@@ -14,6 +25,7 @@ export interface CustomThemeVariables {
   '--separator'?: string
   '--background'?: string
   '--surface'?: string
+  '--brand'?: string
 }
 
 export interface WidgetProps {
@@ -28,9 +40,9 @@ export interface WidgetProps {
 
   /** Selected Day/Night Theme */
   theme?: 'day' | 'night'
- 
+
   /** Apply Custom Themes */
-  customTheme?: CustomThemeVariables
+  customTheme?: CustomTheme
 
   /** Supported Tokens Metadata defined by Consumer */
   tokens: TokenMetaData[]
