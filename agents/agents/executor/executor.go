@@ -435,7 +435,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
-		fmt.Printf("submitted execute() tx: %v\n", tx.Hash())
 
 		return
 	})
@@ -577,7 +576,6 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	if err != nil {
 		return nil, fmt.Errorf("could not get latest header: %w", err)
 	}
-	fmt.Printf("Got chain time: %v\n", chainTime)
 
 	span.AddEvent("got current time", trace.WithAttributes(
 		attribute.Int("chain_time", int(chainTime)),
@@ -607,7 +605,6 @@ func getChainTime(ctx context.Context, backend Backend) (uint64, error) {
 	}
 
 	chainTime = latestHeader.Time
-	fmt.Printf("got new block with number %s, time %d", latestHeader.Number.String(), latestHeader.Time)
 	return chainTime, nil
 }
 

@@ -802,7 +802,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	chainID := uint32(g.TestBackendOrigin.GetChainID())
 	destination := uint32(g.TestBackendDestination.GetChainID())
 	summit := uint32(g.TestBackendSummit.GetChainID())
-	fmt.Printf("omnirpc: %v", omniRPCClient.GetDefaultEndpoint(int(summit)))
 
 	excCfg := execConfig.Config{
 		SummitChainID: summit,
@@ -888,10 +887,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryBondedSigner, g.NotaryUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
-
-	fmt.Printf("GuardBondedAddress: %v\n", g.GuardBondedSigner.Address())
-	fmt.Printf("NotaryBondedAddress: %v\n", g.NotaryBondedSigner.Address())
-	fmt.Printf("NotaryOnDestinationBondedAddress: %v\n", g.NotaryOnDestinationBondedSigner.Address())
 
 	// Submit the snapshot with a guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
@@ -1035,20 +1030,10 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	increaseEvmTime := func(backend backends.SimulatedTestBackend, seconds int64) {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
-		client, err := omniRPCClient.GetClient(g.GetTestContext(), g.TestBackendSummit.GetBigChainID())
-		Nil(g.T(), err)
-		headerPreIncrease, err := client.HeaderByNumber(g.GetTestContext(), nil)
-		Nil(g.T(), err)
-		// targetTimestamp := int64(headerPreIncrease.Time) + seconds
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
-		targetTimestamp := 0
-		// err = anvilClient.SetBlockTimestampInterval(g.GetTestContext(), seconds)
 		Nil(g.T(), err)
 		err = anvilClient.Mine(g.GetTestContext(), 1)
 		Nil(g.T(), err)
-		headerPostIncrease, err := client.HeaderByNumber(g.GetTestContext(), nil)
-		Nil(g.T(), err)
-		fmt.Printf("header time moved from (%d, block=%s) to (%d, block=%s) [target=%d]\n", headerPreIncrease.Time, headerPreIncrease.Number.String(), headerPostIncrease.Time, headerPostIncrease.Number.String(), targetTimestamp)
 	}
 	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
@@ -1056,7 +1041,6 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Increase executor time so that the manager message may be executed.
 	updatedTime := time.Now().Add(time.Duration(optimisticPeriodSeconds+offset) * time.Second)
 	currentTime = &updatedTime
-	fmt.Printf("updated executor time from %d to %d\n", time.Now().Unix(), updatedTime.Unix())
 
 	// Verify that the accused agent is eventually Slashed on Summit.
 	g.Eventually(func() bool {

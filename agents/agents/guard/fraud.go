@@ -330,7 +330,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
-	fmt.Printf("handleStatusUpdated on chain %d with domain %d, flag %v, agent %s\n", chainID, statusUpdated.Domain, types.AgentFlagType(statusUpdated.Flag).String(), statusUpdated.Agent.String())
 
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
@@ -364,7 +363,6 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return nil, fmt.Errorf("could not complete slashing: %w", err)
 			}
-			fmt.Printf("submitted completeSlashing() tx: %v\n", tx.Hash())
 
 			return
 		})
@@ -531,7 +529,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
-			fmt.Printf("Relaying agent status for agent %s on chain %d\n", tree.AgentAddress.String(), chainID)
 			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.getAgentStatus(ctx, g.summitDomainID, tree.AgentAddress)
 			if err != nil {
@@ -554,7 +551,6 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 					return nil, fmt.Errorf("could not submit UpdateAgentStatus tx: %w", err)
 				}
 				logger.Infof("Updated agent status on chain %d for agent %s: %s [hash: %s]", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
-				fmt.Printf("Updated agent status on chain %d for agent %s: %s [hash: %s]\n", chainID, tree.AgentAddress.String(), agentStatus.Flag().String(), tx.Hash())
 				return
 			})
 			if err != nil {
