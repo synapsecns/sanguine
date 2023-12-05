@@ -1,5 +1,8 @@
 const path = require('path')
 module.exports = {
+  stats: {
+    errorDetails: true,
+  },
   entry: './dist/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
