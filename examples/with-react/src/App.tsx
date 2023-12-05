@@ -205,7 +205,6 @@ function App() {
           networkProviders={providers}
           tokens={tokens}
           customTheme={Object.keys(customTheme)?.length && customTheme}
-        />
         <div>
           {/* <label htmlFor='color-picker'>Background</label> */}
           <input id="color-picker" type="color" onInput={createCustomTheme} />
@@ -217,13 +216,13 @@ function App() {
             onInput={createCustomTheme}
           />
         </div>
-        <Bridge
+        {/* <Bridge
           chainIds={chainIds}
           web3Provider={web3Provider}
           networkProviders={providers}
           tokens={tokens}
           theme="night"
-        />
+        /> */}
 
         <h2>Customize</h2>
         <h3>Color Mode — WIP, not reflected in code</h3>
