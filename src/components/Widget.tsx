@@ -8,7 +8,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { DownArrow } from '@/components/DownArrow'
 import { Receipt } from '@/components/Receipt'
-import { CustomThemeVariables, WidgetProps } from 'types'
+import { WidgetProps } from 'types'
 import { lightThemeVariables, darkThemeVariables } from '../constants'
 
 const originChainId = 1
@@ -170,7 +170,7 @@ export const Widget = ({
       </div>
       <div className="border rounded-md bg-[--surface] border-[--separator] p-2 flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <Select />
+          <Select label="Arbitrum" />
         </div>
         <div className="flex items-center justify-between pb-1">
           <input

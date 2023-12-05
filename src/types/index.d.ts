@@ -5,16 +5,6 @@ export interface TokenMetaData {
   decimals: number
 }
 
-export interface CustomTheme {
-  primary?: string
-  secondary?: string
-  accent?: string
-  small?: string
-  separator?: string
-  background?: string
-  surface?: string
-}
-
 export interface CustomThemeVariables {
   '--h'?: string
   '--s'?: string
@@ -42,7 +32,7 @@ export interface WidgetProps {
   theme?: 'day' | 'night'
 
   /** Apply Custom Themes */
-  customTheme?: CustomTheme
+  customTheme?: CustomThemeVariables
 
   /** Supported Tokens Metadata defined by Consumer */
   tokens: TokenMetaData[]

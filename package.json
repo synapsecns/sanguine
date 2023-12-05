@@ -45,8 +45,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@reduxjs/toolkit": "^2.0.1",
     "@synapsecns/sdk-router": "^0.2.23",
     "ethers": "^6.9.0",
+    "react-redux": "^9.0.2",
     "viem": "^1.19.11",
     "wagmi": "^1.4.7"
   }
