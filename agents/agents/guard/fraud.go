@@ -335,6 +335,12 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
+		// Only perform completeSlashing for notary fraud.
+		if statusUpdated.Domain == 0 {
+			return nil
+		}
+
+		// Submit completeSlashing() tx after fetching agent proof.
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			var agentProof [][32]byte
 			contractCall := func(ctx context.Context) error {

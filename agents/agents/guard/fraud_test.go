@@ -889,7 +889,9 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	g.updateAgentStatus(g.DestinationDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, destination)
 	g.updateAgentStatus(g.OriginDomainClient.LightManager(), g.NotaryOnDestinationBondedSigner, g.NotaryOnDestinationUnbondedSigner, uint32(g.TestBackendOrigin.GetChainID()))
 
-	fmt.Printf("BondedNotaryAddress: %v\n", g.NotaryBondedSigner.Address())
+	fmt.Printf("GuardBondedAddress: %v\n", g.GuardBondedSigner.Address())
+	fmt.Printf("NotaryBondedAddress: %v\n", g.NotaryBondedSigner.Address())
+	fmt.Printf("NotaryOnDestinationBondedAddress: %v\n", g.NotaryOnDestinationBondedSigner.Address())
 
 	// Submit the snapshot with a guard.
 	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
