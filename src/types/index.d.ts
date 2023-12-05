@@ -6,16 +6,16 @@ export interface TokenMetaData {
 }
 
 export interface CustomThemeVariables {
-  '--h'?: string
-  '--s'?: string
-  '--primary'?: string
-  '--secondary'?: string
-  '--accent'?: string
-  '--small'?: string
-  '--separator'?: string
-  '--background'?: string
-  '--surface'?: string
-  '--brand'?: string
+  bgColor?: string
+  brandColor?: string
+  '--synapse-text-primary'?: string
+  '--synapse-text-secondary'?: string
+  '--synapse-bg-select'?: string
+  '--synapse-bg-surface'?: string
+  '--synapse-bg-root'?: string
+  '--synapse-border'?: string
+  '--synapse-border-hover'?: string
+  '--synapse-brand'?: string
 }
 
 export interface WidgetProps {

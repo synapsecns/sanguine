@@ -81,96 +81,62 @@ function App() {
         h: 60 * (h < 0 ? h + 6 : h),
         s: f ? (100 * c) / f : 0,
         l: (100 * (v + v - c)) / 2,
-        a,
+        a: 100 * a,
       }
     }
+    const hslString = (h: number, s: number, l: number, a: number) => `hsl(${h}deg ${s}% ${l}% / ${a}%)`
 
     const colorPicker = document.getElementById(
       'color-picker'
     ) as HTMLInputElement | null
-    const hsla = rgb2hsl(hexToRgb(colorPicker?.value ?? '#000000'))
+    const { h, s, l, a } = rgb2hsl(hexToRgb(colorPicker?.value ?? '#000000'))
 
     const accentColorPicker = document.getElementById(
       'accent-color-picker'
     ) as HTMLInputElement | null
 
-    setCustomTheme(
-      hsla.l < 50
-        ? {
-            '--strong': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 1.0 + 100
-            }% / 100%)`,
-            '--primary': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.96 + 96
-            }% / 100%)`,
-            '--secondary': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.86 + 86
-            }% / 100%)`,
-            '--small': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.66 + 66
-            }% / 100%)`,
-            '--accent': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.25 + 25
-            }% / 100%)`,
-            '--separator': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.12 + 12
-            }% / 100%)`,
-            '--surface': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.12 + 12
-            }% / 100%)`,
-            '--background': `hsl(${hsla.h}deg ${hsla.s}% ${
-              hsla.l * 0.07 + 7
-            }% / 100%)`,
-            '--brand': accentColorPicker?.value ?? '#000000',
-          }
-        : {
-            '--strong': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 0.0) * 0.0
-            }% / 100%)`,
-            '--primary': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.07) * 0.07
-            }% / 100%)`,
-            '--secondary': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.41) * 0.41
-            }% / 100%)`,
-            '--small': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.66) * 0.66
-            }% / 100%)`,
-            '--accent': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.96) * 0.96
-            }% / 100%)`,
-            '--separator': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.86) * 0.86
-            }% / 100%)`,
-            '--surface': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 2.0) * 1.0
-            }% / 100%)`,
-            '--background': `hsl(${hsla.h}deg ${hsla.s}% ${
-              Math.min(100, hsla.l * 1.96) * 0.96
-            }% / 100%)`,
-            '--brand': accentColorPicker?.value ?? '#000000',
-          }
-    )
+    setCustomTheme(l < 50
+      ? {
+        '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
+        '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
+        '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
+        '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
+        '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
+        '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
+        '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
+        '--synapse-brand': accentColorPicker?.value ?? '#ffffff',
+      } : {
+        '--synapse-text-primary': hslString(h, s, Math.min(100, l * 1.07) * 0.07, a),
+        '--synapse-text-secondary': hslString(h, s, Math.min(100, l * 1.41) * 0.41, a),
+        '--synapse-bg-select': hslString(h, s, Math.min(100, l * 1.96) * 0.96, a),
+        '--synapse-bg-surface': hslString(h, s, Math.min(100, l * 2.0) * 1.0, a),
+        '--synapse-bg-root': hslString(h, s, Math.min(100, l * 1.96) * 0.96, a),
+        '--synapse-border': hslString(h, s, Math.min(100, l * 1.86) * 0.86, a),
+        '--synapse-border-hover': hslString(h, s, Math.min(100, l * 1.66) * 0.66, a),
+        '--synapse-brand': accentColorPicker?.value ?? '#000000',
+      })
   }
 
   const customThemeDFK = {
-    '--primary': 'rgb(62,31,5)',
-    '--secondary': 'rgb(62,31,5)',
-    '--small': 'rgb(224,228,203)',
-    '--separator': 'rgb(216,172,130)',
-    '--background': 'rgb(255,227,189)',
-    '--surface': 'rgb(216,172,130)',
-    '--accent': 'rgb(255,227,189)',
+    '--synapse-text-primary': 'rgb(62,31,5)',
+    '--synapse-text-secondary': 'rgb(62,31,5)',
+    '--synapse-bg-select': 'rgb(255,227,189)',
+    '--synapse-bg-surface': 'rgb(216,172,130)',
+    '--synapse-bg-background': 'rgb(255,227,189)',
+    '--synapse-border': 'rgb(216,172,130)',
+    '--synapse-border-hover': 'rgb(224,228,203)',
+    '--synapse-brand': 'rgb(62,31,5)',
   }
 
   const customThemeWeird = {
-    '--primary': 'red',
-    '--secondary': 'green',
-    '--small': 'yellow',
-    '--separator': 'blue',
-    '--background': 'orange',
-    '--surface': 'purple',
-    '--accent': 'gray',
+    '--synapse-text-primary': 'red',
+    '--synapse-text-secondary': 'green',
+    '--synapse-bg-select': 'gray',
+    '--synapse-bg-surface': 'purple',
+    '--synapse-bg-background': 'orange',
+    '--synapse-border': 'blue',
+    '--synapse-border-hover': 'yellow',
+    '--synapse-brand': 'red',
   }
 
   const { web3Provider, connectedAddress, connectedNetwork } =
@@ -235,50 +201,29 @@ function App() {
             </ul>
           </dd>
         </dl>
-        <h3>Color Values — WIP, not reflected in code</h3>
-        {/* <h4>Text</h4> */}
+        <h3>Color Values</h3>
         <dl>
-          <dt>--synapse-text-strong</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-text-primary</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-text-secondary</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-text-primary</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-text-secondary</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
-        {/* <h4>Objects</h4> */}
         <dl>
-          <dt>--synapse-bg-button</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-select</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-card</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-root</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-select</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-surface</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-root</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
-        {/* <h4>Color</h4> */}
         <dl>
-          <dt>--synapse-border</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-accent</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-border</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-border-hover</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-brand</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
         <h3>Typography — WIP, not reflected in code</h3>
         <dl>
-          <dt>--synapse-font-size</dt>
-          <dd>100%</dd>
-          <dt>--synapse-font-family-display</dt>
-          <dd>system-ui</dd>
-          <dt>--synapse-font-family-text</dt>
-          <dd>system-ui</dd>
-          <dt>--synapse-font-weight-display</dt>
-          <dd>600 (semibold)</dd>
-          <dt>--synapse-font-weight-text</dt>
-          <dd>500 (medium)</dd>
+          <dt>--synapse-font-size</dt><dd>100%</dd>
+          <dt>--synapse-font-family-display</dt><dd>system-ui</dd>
+          <dt>--synapse-font-family-text</dt><dd>system-ui</dd>
+          <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
+          <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
         </dl>
-        {/* <Bridge chainIds={chainIds} providers={providers} tokens={tokens} /> */}
-        {/* <Bridge chainIds={chainIds} providers={providers} tokens={tokens} theme="night" />
-        <Bridge chainIds={chainIds} providers={providers} tokens={tokens} customTheme={customThemeDFK}/> */}
       </main>
 
       <footer></footer>

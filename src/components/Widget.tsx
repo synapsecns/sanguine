@@ -127,20 +127,20 @@ export const Widget = ({
   return (
     <div
       style={themeVariables}
-      className="w-[374px] bg-[--background] p-2 text-[--primary] rounded-lg font-medium flex flex-col gap-2"
+      className="w-[374px] bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
     >
-      <div className="border rounded-md bg-[--surface] border-[--separator] p-2 flex flex-col gap-2">
+      <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <Select label="Ethereum" />
         </div>
         <div className="flex pb-2">
           <input
-            className="text-3xl w-full font-semibold bg-[--surface] focus:outline-none"
+            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
             placeholder="0"
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+          <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
             <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
               <DownArrow />
             </span>
@@ -168,18 +168,18 @@ export const Widget = ({
           </div>
         </div>
       </div>
-      <div className="border rounded-md bg-[--surface] border-[--separator] p-2 flex flex-col gap-2">
+      <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <Select label="Arbitrum" />
         </div>
         <div className="flex items-center justify-between pb-1">
           <input
-            className="text-3xl w-full font-semibold bg-[--surface] focus:outline-none cursor-not-allowed"
+            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed"
             disabled={true}
             placeholder="0"
             value={isLoading ? '...' : maxAmountOut}
           />
-          <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+          <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
             <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
               <DownArrow />
             </span>
@@ -217,7 +217,7 @@ export const Widget = ({
         receive={maxAmountOut}
       />
       <button
-        className="rounded-md w-full bg-[--surface] font-semibold border border-[--separator] p-2 hover:bg-[--surface] hover:border-[--brand] active:opacity-40"
+        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
         onClick={handleFetchQuote}
       >
         {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
@@ -232,7 +232,7 @@ type SelectProps = {
 
 function Select({ label }: SelectProps) {
   return (
-    <div className="cursor-pointer items-center grid rounded-full bg-[--accent] border border-[--separator] hover:bg-[--separator] hover:border-[--secondary]">
+    <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
       <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
         <DownArrow />
       </span>

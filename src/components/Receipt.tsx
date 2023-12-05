@@ -16,17 +16,17 @@ export const Receipt = ({ quote, send, receive }) => {
     <>
       <div className="flex justify-end text-sm">
       { quote ? (
-        <div onClick={handleToggle} className={`cursor-s-resize hover:bg-[--separator] flex self-end pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 ${isExpanded ? 'cursor-n-resize' : 'cursor-s-resize'}`}>
+        <div onClick={handleToggle} className={`hover:bg-[--synapse-border] flex self-end pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 ${isExpanded ? 'cursor-n-resize' : 'cursor-s-resize'}`}>
             {estTime} min via
-            <a href="https://synapseprotocol.com" target="_blank" className="text-[--brand] cursor-alias text-[--strong]">
+            <a href="https://synapseprotocol.com" target="_blank" className="text-[--synapse-brand] cursor-alias text-[--strong] hover:underline">
               Synapse
             </a>
             {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
           </div>
         ) : (
-          <div className={`flex self-end pl-2 pr-1 py-1 gap-1 text-[--secondary] cursor-default`}>
+          <div className={`flex self-end pl-2 pr-1 py-1 gap-1 text-[--synapse-text-secondary] cursor-default`}>
             Powered by
-            <a href="https://synapseprotocol.com" target="_blank" className="text-[--brand] cursor-alias active:opacity-40 ">
+            <a href="https://synapseprotocol.com" target="_blank" className="text-[--synapse-brand] cursor-alias active:opacity-40 hover:underline">
               Synapse
             </a>
           </div>
@@ -34,10 +34,10 @@ export const Receipt = ({ quote, send, receive }) => {
       }
       </div>
       {isExpanded && (
-        <div className="p-2 text-sm border border-[--separator]">
+        <div className="p-2 text-sm rounded border border-[--synapse-border]">
           <div className="flex justify-between">
             <div>Router</div>
-            <div className="text-[--primary]">{quote.bridgeModuleName}</div>
+            <div className="text-[--synapse-text-primary]">{quote.bridgeModuleName}</div>
           </div>
           <div className="flex justify-between">
             <div>Origin</div>

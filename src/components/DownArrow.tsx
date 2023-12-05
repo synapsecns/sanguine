@@ -1,7 +1,7 @@
 export const DownArrow = () => {
   return (
     <svg
-      className="fill-[--secondary]"
+      className="fill-[--synapse-text-secondary]"
       width="10"
       height="9"
       viewBox="0 0 10 9"
