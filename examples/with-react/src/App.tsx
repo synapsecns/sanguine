@@ -205,6 +205,7 @@ function App() {
           networkProviders={providers}
           tokens={tokens}
           customTheme={Object.keys(customTheme)?.length && customTheme}
+        />
         <div>
           {/* <label htmlFor='color-picker'>Background</label> */}
           <input id="color-picker" type="color" onInput={createCustomTheme} />
