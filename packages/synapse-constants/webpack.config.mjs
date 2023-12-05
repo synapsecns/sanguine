@@ -1,8 +1,16 @@
-const path = require('path')
-module.exports = {
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const config = {
   stats: {
     errorDetails: true,
   },
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
+  mode: 'production',
   entry: './dist/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -36,3 +44,5 @@ module.exports = {
     ],
   },
 };
+
+export default config;
