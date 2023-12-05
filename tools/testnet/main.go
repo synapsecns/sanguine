@@ -307,7 +307,6 @@ func main() {
 	}
 
 	// Connect to contracts.
-	g, _ := errgroup.WithContext(ctx)
 	messageContracts := map[int]domains.PingPongClientContract{}
 	destinationContracts := map[int]domains.DestinationContract{}
 	for cid, c := range loadCfg.Chains {
@@ -351,7 +350,9 @@ func main() {
 	}
 
 	runRoutes := func() {
+		g, _ := errgroup.WithContext(ctx)
 		// Send messages.
+
 		fmt.Printf("Running %d iterations.\n\n", numIters)
 		for i := 0; i < numIters; i++ {
 			for _, r := range routes {
