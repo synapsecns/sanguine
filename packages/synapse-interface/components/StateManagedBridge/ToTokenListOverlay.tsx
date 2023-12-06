@@ -224,8 +224,6 @@ export const ToTokenListOverlay = () => {
     bridgeQuotesMatchDestination,
   ])
 
-  console.log('orderedPossibleTokens:', orderedPossibleTokens)
-
   const totalPossibleTokens: number = useMemo(() => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
