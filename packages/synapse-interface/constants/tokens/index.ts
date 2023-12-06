@@ -27,7 +27,7 @@ const sortedTokens = Object.values(all).sort(
 // Key value pairs here will override bridgeMap to hide particular chain-token pairs
 export const PAUSED_TOKENS_BY_CHAIN = {
   [CHAINS.ETH.id]: ['WETH'],
-  [CHAINS.OPTIMISM.id]: ['WETH'],
+  // [CHAINS.OPTIMISM.id]: ['WETH'],
   [CHAINS.BOBA.id]: ['WETH'],
   [CHAINS.MOONBEAM.id]: ['WETH'],
   [CHAINS.BASE.id]: ['WETH'],
