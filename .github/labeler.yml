@@ -1,5 +1,5 @@
 2-reviewers:
-  - any: ['packages/contracts-core/**/*']
+  - 'packages/contracts-core/**/*'
 
 M-ci:
   - any: ['\.github/**/*']
