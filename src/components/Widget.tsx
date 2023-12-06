@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useContext } from 'react'
+import { useMemo, useState, useEffect, useContext, useCallback } from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
@@ -6,13 +6,20 @@ import { fetchBridgeQuote } from '@/utils/fetchBridgeQuote'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { DownArrow } from '@/components/DownArrow'
 import { Receipt } from '@/components/Receipt'
-import { WidgetProps } from 'types'
-import { lightThemeVariables, darkThemeVariables } from '../constants'
+import { Chain, TokenMetaData, WidgetProps } from 'types'
+import { lightThemeVariables, darkThemeVariables } from '@/constants/index'
+import { ChainSelect } from '@/components/ui/ChainSelect'
+import { TokenSelect } from '@/components/ui/TokenSelect'
 
-const originChainId = 1
-const destinationChainId = 42161
+import { useAppDispatch } from '@/state/hooks'
+import {
+  setDestinationChain,
+  setOriginChain,
+  setOriginToken,
+  setDestinationToken,
+} from '@/state/slices/bridge/reducer'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 export const Widget = ({
   chainIds,
@@ -30,18 +37,16 @@ export const Widget = ({
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [inputAmount, setInputAmount] = useState<string>('')
 
-  const [originToken, setOriginToken] = useState(
-    tokens.find((token) => token.chainId === originChainId)
-  )
-  const [destinationToken, setDestinationToken] = useState(
-    tokens.find((token) => token.chainId === destinationChainId)
-  )
+  const { originChain, destinationChain, originToken, destinationToken } =
+    useBridgeState()
 
   const themeVariables = (() => {
     if (theme === 'night') return darkThemeVariables as React.CSSProperties
     if (customTheme) return customTheme as React.CSSProperties
     return lightThemeVariables as React.CSSProperties
   })()
+
+  const dispatch = useAppDispatch()
 
   const handleFetchQuote = async () => {
     setIsLoading(true)
@@ -124,15 +129,45 @@ export const Widget = ({
     web3Provider && fetchData()
   }, [web3Provider])
 
+  const handleOriginChainSelection = useCallback(
+    (newOriginChain: Chain) => {
+      dispatch(setOriginChain(newOriginChain))
+    },
+    [dispatch]
+  )
+
+  const handleDestinationChainSelection = useCallback(
+    (newDestinationChain: Chain) => {
+      dispatch(setDestinationChain(newDestinationChain))
+    },
+    [dispatch]
+  )
+
+  const handleOriginTokenSelection = useCallback(
+    (newOriginToken: TokenMetaData) => {
+      dispatch(setOriginToken(newOriginToken))
+    },
+    [dispatch]
+  )
+
+  const handleDestinationTokenSelection = useCallback(
+    (newDestinationToken: TokenMetaData) => {
+      dispatch(setDestinationToken(newDestinationToken))
+    },
+    [dispatch]
+  )
+
   return (
     <div
       style={themeVariables}
       className="w-[374px] bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
     >
       <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Select label="Ethereum" />
-        </div>
+        <ChainSelect
+          label="From"
+          chain={originChain}
+          onChange={handleOriginChainSelection}
+        />
         <div className="flex pb-2">
           <input
             className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
@@ -140,38 +175,19 @@ export const Widget = ({
             value={inputAmount}
             onChange={handleInputAmountChange}
           />
-          <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
-            <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
-              <DownArrow />
-            </span>
-            <select
-              className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7"
-              value={originToken.tokenAddress}
-              onChange={(e) => {
-                setOriginToken(
-                  tokens.find((token) => token.tokenAddress === e.target.value)
-                )
-                setQuote(null)
-              }}
-            >
-              {tokens
-                .filter((token) => token.chainId === originChainId)
-                .map((token, index) => (
-                  <option key={index} value={token.tokenAddress}>
-                    <div className="flex items-center">
-                      <div>{token.symbol}</div>
-                      <DownArrow />
-                    </div>
-                  </option>
-                ))}
-            </select>
-          </div>
+          <TokenSelect
+            label="In"
+            token={originToken}
+            onChange={handleOriginTokenSelection}
+          />
         </div>
       </div>
       <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Select label="Arbitrum" />
-        </div>
+        <ChainSelect
+          label="To"
+          chain={destinationChain}
+          onChange={handleDestinationChainSelection}
+        />
         <div className="flex items-center justify-between pb-1">
           <input
             className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed"
@@ -179,32 +195,11 @@ export const Widget = ({
             placeholder="0"
             value={isLoading ? '...' : maxAmountOut}
           />
-          <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
-            <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
-              <DownArrow />
-            </span>
-            <select
-              className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7"
-              value={destinationToken.tokenAddress}
-              onChange={(e) => {
-                setDestinationToken(
-                  tokens.find((token) => token.tokenAddress === e.target.value)
-                )
-                setQuote(null)
-              }}
-            >
-              {tokens
-                .filter((token) => token.chainId === destinationChainId)
-                .map((token, index) => (
-                  <option key={index} value={token.tokenAddress}>
-                    <div className="flex items-center">
-                      <div>{token.symbol}</div>
-                      <DownArrow />
-                    </div>
-                  </option>
-                ))}
-            </select>
-          </div>
+          <TokenSelect
+            label="Out"
+            token={destinationToken}
+            onChange={handleDestinationTokenSelection}
+          />
         </div>
       </div>
       <Receipt
@@ -225,22 +220,3 @@ export const Widget = ({
     </div>
   )
 }
-
-type SelectProps = {
-  label?: string
-}
-
-function Select({ label }: SelectProps) {
-  return (
-    <div className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]">
-      <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
-        <DownArrow />
-      </span>
-      <select className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-        <option>{label ?? 'Network'}</option>
-      </select>
-    </div>
-  )
-}
-
-function Input() {}

@@ -37,3 +37,8 @@ export interface WidgetProps {
   /** Supported Tokens Metadata defined by Consumer */
   tokens: TokenMetaData[]
 }
+
+export interface Chain {
+  id: number
+  name: string
+}
