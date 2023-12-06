@@ -23,8 +23,9 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
 
-interface TokenWithExchangeRate extends Token {
+interface TokenWithRates extends Token {
   exchangeRate: bigint
+  estimatedTime: number
 }
 
 export const ToTokenListOverlay = () => {
@@ -185,44 +186,45 @@ export const ToTokenListOverlay = () => {
     )
   }, [toTokensBridgeQuotes, toChainId])
 
-  const orderedPossibleTokens: TokenWithExchangeRate[] | Token[] =
-    useMemo(() => {
-      if (
-        toTokensBridgeQuotesStatus === FetchState.VALID &&
-        bridgeQuotesMatchDestination &&
-        possibleTokens &&
-        possibleTokens.length > 0
-      ) {
-        const bridgeQuotesMap = new Map(
-          toTokensBridgeQuotes.map((quote) => [quote.destinationToken, quote])
-        )
+  const orderedPossibleTokens: TokenWithRates[] | Token[] = useMemo(() => {
+    if (
+      toTokensBridgeQuotesStatus === FetchState.VALID &&
+      bridgeQuotesMatchDestination &&
+      possibleTokens &&
+      possibleTokens.length > 0
+    ) {
+      const bridgeQuotesMap = new Map(
+        toTokensBridgeQuotes.map((quote) => [quote.destinationToken, quote])
+      )
 
-        const tokensWithExchangeRates: TokenWithExchangeRate[] =
-          possibleTokens.map((token) => {
-            const bridgeQuote = bridgeQuotesMap.get(token)
-            if (bridgeQuote) {
-              return {
-                ...token,
-                exchangeRate: bridgeQuote.exchangeRate,
-              }
-            } else {
-              return token as TokenWithExchangeRate
-            }
-          })
+      const tokensWithRates: TokenWithRates[] = possibleTokens.map((token) => {
+        const bridgeQuote = bridgeQuotesMap.get(token)
+        if (bridgeQuote) {
+          return {
+            ...token,
+            exchangeRate: bridgeQuote?.exchangeRate,
+            estimatedTime: bridgeQuote?.estimatedTime,
+          }
+        } else {
+          return token as TokenWithRates
+        }
+      })
 
-        const sortedTokens = tokensWithExchangeRates.sort(
-          (a, b) => Number(b.exchangeRate) - Number(a.exchangeRate)
-        )
+      const sortedTokens = tokensWithRates.sort(
+        (a, b) => Number(b.exchangeRate) - Number(a.exchangeRate)
+      )
 
-        return sortedTokens
-      }
-      return possibleTokens
-    }, [
-      possibleTokens,
-      toTokensBridgeQuotes,
-      toTokensBridgeQuotesStatus,
-      bridgeQuotesMatchDestination,
-    ])
+      return sortedTokens
+    }
+    return possibleTokens
+  }, [
+    possibleTokens,
+    toTokensBridgeQuotes,
+    toTokensBridgeQuotesStatus,
+    bridgeQuotesMatchDestination,
+  ])
+
+  console.log('orderedPossibleTokens:', orderedPossibleTokens)
 
   const totalPossibleTokens: number = useMemo(() => {
     return orderedPossibleTokens.length
@@ -250,44 +252,37 @@ export const ToTokenListOverlay = () => {
             Receive…
           </div>
           <div className="px-2 pb-2 md:px-2">
-            {orderedPossibleTokens.map(
-              (token: TokenWithExchangeRate, idx: number) => {
-                return (
-                  <SelectSpecificTokenButton
-                    isOrigin={false}
-                    key={idx}
-                    token={token}
-                    selectedToken={toToken}
-                    active={idx === currentIdx}
-                    showAllChains={false}
-                    isLoadingExchangeRate={isLoadingExchangeRate}
-                    isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
-                    exchangeRate={formatBigIntToString(
-                      token?.exchangeRate,
-                      18,
-                      4
-                    )}
-                    estimatedDurationInSeconds={
-                      toTokensBridgeQuotesStatus === FetchState.VALID &&
-                      bridgeQuotesMatchDestination &&
-                      calculateEstimatedTransactionTime({
-                        originChainId: fromChainId,
-                        originTokenAddress: fromToken?.addresses[
-                          fromChainId
-                        ] as Address,
-                      })
+            {orderedPossibleTokens.map((token: TokenWithRates, idx: number) => {
+              return (
+                <SelectSpecificTokenButton
+                  isOrigin={false}
+                  key={idx}
+                  token={token}
+                  selectedToken={toToken}
+                  active={idx === currentIdx}
+                  showAllChains={false}
+                  isLoadingExchangeRate={isLoadingExchangeRate}
+                  isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
+                  exchangeRate={formatBigIntToString(
+                    token?.exchangeRate,
+                    18,
+                    4
+                  )}
+                  estimatedDurationInSeconds={
+                    toTokensBridgeQuotesStatus === FetchState.VALID &&
+                    bridgeQuotesMatchDestination &&
+                    token.estimatedTime
+                  }
+                  onClick={() => {
+                    if (token === toToken) {
+                      onClose()
+                    } else {
+                      handleSetToToken(toToken, token)
                     }
-                    onClick={() => {
-                      if (token === toToken) {
-                        onClose()
-                      } else {
-                        handleSetToToken(toToken, token)
-                      }
-                    }}
-                  />
-                )
-              }
-            )}
+                  }}
+                />
+              )
+            })}
           </div>
         </>
       )}
