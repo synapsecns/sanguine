@@ -21,3 +21,6 @@ export const darkThemeVariables: CustomThemeVariables = {
   '--synapse-border': 'hsl(240deg 0% 13%)',
   '--synapse-brand': 'hsl(285deg 100% 67%)',
 }
+
+export const MAX_UINT256 =
+  115792089237316195423570985008687907853269984665640564039457584007913129639935n

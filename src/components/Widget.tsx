@@ -1,16 +1,26 @@
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react'
+import { Address } from 'viem'
+
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
-import { fetchBridgeQuote } from '@/utils/fetchBridgeQuote'
+import { fetchBridgeQuote } from '@/utils/actions/fetchBridgeQuote'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { Receipt } from '@/components/Receipt'
+
 import { Chain, TokenMetaData, WidgetProps } from 'types'
 import { lightThemeVariables, darkThemeVariables } from '@/constants/index'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
+import {
+  useBridgeQuoteCallback,
+  QuoteCallbackState,
+} from '@/hooks/useBridgeQuoteCallback'
+import { useAllowance } from '@/hooks/useAllowance'
+import { useApprove } from '@/hooks/useApproval'
+import { useBridgeCallback } from '@/hooks/useBridgeCallback'
 
 import { useAppDispatch } from '@/state/hooks'
 import {
@@ -33,8 +43,6 @@ export const Widget = ({
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer } = web3Context.web3Provider
 
-  const [quote, setQuote] = useState<any>()
-  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [inputAmount, setInputAmount] = useState<string>('')
 
   const { originChain, destinationChain, originToken, destinationToken } =
@@ -48,47 +56,55 @@ export const Widget = ({
 
   const dispatch = useAppDispatch()
 
-  const handleFetchQuote = async () => {
-    setIsLoading(true)
-    setQuote(null)
-    try {
-      const result = await fetchBridgeQuote(
-        {
-          originChainId: originToken.chainId,
-          originTokenAddress: originToken.tokenAddress,
-          destinationChainId: destinationToken.chainId,
-          destinationTokenAddress: destinationToken.tokenAddress,
-          amount: stringToBigInt(inputAmount, originToken.decimals),
-        },
-        synapseSDK
-      )
-      console.log('result', result)
-      setQuote(result)
-    } catch (error) {
-      setQuote(null)
-      console.error('Error:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    state: quoteState,
+    callback: fetchQuoteCallback,
+    quote,
+    error: quoteError,
+  } = useBridgeQuoteCallback({
+    originChainId: originToken.chainId,
+    originTokenAddress: originToken.tokenAddress,
+    destinationChainId: destinationToken.chainId,
+    destinationTokenAddress: destinationToken.tokenAddress,
+    amount: stringToBigInt(inputAmount, originToken.decimals),
+    synapseSDK: synapseSDK,
+  })
 
-  const handleBridge = async () => {
-    try {
-      const data = await synapseSDK.bridge(
-        connectedAddress,
-        quote.routerAddress,
-        originToken.chainId,
-        destinationToken.chainId,
-        originToken?.tokenAddress,
-        '1',
-        quote.originQuery,
-        quote.destQuery
-      )
-      const tx = await signer.sendTransaction(data)
-    } catch (error) {
-      console.error('handleBridge error: ', error)
-    }
-  }
+  console.log('quote:', quote)
+
+  const routerAddress: Address = quote?.routerAddress as Address
+
+  const {
+    allowance,
+    checkAllowanceCallback,
+    error: allowanceError,
+  } = useAllowance({
+    spenderAddress: routerAddress as Address,
+    tokenAddress: originToken.tokenAddress as Address,
+    ownerAddress: connectedAddress as Address,
+    chainId: originToken.chainId,
+  })
+
+  const approveCallback = useApprove({
+    spenderAddress: routerAddress as Address,
+    tokenAddress: originToken.tokenAddress as Address,
+    ownerAddress: connectedAddress as Address,
+    amount: stringToBigInt(inputAmount, originToken.decimals),
+    chainId: originToken.chainId,
+  })
+
+  const bridgeCallback = useBridgeCallback({
+    destinationAddress: connectedAddress as Address,
+    originRouterAddress: routerAddress,
+    originChainId: originToken.chainId,
+    destinationChainId: destinationToken.chainId,
+    tokenAddress: originToken.tokenAddress as Address,
+    amount: stringToBigInt(inputAmount, originToken.decimals),
+    originQuery: quote?.originQuery,
+    destinationQuery: quote?.destQuery,
+    synapseSDK,
+    signer,
+  })
 
   const handleInputAmountChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -192,8 +208,10 @@ export const Widget = ({
           <input
             className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed"
             disabled={true}
-            placeholder="0"
-            value={isLoading ? '...' : maxAmountOut}
+            placeholder=""
+            value={
+              quoteState === QuoteCallbackState.LOADING ? '...' : maxAmountOut
+            }
           />
           <TokenSelect
             label="Out"
@@ -212,10 +230,26 @@ export const Widget = ({
         receive={maxAmountOut}
       />
       <button
+        onClick={fetchQuoteCallback}
         className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
-        onClick={handleFetchQuote}
       >
-        {isLoading ? 'Fetching' : 'Fetch Bridge Quote'}
+        {quoteState === QuoteCallbackState.LOADING
+          ? 'Fetching...'
+          : 'Fetch Bridge Quote'}
+      </button>
+
+      <button
+        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
+        onClick={approveCallback}
+      >
+        {!quote ? 'Approve (Require Quote)' : 'Approve'}
+      </button>
+
+      <button
+        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
+        onClick={bridgeCallback}
+      >
+        {!quote ? 'Bridge (Require Quote)' : 'Bridge'}
       </button>
     </div>
   )

@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
+import image from '@rollup/plugin-image';
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -19,7 +20,7 @@ export default [
         format: 'esm',
       },
     ],
-    external: ['react', 'react/jsx-runtime'],
+    external: ['react', 'react/jsx-runtime', 'viem'],
     plugins: [
       resolve(),
       commonjs(),
@@ -31,6 +32,7 @@ export default [
       postcss({
         plugins: [],
       }),
+      image()
     ],
     watch: {
       buildDelay: 200,

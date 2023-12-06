@@ -40,6 +40,12 @@ const tokens = [
     chainId: 42161,
     decimals: 6,
   },
+  {
+    tokenAddress: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    symbol: 'USDC',
+    chainId: 137,
+    decimals: 6,
+  },
 ]
 
 function App() {
@@ -51,9 +57,16 @@ function App() {
     'https://arbitrum.llamarpc.com',
     42161
   )
+  const polygonProvider = new StaticJsonRpcProvider(
+    'https://polygon.llamarpc.com',
+    137
+  )
 
-  const providers = [ethersProvider, aribtrumProvider]
-  const chainIds = [1, 42161]
+  // const providers = [ethersProvider, aribtrumProvider]
+  // const chainIds = [1, 42161]
+
+  const providers = [aribtrumProvider, ethersProvider, polygonProvider]
+  const chainIds = [42161, 1, 137]
 
   const [customTheme, setCustomTheme] = useState({})
 
@@ -84,7 +97,8 @@ function App() {
         a: 100 * a,
       }
     }
-    const hslString = (h: number, s: number, l: number, a: number) => `hsl(${h}deg ${s}% ${l}% / ${a}%)`
+    const hslString = (h: number, s: number, l: number, a: number) =>
+      `hsl(${h}deg ${s}% ${l}% / ${a}%)`
 
     const colorPicker = document.getElementById(
       'color-picker'
@@ -95,26 +109,64 @@ function App() {
       'accent-color-picker'
     ) as HTMLInputElement | null
 
-    setCustomTheme(l < 50
-      ? {
-        '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
-        '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
-        '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
-        '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
-        '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
-        '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
-        '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
-        '--synapse-brand': accentColorPicker?.value ?? '#ffffff',
-      } : {
-        '--synapse-text-primary': hslString(h, s, Math.min(100, l * 1.07) * 0.07, a),
-        '--synapse-text-secondary': hslString(h, s, Math.min(100, l * 1.41) * 0.41, a),
-        '--synapse-bg-select': hslString(h, s, Math.min(100, l * 1.96) * 0.96, a),
-        '--synapse-bg-surface': hslString(h, s, Math.min(100, l * 2.0) * 1.0, a),
-        '--synapse-bg-root': hslString(h, s, Math.min(100, l * 1.96) * 0.96, a),
-        '--synapse-border': hslString(h, s, Math.min(100, l * 1.86) * 0.86, a),
-        '--synapse-border-hover': hslString(h, s, Math.min(100, l * 1.66) * 0.66, a),
-        '--synapse-brand': accentColorPicker?.value ?? '#000000',
-      })
+    setCustomTheme(
+      l < 50
+        ? {
+            '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
+            '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
+            '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
+            '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
+            '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
+            '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
+            '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
+            '--synapse-brand': accentColorPicker?.value ?? '#ffffff',
+          }
+        : {
+            '--synapse-text-primary': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.07) * 0.07,
+              a
+            ),
+            '--synapse-text-secondary': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.41) * 0.41,
+              a
+            ),
+            '--synapse-bg-select': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.96) * 0.96,
+              a
+            ),
+            '--synapse-bg-surface': hslString(
+              h,
+              s,
+              Math.min(100, l * 2.0) * 1.0,
+              a
+            ),
+            '--synapse-bg-root': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.96) * 0.96,
+              a
+            ),
+            '--synapse-border': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.86) * 0.86,
+              a
+            ),
+            '--synapse-border-hover': hslString(
+              h,
+              s,
+              Math.min(100, l * 1.66) * 0.66,
+              a
+            ),
+            '--synapse-brand': accentColorPicker?.value ?? '#000000',
+          }
+    )
   }
 
   const customThemeDFK = {
@@ -141,10 +193,6 @@ function App() {
 
   const { web3Provider, connectedAddress, connectedNetwork } =
     useEthereumWallet()
-
-  console.log('Consumer address:', connectedAddress)
-  console.log('Consumer web3 provider: ', web3Provider)
-  console.log('Consumer connectedNetwork: ', connectedNetwork)
 
   return (
     <>
@@ -203,26 +251,39 @@ function App() {
         </dl>
         <h3>Color Values</h3>
         <dl>
-          <dt>--synapse-text-primary</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-text-secondary</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-text-primary</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-text-secondary</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
         <dl>
-          <dt>--synapse-bg-select</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-surface</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-root</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-select</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-surface</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-bg-root</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
         <dl>
-          <dt>--synapse-border</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-border-hover</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-brand</dt><dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-border</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-border-hover</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
+          <dt>--synapse-brand</dt>
+          <dd>hsl(0deg 0% 0% / 100%)</dd>
         </dl>
         <h3>Typography — WIP, not reflected in code</h3>
         <dl>
-          <dt>--synapse-font-size</dt><dd>100%</dd>
-          <dt>--synapse-font-family-display</dt><dd>system-ui</dd>
-          <dt>--synapse-font-family-text</dt><dd>system-ui</dd>
-          <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
-          <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
+          <dt>--synapse-font-size</dt>
+          <dd>100%</dd>
+          <dt>--synapse-font-family-display</dt>
+          <dd>system-ui</dd>
+          <dt>--synapse-font-family-text</dt>
+          <dd>system-ui</dd>
+          <dt>--synapse-font-weight-display</dt>
+          <dd>600 (semibold)</dd>
+          <dt>--synapse-font-weight-text</dt>
+          <dd>500 (medium)</dd>
         </dl>
       </main>
 

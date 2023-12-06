@@ -10,7 +10,9 @@
       "@/constants/*": ["constants/*"],
       "@/hooks/*": ["hooks/*"],
       "@/utils/*": ["utils/*"],
-      "@/state/*": ["state/*"]
-    }
-  }
+      "@/state/*": ["state/*"],
+      "@/assets/*": ["assets/*"]
+    },
+  },
+  "exclude": ["node_modules"]
 }

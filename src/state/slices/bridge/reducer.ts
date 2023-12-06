@@ -9,18 +9,18 @@ export interface BridgeState {
 }
 
 const initialState: BridgeState = {
-  originChain: { id: 1, name: 'Ethereum' },
-  destinationChain: { id: 42161, name: 'Arbitrum' },
+  originChain: { id: 42161, name: 'Arbitrum' },
+  destinationChain: { id: 137, name: 'Polygon' },
   originToken: {
-    tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    symbol: 'USDC',
-    chainId: 1,
-    decimals: 6,
-  },
-  destinationToken: {
     tokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     symbol: 'USDC',
     chainId: 42161,
+    decimals: 6,
+  },
+  destinationToken: {
+    tokenAddress: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    symbol: 'USDC',
+    chainId: 137,
     decimals: 6,
   },
 }
