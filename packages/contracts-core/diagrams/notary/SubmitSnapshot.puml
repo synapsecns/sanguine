@@ -1,0 +1,101 @@
+@startuml SubmitSnapshot
+title Submit Notary Snapshot [Synapse Chain]
+' Ordering of the participants
+actor "Notary" as N
+participant "StatementInbox" as SI
+database "SnapshotHub" as SH
+database "AttestationHub" as AH
+database "AgentManager" as AM
+' Sequence of operations
+N -> SI: submitSnapshot
+note over SI
+    Recover Notary address
+    from the signature
+end note
+SI -> AM: getAgentStatus
+AM --> SI: agentStatus
+note over SI #Yellow
+    Is Notary active?
+end note
+note over SI #LightGreen
+    Save signature
+end note
+SI -> SH: acceptNotarySnapshot
+note over SH #Yellow
+    Is Notary in dispute?
+end note
+note over SH #Yellow
+    Has Notary just won a dispute?
+end note
+note over SH #Yellow
+    Has Notary previously
+    submitted a fresher state
+    for chains in the snapshot?
+end note
+note over SH #Yellow
+    Has every state in the snapshot
+    been previously submitted
+    by any of the Guards?
+end note
+note over SH #Yellow
+    Has the exact same
+    snapshot been submitted
+    by any Notary before?
+end note
+note over SH #LightGreen
+    emit SnapshotSaved
+end note
+note over SH
+    Build the Snapshot Merkle Tree
+    and calculate Snapshot Root
+end note
+SH -> AM: getAgentRoot
+AM --> SH: agentRoot
+note over SH #LightGreen
+    Save snapshot root,
+    current agent root and
+    snapshot gas data hash
+end note
+note over SH #LightGreen
+    emit AttestationSaved
+end note
+SH --> SI: attestation
+note over SI #LightGreen
+    emit SnapshotAccepted
+end note
+note over SI
+    Attestation is passed
+    along with the agent root
+    and snapshot gas data
+end note
+SI -> AH: acceptAttestation
+note over AH #LightGreen
+    Save attestation's
+    snapshot root for proofs
+    of the message inclusion
+end note
+note over AH #LightGreen
+    emit SnapshotRootSaved
+end note
+note over AH
+    Passed agent root is
+    ignored on Synapse Chain
+end note
+alt Save gas data?
+    note over AH #White
+        **Condition**:
+        - Gas Data for the chain in the
+        snapshot differs from the one
+        that was previously saved
+    end note
+    note over AH #LightGreen
+        Save Gas Data and
+        Notary address for it
+    end note
+    note over AH #LightGreen
+        emit GasDataSaved
+    end note
+end
+AH --> SI
+SI --> N
+@enduml

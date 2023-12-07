@@ -1,0 +1,44 @@
+@startuml SubmitSnapshot
+title Submit Guard Snapshot [Synapse Chain]
+' Ordering of the participants
+actor "Guard" as G
+participant "StatementInbox" as SI
+database "SnapshotHub" as SH
+database "AgentManager" as AM
+' Sequence of operations
+G -> SI: submitSnapshot
+note over SI
+    Recover Guard address
+    from the signature
+end note
+SI -> AM: getAgentStatus
+AM --> SI: agentStatus
+note over SI #Yellow
+    Is Guard active?
+end note
+note over SI #LightGreen
+    Save signature
+end note
+SI -> SH: acceptGuardSnapshot
+note over SH
+    Guard dispute status
+    is **NOT** checked
+end note
+note over SH #Yellow
+    Has Guard previously
+    submitted a fresher state
+    for chains in the snapshot?
+end note
+note over SH #LightGreen
+    Save new states
+    from the snapshot
+end note
+note over SH #LightGreen
+    emit SnapshotSaved
+end note
+SH --> SI
+note over SI #LightGreen
+    emit SnapshotAccepted
+end note
+SI --> G
+@enduml
