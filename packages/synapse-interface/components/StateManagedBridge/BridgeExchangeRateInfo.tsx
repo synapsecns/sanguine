@@ -51,6 +51,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [toChainId, isGasDropped])
 
   const memoizedGasDropLabel = useMemo(() => {
+    if (toChainId === CHAINS.ETH.id) return null
     if (!isGasDropped || !(toChainId == gasDropChainId)) return null
     if (loading) return null
     return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
