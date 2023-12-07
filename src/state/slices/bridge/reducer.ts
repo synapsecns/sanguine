@@ -1,29 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Chain, TokenMetaData } from 'types'
+import { Chain, BridgeableToken } from 'types'
+import { USDC } from '@/constants/bridgeable'
 
 export interface BridgeState {
   originChain: Chain
   destinationChain: Chain
-  originToken: TokenMetaData
-  destinationToken: TokenMetaData
-  tokens: TokenMetaData[]
+  originToken: BridgeableToken
+  destinationToken: BridgeableToken
+  tokens: BridgeableToken[]
 }
 
 const initialState: BridgeState = {
   originChain: { id: 42161, name: 'Arbitrum' },
   destinationChain: { id: 137, name: 'Polygon' },
-  originToken: {
-    tokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    symbol: 'USDC',
-    chainId: 42161,
-    decimals: 6,
-  },
-  destinationToken: {
-    tokenAddress: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    symbol: 'USDC',
-    chainId: 137,
-    decimals: 6,
-  },
+  originToken: USDC,
+  destinationToken: USDC,
   tokens: [],
 }
 
@@ -45,17 +36,20 @@ export const bridgeSlice = createSlice({
     },
     setOriginToken: (
       state: BridgeState,
-      action: PayloadAction<TokenMetaData>
+      action: PayloadAction<BridgeableToken>
     ) => {
       state.originToken = action.payload
     },
     setDestinationToken: (
       state: BridgeState,
-      action: PayloadAction<TokenMetaData>
+      action: PayloadAction<BridgeableToken>
     ) => {
       state.destinationToken = action.payload
     },
-    setTokens: (state: BridgeState, action: PayloadAction<TokenMetaData[]>) => {
+    setTokens: (
+      state: BridgeState,
+      action: PayloadAction<BridgeableToken[]>
+    ) => {
       state.tokens = action.payload
     },
   },

@@ -1,12 +1,12 @@
-import { TokenMetaData, Chain } from 'types'
+import { BridgeableToken, Chain } from 'types'
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '../icons/DownArrow'
 
 type PopoverSelectProps = {
   selectedChain: Chain
-  options: TokenMetaData[]
-  onSelect: (selected: TokenMetaData) => void
-  selected: TokenMetaData
+  options: BridgeableToken[]
+  onSelect: (selected: BridgeableToken) => void
+  selected: BridgeableToken
   label: string
 }
 
@@ -19,7 +19,7 @@ export function TokenPopoverSelect({
 }: PopoverSelectProps) {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
 
-  const handleSelect = (option: TokenMetaData) => {
+  const handleSelect = (option: BridgeableToken) => {
     onSelect(option)
     closePopover()
   }
@@ -46,8 +46,8 @@ export function TokenPopoverSelect({
                 key={index}
                 className={`w-full cursor-pointer px-2 py-2.5 ${
                   option.symbol === selected.symbol
-                  ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-                  : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+                    ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
+                    : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
                 }`}
                 onClick={() => handleSelect(option)}
               >

@@ -10,7 +10,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { Receipt } from '@/components/Receipt'
 
-import { Chain, TokenMetaData, WidgetProps } from 'types'
+import { BridgeableToken, Chain, WidgetProps } from 'types'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
 import {
@@ -62,17 +62,30 @@ export const Widget = ({
     dispatch(setTokens(tokens))
   }, [tokens])
 
+  const originTokenDecimals = useMemo(() => {
+    if (typeof originToken.decimals === 'number') return originToken.decimals
+
+    return originToken.decimals[originChain.id]
+  }, [originToken])
+
+  const destinationTokenDecimals = useMemo(() => {
+    if (typeof destinationToken.decimals === 'number')
+      return destinationToken.decimals
+
+    return destinationToken.decimals[destinationChain.id]
+  }, [destinationToken])
+
   const {
     state: quoteState,
     callback: fetchQuoteCallback,
     quote,
     error: quoteError,
   } = useBridgeQuoteCallback({
-    originChainId: originToken.chainId,
-    originTokenAddress: originToken.tokenAddress,
-    destinationChainId: destinationToken.chainId,
-    destinationTokenAddress: destinationToken.tokenAddress,
-    amount: stringToBigInt(inputAmount, originToken.decimals),
+    originChainId: originChain.id,
+    originTokenAddress: originToken.addresses[originChain.id],
+    destinationChainId: destinationChain.id,
+    destinationTokenAddress: destinationToken.addresses[destinationChain.id],
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
     synapseSDK: synapseSDK,
   })
 
@@ -86,26 +99,26 @@ export const Widget = ({
     error: allowanceError,
   } = useAllowance({
     spenderAddress: routerAddress as Address,
-    tokenAddress: originToken.tokenAddress as Address,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
     ownerAddress: connectedAddress as Address,
-    chainId: originToken.chainId,
+    chainId: originToken.addresses[originChain.id],
   })
 
   const approveCallback = useApprove({
     spenderAddress: routerAddress as Address,
-    tokenAddress: originToken.tokenAddress as Address,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
     ownerAddress: connectedAddress as Address,
-    amount: stringToBigInt(inputAmount, originToken.decimals),
-    chainId: originToken.chainId,
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    chainId: originChain.id,
   })
 
   const bridgeCallback = useBridgeCallback({
     destinationAddress: connectedAddress as Address,
     originRouterAddress: routerAddress,
-    originChainId: originToken.chainId,
-    destinationChainId: destinationToken.chainId,
-    tokenAddress: originToken.tokenAddress as Address,
-    amount: stringToBigInt(inputAmount, originToken.decimals),
+    originChainId: originChain.id,
+    destinationChainId: destinationChain.id,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
     originQuery: quote?.originQuery,
     destinationQuery: quote?.destQuery,
     synapseSDK,
@@ -126,7 +139,7 @@ export const Widget = ({
 
     const max = BigInt(quote.maxAmountOut.toString())
 
-    return formatBigIntToString(max, destinationToken.decimals, 4)
+    return formatBigIntToString(max, destinationTokenDecimals, 4)
   }, [quote])
 
   /** Fetch Web3 Provider Data */
@@ -166,14 +179,14 @@ export const Widget = ({
   )
 
   const handleOriginTokenSelection = useCallback(
-    (newOriginToken: TokenMetaData) => {
+    (newOriginToken: BridgeableToken) => {
       dispatch(setOriginToken(newOriginToken))
     },
     [dispatch]
   )
 
   const handleDestinationTokenSelection = useCallback(
-    (newDestinationToken: TokenMetaData) => {
+    (newDestinationToken: BridgeableToken) => {
       dispatch(setDestinationToken(newDestinationToken))
     },
     [dispatch]
@@ -229,8 +242,8 @@ export const Widget = ({
       <Receipt
         quote={quote ?? null}
         send={formatBigIntToString(
-          stringToBigInt(inputAmount, originToken.decimals),
-          originToken.decimals,
+          stringToBigInt(inputAmount, originTokenDecimals),
+          originTokenDecimals,
           4
         )}
         receive={maxAmountOut}

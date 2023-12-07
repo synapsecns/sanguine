@@ -12,7 +12,7 @@
       "@/utils/*": ["utils/*"],
       "@/state/*": ["state/*"],
       "@/assets/*": ["assets/*"]
-    },
+    }
   },
   "exclude": ["node_modules"]
 }

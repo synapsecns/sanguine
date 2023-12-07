@@ -1,52 +1,9 @@
-import { Bridge } from '@synapsecns/widget'
+import { Bridge, USDC, USDT, DAI } from '@synapsecns/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, useState } from 'react'
 
-const tokens = [
-  {
-    tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    symbol: 'USDC',
-    chainId: 1,
-    decimals: 6,
-  },
-  {
-    tokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    symbol: 'USDC',
-    chainId: 42161,
-    decimals: 6,
-  },
-  {
-    tokenAddress: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    symbol: 'DAI',
-    chainId: 1,
-    decimals: 18,
-  },
-  {
-    tokenAddress: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-    symbol: 'DAI',
-    chainId: 42161,
-    decimals: 18,
-  },
-  {
-    tokenAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    symbol: 'USDT',
-    chainId: 1,
-    decimals: 6,
-  },
-  {
-    tokenAddress: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    symbol: 'USDT',
-    chainId: 42161,
-    decimals: 6,
-  },
-  {
-    tokenAddress: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    symbol: 'USDC',
-    chainId: 137,
-    decimals: 6,
-  },
-]
+const tokens = [USDC, USDT, DAI]
 
 function App() {
   const ethersProvider = new StaticJsonRpcProvider(
@@ -71,7 +28,6 @@ function App() {
   const [customTheme, setCustomTheme] = useState({})
 
   function createCustomTheme() {
-
     const colorPicker = document.getElementById(
       'color-picker'
     ) as HTMLInputElement | null
@@ -92,7 +48,7 @@ function App() {
       // '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
       // '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
       // '--synapse-accent': accentColorPicker?.value ?? '#ffffff',
-      })
+    })
   }
 
   const customThemeDFK = {
@@ -129,7 +85,7 @@ function App() {
         </a>
       </header>
 
-      <main style={{ flexDirection: 'column', }}>
+      <main style={{ flexDirection: 'column' }}>
         <header>
           <h1>Synapse Widget</h1>
           <code>npm synapse-widget</code>
@@ -138,13 +94,12 @@ function App() {
             Bridge to your React project
           </p>
         </header>
-
         <Bridge
           chainIds={chainIds}
           web3Provider={web3Provider}
           networkProviders={providers}
           tokens={tokens}
-          customTheme={Object.keys(customTheme)?.length && customTheme}
+          customTheme={customTheme}
         />
         <div>
           <input id="color-picker" type="color" onInput={createCustomTheme} />
@@ -167,28 +122,24 @@ function App() {
           tokens={tokens}
           theme="night"
         /> */}
-
         <h2>Customize</h2>
-
         <h3>Token list</h3>
         TODO: Describe how to customize the source or destination token lists
-
         <h3>Appearance</h3>
-
         <h4>Dark mode</h4>
         To override the default light theme, set the bgColor property to dark.
         <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
-
         <h4>Auto-palette</h4>
-        Generate a palette based on your brand colors by setting bgColor to any hex, rgb, or hsl color string. Hex values must contain 6 characters.
+        Generate a palette based on your brand colors by setting bgColor to any
+        hex, rgb, or hsl color string. Hex values must contain 6 characters.
         <pre>
-        customTheme = &#123;
-          <br />  bgColor: '#000A14'
-          <br />  bgColor: 'rgb(0 10 20)'
-          <br />  bgColor: 'hsl(210deg 100% 4%)'
-          <br />&#125;
+          customTheme = &#123;
+          <br /> bgColor: '#000A14'
+          <br /> bgColor: 'rgb(0 10 20)'
+          <br /> bgColor: 'hsl(210deg 100% 4%)'
+          <br />
+          &#125;
         </pre>
-
         {/* <h4>Accent Color</h4>
         Add an accent color to text links and button hover states by setting accentColor to any hex, rgb, or hsl color string.
         <pre>
@@ -198,24 +149,25 @@ function App() {
           <br />  accentColor: 'hsl(285deg 100% 67%)'
           <br />&#125;
         </pre> */}
-        
         <h4>Overrides</h4>
-        The following CSS variables can be added to your CustomTheme to override the generated values. Any valid CSS color string can be used, including var() aliases.
-
+        The following CSS variables can be added to your CustomTheme to override
+        the generated values. Any valid CSS color string can be used, including
+        var() aliases.
         <pre>
-        customTheme = &#123;
-          <br />  --synapse-text-primary:   'white'
-          <br />  --synapse-text-secondary: '#cccccc'
+          customTheme = &#123;
+          <br /> --synapse-text-primary: 'white'
+          <br /> --synapse-text-secondary: '#cccccc'
           <br />
-          <br />  --synapse-bg-select:  'hsl(210deg 100% 50%)'
-          <br />  --synapse-bg-surface: 'hsl(210deg 100% 12.5%)'
-          <br />  --synapse-bg-root:    'inherit'
+          <br /> --synapse-bg-select: 'hsl(210deg 100% 50%)'
+          <br /> --synapse-bg-surface: 'hsl(210deg 100% 12.5%)'
+          <br /> --synapse-bg-root: 'inherit'
           <br />
-          <br />  --synapse-border:       'hsl(210deg 100% 25%)'
-          <br />  --synapse-border-hover: 'hsl(285deg 100% 33%)'
+          <br /> --synapse-border: 'hsl(210deg 100% 25%)'
+          <br /> --synapse-border-hover: 'hsl(285deg 100% 33%)'
           <br />
-          <br />  --synapse-accent: 'var(--my-brand-color)'
-          <br />&#125;
+          <br /> --synapse-accent: 'var(--my-brand-color)'
+          <br />
+          &#125;
         </pre>
         {/* <h4>Typography — WIP, not reflected in code</h4>
         <dl>

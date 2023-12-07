@@ -1,8 +1,12 @@
-export interface TokenMetaData {
-  tokenAddress: string
+export interface BridgeableToken {
+  addresses: {}
+  decimals: number | {}
   symbol: string
-  chainId: number
-  decimals: number
+  name: string
+  swapableType: string
+  color: string
+  priorityRank: number
+  routeSymbol: string
 }
 
 export interface CustomThemeVariables {
@@ -35,7 +39,7 @@ export interface WidgetProps {
   customTheme?: CustomThemeVariables
 
   /** Supported Tokens Metadata defined by Consumer */
-  tokens: TokenMetaData[]
+  tokens: BridgeableToken[]
 }
 
 export interface Chain {
@@ -43,4 +47,8 @@ export interface Chain {
   name: string
 }
 
-export declare function Bridge(props: any): JSX.Element
+export declare function Bridge(props: WidgetProps): JSX.Element
+
+export declare const USDC: BridgeableToken
+export declare const USDT: BridgeableToken
+export declare const DAI: BridgeableToken
