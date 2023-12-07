@@ -42,3 +42,5 @@ export interface Chain {
   id: number
   name: string
 }
+
+export declare function Bridge(props: any): JSX.Element

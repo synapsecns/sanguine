@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
-import image from '@rollup/plugin-image';
+import image from '@rollup/plugin-image'
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -32,14 +32,14 @@ export default [
       postcss({
         plugins: [],
       }),
-      image()
+      image(),
     ],
     watch: {
       buildDelay: 200,
     },
   },
   {
-    input: 'dist/esm/index.d.ts',
+    input: 'src/types/index.d.ts',
     output: [{ file: 'dist/index.d.ts', format: 'esm' }],
     plugins: [dts.default()],
     external: [/\.(css|less|scss)$/],
