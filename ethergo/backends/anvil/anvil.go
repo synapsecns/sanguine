@@ -51,6 +51,10 @@ type Backend struct {
 	chainConfig *params.ChainConfig
 	// impersonationMux is used to lock the impersonation
 	impersonationMux sync.Mutex
+	// pool is the docker pool
+	pool *dockertest.Pool
+	// resource is the docker resource
+	resource *dockertest.Resource
 }
 
 // BackendName is the name of the anvil backend.
@@ -170,6 +174,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		fundingMux:  mapmutex.NewStringerMapMutex(),
 		store:       base.NewInMemoryKeyStore(),
 		chainConfig: chainConfig,
+		pool:        pool,
+		resource:    resource,
 	}
 
 	err = backend.storeWallets(args)
@@ -178,16 +184,21 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Cleanup(func() {
 		select {
 		case <-ctx.Done():
-			err = pool.Purge(resource)
-			if err != nil {
-				logger.Errorf("error purging anvil container: %w", err)
-			}
+			backend.TearDown()
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
 	})
 
 	return &backend
+}
+
+func (b *Backend) TearDown() {
+	fmt.Println("tearing down anvil backend")
+	err := b.pool.Purge(b.resource)
+	if err != nil {
+		logger.Errorf("error purging anvil container: %w", err)
+	}
 }
 
 func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {

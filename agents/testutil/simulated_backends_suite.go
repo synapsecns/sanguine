@@ -374,7 +374,7 @@ func (a *SimulatedBackendsTestSuite) shouldUseAnvil() bool {
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
-	a.TestSuite.DeferAfterSuite(a.cleanAfterTestSuite)
+	a.TestSuite.DeferAfterTest(a.cleanAfterTestSuite)
 
 	a.SetupGuard()
 	a.SetupNotary()
@@ -420,6 +420,7 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 			anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
 			anvilOptsOrigin.SetBlockTime(1 * time.Second)
 			a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+			a.TestSuite.DeferAfterTest(a.TestBackendOrigin.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 		}
@@ -431,6 +432,7 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 			anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
 			anvilOptsDestination.SetBlockTime(1 * time.Second)
 			a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+			a.TestSuite.DeferAfterTest(a.TestBackendDestination.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
 		}
@@ -442,6 +444,7 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 			anvilOptsSummit.SetChainID(uint64(10))
 			anvilOptsSummit.SetBlockTime(1 * time.Second)
 			a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+			a.TestSuite.DeferAfterTest(a.TestBackendSummit.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 		}
