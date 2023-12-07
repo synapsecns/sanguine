@@ -1,0 +1,89 @@
+@startuml SubmitAttestation
+title Submit Notary Attestation [Light Chain]
+' Ordering of the participants
+actor "Notary" as N
+participant "StatementInbox" as SI
+database "AttestationHub" as AH
+database "AgentManager" as AM
+' Sequence of operations
+N -> SI: submitAttestation
+note over SI
+    Recover Notary address
+    from the signature
+end note
+SI -> AM: getAgentStatus
+AM --> SI: agentStatus
+note over SI #Yellow
+    Is Notary active?
+end note
+note over SI #LightGreen
+    Save signature
+end note
+SI -> AH: acceptAttestation
+note over AH
+    Attestation is passed
+    along with the agent root
+    and snapshot gas data
+end note
+note over AH #LightGreen
+    Save attestation's
+    snapshot root for proofs
+    of the message inclusion
+end note
+note over AH #LightGreen
+    emit SnapshotRootSaved
+end note
+AH -> AM: getAgentRoot
+AM --> AH: agentRoot
+alt Save agent root?
+    note over AH #White
+        **Condition**:
+        - No pending agent root AND
+        - Attestation's agent root differs
+        from the one in AgentManager
+    end note
+    note over AH #LightGreen
+        Save pending agent root
+    end note
+    note over AH #LightGreen
+        emit AgentRootSaved
+    end note
+end
+alt Save gas data?
+    note over AH #White
+        **Condition**:
+        - Gas Data for the chain in the
+        snapshot differs from the one
+        that was previously saved
+    end note
+    note over AH #LightGreen
+        Save Gas Data and
+        Notary address for it
+    end note
+    note over AH #LightGreen
+        emit GasDataSaved
+    end note
+end
+AH --> SI: agentRootInfo
+note over SI #LightGreen
+    emit AttestationAccepted
+end note
+alt Propagate agent root?
+    note over SI #White
+        **Condition**:
+        - There is a pending agent
+        root that is old enough
+    end note
+    SI -> AM: pullAgentRoot
+    AM -> AH: getAgentRootInfo
+    AH --> AM: agentRootInfo
+    note over AM #LightGreen
+        Update tracked agent root
+    end note
+    note over AM #LightGreen
+        emit AgentRootUpdated
+    end note
+    AM --> SI
+end
+SI --> N
+@enduml
