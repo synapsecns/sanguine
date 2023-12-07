@@ -2,7 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { providers } from 'ethers'
 
 import {
-  PUBLIC_PROVIDER_URLS,
+  getTestProviderUrl,
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_CCTP,
@@ -15,16 +15,16 @@ import { SynapseCCTPRouter } from './synapseCCTPRouter'
 
 describe('SynapseCCTPRouterSet', () => {
   const ethProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ETH]
+    getTestProviderUrl(SupportedChainId.ETH)
   )
 
   const arbProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ARBITRUM]
+    getTestProviderUrl(SupportedChainId.ARBITRUM)
   )
 
   // Chain where CCTP is unlikely to be deployed
   const moonbeamProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.MOONBEAM]
+    getTestProviderUrl(SupportedChainId.MOONBEAM)
   )
 
   const testProviders: ChainProvider[] = [

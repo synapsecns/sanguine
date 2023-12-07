@@ -3,6 +3,62 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.198](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.197...@synapsecns/synapse-interface@0.1.198) (2023-12-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.197](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.196...@synapsecns/synapse-interface@0.1.197) (2023-12-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.196](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.195...@synapsecns/synapse-interface@0.1.196) (2023-12-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.195](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.194...@synapsecns/synapse-interface@0.1.195) (2023-12-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.194](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.193...@synapsecns/synapse-interface@0.1.194) (2023-12-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.193](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.192...@synapsecns/synapse-interface@0.1.193) (2023-12-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.192](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.191...@synapsecns/synapse-interface@0.1.192) (2023-12-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.1.191](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.190...@synapsecns/synapse-interface@0.1.191) (2023-11-29)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

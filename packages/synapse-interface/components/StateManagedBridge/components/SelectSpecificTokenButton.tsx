@@ -133,9 +133,10 @@ export const OptionDetails = ({
   exchangeRate: string
   estimatedDurationInSeconds: number
 }) => {
-  const estimatedDurationInMinutes: number = Math.floor(
-    estimatedDurationInSeconds / 60
-  )
+  const estimatedDurationInMinutes: number =
+    estimatedDurationInSeconds < 60
+      ? Math.ceil(estimatedDurationInSeconds / 60)
+      : Math.floor(estimatedDurationInSeconds / 60)
 
   return (
     <div data-test-id="option-details" className="flex flex-col">
