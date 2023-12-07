@@ -166,10 +166,11 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 	case merkleIndex+1 > message.Nonce():
 		return nil
 	case merkleIndex+1 < message.Nonce():
-		span.AddEvent("nonce is not correct", trace.WithAttributes(
+		span.SetAttributes(
 			attribute.Int("nonce", int(message.Nonce())),
 			attribute.Int("merkle_index", int(merkleIndex)),
-		))
+		)
+		span.AddEvent("nonce is not correct")
 		logger.Warnf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, message.Nonce())
 		return nil
 	default:

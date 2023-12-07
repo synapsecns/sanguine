@@ -268,7 +268,7 @@ func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor
 		return fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
-	tree, err := newTreeFromDB(ctx, chain.ChainID, exec.executorDB)
+	tree, err := exec.newTreeFromDB(ctx, chain.ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get tree from db: %w", err)
 	}
@@ -729,7 +729,10 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 }
 
 // newTreeFromDB creates a new merkle tree from the database's messages.
-func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+func (e *Executor) newTreeFromDB(parentCtx context.Context, chainID uint32) (*merkle.HistoricalTree, error) {
+	ctx, span := e.handler.Tracer().Start(parentCtx, "newTreeFromDB", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
 	var allMessages []types.Message
 
 	messageMask := db.DBMessage{
@@ -738,7 +741,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 	page := 1
 
 	for {
-		messages, err := executorDB.GetMessages(ctx, messageMask, page)
+		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
 		if err != nil {
 			return nil, fmt.Errorf("could not get messages: %w", err)
 		}
@@ -749,6 +752,10 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 		allMessages = append(allMessages, messages...)
 		page++
 	}
+	span.SetAttributes(
+		attribute.Int("num_messages", len(allMessages)),
+		attribute.Int("message_tree_height", int(merkle.MessageTreeHeight)),
+	)
 
 	rawMessages := make([][]byte, len(allMessages))
 
