@@ -92,10 +92,7 @@ export const Banner = () => {
   )
 }
 
-export const CustomBanner = (
-  textOrContents: React.ReactNode | string,
-  link: any
-) => {
+export const CustomBanner = ({ text, link }: { text: string; link?: any }) => {
   const [hasMounted, setHasMounted] = useState(false)
   const [showBanner, setShowBanner] = useState(false)
 
@@ -142,7 +139,7 @@ export const CustomBanner = (
             <p className="text-md">
               {/* TODO: replace w/ tweetlink directly */}
               <a href={link} target={'_blank'}>
-                {textOrContents}
+                {text}
               </a>
             </p>
           </div>
