@@ -7,7 +7,7 @@ export interface TokenMetaData {
 
 export interface CustomThemeVariables {
   bgColor?: string
-  brandColor?: string
+  accentColor?: string
   '--synapse-text-primary'?: string
   '--synapse-text-secondary'?: string
   '--synapse-bg-select'?: string
@@ -15,7 +15,7 @@ export interface CustomThemeVariables {
   '--synapse-bg-root'?: string
   '--synapse-border'?: string
   '--synapse-border-hover'?: string
-  '--synapse-brand'?: string
+  '--synapse-accent'?: string
 }
 
 export interface WidgetProps {
@@ -29,7 +29,7 @@ export interface WidgetProps {
   networkProviders?: any[]
 
   /** Selected Day/Night Theme */
-  theme?: 'day' | 'night'
+  theme?: 'light' | 'dark'
 
   /** Apply Custom Themes */
   customTheme?: CustomThemeVariables

@@ -70,103 +70,29 @@ function App() {
 
   const [customTheme, setCustomTheme] = useState({})
 
-  function createCustomTheme(e: BaseSyntheticEvent) {
-    function hexToRgb(hex: string) {
-      // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-      return result
-        ? {
-            r: parseInt(result[1], 16) / 255,
-            g: parseInt(result[2], 16) / 255,
-            b: parseInt(result[3], 16) / 255,
-          }
-        : null
-    }
-    function rgb2hsl({ r, g, b, a = 1 }: any) {
-      // in: r,g,b in [0,1], out: h in [0,360) and s,l in [0,100] // https://stackoverflow.com/a/54071699
-      let v = Math.max(r, g, b),
-        c = v - Math.min(r, g, b),
-        f = 1 - Math.abs(v + v - c - 1)
-      let h =
-        c &&
-        (v === r ? (g - b) / c : v === g ? 2 + (b - r) / c : 4 + (r - g) / c)
-      return {
-        h: 60 * (h < 0 ? h + 6 : h),
-        s: f ? (100 * c) / f : 0,
-        l: (100 * (v + v - c)) / 2,
-        a: 100 * a,
-      }
-    }
-    const hslString = (h: number, s: number, l: number, a: number) =>
-      `hsl(${h}deg ${s}% ${l}% / ${a}%)`
+  function createCustomTheme() {
 
     const colorPicker = document.getElementById(
       'color-picker'
     ) as HTMLInputElement | null
-    const { h, s, l, a } = rgb2hsl(hexToRgb(colorPicker?.value ?? '#000000'))
 
     const accentColorPicker = document.getElementById(
       'accent-color-picker'
     ) as HTMLInputElement | null
 
-    setCustomTheme(
-      l < 50
-        ? {
-            '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
-            '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
-            '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
-            '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
-            '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
-            '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
-            '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
-            '--synapse-brand': accentColorPicker?.value ?? '#ffffff',
-          }
-        : {
-            '--synapse-text-primary': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.07) * 0.07,
-              a
-            ),
-            '--synapse-text-secondary': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.41) * 0.41,
-              a
-            ),
-            '--synapse-bg-select': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.96) * 0.96,
-              a
-            ),
-            '--synapse-bg-surface': hslString(
-              h,
-              s,
-              Math.min(100, l * 2.0) * 1.0,
-              a
-            ),
-            '--synapse-bg-root': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.96) * 0.96,
-              a
-            ),
-            '--synapse-border': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.86) * 0.86,
-              a
-            ),
-            '--synapse-border-hover': hslString(
-              h,
-              s,
-              Math.min(100, l * 1.66) * 0.66,
-              a
-            ),
-            '--synapse-brand': accentColorPicker?.value ?? '#000000',
-          }
-    )
+    setCustomTheme({
+      bgColor: colorPicker?.value,
+      accentColor: accentColorPicker?.value,
+      /* Overrides */
+      // '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
+      // '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
+      // '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
+      // '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
+      // '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
+      // '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
+      // '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
+      // '--synapse-accent': accentColorPicker?.value ?? '#ffffff',
+      })
   }
 
   const customThemeDFK = {
@@ -177,7 +103,7 @@ function App() {
     '--synapse-bg-background': 'rgb(255,227,189)',
     '--synapse-border': 'rgb(216,172,130)',
     '--synapse-border-hover': 'rgb(224,228,203)',
-    '--synapse-brand': 'rgb(62,31,5)',
+    '--synapse-accent': 'rgb(62,31,5)',
   }
 
   const customThemeWeird = {
@@ -188,7 +114,7 @@ function App() {
     '--synapse-bg-background': 'orange',
     '--synapse-border': 'blue',
     '--synapse-border-hover': 'yellow',
-    '--synapse-brand': 'red',
+    '--synapse-accent': 'red',
   }
 
   const { web3Provider, connectedAddress, connectedNetwork } =
@@ -196,14 +122,14 @@ function App() {
 
   return (
     <>
-      <header>
+      <header style={{ placeContent: 'space-between' }}>
         <img width="160" src="/synapse-logo.svg" alt="Synapse logo" />
         <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">
           EVM Bridge
         </a>
       </header>
 
-      <main style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <main style={{ flexDirection: 'column', }}>
         <header>
           <h1>Synapse Widget</h1>
           <code>npm synapse-widget</code>
@@ -221,15 +147,18 @@ function App() {
           customTheme={Object.keys(customTheme)?.length && customTheme}
         />
         <div>
-          {/* <label htmlFor='color-picker'>Background</label> */}
           <input id="color-picker" type="color" onInput={createCustomTheme} />
+          {/* &nbsp;
+          <label htmlFor='color-picker'>Background</label>
           &nbsp;
-          {/* <label htmlFor='accent-color-picker'>Accent</label> */}
+          &nbsp;
           <input
             id="accent-color-picker"
             type="color"
             onInput={createCustomTheme}
           />
+          &nbsp;
+          <label htmlFor='accent-color-picker'>Accent</label> */}
         </div>
         {/* <Bridge
           chainIds={chainIds}
@@ -240,51 +169,62 @@ function App() {
         /> */}
 
         <h2>Customize</h2>
-        <h3>Color Mode — WIP, not reflected in code</h3>
+
+        <h3>Token list</h3>
+        TODO: Describe how to customize the source or destination token lists
+
+        <h3>Appearance</h3>
+
+        <h4>Dark mode</h4>
+        To override the default light theme, set the bgColor property to dark.
+        <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
+
+        <h4>Auto-palette</h4>
+        Generate a palette based on your brand colors by setting bgColor to any hex, rgb, or hsl color string. Hex values must contain 6 characters.
+        <pre>
+        customTheme = &#123;
+          <br />  bgColor: '#000A14'
+          <br />  bgColor: 'rgb(0 10 20)'
+          <br />  bgColor: 'hsl(210deg 100% 4%)'
+          <br />&#125;
+        </pre>
+
+        {/* <h4>Accent Color</h4>
+        Add an accent color to text links and button hover states by setting accentColor to any hex, rgb, or hsl color string.
+        <pre>
+        customTheme = &#123;
+          <br />  accentColor: '#d557ff'
+          <br />  accentColor: 'rgb(213 87 255)'
+          <br />  accentColor: 'hsl(285deg 100% 67%)'
+          <br />&#125;
+        </pre> */}
+        
+        <h4>Overrides</h4>
+        The following CSS variables can be added to your CustomTheme to override the generated values. Any valid CSS color string can be used, including var() aliases.
+
+        <pre>
+        customTheme = &#123;
+          <br />  --synapse-text-primary:   'white'
+          <br />  --synapse-text-secondary: '#cccccc'
+          <br />
+          <br />  --synapse-bg-select:  'hsl(210deg 100% 50%)'
+          <br />  --synapse-bg-surface: 'hsl(210deg 100% 12.5%)'
+          <br />  --synapse-bg-root:    'inherit'
+          <br />
+          <br />  --synapse-border:       'hsl(210deg 100% 25%)'
+          <br />  --synapse-border-hover: 'hsl(285deg 100% 33%)'
+          <br />
+          <br />  --synapse-accent: 'var(--my-brand-color)'
+          <br />&#125;
+        </pre>
+        {/* <h4>Typography — WIP, not reflected in code</h4>
         <dl>
-          <dt>theme</dt>
-          <dd>
-            <ul style={{ display: 'flex', gap: '1rem' }}>
-              <li>auto</li>|<li>dark</li>|<li>light</li>
-            </ul>
-          </dd>
-        </dl>
-        <h3>Color Values</h3>
-        <dl>
-          <dt>--synapse-text-primary</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-text-secondary</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-        </dl>
-        <dl>
-          <dt>--synapse-bg-select</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-surface</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-bg-root</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-        </dl>
-        <dl>
-          <dt>--synapse-border</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-border-hover</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-          <dt>--synapse-brand</dt>
-          <dd>hsl(0deg 0% 0% / 100%)</dd>
-        </dl>
-        <h3>Typography — WIP, not reflected in code</h3>
-        <dl>
-          <dt>--synapse-font-size</dt>
-          <dd>100%</dd>
-          <dt>--synapse-font-family-display</dt>
-          <dd>system-ui</dd>
-          <dt>--synapse-font-family-text</dt>
-          <dd>system-ui</dd>
-          <dt>--synapse-font-weight-display</dt>
-          <dd>600 (semibold)</dd>
-          <dt>--synapse-font-weight-text</dt>
-          <dd>500 (medium)</dd>
-        </dl>
+          <dt>--synapse-font-size</dt><dd>100%</dd>
+          <dt>--synapse-font-family-display</dt><dd>system-ui</dd>
+          <dt>--synapse-font-family-text</dt><dd>system-ui</dd>
+          <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
+          <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
+        </dl> */}
       </main>
 
       <footer></footer>

@@ -26,7 +26,7 @@ export const Receipt = ({ quote, send, receive }) => {
             <a
               href="https://synapseprotocol.com"
               target="_blank"
-              className="text-[--synapse-brand] cursor-alias  hover:underline"
+              className="text-[--synapse-accent] cursor-alias  hover:underline"
             >
               Synapse
             </a>
@@ -40,7 +40,7 @@ export const Receipt = ({ quote, send, receive }) => {
             <a
               href="https://synapseprotocol.com"
               target="_blank"
-              className="text-[--synapse-brand] cursor-alias active:opacity-40 hover:underline"
+              className="text-[--synapse-accent] cursor-alias active:opacity-40 hover:underline"
             >
               Synapse
             </a>

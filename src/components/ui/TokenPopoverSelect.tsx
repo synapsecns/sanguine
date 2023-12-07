@@ -38,7 +38,7 @@ export function TokenPopoverSelect({
         </div>
       </div>
       {isOpen && (
-        <div className="absolute z-50 mt-1 bg-[--synapse-bg-select] rounded shadow popover">
+        <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-[--synapse-border] rounded shadow popover">
           {options.map((option, index) => {
             return (
               <div
@@ -46,8 +46,8 @@ export function TokenPopoverSelect({
                 key={index}
                 className={`w-full cursor-pointer px-2 py-2.5 ${
                   option.symbol === selected.symbol
-                    ? 'border border-zinc-300 rounded-md'
-                    : 'border border-transparent active:border-zinc-300 rounded-md hover:bg-[--synapse-bg-surface] active:opacity-40'
+                  ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
+                  : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
                 }`}
                 onClick={() => handleSelect(option)}
               >

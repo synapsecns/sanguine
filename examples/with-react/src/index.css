@@ -79,7 +79,7 @@ dl {
 #root > header,
 #root > footer,
 #root > main {
+  display: flex;
   padding: 1rem;
-  flex-direction: column;
   gap: 1rem;
 }

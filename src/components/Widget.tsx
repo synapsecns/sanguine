@@ -31,6 +31,8 @@ import {
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 
+import { generateTheme } from '@/utils/generateTheme'
+
 export const Widget = ({
   chainIds,
   web3Provider,
@@ -49,9 +51,9 @@ export const Widget = ({
     useBridgeState()
 
   const themeVariables = (() => {
-    if (theme === 'night') return darkThemeVariables as React.CSSProperties
-    if (customTheme) return customTheme as React.CSSProperties
-    return lightThemeVariables as React.CSSProperties
+    if (theme === 'dark') return generateTheme({bgColor: 'dark'})
+    if (customTheme) return generateTheme(customTheme)
+    return generateTheme()
   })()
 
   const dispatch = useAppDispatch()
@@ -231,7 +233,7 @@ export const Widget = ({
       />
       <button
         onClick={fetchQuoteCallback}
-        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
+        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-border-hover] active:opacity-40"
       >
         {quoteState === QuoteCallbackState.LOADING
           ? 'Fetching...'
