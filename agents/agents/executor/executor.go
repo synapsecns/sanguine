@@ -806,8 +806,8 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
+func (e Executor) streamLogs(parentCtx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(parentCtx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
@@ -815,6 +815,14 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
 	toBlock := "latest"
+
+	ctx, _ := e.handler.Tracer().Start(parentCtx, "streamLogs", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.String("address", address),
+		attribute.Int("from_block", int(lastStoredBlock)),
+		attribute.String("to_block", toBlock),
+		attribute.String("contract_type", contractType.String()),
+	))
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
