@@ -228,6 +228,8 @@ export const ToTokenListOverlay = () => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
 
+  console.log('orderedPossibleTokens:', orderedPossibleTokens)
+
   return (
     <div
       ref={overlayRef}
