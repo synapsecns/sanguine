@@ -1,0 +1,86 @@
+@startuml ExecuteMessage
+title Execute Message [All Chains]
+' Ordering of the participants
+actor "Executor" as E
+participant "Destination" as D
+participant "TipsDistributor" as TD
+database "AttestationHub" as AH
+database "ReceiptHub" as RH
+entity "App" as A
+' Sequence of operations
+E -> D: executeMessage
+note over D
+    Executor provides a message
+    and its merkle proofs:
+    - Proof for message inclusion
+    in the State Merkle Tree
+    - Proof of state inclusion
+    in the Snapshot Merkle Tree
+end note
+note over D #Yellow
+    Is message already executed?
+end note
+note over D
+    Snapshot Root is calculated
+    using the merkle proof
+end note
+D -> AH: getSnapRootData
+note over AH
+    Attestation for snapRoot:
+    - Notary who posted it.
+    - When it was posted.
+end note
+AH --> D: snapRootData
+note over D #Yellow
+    Has snapshot root been attested?
+end note
+note over D #Yellow
+    Is Notary in dispute or slashed?
+end note
+note over D #Yellow
+    Has Notary just won a dispute?
+end note
+note over D #Yellow
+    Has message optimistic period
+    passed for snapshot root?
+end note
+note over D #Yellow
+    Has Executor provided enough
+    ""msg.value"" and gas limit?
+end note
+D -> A: executeMessage
+note over A
+    App handles the
+    message execution
+end note
+A --> D: Success/Failure
+note over D #LightGreen
+    emit Executed
+end note
+D -> RH: saveReceipt
+note over RH #LightGreen
+    Saved for msgHash:
+    - executor
+    - snapRoot
+    - Success/Failure
+end note
+note over RH #LightGreen
+    emit ReceiptSaved
+end note
+RH --> D
+alt Forward receipt?
+    note over D #White
+        **Condition:**
+        - This is Synapse Chain
+    end note
+    D -> TD: acceptReceipt
+    note over TD #LightGreen
+        Receipt is added to the queue
+    end note
+    note over TD #LightGreen
+        emit ReceiptEnqueued
+    end note
+    TD --> D
+end
+D --> E
+@enduml

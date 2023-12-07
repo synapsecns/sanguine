@@ -1,0 +1,77 @@
+@startuml SendMessage
+title Send Message [All Chains]
+' Ordering of the participants
+actor "User" as U
+entity "App" as A
+participant "Origin" as O
+database "StateHub" as SH
+database "GasOracle" as GO
+participant "TipsCollector" as TC
+database "AttestationHub" as AH
+' Sequence of operations
+U -> A: doSomething
+note over A
+    App initiates
+    message sending
+end note
+A -> O: sendMessage
+O -> GO: getMinimumTips
+GO --> O: minimumTips
+note over O #Yellow
+    Are the provided
+    tips sufficient?
+end note
+O -> TC: transfer tips
+note over TC #LightGreen
+    Tips are custodied
+    by the Tip Collector
+end note
+TC --> O
+note over O: Message is hashed
+O -> SH: insertMsgHash
+note over SH #LightGreen
+    Message hash is inserted
+    in the State Merkle Tree
+end note
+note over SH
+    Gas data is fetched
+    for the local chain
+end note
+SH -> GO: getGasData
+GO --> SH: localGasData
+note over SH #LightGreen
+    New Tree Root and
+    current gas data for
+    the local chain are saved
+end note
+note over SH #LightGreen: emit StateSaved
+SH --> O
+note over O #LightGreen: emit MessageSent
+O -> GO: updateGasData
+note over GO
+    Gas Data is fetched
+    for the destination chain
+end note
+GO -> AH: getGasData
+AH --> GO: destinationGasData
+alt Update Gas Data?
+    note over GO #White
+        **Condition:**
+        - New gas data is available
+        - Gas data is old enough
+    end note
+    note over GO #LightGreen
+        Gas Data is updated
+        for the destination chain
+    end note
+    note over GO #LightGreen: emit GasDataUpdated
+end
+GO --> O
+O --> A: msgInfo
+note over A
+    Nonce and hash of
+    the message are
+    passed back to App
+end note
+A --> U
+@enduml
