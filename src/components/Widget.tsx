@@ -11,7 +11,6 @@ import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { Receipt } from '@/components/Receipt'
 
 import { Chain, TokenMetaData, WidgetProps } from 'types'
-import { lightThemeVariables, darkThemeVariables } from '@/constants/index'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
 import {
@@ -28,6 +27,7 @@ import {
   setOriginChain,
   setOriginToken,
   setDestinationToken,
+  setTokens,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 
@@ -51,12 +51,16 @@ export const Widget = ({
     useBridgeState()
 
   const themeVariables = (() => {
-    if (theme === 'dark') return generateTheme({bgColor: 'dark'})
+    if (theme === 'dark') return generateTheme({ bgColor: 'dark' })
     if (customTheme) return generateTheme(customTheme)
     return generateTheme()
   })()
 
   const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    dispatch(setTokens(tokens))
+  }, [tokens])
 
   const {
     state: quoteState,

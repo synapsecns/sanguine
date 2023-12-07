@@ -6,6 +6,7 @@ export interface BridgeState {
   destinationChain: Chain
   originToken: TokenMetaData
   destinationToken: TokenMetaData
+  tokens: TokenMetaData[]
 }
 
 const initialState: BridgeState = {
@@ -23,6 +24,7 @@ const initialState: BridgeState = {
     chainId: 137,
     decimals: 6,
   },
+  tokens: [],
 }
 
 export const bridgeSlice = createSlice({
@@ -53,6 +55,9 @@ export const bridgeSlice = createSlice({
     ) => {
       state.destinationToken = action.payload
     },
+    setTokens: (state: BridgeState, action: PayloadAction<TokenMetaData[]>) => {
+      state.tokens = action.payload
+    },
   },
 })
 
@@ -61,6 +66,7 @@ export const {
   setDestinationChain,
   setOriginToken,
   setDestinationToken,
+  setTokens,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
