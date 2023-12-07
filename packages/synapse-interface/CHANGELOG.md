@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.199](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.198...@synapsecns/synapse-interface@0.1.199) (2023-12-07)
+
+
+### Reverts
+
+* Revert "pause bsc (#1603)" (#1606) ([1eb45f5](https://github.com/synapsecns/sanguine/commit/1eb45f515000a89214359a2d36ed99367c0995aa)), closes [#1603](https://github.com/synapsecns/sanguine/issues/1603) [#1606](https://github.com/synapsecns/sanguine/issues/1606)
+
+
+
+
+
 ## [0.1.198](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.197...@synapsecns/synapse-interface@0.1.198) (2023-12-07)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
