@@ -145,7 +145,7 @@ Scribe
 ├── <a href="./grpc">grpc</a>: The gRPC client implementation for Scribe
 ├── <a href="./internal">internal</a>: Internal packages for Scribe
 ├── <a href="./logger">logger</a>: Handles logging for various events in Scribe.
-├── <a href="./metadata">metadata</a>: Provides metadata for building .
+├── <a href="./metadata">metadata</a>: Provides metadata for building.
 ├── <a href="./scripts">scripts</a>: Scripts for Scribe
 ├── <a href="./service">service</a>: Service holds Scribe indexer code (Fetcher, Indexer, ChainIndexer)
 ├── <a href="./testhelper">testhelper</a>: Assists testing in downstream services.
