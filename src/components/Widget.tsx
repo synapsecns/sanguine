@@ -112,11 +112,11 @@ export const Widget = ({
     quote,
     error: quoteError,
   } = useBridgeQuote({
-    originChainId: originToken.chainId,
-    originTokenAddress: originToken.tokenAddress,
-    destinationChainId: destinationToken.chainId,
-    destinationTokenAddress: destinationToken.tokenAddress,
-    amount: stringToBigInt(inputAmount, originToken.decimals),
+    originChainId: originChain.id,
+    originTokenAddress: originToken.addresses[originChain.id],
+    destinationChainId: destinationChain.id,
+    destinationTokenAddress: destinationToken.addresses[destinationChain.id],
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
     synapseSDK: synapseSDK,
   })
 
@@ -133,8 +133,8 @@ export const Widget = ({
     spenderAddress: routerAddress as Address,
     tokenAddress: originToken.addresses[originChain.id] as Address,
     ownerAddress: connectedAddress as Address,
-    amount: stringToBigInt(inputAmount, originToken.decimals),
-    chainId: originToken.chainId,
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    chainId: originChain.id,
     onSuccess: checkAllowanceCallback,
   }
   const {
@@ -168,7 +168,11 @@ export const Widget = ({
   }, [originChain?.id, networkId])
 
   const formattedInputAmount: bigint = useMemo(
-    () => stringToBigInt(inputAmount ?? '0', originToken?.decimals),
+    () =>
+      stringToBigInt(
+        inputAmount ?? '0',
+        originToken.decimals ?? originToken.decimals[originChain.id]
+      ),
     [inputAmount, originToken]
   )
 
