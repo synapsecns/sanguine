@@ -17,6 +17,7 @@ replace (
 
 require (
 	github.com/99designs/gqlgen v0.17.36
+	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Yamashou/gqlgenc v0.10.0
 	github.com/creasty/defaults v1.7.0
 	github.com/ethereum/go-ethereum v1.10.26
@@ -43,7 +44,6 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/ClickHouse/ch-go v0.47.3 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.3.0 // indirect
-	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
