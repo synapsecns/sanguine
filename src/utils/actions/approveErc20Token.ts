@@ -24,17 +24,33 @@ export const approveErc20Token = async ({
   //     abi = erc20ABI
   //   }
 
-  const { request } = await viemPublicClient.simulateContract({
-    address: tokenAddress,
-    account: ownerAddress,
-    abi: erc20ABI,
-    functionName: 'approve',
-    args: [spenderAddress, amount ?? MAX_UINT256],
-  })
+  //   const { request } = await viemPublicClient.simulateContract({
+  //     address: tokenAddress,
+  //     account: ownerAddress as Address,
+  //     abi: erc20ABI,
+  //     functionName: 'approve',
+  //     args: [spenderAddress, amount ?? MAX_UINT256],
+  //   })
 
-  const hash = await viemWalletClient.writeContract(request)
+  //   const hash = await viemWalletClient.writeContract(request)
 
-  const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
+  //   return hash
+  // }
 
-  return txReceipt
+  try {
+    const { request } = await viemPublicClient.simulateContract({
+      address: tokenAddress,
+      account: ownerAddress as Address,
+      abi: erc20ABI,
+      functionName: 'approve',
+      args: [spenderAddress, amount ?? MAX_UINT256],
+    })
+
+    const hash = await viemWalletClient.writeContract(request)
+
+    return hash
+  } catch (error) {
+    console.error('Error in approveErc20Token: ', error)
+    return error
+  }
 }

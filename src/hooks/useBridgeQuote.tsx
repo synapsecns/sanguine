@@ -16,7 +16,7 @@ export enum QuoteCallbackErrors {
   REQUIRE_AMOUNT = 'Missing Input Amount',
 }
 
-interface UseBridgeQuoteCallbackArgs {
+interface UseBridgeQuoteArgs {
   originChainId?: number
   originTokenAddress?: string
   destinationChainId?: number
@@ -25,16 +25,17 @@ interface UseBridgeQuoteCallbackArgs {
   synapseSDK?: any
 }
 
-export function useBridgeQuoteCallback({
+export function useBridgeQuote({
   originChainId,
   destinationChainId,
   originTokenAddress,
   destinationTokenAddress,
   amount,
   synapseSDK,
-}: UseBridgeQuoteCallbackArgs): {
+}: UseBridgeQuoteArgs): {
   state: QuoteCallbackState
   callback: () => Promise<void>
+  reset: () => void
   quote: any
   error: any
 } {
@@ -48,19 +49,24 @@ export function useBridgeQuoteCallback({
     caughtError: (error: any) => void
   } = {
     startFetch: () => {
+      console.log('start bridge quote fetch')
       setLoading(true)
       setError(null)
     },
     successFetch: async (quote) => {
+      console.log('success bridge quote fetch')
       setLoading(false)
       setQuote(quote)
       setError(null)
     },
     caughtError: (error) => {
+      console.log('error bridge quote fetch ', error)
       setLoading(false)
       setError(error)
     },
   }
+
+  const resetQuote = () => setQuote(null)
 
   const getBridgeQuote: () => Promise<void> = async () => {
     try {
@@ -75,8 +81,6 @@ export function useBridgeQuoteCallback({
         },
         synapseSDK
       )
-      console.log('bridgeQuote:', bridgeQuote)
-
       FetchStatusCallback.successFetch(bridgeQuote)
     } catch (error) {
       FetchStatusCallback.caughtError(error)
@@ -90,6 +94,7 @@ export function useBridgeQuoteCallback({
         state: QuoteCallbackState.INVALID,
         quote: null,
         callback: null,
+        reset: () => resetQuote(),
         error: QuoteCallbackErrors.REQUIRE_ORIGIN_CHAIN,
       }
     } else if (!originTokenAddress) {
@@ -97,6 +102,7 @@ export function useBridgeQuoteCallback({
         state: QuoteCallbackState.INVALID,
         quote: null,
         callback: null,
+        reset: () => resetQuote(),
         error: QuoteCallbackErrors.REQUIRE_ORIGIN_TOKEN,
       }
     } else if (!destinationChainId) {
@@ -104,6 +110,7 @@ export function useBridgeQuoteCallback({
         state: QuoteCallbackState.INVALID,
         quote: null,
         callback: null,
+        reset: () => resetQuote(),
         error: QuoteCallbackErrors.REQUIRE_DEST_CHAIN,
       }
     } else if (!destinationTokenAddress) {
@@ -111,6 +118,7 @@ export function useBridgeQuoteCallback({
         state: QuoteCallbackState.INVALID,
         quote: null,
         callback: null,
+        reset: () => resetQuote(),
         error: QuoteCallbackErrors.REQUIRE_DEST_TOKEN,
       }
     } else if (!amount) {
@@ -118,6 +126,7 @@ export function useBridgeQuoteCallback({
         state: QuoteCallbackState.INVALID,
         quote: null,
         callback: null,
+        reset: () => resetQuote(),
         error: QuoteCallbackErrors.REQUIRE_AMOUNT,
       }
     }
@@ -127,6 +136,7 @@ export function useBridgeQuoteCallback({
       return {
         state: QuoteCallbackState.INVALID,
         callback: () => getBridgeQuote(),
+        reset: () => resetQuote(),
         quote: null,
         error: error,
       }
@@ -137,6 +147,7 @@ export function useBridgeQuoteCallback({
       return {
         state: QuoteCallbackState.LOADING,
         callback: () => getBridgeQuote(),
+        reset: () => resetQuote(),
         quote: null,
         error: error,
       }
@@ -147,6 +158,7 @@ export function useBridgeQuoteCallback({
       return {
         state: QuoteCallbackState.VALID,
         callback: () => getBridgeQuote(),
+        reset: () => resetQuote(),
         quote: quote,
         error: error,
       }
@@ -155,6 +167,7 @@ export function useBridgeQuoteCallback({
     return {
       state: QuoteCallbackState.IDLE,
       callback: () => getBridgeQuote(),
+      reset: () => resetQuote(),
       quote: quote,
       error: error,
     }

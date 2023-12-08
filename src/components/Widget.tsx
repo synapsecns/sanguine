@@ -13,13 +13,18 @@ import { Receipt } from '@/components/Receipt'
 import { BridgeableToken, Chain, WidgetProps } from 'types'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
-import {
-  useBridgeQuoteCallback,
-  QuoteCallbackState,
-} from '@/hooks/useBridgeQuoteCallback'
+import { useBridgeQuote, QuoteCallbackState } from '@/hooks/useBridgeQuote'
 import { useAllowance } from '@/hooks/useAllowance'
-import { useApprove } from '@/hooks/useApproval'
-import { useBridgeCallback } from '@/hooks/useBridgeCallback'
+import {
+  ApproveCallbackState,
+  UseApproveCallbackProps,
+  useApproveCallback,
+} from '@/hooks/useApproveCallback'
+import {
+  UseBridgeCallbackArgs,
+  useBridgeCallback,
+  BridgeCallbackState,
+} from '@/hooks/useBridgeCallback'
 
 import { useAppDispatch } from '@/state/hooks'
 import {
@@ -30,6 +35,9 @@ import {
   setTokens,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { BridgeButton } from './BridgeButton'
+import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
+import { toHexStr } from '@/utils/toHexStr'
 
 import { generateTheme } from '@/utils/generateTheme'
 
@@ -41,9 +49,11 @@ export const Widget = ({
   customTheme,
   tokens,
 }: WidgetProps) => {
+  const dispatch = useAppDispatch()
   const synapseSDK = new SynapseSDK(chainIds, networkProviders)
   const web3Context = useContext(Web3Context)
-  const { connectedAddress, signer } = web3Context.web3Provider
+  const { connectedAddress, signer, provider, networkId } =
+    web3Context.web3Provider
 
   const [inputAmount, setInputAmount] = useState<string>('')
 
@@ -55,92 +65,6 @@ export const Widget = ({
     if (customTheme) return generateTheme(customTheme)
     return generateTheme()
   })()
-
-  const dispatch = useAppDispatch()
-
-  useEffect(() => {
-    dispatch(setTokens(tokens))
-  }, [tokens])
-
-  const originTokenDecimals = useMemo(() => {
-    if (typeof originToken.decimals === 'number') return originToken.decimals
-
-    return originToken.decimals[originChain.id]
-  }, [originToken])
-
-  const destinationTokenDecimals = useMemo(() => {
-    if (typeof destinationToken.decimals === 'number')
-      return destinationToken.decimals
-
-    return destinationToken.decimals[destinationChain.id]
-  }, [destinationToken])
-
-  const {
-    state: quoteState,
-    callback: fetchQuoteCallback,
-    quote,
-    error: quoteError,
-  } = useBridgeQuoteCallback({
-    originChainId: originChain.id,
-    originTokenAddress: originToken.addresses[originChain.id],
-    destinationChainId: destinationChain.id,
-    destinationTokenAddress: destinationToken.addresses[destinationChain.id],
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
-    synapseSDK: synapseSDK,
-  })
-
-  console.log('quote:', quote)
-
-  const routerAddress: Address = quote?.routerAddress as Address
-
-  const {
-    allowance,
-    checkAllowanceCallback,
-    error: allowanceError,
-  } = useAllowance({
-    spenderAddress: routerAddress as Address,
-    tokenAddress: originToken.addresses[originChain.id] as Address,
-    ownerAddress: connectedAddress as Address,
-    chainId: originToken.addresses[originChain.id],
-  })
-
-  const approveCallback = useApprove({
-    spenderAddress: routerAddress as Address,
-    tokenAddress: originToken.addresses[originChain.id] as Address,
-    ownerAddress: connectedAddress as Address,
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
-    chainId: originChain.id,
-  })
-
-  const bridgeCallback = useBridgeCallback({
-    destinationAddress: connectedAddress as Address,
-    originRouterAddress: routerAddress,
-    originChainId: originChain.id,
-    destinationChainId: destinationChain.id,
-    tokenAddress: originToken.addresses[originChain.id] as Address,
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
-    originQuery: quote?.originQuery,
-    destinationQuery: quote?.destQuery,
-    synapseSDK,
-    signer,
-  })
-
-  const handleInputAmountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const cleanedInput: string = cleanNumberInput(event.target.value)
-    setInputAmount(cleanedInput)
-  }
-
-  const maxAmountOut = useMemo(() => {
-    if (!quote || !quote.maxAmountOut) {
-      return 0
-    }
-
-    const max = BigInt(quote.maxAmountOut.toString())
-
-    return formatBigIntToString(max, destinationTokenDecimals, 4)
-  }, [quote])
 
   /** Fetch Web3 Provider Data */
   useEffect(() => {
@@ -163,6 +87,146 @@ export const Widget = ({
 
     web3Provider && fetchData()
   }, [web3Provider])
+
+  useEffect(() => {
+    dispatch(setTokens(tokens))
+  }, [tokens])
+
+  const originTokenDecimals = useMemo(() => {
+    if (typeof originToken.decimals === 'number') return originToken.decimals
+
+    return originToken.decimals[originChain.id]
+  }, [originToken])
+
+  const destinationTokenDecimals = useMemo(() => {
+    if (typeof destinationToken.decimals === 'number')
+      return destinationToken.decimals
+
+    return destinationToken.decimals[destinationChain.id]
+  }, [destinationToken])
+
+  const {
+    state: quoteState,
+    callback: fetchQuoteCallback,
+    reset: resetQuote,
+    quote,
+    error: quoteError,
+  } = useBridgeQuote({
+    originChainId: originToken.chainId,
+    originTokenAddress: originToken.tokenAddress,
+    destinationChainId: destinationToken.chainId,
+    destinationTokenAddress: destinationToken.tokenAddress,
+    amount: stringToBigInt(inputAmount, originToken.decimals),
+    synapseSDK: synapseSDK,
+  })
+
+  const routerAddress: Address = quote?.routerAddress as Address
+
+  const { allowance, checkAllowanceCallback } = useAllowance({
+    spenderAddress: routerAddress as Address,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
+    ownerAddress: connectedAddress as Address,
+    chainId: originToken.addresses[originChain.id],
+  })
+
+  const useApproveCallbackArgs: UseApproveCallbackProps = {
+    spenderAddress: routerAddress as Address,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
+    ownerAddress: connectedAddress as Address,
+    amount: stringToBigInt(inputAmount, originToken.decimals),
+    chainId: originToken.chainId,
+    onSuccess: checkAllowanceCallback,
+  }
+  const {
+    state: approveState,
+    callback: approveCallback,
+    error: approveError,
+  } = useApproveCallback(useApproveCallbackArgs)
+
+  console.log('approveState:', approveState)
+
+  const useBridgeCallbackArgs: UseBridgeCallbackArgs = {
+    destinationAddress: connectedAddress as Address,
+    originRouterAddress: routerAddress,
+    originChainId: originChain.id,
+    destinationChainId: destinationChain.id,
+    tokenAddress: originToken.addresses[originChain.id] as Address,
+    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    originQuery: quote?.originQuery,
+    destinationQuery: quote?.destQuery,
+    synapseSDK,
+    signer,
+  }
+  const {
+    state: bridgeState,
+    callback: bridgeCallback,
+    error: bridgeError,
+  } = useBridgeCallback(useBridgeCallbackArgs)
+
+  const isConnectedNetworkSelectedOriginNetwork: boolean = useMemo(() => {
+    return networkId === originChain?.id
+  }, [originChain?.id, networkId])
+
+  const formattedInputAmount: bigint = useMemo(
+    () => stringToBigInt(inputAmount ?? '0', originToken?.decimals),
+    [inputAmount, originToken]
+  )
+
+  const isInputValid: boolean = useMemo(() => {
+    if (inputAmount === '') return false
+    if (isOnlyZeroes(inputAmount)) return false
+    return true
+  }, [inputAmount])
+
+  const isApproved: boolean = useMemo(() => {
+    if (allowance === null) return true
+    if (!formattedInputAmount) return true
+    return formattedInputAmount <= allowance
+  }, [formattedInputAmount, allowance])
+
+  /** Handle refreshing quotes */
+  useEffect(() => {
+    if (isInputValid) {
+      fetchQuoteCallback()
+    } else {
+      resetQuote()
+    }
+  }, [
+    inputAmount,
+    originToken,
+    destinationToken,
+    originChain,
+    destinationChain,
+    isInputValid,
+  ])
+
+  const handleSwitchNetwork = useCallback(async () => {
+    try {
+      const hexChainId: string = toHexStr(originChain?.id)
+      await provider.send('wallet_switchEthereumChain', [
+        { chainId: hexChainId },
+      ])
+    } catch (error) {
+      console.error('handleSwitchNetwork ', error)
+    }
+  }, [originChain?.id, provider])
+
+  const handleInputAmountChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const cleanedInput: string = cleanNumberInput(event.target.value)
+    setInputAmount(cleanedInput)
+  }
+
+  const maxAmountOut = useMemo(() => {
+    if (!quote || !quote.maxAmountOut) {
+      return 0
+    }
+
+    const max = BigInt(quote.maxAmountOut.toString())
+
+    return formatBigIntToString(max, destinationTokenDecimals, 4)
+  }, [quote])
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
@@ -248,28 +312,19 @@ export const Widget = ({
         )}
         receive={maxAmountOut}
       />
-      <button
-        onClick={fetchQuoteCallback}
-        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-border-hover] active:opacity-40"
-      >
-        {quoteState === QuoteCallbackState.LOADING
-          ? 'Fetching...'
-          : 'Fetch Bridge Quote'}
-      </button>
-
-      <button
-        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
-        onClick={approveCallback}
-      >
-        {!quote ? 'Approve (Require Quote)' : 'Approve'}
-      </button>
-
-      <button
-        className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
-        onClick={bridgeCallback}
-      >
-        {!quote ? 'Bridge (Require Quote)' : 'Bridge'}
-      </button>
+      <BridgeButton
+        originChain={originChain}
+        isApproved={isApproved}
+        isDisabled={!isInputValid}
+        isWrongNetwork={!isConnectedNetworkSelectedOriginNetwork}
+        handleApprove={approveCallback}
+        handleBridge={bridgeCallback}
+        handleSwitchNetwork={handleSwitchNetwork}
+        isApprovalPending={approveState === ApproveCallbackState.PENDING}
+        isBridgePending={bridgeState === BridgeCallbackState.PENDING}
+        approveError={approveError}
+        bridgeError={bridgeError}
+      />
     </div>
   )
 }

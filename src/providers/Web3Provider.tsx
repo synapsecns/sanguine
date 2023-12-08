@@ -1,13 +1,13 @@
 import { createContext, useState } from 'react'
 
-interface web3ProviderTypes {
+export interface web3ProviderTypes {
   connectedAddress: string
   networkId: number | null
   signer: any | null
   provider: any | null
 }
 
-interface ContextType {
+export interface ContextType {
   web3Provider: web3ProviderTypes | null
   setWeb3Provider: React.Dispatch<React.SetStateAction<web3ProviderTypes>>
 }

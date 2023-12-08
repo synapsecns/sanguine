@@ -3,10 +3,10 @@ import { Address } from 'viem'
 import { fetchErc20TokenAllowance } from '@/utils/actions/fetchErc20TokenAllowance'
 
 export enum UseAllowanceError {
-  REQUIRE_SPENDER_ADDRESS = 'Missing Spender Address',
-  REQUIRE_TOKEN_ADDRESS = 'Missing Token Address',
-  REQUIRE_OWNER_ADDRESS = 'Missing Owner Address',
-  REQUIRE_CHAIN_ID = 'Missing ChainId',
+  REQUIRE_SPENDER_ADDRESS = 'Allowance: Missing Spender Address',
+  REQUIRE_TOKEN_ADDRESS = 'Allowance: Missing Token Address',
+  REQUIRE_OWNER_ADDRESS = 'Allowance: Missing Owner Address',
+  REQUIRE_CHAIN_ID = 'Allowance: Missing ChainId',
 }
 
 interface UseAllowanceProps {
@@ -32,15 +32,13 @@ export function useAllowance({
   const getTokenAllowance: () => Promise<void> = async () => {
     try {
       setError(null)
-      console.log('fetching allowance')
       const allowance: bigint = await fetchErc20TokenAllowance({
         spenderAddress: spenderAddress,
         tokenAddress: tokenAddress,
         ownerAddress: ownerAddress,
         chainId: chainId,
       })
-      console.log('fetched allowance:', allowance)
-
+      console.log('fetched allowance: ', allowance)
       setAllowance(allowance)
     } catch (error) {
       setError(error)
@@ -50,6 +48,7 @@ export function useAllowance({
   /** Fetch Token Allowance when props update */
   useEffect(() => {
     if (spenderAddress && tokenAddress && ownerAddress && chainId) {
+      console.log('fetching allowance')
       getTokenAllowance()
     }
   }, [spenderAddress, tokenAddress, ownerAddress, chainId])
@@ -87,5 +86,13 @@ export function useAllowance({
       checkAllowanceCallback: () => getTokenAllowance(),
       error,
     }
-  }, [spenderAddress, tokenAddress, ownerAddress, chainId])
+  }, [
+    spenderAddress,
+    tokenAddress,
+    ownerAddress,
+    chainId,
+    getTokenAllowance,
+    allowance,
+    error,
+  ])
 }
