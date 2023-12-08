@@ -59,13 +59,13 @@ RETRY:
 		sender, err := s.underlyingClient.GetTxSender(ctx, int(chainID), txHash)
 
 		if err != nil {
-			logger.Warnf("could not get sender for tx, trying again %s: %v", txHash, err)
+			scribeLogger.Warnf("could not get sender for tx, trying again %s: %v", txHash, err)
 			timeout = b.Duration()
 			goto RETRY
 		}
 
 		if sender == nil || sender.Response == nil {
-			logger.Warnf("could not get sender for tx, invalid tx likely (arb legacy, v,r,x, etc.) %s: %v", txHash)
+			scribeLogger.Warnf("could not get sender for tx, invalid tx likely (arb legacy, v,r,x, etc.) %s: %v", txHash)
 			*sender.Response = ""
 		}
 
@@ -127,7 +127,7 @@ func (s scribeFetcherImpl) FetchBlockTime(ctx context.Context, chainID int, bloc
 RETRY:
 	attempts++
 	if attempts > retryThreshold {
-		logger.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
+		scribeLogger.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
 		return nil, fmt.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
 	}
 	select {
@@ -139,13 +139,13 @@ RETRY:
 		timeStamp, err := s.underlyingClient.GetBlockTime(ctx, chainID, blockNumber)
 
 		if err != nil {
-			logger.Warnf("could not get timestamp for block, trying again %d: %v", blockNumber, err)
+			scribeLogger.Warnf("could not get timestamp for block, trying again %d: %v", blockNumber, err)
 			timeout = b.Duration()
 			goto RETRY
 		}
 
 		if timeStamp == nil || timeStamp.Response == nil {
-			logger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
+			scribeLogger.Warnf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
 			return nil, fmt.Errorf("could not get timestamp for block, invalid blocktime %d: %d", chainID, blockNumber)
 		}
 
@@ -167,7 +167,7 @@ RETRY:
 	attempts++
 
 	if attempts > retryThreshold {
-		logger.Errorf("could not get tx after %d attempts for hash %s on chain %d trying blocktime", retryThreshold, tx, chainID)
+		scribeLogger.Errorf("could not get tx after %d attempts for hash %s on chain %d trying blocktime", retryThreshold, tx, chainID)
 		auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)
 		if err != nil {
 			return nil, nil, fmt.Errorf("could not get tx for log, after trying to get blocktime, invalid response %d: %s", chainID, tx)

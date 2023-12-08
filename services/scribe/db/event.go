@@ -114,6 +114,6 @@ type EventDB interface {
 
 // TxWithBlockNumber is a transaction with a block number and is used for specifically for batching data in explorer.
 type TxWithBlockNumber struct {
-	Tx          types.Transaction
+	Tx          types.Transwaction
 	BlockNumber uint64
 }

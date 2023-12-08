@@ -126,7 +126,7 @@ func (p *ParserSuite) SetupTest() {
 	deployInfo, p.bridgeConfigContract = p.deployManager.GetBridgeConfigV3(p.GetTestContext(), p.testBackend)
 
 	var testERC20Info contracts.DeployedContract
-	testERC20Info, _ = p.deployManager.GetERC20(p.GetTestContext(), p.testBackend)
+	testERC20Info, _ = p.deployManager.GetERC20A(p.GetTestContext(), p.testBackend)
 
 	for _, token := range testTokens {
 		token.TokenAddress = testERC20Info.Address().String()

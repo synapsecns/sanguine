@@ -153,6 +153,25 @@ Scribe
 └── <a href="./types">types</a>: Holds various custom types for Scribe
 </pre>
 
+#Key items
+
+### Directory
+
+<pre>
+db
+├── <a href="./db.go">db.go</a>: Houses the interface in which the database can be interacted with. All functions for both read/write/util are here.
+├── <a href="./read_test.go">read_test.go</a>: All the tests for the read operations for the database (its testing all the functions in the `DBReader` interface in db.go).
+├── <a href="./write_test.go">write_test.go</a>: All the tests for the write operations for the database (its testing all the functions in the `DBWriter` interface in db.go).
+├── <a href="./write_test.go">write_test.go</a>: All the tests for the write operations for the database (its testing all the functions in the `DBWriter` interface in db.go).
+├── <a href="./sql">sql</a>: Contains all implementations of the `DBReader` and `DBWriter` functions and the init functions for both mysql and sqlite.
+│ ├── <a href="./sql/base">base</a>: Holds all the implementations of `DBReader` and `DBWriter`. Also has the database init functionality.
+│ ├── <a href="./sql/mysql">mysql</a>: Mysql init functionality.
+│ └── <a href="./sql/sqlite">sqlite</a>: Sqlite init functionality.
+└── <a href="./model">model</a>: Has all the models for each table, as well as all the namer initializing.
+
+</pre>
+
+
 
 
 ### Schema

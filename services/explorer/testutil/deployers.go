@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/lptoken"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 
@@ -58,8 +59,18 @@ type CCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// ERC20Deployer is the type of the erc20 deployer.
-type ERC20Deployer struct {
+// ERC20DeployerA is the type of the test erc20 deployer.
+type ERC20DeployerA struct {
+	*deployer.BaseDeployer
+}
+
+// ERC20DeployerB is the type of the second test erc20 deployer.
+type ERC20DeployerB struct {
+	*deployer.BaseDeployer
+}
+
+// LPTokenDeployer is the type of a test lp token deployer.
+type LPTokenDeployer struct {
 	*deployer.BaseDeployer
 }
 
@@ -98,9 +109,19 @@ func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends
 	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
 }
 
-// NewERC20Deployer creates a new erc20 client.
-func NewERC20Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return ERC20Deployer{deployer.NewSimpleDeployer(registry, backend, ERC20Type)}
+// NewERC20DeployerA creates a new test erc20 client.
+func NewERC20DeployerA(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ERC20DeployerA{deployer.NewSimpleDeployer(registry, backend, ERC20TypeA)}
+}
+
+// NewERC20DeployerB creates a second new test erc20 client.
+func NewERC20DeployerB(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ERC20DeployerB{deployer.NewSimpleDeployer(registry, backend, ERC20TypeB)}
+}
+
+// NewLPTokenDeployer creates a new test lp token client.
+func NewLPTokenDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return LPTokenDeployer{deployer.NewSimpleDeployer(registry, backend, LPTokenType)}
 }
 
 // Deploy deploys bridge config v3 contract
@@ -215,14 +236,36 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 	})
 }
 
-// Deploy deploys ERC20 contract
+// Deploy deploys a ERC20 contract
 //
 //nolint:dupl
-func (n ERC20Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+func (n ERC20DeployerA) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return erc20.DeployTestERC(transactOps, backend)
+		return erc20.DeployTestERC20A(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return erc20.NewTestERC(address, backend)
+		return erc20.NewTestERC20A(address, backend)
+	})
+}
+
+// Deploy deploys a second ERC20 contract (mostly for testing swaps)
+//
+//nolint:dupl
+func (n ERC20DeployerB) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return erc20.DeployTestERC20B(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return erc20.NewTestERC20B(address, backend)
+	})
+}
+
+// Deploy deploys a lp token contract (mostly for testing swaps)
+//
+//nolint:dupl
+func (n LPTokenDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return lptoken.DeployLPToken(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return lptoken.NewLPTokenRef(address, backend)
 	})
 }
 
@@ -232,4 +275,6 @@ var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &MetaSwapDeployer{}
 var _ deployer.ContractDeployer = &CCTPDeployer{}
-var _ deployer.ContractDeployer = &ERC20Deployer{}
+var _ deployer.ContractDeployer = &ERC20DeployerA{}
+var _ deployer.ContractDeployer = &ERC20DeployerB{}
+var _ deployer.ContractDeployer = &LPTokenDeployer{}

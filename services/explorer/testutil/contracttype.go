@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
@@ -8,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/lptoken"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -58,8 +60,12 @@ const (
 	MetaSwapType
 	// CCTPType is cctp contract type.
 	CCTPType
-	// ERC20Type is erc20 contract type.
-	ERC20Type
+	// ERC20TypeA is a test erc20 (used for swap tests).
+	ERC20TypeA
+	// ERC20TypeB is a second test erc20 (used for swap tests).
+	ERC20TypeB
+	// LPTokenType is a test lp token (used for swap tests).
+	LPTokenType
 )
 
 // ID gets the contract type as an id.
@@ -79,6 +85,7 @@ func (c contractTypeImpl) Name() string {
 // ContractInfo gets the source code of every contract. See TODO above.
 // TODO these should use contract name and maybe come out of the generator.
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
+	fmt.Println("SDkljsdlkajdssss", c)
 	switch c {
 	case BridgeConfigTypeV3:
 		return bridgeconfig.Contracts["/solidity/BridgeConfigV3_flat.sol:BridgeConfigV3"]
@@ -94,8 +101,13 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testmetaswap.Contracts["/solidity/TestMetaSwapV1.sol:TestMetaSwap"]
 	case CCTPType:
 		return testcctp.Contracts["solidity/TestSynapseCCTPV1.sol:TestSynapseCCTP"]
-	case ERC20Type:
-		return erc20.Contracts["solidity/ERC20_flat.sol:TestERC"]
+	case ERC20TypeA:
+		return erc20.Contracts["solidity/ERC20_flat.sol:TestERC20A"]
+	case ERC20TypeB:
+		return erc20.Contracts["solidity/ERC20_flat.sol:TestERC20B"]
+	case LPTokenType:
+		return lptoken.Contracts["/solidity/LPToken_flat.sol:LPToken"]
+
 	default:
 		panic("not yet implemented")
 	}

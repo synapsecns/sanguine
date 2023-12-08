@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/erc20"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/lptoken"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -64,8 +65,20 @@ func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedT
 	return manager.GetContract[*testcctp.TestCCTPRef](ctx, d.T(), d, backend, CCTPType)
 }
 
-// GetERC20 gets a typecast erc20.
-func (d *DeployManager) GetERC20(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *erc20.TestERC) {
+// GetERC20A gets a typecast test erc20.
+func (d *DeployManager) GetERC20A(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *erc20.TestERC20A) {
 	d.T().Helper()
-	return manager.GetContract[*erc20.TestERC](ctx, d.T(), d, backend, ERC20Type)
+	return manager.GetContract[*erc20.TestERC20A](ctx, d.T(), d, backend, ERC20TypeA)
+}
+
+// GetERC20B gets the second typecast test erc20 .
+func (d *DeployManager) GetERC20B(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *erc20.TestERC20B) {
+	d.T().Helper()
+	return manager.GetContract[*erc20.TestERC20B](ctx, d.T(), d, backend, ERC20TypeB)
+}
+
+// GetLPToken gets the typecast lp token.
+func (d *DeployManager) GetLPToken(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *lptoken.LPTokenRef) {
+	d.T().Helper()
+	return manager.GetContract[*lptoken.LPTokenRef](ctx, d.T(), d, backend, LPTokenType)
 }

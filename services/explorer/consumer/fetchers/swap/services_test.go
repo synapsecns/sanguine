@@ -9,7 +9,7 @@ import (
 	"math/big"
 )
 
-func (p *SwapFetcherSuite) TestPoolTokenAddressRetrieve() {
+func (s *SwapFetcherSuite) TestSwapMocks() {
 	testService := new(mocks.ISwapFetcher)
 
 	testChainID := uint32(gofakeit.Number(1, 1000))
@@ -22,5 +22,4 @@ func (p *SwapFetcherSuite) TestPoolTokenAddressRetrieve() {
 	testService.On("GetTokenAddress", mock.Anything, testTokenIndex).Return(nil, errors.New("error occurred")).Once()
 	testService.On("GetTokenAddress", mock.Anything, testTokenIndex).Return(&testTokenAddress, nil).Once()
 	testService.On("ChainID", mock.Anything, testChainID).Return(&testChainID, nil).Once()
-
 }

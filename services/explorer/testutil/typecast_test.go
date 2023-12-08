@@ -1,7 +1,6 @@
 package testutil_test
 
 import (
-	"fmt"
 	. "github.com/stretchr/testify/assert"
 )
 
@@ -22,8 +21,11 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), metaSwapHandle)
 		_, cctpHandle := s.deployManager.GetCCTP(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), cctpHandle)
-		_, erc20Handle := s.deployManager.GetERC20(s.GetTestContext(), s.testBackend)
-		fmt.Println("SSS", erc20Handle)
-		NotNil(s.T(), erc20Handle)
+		_, erc20HandleA := s.deployManager.GetERC20A(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), erc20HandleA)
+		_, erc20HandleB := s.deployManager.GetERC20B(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), erc20HandleB)
+		_, LPTokenHandle := s.deployManager.GetLPToken(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), LPTokenHandle)
 	})
 }

@@ -605,8 +605,22 @@ abstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
     }
 }
 
-contract TestERC is ERC20 {
-    constructor() ERC20("TEST", "TST") {
+
+// Test ERC20 Tokens
+contract TestERC20A is ERC20 {
+    constructor() ERC20("TESTA", "TSTA") {
         _mint(msg.sender, 1000000000000000000000);
+    }
+}
+
+contract TestERC20B is ERC20 {
+    constructor() ERC20("TESTB", "TSTB") {
+        _mint(msg.sender, 2000000000000000000000);
+    }
+}
+
+contract TestERC20C is ERC20 {
+    constructor() ERC20("TESTLP", "TSTLP") {
+        _mint(msg.sender, 3000000000000000000000);
     }
 }
