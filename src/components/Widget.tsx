@@ -167,14 +167,9 @@ export const Widget = ({
     return networkId === originChain?.id
   }, [originChain?.id, networkId])
 
-  const formattedInputAmount: bigint = useMemo(
-    () =>
-      stringToBigInt(
-        inputAmount ?? '0',
-        originToken.decimals ?? originToken.decimals[originChain.id]
-      ),
-    [inputAmount, originToken]
-  )
+  const formattedInputAmount: bigint = useMemo(() => {
+    return stringToBigInt(inputAmount ?? '0', originTokenDecimals)
+  }, [inputAmount, originToken])
 
   const isInputValid: boolean = useMemo(() => {
     if (inputAmount === '') return false
