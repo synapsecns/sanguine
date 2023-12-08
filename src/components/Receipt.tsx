@@ -52,7 +52,7 @@ export const Receipt = ({ quote, send, receive }) => {
           <div className="flex justify-between">
             <div>Router</div>
             <div className="text-[--synapse-text-primary]">
-              {quote.bridgeModuleName}
+              {quote?.bridgeModuleName}
             </div>
           </div>
           <div className="flex justify-between">
