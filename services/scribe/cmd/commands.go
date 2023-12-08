@@ -23,7 +23,7 @@ import (
 var help string
 
 // MaxConfirmations is the maximum number of confirmations.
-var MaxConfirmations = 3
+const MaxConfirmations = 3
 
 // infoCommand gets info about using the scribe service.
 var infoCommand = &cli.Command{
@@ -75,7 +75,11 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32][]backend.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
+		minConf := client.OmniRPCConfirmations
+		if minConf == 0 {
+			minConf = 1
+		}
+		for confNum := minConf; confNum <= MaxConfirmations; confNum++ {
 			backendClient, err := backend.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))

@@ -32,6 +32,8 @@ type ChainConfig struct {
 	LivefillRange uint64 `yaml:"livefill_range"`
 	// LivefillFlushInterval is how long to wait before flushing the livefill indexer db (in seconds)
 	LivefillFlushInterval uint64 `yaml:"livefill_flush_interval"`
+	// OmniRPCConfirmations is the OmniRPC URL.
+	OmniRPCConfirmations uint `yaml:"omnirpc_confirmations"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

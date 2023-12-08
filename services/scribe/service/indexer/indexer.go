@@ -277,6 +277,7 @@ func (x *Indexer) store(parentCtx context.Context, log types.Log) (err error) {
 		attribute.String("tx", log.TxHash.Hex()),
 		attribute.String("block", fmt.Sprintf("%d", log.BlockNumber)),
 	))
+	logger.LogEventLogStore(x.indexerConfig.ChainID, log.BlockNumber, log.TxHash.String())
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)

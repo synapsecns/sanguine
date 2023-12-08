@@ -54,6 +54,8 @@ const (
 	BackfillCompleted
 	// BeginBackfillIndexing is returned when a backfill is beginning.
 	BeginBackfillIndexing
+	// StoringLogs is returned when logs are being stored.
+	StoringLogs
 )
 
 // ErrorType is a type of error.
@@ -140,9 +142,15 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 		logger.Warnf("Flushing logs at head on chain %d", chainID)
 	case CreatingSQLStore:
 		logger.Warnf("Creating SQL store")
+
 	default:
 		logger.Warnf("Event on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	}
+}
+
+// LogEventLogStore records when a log has been seen and will be stored. Used for debugging BSC missing txs.
+func LogEventLogStore(chainID uint32, block uint64, txHash string) {
+	logger.Warnf("Log seen: ChainID: %d | Block %d | TxHash %s", chainID, block, txHash)
 }
 
 func unpackIndexerConfig(indexerData scribeTypes.IndexerConfig) string {
