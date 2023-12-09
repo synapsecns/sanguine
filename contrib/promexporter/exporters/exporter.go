@@ -132,6 +132,10 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		}
 	}
 
+	g.Go(func() error {
+		return exp.getTokenBalances(ctx)
+	})
+
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("could not start exporter server: %w", err)
 	}

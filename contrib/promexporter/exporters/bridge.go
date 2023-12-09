@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
+	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
@@ -13,6 +17,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 	"math"
 	"math/big"
 	"time"
@@ -126,3 +131,58 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 }
 
 var errPoolNotExist = errors.New("pool does not exist")
+
+func (e *exporter) getTokenBalances(ctx context.Context) error {
+	bridgeConfig, err := e.getBridgeConfig(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get bridge config: %w", err)
+	}
+
+	// TODO: multicall is preferable here, but I ain't got time for that
+	tokenIDs, err := bridgeConfig.GetAllTokenIDs(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get all token ids: %w", err)
+	}
+
+	bridgeConfigClient, err := e.omnirpcClient.GetConfirmationsClient(ctx, e.cfg.BridgeConfig.ChainID, 1)
+	if err != nil {
+		return fmt.Errorf("could not get confirmations client: %w", err)
+	}
+
+	bridgeTokens := make([]*bridgeconfig.BridgeConfigV3Token, len(tokenIDs)*len(e.cfg.BridgeChecks))
+
+	var calls []w3types.Caller
+
+	i := 0
+	for _, tokenID := range tokenIDs {
+		for chainID := range e.cfg.BridgeChecks {
+			token := &bridgeconfig.BridgeConfigV3Token{}
+			calls = append(calls, eth.CallFunc(decoders.TokenConfigGetToken(), bridgeConfig.Address(), tokenID, big.NewInt(int64(chainID))).Returns(token))
+			bridgeTokens[i] = token
+			i++
+		}
+	}
+
+	// TODO: once go 1.21 is introduced do min(cfg.BatchCallLimit, 2)
+	tasks := core.ChunkSlice(calls, e.cfg.BatchCallLimit)
+
+	g, ctx := errgroup.WithContext(ctx)
+	for _, task := range tasks {
+		task := task // capture func literal
+		g.Go(func() error {
+			err = bridgeConfigClient.BatchWithContext(ctx, task...)
+			if err != nil {
+				return fmt.Errorf("could not batch calls: %w", err)
+			}
+
+			return nil
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not get token balances: %w", err)
+	}
+
+	return nil
+}

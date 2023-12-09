@@ -26,8 +26,10 @@ type Config struct {
 	BridgeChecks map[int]string
 	// VpriceCheckTokens is the list of tokens to check vprice for
 	VpriceCheckTokens []string `yaml:"vprice_tokens"`
-
+	// BridgeConfig is the config for the bridge.
 	BridgeConfig BridgeConfig
+	// BatchCallLimit is the limit of batch calls
+	BatchCallLimit int
 }
 
 // BridgeConfig contains the config for the bridge.
@@ -131,6 +133,8 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 		ChainID: types.ETH.Int(),
 		Address: "0x5217c83ca75559b1f8a8803824e5b7ac233a12a1",
 	}
+
+	cfg.BatchCallLimit = 45
 
 	err = yaml.Unmarshal(input, cfg)
 	if err != nil {

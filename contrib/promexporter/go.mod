@@ -29,6 +29,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/synapsecns/sanguine/services/explorer v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.25.5
@@ -195,7 +196,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.12.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
-	github.com/synapsecns/sanguine/ethergo v0.0.2 // indirect
 	github.com/synapsecns/sanguine/services/scribe v0.0.0-00010101000000-000000000000 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/teivah/onecontext v1.3.0 // indirect
