@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
+	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
@@ -105,22 +106,8 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 			return fmt.Errorf("could not get virtual price: %w", err)
 		}
 
-		// Assuming `vpriceMetric` is of type *big.Int and `decimals` is an int
-
-		// Convert vpriceMetric to *big.Float
-		bigVPrice := new(big.Float).SetInt(realvPrice)
-
-		// Calculate the divisor for decimals
-		divisor := new(big.Float).SetFloat64(math.Pow10(int(decimals)))
-
-		// Divide bigVPrice by the divisor to account for decimals
-		realVPrice := new(big.Float).Quo(bigVPrice, divisor)
-
-		// Convert the final value to float64
-		floatVPrice, _ := realVPrice.Float64()
-
 		// Use floatVPrice as required
-		o.ObserveFloat64(vpriceMetric, floatVPrice, metric.WithAttributeSet(attributes))
+		o.ObserveFloat64(vpriceMetric, bigToDecimals(realvPrice, decimals), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, vpriceMetric); err != nil {
@@ -132,24 +119,133 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 
 var errPoolNotExist = errors.New("pool does not exist")
 
+// nolint: cyclop
 func (e *exporter) getTokenBalances(ctx context.Context) error {
+	allTokens, err := e.getAllTokens(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get all tokens: %w", err)
+	}
+
+	for chainID, bridgeContract := range e.cfg.BridgeChecks {
+		chainID := chainID
+		bridgeContract := bridgeContract // capture func literals
+		meter := e.metrics.Meter(meterName)
+
+		bridgeBalanceMetric, err := meter.Float64ObservableGauge("bridgeBalanceMetric")
+		if err != nil {
+			return fmt.Errorf("could not create gauge: %w", err)
+		}
+
+		feeBalanceMetric, err := meter.Float64ObservableCounter("feeBalance")
+		if err != nil {
+			return fmt.Errorf("could not create counter: %w", err)
+		}
+
+		totalSupplyMetric, err := meter.Float64ObservableGauge("totalSupply")
+		if err != nil {
+			return fmt.Errorf("could not create gauge: %w", err)
+		}
+
+		gasBalanceMetric, err := meter.Float64ObservableGauge("gasBalance")
+		if err != nil {
+			return fmt.Errorf("could not create gauge: %w", err)
+		}
+
+		if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+			ctx, span := e.metrics.Tracer().Start(parentCtx, "tokenbalances", trace.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+			))
+
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
+			client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
+			if err != nil {
+				return fmt.Errorf("could not get confirmations client: %w", err)
+			}
+
+			var realGasBalance big.Int
+			calls := []w3types.Caller{
+				eth.Balance(common.HexToAddress(bridgeContract), nil).Returns(&realGasBalance),
+			}
+
+			type tokenData struct {
+				metadata        TokenConfig
+				contractBalance *big.Int
+				totalSuppply    *big.Int
+				feeBalance      *big.Int
+			}
+
+			allTokenData := make([]tokenData, len(allTokens.GetForChainID(chainID)))
+
+			for i, tokenConfig := range allTokens.GetForChainID(chainID) {
+				// initialize empty struct
+				allTokenData[i] = tokenData{
+					metadata:        tokenConfig,
+					contractBalance: new(big.Int),
+					totalSuppply:    new(big.Int),
+					feeBalance:      new(big.Int),
+				}
+
+				calls = append(calls,
+					eth.CallFunc(decoders.FuncBalanceOf(), tokenConfig.TokenAddress, common.HexToAddress(bridgeContract)).Returns(allTokenData[i].contractBalance),
+					eth.CallFunc(decoders.FuncTotalSupply(), tokenConfig.TokenAddress).Returns(allTokenData[i].totalSuppply),
+					eth.CallFunc(decoders.FuncFeeBalance(), common.HexToAddress(bridgeContract), tokenConfig.TokenAddress).Returns(allTokenData[i].feeBalance),
+				)
+			}
+
+			err = e.batchCalls(ctx, client, calls)
+			if err != nil {
+				return fmt.Errorf("could not get token balances: %w", err)
+			}
+
+			// eth is always 18 decimals
+			o.ObserveFloat64(gasBalanceMetric, bigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+
+			for _, td := range allTokenData {
+				tokenAttributes := attribute.NewSet(attribute.String("tokenID", td.metadata.TokenID), attribute.Int(metrics.ChainID, td.metadata.ChainID))
+				o.ObserveFloat64(bridgeBalanceMetric, bigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+				o.ObserveFloat64(feeBalanceMetric, bigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+				o.ObserveFloat64(totalSupplyMetric, bigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+			}
+
+			return nil
+		}, bridgeBalanceMetric, feeBalanceMetric, totalSupplyMetric, gasBalanceMetric); err != nil {
+			return fmt.Errorf("could not register")
+		}
+	}
+
+	return nil
+}
+
+func (e *exporter) getAllTokens(parentCtx context.Context) (allTokens Tokens, err error) {
+	allTokens = []TokenConfig{}
+
+	ctx, span := e.metrics.Tracer().Start(parentCtx, "get_all_tokens")
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	bridgeConfig, err := e.getBridgeConfig(ctx)
 	if err != nil {
-		return fmt.Errorf("could not get bridge config: %w", err)
+		return nil, fmt.Errorf("could not get bridge config: %w", err)
 	}
 
 	// TODO: multicall is preferable here, but I ain't got time for that
 	tokenIDs, err := bridgeConfig.GetAllTokenIDs(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get all token ids: %w", err)
+		return nil, fmt.Errorf("could not get all token ids: %w", err)
 	}
 
 	bridgeConfigClient, err := e.omnirpcClient.GetConfirmationsClient(ctx, e.cfg.BridgeConfig.ChainID, 1)
 	if err != nil {
-		return fmt.Errorf("could not get confirmations client: %w", err)
+		return nil, fmt.Errorf("could not get confirmations client: %w", err)
 	}
 
 	bridgeTokens := make([]*bridgeconfig.BridgeConfigV3Token, len(tokenIDs)*len(e.cfg.BridgeChecks))
+	tokenIDS := make([]string, len(tokenIDs)*len(e.cfg.BridgeChecks))
 
 	var calls []w3types.Caller
 
@@ -159,18 +255,45 @@ func (e *exporter) getTokenBalances(ctx context.Context) error {
 			token := &bridgeconfig.BridgeConfigV3Token{}
 			calls = append(calls, eth.CallFunc(decoders.TokenConfigGetToken(), bridgeConfig.Address(), tokenID, big.NewInt(int64(chainID))).Returns(token))
 			bridgeTokens[i] = token
+			tokenIDS[i] = tokenID
 			i++
 		}
 	}
 
 	// TODO: once go 1.21 is introduced do min(cfg.BatchCallLimit, 2)
+	err = e.batchCalls(ctx, bridgeConfigClient, calls)
+	if err != nil {
+		return nil, fmt.Errorf("could not get token balances: %w", err)
+	}
+
+	for i, token := range bridgeTokens {
+		tokenID := tokenIDS[i]
+
+		if token.TokenAddress == "" {
+			continue
+		}
+
+		allTokens = append(allTokens, TokenConfig{
+			TokenID:       tokenID,
+			ChainID:       int(token.ChainId.Int64()),
+			TokenAddress:  common.HexToAddress(token.TokenAddress),
+			TokenDecimals: token.TokenDecimals,
+			HasUnderlying: token.HasUnderlying,
+			IsUnderlying:  token.IsUnderlying,
+		})
+	}
+
+	return allTokens, nil
+}
+
+func (e *exporter) batchCalls(ctx context.Context, evmClient ethergoClient.EVM, calls []w3types.Caller) (err error) {
 	tasks := core.ChunkSlice(calls, e.cfg.BatchCallLimit)
 
 	g, ctx := errgroup.WithContext(ctx)
 	for _, task := range tasks {
 		task := task // capture func literal
 		g.Go(func() error {
-			err = bridgeConfigClient.BatchWithContext(ctx, task...)
+			err = evmClient.BatchWithContext(ctx, task...)
 			if err != nil {
 				return fmt.Errorf("could not batch calls: %w", err)
 			}
@@ -185,4 +308,44 @@ func (e *exporter) getTokenBalances(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// Tokens is a list of token configs.
+type Tokens []TokenConfig
+
+// GetForChainID returns all tokens for a given chainID.
+func (t Tokens) GetForChainID(chainID int) Tokens {
+	var chainTokens []TokenConfig
+	for _, token := range t {
+		if token.ChainID == chainID {
+			chainTokens = append(chainTokens, token)
+		}
+	}
+
+	return chainTokens
+}
+
+// TokenConfig is a cleaned up token config.
+type TokenConfig struct {
+	TokenID       string
+	ChainID       int
+	TokenAddress  common.Address
+	TokenDecimals uint8
+	HasUnderlying bool
+	IsUnderlying  bool
+}
+
+func bigToDecimals(bigInt *big.Int, decimals uint8) float64 {
+	// Convert vpriceMetric to *big.Float
+	bigVPrice := new(big.Float).SetInt(bigInt)
+
+	// Calculate the divisor for decimals
+	divisor := new(big.Float).SetFloat64(math.Pow10(int(decimals)))
+
+	// Divide bigVPrice by the divisor to account for decimals
+	realVPrice := new(big.Float).Quo(bigVPrice, divisor)
+
+	// Convert the final value to float64
+	floatVPrice, _ := realVPrice.Float64()
+	return floatVPrice
 }
