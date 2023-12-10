@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",
-    "@openzeppelin/contracts": "4.9.3",
-    "@openzeppelin/contracts-upgradeable": "4.9.3",
+    "@openzeppelin/contracts": "4.9.5",
+    "@openzeppelin/contracts-upgradeable": "4.9.5",
     "dotenv": "16.0.1",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "3.4.1",
