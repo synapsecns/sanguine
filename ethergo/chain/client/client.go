@@ -19,6 +19,8 @@ import (
 
 // EVMClient is the chain client. It defines everything necessary to create a Chain.
 //
+// Deprecated: use ethergo/client
+//
 //go:generate go run github.com/vektra/mockery/v2 --name EVMClient --output ./mocks --case=underscore
 type EVMClient interface {
 	// ContractBackend defines the methods needed to work with contracts on a read-write basis.
