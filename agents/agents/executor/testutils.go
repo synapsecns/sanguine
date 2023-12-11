@@ -13,8 +13,8 @@ import (
 )
 
 // NewTreeFromDB builds a merkle tree from the db.
-func NewTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
-	return newTreeFromDB(ctx, chainID, executorDB)
+func NewTreeFromDB(ctx context.Context, exec *Executor, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	return exec.newTreeFromDB(ctx, chainID)
 }
 
 // GetLogChan gets a log channel.

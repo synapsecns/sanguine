@@ -319,7 +319,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	var newRoot []byte
 	e.Eventually(func() bool {
-		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 		e.Nil(err)
 
 		exec.OverrideMerkleTree(chainID, dbTree)
@@ -410,7 +410,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0, common.Hash{})
 	e.Nil(err)
 
-	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, dbTree)
@@ -434,7 +434,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0, common.Hash{})
 	e.Nil(err)
 
-	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, dbTree)
