@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gin-gonic/gin"
 	"github.com/ravilushqa/otelgqlgen"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	etherClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
@@ -37,6 +38,7 @@ func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher
 				DB:          consumerDB,
 				Fetcher:     fetcher,
 				Cache:       apiCache,
+				CacheMutex:  mapmutex.NewStringMapMutex(),
 				Clients:     clients,
 				Parsers:     parsers,
 				Refs:        refs,
