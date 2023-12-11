@@ -1614,12 +1614,15 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 	return &query, nil
 }
 
+// increase this to enable querying the db
+const fallbackTime = time.Second * 0
+
 // GetOriginBridgeTxBW gets an origin bridge tx.
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txType := model.BridgeTxTypeOrigin
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' ORDER BY insert_time desc LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
 
-	bwQueryCtx, cancel := context.WithTimeout(ctx, time.Second*20)
+	bwQueryCtx, cancel := context.WithTimeout(ctx, fallbackTime)
 	defer cancel()
 
 	bridgeEventMV, err := r.DB.GetMVBridgeEvent(bwQueryCtx, query)
@@ -1639,7 +1642,7 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeDestination
-	bwQueryCtx, cancel := context.WithTimeout(ctx, time.Second*20)
+	bwQueryCtx, cancel := context.WithTimeout(ctx, fallbackTime)
 	defer cancel()
 
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' ORDER BY insert_time desc LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
