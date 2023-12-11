@@ -164,7 +164,7 @@ func getBalance(ctx context.Context, omniRPCClient omniClient.RPCClient, addr co
 	return
 }
 
-const balanceThreshold = 0.05
+const balanceThreshold = 0.1
 
 func checkAgentBalances(ctx context.Context, omniRPCClient omniClient.RPCClient, chains map[int]chainConfig) (ok bool, err error) {
 	fmt.Println("Checking agent balances...")
@@ -222,14 +222,8 @@ func checkAgentStatuses(ctx context.Context, omniRPCClient omniClient.RPCClient,
 }
 
 func clearMaps() {
-	messages.Range(func(key, value interface{}) bool {
-		messages.Delete(key)
-		return true
-	})
-	sentTxes.Range(func(key, value interface{}) bool {
-		sentTxes.Delete(key)
-		return true
-	})
+	messages = &sync.Map{}
+	sentTxes = &sync.Map{}
 }
 
 var pingPongParser *pingpongclient.PingPongClientFilterer
