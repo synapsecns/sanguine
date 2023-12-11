@@ -61,7 +61,7 @@ export function Home() {
     stopPolling,
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 10000,
+    pollInterval: 3600000,
     fetchPolicy: 'network-only',
     variables: {
       pending,
