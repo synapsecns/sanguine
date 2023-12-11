@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -775,17 +774,7 @@ func (e *Executor) newTreeFromDB(parentCtx context.Context, chainID uint32) (*me
 
 // checkIfExecuted checks if a message has been executed.
 // TODO: Needs to be tested.
-func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Message) (_ bool, err error) {
-	ctx, span := e.handler.Tracer().Start(parentCtx, "checkIfExecuted", trace.WithAttributes(
-		attribute.Int(metrics.Origin, int(message.OriginDomain())),
-		attribute.Int(metrics.Destination, int(message.DestinationDomain())),
-		attribute.Int(metrics.Nonce, int(message.Nonce())),
-	))
-
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
+func (e Executor) checkIfExecuted(ctx context.Context, message types.Message) (_ bool, err error) {
 	var executed uint8
 	contractCall := func(ctx context.Context) error {
 		var err error
@@ -802,11 +791,9 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 	}
 
 	if execTypes.MessageStatusType(executed) == execTypes.Success {
-		span.AddEvent("message executed")
 		return true, nil
 	}
 
-	span.AddEvent("message not executed")
 	return false, nil
 }
 
@@ -891,7 +878,7 @@ func (e Executor) streamLogs(parentCtx context.Context, grpcClient pbscribe.Scri
 // processLog processes the log and updates the merkle tree.
 //
 //nolint:cyclop,gocognit
-func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
+func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) (err error) {
 	datatypeInterface, err := e.logToInterface(log, chainID)
 	if err != nil {
 		return fmt.Errorf("could not convert log to interface: %w", err)
@@ -899,16 +886,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	if datatypeInterface == nil {
 		return nil
 	}
-
-	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
-		attribute.Int(metrics.ChainID, int(chainID)),
-		attribute.String(metrics.TxHash, log.TxHash.String()),
-		attribute.String("datatype", reflect.TypeOf(datatypeInterface).String()),
-	))
-
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
 
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
