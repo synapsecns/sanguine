@@ -330,6 +330,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
+	fmt.Printf("handleStatusUpdated on chain %d, agent %s, domain %d, flag %s\n", chainID, statusUpdated.Agent.String(), statusUpdated.Domain, types.AgentFlagType(statusUpdated.Flag).String())
 
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
@@ -363,6 +364,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return nil, fmt.Errorf("could not complete slashing: %w", err)
 			}
+			fmt.Printf("submitted completeSlashing tx: %v\n", tx.Hash())
 
 			return
 		})
