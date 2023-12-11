@@ -61,7 +61,7 @@ type Backend struct {
 const BackendName = "anvil"
 
 // BackendName returns the name of the backend.
-func (f *Backend) BackendName() string {
+func (b *Backend) BackendName() string {
 	return BackendName
 }
 
@@ -193,8 +193,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	return &backend
 }
 
+// TearDown purges docker resources associated with the backend.
 func (b *Backend) TearDown() {
-	fmt.Println("tearing down anvil backend")
 	err := b.pool.Purge(b.resource)
 	if err != nil {
 		logger.Errorf("error purging anvil container: %w", err)
