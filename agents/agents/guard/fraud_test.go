@@ -1034,7 +1034,6 @@ func (g *GuardSuite) TestUpdateAgentStatusOnRemote() {
 		Nil(g.T(), err)
 		err = anvilClient.Mine(g.GetTestContext(), 1)
 		Nil(g.T(), err)
-		fmt.Printf("increased evm time by %d\n", seconds)
 	}
 	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+offset)
 	g.bumpBackends()
