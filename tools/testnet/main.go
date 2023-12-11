@@ -221,11 +221,6 @@ func checkAgentStatuses(ctx context.Context, omniRPCClient omniClient.RPCClient,
 	return ok, nil
 }
 
-func clearMaps() {
-	messages = &sync.Map{}
-	sentTxes = &sync.Map{}
-}
-
 var pingPongParser *pingpongclient.PingPongClientFilterer
 var originParser origin.Parser
 var bondingManagerParser bondingmanager.Parser
@@ -235,7 +230,7 @@ var messages = &sync.Map{}
 var sentTxes = &sync.Map{}
 
 const eventBufferSize = 1000
-const executionTimeout = 1800
+const executionTimeout = 300
 
 func main() {
 	var loadConfigPath string
@@ -402,6 +397,7 @@ func main() {
 			}
 		}
 
+		unexecutedMsgs := map[common.Hash]types.Message{}
 		g.Go(func() error {
 			startTime := time.Now()
 			numRoutesActual := len(routes)
@@ -442,15 +438,14 @@ func main() {
 				}
 				elapsed := time.Since(startTime).Seconds()
 				if elapsed > executionTimeout {
-					unexecutedMsgs := []string{}
 					messages.Range(func(key, value interface{}) bool {
 						_, ok := executedMap[key.(common.Hash)]
 						if !ok {
-							unexecutedMsgs = append(unexecutedMsgs, key.(common.Hash).String())
+							unexecutedMsgs[key.(common.Hash)] = value.(types.Message)
 						}
 						return true
 					})
-					return fmt.Errorf("Timed out waiting for messages to be executed: %f; %v", elapsed, unexecutedMsgs)
+					return fmt.Errorf("Timed out waiting for messages to be executed: %f", elapsed)
 				}
 			}
 		})
@@ -458,6 +453,22 @@ func main() {
 		err = g.Wait()
 		if err != nil {
 			fmt.Printf("%v\n", err)
+		}
+
+		// Clear caches
+		messages = &sync.Map{}
+		sentTxes = &sync.Map{}
+		unexecutedByChainID := map[uint32][]string{}
+		for leaf, msg := range unexecutedMsgs {
+			messages.Store(leaf, msg)
+			_, ok := unexecutedByChainID[msg.DestinationDomain()]
+			if !ok {
+				unexecutedByChainID[msg.DestinationDomain()] = []string{}
+			}
+			unexecutedByChainID[msg.DestinationDomain()] = append(unexecutedByChainID[msg.DestinationDomain()], leaf.String())
+		}
+		for chainID, leafs := range unexecutedByChainID {
+			fmt.Printf("Unexecuted messages on destination chain %d: %v\n", chainID, leafs)
 		}
 	}
 
@@ -481,7 +492,6 @@ func main() {
 		// Non-blocking wait
 		select {
 		case <-time.After(waitTime):
-			clearMaps()
 			// Continue to the next iteration
 		}
 	}
