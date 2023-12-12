@@ -13,14 +13,14 @@ If you need to make a new go module, here are the steps to follow:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.19 // or whatever the version is in go.work
+    go 1.20 // or whatever the version is in go.work
    ```
 
    Any local dependencies should use replaces like this:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.19 // or whatever the version is in go.work
+    go 1.20 // or whatever the version is in go.work
 
    require (
         github.com/synapsecns/sanguine/core v0.0.1
@@ -33,7 +33,7 @@ If you need to make a new go module, here are the steps to follow:
    In so far as you have issues running `go mod tidy`, you may need to add additional replace directives. If you can't figure out what these are, please look at other requires of the module you're trying to link to
 3. Add the module to the [go.work](go.work) file. The path should be in alphabetical order.
     ```go
-    go 1.19
+    go 1.20
    use (
     ./a_module
     ./another_module

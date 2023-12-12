@@ -43,8 +43,16 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
+	github.com/deepmap/oapi-codegen v1.8.2 // indirect
+	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
+	github.com/graph-gophers/graphql-go v1.3.0 // indirect
+	github.com/influxdata/influxdb v1.8.3 // indirect
+	github.com/influxdata/influxdb-client-go/v2 v2.5.1 // indirect
+	github.com/influxdata/line-protocol v0.0.0-20210311194329-9aa0e372d097 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
+	github.com/peterh/liner v1.2.1 // indirect
 	github.com/puzpuzpuz/xsync/v2 v2.5.1 // indirect
+	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
 )
 
 require (

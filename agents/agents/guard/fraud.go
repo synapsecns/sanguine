@@ -334,21 +334,26 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
-		var agentProof [][32]byte
-		contractCall := func(ctx context.Context) error {
-			agentProof, err = g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
-			if err != nil {
-				return fmt.Errorf("could not get proof: %w", err)
-			}
-
+		// Only perform completeSlashing for notary fraud.
+		if statusUpdated.Domain == 0 {
 			return nil
 		}
-		err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
-		if err != nil {
-			return fmt.Errorf("could not get proof: %w", err)
-		}
 
+		// Submit completeSlashing() tx after fetching agent proof.
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			var agentProof [][32]byte
+			contractCall := func(ctx context.Context) error {
+				agentProof, err = g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+				if err != nil {
+					return fmt.Errorf("could not get proof: %w", err)
+				}
+
+				return nil
+			}
+			err = retry.WithBackoff(ctx, contractCall, g.retryConfig...)
+			if err != nil {
+				return nil, fmt.Errorf("could not get proof: %w", err)
+			}
 			tx, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
 				transactor,
 				statusUpdated.Domain,
@@ -362,7 +367,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 			return
 		})
 		if err != nil {
-			return fmt.Errorf("could not submit CompleteSlashing tx: %w", err)
+			return fmt.Errorf("could not submit completeSlashing tx: %w", err)
 		}
 	case types.AgentFlagSlashed:
 		var agentRoot [32]byte
