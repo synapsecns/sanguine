@@ -90,18 +90,19 @@ function App() {
             Easily onboard new users by adding a custom instance of the Synapse
             Bridge to your React project
           </p>
-        <div id="example-container">
-          <div id="bridge-container">
-            <Bridge
-              chainIds={chainIds}
-              web3Provider={web3Provider}
-              networkProviders={providers}
-              tokens={tokens}
-              customTheme={customTheme}
+          <div id="example-container">
+            <div id="bridge-container">
+              <Bridge
+                chainIds={chainIds}
+                web3Provider={web3Provider}
+                networkProviders={providers}
+                tokens={tokens}
+                customTheme={customTheme}
+                toChainId={137}
               />
             </div>
-          <input id="color-picker" type="color" onInput={createCustomTheme} />
-        </div>
+            <input id="color-picker" type="color" onInput={createCustomTheme} />
+          </div>
         </header>
         {/* <Bridge
           chainIds={chainIds}
@@ -112,26 +113,35 @@ function App() {
         /> */}
         {/* <hr /> */}
         <article>
-
           <h2>⬇️&nbsp; Install</h2>
-          <p>
-            Install the Synapse Widget in your Next.js or React project
-          </p>
+          <p>Install the Synapse Widget in your Next.js or React project</p>
           <pre>npm synapse-widget</pre>
 
           <h2>⚙️&nbsp; Setup</h2>
           <h3>Supported tokens</h3>
           <p>
-            While the Synapse Widget supports <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">hundreds of tokens and chains</a>, for a streamlined user experience, you can render a separate instance of the bridge for each user need.
+            While the Synapse Widget supports{' '}
+            <a
+              href="https://synapseprotocol.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              hundreds of tokens and chains
+            </a>
+            , for a streamlined user experience, you can render a separate
+            instance of the bridge for each user need.
           </p>
           <p>
-            For example: separate <code>BridgeIn</code> and <code>BridgeOut</code> functions allow you to define the tokens you support sending and receiving.
+            For example: separate <code>BridgeIn</code> and{' '}
+            <code>BridgeOut</code> functions allow you to define the tokens you
+            support sending and receiving.
           </p>
           <p className="info">
-            <strong>Note</strong>: Whitelisting one side of a transaction limits the other side to compatible tokens automatically.
+            <strong>Note</strong>: Whitelisting one side of a transaction limits
+            the other side to compatible tokens automatically.
           </p>
           <pre>
-{`// Bridge in
+            {`// Bridge in
 tokenList = {
   source: [], destination: [ token, token, token ]
 }
@@ -142,24 +152,21 @@ tokenList = {
 }`}
           </pre>
 
-          <h2>
-            🎨&nbsp; Customize
-          </h2>
-          <h3>
-            Dark mode
-          </h3>
+          <h2>🎨&nbsp; Customize</h2>
+          <h3>Dark mode</h3>
           <p>
-            To override the default light theme, set &nbsp;<code>bgColor</code>&nbsp; to &nbsp;<code>'dark'</code>&nbsp;.
+            To override the default light theme, set &nbsp;<code>bgColor</code>
+            &nbsp; to &nbsp;<code>'dark'</code>&nbsp;.
           </p>
           <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
-          <h3>
-            Auto-palette
-          </h3>
+          <h3>Auto-palette</h3>
           <p>
-            Generate a palette based on your brand colors by setting bgColor to any hex, rgb, or hsl color string. Hex values must contain 6 characters.
+            Generate a palette based on your brand colors by setting bgColor to
+            any hex, rgb, or hsl color string. Hex values must contain 6
+            characters.
           </p>
           <pre>
-{`customTheme = {
+            {`customTheme = {
   bgColor: '#000A14'
   bgColor: 'rgb(0 10 20)'
   bgColor: 'hsl(210deg 100% 4%)'
@@ -176,10 +183,12 @@ tokenList = {
           </pre> */}
           <h3>Overrides</h3>
           <p>
-            The following CSS variables can be added to your CustomTheme to override the generated values. Any valid CSS color string can be used, including var() aliases.
+            The following CSS variables can be added to your CustomTheme to
+            override the generated values. Any valid CSS color string can be
+            used, including var() aliases.
           </p>
           <pre>
-{`customTheme = {
+            {`customTheme = {
   --synapse-text-primary: 'white'
   --synapse-text-secondary: '#cccccc'
 
@@ -199,11 +208,12 @@ tokenList = {
             <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
             <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
           </dl> */}
-          <h2>
-            🙋&nbsp; Support
-          </h2>
+          <h2>🙋&nbsp; Support</h2>
           <p>
-            For help and feedback, reach out to our Support team in the <a href="#" target="_blank" rel="noreferrer">Synapse Discord channel.</a>
+            For help and feedback, reach out to our Support team in the{' '}
+            <a href="#" target="_blank" rel="noreferrer">
+              Synapse Discord channel.
+            </a>
           </p>
         </article>
       </main>

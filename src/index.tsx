@@ -28,6 +28,7 @@ export const Bridge = ({
   theme,
   customTheme,
   tokens,
+  toChainId,
 }: WidgetProps) => {
   return (
     <Web3Provider>
@@ -39,6 +40,7 @@ export const Bridge = ({
           theme={theme}
           customTheme={customTheme}
           tokens={tokens}
+          toChainId={toChainId}
         />
       </Provider>
     </Web3Provider>

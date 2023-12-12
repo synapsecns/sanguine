@@ -49,6 +49,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "@synapsecns/sdk-router": "^0.2.23",
     "ethers": "^6.9.0",
+    "lodash": "^4.17.21",
     "react-redux": "^9.0.2",
     "viem": "^1.19.11",
     "wagmi": "^1.4.8"

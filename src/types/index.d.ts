@@ -40,6 +40,9 @@ export interface WidgetProps {
 
   /** Supported Tokens Metadata defined by Consumer */
   tokens: BridgeableToken[]
+
+  /** Destination chain selected by Consumer */
+  toChainId: number
 }
 
 export interface Chain {
@@ -47,7 +50,7 @@ export interface Chain {
   name: string
 }
 
-export declare function Bridge(props: WidgetProps): JSX.Element
+export declare function Bridge(props: any): JSX.Element
 
 export declare const USDC: BridgeableToken
 export declare const USDT: BridgeableToken

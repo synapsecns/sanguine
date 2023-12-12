@@ -52,7 +52,7 @@ export const BridgeButton = ({
         className="rounded-md w-full bg-[--synapse-bg-surface] font-semibold border border-[--synapse-border] p-2 hover:border-[--synapse-brand] active:opacity-40"
         onClick={handleSwitchNetwork}
       >
-        Connect to {originChain.name} Network
+        Connect to {originChain?.name} Network
       </button>
     )
   }

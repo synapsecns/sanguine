@@ -3,7 +3,7 @@ import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '../icons/DownArrow'
 
 type PopoverSelectProps = {
-  selectedChain: Chain
+  selectedChainId: number
   options: BridgeableToken[]
   onSelect: (selected: BridgeableToken) => void
   selected: BridgeableToken
@@ -11,7 +11,7 @@ type PopoverSelectProps = {
 }
 
 export function TokenPopoverSelect({
-  selectedChain,
+  selectedChainId,
   options,
   onSelect,
   selected,
@@ -34,7 +34,7 @@ export function TokenPopoverSelect({
           <DownArrow />
         </span>
         <div className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-          {selected.symbol}
+          {selected?.symbol}
         </div>
       </div>
       {isOpen && (
@@ -45,7 +45,7 @@ export function TokenPopoverSelect({
                 data-test-id="token-option"
                 key={index}
                 className={`w-full cursor-pointer px-2 py-2.5 ${
-                  option.symbol === selected.symbol
+                  option.symbol === selected?.symbol
                     ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
                     : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
                 }`}

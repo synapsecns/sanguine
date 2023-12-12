@@ -10,20 +10,24 @@ type Props = {
 }
 
 export function TokenSelect({ label, token, onChange }: Props) {
-  const { originChain, destinationChain, tokens }: BridgeState =
-    useBridgeState()
+  const {
+    originChainId,
+    destinationChainId,
+    originTokens,
+    destinationTokens,
+  }: BridgeState = useBridgeState()
 
   let options
 
   if (label === 'In') {
-    options = filterObjectsWithAddressKey(tokens, originChain.id)
+    options = originTokens
   } else {
-    options = filterObjectsWithAddressKey(tokens, destinationChain.id)
+    options = destinationTokens
   }
 
   return (
     <TokenPopoverSelect
-      selectedChain={label === 'In' ? originChain : destinationChain}
+      selectedChainId={label === 'In' ? originChainId : destinationChainId}
       options={options}
       onSelect={(selected) => {
         onChange(selected)
@@ -32,16 +36,4 @@ export function TokenSelect({ label, token, onChange }: Props) {
       label={label}
     />
   )
-}
-
-export const filterObjectsWithAddressKey = (
-  array: BridgeableToken[],
-  chainId: number
-) => {
-  return array.filter((item) => {
-    if (item.addresses) {
-      return Object.keys(item.addresses).some((key) => Number(key) === chainId)
-    }
-    return false
-  })
 }
