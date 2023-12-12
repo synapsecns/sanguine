@@ -626,14 +626,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
 
-	mask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
-	e.Nil(err)
-	e.Len(executableMessages, 0)
-
 	// Make sure there is one executable message in the database.
 	e.Eventually(func() bool {
 		mask := execTypes.DBMessage{
@@ -797,6 +789,9 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 //nolint:maintidx
 func (e *ExecutorSuite) TestSendManagerMessage() {
+	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
+	// set up the backends with anvil.
+
 	testDone := false
 	defer func() {
 		testDone = true

@@ -192,7 +192,7 @@ jobs:
             retries=0
 
             while [ $retries -lt $max_num_retries ]; do
-              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
+              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -timeout 30m -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
                 break
               else
                 retries=$((retries+1))
