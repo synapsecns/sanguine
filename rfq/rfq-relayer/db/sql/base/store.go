@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Store is the sqlite store. It extends the base store for sqlite specific queries.
+// Store is the store.
 type Store struct {
 	db             *gorm.DB
 	metrics        metrics.Handler

@@ -9,6 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetAllModels gets all models to migrate.
+func GetAllModels() (allModels []interface{}) {
+	return []interface{}{&Request{}, &Quote{}}
+}
+
 type Request struct {
 	OriginChainId uint            `form:"origin_chain_id"`
 	DestChainId   uint            `form:"dest_chain_id"`

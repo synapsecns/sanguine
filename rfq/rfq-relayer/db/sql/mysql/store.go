@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Store is the sqlite store. It extends the base store for sqlite specific queries.
+// Store is the mysql store. It extends the base store for sqlite specific queries.
 type Store struct {
 	*base.Store
 }
