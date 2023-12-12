@@ -1,4 +1,5 @@
 import { CustomThemeVariables } from 'types'
+import { Address } from 'types'
 
 export const lightThemeVariables: CustomThemeVariables = {
   '--synapse-text-primary': 'hsl(240deg 0% 7%)',
@@ -24,3 +25,4 @@ export const darkThemeVariables: CustomThemeVariables = {
 
 export const MAX_UINT256 =
   115792089237316195423570985008687907853269984665640564039457584007913129639935n
+export const zeroAddress: Address = '0x0000000000000000000000000000000000000000'

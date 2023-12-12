@@ -27,6 +27,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-image": "^3.0.3",
+    "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/react": "^18.2.39",
@@ -50,8 +51,6 @@
     "@synapsecns/sdk-router": "^0.2.23",
     "ethers": "^6.9.0",
     "lodash": "^4.17.21",
-    "react-redux": "^9.0.2",
-    "viem": "^1.19.11",
-    "wagmi": "^1.4.8"
+    "react-redux": "^9.0.2"
   }
 }

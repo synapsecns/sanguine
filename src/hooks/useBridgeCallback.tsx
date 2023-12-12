@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { Address } from 'viem'
+import { Address } from 'types'
 
 export enum UseBridgeCallbackError {
   REQUIRE_TOKEN_ADDRESS = 'Bridge: Missing Token Address',

@@ -1,6 +1,4 @@
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react'
-import { Address } from 'viem'
-
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
@@ -32,13 +30,22 @@ import {
   setOriginToken,
   setDestinationToken,
   setTokens,
+  setDebouncedInputAmount,
+  setInputAmount,
 } from '@/state/slices/bridge/reducer'
-import { useBridgeState } from '@/state/slices/bridge/hooks'
+import {
+  fetchAndStoreTokenBalances,
+  useBridgeState,
+} from '@/state/slices/bridge/hooks'
 import { BridgeButton } from './BridgeButton'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 import { toHexStr } from '@/utils/toHexStr'
+import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 import { generateTheme } from '@/utils/generateTheme'
+import { fetchTokenBalances } from '@/utils/actions/fetchTokenBalances'
+import { AvailableBalance } from './AvailableBalance'
+import { Address } from 'types'
 
 const chains = {
   1: {
@@ -70,10 +77,16 @@ export const Widget = ({
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
 
-  const [inputAmount, setInputAmount] = useState<string>('')
-
-  const { originChainId, originToken, destinationChainId, destinationToken } =
-    useBridgeState()
+  const {
+    inputAmount,
+    debouncedInputAmount,
+    originChainId,
+    originToken,
+    destinationChainId,
+    destinationToken,
+    tokens: allTokens,
+    balances,
+  } = useBridgeState()
 
   const themeVariables = (() => {
     if (theme === 'dark') return generateTheme({ bgColor: 'dark' })
@@ -109,6 +122,32 @@ export const Widget = ({
     dispatch(setDestinationToken(tokens[0]))
   }, [tokens, toChainId])
 
+  /** Debounce user input to fetch bridge quote (in ms) */
+  useEffect(() => {
+    const DEBOUNCE_DELAY = 300
+    const debounceTimer = setTimeout(() => {
+      dispatch(setDebouncedInputAmount(inputAmount))
+    }, DEBOUNCE_DELAY)
+
+    return () => {
+      clearTimeout(debounceTimer)
+    }
+  }, [dispatch, inputAmount])
+
+  /** Fetch token balances when signer/address connected */
+  useEffect(() => {
+    if (originChainId && tokens && connectedAddress && signer) {
+      dispatch(
+        fetchAndStoreTokenBalances({
+          address: connectedAddress,
+          chainId: originChainId,
+          tokens: allTokens,
+          signer: signer,
+        })
+      )
+    }
+  }, [originChainId, allTokens, connectedAddress, signer])
+
   const originTokenDecimals = useMemo(() => {
     if (typeof originToken?.decimals === 'number') return originToken?.decimals
 
@@ -133,7 +172,7 @@ export const Widget = ({
     originTokenAddress: originToken?.addresses[originChainId],
     destinationChainId: destinationChainId,
     destinationTokenAddress: destinationToken?.addresses[destinationChainId],
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    amount: stringToBigInt(debouncedInputAmount, originTokenDecimals),
     synapseSDK: synapseSDK,
   })
 
@@ -144,6 +183,8 @@ export const Widget = ({
     tokenAddress: originToken?.addresses[originChainId] as Address,
     ownerAddress: connectedAddress as Address,
     chainId: originToken?.addresses[originChainId],
+    signer: signer,
+    provider: provider,
   })
 
   const useApproveCallbackArgs: UseApproveCallbackProps = {
@@ -153,14 +194,14 @@ export const Widget = ({
     amount: stringToBigInt(inputAmount, originTokenDecimals),
     chainId: originChainId,
     onSuccess: checkAllowanceCallback,
+    signer: signer,
+    provider: provider,
   }
   const {
     state: approveState,
     callback: approveCallback,
     error: approveError,
   } = useApproveCallback(useApproveCallbackArgs)
-
-  console.log('approveState:', approveState)
 
   const useBridgeCallbackArgs: UseBridgeCallbackArgs = {
     destinationAddress: connectedAddress as Address,
@@ -189,10 +230,10 @@ export const Widget = ({
   }, [inputAmount, originToken])
 
   const isInputValid: boolean = useMemo(() => {
-    if (inputAmount === '') return false
-    if (isOnlyZeroes(inputAmount)) return false
+    if (debouncedInputAmount === '') return false
+    if (isOnlyZeroes(debouncedInputAmount)) return false
     return true
-  }, [inputAmount])
+  }, [debouncedInputAmount])
 
   const isApproved: boolean = useMemo(() => {
     if (allowance === null) return true
@@ -214,7 +255,7 @@ export const Widget = ({
       resetQuote()
     }
   }, [
-    inputAmount,
+    debouncedInputAmount,
     originToken,
     destinationToken,
     originChainId,
@@ -223,22 +264,8 @@ export const Widget = ({
   ])
 
   const handleSwitchNetwork = useCallback(async () => {
-    try {
-      const hexChainId: string = toHexStr(originChainId)
-      await provider.send('wallet_switchEthereumChain', [
-        { chainId: hexChainId },
-      ])
-    } catch (error) {
-      console.error('handleSwitchNetwork ', error)
-    }
+    switchNetwork(originChainId, provider)
   }, [originChainId, provider])
-
-  const handleInputAmountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const cleanedInput: string = cleanNumberInput(event.target.value)
-    setInputAmount(cleanedInput)
-  }
 
   const maxAmountOut = useMemo(() => {
     if (!quote || !quote.maxAmountOut) {
@@ -249,6 +276,14 @@ export const Widget = ({
 
     return formatBigIntToString(max, destinationTokenDecimals, 4)
   }, [quote])
+
+  const handleUserInput = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = cleanNumberInput(event.target.value)
+      dispatch(setInputAmount(value))
+    },
+    [dispatch]
+  )
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
@@ -290,12 +325,21 @@ export const Widget = ({
           onChange={handleOriginChainSelection}
         />
         <div className="flex pb-2">
-          <input
-            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
-            placeholder="0"
-            value={inputAmount}
-            onChange={handleInputAmountChange}
-          />
+          <div className="flex flex-col items-start">
+            <input
+              className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
+              placeholder="0"
+              value={inputAmount}
+              onChange={handleUserInput}
+            />
+            <AvailableBalance
+              originChainId={originChainId}
+              originToken={originToken}
+              inputAmount={inputAmount}
+              connectedAddress={connectedAddress as Address}
+              balances={balances}
+            />
+          </div>
           <TokenSelect
             label="In"
             token={originToken}

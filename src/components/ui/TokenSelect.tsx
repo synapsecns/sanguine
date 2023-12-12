@@ -15,6 +15,7 @@ export function TokenSelect({ label, token, onChange }: Props) {
     destinationChainId,
     originTokens,
     destinationTokens,
+    balances,
   }: BridgeState = useBridgeState()
 
   let options
@@ -29,6 +30,7 @@ export function TokenSelect({ label, token, onChange }: Props) {
     <TokenPopoverSelect
       selectedChainId={label === 'In' ? originChainId : destinationChainId}
       options={options}
+      balances={balances}
       onSelect={(selected) => {
         onChange(selected)
       }}

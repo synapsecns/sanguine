@@ -4,6 +4,8 @@ import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
 import image from '@rollup/plugin-image'
+import json from "@rollup/plugin-json";
+
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -33,6 +35,7 @@ export default [
         plugins: [],
       }),
       image(),
+      json()
     ],
     watch: {
       buildDelay: 200,

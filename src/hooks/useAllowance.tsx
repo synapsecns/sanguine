@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react'
-import { Address } from 'viem'
 import { fetchErc20TokenAllowance } from '@/utils/actions/fetchErc20TokenAllowance'
+import { Address } from 'types'
 
 export enum UseAllowanceError {
   REQUIRE_SPENDER_ADDRESS = 'Allowance: Missing Spender Address',
@@ -14,6 +14,8 @@ interface UseAllowanceProps {
   tokenAddress: Address
   ownerAddress: Address
   chainId: number
+  signer: any
+  provider: any
 }
 
 export function useAllowance({
@@ -21,6 +23,8 @@ export function useAllowance({
   tokenAddress,
   ownerAddress,
   chainId,
+  signer,
+  provider,
 }: UseAllowanceProps): {
   allowance: bigint
   checkAllowanceCallback: () => Promise<void>
@@ -36,7 +40,9 @@ export function useAllowance({
         spenderAddress: spenderAddress,
         tokenAddress: tokenAddress,
         ownerAddress: ownerAddress,
-        chainId: chainId,
+        // chainId: chainId,
+        signer: signer,
+        provider: provider,
       })
       console.log('fetched allowance: ', allowance)
       setAllowance(allowance)

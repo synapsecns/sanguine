@@ -1,54 +1,34 @@
-import { Address, erc20ABI, waitForTransaction } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
 import { MAX_UINT256 } from '@/constants/index'
-import { viemPublicClient, viemWalletClient } from 'index'
+import { ethers } from 'ethers'
+import erc20ABI from '../../constants/abis/erc20.json'
 
 export const approveErc20Token = async ({
   spenderAddress,
   tokenAddress,
-  ownerAddress,
-  chainId,
   amount,
-}: {
-  spenderAddress: Address
-  tokenAddress: Address
-  ownerAddress: Address
-  chainId: number
-  amount: bigint
+  provider,
+  signer,
 }) => {
-  /** @DEV TO-DO: Uncomment once Chains / Tokens constants port over */
-  //   let abi
-  //   if (tokenAddress === USDT.addresses[Ethereum.id]) {
-  //     abi = USDT_ABI
-  //   } else {
-  //     abi = erc20ABI
-  //   }
-
-  //   const { request } = await viemPublicClient.simulateContract({
-  //     address: tokenAddress,
-  //     account: ownerAddress as Address,
-  //     abi: erc20ABI,
-  //     functionName: 'approve',
-  //     args: [spenderAddress, amount ?? MAX_UINT256],
-  //   })
-
-  //   const hash = await viemWalletClient.writeContract(request)
-
-  //   return hash
-  // }
-
   try {
-    const { request } = await viemPublicClient.simulateContract({
-      address: tokenAddress,
-      account: ownerAddress as Address,
-      abi: erc20ABI,
-      functionName: 'approve',
-      args: [spenderAddress, amount ?? MAX_UINT256],
-    })
+    if (!provider || !signer) {
+      console.error('Web3 provider or signer is not available')
+      throw new Error('Web3 provider or signer is not available')
+    }
+    // Create a new instance of Contract with the signer
+    const tokenContract = new ethers.Contract(tokenAddress, erc20ABI, signer)
 
-    const hash = await viemWalletClient.writeContract(request)
+    // If amount is not provided, use maximum uint256
+    const approveAmount = amount ?? MAX_UINT256
 
-    return hash
+    // Send approve transaction
+    const tx = await tokenContract.approve(spenderAddress, approveAmount)
+
+    // Wait for the transaction to be mined
+    const receipt = await tx.wait()
+
+    console.log('receipt:', receipt)
+
+    return receipt
   } catch (error) {
     console.error('Error in approveErc20Token: ', error)
     return error

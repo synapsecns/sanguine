@@ -1,10 +1,12 @@
 import { BridgeableToken, Chain } from 'types'
+import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '../icons/DownArrow'
 
 type PopoverSelectProps = {
   selectedChainId: number
   options: BridgeableToken[]
+  balances: TokenBalance[]
   onSelect: (selected: BridgeableToken) => void
   selected: BridgeableToken
   label: string
@@ -13,6 +15,7 @@ type PopoverSelectProps = {
 export function TokenPopoverSelect({
   selectedChainId,
   options,
+  balances,
   onSelect,
   selected,
   label,
@@ -25,7 +28,11 @@ export function TokenPopoverSelect({
   }
 
   return (
-    <div className="relative w-min" ref={popoverRef}>
+    <div
+      data-test-id="token-popover-select"
+      className="relative w-min"
+      ref={popoverRef}
+    >
       <div
         className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}
@@ -39,7 +46,11 @@ export function TokenPopoverSelect({
       </div>
       {isOpen && (
         <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-[--synapse-border] rounded shadow popover">
-          {options.map((option, index) => {
+          {options.map((option: BridgeableToken, index) => {
+            const matchedTokenBalance: TokenBalance = balances?.find(
+              (token: TokenBalance) => token.token === option
+            )
+            const parsedBalance: string = matchedTokenBalance?.parsedBalance
             return (
               <div
                 data-test-id="token-option"
@@ -54,6 +65,7 @@ export function TokenPopoverSelect({
                 <div className="flex items-center gap-2">
                   <div className="mr-3">{option.symbol}</div>
                   <div className="flex gap-1 ml-auto text-xs">
+                    {parsedBalance && <div>{parsedBalance}</div>}
                     <div className="text-[--synapse-text-secondary]">
                       {option.symbol}
                     </div>

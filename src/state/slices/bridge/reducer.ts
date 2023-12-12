@@ -13,8 +13,19 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findValidToken } from '@/utils/findValidTokens'
 import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
+import { fetchAndStoreTokenBalances } from './hooks'
+import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
+
+export enum FetchState {
+  IDLE = 'idle',
+  LOADING = 'loading',
+  VALID = 'valid',
+  INVALID = 'invalid',
+}
 
 export interface BridgeState {
+  inputAmount: string
+  debouncedInputAmount: string
   originChainId: number
   originToken: BridgeableToken
   destinationChainId: number
@@ -24,9 +35,15 @@ export interface BridgeState {
   destinationChainIds: number[]
   destinationTokens: BridgeableToken[]
   tokens: BridgeableToken[]
+  // Thunk States
+  balances: TokenBalance[]
+  status: FetchState
+  error?: any
 }
 
 const initialState: BridgeState = {
+  inputAmount: '',
+  debouncedInputAmount: '',
   originChainId: 42161,
   originToken: null,
   destinationChainId: null,
@@ -36,12 +53,24 @@ const initialState: BridgeState = {
   destinationChainIds: [],
   destinationTokens: [],
   tokens: [],
+  balances: [],
+  status: FetchState.IDLE,
+  error: null,
 }
 
 export const bridgeSlice = createSlice({
   name: 'bridge',
   initialState,
   reducers: {
+    setInputAmount: (state: BridgeState, action: PayloadAction<string>) => {
+      state.inputAmount = action.payload
+    },
+    setDebouncedInputAmount: (
+      state: BridgeState,
+      action: PayloadAction<string>
+    ) => {
+      state.debouncedInputAmount = action.payload
+    },
     setOriginChainId: (state: BridgeState, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
 
@@ -414,9 +443,26 @@ export const bridgeSlice = createSlice({
       state.tokens = action.payload
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAndStoreTokenBalances.pending, (state) => {
+        state.status = FetchState.LOADING
+      })
+      .addCase(
+        fetchAndStoreTokenBalances.fulfilled,
+        (state, action: PayloadAction<TokenBalance[]>) => {
+          state.balances = action.payload
+        }
+      )
+      .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
+        state.error = action.payload
+      })
+  },
 })
 
 export const {
+  setInputAmount,
+  setDebouncedInputAmount,
   setOriginChainId,
   setDestinationChainId,
   setOriginToken,

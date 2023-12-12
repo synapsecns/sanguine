@@ -23,7 +23,11 @@ export function ChainPopoverSelect({
   }
 
   return (
-    <div className="relative w-min" ref={popoverRef}>
+    <div
+      data-test-id="chain-popover-select"
+      className="relative w-min"
+      ref={popoverRef}
+    >
       <div
         className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}

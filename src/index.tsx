@@ -6,20 +6,7 @@ import { Web3Provider } from 'providers/Web3Provider'
 import { Provider } from 'react-redux'
 import { store } from '@/state/store'
 
-import { createPublicClient, createWalletClient, custom, http } from 'viem'
-import { mainnet, arbitrum } from 'viem/chains'
-
 import * as BRIDGEABLE from '@/constants/bridgeable'
-
-export const viemPublicClient = createPublicClient({
-  chain: arbitrum,
-  transport: http(),
-})
-
-export const viemWalletClient = createWalletClient({
-  chain: arbitrum,
-  transport: custom(window.ethereum),
-})
 
 export const Bridge = ({
   chainIds,
