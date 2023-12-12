@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO: make this work w/ generate detection
 # Define the base directories
 ARTIFACTS_DIR="./out"
 OUTPUT_DIR="./rfq-quoter/bindings"
@@ -8,7 +9,7 @@ OUTPUT_DIR="./rfq-quoter/bindings"
 CONTRACT_NAMES=("FastBridge" "MockERC20") # Replace with your contract names
 
 cd contracts
-forge build --extra-output-files bin abi --force 
+forge build --extra-output-files bin abi --force
 cd ..
 
 # Loop over the list of contract names

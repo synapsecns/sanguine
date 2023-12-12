@@ -14,3 +14,9 @@
 [submodule "packages/contracts-core/lib/create3-factory"]
 	path = packages/contracts-core/lib/create3-factory
 	url = https://github.com/zeframlou/create3-factory
+[submodule "rfq/contracts/lib/forge-std"]
+	path = rfq/contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "rfq/contracts/lib/openzeppelin-contracts"]
+	path = rfq/contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
