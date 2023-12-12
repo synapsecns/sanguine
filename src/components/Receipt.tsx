@@ -18,29 +18,20 @@ export const Receipt = ({ quote, send, receive }) => {
         {quote ? (
           <div
             onClick={handleToggle}
-            className={`hover:bg-[--synapse-border] flex self-end pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 ${
-              isExpanded ? 'cursor-n-resize' : 'cursor-s-resize'
-            }`}
+            className="hover:bg-[--synapse-border] flex self-end pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 cursor-pointer"
           >
-            {estTime} min via
-            <a
-              href="https://synapseprotocol.com"
-              target="_blank"
-              className="text-[--synapse-accent] cursor-alias  hover:underline"
-            >
-              Synapse
-            </a>
+            {estTime} min via Synapse
             {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
           </div>
         ) : (
           <div
-            className={`flex self-end pl-2 pr-1 py-1 gap-1 text-[--synapse-text-secondary] cursor-default`}
+            className="flex self-end pl-2 pr-1 py-1 gap-1 text-[--synapse-text-secondary] cursor-default"
           >
             Powered by
             <a
               href="https://synapseprotocol.com"
               target="_blank"
-              className="text-[--synapse-accent] cursor-alias active:opacity-40 hover:underline"
+              className="underline hover:text-[--synapse-text-primary] active:opacity-40"
             >
               Synapse
             </a>
@@ -48,30 +39,18 @@ export const Receipt = ({ quote, send, receive }) => {
         )}
       </div>
       {isExpanded && (
-        <div className="p-2 text-sm rounded border border-[--synapse-border]">
-          <div className="flex justify-between">
-            <div>Router</div>
-            <div className="text-[--synapse-text-primary]">
-              {quote?.bridgeModuleName}
-            </div>
-          </div>
-          <div className="flex justify-between">
-            <div>Origin</div>
-            <div>Ethereum</div>
-          </div>
-          <div className="flex justify-between">
-            <div>Destination</div>
-            <div>Arbitrum</div>
-          </div>
-          <div className="flex justify-between">
-            <div>Send</div>
-            <div>{send}</div>
-          </div>
-          <div className="flex justify-between">
-            <div>Receive</div>
-            <div>{receive}</div>
-          </div>
-        </div>
+        <dl className="receipt p-2 text-sm rounded border border-[--synapse-border] grid grid-cols-2">
+          <dt>Router</dt>
+          <dd className="text-right">{quote?.bridgeModuleName}</dd>
+          <dt>Origin</dt>
+          <dd className="text-right">Ethereum</dd>
+          <dt>Destination</dt>
+          <dd className="text-right">Arbitrum</dd>
+          <dt>Send</dt>
+          <dd className="text-right">{send}</dd>
+          <dt>Receive</dt>
+          <dd className="text-right">{receive}</dd>
+        </dl>
       )}
     </>
   )
