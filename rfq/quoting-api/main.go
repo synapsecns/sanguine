@@ -16,5 +16,5 @@ var (
 
 func main() {
 	buildInfo := sanguineConfig.NewBuildInfo(version, commit, "quoter", date)
-	cmd.Start(os.Args, buildInfo)
+	cmd.Start(os.Args, buildInfo) 
 }
