@@ -456,7 +456,6 @@ func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, chainID uin
 		}
 		return nil
 	default:
-		logger.Warnf("unknown topic %s", log.Topics[0])
 		return nil
 	}
 }
