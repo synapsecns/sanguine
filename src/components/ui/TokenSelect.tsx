@@ -16,6 +16,7 @@ export function TokenSelect({ label, token, onChange }: Props) {
     originTokens,
     destinationTokens,
     balances,
+    tokens,
   }: BridgeState = useBridgeState()
 
   let options
@@ -23,7 +24,7 @@ export function TokenSelect({ label, token, onChange }: Props) {
   if (label === 'In') {
     options = originTokens
   } else {
-    options = destinationTokens
+    options = filterTokens(destinationTokens, tokens)
   }
 
   return (
@@ -37,5 +38,14 @@ export function TokenSelect({ label, token, onChange }: Props) {
       selected={token}
       label={label}
     />
+  )
+}
+
+const filterTokens = (
+  destinationTokens: BridgeableToken[],
+  tokens: BridgeableToken[]
+) => {
+  return destinationTokens.filter((destinationToken) =>
+    tokens.some((token) => token.routeSymbol === destinationToken.routeSymbol)
   )
 }
