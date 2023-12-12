@@ -47,7 +47,7 @@ func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex in
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				transactor,
-				int64(stateIndex),
+				uint8(stateIndex),
 				data.SnapshotPayload(),
 				data.AttestationPayload(),
 				data.AttestationSignature(),
@@ -58,7 +58,7 @@ func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex in
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 				transactor,
-				int64(stateIndex),
+				uint8(stateIndex),
 				data.SnapshotPayload(),
 				data.SnapshotSignature(),
 			)
@@ -85,9 +85,9 @@ func (g Guard) verifyState(ctx context.Context, state types.State, stateIndex in
 
 type stateReportContract interface {
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
-	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
-	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // submitStateReport submits a state report to the given chain, provided a snapshot or attestation.
@@ -108,7 +108,7 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = contract.SubmitStateReportWithAttestation(
 				transactor,
-				int64(stateIndex),
+				uint8(stateIndex),
 				srSignature,
 				data.SnapshotPayload(),
 				data.AttestationPayload(),
@@ -120,7 +120,7 @@ func (g Guard) submitStateReport(ctx context.Context, chainID uint32, state type
 		submitFunc = func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = contract.SubmitStateReportWithSnapshot(
 				transactor,
-				int64(stateIndex),
+				uint8(stateIndex),
 				srSignature,
 				data.SnapshotPayload(),
 				data.SnapshotSignature(),
