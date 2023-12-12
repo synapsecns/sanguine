@@ -32,7 +32,7 @@ export function ChainPopoverSelect({
           <DownArrow />
         </span>
         <div className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-          {selected?.name}
+          {selected?.name || 'Network'}
         </div>
       </div>
       {isOpen && (

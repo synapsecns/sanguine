@@ -34,7 +34,7 @@ export function TokenPopoverSelect({
           <DownArrow />
         </span>
         <div className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-          {selected?.symbol}
+          {selected?.symbol || 'Token'}
         </div>
       </div>
       {isOpen && (
