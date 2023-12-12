@@ -35,7 +35,10 @@ var quoterCommand = &cli.Command{
 			fmt.Println("Error loading config:", err)
 		}
 		fmt.Printf("Config loaded: %+v\n", cfg)
-		restAPI := rest.NewRestApiServer(c.Context, &cfg)
+		restAPI, err := rest.NewRestApiServer(c.Context, &cfg)
+		if err != nil {
+			return fmt.Errorf("could not create rest api server: %w", err)
+		}
 		restAPI.Setup()
 		restAPI.Run()
 		return nil

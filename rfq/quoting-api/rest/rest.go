@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"strconv"
 	"time"
 
@@ -28,11 +29,14 @@ type RestApiServer struct {
 	bridges map[uint]*bindings.FastBridge
 }
 
-func NewRestApiServer(ctx context.Context, cfg *config.Config) *RestApiServer {
-	db := db.NewDatabase(ctx, cfg)
+func NewRestApiServer(ctx context.Context, cfg *config.Config) (*RestApiServer, error) {
+	db, err := db.NewDatabase(ctx, metrics.NewNullHandler(), true)
+	if err != nil {
+		return nil, fmt.Errorf("could not create db: %w", err)
+	}
 	engine := gin.Default()
 	r := RestApiServer{cfg: cfg, db: db, engine: engine}
-	return &r
+	return &r, nil
 }
 
 // Setup initializes rest api server routes

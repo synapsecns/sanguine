@@ -79,41 +79,34 @@ func (s Store) StoreDestinationBridgeEvent(ctx context.Context, log *types.Log, 
 
 // StoreLastIndexed stores the last indexed block number for a contract. It will only insert if the current stored block number is less than the block number being inserted.
 func (s Store) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error {
+	var lastIndexed model.LastIndexed
 	address := contractAddress.String()
-	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: model.ContractAddressFieldName}, {Name: model.ChainIDFieldName}},
-			DoUpdates: clause.AssignmentColumns([]string{model.BlockNumberFieldName}),
-			Where: clause.Where{
-				Exprs: []clause.Expression{
-					clause.And(
-						clause.Where{
-							Exprs: []clause.Expression{
-								clause.Eq{
-									Column: clause.Column{Name: model.ContractAddressFieldName},
-									Value:  address,
-								},
-								clause.Eq{
-									Column: clause.Column{Name: model.ChainIDFieldName},
-									Value:  chainID,
-								},
-							},
-						},
-						clause.Lt{
-							Column: clause.Column{Name: model.BlockNumberFieldName},
-							Value:  blockNumber,
-						},
-					),
-				},
-			},
-		}).
-		Create(&model.LastIndexed{
-			ContractAddress: address,
+	// Gorm clauses don't work on all databases
+	dbTx := s.db.WithContext(ctx).
+		Model(&model.LastIndexed{}).
+		Where(&model.LastIndexed{
 			ChainID:         chainID,
-			BlockNumber:     blockNumber,
-		})
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not update last indexed info: %w", dbTx.Error)
+			ContractAddress: address,
+		}).
+		Order("block_number DESC").
+		Limit(1).
+		Scan(&lastIndexed)
+	if dbTx.Error == nil && blockNumber > lastIndexed.BlockNumber {
+		// Populate the struct
+		lastIndexed.ChainID = chainID
+		lastIndexed.BlockNumber = blockNumber
+		lastIndexed.ContractAddress = address
+
+		// Upsert, clauses don[t work here with gorm.model
+		if s.db.Model(&model.LastIndexed{}).Where(&model.LastIndexed{
+			ChainID:         chainID,
+			ContractAddress: address,
+		}).Updates(&lastIndexed).RowsAffected == 0 {
+			s.db.Create(&lastIndexed)
+		}
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
 	}
 	return nil
 }
