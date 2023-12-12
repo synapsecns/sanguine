@@ -36,5 +36,5 @@ export const MEDIAN_TIME_CCTP = {
   [SupportedChainId.BASE]: 1170,
   [SupportedChainId.ARBITRUM]: 1170,
   [SupportedChainId.AVALANCHE]: 30,
-  [SupportedChainId.POLYGON]: 440,
+  [SupportedChainId.POLYGON]: 480,
 }
