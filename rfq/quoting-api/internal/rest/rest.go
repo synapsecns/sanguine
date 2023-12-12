@@ -31,7 +31,7 @@ type APIServer struct {
 
 // NewRestAPIServer creates a new instance of the rest api server.
 func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
-	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), true)
+	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false)
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
