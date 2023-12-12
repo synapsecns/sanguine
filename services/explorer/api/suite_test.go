@@ -5,9 +5,11 @@ import (
 	gosql "database/sql"
 	"fmt"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 	"math/big"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
@@ -209,6 +211,12 @@ func (g *APISuite) SetupSuite() {
 
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
+
+	initialFallback := graph.GetFallbackTime()
+	graph.UnsafeSetFallbackTime(time.Second * 20)
+	g.TestSuite.DeferAfterTest(func() {
+		graph.UnsafeSetFallbackTime(initialFallback)
+	})
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
