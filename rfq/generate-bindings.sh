@@ -8,9 +8,9 @@ OUTPUT_DIR="./rfq-quoter/bindings"
 # List of contract names to process
 CONTRACT_NAMES=("FastBridge" "MockERC20") # Replace with your contract names
 
-cd contracts
+cd contracts || exit 1
 forge build --extra-output-files bin abi --force
-cd ..
+cd .. || exit 1
 
 # Loop over the list of contract names
 for CONTRACT_NAME in "${CONTRACT_NAMES[@]}"; do
