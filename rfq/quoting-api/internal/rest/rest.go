@@ -1,66 +1,71 @@
+// Package rest implements the rest driver
 package rest
 
 import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/bindings"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/config"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest/auth"
 	"strconv"
 	"time"
-
-	"github.com/synapsecns/sanguine/rfq/quoting-api/bindings"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/config"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db/models"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/rest/auth"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	// EVMClient "github.com/synapsecns/sanguine/ethergo/client".
-
 	"github.com/gin-gonic/gin"
 )
 
-type RestApiServer struct {
+// APIServer is the server object.
+// TODO: this should be an interface.
+type APIServer struct {
 	cfg     *config.Config // TODO: cfg
-	db      *db.Database
+	db      *db.Database   // TODO: carefully consider why this is a pointer
 	engine  *gin.Engine
 	bridges map[uint]*bindings.FastBridge
 }
 
-func NewRestApiServer(ctx context.Context, cfg *config.Config) (*RestApiServer, error) {
-	db, err := db.NewDatabase(ctx, metrics.NewNullHandler(), true)
+// NewRestAPIServer creates a new instance of the rest api server.
+func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
+	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), true)
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
 	engine := gin.Default()
-	r := RestApiServer{cfg: cfg, db: db, engine: engine}
+	r := APIServer{cfg: cfg, db: apiDB, engine: engine}
 	return &r, nil
 }
 
 // Setup initializes rest api server routes.
-func (r *RestApiServer) Setup() {
-	r.engine.GET("/ping", r.Ping)
-	r.engine.POST("/quote", r.CreateQuote)
-	r.engine.GET("/quote", r.ReadQuotes)
-	r.engine.GET("/quote/:id", r.ReadQuote)
-	r.engine.PUT("/quote/:id", r.UpdateQuote)
-	r.engine.DELETE("/quote/:id", r.DeleteQuote)
-	r.engine.POST("/quote/:id/ping", r.PingQuote)
+func (r *APIServer) Setup() {
+	r.engine.GET("/ping", r.ping)
+	r.engine.POST("/quote", r.createQuote)
+	r.engine.GET("/quote", r.readQuotes)
+	r.engine.GET("/quote/:id", r.readQuote)
+	r.engine.PUT("/quote/:id", r.updateQuote)
+	r.engine.DELETE("/quote/:id", r.deleteQuote)
+	r.engine.POST("/quote/:id/ping", r.pingQuote)
 }
 
 // Run runs the rest api server.
-func (r *RestApiServer) Run() {
-	r.engine.Run()
+func (r *APIServer) Run() error {
+	err := r.engine.Run()
+	if err != nil {
+		return fmt.Errorf("could not run rest api server: %w", err)
+	}
+	return nil
 }
 
 // Authenticate checks request header for EIP191 signature for a valid relayer.
-func (r *RestApiServer) Authenticate(c *gin.Context, q *models.Quote) {
+func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) {
 	// check relayer registered with contract
-	bridge, ok := r.bridges[q.DestChainId]
+	bridge, ok := r.bridges[q.DestChainID]
 	if !ok {
-		err := fmt.Errorf("Dest chain id not supported")
+		err := fmt.Errorf("dest chain id not supported")
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
@@ -71,7 +76,7 @@ func (r *RestApiServer) Authenticate(c *gin.Context, q *models.Quote) {
 	relayer := common.HexToAddress(q.Relayer)
 
 	if has, err := bridge.HasRole(ops, role, relayer); err != nil {
-		err := fmt.Errorf("Unable to check relayer role on-chain")
+		err := fmt.Errorf("unable to check relayer role on-chain")
 		c.JSON(400, gin.H{"msg": err})
 		return
 	} else if !has {
@@ -86,14 +91,19 @@ func (r *RestApiServer) Authenticate(c *gin.Context, q *models.Quote) {
 }
 
 // GET /ping.
-func (r *RestApiServer) Ping(c *gin.Context) {
+func (r *APIServer) ping(c *gin.Context) {
 	c.JSON(200, gin.H{"result": "pong"})
 }
 
 // POST /quote.
-func (r *RestApiServer) CreateQuote(c *gin.Context) {
+func (r *APIServer) createQuote(c *gin.Context) {
 	var q models.Quote
-	c.Bind(&q)
+	err := c.Bind(&q)
+	if err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
+
 	r.Authenticate(c, &q)
 
 	id, err := r.db.InsertQuote(c, &q)
@@ -106,9 +116,13 @@ func (r *RestApiServer) CreateQuote(c *gin.Context) {
 
 // GET /quote
 // query: originChainId, destChainId, originToken, destToken, originAmount, deadline (+ relayer?)
-func (r *RestApiServer) ReadQuotes(c *gin.Context) {
+func (r *APIServer) readQuotes(c *gin.Context) {
 	var req models.Request
-	c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
 	qs, err := r.db.GetQuotes(c, &req)
 	if err != nil {
 		c.JSON(400, gin.H{"msg": err})
@@ -118,7 +132,7 @@ func (r *RestApiServer) ReadQuotes(c *gin.Context) {
 }
 
 // GET /quote/{id}.
-func (r *RestApiServer) ReadQuote(c *gin.Context) {
+func (r *APIServer) readQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -136,7 +150,7 @@ func (r *RestApiServer) ReadQuote(c *gin.Context) {
 }
 
 // PUT /quote/{id}.
-func (r *RestApiServer) UpdateQuote(c *gin.Context) {
+func (r *APIServer) updateQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -144,14 +158,19 @@ func (r *RestApiServer) UpdateQuote(c *gin.Context) {
 		return
 	}
 	q.ID = uint(id) // get q.ID first from URI
-	c.Bind(&q)      // binds remaining form data
+
+	err = c.Bind(&q) // binds remaining form data
+	if err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
 
 	// check relayer hasn't changed
 	if quote, err := r.db.GetQuote(c, q.ID); err != nil {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	} else if quote.Relayer != q.Relayer {
-		err := fmt.Errorf("Quote relayer not same")
+		err := fmt.Errorf("quote relayer not same")
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
@@ -169,7 +188,7 @@ func (r *RestApiServer) UpdateQuote(c *gin.Context) {
 }
 
 // DELETE /quote/{id}.
-func (r *RestApiServer) DeleteQuote(c *gin.Context) {
+func (r *APIServer) deleteQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -194,7 +213,7 @@ func (r *RestApiServer) DeleteQuote(c *gin.Context) {
 }
 
 // POST /quote/{id}/ping.
-func (r *RestApiServer) PingQuote(c *gin.Context) {
+func (r *APIServer) pingQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

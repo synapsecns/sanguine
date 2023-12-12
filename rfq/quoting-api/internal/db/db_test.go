@@ -1,26 +1,29 @@
-package db
+package db_test
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"testing"
 	"time"
 
 	"github.com/shopspring/decimal"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db/models"
-
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 // setupDatabase is a helper function to create an in-memory SQLite database for testing.
-func setupDatabase(t *testing.T) *Database {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+func setupDatabase(tb testing.TB) *db.Database {
+	tb.Helper()
+
+	database, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
-		t.Fatalf("failed to connect database: %v", err)
+		tb.Fatalf("failed to connect database: %v", err)
 	}
-	db.AutoMigrate(&models.Quote{})
-	return &Database{DB: db}
+	err = database.AutoMigrate(&models.Quote{})
+	assert.NoError(tb, err)
+	return &db.Database{DB: database}
 }
 
 // TestInsertQuote tests the InsertQuote function.
@@ -37,8 +40,8 @@ func TestInsertQuote(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -64,7 +67,7 @@ func TestInsertQuote(t *testing.T) {
 	assert.Equal(t, quote, q)
 }
 
-// TestUpdateQuote tests the UpdateQuote function.
+// TestUpdateQuote tests the updateQuote function.
 func TestUpdateQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -78,8 +81,8 @@ func TestUpdateQuote(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -127,8 +130,8 @@ func TestGetQuote(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -166,8 +169,8 @@ func TestGetQuotes(t *testing.T) {
 	quotes := make([]models.Quote, 7)
 	quotes[0] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -175,8 +178,8 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[1] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  destAmount,
@@ -184,8 +187,8 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[2] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   30,
+		OriginChainID: 10,
+		DestChainID:   30,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -193,8 +196,8 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[3] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 30,
-		DestChainId:   20,
+		OriginChainID: 30,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -202,8 +205,8 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[4] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x3",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -211,8 +214,8 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[5] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
@@ -220,22 +223,22 @@ func TestGetQuotes(t *testing.T) {
 	}
 	quotes[6] = models.Quote{
 		Relayer:       "0xB",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  destAmount.Mul(decimal.NewFromFloat(0.9)),
 		DestAmount:    destAmount,
 	}
-	for _, quote := range quotes {
-		_, err = database.InsertQuote(ctx, &quote)
+	for i := range quotes {
+		_, err = database.InsertQuote(ctx, &quotes[i])
 		assert.NoError(t, err)
 	}
 
 	// build the request
 	req := models.Request{
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount.Mul(decimal.NewFromFloat(0.5)),
@@ -249,8 +252,8 @@ func TestGetQuotes(t *testing.T) {
 	expectedQuotes[0] = models.Quote{
 		ID:            qs[0].ID,
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  destAmount,
@@ -263,8 +266,8 @@ func TestGetQuotes(t *testing.T) {
 	expectedQuotes[1] = models.Quote{
 		ID:            qs[1].ID,
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -292,8 +295,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	quotes := make([]models.Quote, 7)
 	quotes[0] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -301,8 +304,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[1] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  destAmount,
@@ -310,8 +313,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[2] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   30,
+		OriginChainID: 10,
+		DestChainID:   30,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -319,8 +322,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[3] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 30,
-		DestChainId:   20,
+		OriginChainID: 30,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -328,8 +331,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[4] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x3",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -337,8 +340,8 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[5] = models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
@@ -346,22 +349,22 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	}
 	quotes[6] = models.Quote{
 		Relayer:       "0xB",
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  destAmount.Mul(decimal.NewFromFloat(0.9)),
 		DestAmount:    destAmount,
 	}
-	for _, quote := range quotes {
-		_, err = database.InsertQuote(ctx, &quote)
+	for i := range quotes {
+		_, err = database.InsertQuote(ctx, &quotes[i])
 		assert.NoError(t, err)
 	}
 
 	// build the request
 	req := models.Request{
-		OriginChainId: 10,
-		DestChainId:   20,
+		OriginChainID: 10,
+		DestChainID:   20,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  decimal.NewFromFloat(100),
@@ -376,7 +379,7 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	assert.Equal(t, expectedQuotes, qs)
 }
 
-// TestDeleteQuote tests the DeleteQuote function.
+// TestDeleteQuote tests the deleteQuote function.
 func TestDeleteQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -390,8 +393,8 @@ func TestDeleteQuote(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -408,7 +411,7 @@ func TestDeleteQuote(t *testing.T) {
 	err = database.DeleteQuote(ctx, quote.ID)
 
 	// assert
-	assert.NoError(t, result.Error)
+	assert.NoError(t, err)
 
 	_, err = database.GetQuote(ctx, quote.ID)
 	assert.Error(t, err)
@@ -428,8 +431,8 @@ func TestBeforeCreateQuoteWhenIDNotZero(t *testing.T) {
 	quote := models.Quote{
 		ID:            3,
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -457,8 +460,8 @@ func TestBeforeCreateQuoteWhenSameChainId(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   1,
+		OriginChainID: 1,
+		DestChainID:   1,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -469,7 +472,7 @@ func TestBeforeCreateQuoteWhenSameChainId(t *testing.T) {
 	id, err := database.InsertQuote(ctx, &quote)
 
 	// Assert
-	assert.Error(t, err, "Invalid quote: q.OriginChainId == q.DestChainId")
+	assert.Error(t, err, "Invalid quote: q.OriginChainID == q.DestChainID")
 	assert.Equal(t, id, uint(0))
 }
 
@@ -486,8 +489,8 @@ func TestBeforeCreateQuoteWhenOriginTokenZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   1,
+		OriginChainID: 1,
+		DestChainID:   1,
 		OriginToken:   "0x0000000000000000000000000000000000000000",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -515,8 +518,8 @@ func TestBeforeCreateQuoteWhenDestTokenZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   1,
+		OriginChainID: 1,
+		DestChainID:   1,
 		OriginToken:   "0x1",
 		DestToken:     "0x0000000000000000000000000000000000000000",
 		OriginAmount:  originAmount,
@@ -543,8 +546,8 @@ func TestBeforeCreateQuoteWhenOriginAmountZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   1,
+		OriginChainID: 1,
+		DestChainID:   1,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  decimal.Zero,
@@ -568,11 +571,12 @@ func TestBeforeCreateQuoteWhenDestAmountZero(t *testing.T) {
 
 	originAmount, _ := decimal.NewFromString("200")
 
+	//nolint: dupl
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   1,
+		OriginChainID: 1,
+		DestChainID:   1,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -587,6 +591,7 @@ func TestBeforeCreateQuoteWhenDestAmountZero(t *testing.T) {
 	assert.Equal(t, id, uint(0))
 }
 
+// nolint: dupl
 func TestBeforeSaveQuoteWhenSameChainId(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -600,8 +605,8 @@ func TestBeforeSaveQuoteWhenSameChainId(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -617,15 +622,16 @@ func TestBeforeSaveQuoteWhenSameChainId(t *testing.T) {
 	// update origin amount to decrease price
 	originAmount, _ = decimal.NewFromString("400")
 	quote.OriginAmount = originAmount
-	quote.DestChainId = 1
+	quote.DestChainID = 1
 
 	// act
 	err = database.UpdateQuote(ctx, &quote)
 
 	// Assert
-	assert.Error(t, err, "Invalid quote: q.OriginChainId == q.DestChainId")
+	assert.Error(t, err, "Invalid quote: q.OriginChainID == q.DestChainID")
 }
 
+// nolint: dupl
 func TestBeforeSaveQuoteWhenOriginTokenZero(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -639,8 +645,8 @@ func TestBeforeSaveQuoteWhenOriginTokenZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -665,6 +671,7 @@ func TestBeforeSaveQuoteWhenOriginTokenZero(t *testing.T) {
 	assert.Error(t, err, "Invalid quote: q.Tokens == address(0)")
 }
 
+// nolint: dupl
 func TestBeforeSaveQuoteWhenDestTokenZero(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -678,8 +685,8 @@ func TestBeforeSaveQuoteWhenDestTokenZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -717,8 +724,8 @@ func TestBeforeSaveQuoteWhenOriginAmountZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
@@ -754,8 +761,8 @@ func TestBeforeSaveQuoteWhenDestAmountZero(t *testing.T) {
 	// Create a dummy quote
 	quote := models.Quote{
 		Relayer:       "0xA",
-		OriginChainId: 1,
-		DestChainId:   2,
+		OriginChainID: 1,
+		DestChainID:   2,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,

@@ -1,3 +1,4 @@
+// Package db contains the database implementation of the quoting api.
 package db
 
 import (
@@ -6,12 +7,11 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm/schema"
 	"os"
 	"time"
-
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db/models"
 
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -20,15 +20,17 @@ import (
 
 const (
 	maxOpenConns = 1048
-	maxIdleConns = 1048
 )
 
+// Database is the database object.
 type Database struct {
 	*gorm.DB
 	metrics        metrics.Handler
 	submitterStore submitterDB.Service
 }
 
+// NewDatabase creates a new instance of the database.
+// TODO: consider returning an interface instead of a concrete type.
 func NewDatabase(ctx context.Context, handler metrics.Handler, skipMigrations bool) (db *Database, err error) {
 	// @Bobby lets adjust this to how we want the config to work
 	dbname := os.Getenv("MYSQL_DATABASE")
@@ -80,6 +82,7 @@ func NewDatabase(ctx context.Context, handler metrics.Handler, skipMigrations bo
 	return &Database{gdb, handler, txDB}, nil
 }
 
+// InsertQuote inserts a quote into the database.
 func (db *Database) InsertQuote(c context.Context, q *models.Quote) (id uint, err error) {
 	if err = db.WithContext(c).Create(q).Error; err != nil {
 		return
@@ -88,20 +91,23 @@ func (db *Database) InsertQuote(c context.Context, q *models.Quote) (id uint, er
 	return
 }
 
+// UpdateQuote updates a quote in the database.
 func (db *Database) UpdateQuote(c context.Context, q *models.Quote) error {
 	return db.WithContext(c).Save(q).Error
 }
 
+// GetQuote gets a quote from the database.
 func (db *Database) GetQuote(c context.Context, id uint) (q models.Quote, err error) {
 	result := db.WithContext(c).First(&q, "id = ?", id)
 	err = result.Error
 	return
 }
 
+// GetQuotes gets quotes from the database.
 func (db *Database) GetQuotes(c context.Context, req *models.Request) (qs []models.Quote, err error) {
 	result := db.WithContext(c).Where(&models.Quote{
-		OriginChainId: req.OriginChainId,
-		DestChainId:   req.DestChainId,
+		OriginChainID: req.OriginChainID,
+		DestChainID:   req.DestChainID,
 		OriginToken:   req.OriginToken,
 		DestToken:     req.DestToken,
 	}).Where(
@@ -115,6 +121,7 @@ func (db *Database) GetQuotes(c context.Context, req *models.Request) (qs []mode
 	return
 }
 
+// DeleteQuote deletes a quote from the database.
 func (db *Database) DeleteQuote(c context.Context, id uint) error {
 	return db.WithContext(c).Delete(&models.Quote{}, id).Error
 }

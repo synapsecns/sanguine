@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/config"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/rest"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/config"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest"
 	"github.com/urfave/cli/v2"
 )
 
@@ -35,12 +35,15 @@ var quoterCommand = &cli.Command{
 			fmt.Println("Error loading config:", err)
 		}
 		fmt.Printf("Config loaded: %+v\n", cfg)
-		restAPI, err := rest.NewRestApiServer(c.Context, &cfg)
+		restAPI, err := rest.NewRestAPIServer(c.Context, &cfg)
 		if err != nil {
 			return fmt.Errorf("could not create rest api server: %w", err)
 		}
 		restAPI.Setup()
-		restAPI.Run()
+		err = restAPI.Run()
+		if err != nil {
+			return fmt.Errorf("could not run rest api server: %w", err)
+		}
 		return nil
 	},
 }

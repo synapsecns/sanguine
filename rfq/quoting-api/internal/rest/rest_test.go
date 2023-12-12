@@ -1,9 +1,17 @@
-package rest
+package rest_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/bindings"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/config"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/testutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -11,14 +19,7 @@ import (
 	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
-	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-
-	"github.com/synapsecns/sanguine/rfq/quoting-api/bindings"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/config"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/db/models"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/testutil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -31,10 +32,11 @@ import (
 )
 
 func getBridges(t *testing.T, testWallet wallet.Wallet) (bridges map[uint]*bindings.FastBridge) {
+	t.Helper()
 	bridges = make(map[uint]*bindings.FastBridge)
 
 	testCtx := context.Background()
-	clients := make(map[uint]client.EVMClient)
+	clients := make(map[uint]bind.ContractBackend)
 
 	// deploy bridges on anvil dest chain
 	chainID := uint32(42161)
@@ -53,22 +55,26 @@ func getBridges(t *testing.T, testWallet wallet.Wallet) (bridges map[uint]*bindi
 	return
 }
 
-func getServer(t *testing.T, testWallet wallet.Wallet) *RestApiServer {
+func getServer(t *testing.T, testWallet wallet.Wallet) *rest.APIServer {
+	t.Helper()
 	cfg := &config.Config{}
 	d, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)
 	}
-	d.AutoMigrate(&models.Quote{})
+	err = d.AutoMigrate(&models.Quote{})
+	assert.NoError(t, err, "expected no error on automigrate")
+
 	database := &db.Database{DB: d}
 	engine := gin.Default()
 	bridges := getBridges(t, testWallet)
-	return &RestApiServer{cfg: cfg, db: database, engine: engine, bridges: bridges}
+	return rest.NewTestRestAPIServer(cfg, database, engine, bridges)
 }
 
 // auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
 // signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix()))).
 func getAuthHeader(t *testing.T, testWallet wallet.Wallet) (header string) {
+	t.Helper()
 	now := strconv.Itoa(int(time.Now().Unix()))
 	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now
 	digest := crypto.Keccak256([]byte(data))
@@ -90,11 +96,19 @@ func TestSetup(t *testing.T) {
 	r.Setup()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
-	r.engine.ServeHTTP(w, req)
+	req := newRequest(t, "GET", "/ping", nil)
+	r.Engine().ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"result\":\"pong\"}", w.Body.String())
+}
+
+func newRequest(tb testing.TB, method, url string, body io.Reader) *http.Request {
+	tb.Helper()
+	// nolint: noctx
+	req, err := http.NewRequest(method, url, body)
+	assert.Nil(tb, err)
+	return req
 }
 
 func TestCreateQuote(t *testing.T) {
@@ -105,10 +119,10 @@ func TestCreateQuote(t *testing.T) {
 	r.Setup()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/quote", bytes.NewBufferString(fmt.Sprintf("{\"relayer\":\"%s\", \"origin_chain_id\":1, \"dest_chain_id\":42161, \"origin_token\":\"0x1\", \"dest_token\":\"0x2\", \"origin_amount\":100, \"dest_amount\":200}", testWallet.Address().Hex())))
+	req := newRequest(t, "POST", "/quote", bytes.NewBufferString(fmt.Sprintf("{\"relayer\":\"%s\", \"origin_chain_id\":1, \"dest_chain_id\":42161, \"origin_token\":\"0x1\", \"dest_token\":\"0x2\", \"origin_amount\":100, \"dest_amount\":200}", testWallet.Address().Hex())))
 	req.Header.Add("Content-Type", gin.MIMEJSON)
 	req.Header.Add("Authorization", getAuthHeader(t, testWallet))
-	r.engine.ServeHTTP(w, req)
+	r.Engine().ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"result\":1}", w.Body.String()) // id = 1
@@ -119,14 +133,14 @@ func TestCreateQuote(t *testing.T) {
 	// Created a dummy quote
 	quote := models.Quote{
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 	}
-	q, err := r.db.GetQuote(ctx, uint(1))
+	q, err := r.DB().GetQuote(ctx, uint(1))
 	assert.NoError(t, err)
 
 	quote.ID = q.ID
@@ -151,25 +165,25 @@ func TestReadQuotes(t *testing.T) {
 	// add another quote
 	q := models.Quote{
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 	}
-	_, err = r.db.InsertQuote(ctx, &q)
+	_, err = r.DB().InsertQuote(ctx, &q)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/quote", nil)
-	r.engine.ServeHTTP(w, req)
+	req := newRequest(t, "GET", "/quote", nil)
+	r.Engine().ServeHTTP(w, req)
 
-	q1, err := r.db.GetQuote(ctx, uint(1))
+	q1, err := r.DB().GetQuote(ctx, uint(1))
 	assert.NoError(t, err)
 	now1 := q1.CreatedAt.Format(time.RFC3339Nano)
 
-	q2, err := r.db.GetQuote(ctx, uint(2))
+	q2, err := r.DB().GetQuote(ctx, uint(2))
 	assert.NoError(t, err)
 	now2 := q2.CreatedAt.Format(time.RFC3339Nano)
 
@@ -187,10 +201,10 @@ func TestReadQuote(t *testing.T) {
 	r.Setup()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/quote/1", nil)
-	r.engine.ServeHTTP(w, req)
+	req := newRequest(t, "GET", "/quote/1", nil)
+	r.Engine().ServeHTTP(w, req)
 
-	q, err := r.db.GetQuote(ctx, uint(1))
+	q, err := r.DB().GetQuote(ctx, uint(1))
 	assert.NoError(t, err)
 
 	now := q.CreatedAt.Format(time.RFC3339Nano)
@@ -213,21 +227,21 @@ func TestUpdateQuote(t *testing.T) {
 	// add another quote
 	q := models.Quote{
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 	}
-	id, err := r.db.InsertQuote(ctx, &q)
+	id, err := r.DB().InsertQuote(ctx, &q)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", fmt.Sprintf("/quote/%d", id), bytes.NewBufferString(fmt.Sprintf("{\"relayer\":\"%s\", \"origin_chain_id\":1, \"dest_chain_id\":42161, \"origin_token\":\"0x1\", \"dest_token\":\"0x2\", \"origin_amount\":100, \"dest_amount\":150}", testWallet.Address().Hex())))
+	req := newRequest(t, "PUT", fmt.Sprintf("/quote/%d", id), bytes.NewBufferString(fmt.Sprintf("{\"relayer\":\"%s\", \"origin_chain_id\":1, \"dest_chain_id\":42161, \"origin_token\":\"0x1\", \"dest_token\":\"0x2\", \"origin_amount\":100, \"dest_amount\":150}", testWallet.Address().Hex())))
 	req.Header.Add("Content-Type", gin.MIMEJSON)
 	req.Header.Add("Authorization", getAuthHeader(t, testWallet))
-	r.engine.ServeHTTP(w, req)
+	r.Engine().ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, fmt.Sprintf("{\"result\":%d}", id), w.Body.String())
@@ -240,15 +254,15 @@ func TestUpdateQuote(t *testing.T) {
 	quote := models.Quote{
 		ID:            id,
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x2",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 		Price:         price,
 	}
-	q, err = r.db.GetQuote(ctx, id)
+	q, err = r.DB().GetQuote(ctx, id)
 	quote.CreatedAt = q.CreatedAt
 	quote.UpdatedAt = q.UpdatedAt
 	quote.DeletedAt = q.DeletedAt
@@ -269,20 +283,20 @@ func TestDeleteQuote(t *testing.T) {
 	// add another quote
 	q := models.Quote{
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 	}
-	id, err := r.db.InsertQuote(ctx, &q)
+	id, err := r.DB().InsertQuote(ctx, &q)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/quote/%d", id), nil)
+	req := newRequest(t, "DELETE", fmt.Sprintf("/quote/%d", id), nil)
 	req.Header.Add("Authorization", getAuthHeader(t, testWallet))
-	r.engine.ServeHTTP(w, req)
+	r.Engine().ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, fmt.Sprintf("{\"result\":%d}", id), w.Body.String())
@@ -301,32 +315,32 @@ func TestPingQuote(t *testing.T) {
 	// add another quote
 	q := models.Quote{
 		Relayer:       testWallet.Address().Hex(),
-		OriginChainId: 1,
-		DestChainId:   42161,
+		OriginChainID: 1,
+		DestChainID:   42161,
 		OriginToken:   "0x1",
 		DestToken:     "0x3",
 		OriginAmount:  originAmount,
 		DestAmount:    destAmount,
 	}
-	id, err := r.db.InsertQuote(ctx, &q)
+	id, err := r.DB().InsertQuote(ctx, &q)
 	assert.NoError(t, err)
 
 	time.Sleep(100 * time.Millisecond)
 
 	// get timestamp before
-	quote, err := r.db.GetQuote(ctx, id)
+	quote, err := r.DB().GetQuote(ctx, id)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/quote/%d/ping", id), nil)
+	req := newRequest(t, "POST", fmt.Sprintf("/quote/%d/ping", id), nil)
 	req.Header.Add("Authorization", getAuthHeader(t, testWallet))
-	r.engine.ServeHTTP(w, req)
+	r.Engine().ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, fmt.Sprintf("{\"result\":%d}", id), w.Body.String())
 
 	// check timestamp updated
-	q, err = r.db.GetQuote(ctx, id)
+	q, err = r.DB().GetQuote(ctx, id)
 	assert.NoError(t, err)
 
 	assert.Greater(t, q.UpdatedAt, quote.UpdatedAt)

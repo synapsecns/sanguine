@@ -18,6 +18,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 
 	//TODO: Implement metrics in the RFQ Quoter
 	app.Before = func(c *cli.Context) error {
+		//nolint: wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
 	app.Commands = cli.Commands{infoCommand, quoterCommand}
