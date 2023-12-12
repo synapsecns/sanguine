@@ -65,6 +65,14 @@ flags:
     paths:
       - services/omnirpc/
     carryforward: true
+  quoting-api:
+    paths:
+      - rfq/quoting-api/
+    carryforward: true
+  rfq-relayer:
+    paths:
+      - rfq/rfq-relayer/
+    carryforward: true
   scribe:
     paths:
       - services/scribe/

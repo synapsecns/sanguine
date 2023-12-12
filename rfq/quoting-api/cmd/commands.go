@@ -1,0 +1,43 @@
+package cmd
+
+import (
+	"fmt"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/config"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/rest"
+	"github.com/urfave/cli/v2"
+)
+
+// infoCommand gets info the quoter API.
+var infoCommand = &cli.Command{
+	Name:        "info",
+	Description: "quoter help",
+	Action: func(c *cli.Context) error {
+		fmt.Println("run quoter --config /path/to/config.yaml to start the quoter")
+		return nil
+	},
+}
+
+var configFlag = &cli.StringFlag{
+	Name:      "config",
+	Usage:     "--config /Path/To/Config.yaml",
+	TakesFile: true,
+	Required:  true,
+}
+
+var quoterCommand = &cli.Command{
+	Name:        "quoter",
+	Description: "runs the quoter server",
+	Flags:       []cli.Flag{configFlag},
+	Action: func(c *cli.Context) error {
+		cfg, err := config.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			fmt.Println("Error loading config:", err)
+		}
+		fmt.Printf("Config loaded: %+v\n", cfg)
+		restAPI := rest.NewRestApiServer(c.Context, &cfg)
+		restAPI.Setup()
+		restAPI.Run()
+		return nil
+	},
+}

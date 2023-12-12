@@ -66,6 +66,10 @@ root
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
 │   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
 │   ├── <a href="./packages/sdk-router">synapse-interface</a>: Synapse frontend code
+├── <a href="./rfq">rfq</a>: RFQ bridge
+│   ├── <a href="./rfq/contracts">contracts</a>: RFQ contracts
+│   ├── <a href="rfq/quoting-api">quoting-api</a>: RFQ quoter api
+│   ├── <a href="rfq/rfq-relayer">rfq-relayer</a>: RFQ relayer
 ├── <a href="./services">services</a>
 │   ├── <a href="./services/cctp-relayer">CCTP Relayer</a>: CCTP message relayer
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer backend

@@ -1,0 +1,78 @@
+package utils_test
+
+import (
+	"math/big"
+	"testing"
+
+	"github.com/synapsecns/sanguine/rfq/rfq-relayer/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/rfq/rfq-relayer/bindings"
+)
+
+func TestEncode(t *testing.T) {
+	bridgeTransaction := bindings.IFastBridgeBridgeTransaction{
+		OriginChainId: uint32(42161),
+		DestChainId:   uint32(1),
+		OriginSender:  common.HexToAddress("0x0000000000000000000000000000000000000004"),
+		DestRecipient: common.HexToAddress("0x0000000000000000000000000000000000000004"),
+		OriginToken:   common.HexToAddress("0x2e234DAe75C793f67A35089C9d99245E1C58470b"),
+		DestToken:     common.HexToAddress("0xF62849F9A0B5Bf2913b396098F7c7019b51A820a"),
+		OriginAmount:  big.NewInt(11000000),
+		DestAmount:    big.NewInt(10970000),
+		Deadline:      big.NewInt(3601),
+		Nonce:         big.NewInt(0),
+	}
+	request := common.FromHex("0x000000000000000000000000000000000000000000000000000000000000a4b10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000040000000000000000000000002e234dae75c793f67a35089c9d99245e1c58470b000000000000000000000000f62849f9a0b5bf2913b396098f7c7019b51a820a0000000000000000000000000000000000000000000000000000000000a7d8c00000000000000000000000000000000000000000000000000000000000a763900000000000000000000000000000000000000000000000000000000000000e110000000000000000000000000000000000000000000000000000000000000000")
+
+	encodedRequest, err := utils.Encode(&bridgeTransaction)
+	assert.NoError(t, err)
+	assert.Equal(t, request, encodedRequest)
+}
+
+func TestDecode(t *testing.T) {
+	bridgeTransaction := bindings.IFastBridgeBridgeTransaction{
+		OriginChainId: uint32(42161),
+		DestChainId:   uint32(1),
+		OriginSender:  common.HexToAddress("0x0000000000000000000000000000000000000004"),
+		DestRecipient: common.HexToAddress("0x0000000000000000000000000000000000000004"),
+		OriginToken:   common.HexToAddress("0x2e234DAe75C793f67A35089C9d99245E1C58470b"),
+		DestToken:     common.HexToAddress("0xF62849F9A0B5Bf2913b396098F7c7019b51A820a"),
+		OriginAmount:  big.NewInt(11000000),
+		DestAmount:    big.NewInt(10970000),
+		Deadline:      big.NewInt(3601),
+		Nonce:         big.NewInt(0),
+	}
+	request := common.FromHex("0x000000000000000000000000000000000000000000000000000000000000a4b10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000040000000000000000000000002e234dae75c793f67a35089c9d99245e1c58470b000000000000000000000000f62849f9a0b5bf2913b396098f7c7019b51a820a0000000000000000000000000000000000000000000000000000000000a7d8c00000000000000000000000000000000000000000000000000000000000a763900000000000000000000000000000000000000000000000000000000000000e110000000000000000000000000000000000000000000000000000000000000000")
+
+	decodedBridgeTransaction, err := utils.Decode(request)
+	assert.NoError(t, err)
+
+	// Manually compare big.Int fields
+	assert.True(t, bridgeTransaction.OriginAmount.Cmp(decodedBridgeTransaction.OriginAmount) == 0)
+	assert.True(t, bridgeTransaction.DestAmount.Cmp(decodedBridgeTransaction.DestAmount) == 0)
+	assert.True(t, bridgeTransaction.Deadline.Cmp(decodedBridgeTransaction.Deadline) == 0)
+	assert.True(t, bridgeTransaction.Nonce.Cmp(decodedBridgeTransaction.Nonce) == 0)
+
+	// Set big.Int fields to nil to avoid them being compared in the next step
+	bridgeTransaction.OriginAmount = nil
+	bridgeTransaction.DestAmount = nil
+	bridgeTransaction.Deadline = nil
+	bridgeTransaction.Nonce = nil
+	decodedBridgeTransaction.OriginAmount = nil
+	decodedBridgeTransaction.DestAmount = nil
+	decodedBridgeTransaction.Deadline = nil
+	decodedBridgeTransaction.Nonce = nil
+
+	// Compare the rest of the fields
+	assert.Equal(t, bridgeTransaction, *decodedBridgeTransaction)
+}
+
+func TestTransactionId(t *testing.T) {
+	request := common.FromHex("0x000000000000000000000000000000000000000000000000000000000000a4b10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000040000000000000000000000002e234dae75c793f67a35089c9d99245e1c58470b000000000000000000000000f62849f9a0b5bf2913b396098f7c7019b51a820a0000000000000000000000000000000000000000000000000000000000a7d8c00000000000000000000000000000000000000000000000000000000000a763900000000000000000000000000000000000000000000000000000000000000e110000000000000000000000000000000000000000000000000000000000000000")
+	expectedTransactionId := common.FromHex("0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75")
+
+	transactionId := utils.TransactionId(request)
+	assert.Equal(t, transactionId.Bytes(), expectedTransactionId)
+}

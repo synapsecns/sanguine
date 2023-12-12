@@ -52,7 +52,7 @@ If you need to make a new go module, here are the steps to follow:
           path: path/to/your/module/
           carryforward: true
     ```
-   #### Note: The codecov.yaml used in ci will not be updated until your branch is merged to master. This is expected
+   #### Note: The codecov.yaml used in ci will not be updated until your branch is merged to master. This is expected.
 5. Create a Makefile.
    If your makefile has no custom commands (it shouldn't if you're just starting), simply create a symlink to the go.Makefile by running `ln -sv ../path/to/repo/root/make/go.Makefile Makefile`.
    Otherwise, create the makefile in `$REPO_ROOT/make/[module_name].Makefile` with the following text:
