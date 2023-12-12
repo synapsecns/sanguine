@@ -1,6 +1,7 @@
 package guard_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"time"
@@ -31,7 +32,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
-func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *guard.Guard, sclient client.ScribeClient, err error) {
+func (g *GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *guard.Guard, sclient client.ScribeClient, err error) {
 	testConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      g.OriginDomainClient.Config(),
@@ -87,7 +88,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (testGuard *g
 	return testGuard, sclient, nil
 }
 
-func (g GuardSuite) bumpBackends() {
+func (g *GuardSuite) bumpBackends() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextOrigin := g.TestBackendOrigin.GetTxContext(g.GetTestContext(), g.OriginContractMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
@@ -97,13 +98,13 @@ func (g GuardSuite) bumpBackends() {
 }
 
 // Helper to get the test backend to emit expected events.
-func (g GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
+func (g *GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
 	bumpTx, err := contract.EmitAgentsEventA(txOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	Nil(g.T(), err)
 	backend.WaitForConfirmation(g.GetTestContext(), bumpTx)
 }
 
-func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract, bondedSigner, unbondedSigner signer.Signer, chainID uint32) {
+func (g *GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract, bondedSigner, unbondedSigner signer.Signer, chainID uint32) {
 	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), bondedSigner.Address())
 	Nil(g.T(), err)
 	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), bondedSigner.Address())
@@ -121,7 +122,7 @@ func (g GuardSuite) updateAgentStatus(lightManager domains.LightManagerContract,
 }
 
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
-func (g GuardSuite) TestFraudulentStateInSnapshot() {
+func (g *GuardSuite) TestFraudulentStateInSnapshot() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -257,7 +258,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	g.verifyStateReport(g.LightInboxOnDestination, 1, fraudulentState)
 }
 
-func (g GuardSuite) TestFraudulentAttestationOnDestination() {
+func (g *GuardSuite) TestFraudulentAttestationOnDestination() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -380,7 +381,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	})
 }
 
-func (g GuardSuite) TestReportFraudulentStateInAttestation() {
+func (g *GuardSuite) TestReportFraudulentStateInAttestation() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -521,7 +522,7 @@ type statementInboxContract interface {
 // Verify that a state report was submitted on the given contract.
 //
 //nolint:unparam
-func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
+func (g *GuardSuite) verifyStateReport(contract statementInboxContract, expectedNumReports int64, expectedState types.State) {
 	g.Eventually(func() bool {
 		numReports, err := contract.GetReportsAmount(&bind.CallOpts{Context: g.GetTestContext()})
 		Nil(g.T(), err)
@@ -543,7 +544,7 @@ func (g GuardSuite) verifyStateReport(contract statementInboxContract, expectedN
 	})
 }
 
-func (g GuardSuite) TestInvalidReceipt() {
+func (g *GuardSuite) TestInvalidReceipt() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -720,7 +721,10 @@ func (g GuardSuite) TestInvalidReceipt() {
 }
 
 //nolint:maintidx,cyclop
-func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
+func (g *GuardSuite) TestUpdateAgentStatusOnRemote() {
+	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
+	// set up the backends with anvil.
+
 	testDone := false
 	defer func() {
 		testDone = true
@@ -838,11 +842,15 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		}
 		return *currentTime
 	}
+	getChainTimeFunc := func(ctx context.Context, backend executor.Backend) (uint64, error) {
+		return uint64(nowFunc().Unix()), nil
+	}
 
 	// Start a new Executor.
 	exec, err := executor.NewExecutor(g.GetTestContext(), excCfg, g.ExecutorTestDB, scribeClient, omniRPCClient, g.ExecutorMetrics)
 	Nil(g.T(), err)
 	exec.NowFunc = nowFunc
+	exec.GetChainTimeFunc = getChainTimeFunc
 
 	go func() {
 		execErr := exec.Run(g.GetTestContext())
@@ -1023,6 +1031,8 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 		anvilClient, err := anvil.Dial(g.GetTestContext(), backend.RPCAddress())
 		Nil(g.T(), err)
 		err = anvilClient.IncreaseTime(g.GetTestContext(), seconds)
+		Nil(g.T(), err)
+		err = anvilClient.Mine(g.GetTestContext(), 1)
 		Nil(g.T(), err)
 	}
 	increaseEvmTime(g.TestBackendSummit, optimisticPeriodSeconds+offset)
