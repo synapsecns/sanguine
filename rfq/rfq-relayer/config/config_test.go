@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO we can write better tests here
+// TODO we can write better tests here.
 func TestLoadConfig(t *testing.T) {
 	config, err := config.DecodeConfig("../config.yaml") // Assuming the config.yaml is in the parent directory of the config package
 	assert.NoError(t, err, "Failed to load config")

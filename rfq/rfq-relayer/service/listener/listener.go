@@ -152,9 +152,7 @@ func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 			startBlock = lastUnconfirmedBlock
 			pollInterval = time.Duration(c.config.PollInterval)
 		}
-
 	}
-
 }
 
 func (c *chainListenerImpl) buildFilterQuery(fromBlock *big.Int, toBlock *big.Int) ethereum.FilterQuery {
@@ -200,5 +198,4 @@ func newBackoffConfig() *backoff.Backoff {
 		Min:    10 * time.Millisecond,
 		Max:    1 * time.Second,
 	}
-
 }

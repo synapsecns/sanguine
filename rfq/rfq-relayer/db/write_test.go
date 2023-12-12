@@ -290,6 +290,5 @@ func (t *DBSuite) TestStoreAndRemoveDeadlineQueueEvent() {
 			Find(&noEvents).Error
 		Nil(t.T(), err)
 		Equal(t.T(), 0, len(noEvents)) // No event should be found with this ID
-
 	})
 }

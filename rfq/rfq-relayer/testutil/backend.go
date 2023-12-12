@@ -22,7 +22,6 @@ func NewAnvilBackend(ctx context.Context, chainID uint32, t *testing.T) backends
 	var backend backends.SimulatedTestBackend
 
 	for i := 0; i < AnvilMaxRetries; i++ {
-
 		done := make(chan bool, 1)
 		go func() {
 			anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
@@ -34,7 +33,7 @@ func NewAnvilBackend(ctx context.Context, chainID uint32, t *testing.T) backends
 
 		select {
 		case <-ctx.Done():
-			// Context cancelled, return with nil or some error
+			// Context canceled, return with nil or some error
 			return nil
 		case <-time.After(AnvilMaxTimeToWait * time.Second):
 			// Timeout occurred, retry
@@ -56,5 +55,4 @@ func NewEVMClientFromAnvil(ctx context.Context, backend backends.SimulatedTestBa
 		return nil, err
 	}
 	return evmClient, err
-
 }

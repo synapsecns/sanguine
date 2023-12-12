@@ -29,5 +29,4 @@ func TestBackend(t *testing.T) {
 	clientChain, err := evmClient.ChainID(testCtx)
 	Nil(t, err)
 	Equal(t, testChainID, uint32(clientChain.Int64()))
-
 }

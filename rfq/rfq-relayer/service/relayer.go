@@ -50,7 +50,7 @@ type relayerImpl struct {
 	quoter       quote.IQuoter
 }
 
-// NewRelayer inits all necessary components for the relayer
+// NewRelayer inits all necessary components for the relayer.
 func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metrics.Handler) (IRelayer, error) {
 	// Init OmniRPC client
 	omniRPCClient := omniClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omniClient.WithCaptureReqRes())
@@ -121,11 +121,10 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 
 // Start starts the relayer.
 func (r *relayerImpl) Start(ctx context.Context) error {
-
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("global context cancelled %w", ctx.Err())
+			return fmt.Errorf("global context canceled %w", ctx.Err())
 		default:
 			g, gCtx := errgroup.WithContext(ctx)
 

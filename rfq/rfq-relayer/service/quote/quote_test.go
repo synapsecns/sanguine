@@ -103,7 +103,6 @@ func (t *QuoteSuite) TestGetValidQuote() {
 	q, err := quoter.GetValidQuote(quoteID, destTokenID, testAmount)
 	Nil(t.T(), err)
 	NotNil(t.T(), q)
-
 }
 
 func (t *QuoteSuite) TestQuoteToAPIQuote() {

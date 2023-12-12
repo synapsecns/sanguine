@@ -63,7 +63,7 @@ func TestTokens(t *testing.T) {
 	}
 }
 
-// TestBridge tests the entire bridge process (bridge, prove, claim)
+// TestBridge tests the entire bridge process (bridge, prove, claim).
 func TestBridge(t *testing.T) {
 	testCtx := context.Background()
 	// Wallet

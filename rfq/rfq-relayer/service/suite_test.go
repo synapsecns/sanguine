@@ -112,7 +112,6 @@ func (t *RelayerSuite) SetupSuite() {
 
 	// Generate config
 	t.generateConfig()
-
 }
 
 func (t *RelayerSuite) setupMysqlDB() {

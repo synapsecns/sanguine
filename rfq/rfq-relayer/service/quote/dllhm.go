@@ -7,7 +7,7 @@ import (
 
 const staleThreshold = 86400
 
-// DLLNode represents a node in the doubly linked list
+// DLLNode represents a node in the doubly linked list.
 type DLLNode struct {
 	transactionID string
 	Value         *big.Int // exported for tests
@@ -16,13 +16,13 @@ type DLLNode struct {
 	next          *DLLNode
 }
 
-// DLL represents a doubly linked list
+// DLL represents a doubly linked list.
 type DLL struct {
 	head *DLLNode
 	tail *DLLNode
 }
 
-// NewNode creates a new Node
+// NewNode creates a new Node.
 func NewNode(transactionID string, value *big.Int) *DLLNode {
 	return &DLLNode{
 		transactionID: transactionID,
@@ -41,12 +41,12 @@ func (dll *DLL) Tail() *DLLNode {
 	return dll.tail
 }
 
-// NewTimestamp is just for testing purposes
+// NewTimestamp is just for testing purposes.
 func (dll *DLL) NewTimestamp(newTime int64, node *DLLNode) {
 	node.timestamp = newTime
 }
 
-// AddNode adds a node to the front of the list
+// AddNode adds a node to the front of the list.
 func (dll *DLL) AddNode(node *DLLNode) {
 	if dll.head == nil {
 		dll.head = node
@@ -58,7 +58,7 @@ func (dll *DLL) AddNode(node *DLLNode) {
 	dll.head = node
 }
 
-// RemoveNode removes a given node from the list
+// RemoveNode removes a given node from the list.
 func (dll *DLL) RemoveNode(node *DLLNode) {
 	if node == dll.head {
 		dll.head = node.next
@@ -74,7 +74,7 @@ func (dll *DLL) RemoveNode(node *DLLNode) {
 	}
 }
 
-// ClearStale clears any stale items from the list
+// ClearStale clears any stale items from the list.
 func (dll *DLL) ClearStale() {
 	for dll.tail != nil && dll.tail.timestamp+staleThreshold < time.Now().Unix() {
 		dll.RemoveNode(dll.tail)
@@ -90,7 +90,7 @@ type IBridgeReqHandler interface {
 	GetHead() *DLLNode
 }
 
-// bridgeReqHandlerImpl represents a doubly linked list of unconfirmed bridge requests
+// bridgeReqHandlerImpl represents a doubly linked list of unconfirmed bridge requests.
 type bridgeReqHandlerImpl struct {
 	capacity int
 	hashmap  map[string]*DLLNode
@@ -98,7 +98,7 @@ type bridgeReqHandlerImpl struct {
 	sum      *big.Int
 }
 
-// NewBridgeReqs creates a new IBridgeReqHandler
+// NewBridgeReqs creates a new IBridgeReqHandler.
 func NewBridgeReqs(capacity int) IBridgeReqHandler {
 	return &bridgeReqHandlerImpl{
 		capacity: capacity,
@@ -118,7 +118,7 @@ func (b *bridgeReqHandlerImpl) GetAndDelete(transactionID string) (*big.Int, boo
 	return nil, false
 }
 
-// Put sets or inserts the value if the key is not already present
+// Put sets or inserts the value if the key is not already present.
 func (b *bridgeReqHandlerImpl) Put(transactionID string, value *big.Int) {
 	if node, ok := b.hashmap[transactionID]; ok {
 		b.ll.RemoveNode(node)

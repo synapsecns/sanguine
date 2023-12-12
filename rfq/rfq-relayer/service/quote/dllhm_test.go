@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/service/quote"
 )
 
-// helper function to create a node with a specific transaction ID and value
+// helper function to create a node with a specific transaction ID and value.
 func createNode(transactionID string, value int64) *quote.DLLNode {
 	return quote.NewNode(transactionID, big.NewInt(value))
 }
@@ -26,7 +26,6 @@ func (t *QuoteSuite) TestAddNode() {
 	dll.AddNode(node2)
 	Equal(t.T(), node2, dll.Head())
 	Equal(t.T(), node1, dll.Tail())
-
 }
 
 func (t *QuoteSuite) TestRemoveNode() {
@@ -119,5 +118,4 @@ func (t *QuoteSuite) TestBridgeReqHandlerCapacityHandling() {
 
 	_, exists = handler.GetAndDelete("tx3")
 	True(t.T(), exists)
-
 }

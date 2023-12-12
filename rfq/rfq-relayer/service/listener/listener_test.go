@@ -389,7 +389,6 @@ DoneWaitingForConfirmations:
 			}
 			continue
 		}
-
 	}
 
 	listenCtx, cancelListening := context.WithCancel(testCtx)

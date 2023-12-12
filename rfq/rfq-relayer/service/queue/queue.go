@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db/model"
 )
 
-// IQueue is the interface for a thread safe queue
+// IQueue is the interface for a thread safe queue.
 type IQueue interface {
 	Enqueue(ctx context.Context, transactionID string) error
 	Dequeue(ctx context.Context) (string, error)
@@ -19,7 +19,7 @@ type IQueue interface {
 	Kill()
 }
 
-// Queue is a thread safe queue implementation
+// Queue is a thread safe queue implementation.
 type Queue struct {
 	mu       sync.Mutex
 	capacity int
@@ -28,7 +28,7 @@ type Queue struct {
 	db       db.DB
 }
 
-// NewQueue creates an empty queue with desired capacity
+// NewQueue creates an empty queue with desired capacity.
 func NewQueue(ctx context.Context, capacity int, deadline int64, db db.DB) (*Queue, error) {
 	// Load any existing records from DB
 	records, err := db.GetDeadlineQueueEvents(ctx)
@@ -44,7 +44,7 @@ func NewQueue(ctx context.Context, capacity int, deadline int64, db db.DB) (*Que
 	}, nil
 }
 
-// Enqueue inserts the item into the queue and underlying queue table
+// Enqueue inserts the item into the queue and underlying queue table.
 func (q *Queue) Enqueue(ctx context.Context, transactionID string) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -68,7 +68,7 @@ func (q *Queue) Enqueue(ctx context.Context, transactionID string) error {
 	return fmt.Errorf("queue is full")
 }
 
-// Dequeue removes the oldest element from the queue
+// Dequeue removes the oldest element from the queue.
 func (q *Queue) Dequeue(ctx context.Context) (string, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -88,7 +88,7 @@ func (q *Queue) Dequeue(ctx context.Context) (string, error) {
 	return "", fmt.Errorf("queue is empty")
 }
 
-// HasLiveElements checks if the queue has any elements that are past the deadline
+// HasLiveElements checks if the queue has any elements that are past the deadline.
 func (q *Queue) HasLiveElements(currTime int64) (bool, error) {
 	if len(q.q) > 0 {
 		if currTime >= q.q[0].Timestamp+q.deadline {
@@ -99,7 +99,7 @@ func (q *Queue) HasLiveElements(currTime int64) (bool, error) {
 	return false, fmt.Errorf("queue is empty")
 }
 
-// Len returns the length of the queue
+// Len returns the length of the queue.
 func (q *Queue) Len() int {
 	q.mu.Lock()
 	defer q.mu.Unlock()

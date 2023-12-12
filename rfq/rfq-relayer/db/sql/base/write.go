@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// StoreOriginBridgeEvent adds a new origin event to the database
+// StoreOriginBridgeEvent adds a new origin event to the database.
 func (s Store) StoreOriginBridgeEvent(ctx context.Context, chainID uint32, log *types.Log, event *bindings.FastBridgeBridgeRequested) error {
 	transactionId := common.Bytes2Hex(event.TransactionId[:]) // keccak256 hash of the request
 	bridgeTransaction, err := requests.Decode(event.Request)
@@ -54,7 +54,7 @@ func (s Store) StoreOriginBridgeEvent(ctx context.Context, chainID uint32, log *
 	}).Create(&e).Error
 }
 
-// StoreDestinationBridgeEvent adds a new destination to the database
+// StoreDestinationBridgeEvent adds a new destination to the database.
 func (s Store) StoreDestinationBridgeEvent(ctx context.Context, log *types.Log, originEvent *model.OriginBridgeEvent) error {
 	e := model.DestinationBridgeEvent{
 		TransactionID: originEvent.TransactionID,

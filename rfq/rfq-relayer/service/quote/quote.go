@@ -38,7 +38,7 @@ type quoterImpl struct {
 	rfqURL           string
 }
 
-// Quote holds all the data for a quote
+// Quote holds all the data for a quote.
 type Quote struct {
 	QuoteID       string   // Hash of relayer, sell/buy asset, sell/buy chainID
 	Gas           *big.Int // Customizable by the relayer config
@@ -142,12 +142,11 @@ func (q *quoterImpl) PublishQuotes() error {
 			// TODO: /publish quote
 			// @mikeyf How should we go about this http connection
 		}
-
 	}
 	return nil
 }
 
-// UpdateQuotes updates the quotes in the quote API
+// UpdateQuotes updates the quotes in the quote API.
 func (q *quoterImpl) UpdateQuotes(quoteID string) error {
 	// Get the quote from the quote API
 	for _, quote := range q.quotes[quoteID] {
@@ -181,7 +180,7 @@ func (q *quoterImpl) GetValidQuote(quoteID string, destTokenID string, destVolum
 	return nil, fmt.Errorf("no valid quote found")
 }
 
-// QuoteToAPIQuote gets current balances and converts a quote to an APIQuote,
+// QuoteToAPIQuote gets current balances and converts a quote to an APIQuote,.
 func (q *quoterImpl) QuoteToAPIQuote(quote *Quote) (*APIQuote, error) {
 	originTokenID := utils.GenerateTokenID(quote.OriginChainID, quote.OriginToken)
 	destTokenID := utils.GenerateTokenID(quote.DestChainID, quote.DestToken)

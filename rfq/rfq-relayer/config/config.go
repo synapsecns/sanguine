@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ChainConfig represents the configuration for each chain
+// ChainConfig represents the configuration for each chain.
 type ChainConfig struct {
 	ChainID                 uint32 `yaml:"chainId"`
 	RpcUrl                  string `yaml:"rpcUrl"`
@@ -32,7 +32,7 @@ type AssetConfig struct {
 	ChainID uint32 `yaml:"chainid"`
 }
 
-// Config represents the application's configuration structure
+// Config represents the application's configuration structure.
 type Config struct {
 	Chains         map[uint32]ChainConfig `yaml:"chains"`
 	Database       DatabaseConfig         `yaml:"database"`
