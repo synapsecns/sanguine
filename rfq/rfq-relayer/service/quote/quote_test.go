@@ -161,15 +161,15 @@ func (t *QuoteSuite) TestQuoteToAPIQuote() {
 	NotNil(t.T(), quotes)
 	Equal(t.T(), 1, len(quotes))
 
-	quote := quotes[0]
-	NotNil(t.T(), quote)
-	apiQuote, err := quoter.QuoteToAPIQuote(quote)
+	qt := quotes[0]
+	NotNil(t.T(), qt)
+	apiQuote, err := quoter.QuoteToAPIQuote(qt)
 	Nil(t.T(), err)
 	NotNil(t.T(), apiQuote)
-	Equal(t.T(), quote.OriginToken.String(), apiQuote.OriginToken)
-	Equal(t.T(), quote.DestToken.String(), apiQuote.DestToken)
-	Equal(t.T(), uint(quote.OriginChainID), apiQuote.OriginChainID)
-	Equal(t.T(), uint(quote.DestChainID), apiQuote.DestChainID)
+	Equal(t.T(), qt.OriginToken.String(), apiQuote.OriginToken)
+	Equal(t.T(), qt.DestToken.String(), apiQuote.DestToken)
+	Equal(t.T(), uint(qt.OriginChainID), apiQuote.OriginChainID)
+	Equal(t.T(), uint(qt.DestChainID), apiQuote.DestChainID)
 	Equal(t.T(), fmt.Sprintf("%d", int(testutil.DefaultMintAmount)), apiQuote.OriginAmount)
 	Equal(t.T(), fmt.Sprintf("%d", int(testutil.DefaultMintAmount)), apiQuote.DestAmount)
 	Equal(t.T(), uint8(18), apiQuote.OriginDecimals)
