@@ -61,7 +61,7 @@ export function Home() {
     stopPolling,
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 3600000,
+    pollInterval: 30000,
     fetchPolicy: 'network-only',
     variables: {
       pending,
@@ -138,7 +138,7 @@ export function Home() {
 
   useEffect(() => {
     if (!completed) {
-      startPolling(10000)
+      startPolling(30000)
     } else {
       stopPolling()
     }
