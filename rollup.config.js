@@ -22,7 +22,7 @@ export default [
         format: 'esm',
       },
     ],
-    external: ['react', 'react/jsx-runtime', 'viem'],
+    external: ['react', 'react/jsx-runtime'],
     plugins: [
       resolve(),
       commonjs(),

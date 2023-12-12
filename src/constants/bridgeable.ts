@@ -1,4 +1,4 @@
-import { zeroAddress } from 'viem'
+import { ZeroAddress } from 'ethers'
 // import ageurLogo from '@assets/icons/ageur.svg'
 // import avaxLogo from '@assets/icons/avax.svg'
 // import btcLogo from '@assets/icons/btc.svg'
@@ -702,12 +702,12 @@ export const NETH = {
 
 export const ETH = {
   addresses: {
-    [CHAINS.ETH.id]: zeroAddress,
-    [CHAINS.OPTIMISM.id]: zeroAddress,
-    [CHAINS.BOBA.id]: zeroAddress,
+    [CHAINS.ETH.id]: ZeroAddress,
+    [CHAINS.OPTIMISM.id]: ZeroAddress,
+    [CHAINS.BOBA.id]: ZeroAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
-    [CHAINS.BASE.id]: zeroAddress,
-    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.BASE.id]: ZeroAddress,
+    [CHAINS.ARBITRUM.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
   },
   decimals: 18,
@@ -725,7 +725,7 @@ export const ETH = {
 export const MOVR = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
-    [CHAINS.MOONRIVER.id]: zeroAddress,
+    [CHAINS.MOONRIVER.id]: ZeroAddress,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -742,7 +742,7 @@ export const AVAX = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
     [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
-    [CHAINS.AVALANCHE.id]: zeroAddress,
+    [CHAINS.AVALANCHE.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
     [CHAINS.HARMONY.id]: '0xb12c13e66AdE1F72f71834f2FC5082Db8C091358',
   },
@@ -789,7 +789,7 @@ export const WAVAX = {
 
 export const JEWEL = {
   addresses: {
-    [CHAINS.DFK.id]: zeroAddress,
+    [CHAINS.DFK.id]: ZeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
     [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
@@ -1006,7 +1006,7 @@ export const DAIE = {
 
 export const KLAY = {
   addresses: {
-    [CHAINS.KLAYTN.id]: zeroAddress,
+    [CHAINS.KLAYTN.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
   },
   decimals: {
@@ -1041,7 +1041,7 @@ export const WKLAY = {
 
 export const MATIC = {
   addresses: {
-    [CHAINS.POLYGON.id]: zeroAddress,
+    [CHAINS.POLYGON.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: 18,
@@ -1073,7 +1073,7 @@ export const WMATIC = {
 
 export const FTM = {
   addresses: {
-    [CHAINS.FANTOM.id]: zeroAddress,
+    [CHAINS.FANTOM.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0x2Df041186C844F8a2e2b63F16145Bc6Ff7d23E25',
   },
   decimals: 18,
