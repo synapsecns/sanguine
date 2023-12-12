@@ -7,7 +7,7 @@ require (
 	github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/augustoroman/hexdump v0.0.0-20190827031536-6506f4163e93
-	github.com/davecgh/go-spew v1.1.1
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
 	github.com/gartnera/gcloud v0.0.15
 	github.com/gorilla/websocket v1.5.0
@@ -84,7 +84,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect

@@ -12,8 +12,8 @@ use (
 	./contrib/tfcore
 	./core
 	./ethergo
-	./rfq/rfq-relayer
 	./rfq/quoting-api
+	./rfq/rfq-relayer
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc

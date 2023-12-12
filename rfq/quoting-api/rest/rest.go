@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	// EVMClient "github.com/synapsecns/sanguine/ethergo/client"
+	// EVMClient "github.com/synapsecns/sanguine/ethergo/client".
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,7 +39,7 @@ func NewRestApiServer(ctx context.Context, cfg *config.Config) (*RestApiServer, 
 	return &r, nil
 }
 
-// Setup initializes rest api server routes
+// Setup initializes rest api server routes.
 func (r *RestApiServer) Setup() {
 	r.engine.GET("/ping", r.Ping)
 	r.engine.POST("/quote", r.CreateQuote)
@@ -50,12 +50,12 @@ func (r *RestApiServer) Setup() {
 	r.engine.POST("/quote/:id/ping", r.PingQuote)
 }
 
-// Run runs the rest api server
+// Run runs the rest api server.
 func (r *RestApiServer) Run() {
 	r.engine.Run()
 }
 
-// Authenticate checks request header for EIP191 signature for a valid relayer
+// Authenticate checks request header for EIP191 signature for a valid relayer.
 func (r *RestApiServer) Authenticate(c *gin.Context, q *models.Quote) {
 	// check relayer registered with contract
 	bridge, ok := r.bridges[q.DestChainId]
@@ -85,12 +85,12 @@ func (r *RestApiServer) Authenticate(c *gin.Context, q *models.Quote) {
 	auth.EIP191Auth(q.Relayer, deadline)(c)
 }
 
-// GET /ping
+// GET /ping.
 func (r *RestApiServer) Ping(c *gin.Context) {
 	c.JSON(200, gin.H{"result": "pong"})
 }
 
-// POST /quote
+// POST /quote.
 func (r *RestApiServer) CreateQuote(c *gin.Context) {
 	var q models.Quote
 	c.Bind(&q)
@@ -117,7 +117,7 @@ func (r *RestApiServer) ReadQuotes(c *gin.Context) {
 	c.JSON(200, gin.H{"result": qs})
 }
 
-// GET /quote/{id}
+// GET /quote/{id}.
 func (r *RestApiServer) ReadQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
@@ -135,7 +135,7 @@ func (r *RestApiServer) ReadQuote(c *gin.Context) {
 	c.JSON(200, gin.H{"result": q})
 }
 
-// PUT /quote/{id}
+// PUT /quote/{id}.
 func (r *RestApiServer) UpdateQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
@@ -168,7 +168,7 @@ func (r *RestApiServer) UpdateQuote(c *gin.Context) {
 	c.JSON(200, gin.H{"result": q.ID})
 }
 
-// DELETE /quote/{id}
+// DELETE /quote/{id}.
 func (r *RestApiServer) DeleteQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))
@@ -193,7 +193,7 @@ func (r *RestApiServer) DeleteQuote(c *gin.Context) {
 	c.JSON(200, gin.H{"result": q.ID})
 }
 
-// POST /quote/{id}/ping
+// POST /quote/{id}/ping.
 func (r *RestApiServer) PingQuote(c *gin.Context) {
 	var q models.Quote
 	id, err := strconv.Atoi(c.Param("id"))

@@ -9,7 +9,7 @@ require (
 	github.com/aws/smithy-go v1.13.5
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/coinbase/rosetta-sdk-go v0.8.1
-	github.com/davecgh/go-spew v1.1.1
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/hedzr/log v1.6.3
 	github.com/imkira/go-interpol v1.1.0
@@ -36,9 +36,9 @@ require (
 	golang.org/x/sync v0.3.0
 	google.golang.org/grpc v1.55.0
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/mysql v1.3.6
-	gorm.io/driver/sqlite v1.5.3
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
+	gorm.io/driver/mysql v1.5.2
+	gorm.io/driver/sqlite v1.5.4
+	gorm.io/gorm v1.25.5
 )
 
 require (
@@ -228,7 +228,7 @@ require (
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect

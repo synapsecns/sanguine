@@ -23,7 +23,7 @@ func setupDatabase(t *testing.T) *Database {
 	return &Database{DB: db}
 }
 
-// TestInsertQuote tests the InsertQuote function
+// TestInsertQuote tests the InsertQuote function.
 func TestInsertQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -64,7 +64,7 @@ func TestInsertQuote(t *testing.T) {
 	assert.Equal(t, quote, q)
 }
 
-// TestUpdateQuote tests the UpdateQuote function
+// TestUpdateQuote tests the UpdateQuote function.
 func TestUpdateQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -113,7 +113,7 @@ func TestUpdateQuote(t *testing.T) {
 	assert.Equal(t, quote, q)
 }
 
-// TestGetQuote tests the GetQuote function
+// TestGetQuote tests the GetQuote function.
 func TestGetQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -151,7 +151,7 @@ func TestGetQuote(t *testing.T) {
 	assert.Equal(t, quote, q)
 }
 
-// TestGetQuotes tests the GetQuotes function
+// TestGetQuotes tests the GetQuotes function.
 func TestGetQuotes(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -277,7 +277,7 @@ func TestGetQuotes(t *testing.T) {
 	assert.Equal(t, expectedQuotes, qs)
 }
 
-// TestGetQuotesWhenUpdatedAtLast test the GetQuotes function with UpdatedAtLast time filter
+// TestGetQuotesWhenUpdatedAtLast test the GetQuotes function with UpdatedAtLast time filter.
 func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -376,7 +376,7 @@ func TestGetQuotesWhenUpdatedAtLast(t *testing.T) {
 	assert.Equal(t, expectedQuotes, qs)
 }
 
-// TestDeleteQuote tests the DeleteQuote function
+// TestDeleteQuote tests the DeleteQuote function.
 func TestDeleteQuote(t *testing.T) {
 	// Arrange
 	ctx := context.Background()

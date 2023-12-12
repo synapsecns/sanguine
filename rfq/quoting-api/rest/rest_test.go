@@ -67,7 +67,7 @@ func getServer(t *testing.T, testWallet wallet.Wallet) *RestApiServer {
 }
 
 // auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
-// signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix())))
+// signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix()))).
 func getAuthHeader(t *testing.T, testWallet wallet.Wallet) (header string) {
 	now := strconv.Itoa(int(time.Now().Unix()))
 	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now

@@ -21,7 +21,7 @@ for CONTRACT_NAME in "${CONTRACT_NAMES[@]}"; do
     if [[ -f "$ABI_FILE" && -f "$BIN_FILE" ]]; then
         # Generate Go bindings
         echo "Generating bindings for $CONTRACT_NAME..."
-        abigen --abi="$ABI_FILE" --bin="$BIN_FILE" --pkg="bindings" --out="${OUTPUT_DIR}/${CONTRACT_NAME}.go" --type="$CONTRACT_NAME"
+        abigen --abi="$ABI_FILE" --bin="$BIN_FILE" --pkg="bindings" --out="${OUTPUT_DIR}/${CONTRACT_NAME}.abigen.go" --type="$CONTRACT_NAME"
         echo "Bindings for $CONTRACT_NAME generated."
     else
         echo "ABI or BIN file for $CONTRACT_NAME not found."

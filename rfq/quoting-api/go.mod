@@ -19,6 +19,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.9.1
+	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
@@ -26,6 +27,7 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.0.138
 	github.com/urfave/cli/v2 v2.25.5
 	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/mysql v1.5.2
 	gorm.io/driver/sqlite v1.5.4
 	gorm.io/gorm v1.25.5
 )
@@ -89,6 +91,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
@@ -112,9 +115,9 @@ require (
 	github.com/holiman/uint256 v1.2.1 // indirect
 	github.com/huin/goupnp v1.0.3 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc // indirect
-	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect

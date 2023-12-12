@@ -23,7 +23,7 @@ type Request struct {
 	UpdatedAtLast time.Time       `form:"updated_at_last"` // for liveness checks on q.UpdatedAt
 }
 
-// see bindings/FastBridge.go::IFastBridgeBridgeTransaction
+// see bindings/FastBridge.go::IFastBridgeBridgeTransaction.
 type Quote struct {
 	ID            uint            `gorm:"primaryKey" json:"id" uri:"id"`
 	Relayer       string          `json:"relayer" binding:"required"`
@@ -39,7 +39,7 @@ type Quote struct {
 	DeletedAt     gorm.DeletedAt  `gorm:"index" json:"deleted_at"`
 }
 
-// Validates quote attributes
+// Validates quote attributes.
 func (q *Quote) Validate() (err error) {
 	// zero address and zero int string
 	zeroAddress := (common.Address{}).Hex()
@@ -61,7 +61,7 @@ func (q *Quote) Validate() (err error) {
 	return
 }
 
-// hook to set price on insert
+// hook to set price on insert.
 func (q *Quote) BeforeCreate(tx *gorm.DB) (err error) {
 	// cannot create quote with existing ID
 	if q.ID != 0 {
@@ -76,7 +76,7 @@ func (q *Quote) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-// hook to set price on update
+// hook to set price on update.
 func (q *Quote) BeforeSave(tx *gorm.DB) (err error) {
 	if err = q.Validate(); err != nil {
 		return
@@ -86,7 +86,7 @@ func (q *Quote) BeforeSave(tx *gorm.DB) (err error) {
 	return
 }
 
-// Util to get the quote price inferred from dest, origin amounts
+// Util to get the quote price inferred from dest, origin amounts.
 func (q *Quote) GetPrice() (price decimal.Decimal) {
 	// calculate price using decimals
 	price = q.DestAmount.Div(q.OriginAmount)

@@ -229,7 +229,7 @@ func (_FastBridge *FastBridgeTransactorRaw) Transact(opts *bind.TransactOpts, me
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
 //
-// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
@@ -241,26 +241,25 @@ func (_FastBridge *FastBridgeCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
-
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
 //
-// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeSession) DEFAULTADMINROLE() ([32]byte, error) {
 	return _FastBridge.Contract.DEFAULTADMINROLE(&_FastBridge.CallOpts)
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
 //
-// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
 	return _FastBridge.Contract.DEFAULTADMINROLE(&_FastBridge.CallOpts)
 }
 
 // DISPUTEPERIOD is a free data retrieval call binding the contract method 0xa5bbe22b.
 //
-// Solidity: function DISPUTE_PERIOD() view returns(uint256)
+// Solidity: function DISPUTE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeCaller) DISPUTEPERIOD(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "DISPUTE_PERIOD")
@@ -272,26 +271,25 @@ func (_FastBridge *FastBridgeCaller) DISPUTEPERIOD(opts *bind.CallOpts) (*big.In
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
-
 }
 
 // DISPUTEPERIOD is a free data retrieval call binding the contract method 0xa5bbe22b.
 //
-// Solidity: function DISPUTE_PERIOD() view returns(uint256)
+// Solidity: function DISPUTE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeSession) DISPUTEPERIOD() (*big.Int, error) {
 	return _FastBridge.Contract.DISPUTEPERIOD(&_FastBridge.CallOpts)
 }
 
 // DISPUTEPERIOD is a free data retrieval call binding the contract method 0xa5bbe22b.
 //
-// Solidity: function DISPUTE_PERIOD() view returns(uint256)
+// Solidity: function DISPUTE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeCallerSession) DISPUTEPERIOD() (*big.Int, error) {
 	return _FastBridge.Contract.DISPUTEPERIOD(&_FastBridge.CallOpts)
 }
 
 // GUARDROLE is a free data retrieval call binding the contract method 0x03ed0ee5.
 //
-// Solidity: function GUARD_ROLE() view returns(bytes32)
+// Solidity: function GUARD_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCaller) GUARDROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "GUARD_ROLE")
@@ -303,26 +301,25 @@ func (_FastBridge *FastBridgeCaller) GUARDROLE(opts *bind.CallOpts) ([32]byte, e
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
-
 }
 
 // GUARDROLE is a free data retrieval call binding the contract method 0x03ed0ee5.
 //
-// Solidity: function GUARD_ROLE() view returns(bytes32)
+// Solidity: function GUARD_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeSession) GUARDROLE() ([32]byte, error) {
 	return _FastBridge.Contract.GUARDROLE(&_FastBridge.CallOpts)
 }
 
 // GUARDROLE is a free data retrieval call binding the contract method 0x03ed0ee5.
 //
-// Solidity: function GUARD_ROLE() view returns(bytes32)
+// Solidity: function GUARD_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCallerSession) GUARDROLE() ([32]byte, error) {
 	return _FastBridge.Contract.GUARDROLE(&_FastBridge.CallOpts)
 }
 
 // MINDEADLINEPERIOD is a free data retrieval call binding the contract method 0x820688d5.
 //
-// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256)
+// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeCaller) MINDEADLINEPERIOD(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "MIN_DEADLINE_PERIOD")
@@ -334,26 +331,25 @@ func (_FastBridge *FastBridgeCaller) MINDEADLINEPERIOD(opts *bind.CallOpts) (*bi
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
-
 }
 
 // MINDEADLINEPERIOD is a free data retrieval call binding the contract method 0x820688d5.
 //
-// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256)
+// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeSession) MINDEADLINEPERIOD() (*big.Int, error) {
 	return _FastBridge.Contract.MINDEADLINEPERIOD(&_FastBridge.CallOpts)
 }
 
 // MINDEADLINEPERIOD is a free data retrieval call binding the contract method 0x820688d5.
 //
-// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256)
+// Solidity: function MIN_DEADLINE_PERIOD() view returns(uint256).
 func (_FastBridge *FastBridgeCallerSession) MINDEADLINEPERIOD() (*big.Int, error) {
 	return _FastBridge.Contract.MINDEADLINEPERIOD(&_FastBridge.CallOpts)
 }
 
 // RELAYERROLE is a free data retrieval call binding the contract method 0x926d7d7f.
 //
-// Solidity: function RELAYER_ROLE() view returns(bytes32)
+// Solidity: function RELAYER_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCaller) RELAYERROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "RELAYER_ROLE")
@@ -365,26 +361,25 @@ func (_FastBridge *FastBridgeCaller) RELAYERROLE(opts *bind.CallOpts) ([32]byte,
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
-
 }
 
 // RELAYERROLE is a free data retrieval call binding the contract method 0x926d7d7f.
 //
-// Solidity: function RELAYER_ROLE() view returns(bytes32)
+// Solidity: function RELAYER_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeSession) RELAYERROLE() ([32]byte, error) {
 	return _FastBridge.Contract.RELAYERROLE(&_FastBridge.CallOpts)
 }
 
 // RELAYERROLE is a free data retrieval call binding the contract method 0x926d7d7f.
 //
-// Solidity: function RELAYER_ROLE() view returns(bytes32)
+// Solidity: function RELAYER_ROLE() view returns(bytes32).
 func (_FastBridge *FastBridgeCallerSession) RELAYERROLE() ([32]byte, error) {
 	return _FastBridge.Contract.RELAYERROLE(&_FastBridge.CallOpts)
 }
 
 // BridgeProofs is a free data retrieval call binding the contract method 0x91ad5039.
 //
-// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer)
+// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer).
 func (_FastBridge *FastBridgeCaller) BridgeProofs(opts *bind.CallOpts, arg0 [32]byte) (struct {
 	Timestamp *big.Int
 	Relayer   common.Address
@@ -404,12 +399,11 @@ func (_FastBridge *FastBridgeCaller) BridgeProofs(opts *bind.CallOpts, arg0 [32]
 	outstruct.Relayer = *abi.ConvertType(out[1], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
-
 }
 
 // BridgeProofs is a free data retrieval call binding the contract method 0x91ad5039.
 //
-// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer)
+// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer).
 func (_FastBridge *FastBridgeSession) BridgeProofs(arg0 [32]byte) (struct {
 	Timestamp *big.Int
 	Relayer   common.Address
@@ -419,7 +413,7 @@ func (_FastBridge *FastBridgeSession) BridgeProofs(arg0 [32]byte) (struct {
 
 // BridgeProofs is a free data retrieval call binding the contract method 0x91ad5039.
 //
-// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer)
+// Solidity: function bridgeProofs(bytes32 ) view returns(uint96 timestamp, address relayer).
 func (_FastBridge *FastBridgeCallerSession) BridgeProofs(arg0 [32]byte) (struct {
 	Timestamp *big.Int
 	Relayer   common.Address
@@ -429,7 +423,7 @@ func (_FastBridge *FastBridgeCallerSession) BridgeProofs(arg0 [32]byte) (struct 
 
 // BridgeRelays is a free data retrieval call binding the contract method 0x8379a24f.
 //
-// Solidity: function bridgeRelays(bytes32 ) view returns(bool)
+// Solidity: function bridgeRelays(bytes32 ) view returns(bool).
 func (_FastBridge *FastBridgeCaller) BridgeRelays(opts *bind.CallOpts, arg0 [32]byte) (bool, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "bridgeRelays", arg0)
@@ -441,26 +435,25 @@ func (_FastBridge *FastBridgeCaller) BridgeRelays(opts *bind.CallOpts, arg0 [32]
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // BridgeRelays is a free data retrieval call binding the contract method 0x8379a24f.
 //
-// Solidity: function bridgeRelays(bytes32 ) view returns(bool)
+// Solidity: function bridgeRelays(bytes32 ) view returns(bool).
 func (_FastBridge *FastBridgeSession) BridgeRelays(arg0 [32]byte) (bool, error) {
 	return _FastBridge.Contract.BridgeRelays(&_FastBridge.CallOpts, arg0)
 }
 
 // BridgeRelays is a free data retrieval call binding the contract method 0x8379a24f.
 //
-// Solidity: function bridgeRelays(bytes32 ) view returns(bool)
+// Solidity: function bridgeRelays(bytes32 ) view returns(bool).
 func (_FastBridge *FastBridgeCallerSession) BridgeRelays(arg0 [32]byte) (bool, error) {
 	return _FastBridge.Contract.BridgeRelays(&_FastBridge.CallOpts, arg0)
 }
 
 // BridgeStatuses is a free data retrieval call binding the contract method 0x051287bc.
 //
-// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8)
+// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8).
 func (_FastBridge *FastBridgeCaller) BridgeStatuses(opts *bind.CallOpts, arg0 [32]byte) (uint8, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "bridgeStatuses", arg0)
@@ -472,26 +465,25 @@ func (_FastBridge *FastBridgeCaller) BridgeStatuses(opts *bind.CallOpts, arg0 [3
 	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
 
 	return out0, err
-
 }
 
 // BridgeStatuses is a free data retrieval call binding the contract method 0x051287bc.
 //
-// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8)
+// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8).
 func (_FastBridge *FastBridgeSession) BridgeStatuses(arg0 [32]byte) (uint8, error) {
 	return _FastBridge.Contract.BridgeStatuses(&_FastBridge.CallOpts, arg0)
 }
 
 // BridgeStatuses is a free data retrieval call binding the contract method 0x051287bc.
 //
-// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8)
+// Solidity: function bridgeStatuses(bytes32 ) view returns(uint8).
 func (_FastBridge *FastBridgeCallerSession) BridgeStatuses(arg0 [32]byte) (uint8, error) {
 	return _FastBridge.Contract.BridgeStatuses(&_FastBridge.CallOpts, arg0)
 }
 
 // GetBridgeTransaction is a free data retrieval call binding the contract method 0xac11fb1a.
 //
-// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256))
+// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256)).
 func (_FastBridge *FastBridgeCaller) GetBridgeTransaction(opts *bind.CallOpts, request []byte) (IFastBridgeBridgeTransaction, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "getBridgeTransaction", request)
@@ -503,26 +495,25 @@ func (_FastBridge *FastBridgeCaller) GetBridgeTransaction(opts *bind.CallOpts, r
 	out0 := *abi.ConvertType(out[0], new(IFastBridgeBridgeTransaction)).(*IFastBridgeBridgeTransaction)
 
 	return out0, err
-
 }
 
 // GetBridgeTransaction is a free data retrieval call binding the contract method 0xac11fb1a.
 //
-// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256))
+// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256)).
 func (_FastBridge *FastBridgeSession) GetBridgeTransaction(request []byte) (IFastBridgeBridgeTransaction, error) {
 	return _FastBridge.Contract.GetBridgeTransaction(&_FastBridge.CallOpts, request)
 }
 
 // GetBridgeTransaction is a free data retrieval call binding the contract method 0xac11fb1a.
 //
-// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256))
+// Solidity: function getBridgeTransaction(bytes request) pure returns((uint32,uint32,address,address,address,address,uint256,uint256,uint256,uint256)).
 func (_FastBridge *FastBridgeCallerSession) GetBridgeTransaction(request []byte) (IFastBridgeBridgeTransaction, error) {
 	return _FastBridge.Contract.GetBridgeTransaction(&_FastBridge.CallOpts, request)
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32).
 func (_FastBridge *FastBridgeCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "getRoleAdmin", role)
@@ -534,26 +525,25 @@ func (_FastBridge *FastBridgeCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
-
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32).
 func (_FastBridge *FastBridgeSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
 	return _FastBridge.Contract.GetRoleAdmin(&_FastBridge.CallOpts, role)
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32).
 func (_FastBridge *FastBridgeCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
 	return _FastBridge.Contract.GetRoleAdmin(&_FastBridge.CallOpts, role)
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool).
 func (_FastBridge *FastBridgeCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "hasRole", role, account)
@@ -565,26 +555,25 @@ func (_FastBridge *FastBridgeCaller) HasRole(opts *bind.CallOpts, role [32]byte,
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool).
 func (_FastBridge *FastBridgeSession) HasRole(role [32]byte, account common.Address) (bool, error) {
 	return _FastBridge.Contract.HasRole(&_FastBridge.CallOpts, role, account)
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool).
 func (_FastBridge *FastBridgeCallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
 	return _FastBridge.Contract.HasRole(&_FastBridge.CallOpts, role, account)
 }
 
 // Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 //
-// Solidity: function nonce() view returns(uint256)
+// Solidity: function nonce() view returns(uint256).
 func (_FastBridge *FastBridgeCaller) Nonce(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "nonce")
@@ -596,26 +585,25 @@ func (_FastBridge *FastBridgeCaller) Nonce(opts *bind.CallOpts) (*big.Int, error
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
-
 }
 
 // Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 //
-// Solidity: function nonce() view returns(uint256)
+// Solidity: function nonce() view returns(uint256).
 func (_FastBridge *FastBridgeSession) Nonce() (*big.Int, error) {
 	return _FastBridge.Contract.Nonce(&_FastBridge.CallOpts)
 }
 
 // Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
 //
-// Solidity: function nonce() view returns(uint256)
+// Solidity: function nonce() view returns(uint256).
 func (_FastBridge *FastBridgeCallerSession) Nonce() (*big.Int, error) {
 	return _FastBridge.Contract.Nonce(&_FastBridge.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() view returns(address)
+// Solidity: function owner() view returns(address).
 func (_FastBridge *FastBridgeCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "owner")
@@ -627,26 +615,25 @@ func (_FastBridge *FastBridgeCaller) Owner(opts *bind.CallOpts) (common.Address,
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() view returns(address)
+// Solidity: function owner() view returns(address).
 func (_FastBridge *FastBridgeSession) Owner() (common.Address, error) {
 	return _FastBridge.Contract.Owner(&_FastBridge.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function owner() view returns(address)
+// Solidity: function owner() view returns(address).
 func (_FastBridge *FastBridgeCallerSession) Owner() (common.Address, error) {
 	return _FastBridge.Contract.Owner(&_FastBridge.CallOpts)
 }
 
 // PendingOwner is a free data retrieval call binding the contract method 0xe30c3978.
 //
-// Solidity: function pendingOwner() view returns(address)
+// Solidity: function pendingOwner() view returns(address).
 func (_FastBridge *FastBridgeCaller) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "pendingOwner")
@@ -658,26 +645,25 @@ func (_FastBridge *FastBridgeCaller) PendingOwner(opts *bind.CallOpts) (common.A
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // PendingOwner is a free data retrieval call binding the contract method 0xe30c3978.
 //
-// Solidity: function pendingOwner() view returns(address)
+// Solidity: function pendingOwner() view returns(address).
 func (_FastBridge *FastBridgeSession) PendingOwner() (common.Address, error) {
 	return _FastBridge.Contract.PendingOwner(&_FastBridge.CallOpts)
 }
 
 // PendingOwner is a free data retrieval call binding the contract method 0xe30c3978.
 //
-// Solidity: function pendingOwner() view returns(address)
+// Solidity: function pendingOwner() view returns(address).
 func (_FastBridge *FastBridgeCallerSession) PendingOwner() (common.Address, error) {
 	return _FastBridge.Contract.PendingOwner(&_FastBridge.CallOpts)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool).
 func (_FastBridge *FastBridgeCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _FastBridge.contract.Call(opts, &out, "supportsInterface", interfaceId)
@@ -689,355 +675,354 @@ func (_FastBridge *FastBridgeCaller) SupportsInterface(opts *bind.CallOpts, inte
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool).
 func (_FastBridge *FastBridgeSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
 	return _FastBridge.Contract.SupportsInterface(&_FastBridge.CallOpts, interfaceId)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool).
 func (_FastBridge *FastBridgeCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
 	return _FastBridge.Contract.SupportsInterface(&_FastBridge.CallOpts, interfaceId)
 }
 
 // AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
 //
-// Solidity: function acceptOwnership() returns()
+// Solidity: function acceptOwnership() returns().
 func (_FastBridge *FastBridgeTransactor) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "acceptOwnership")
 }
 
 // AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
 //
-// Solidity: function acceptOwnership() returns()
+// Solidity: function acceptOwnership() returns().
 func (_FastBridge *FastBridgeSession) AcceptOwnership() (*types.Transaction, error) {
 	return _FastBridge.Contract.AcceptOwnership(&_FastBridge.TransactOpts)
 }
 
 // AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
 //
-// Solidity: function acceptOwnership() returns()
+// Solidity: function acceptOwnership() returns().
 func (_FastBridge *FastBridgeTransactorSession) AcceptOwnership() (*types.Transaction, error) {
 	return _FastBridge.Contract.AcceptOwnership(&_FastBridge.TransactOpts)
 }
 
 // AddGuard is a paid mutator transaction binding the contract method 0x6913a63c.
 //
-// Solidity: function addGuard(address _guard) returns()
+// Solidity: function addGuard(address _guard) returns().
 func (_FastBridge *FastBridgeTransactor) AddGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "addGuard", _guard)
 }
 
 // AddGuard is a paid mutator transaction binding the contract method 0x6913a63c.
 //
-// Solidity: function addGuard(address _guard) returns()
+// Solidity: function addGuard(address _guard) returns().
 func (_FastBridge *FastBridgeSession) AddGuard(_guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.AddGuard(&_FastBridge.TransactOpts, _guard)
 }
 
 // AddGuard is a paid mutator transaction binding the contract method 0x6913a63c.
 //
-// Solidity: function addGuard(address _guard) returns()
+// Solidity: function addGuard(address _guard) returns().
 func (_FastBridge *FastBridgeTransactorSession) AddGuard(_guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.AddGuard(&_FastBridge.TransactOpts, _guard)
 }
 
 // AddRelayer is a paid mutator transaction binding the contract method 0xdd39f00d.
 //
-// Solidity: function addRelayer(address _relayer) returns()
+// Solidity: function addRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeTransactor) AddRelayer(opts *bind.TransactOpts, _relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "addRelayer", _relayer)
 }
 
 // AddRelayer is a paid mutator transaction binding the contract method 0xdd39f00d.
 //
-// Solidity: function addRelayer(address _relayer) returns()
+// Solidity: function addRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeSession) AddRelayer(_relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.AddRelayer(&_FastBridge.TransactOpts, _relayer)
 }
 
 // AddRelayer is a paid mutator transaction binding the contract method 0xdd39f00d.
 //
-// Solidity: function addRelayer(address _relayer) returns()
+// Solidity: function addRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeTransactorSession) AddRelayer(_relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.AddRelayer(&_FastBridge.TransactOpts, _relayer)
 }
 
 // Bridge is a paid mutator transaction binding the contract method 0x0728e3ad.
 //
-// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns()
+// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns().
 func (_FastBridge *FastBridgeTransactor) Bridge(opts *bind.TransactOpts, params IFastBridgeBridgeParams) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "bridge", params)
 }
 
 // Bridge is a paid mutator transaction binding the contract method 0x0728e3ad.
 //
-// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns()
+// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns().
 func (_FastBridge *FastBridgeSession) Bridge(params IFastBridgeBridgeParams) (*types.Transaction, error) {
 	return _FastBridge.Contract.Bridge(&_FastBridge.TransactOpts, params)
 }
 
 // Bridge is a paid mutator transaction binding the contract method 0x0728e3ad.
 //
-// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns()
+// Solidity: function bridge((uint32,address,address,address,uint256,uint256,uint256) params) payable returns().
 func (_FastBridge *FastBridgeTransactorSession) Bridge(params IFastBridgeBridgeParams) (*types.Transaction, error) {
 	return _FastBridge.Contract.Bridge(&_FastBridge.TransactOpts, params)
 }
 
 // Claim is a paid mutator transaction binding the contract method 0x41fcb612.
 //
-// Solidity: function claim(bytes request, address to) returns()
+// Solidity: function claim(bytes request, address to) returns().
 func (_FastBridge *FastBridgeTransactor) Claim(opts *bind.TransactOpts, request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "claim", request, to)
 }
 
 // Claim is a paid mutator transaction binding the contract method 0x41fcb612.
 //
-// Solidity: function claim(bytes request, address to) returns()
+// Solidity: function claim(bytes request, address to) returns().
 func (_FastBridge *FastBridgeSession) Claim(request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.Claim(&_FastBridge.TransactOpts, request, to)
 }
 
 // Claim is a paid mutator transaction binding the contract method 0x41fcb612.
 //
-// Solidity: function claim(bytes request, address to) returns()
+// Solidity: function claim(bytes request, address to) returns().
 func (_FastBridge *FastBridgeTransactorSession) Claim(request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.Claim(&_FastBridge.TransactOpts, request, to)
 }
 
 // Dispute is a paid mutator transaction binding the contract method 0xadd98c70.
 //
-// Solidity: function dispute(bytes32 transactionId) returns()
+// Solidity: function dispute(bytes32 transactionId) returns().
 func (_FastBridge *FastBridgeTransactor) Dispute(opts *bind.TransactOpts, transactionId [32]byte) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "dispute", transactionId)
 }
 
 // Dispute is a paid mutator transaction binding the contract method 0xadd98c70.
 //
-// Solidity: function dispute(bytes32 transactionId) returns()
+// Solidity: function dispute(bytes32 transactionId) returns().
 func (_FastBridge *FastBridgeSession) Dispute(transactionId [32]byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Dispute(&_FastBridge.TransactOpts, transactionId)
 }
 
 // Dispute is a paid mutator transaction binding the contract method 0xadd98c70.
 //
-// Solidity: function dispute(bytes32 transactionId) returns()
+// Solidity: function dispute(bytes32 transactionId) returns().
 func (_FastBridge *FastBridgeTransactorSession) Dispute(transactionId [32]byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Dispute(&_FastBridge.TransactOpts, transactionId)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function grantRole(bytes32 role, address account) returns()
+// Solidity: function grantRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeTransactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "grantRole", role, account)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function grantRole(bytes32 role, address account) returns()
+// Solidity: function grantRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.GrantRole(&_FastBridge.TransactOpts, role, account)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function grantRole(bytes32 role, address account) returns()
+// Solidity: function grantRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.GrantRole(&_FastBridge.TransactOpts, role, account)
 }
 
 // Prove is a paid mutator transaction binding the contract method 0x886d36ff.
 //
-// Solidity: function prove(bytes request, bytes32 destTxHash) returns()
+// Solidity: function prove(bytes request, bytes32 destTxHash) returns().
 func (_FastBridge *FastBridgeTransactor) Prove(opts *bind.TransactOpts, request []byte, destTxHash [32]byte) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "prove", request, destTxHash)
 }
 
 // Prove is a paid mutator transaction binding the contract method 0x886d36ff.
 //
-// Solidity: function prove(bytes request, bytes32 destTxHash) returns()
+// Solidity: function prove(bytes request, bytes32 destTxHash) returns().
 func (_FastBridge *FastBridgeSession) Prove(request []byte, destTxHash [32]byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Prove(&_FastBridge.TransactOpts, request, destTxHash)
 }
 
 // Prove is a paid mutator transaction binding the contract method 0x886d36ff.
 //
-// Solidity: function prove(bytes request, bytes32 destTxHash) returns()
+// Solidity: function prove(bytes request, bytes32 destTxHash) returns().
 func (_FastBridge *FastBridgeTransactorSession) Prove(request []byte, destTxHash [32]byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Prove(&_FastBridge.TransactOpts, request, destTxHash)
 }
 
 // Refund is a paid mutator transaction binding the contract method 0xef059bd3.
 //
-// Solidity: function refund(bytes request, address to) returns()
+// Solidity: function refund(bytes request, address to) returns().
 func (_FastBridge *FastBridgeTransactor) Refund(opts *bind.TransactOpts, request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "refund", request, to)
 }
 
 // Refund is a paid mutator transaction binding the contract method 0xef059bd3.
 //
-// Solidity: function refund(bytes request, address to) returns()
+// Solidity: function refund(bytes request, address to) returns().
 func (_FastBridge *FastBridgeSession) Refund(request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.Refund(&_FastBridge.TransactOpts, request, to)
 }
 
 // Refund is a paid mutator transaction binding the contract method 0xef059bd3.
 //
-// Solidity: function refund(bytes request, address to) returns()
+// Solidity: function refund(bytes request, address to) returns().
 func (_FastBridge *FastBridgeTransactorSession) Refund(request []byte, to common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.Refund(&_FastBridge.TransactOpts, request, to)
 }
 
 // Relay is a paid mutator transaction binding the contract method 0x8f0d6f17.
 //
-// Solidity: function relay(bytes request) payable returns()
+// Solidity: function relay(bytes request) payable returns().
 func (_FastBridge *FastBridgeTransactor) Relay(opts *bind.TransactOpts, request []byte) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "relay", request)
 }
 
 // Relay is a paid mutator transaction binding the contract method 0x8f0d6f17.
 //
-// Solidity: function relay(bytes request) payable returns()
+// Solidity: function relay(bytes request) payable returns().
 func (_FastBridge *FastBridgeSession) Relay(request []byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Relay(&_FastBridge.TransactOpts, request)
 }
 
 // Relay is a paid mutator transaction binding the contract method 0x8f0d6f17.
 //
-// Solidity: function relay(bytes request) payable returns()
+// Solidity: function relay(bytes request) payable returns().
 func (_FastBridge *FastBridgeTransactorSession) Relay(request []byte) (*types.Transaction, error) {
 	return _FastBridge.Contract.Relay(&_FastBridge.TransactOpts, request)
 }
 
 // RemoveGuard is a paid mutator transaction binding the contract method 0xb6235016.
 //
-// Solidity: function removeGuard(address _guard) returns()
+// Solidity: function removeGuard(address _guard) returns().
 func (_FastBridge *FastBridgeTransactor) RemoveGuard(opts *bind.TransactOpts, _guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "removeGuard", _guard)
 }
 
 // RemoveGuard is a paid mutator transaction binding the contract method 0xb6235016.
 //
-// Solidity: function removeGuard(address _guard) returns()
+// Solidity: function removeGuard(address _guard) returns().
 func (_FastBridge *FastBridgeSession) RemoveGuard(_guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RemoveGuard(&_FastBridge.TransactOpts, _guard)
 }
 
 // RemoveGuard is a paid mutator transaction binding the contract method 0xb6235016.
 //
-// Solidity: function removeGuard(address _guard) returns()
+// Solidity: function removeGuard(address _guard) returns().
 func (_FastBridge *FastBridgeTransactorSession) RemoveGuard(_guard common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RemoveGuard(&_FastBridge.TransactOpts, _guard)
 }
 
 // RemoveRelayer is a paid mutator transaction binding the contract method 0x60f0a5ac.
 //
-// Solidity: function removeRelayer(address _relayer) returns()
+// Solidity: function removeRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeTransactor) RemoveRelayer(opts *bind.TransactOpts, _relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "removeRelayer", _relayer)
 }
 
 // RemoveRelayer is a paid mutator transaction binding the contract method 0x60f0a5ac.
 //
-// Solidity: function removeRelayer(address _relayer) returns()
+// Solidity: function removeRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeSession) RemoveRelayer(_relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RemoveRelayer(&_FastBridge.TransactOpts, _relayer)
 }
 
 // RemoveRelayer is a paid mutator transaction binding the contract method 0x60f0a5ac.
 //
-// Solidity: function removeRelayer(address _relayer) returns()
+// Solidity: function removeRelayer(address _relayer) returns().
 func (_FastBridge *FastBridgeTransactorSession) RemoveRelayer(_relayer common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RemoveRelayer(&_FastBridge.TransactOpts, _relayer)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
-// Solidity: function renounceOwnership() returns()
+// Solidity: function renounceOwnership() returns().
 func (_FastBridge *FastBridgeTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "renounceOwnership")
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
-// Solidity: function renounceOwnership() returns()
+// Solidity: function renounceOwnership() returns().
 func (_FastBridge *FastBridgeSession) RenounceOwnership() (*types.Transaction, error) {
 	return _FastBridge.Contract.RenounceOwnership(&_FastBridge.TransactOpts)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
-// Solidity: function renounceOwnership() returns()
+// Solidity: function renounceOwnership() returns().
 func (_FastBridge *FastBridgeTransactorSession) RenounceOwnership() (*types.Transaction, error) {
 	return _FastBridge.Contract.RenounceOwnership(&_FastBridge.TransactOpts)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns().
 func (_FastBridge *FastBridgeTransactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "renounceRole", role, callerConfirmation)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns().
 func (_FastBridge *FastBridgeSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RenounceRole(&_FastBridge.TransactOpts, role, callerConfirmation)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns().
 func (_FastBridge *FastBridgeTransactorSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RenounceRole(&_FastBridge.TransactOpts, role, callerConfirmation)
 }
 
 // RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function revokeRole(bytes32 role, address account) returns()
+// Solidity: function revokeRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeTransactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "revokeRole", role, account)
 }
 
 // RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function revokeRole(bytes32 role, address account) returns()
+// Solidity: function revokeRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RevokeRole(&_FastBridge.TransactOpts, role, account)
 }
 
 // RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function revokeRole(bytes32 role, address account) returns()
+// Solidity: function revokeRole(bytes32 role, address account) returns().
 func (_FastBridge *FastBridgeTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.RevokeRole(&_FastBridge.TransactOpts, role, account)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function transferOwnership(address newOwner) returns()
+// Solidity: function transferOwnership(address newOwner) returns().
 func (_FastBridge *FastBridgeTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	return _FastBridge.contract.Transact(opts, "transferOwnership", newOwner)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function transferOwnership(address newOwner) returns()
+// Solidity: function transferOwnership(address newOwner) returns().
 func (_FastBridge *FastBridgeSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.TransferOwnership(&_FastBridge.TransactOpts, newOwner)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function transferOwnership(address newOwner) returns()
+// Solidity: function transferOwnership(address newOwner) returns().
 func (_FastBridge *FastBridgeTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _FastBridge.Contract.TransferOwnership(&_FastBridge.TransactOpts, newOwner)
 }
@@ -1121,9 +1106,8 @@ type FastBridgeBridgeDepositClaimed struct {
 
 // FilterBridgeDepositClaimed is a free log retrieval operation binding the contract event 0x582211c35a2139ac3bbaac74663c6a1f56c6cbb658b41fe11fd45a82074ac678.
 //
-// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeDepositClaimed(opts *bind.FilterOpts) (*FastBridgeBridgeDepositClaimedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeDepositClaimed")
 	if err != nil {
 		return nil, err
@@ -1133,9 +1117,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeDepositClaimed(opts *bind.Fil
 
 // WatchBridgeDepositClaimed is a free log subscription operation binding the contract event 0x582211c35a2139ac3bbaac74663c6a1f56c6cbb658b41fe11fd45a82074ac678.
 //
-// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeDepositClaimed(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeDepositClaimed) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeDepositClaimed")
 	if err != nil {
 		return nil, err
@@ -1170,7 +1153,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeDepositClaimed(opts *bind.Watc
 
 // ParseBridgeDepositClaimed is a log parse operation binding the contract event 0x582211c35a2139ac3bbaac74663c6a1f56c6cbb658b41fe11fd45a82074ac678.
 //
-// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeDepositClaimed(log types.Log) (*FastBridgeBridgeDepositClaimed, error) {
 	event := new(FastBridgeBridgeDepositClaimed)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeDepositClaimed", log); err != nil {
@@ -1258,9 +1241,8 @@ type FastBridgeBridgeDepositRefunded struct {
 
 // FilterBridgeDepositRefunded is a free log retrieval operation binding the contract event 0xb4c55c0c9bc613519b920e88748090150b890a875d307f21bea7d4fb2e8bc958.
 //
-// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeDepositRefunded(opts *bind.FilterOpts) (*FastBridgeBridgeDepositRefundedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeDepositRefunded")
 	if err != nil {
 		return nil, err
@@ -1270,9 +1252,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeDepositRefunded(opts *bind.Fi
 
 // WatchBridgeDepositRefunded is a free log subscription operation binding the contract event 0xb4c55c0c9bc613519b920e88748090150b890a875d307f21bea7d4fb2e8bc958.
 //
-// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeDepositRefunded(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeDepositRefunded) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeDepositRefunded")
 	if err != nil {
 		return nil, err
@@ -1307,7 +1288,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeDepositRefunded(opts *bind.Wat
 
 // ParseBridgeDepositRefunded is a log parse operation binding the contract event 0xb4c55c0c9bc613519b920e88748090150b890a875d307f21bea7d4fb2e8bc958.
 //
-// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount)
+// Solidity: event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeDepositRefunded(log types.Log) (*FastBridgeBridgeDepositRefunded, error) {
 	event := new(FastBridgeBridgeDepositRefunded)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeDepositRefunded", log); err != nil {
@@ -1393,9 +1374,8 @@ type FastBridgeBridgeProofDisputed struct {
 
 // FilterBridgeProofDisputed is a free log retrieval operation binding the contract event 0x0695cf1d39b3055dcd0fe02d8b47eaf0d5a13e1996de925de59d0ef9b7f7fad4.
 //
-// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer)
+// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeProofDisputed(opts *bind.FilterOpts) (*FastBridgeBridgeProofDisputedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeProofDisputed")
 	if err != nil {
 		return nil, err
@@ -1405,9 +1385,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeProofDisputed(opts *bind.Filt
 
 // WatchBridgeProofDisputed is a free log subscription operation binding the contract event 0x0695cf1d39b3055dcd0fe02d8b47eaf0d5a13e1996de925de59d0ef9b7f7fad4.
 //
-// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer)
+// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeProofDisputed(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeProofDisputed) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeProofDisputed")
 	if err != nil {
 		return nil, err
@@ -1442,7 +1421,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeProofDisputed(opts *bind.Watch
 
 // ParseBridgeProofDisputed is a log parse operation binding the contract event 0x0695cf1d39b3055dcd0fe02d8b47eaf0d5a13e1996de925de59d0ef9b7f7fad4.
 //
-// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer)
+// Solidity: event BridgeProofDisputed(bytes32 transactionId, address relayer).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeProofDisputed(log types.Log) (*FastBridgeBridgeProofDisputed, error) {
 	event := new(FastBridgeBridgeProofDisputed)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeProofDisputed", log); err != nil {
@@ -1529,9 +1508,8 @@ type FastBridgeBridgeProofProvided struct {
 
 // FilterBridgeProofProvided is a free log retrieval operation binding the contract event 0x4ac8af8a2cd87193d64dfc7a3b8d9923b714ec528b18725d080aa1299be0c5e4.
 //
-// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash)
+// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeProofProvided(opts *bind.FilterOpts) (*FastBridgeBridgeProofProvidedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeProofProvided")
 	if err != nil {
 		return nil, err
@@ -1541,9 +1519,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeProofProvided(opts *bind.Filt
 
 // WatchBridgeProofProvided is a free log subscription operation binding the contract event 0x4ac8af8a2cd87193d64dfc7a3b8d9923b714ec528b18725d080aa1299be0c5e4.
 //
-// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash)
+// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeProofProvided(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeProofProvided) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeProofProvided")
 	if err != nil {
 		return nil, err
@@ -1578,7 +1555,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeProofProvided(opts *bind.Watch
 
 // ParseBridgeProofProvided is a log parse operation binding the contract event 0x4ac8af8a2cd87193d64dfc7a3b8d9923b714ec528b18725d080aa1299be0c5e4.
 //
-// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash)
+// Solidity: event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeProofProvided(log types.Log) (*FastBridgeBridgeProofProvided, error) {
 	event := new(FastBridgeBridgeProofProvided)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeProofProvided", log); err != nil {
@@ -1667,9 +1644,8 @@ type FastBridgeBridgeRelayed struct {
 
 // FilterBridgeRelayed is a free log retrieval operation binding the contract event 0x7212c977e94cbafc6e4685aee721574624efaa1993ce2b48d1bb37c27ffa13f4.
 //
-// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeRelayed(opts *bind.FilterOpts) (*FastBridgeBridgeRelayedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeRelayed")
 	if err != nil {
 		return nil, err
@@ -1679,9 +1655,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeRelayed(opts *bind.FilterOpts
 
 // WatchBridgeRelayed is a free log subscription operation binding the contract event 0x7212c977e94cbafc6e4685aee721574624efaa1993ce2b48d1bb37c27ffa13f4.
 //
-// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeRelayed(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeRelayed) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeRelayed")
 	if err != nil {
 		return nil, err
@@ -1716,7 +1691,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeRelayed(opts *bind.WatchOpts, 
 
 // ParseBridgeRelayed is a log parse operation binding the contract event 0x7212c977e94cbafc6e4685aee721574624efaa1993ce2b48d1bb37c27ffa13f4.
 //
-// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+// Solidity: event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeRelayed(log types.Log) (*FastBridgeBridgeRelayed, error) {
 	event := new(FastBridgeBridgeRelayed)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeRelayed", log); err != nil {
@@ -1803,9 +1778,8 @@ type FastBridgeBridgeRequested struct {
 
 // FilterBridgeRequested is a free log retrieval operation binding the contract event 0x2a8233b619c9d479346e133f609855c0a94d89fbcfa62f846a9f0cfdd1198ccf.
 //
-// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request)
+// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request).
 func (_FastBridge *FastBridgeFilterer) FilterBridgeRequested(opts *bind.FilterOpts) (*FastBridgeBridgeRequestedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "BridgeRequested")
 	if err != nil {
 		return nil, err
@@ -1815,9 +1789,8 @@ func (_FastBridge *FastBridgeFilterer) FilterBridgeRequested(opts *bind.FilterOp
 
 // WatchBridgeRequested is a free log subscription operation binding the contract event 0x2a8233b619c9d479346e133f609855c0a94d89fbcfa62f846a9f0cfdd1198ccf.
 //
-// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request)
+// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request).
 func (_FastBridge *FastBridgeFilterer) WatchBridgeRequested(opts *bind.WatchOpts, sink chan<- *FastBridgeBridgeRequested) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "BridgeRequested")
 	if err != nil {
 		return nil, err
@@ -1852,7 +1825,7 @@ func (_FastBridge *FastBridgeFilterer) WatchBridgeRequested(opts *bind.WatchOpts
 
 // ParseBridgeRequested is a log parse operation binding the contract event 0x2a8233b619c9d479346e133f609855c0a94d89fbcfa62f846a9f0cfdd1198ccf.
 //
-// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request)
+// Solidity: event BridgeRequested(bytes32 transactionId, address sender, bytes request).
 func (_FastBridge *FastBridgeFilterer) ParseBridgeRequested(log types.Log) (*FastBridgeBridgeRequested, error) {
 	event := new(FastBridgeBridgeRequested)
 	if err := _FastBridge.contract.UnpackLog(event, "BridgeRequested", log); err != nil {
@@ -1937,9 +1910,8 @@ type FastBridgeGuardAdded struct {
 
 // FilterGuardAdded is a free log retrieval operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
 //
-// Solidity: event GuardAdded(address guard)
+// Solidity: event GuardAdded(address guard).
 func (_FastBridge *FastBridgeFilterer) FilterGuardAdded(opts *bind.FilterOpts) (*FastBridgeGuardAddedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "GuardAdded")
 	if err != nil {
 		return nil, err
@@ -1949,9 +1921,8 @@ func (_FastBridge *FastBridgeFilterer) FilterGuardAdded(opts *bind.FilterOpts) (
 
 // WatchGuardAdded is a free log subscription operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
 //
-// Solidity: event GuardAdded(address guard)
+// Solidity: event GuardAdded(address guard).
 func (_FastBridge *FastBridgeFilterer) WatchGuardAdded(opts *bind.WatchOpts, sink chan<- *FastBridgeGuardAdded) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "GuardAdded")
 	if err != nil {
 		return nil, err
@@ -1986,7 +1957,7 @@ func (_FastBridge *FastBridgeFilterer) WatchGuardAdded(opts *bind.WatchOpts, sin
 
 // ParseGuardAdded is a log parse operation binding the contract event 0x93405f05cd04f0d1bd875f2de00f1f3890484ffd0589248953bdfd29ba7f2f59.
 //
-// Solidity: event GuardAdded(address guard)
+// Solidity: event GuardAdded(address guard).
 func (_FastBridge *FastBridgeFilterer) ParseGuardAdded(log types.Log) (*FastBridgeGuardAdded, error) {
 	event := new(FastBridgeGuardAdded)
 	if err := _FastBridge.contract.UnpackLog(event, "GuardAdded", log); err != nil {
@@ -2071,9 +2042,8 @@ type FastBridgeGuardRemoved struct {
 
 // FilterGuardRemoved is a free log retrieval operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
 //
-// Solidity: event GuardRemoved(address guard)
+// Solidity: event GuardRemoved(address guard).
 func (_FastBridge *FastBridgeFilterer) FilterGuardRemoved(opts *bind.FilterOpts) (*FastBridgeGuardRemovedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "GuardRemoved")
 	if err != nil {
 		return nil, err
@@ -2083,9 +2053,8 @@ func (_FastBridge *FastBridgeFilterer) FilterGuardRemoved(opts *bind.FilterOpts)
 
 // WatchGuardRemoved is a free log subscription operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
 //
-// Solidity: event GuardRemoved(address guard)
+// Solidity: event GuardRemoved(address guard).
 func (_FastBridge *FastBridgeFilterer) WatchGuardRemoved(opts *bind.WatchOpts, sink chan<- *FastBridgeGuardRemoved) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "GuardRemoved")
 	if err != nil {
 		return nil, err
@@ -2120,7 +2089,7 @@ func (_FastBridge *FastBridgeFilterer) WatchGuardRemoved(opts *bind.WatchOpts, s
 
 // ParseGuardRemoved is a log parse operation binding the contract event 0x59926e0a78d12238b668b31c8e3f6ece235a59a00ede111d883e255b68c4d048.
 //
-// Solidity: event GuardRemoved(address guard)
+// Solidity: event GuardRemoved(address guard).
 func (_FastBridge *FastBridgeFilterer) ParseGuardRemoved(log types.Log) (*FastBridgeGuardRemoved, error) {
 	event := new(FastBridgeGuardRemoved)
 	if err := _FastBridge.contract.UnpackLog(event, "GuardRemoved", log); err != nil {
@@ -2206,9 +2175,8 @@ type FastBridgeOwnershipTransferStarted struct {
 
 // FilterOwnershipTransferStarted is a free log retrieval operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
 //
-// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*FastBridgeOwnershipTransferStartedIterator, error) {
-
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
 		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
@@ -2227,9 +2195,8 @@ func (_FastBridge *FastBridgeFilterer) FilterOwnershipTransferStarted(opts *bind
 
 // WatchOwnershipTransferStarted is a free log subscription operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
 //
-// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *FastBridgeOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
 		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
@@ -2273,7 +2240,7 @@ func (_FastBridge *FastBridgeFilterer) WatchOwnershipTransferStarted(opts *bind.
 
 // ParseOwnershipTransferStarted is a log parse operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
 //
-// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) ParseOwnershipTransferStarted(log types.Log) (*FastBridgeOwnershipTransferStarted, error) {
 	event := new(FastBridgeOwnershipTransferStarted)
 	if err := _FastBridge.contract.UnpackLog(event, "OwnershipTransferStarted", log); err != nil {
@@ -2359,9 +2326,8 @@ type FastBridgeOwnershipTransferred struct {
 
 // FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*FastBridgeOwnershipTransferredIterator, error) {
-
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
 		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
@@ -2380,9 +2346,8 @@ func (_FastBridge *FastBridgeFilterer) FilterOwnershipTransferred(opts *bind.Fil
 
 // WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *FastBridgeOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
 		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
@@ -2426,7 +2391,7 @@ func (_FastBridge *FastBridgeFilterer) WatchOwnershipTransferred(opts *bind.Watc
 
 // ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner).
 func (_FastBridge *FastBridgeFilterer) ParseOwnershipTransferred(log types.Log) (*FastBridgeOwnershipTransferred, error) {
 	event := new(FastBridgeOwnershipTransferred)
 	if err := _FastBridge.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
@@ -2511,9 +2476,8 @@ type FastBridgeRelayerAdded struct {
 
 // FilterRelayerAdded is a free log retrieval operation binding the contract event 0x03580ee9f53a62b7cb409a2cb56f9be87747dd15017afc5cef6eef321e4fb2c5.
 //
-// Solidity: event RelayerAdded(address relayer)
+// Solidity: event RelayerAdded(address relayer).
 func (_FastBridge *FastBridgeFilterer) FilterRelayerAdded(opts *bind.FilterOpts) (*FastBridgeRelayerAddedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "RelayerAdded")
 	if err != nil {
 		return nil, err
@@ -2523,9 +2487,8 @@ func (_FastBridge *FastBridgeFilterer) FilterRelayerAdded(opts *bind.FilterOpts)
 
 // WatchRelayerAdded is a free log subscription operation binding the contract event 0x03580ee9f53a62b7cb409a2cb56f9be87747dd15017afc5cef6eef321e4fb2c5.
 //
-// Solidity: event RelayerAdded(address relayer)
+// Solidity: event RelayerAdded(address relayer).
 func (_FastBridge *FastBridgeFilterer) WatchRelayerAdded(opts *bind.WatchOpts, sink chan<- *FastBridgeRelayerAdded) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "RelayerAdded")
 	if err != nil {
 		return nil, err
@@ -2560,7 +2523,7 @@ func (_FastBridge *FastBridgeFilterer) WatchRelayerAdded(opts *bind.WatchOpts, s
 
 // ParseRelayerAdded is a log parse operation binding the contract event 0x03580ee9f53a62b7cb409a2cb56f9be87747dd15017afc5cef6eef321e4fb2c5.
 //
-// Solidity: event RelayerAdded(address relayer)
+// Solidity: event RelayerAdded(address relayer).
 func (_FastBridge *FastBridgeFilterer) ParseRelayerAdded(log types.Log) (*FastBridgeRelayerAdded, error) {
 	event := new(FastBridgeRelayerAdded)
 	if err := _FastBridge.contract.UnpackLog(event, "RelayerAdded", log); err != nil {
@@ -2645,9 +2608,8 @@ type FastBridgeRelayerRemoved struct {
 
 // FilterRelayerRemoved is a free log retrieval operation binding the contract event 0x10e1f7ce9fd7d1b90a66d13a2ab3cb8dd7f29f3f8d520b143b063ccfbab6906b.
 //
-// Solidity: event RelayerRemoved(address relayer)
+// Solidity: event RelayerRemoved(address relayer).
 func (_FastBridge *FastBridgeFilterer) FilterRelayerRemoved(opts *bind.FilterOpts) (*FastBridgeRelayerRemovedIterator, error) {
-
 	logs, sub, err := _FastBridge.contract.FilterLogs(opts, "RelayerRemoved")
 	if err != nil {
 		return nil, err
@@ -2657,9 +2619,8 @@ func (_FastBridge *FastBridgeFilterer) FilterRelayerRemoved(opts *bind.FilterOpt
 
 // WatchRelayerRemoved is a free log subscription operation binding the contract event 0x10e1f7ce9fd7d1b90a66d13a2ab3cb8dd7f29f3f8d520b143b063ccfbab6906b.
 //
-// Solidity: event RelayerRemoved(address relayer)
+// Solidity: event RelayerRemoved(address relayer).
 func (_FastBridge *FastBridgeFilterer) WatchRelayerRemoved(opts *bind.WatchOpts, sink chan<- *FastBridgeRelayerRemoved) (event.Subscription, error) {
-
 	logs, sub, err := _FastBridge.contract.WatchLogs(opts, "RelayerRemoved")
 	if err != nil {
 		return nil, err
@@ -2694,7 +2655,7 @@ func (_FastBridge *FastBridgeFilterer) WatchRelayerRemoved(opts *bind.WatchOpts,
 
 // ParseRelayerRemoved is a log parse operation binding the contract event 0x10e1f7ce9fd7d1b90a66d13a2ab3cb8dd7f29f3f8d520b143b063ccfbab6906b.
 //
-// Solidity: event RelayerRemoved(address relayer)
+// Solidity: event RelayerRemoved(address relayer).
 func (_FastBridge *FastBridgeFilterer) ParseRelayerRemoved(log types.Log) (*FastBridgeRelayerRemoved, error) {
 	event := new(FastBridgeRelayerRemoved)
 	if err := _FastBridge.contract.UnpackLog(event, "RelayerRemoved", log); err != nil {
@@ -2781,9 +2742,8 @@ type FastBridgeRoleAdminChanged struct {
 
 // FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole).
 func (_FastBridge *FastBridgeFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*FastBridgeRoleAdminChangedIterator, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2806,9 +2766,8 @@ func (_FastBridge *FastBridgeFilterer) FilterRoleAdminChanged(opts *bind.FilterO
 
 // WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole).
 func (_FastBridge *FastBridgeFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *FastBridgeRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2856,7 +2815,7 @@ func (_FastBridge *FastBridgeFilterer) WatchRoleAdminChanged(opts *bind.WatchOpt
 
 // ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole).
 func (_FastBridge *FastBridgeFilterer) ParseRoleAdminChanged(log types.Log) (*FastBridgeRoleAdminChanged, error) {
 	event := new(FastBridgeRoleAdminChanged)
 	if err := _FastBridge.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
@@ -2943,9 +2902,8 @@ type FastBridgeRoleGranted struct {
 
 // FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*FastBridgeRoleGrantedIterator, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2968,9 +2926,8 @@ func (_FastBridge *FastBridgeFilterer) FilterRoleGranted(opts *bind.FilterOpts, 
 
 // WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *FastBridgeRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -3018,7 +2975,7 @@ func (_FastBridge *FastBridgeFilterer) WatchRoleGranted(opts *bind.WatchOpts, si
 
 // ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) ParseRoleGranted(log types.Log) (*FastBridgeRoleGranted, error) {
 	event := new(FastBridgeRoleGranted)
 	if err := _FastBridge.contract.UnpackLog(event, "RoleGranted", log); err != nil {
@@ -3105,9 +3062,8 @@ type FastBridgeRoleRevoked struct {
 
 // FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*FastBridgeRoleRevokedIterator, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -3130,9 +3086,8 @@ func (_FastBridge *FastBridgeFilterer) FilterRoleRevoked(opts *bind.FilterOpts, 
 
 // WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *FastBridgeRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
-
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -3180,7 +3135,7 @@ func (_FastBridge *FastBridgeFilterer) WatchRoleRevoked(opts *bind.WatchOpts, si
 
 // ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender).
 func (_FastBridge *FastBridgeFilterer) ParseRoleRevoked(log types.Log) (*FastBridgeRoleRevoked, error) {
 	event := new(FastBridgeRoleRevoked)
 	if err := _FastBridge.contract.UnpackLog(event, "RoleRevoked", log); err != nil {

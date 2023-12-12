@@ -15,7 +15,7 @@ require (
 	github.com/btcsuite/btcd v0.22.1
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0
 	github.com/chzyer/test v1.0.0
-	github.com/davecgh/go-spew v1.1.1
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/dgraph-io/ristretto v0.1.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/goccy/go-json v0.10.2
@@ -64,9 +64,9 @@ require (
 	google.golang.org/api v0.121.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/mysql v1.3.6
-	gorm.io/driver/sqlite v1.5.3
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
+	gorm.io/driver/mysql v1.5.2
+	gorm.io/driver/sqlite v1.5.4
+	gorm.io/gorm v1.25.5
 	gotest.tools v2.2.0+incompatible
 	k8s.io/apimachinery v0.25.5
 )
@@ -213,7 +213,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/peterh/liner v1.2.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect

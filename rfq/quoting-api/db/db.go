@@ -30,7 +30,6 @@ type Database struct {
 }
 
 func NewDatabase(ctx context.Context, handler metrics.Handler, skipMigrations bool) (db *Database, err error) {
-
 	// @Bobby lets adjust this to how we want the config to work
 	dbname := os.Getenv("MYSQL_DATABASE")
 	connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
