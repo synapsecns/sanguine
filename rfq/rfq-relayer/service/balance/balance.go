@@ -1,10 +1,8 @@
-// Package balance keeps track of the balance
 package balance
 
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"strconv"
 	"sync"
@@ -20,7 +18,6 @@ import (
 
 const precision = 5
 
-// IBalanceManager is the interface for a BalanceManager.
 type IBalanceManager interface {
 	IncrementBalance(tokenID string, amount *big.Int)
 	DecrementBalance(tokenID string, amount *big.Int)
@@ -35,11 +32,9 @@ type balanceManageImpl struct {
 	erc20s         map[string]*bindings.MockERC20
 	balances       map[string]*Balance
 	relayerAddress common.Address
-	// TODO: use mapMutex
-	mux sync.RWMutex // Mutex to ensure thread safety
+	mux            sync.RWMutex // Mutex to ensure thread safety
 }
 
-// NewBalanceManager creates a new balance manager.
 func NewBalanceManager(clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayerAddress common.Address) (IBalanceManager, error) {
 	erc20s := make(map[string]*bindings.MockERC20)
 	balances := make(map[string]*Balance)
@@ -61,7 +56,6 @@ func NewBalanceManager(clients map[uint32]EVMClient.EVM, assets []config.AssetCo
 	}, nil
 }
 
-// IncrementBalance increments the balance of an asset by a given amount.
 func (i *balanceManageImpl) IncrementBalance(tokenID string, amount *big.Int) {
 	i.mux.Lock()
 	defer i.mux.Unlock()
@@ -71,10 +65,9 @@ func (i *balanceManageImpl) IncrementBalance(tokenID string, amount *big.Int) {
 		currentBalance = &Balance{}
 	}
 	newBalance := new(big.Int).Add(currentBalance.Amount, amount)
-	i.balances[tokenID].Amount = core.CopyBigInt(newBalance)
+	i.balances[tokenID].Amount = newBalance
 }
 
-// DecrementBalance decrements the balance of an asset by a given amount.
 func (i *balanceManageImpl) DecrementBalance(tokenID string, amount *big.Int) {
 	i.mux.Lock()
 	defer i.mux.Unlock()
@@ -84,7 +77,7 @@ func (i *balanceManageImpl) DecrementBalance(tokenID string, amount *big.Int) {
 		currentBalance = &Balance{}
 	}
 	newBalance := new(big.Int).Sub(currentBalance.Amount, amount)
-	i.balances[tokenID].Amount = core.CopyBigInt(newBalance)
+	i.balances[tokenID].Amount = newBalance
 }
 
 func (i *balanceManageImpl) GetBalance(tokenID string) *Balance {
@@ -136,7 +129,7 @@ func (i *balanceManageImpl) GetOnChainBalance(ctx context.Context, tokenID strin
 		return fmt.Errorf("could not retrieve decimals of token ID %s: %w", tokenID, err)
 	}
 	newBalance := &Balance{
-		Amount:   core.CopyBigInt(balance),
+		Amount:   balance,
 		Decimals: decimals,
 	}
 
@@ -160,9 +153,5 @@ func (b *Balance) ToFloat64() (float64, error) {
 	decimalMultiplier := new(big.Float).SetInt(big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(b.Decimals)), nil))
 	normalizedBalance := new(big.Float).Quo(new(big.Float).SetInt(b.Amount), decimalMultiplier)
 	trueAmountStr := normalizedBalance.SetMode(big.AwayFromZero).Text('f', precision)
-	amount, err := strconv.ParseFloat(trueAmountStr, 64)
-	if err != nil {
-		return 0, fmt.Errorf("could not parse float64 from string %s: %w", trueAmountStr, err)
-	}
-	return amount, nil
+	return strconv.ParseFloat(trueAmountStr, 64)
 }
