@@ -43,9 +43,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         const mergedTransactions = [...transactions, ...fallbackTransactions]
 
         const uniqueMergedTransactions = Array.from(
-          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+          new Set(mergedTransactions.map((transaction) => transaction?.kappa))
         ).map((kappa) =>
-          mergedTransactions.find((item) => item.kappa === kappa)
+          mergedTransactions.find((item) => item?.kappa === kappa)
         )
         return uniqueMergedTransactions
       }
@@ -181,9 +181,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         const mergedTransactions = [...fallbackTransactions, ...transactions]
 
         const uniqueMergedTransactions = Array.from(
-          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+          new Set(mergedTransactions.map((transaction) => transaction?.kappa))
         ).map((kappa) =>
-          mergedTransactions.find((item) => item.kappa === kappa)
+          mergedTransactions.find((item) => item?.kappa === kappa)
         )
         return uniqueMergedTransactions
       }
@@ -285,7 +285,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
               .slice(0, searchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
-                  key={transaction.kappa}
+                  key={transaction?.kappa}
                   connectedAddress={viewingAddress as Address}
                   destinationAddress={transaction?.fromInfo?.address as Address}
                   startedTimestamp={transaction?.fromInfo?.time}
