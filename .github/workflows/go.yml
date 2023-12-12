@@ -78,7 +78,7 @@ jobs:
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 && github.event_name != 'push' }}
     needs: changes
     strategy:
       fail-fast: false
