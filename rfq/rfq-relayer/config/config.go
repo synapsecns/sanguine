@@ -46,6 +46,7 @@ type Config struct {
 	Deadline          int64                  `yaml:"deadline"`
 	QueuePollInterval int                    `yaml:"queue_poll_interval"`
 	SkipMigrations    bool                   `yaml:"skip_migrations"`
+	RFQURL            string                 `yaml:"rfq_url"`
 }
 
 // DecodeConfig parses in a config from a file.

@@ -35,6 +35,7 @@ type quoterImpl struct {
 	relayer          common.Address
 	mu               sync.Mutex
 	bridgeReqHandler IBridgeReqHandler
+	rfqURL           string
 }
 
 // Quote holds all the data for a quote
@@ -71,7 +72,7 @@ type APIQuote struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
-func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayer common.Address) (IQuoter, error) {
+func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayer common.Address, rfqURL string) (IQuoter, error) {
 	// Create balance manager
 	balanceManager, err := balance.NewBalanceManager(clients, assets, relayer)
 	if err != nil {
@@ -85,7 +86,6 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 	}
 
 	bridgeReqHandler := NewBridgeReqs(bridgeReqCacheSize)
-	// TODO: Init connection to the quote API.
 
 	quotes := make(map[string][]*Quote)
 	for _, asset := range assets {
@@ -122,6 +122,7 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 		quotes:           quotes,
 		balance:          balanceManager,
 		bridgeReqHandler: bridgeReqHandler,
+		rfqURL:           rfqURL,
 	}, nil
 }
 
@@ -138,8 +139,8 @@ func (q *quoterImpl) PublishQuotes() error {
 			}
 
 			// TODO: Publish quote to quote API
-			// newID := q.quoterAPI.PublishQuote(apiQuote)
-			// quote.APIID = newID
+			// TODO: /publish quote
+			// @mikeyf How should we go about this http connection
 		}
 
 	}
@@ -154,8 +155,10 @@ func (q *quoterImpl) UpdateQuotes(quoteID string) error {
 		if err != nil {
 			return err
 		}
-		// TODO: Update the quote in the quote API
-		// q.quoterAPI.UpdateQuote(apiQuote)
+
+		// TODO: make an interface for the API, would be cleaner
+		// TODO: /update quote
+		// @mikeyf How should we go about this http connection
 	}
 	return nil
 }

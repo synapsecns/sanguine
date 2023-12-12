@@ -99,7 +99,7 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 	}
 
 	// Create the quoter (balance management, unconfirmed bridge events, quoter API connection.
-	quoter, err := quote.NewQuoter(ctx, evmClients, cfg.Assets, common.HexToAddress(cfg.RelayerAddress))
+	quoter, err := quote.NewQuoter(ctx, evmClients, cfg.Assets, common.HexToAddress(cfg.RelayerAddress), cfg.RFQURL)
 	// Init queue to handle claim() execution
 	claimQueue, err := queue.NewQueue(ctx, cfg.MaxQueueSize, cfg.Deadline, db)
 
