@@ -111,6 +111,7 @@ export const CCTP_USDC = new Token({
     [ChainId.ARBITRUM]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
     [ChainId.BASE]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [ChainId.OPTIMISM]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+    [ChainId.POLYGON]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
   },
   decimals: {
     [ChainId.ETH]: 6,
@@ -118,6 +119,7 @@ export const CCTP_USDC = new Token({
     [ChainId.ARBITRUM]: 6,
     [ChainId.BASE]: 6,
     [ChainId.OPTIMISM]: 6,
+    [ChainId.POLYGON]: 6,
   },
   symbol: 'USDC',
   name: 'USD Circle',
@@ -977,6 +979,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
   ],
   [ChainId.POLYGON]: [
     USDC,
+    CCTP_USDC,
     USDT,
     DAI,
     NUSD,
