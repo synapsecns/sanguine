@@ -16,6 +16,7 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
+// TODO: add a command to print default config.
 var exporterCommand = &cli.Command{
 	Name:  "start",
 	Usage: "start the prometheus exporter",

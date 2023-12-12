@@ -19,12 +19,21 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	GetMessageStatus   *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
-	GetOriginInfo      []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
-	GetDestinationInfo []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
+	GetMessageStatus    *model.MessageStatus     "json:\"getMessageStatus\" graphql:\"getMessageStatus\""
+	GetMessagesByStatus []*model.MessageStatus   "json:\"getMessagesByStatus\" graphql:\"getMessagesByStatus\""
+	GetOriginInfo       []*model.OriginInfo      "json:\"getOriginInfo\" graphql:\"getOriginInfo\""
+	GetDestinationInfo  []*model.DestinationInfo "json:\"getDestinationInfo\" graphql:\"getDestinationInfo\""
 }
 type GetMessageStatus struct {
 	Response *struct {
+		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
+		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
+		DestinationTxHash *string                     "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
+		MessageHash       *string                     "json:\"messageHash\" graphql:\"messageHash\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetMessagesByStatus struct {
+	Response []*struct {
 		LastSeen          *model.MessageStateLastSeen "json:\"lastSeen\" graphql:\"lastSeen\""
 		OriginTxHash      *string                     "json:\"originTxHash\" graphql:\"originTxHash\""
 		DestinationTxHash *string                     "json:\"destinationTxHash\" graphql:\"destinationTxHash\""
@@ -86,6 +95,30 @@ func (c *Client) GetMessageStatus(ctx context.Context, messageHash *string, orig
 
 	var res GetMessageStatus
 	if err := c.Client.Post(ctx, "GetMessageStatus", GetMessageStatusDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetMessagesByStatusDocument = `query GetMessagesByStatus ($messageStatus: MessageState!, $page: Int! = 1) {
+	response: getMessagesByStatus(messageStatus: $messageStatus, page: $page) {
+		lastSeen
+		originTxHash
+		destinationTxHash
+		messageHash
+	}
+}
+`
+
+func (c *Client) GetMessagesByStatus(ctx context.Context, messageStatus model.MessageState, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetMessagesByStatus, error) {
+	vars := map[string]interface{}{
+		"messageStatus": messageStatus,
+		"page":          page,
+	}
+
+	var res GetMessagesByStatus
+	if err := c.Client.Post(ctx, "GetMessagesByStatus", GetMessagesByStatusDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

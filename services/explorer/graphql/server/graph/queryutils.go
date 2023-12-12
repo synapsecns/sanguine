@@ -1614,17 +1614,33 @@ func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, co
 	return &query, nil
 }
 
+// increase this to enable querying the db
+// this has been disabled in prod to prevent the db from falling over.
+var timeToFallback = time.Second * 0
+
+// GetFallbackTime gets the fallback time for the bridge watcher.
+// this is intended only for testing
+func GetFallbackTime() time.Duration {
+	return timeToFallback
+}
+
+// UnsafeSetFallbackTime sets the fallback time for the bridge watcher.
+// it is intended for testing. Plese remember to reset this value.
+func UnsafeSetFallbackTime(ttf time.Duration) {
+	timeToFallback = ttf
+}
+
 // GetOriginBridgeTxBW gets an origin bridge tx.
 func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, txnHash string, eventType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	txType := model.BridgeTxTypeOrigin
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE fchain_id = %d AND ftx_hash = '%s' ORDER BY insert_time desc LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash", chainID, txnHash)
 
-	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
+	bwQueryCtx, cancel := context.WithTimeout(ctx, timeToFallback)
+	defer cancel()
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
-	if bridgeEventMV == nil || bridgeEventMV.FChainID == 0 {
+	bridgeEventMV, err := r.DB.GetMVBridgeEvent(bwQueryCtx, query)
+
+	if err != nil || bridgeEventMV == nil || bridgeEventMV.FChainID == 0 {
 		switch eventType {
 		case model.BridgeTypeBridge:
 			return r.bwOriginFallback(ctx, uint32(chainID), txnHash)
@@ -1639,16 +1655,16 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID int, address string, kappa string, timestamp int, historical bool, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
 	var err error
 	txType := model.BridgeTxTypeDestination
+	bwQueryCtx, cancel := context.WithTimeout(ctx, timeToFallback)
+	defer cancel()
+
 	query := fmt.Sprintf("SELECT * FROM mv_bridge_events WHERE tchain_id = %d AND tkappa = '%s' ORDER BY insert_time desc LIMIT 1 BY tchain_id, tcontract_address, tevent_type, tblock_number, tevent_index, ttx_hash", chainID, kappa)
-	bridgeEventMV, err := r.DB.GetMVBridgeEvent(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
+	bridgeEventMV, err := r.DB.GetMVBridgeEvent(bwQueryCtx, query)
 
 	var bridgeTx model.PartialInfo
 	isPending := true
 
-	if bridgeEventMV == nil || bridgeEventMV.TChainID == 0 {
+	if err != nil || bridgeEventMV == nil || bridgeEventMV.TChainID == 0 {
 		var txFromChain *model.BridgeWatcherTx
 		txFromChain, err = r.bwDestinationFallback(ctx, uint32(chainID), address, kappa, timestamp, historical, bridgeType)
 		if err != nil {

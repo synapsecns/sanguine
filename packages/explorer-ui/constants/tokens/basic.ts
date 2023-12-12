@@ -23,6 +23,7 @@ import maticLogo from '@assets/icons/matic.svg'
 import crvusdLogo from '@assets/icons/crvusd.svg'
 import ftmLogo from '@assets/icons/ftm.svg'
 import susdLogo from '@assets/icons/susd.svg'
+import lusdLogo from '@assets/icons/lusd.svg'
 import { ChainId } from '@constants/networks'
 import { Token } from '@utils/classes/Token'
 import {
@@ -298,8 +299,20 @@ export const SUSD = new Token({
   swapableType: 'USD',
 })
 
+export const LUSD = new Token({
+  addresses: {
+    [ChainId.ETH]: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+  },
+  decimals: 18,
+  symbol: 'LUSD',
+  name: 'Liquity USD',
+  logo: lusdLogo,
+  swapableType: 'USD',
+})
+
 export const CRVUSD = new Token({
   addresses: {
+    [ChainId.ETH]: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
     [ChainId.BASE]: '0x417ac0e078398c154edfadd9ef675d30be60af93',
   },
   decimals: 18,
@@ -957,6 +970,8 @@ export const BASIC_TOKENS_BY_CHAIN = {
     LINK,
     PEPE,
     UNIDX,
+    LUSD,
+    CRVUSD,
   ],
   [ChainId.BSC]: [
     BUSD,

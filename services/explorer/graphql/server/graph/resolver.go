@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	etherClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
@@ -18,9 +19,12 @@ import (
 //
 //go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib/client
 type Resolver struct {
-	DB          db.ConsumerDB
-	Fetcher     fetcher.ScribeFetcher
-	Cache       cache.Service
+	DB      db.ConsumerDB
+	Fetcher fetcher.ScribeFetcher
+	Cache   cache.Service
+	// CacheMutex is a mutex used for caching. It is used to prevent multiple
+	// stat queries from being made at the same time. In the future, this should be done somewhere else.
+	CacheMutex  mapmutex.StringMapMutex
 	Clients     map[uint32]etherClient.EVM
 	Parsers     *types.ServerParsers
 	Refs        *types.ServerRefs
