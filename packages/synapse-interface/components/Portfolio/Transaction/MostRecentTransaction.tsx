@@ -60,9 +60,9 @@ export const MostRecentTransaction = () => {
         ]
 
         const uniqueMergedTransactions = Array.from(
-          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+          new Set(mergedTransactions.map((transaction) => transaction?.kappa))
         ).map((kappa) =>
-          mergedTransactions.find((item) => item.kappa === kappa)
+          mergedTransactions.find((item) => item?.kappa === kappa)
         )
         return uniqueMergedTransactions
       }
@@ -88,9 +88,9 @@ export const MostRecentTransaction = () => {
         ]
 
         const uniqueMergedTransactions = Array.from(
-          new Set(mergedTransactions.map((transaction) => transaction.kappa))
+          new Set(mergedTransactions.map((transaction) => transaction?.kappa))
         ).map((kappa) =>
-          mergedTransactions.find((item) => item.kappa === kappa)
+          mergedTransactions.find((item) => item?.kappa === kappa)
         )
         return uniqueMergedTransactions
       }
@@ -125,8 +125,8 @@ export const MostRecentTransaction = () => {
     } else {
       return seenHistoricalTransactions?.some(
         (transaction: BridgeTransaction) =>
-          transaction.kappa ===
-          (lastHistoricalTransaction.kappa as BridgeTransaction)
+          transaction?.kappa ===
+          (lastHistoricalTransaction?.kappa as BridgeTransaction)
       )
     }
   }, [seenHistoricalTransactions, lastHistoricalTransaction])

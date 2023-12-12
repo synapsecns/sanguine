@@ -59,10 +59,10 @@ export default function Updater(): null {
   }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 30000 })
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 3000000 })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 30000 })
+    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000000 })
 
   const { address } = useAccount({
     onDisconnect() {
@@ -216,7 +216,7 @@ export default function Updater(): null {
         (pendingTransaction: BridgeTransaction) => {
           const isStored: boolean = pendingAwaitingCompletionTransactions?.some(
             (storedTransaction: BridgeTransaction) =>
-              storedTransaction.kappa === pendingTransaction.kappa
+              storedTransaction?.kappa === pendingTransaction?.kappa
           )
 
           if (!isStored) {
@@ -259,12 +259,16 @@ export default function Updater(): null {
           const isCompleted: boolean =
             userHistoricalTransactions?.some(
               (historicalTransaction: BridgeTransaction) => {
-                return historicalTransaction.kappa === pendingTransaction.kappa
+                return (
+                  historicalTransaction?.kappa === pendingTransaction?.kappa
+                )
               }
             ) ||
             fallbackQueryHistoricalTransactions?.some(
               (historicalTransaction: BridgeTransaction) => {
-                return historicalTransaction.kappa === pendingTransaction.kappa
+                return (
+                  historicalTransaction?.kappa === pendingTransaction?.kappa
+                )
               }
             )
 
@@ -328,8 +332,8 @@ export default function Updater(): null {
 
       const isTransactionAlreadySeen = seenHistoricalTransactions?.some(
         (transaction: BridgeTransaction) =>
-          transaction.kappa ===
-          (mostRecentFallbackHistoricalTransaction.kappa as BridgeTransaction)
+          transaction?.kappa ===
+          (mostRecentFallbackHistoricalTransaction?.kappa as BridgeTransaction)
       )
 
       if (!isTransactionAlreadySeen) {
@@ -387,7 +391,7 @@ export default function Updater(): null {
           if (
             userHistoricalTransactions?.some(
               (historicalTransaction: BridgeTransaction) =>
-                historicalTransaction.kappa === fallbackTransaction.kappa
+                historicalTransaction?.kappa === fallbackTransaction?.kappa
             )
           ) {
             console.log('removed this transaction: ', fallbackTransaction)
@@ -410,7 +414,7 @@ export default function Updater(): null {
         (fallbackHistoricalTransaction: BridgeTransaction) => {
           const matched: boolean = fallbackQueryPendingTransactions?.some(
             (pendingTransaction: BridgeTransaction) =>
-              pendingTransaction.kappa === fallbackHistoricalTransaction.kappa
+              pendingTransaction?.kappa === fallbackHistoricalTransaction?.kappa
           )
 
           if (matched) {
@@ -428,7 +432,7 @@ export default function Updater(): null {
         (fallbackPendingTransaction: BridgeTransaction) => {
           const matched: boolean = userHistoricalTransactions?.some(
             (pendingTransaction: BridgeTransaction) =>
-              pendingTransaction.kappa === fallbackPendingTransaction.kappa
+              pendingTransaction?.kappa === fallbackPendingTransaction?.kappa
           )
 
           if (matched) {
