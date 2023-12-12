@@ -384,7 +384,7 @@ func main() {
 						return err
 					}
 					if receipt.Status != ethTypes.ReceiptStatusSuccessful {
-						fmt.Printf("status not successful: %v\n", receipt.Status)
+						fmt.Printf("status not successful: %v [chain=%d, hash=%s]\n", receipt.Status, origin, tx.Hash())
 						return fmt.Errorf("receipt status is not successful: %v", receipt.Status)
 					}
 					for _, log := range receipt.Logs {
