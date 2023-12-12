@@ -156,7 +156,7 @@ export const transactionsSlice = createSlice({
 
           state.pendingAwaitingCompletionTransactions =
             state.pendingAwaitingCompletionTransactions.filter(
-              (transaction: BridgeTransaction) => transaction.kappa !== kappa
+              (transaction: BridgeTransaction) => transaction?.kappa !== kappa
             )
         }
       )
@@ -166,7 +166,7 @@ export const transactionsSlice = createSlice({
           const newfallbackTransaction = action.payload
           const filtered = state.fallbackQueryPendingTransactions.filter(
             (transaction: BridgeTransaction) =>
-              transaction.kappa !== newfallbackTransaction.kappa
+              transaction?.kappa !== newfallbackTransaction?.kappa
           )
 
           state.fallbackQueryPendingTransactions = [action.payload, ...filtered]
@@ -192,7 +192,7 @@ export const transactionsSlice = createSlice({
           state.fallbackQueryPendingTransactions = [
             action.payload,
             ...state.fallbackQueryPendingTransactions.filter(
-              (transaction: BridgeTransaction) => transaction.kappa !== kappa
+              (transaction: BridgeTransaction) => transaction?.kappa !== kappa
             ),
           ]
         }
@@ -206,7 +206,7 @@ export const transactionsSlice = createSlice({
             newFallbackTransaction,
             ...state.fallbackQueryHistoricalTransactions.filter(
               (transaction: BridgeTransaction) =>
-                transaction.kappa !== newFallbackTransaction.kappa
+                transaction?.kappa !== newFallbackTransaction?.kappa
             ),
           ]
         }
