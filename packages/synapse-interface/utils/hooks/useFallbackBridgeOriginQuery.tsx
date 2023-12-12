@@ -98,18 +98,18 @@ export const useFallbackBridgeOriginQuery = ({
       const alreadyExists: boolean =
         fallbackQueryPendingTransactions?.some(
           (transaction) =>
-            transaction.kappa === constructedBridgeTransaction.kappa ||
-            transaction.fromInfo === constructedBridgeTransaction.fromInfo
+            transaction?.kappa === constructedBridgeTransaction?.kappa ||
+            transaction?.fromInfo === constructedBridgeTransaction?.fromInfo
         ) ||
         fallbackQueryHistoricalTransactions?.some(
           (transaction) =>
-            transaction.kappa === constructedBridgeTransaction.kappa ||
-            transaction.fromInfo === constructedBridgeTransaction.fromInfo
+            transaction?.kappa === constructedBridgeTransaction?.kappa ||
+            transaction?.fromInfo === constructedBridgeTransaction?.fromInfo
         ) ||
         userHistoricalTransactions?.some(
           (transaction) =>
-            transaction.kappa === constructedBridgeTransaction.kappa ||
-            transaction.fromInfo === constructedBridgeTransaction.fromInfo
+            transaction?.kappa === constructedBridgeTransaction?.kappa ||
+            transaction?.fromInfo === constructedBridgeTransaction?.fromInfo
         )
 
       if (!alreadyExists) {
