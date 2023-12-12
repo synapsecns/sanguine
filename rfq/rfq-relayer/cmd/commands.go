@@ -36,7 +36,7 @@ var relayerCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		relayerConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
-			return err
+			return fmt.Errorf("could not decode config: %w", err)
 		}
 		// Create MySQL Database connection
 		metricHandler := metrics.Get()

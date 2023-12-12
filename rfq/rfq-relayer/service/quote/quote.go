@@ -18,6 +18,7 @@ import (
 
 const bridgeReqCacheSize = 10000
 
+// IQuoter is the interface for a Quoter.
 type IQuoter interface {
 	GetValidQuote(quoteID string, destTokenID string, destVolume *big.Int) (*Quote, error)
 	PublishQuotes() error
@@ -30,10 +31,10 @@ type IQuoter interface {
 }
 
 type quoterImpl struct {
+	mux              sync.RWMutex
 	quotes           map[string][]*Quote // sorted quotes
 	balance          balance.IBalanceManager
 	relayer          common.Address
-	mu               sync.Mutex
 	bridgeReqHandler IBridgeReqHandler
 	rfqURL           string
 }
@@ -51,16 +52,17 @@ type Quote struct {
 	// Other fields to calculate the actual fee can go here.
 }
 
+// APIQuote is the struct for the quote API.
 type APIQuote struct {
 	Relayer string `json:"relayer" binding:"required"`
 
-	OriginChainId    uint    `json:"origin_chain_id" binding:"required"`
+	OriginChainID    uint    `json:"origin_chain_id" binding:"required"`
 	OriginToken      string  `json:"origin_token" binding:"required"`
 	OriginAmount     string  `json:"origin_amount" binding:"required"`
 	OriginAmountNorm float64 `json:"origin_amount_norm" binding:"required"`
 	OriginDecimals   uint8   `json:"origin_decimals" binding:"required"`
 
-	DestChainId    uint    `json:"dest_chain_id" binding:"required"`
+	DestChainID    uint    `json:"dest_chain_id" binding:"required"`
 	DestToken      string  `json:"dest_token" binding:"required"`
 	DestAmount     string  `json:"dest_amount" binding:"required"`
 	DestAmountNorm float64 `json:"dest_amount_norm" binding:"required"`
@@ -72,17 +74,18 @@ type APIQuote struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
+// NewQuoter creates a new quoter.
 func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayer common.Address, rfqURL string) (IQuoter, error) {
 	// Create balance manager
 	balanceManager, err := balance.NewBalanceManager(clients, assets, relayer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create balance manager: %w", err)
 	}
 
 	// Get the balances for each asset
 	err = balanceManager.GetAllOnChainBalances(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get on chain balances: %w", err)
 	}
 
 	bridgeReqHandler := NewBridgeReqs(bridgeReqCacheSize)
@@ -126,16 +129,23 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 	}, nil
 }
 
+// GetQuotes gets all quotes for a given quoteID.
 func (q *quoterImpl) GetQuotes(quoteID string) []*Quote {
+	q.mux.RLock()
+	defer q.mux.RUnlock()
+	// TODO: investigate wether thees should be pointers or not.
 	return q.quotes[quoteID]
 }
 
 func (q *quoterImpl) PublishQuotes() error {
+	q.mux.Lock()
+	defer q.mux.Unlock()
+
 	for _, quotes := range q.quotes {
 		for _, quote := range quotes {
 			_, err := q.QuoteToAPIQuote(quote)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not convert quote to API quote: %w", err)
 			}
 
 			// TODO: Publish quote to quote API
@@ -148,11 +158,14 @@ func (q *quoterImpl) PublishQuotes() error {
 
 // UpdateQuotes updates the quotes in the quote API.
 func (q *quoterImpl) UpdateQuotes(quoteID string) error {
+	q.mux.Lock()
+	defer q.mux.Unlock()
+
 	// Get the quote from the quote API
 	for _, quote := range q.quotes[quoteID] {
 		_, err := q.QuoteToAPIQuote(quote)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not convert quote to API quote: %w", err)
 		}
 
 		// TODO: make an interface for the API, would be cleaner
@@ -164,6 +177,9 @@ func (q *quoterImpl) UpdateQuotes(quoteID string) error {
 
 // GetValidQuote gets a valid quote, more logic can be added here as quotes get more complex.
 func (q *quoterImpl) GetValidQuote(quoteID string, destTokenID string, destVolume *big.Int) (*Quote, error) {
+	q.mux.RLock()
+	defer q.mux.RUnlock()
+
 	// Check if requested volume is below the destination balance before getting quote
 	currentBalance := q.balance.GetBalance(destTokenID)
 	if destVolume.Cmp(currentBalance.Amount) > 0 {
@@ -188,23 +204,23 @@ func (q *quoterImpl) QuoteToAPIQuote(quote *Quote) (*APIQuote, error) {
 	destBalance := q.balance.GetBalance(destTokenID)
 	originNormBalance, err := originBalance.ToFloat64()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not convert origin balance to float64: %w", err)
 	}
 	destNormBalance, err := destBalance.ToFloat64()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not convert dest balance to float64: %w", err)
 	}
 	normBalance := destNormBalance / originNormBalance
 	return &APIQuote{
 		Relayer: q.relayer.String(),
 
-		OriginChainId:    uint(quote.OriginChainID),
+		OriginChainID:    uint(quote.OriginChainID),
 		OriginToken:      quote.OriginToken.String(),
 		OriginDecimals:   originBalance.Decimals,
 		OriginAmount:     originBalance.Amount.String(),
 		OriginAmountNorm: originNormBalance,
 
-		DestChainId:    uint(quote.DestChainID),
+		DestChainID:    uint(quote.DestChainID),
 		DestToken:      quote.DestToken.String(),
 		DestAmount:     destBalance.Amount.String(),
 		DestAmountNorm: destNormBalance,

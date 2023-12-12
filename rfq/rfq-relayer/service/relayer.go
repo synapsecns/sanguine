@@ -33,6 +33,7 @@ const (
 	MaxSeenChanSize = 1000
 )
 
+// IRelayer is the interface for the relayer.
 type IRelayer interface {
 	Start(ctx context.Context) error
 }
@@ -100,8 +101,14 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 
 	// Create the quoter (balance management, unconfirmed bridge events, quoter API connection.
 	quoter, err := quote.NewQuoter(ctx, evmClients, cfg.Assets, common.HexToAddress(cfg.RelayerAddress), cfg.RFQURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not create quoter: %w", err)
+	}
 	// Init queue to handle claim() execution
 	claimQueue, err := queue.NewQueue(ctx, cfg.MaxQueueSize, cfg.Deadline, db)
+	if err != nil {
+		return nil, fmt.Errorf("could not create queue: %w", err)
+	}
 
 	// Listener Channels
 	eventChan := make(chan relayerTypes.WrappedLog, MaxEventChanSize)

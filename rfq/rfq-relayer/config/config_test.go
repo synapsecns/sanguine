@@ -18,7 +18,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.True(t, exists42, "Chain 42 does not exist in config")
 
 	assert.Equal(t, uint32(42), chain42.ChainID, "ChainID does not match for chain 42")
-	assert.Equal(t, "http://localhost:8042", chain42.RpcUrl, "RpcUrl does not match for chain 42")
+	assert.Equal(t, "http://localhost:8042", chain42.RPCURL, "RPCURL does not match for chain 42")
 	assert.Equal(t, "0x6438CB36cb18520774EfC7A172410D8BBBe9a428", chain42.FastBridgeAddress, "FastBridgeContract does not match for chain 42")
 
 	// Test for chain 43
@@ -26,7 +26,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.True(t, exists43, "Chain 43 does not exist in config")
 
 	assert.Equal(t, uint32(43), chain43.ChainID, "ChainID does not match for chain 43")
-	assert.Equal(t, "http://localhost:8043", chain43.RpcUrl, "RpcUrl does not match for chain 43")
+	assert.Equal(t, "http://localhost:8043", chain43.RPCURL, "RPCURL does not match for chain 43")
 	assert.Equal(t, "0x6438CB36cb18520774EfC7A172410D8BBBe9a428", chain43.FastBridgeAddress, "FastBridgeContract does not match for chain 43")
 
 	// Test for database configuration

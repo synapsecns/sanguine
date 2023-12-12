@@ -50,8 +50,8 @@ var (
 type OriginBridgeEvent struct {
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	Request       string
-	OriginChainId uint32
-	DestChainId   uint32
+	OriginChainID uint32
+	DestChainID   uint32
 	OriginSender  string
 	DestRecipient string
 	OriginToken   string
@@ -72,8 +72,8 @@ type OriginBridgeEvent struct {
 type DestinationBridgeEvent struct {
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	Request       string
-	OriginChainId uint32
-	DestChainId   uint32
+	OriginChainID uint32
+	DestChainID   uint32
 	BlockNumber   uint64
 	TxHash        string
 	TxIndex       uint

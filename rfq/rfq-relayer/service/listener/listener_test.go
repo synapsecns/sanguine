@@ -27,7 +27,7 @@ func (t *ListenerSuite) TestNewListener() {
 	t.RunOnAllDBs(func(testDB db.TestDB) {
 		testCtx := t.GetTestContext()
 		testChainID := uint32(42161)
-		anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+		anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 		evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 		Nil(t.T(), err)
 
@@ -62,6 +62,7 @@ func (t *ListenerSuite) TestNewListener() {
 	})
 }
 
+// nolint: cyclop
 func (t *ListenerSuite) TestIterateThroughLogs() {
 	testCtx := t.GetTestContext()
 	numLogs := 10
@@ -84,7 +85,7 @@ func (t *ListenerSuite) TestIterateThroughLogs() {
 	Nil(t.T(), err)
 
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 
@@ -168,6 +169,7 @@ DoneDrainingB:
 
 // TestListenActive tests listening for events on an origin and destination chain. This test also checks for
 // the correct topic filtering and that the logs are added to the correct channels.
+// nolint: cyclop
 func (t *ListenerSuite) TestListenE2E() {
 	testCtx := t.GetTestContext()
 	numBridgeRequestLogs := 5
@@ -181,7 +183,7 @@ func (t *ListenerSuite) TestListenE2E() {
 
 	// Origin Chain --------
 	originChainID := uint32(42161)
-	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, originChainID, t.T())
+	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, t.T(), originChainID)
 	originContractHandler, err := testutil.NewTestContractHandlerImpl(testCtx, anvilOriginBackend, testWallet, originChainID)
 	Nil(t.T(), err)
 	NotNil(t.T(), originContractHandler)
@@ -206,7 +208,7 @@ func (t *ListenerSuite) TestListenE2E() {
 
 	// Destination Chain --------
 	destinationChainID := uint32(1)
-	anvilDestinationBackend := testutil.NewAnvilBackend(testCtx, destinationChainID, t.T())
+	anvilDestinationBackend := testutil.NewAnvilBackend(testCtx, t.T(), destinationChainID)
 	destinationContractHandler, err := testutil.NewTestContractHandlerImpl(testCtx, anvilDestinationBackend, testWallet, destinationChainID)
 	Nil(t.T(), err)
 	NotNil(t.T(), destinationContractHandler)
@@ -316,6 +318,7 @@ DoneDraining:
 }
 
 // TestListenActive simulates listening for events occurring while a listener is active.
+// nolint: cyclop
 func (t *ListenerSuite) TestListenActive() {
 	testCtx := t.GetTestContext()
 	numBridgeRequestLogs := 5
@@ -330,7 +333,7 @@ func (t *ListenerSuite) TestListenActive() {
 	// Init
 	originChainID := uint32(42161)
 	destinationChainID := uint32(1)
-	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, originChainID, t.T())
+	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, t.T(), originChainID)
 	originContractHandler, err := testutil.NewTestContractHandlerImpl(testCtx, anvilOriginBackend, testWallet, originChainID)
 	Nil(t.T(), err)
 	NotNil(t.T(), originContractHandler)

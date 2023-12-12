@@ -42,7 +42,7 @@ type RelayerSuite struct {
 	metrics             metrics.Handler
 	testBackends        map[uint32]backends.SimulatedTestBackend
 	contractHandlers    map[uint32]testutil.ITestContractHandler
-	omniRpcTestBackends []backends.SimulatedTestBackend
+	omniRPCTestBackends []backends.SimulatedTestBackend
 	config              *config.Config
 	chainIDs            []uint32
 	wallet              wallet.Wallet
@@ -96,9 +96,9 @@ func (t *RelayerSuite) SetupSuite() {
 	for _, chainID := range t.chainIDs {
 		currChainID := chainID // capture func literal
 		g.Go(func() error {
-			backend := testutil.NewAnvilBackend(t.GetSuiteContext(), currChainID, t.T())
+			backend := testutil.NewAnvilBackend(t.GetSuiteContext(), t.T(), currChainID)
 			t.testBackends[currChainID] = backend
-			t.omniRpcTestBackends = append(t.omniRpcTestBackends, backend)
+			t.omniRPCTestBackends = append(t.omniRPCTestBackends, backend)
 			return nil
 		})
 	}
@@ -208,7 +208,7 @@ func (t *RelayerSuite) generateConfig() {
 		SubmitterConfig: submitterConfig.Config{},
 		OmnirpcURL:      "",
 	}
-	testOmnirpc := omnirpcHelper.NewOmnirpcServer(t.GetSuiteContext(), t.T(), t.omniRpcTestBackends...)
+	testOmnirpc := omnirpcHelper.NewOmnirpcServer(t.GetSuiteContext(), t.T(), t.omniRPCTestBackends...)
 	t.config.OmnirpcURL = testOmnirpc
 }
 

@@ -26,9 +26,13 @@ const (
 
 // IChainListener is the interface for a ChainListener.
 type IChainListener interface {
+	// ABI returns the ABI of the bridge contract.
 	ABI() abi.ABI
+	// ChainID returns the chain ID of the chain the listener is listening on.
 	ChainID() uint32
+	// StartListening starts listening for events.
 	StartListening(ctx context.Context) error
+	// IterateThroughLogs iterates through logs and sends them to their respective channels.
 	IterateThroughLogs(logs []types.Log, lastUnconfirmedBlock uint64) error
 }
 
@@ -53,6 +57,7 @@ type ChainListenerConfig struct {
 	ABI             abi.ABI
 }
 
+// NewChainListener creates a new chain listener.
 func NewChainListener(config *ChainListenerConfig, db db.DB, eventChan chan relayerTypes.WrappedLog, seenChan chan relayerTypes.WrappedLog) (IChainListener, error) {
 	// Create caches
 	unconfirmedCache, err := lru.New(DefaultCacheSize)
@@ -81,6 +86,7 @@ func (c *chainListenerImpl) ChainID() uint32 {
 	return c.config.ChainID
 }
 
+// nolint: cyclop
 func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 	// Handle initial starting block
 	startBlock := c.config.StartBlock
@@ -106,7 +112,7 @@ func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 		select {
 		case <-ctx.Done(): // context cancellation safe
 			return fmt.Errorf("context was canceled")
-		case <-time.After(pollInterval * time.Second):
+		case <-time.After(pollInterval * time.Second): // nolint: durationcheck
 			// Get latest block
 			latestBlock, lErr := rpcClient.BlockNumber(ctx)
 			if lErr != nil {
@@ -160,7 +166,8 @@ func (c *chainListenerImpl) buildFilterQuery(fromBlock *big.Int, toBlock *big.In
 		FromBlock: fromBlock,
 		ToBlock:   toBlock,
 		Addresses: []common.Address{c.config.BridgeAddress},
-		Topics:    [][]common.Hash{{c.config.ABI.Events["BridgeRequested"].ID, c.config.ABI.Events["BridgeRelayed"].ID}},
+		// TODO: make these vars that panic on init if not present
+		Topics: [][]common.Hash{{c.config.ABI.Events["BridgeRequested"].ID, c.config.ABI.Events["BridgeRelayed"].ID}},
 	}
 }
 

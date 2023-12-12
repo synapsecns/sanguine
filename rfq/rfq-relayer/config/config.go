@@ -14,7 +14,7 @@ import (
 // ChainConfig represents the configuration for each chain.
 type ChainConfig struct {
 	ChainID                 uint32 `yaml:"chainId"`
-	RpcUrl                  string `yaml:"rpcUrl"`
+	RPCURL                  string `yaml:"rpcUrl"`
 	FastBridgeAddress       string `yaml:"fastBridgeContract"`
 	FastBridgeBlockDeployed uint64 `yaml:"fastBridgeBlockDeployed"`
 	PollInterval            int    `yaml:"pollInterval"`
@@ -22,11 +22,13 @@ type ChainConfig struct {
 	Confirmations           uint64 `yaml:"confirmations"`
 }
 
+// DatabaseConfig represents the configuration for the database.
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
 }
 
+// AssetConfig represents the configuration for each asset.
 type AssetConfig struct {
 	Address string `yaml:"address"`
 	ChainID uint32 `yaml:"chainid"`

@@ -17,7 +17,7 @@ func (t *QuoteSuite) TestNewQuoter() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -52,7 +52,7 @@ func (t *QuoteSuite) TestGetValidQuote() {
 
 	clients := make(map[uint32]EVMClient.EVM)
 	originChainID := uint32(42161)
-	originAnvilBackend := testutil.NewAnvilBackend(testCtx, originChainID, t.T())
+	originAnvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), originChainID)
 	originEvmClient, err := testutil.NewEVMClientFromAnvil(testCtx, originAnvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[originChainID] = originEvmClient
@@ -61,7 +61,7 @@ func (t *QuoteSuite) TestGetValidQuote() {
 	NotNil(t.T(), originContractHandler)
 
 	destChainID := uint32(1)
-	destAnvilBackend := testutil.NewAnvilBackend(testCtx, destChainID, t.T())
+	destAnvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), destChainID)
 	destEvmClient, err := testutil.NewEVMClientFromAnvil(testCtx, destAnvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[destChainID] = destEvmClient
@@ -113,7 +113,7 @@ func (t *QuoteSuite) TestQuoteToAPIQuote() {
 
 	clients := make(map[uint32]EVMClient.EVM)
 	originChainID := uint32(42161)
-	originAnvilBackend := testutil.NewAnvilBackend(testCtx, originChainID, t.T())
+	originAnvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), originChainID)
 	originEvmClient, err := testutil.NewEVMClientFromAnvil(testCtx, originAnvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[originChainID] = originEvmClient
@@ -122,7 +122,7 @@ func (t *QuoteSuite) TestQuoteToAPIQuote() {
 	NotNil(t.T(), originContractHandler)
 
 	destChainID := uint32(1)
-	destAnvilBackend := testutil.NewAnvilBackend(testCtx, destChainID, t.T())
+	destAnvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), destChainID)
 	destEvmClient, err := testutil.NewEVMClientFromAnvil(testCtx, destAnvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[destChainID] = destEvmClient
@@ -168,8 +168,8 @@ func (t *QuoteSuite) TestQuoteToAPIQuote() {
 	NotNil(t.T(), apiQuote)
 	Equal(t.T(), quote.OriginToken.String(), apiQuote.OriginToken)
 	Equal(t.T(), quote.DestToken.String(), apiQuote.DestToken)
-	Equal(t.T(), uint(quote.OriginChainID), apiQuote.OriginChainId)
-	Equal(t.T(), uint(quote.DestChainID), apiQuote.DestChainId)
+	Equal(t.T(), uint(quote.OriginChainID), apiQuote.OriginChainID)
+	Equal(t.T(), uint(quote.DestChainID), apiQuote.DestChainID)
 	Equal(t.T(), fmt.Sprintf("%d", int(testutil.DefaultMintAmount)), apiQuote.OriginAmount)
 	Equal(t.T(), fmt.Sprintf("%d", int(testutil.DefaultMintAmount)), apiQuote.DestAmount)
 	Equal(t.T(), uint8(18), apiQuote.OriginDecimals)

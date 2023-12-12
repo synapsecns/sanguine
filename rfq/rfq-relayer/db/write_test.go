@@ -21,8 +21,8 @@ func (t *DBSuite) TestStoreOriginBridgeEvent() {
 	t.RunOnAllDBs(func(testDB db.TestDB) {
 		ctx := t.GetTestContext()
 		chainID := uint32(42161)
-		var transactionId [32]byte
-		copy(transactionId[:], common.FromHex("0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"))
+		var transactionID [32]byte
+		copy(transactionID[:], common.FromHex("0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"))
 		request := common.FromHex("0x000000000000000000000000000000000000000000000000000000000000a4b10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000040000000000000000000000002e234dae75c793f67a35089c9d99245e1c58470b000000000000000000000000f62849f9a0b5bf2913b396098f7c7019b51a820a0000000000000000000000000000000000000000000000000000000000a7d8c00000000000000000000000000000000000000000000000000000000000a763900000000000000000000000000000000000000000000000000000000000000e110000000000000000000000000000000000000000000000000000000000000000")
 
 		// Create a dummy log and event data to insert
@@ -35,7 +35,7 @@ func (t *DBSuite) TestStoreOriginBridgeEvent() {
 			BlockHash:   common.HexToHash("0xabc"),
 		}
 		OriginBridgeEvent := bindings.FastBridgeBridgeRequested{
-			TransactionId: transactionId,
+			TransactionId: transactionID,
 			Sender:        common.HexToAddress("0x0000000000000000000000000000000000000004"),
 			Request:       request,
 			Raw:           *log,
@@ -60,7 +60,7 @@ func (t *DBSuite) TestStoreOriginBridgeEvent() {
 		Equal(t.T(), log.Index, retrievedEvent.LogIndex)
 		Equal(t.T(), log.Removed, retrievedEvent.Removed)
 
-		// Test chainID != bridgeTransaction.OriginChainId case
+		// Test chainID != bridgeTransaction.OriginChainID case
 		wrongChainID := chainID + 1
 		err = testDB.StoreOriginBridgeEvent(ctx, wrongChainID, log, &OriginBridgeEvent)
 		NotNil(t.T(), err)
@@ -95,8 +95,8 @@ func (t *DBSuite) TestStoreDestinationBridgeEvent() {
 		originBridgeEvent := &model.OriginBridgeEvent{
 			TransactionID: "transactionId1",
 			Request:       "request1",
-			OriginChainId: 42161,
-			DestChainId:   1,
+			OriginChainID: 42161,
+			DestChainID:   1,
 			BlockNumber:   42,
 			TxHash:        "0x789",
 			TxIndex:       0,
@@ -119,8 +119,8 @@ func (t *DBSuite) TestStoreDestinationBridgeEvent() {
 		// Validate retrieved data
 		Equal(t.T(), originBridgeEvent.TransactionID, retrievedEvent.TransactionID)
 		Equal(t.T(), originBridgeEvent.Request, retrievedEvent.Request)
-		Equal(t.T(), originBridgeEvent.OriginChainId, retrievedEvent.OriginChainId)
-		Equal(t.T(), originBridgeEvent.DestChainId, retrievedEvent.DestChainId)
+		Equal(t.T(), originBridgeEvent.OriginChainID, retrievedEvent.OriginChainID)
+		Equal(t.T(), originBridgeEvent.DestChainID, retrievedEvent.DestChainID)
 		Equal(t.T(), log.BlockNumber, retrievedEvent.BlockNumber)
 		Equal(t.T(), log.TxHash.Hex(), retrievedEvent.TxHash)
 		Equal(t.T(), log.TxIndex, retrievedEvent.TxIndex)

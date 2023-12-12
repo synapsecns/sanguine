@@ -1,3 +1,4 @@
+// Package queue implements a thread safe queue.
 package queue
 
 import (
@@ -59,7 +60,7 @@ func (q *Queue) Enqueue(ctx context.Context, transactionID string) error {
 		err := q.db.StoreDeadlineQueueEvent(ctx, newEntry)
 		if err != nil {
 			logger.Errorf("Error storing event into queue db: %v", err)
-			return err
+			return fmt.Errorf("error storing event into queue db: %w", err)
 		}
 
 		return nil

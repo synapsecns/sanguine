@@ -1,3 +1,4 @@
+// nolint: goconst
 package queue_test
 
 import (

@@ -14,7 +14,7 @@ import (
 
 // StoreOriginBridgeEvent adds a new origin event to the database.
 func (s Store) StoreOriginBridgeEvent(ctx context.Context, chainID uint32, log *types.Log, event *bindings.FastBridgeBridgeRequested) error {
-	transactionId := common.Bytes2Hex(event.TransactionId[:]) // keccak256 hash of the request
+	transactionID := common.Bytes2Hex(event.TransactionId[:]) // keccak256 hash of the request
 	bridgeTransaction, err := requests.Decode(event.Request)
 	if err != nil {
 		return fmt.Errorf("could not decode bridge transaction: %w", err)
@@ -26,10 +26,10 @@ func (s Store) StoreOriginBridgeEvent(ctx context.Context, chainID uint32, log *
 		return fmt.Errorf("chain ID '%d' not same as bridge transaction origin chain ID '%d'", chainID, bridgeTransaction.OriginChainId)
 	}
 	e := model.OriginBridgeEvent{
-		TransactionID: transactionId,
+		TransactionID: transactionID,
 		Request:       requestStr,
-		OriginChainId: bridgeTransaction.OriginChainId,
-		DestChainId:   bridgeTransaction.DestChainId,
+		OriginChainID: bridgeTransaction.OriginChainId,
+		DestChainID:   bridgeTransaction.DestChainId,
 		OriginSender:  bridgeTransaction.OriginSender.Hex(),
 		DestRecipient: bridgeTransaction.DestRecipient.Hex(),
 		OriginToken:   bridgeTransaction.OriginToken.Hex(),
@@ -59,8 +59,8 @@ func (s Store) StoreDestinationBridgeEvent(ctx context.Context, log *types.Log, 
 	e := model.DestinationBridgeEvent{
 		TransactionID: originEvent.TransactionID,
 		Request:       originEvent.Request,
-		OriginChainId: originEvent.OriginChainId,
-		DestChainId:   originEvent.DestChainId,
+		OriginChainID: originEvent.OriginChainID,
+		DestChainID:   originEvent.DestChainID,
 		BlockNumber:   log.BlockNumber,
 		TxHash:        log.TxHash.Hex(),
 		TxIndex:       log.TxIndex,

@@ -7,6 +7,7 @@ import (
 	"math/big"
 )
 
+// GenerateTestLog generates a test log.
 func GenerateTestLog() *types.Log {
 	return &types.Log{
 		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),

@@ -18,9 +18,9 @@ func (t *DBSuite) TestGetOriginBridgeEvent() {
 	t.RunOnAllDBs(func(testDB db.TestDB) {
 		ctx := t.GetTestContext()
 		chainID := uint32(42161)
-		transactionIdStr := "0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"
-		var transactionId [32]byte
-		copy(transactionId[:], common.FromHex(transactionIdStr))
+		transactionIDStr := "0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"
+		var transactionID [32]byte
+		copy(transactionID[:], common.FromHex(transactionIDStr))
 		request := common.FromHex("0x000000000000000000000000000000000000000000000000000000000000a4b10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000040000000000000000000000002e234dae75c793f67a35089c9d99245e1c58470b000000000000000000000000f62849f9a0b5bf2913b396098f7c7019b51a820a0000000000000000000000000000000000000000000000000000000000a7d8c00000000000000000000000000000000000000000000000000000000000a763900000000000000000000000000000000000000000000000000000000000000e110000000000000000000000000000000000000000000000000000000000000000")
 
 		// Create a dummy log and event data to insert
@@ -33,7 +33,7 @@ func (t *DBSuite) TestGetOriginBridgeEvent() {
 			BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
 		}
 		OriginBridgeEvent := bindings.FastBridgeBridgeRequested{
-			TransactionId: transactionId,
+			TransactionId: transactionID,
 			Sender:        common.HexToAddress("0x0000000000000000000000000000000000000004"),
 			Request:       request,
 			Raw:           *log,
@@ -44,12 +44,12 @@ func (t *DBSuite) TestGetOriginBridgeEvent() {
 		Nil(t.T(), err)
 
 		// Test retrieving the event using GetOriginBridgeEvent
-		retrievedEvent, err := testDB.GetOriginBridgeEvent(t.GetTestContext(), transactionIdStr[2:])
+		retrievedEvent, err := testDB.GetOriginBridgeEvent(t.GetTestContext(), transactionIDStr[2:])
 		Nil(t.T(), err)
 		NotNil(t.T(), retrievedEvent)
 
 		// Validate retrieved events.
-		Equal(t.T(), transactionIdStr[2:], retrievedEvent.TransactionID)
+		Equal(t.T(), transactionIDStr[2:], retrievedEvent.TransactionID)
 		Equal(t.T(), log.BlockNumber, retrievedEvent.BlockNumber)
 		Equal(t.T(), log.TxHash.Hex(), retrievedEvent.TxHash)
 		Equal(t.T(), log.TxIndex, retrievedEvent.TxIndex)
@@ -65,7 +65,7 @@ func (t *DBSuite) TestGetOriginBridgeEvent() {
 func (t *DBSuite) TestGetDestinationBridgeEvent() {
 	t.RunOnAllDBs(func(testDB db.TestDB) {
 		ctx := t.GetTestContext()
-		transactionIdStr := "0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"
+		transactionIDStr := "0xfcc1f7f7cc74717594f51e4e4359462632ea2488f9cd9624721f0f0b19dddb75"
 
 		// Create a dummy log and event data to insert
 		log := &types.Log{
@@ -77,10 +77,10 @@ func (t *DBSuite) TestGetDestinationBridgeEvent() {
 			BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
 		}
 		originBridgeEvent := model.OriginBridgeEvent{
-			TransactionID: transactionIdStr,
+			TransactionID: transactionIDStr,
 			Request:       "request1",
-			OriginChainId: 42161,
-			DestChainId:   1,
+			OriginChainID: 42161,
+			DestChainID:   1,
 			BlockNumber:   42,
 			TxHash:        log.TxHash.Hex(),
 			TxIndex:       0,
@@ -94,12 +94,12 @@ func (t *DBSuite) TestGetDestinationBridgeEvent() {
 		Nil(t.T(), err)
 
 		// Test retrieving the event
-		retrievedEvent, err := testDB.GetDestinationBridgeEvent(ctx, transactionIdStr)
+		retrievedEvent, err := testDB.GetDestinationBridgeEvent(ctx, transactionIDStr)
 		Nil(t.T(), err)
 		NotNil(t.T(), retrievedEvent)
 
 		// Validate retrieved events.
-		Equal(t.T(), transactionIdStr, retrievedEvent.TransactionID)
+		Equal(t.T(), transactionIDStr, retrievedEvent.TransactionID)
 		Equal(t.T(), originBridgeEvent.BlockNumber, retrievedEvent.BlockNumber)
 		Equal(t.T(), originBridgeEvent.TxHash, retrievedEvent.TxHash)
 		Equal(t.T(), originBridgeEvent.TxIndex, retrievedEvent.TxIndex)
@@ -108,7 +108,7 @@ func (t *DBSuite) TestGetDestinationBridgeEvent() {
 		Equal(t.T(), originBridgeEvent.Removed, retrievedEvent.Removed)
 
 		// Test Non-Existent Event
-		_, err = testDB.GetDestinationBridgeEvent(ctx, transactionIdStr+"1")
+		_, err = testDB.GetDestinationBridgeEvent(ctx, transactionIDStr+"1")
 		NotNil(t.T(), err) // Expect an error since the event should not exist
 	})
 }

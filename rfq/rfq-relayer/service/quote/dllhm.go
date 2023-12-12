@@ -33,10 +33,12 @@ func NewNode(transactionID string, value *big.Int) *DLLNode {
 	}
 }
 
+// Head returns the head of the doubly linked list.
 func (dll *DLL) Head() *DLLNode {
 	return dll.head
 }
 
+// Tail returns the tail of the doubly linked list.
 func (dll *DLL) Tail() *DLLNode {
 	return dll.tail
 }
@@ -81,6 +83,7 @@ func (dll *DLL) ClearStale() {
 	}
 }
 
+// IBridgeReqHandler is the interface for the handling bridge requests.
 type IBridgeReqHandler interface {
 	GetAndDelete(transactionID string) (*big.Int, bool) // Pop
 	Put(transactionID string, value *big.Int)
@@ -142,18 +145,24 @@ func (b *bridgeReqHandlerImpl) Put(transactionID string, value *big.Int) {
 	b.hashmap[transactionID] = newNode
 }
 
+// Sum returns the sum of the values in the hashmap.
 func (b *bridgeReqHandlerImpl) Sum() *big.Int {
 	return b.sum
 }
 
+// Capacity returns the capacity of the hashmap.
 func (b *bridgeReqHandlerImpl) Capacity() int {
 	return b.capacity
 }
 
+// GetHashmapLen returns the length of the hashmap.
 func (b *bridgeReqHandlerImpl) GetHashmapLen() int {
 	return len(b.hashmap)
 }
 
+// GetHead returns the head of the doubly linked list.
 func (b *bridgeReqHandlerImpl) GetHead() *DLLNode {
 	return b.ll.Head()
 }
+
+var _ IBridgeReqHandler = &bridgeReqHandlerImpl{}

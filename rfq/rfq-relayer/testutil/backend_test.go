@@ -14,7 +14,7 @@ func TestBackend(t *testing.T) {
 	testChainID := uint32(42161)
 
 	// Test Anvil
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t)
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t, testChainID)
 	NotNil(t, anvilBackend)
 	Equal(t, "anvil", anvilBackend.BackendName())
 	chain, err := anvilBackend.ChainID(testCtx)

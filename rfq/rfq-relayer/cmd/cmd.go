@@ -18,7 +18,11 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 	app.Before = func(c *cli.Context) error {
-		return metrics.Setup(c.Context, buildInfo)
+		err := metrics.Setup(c.Context, buildInfo)
+		if err != nil {
+			return fmt.Errorf("failed to setup metrics: %w", err)
+		}
+		return nil
 	}
 
 	// commands

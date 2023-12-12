@@ -1,3 +1,5 @@
+// Package testutil provides utilities for testing the RFQ relayer.
+// TODO: deduplicate w/ rfq/quoting-api/testutil & combine these into one package
 package testutil
 
 import (
@@ -12,13 +14,16 @@ import (
 )
 
 const (
-	AnvilMaxRetries    = 3
+	// AnvilMaxRetries is the maximum number of times to retry creating an Anvil backend.
+	AnvilMaxRetries = 3
+	// AnvilMaxTimeToWait is the maximum time to wait for an Anvil backend to be created.
 	AnvilMaxTimeToWait = 3
 )
 
 // NewAnvilBackend creates a new instance of the Anvil backend with a given chain.
 // Because NewAnvilBackend sometimes fails or times out, it will retry a few times if it does not return within 5 seconds.
-func NewAnvilBackend(ctx context.Context, chainID uint32, t *testing.T) backends.SimulatedTestBackend {
+func NewAnvilBackend(ctx context.Context, t *testing.T, chainID uint32) backends.SimulatedTestBackend {
+	t.Helper()
 	var backend backends.SimulatedTestBackend
 
 	for i := 0; i < AnvilMaxRetries; i++ {

@@ -24,7 +24,7 @@ func TestNewTestContractHandlerImpl(t *testing.T) {
 
 	// Origin Chain
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t)
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t, testChainID)
 
 	// Wallet
 	testWallet, _ := wallet.FromRandom()
@@ -38,7 +38,7 @@ func TestTokens(t *testing.T) {
 
 	// Origin Chain
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t)
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t, testChainID)
 
 	// Wallet
 	testWallet, _ := wallet.FromRandom()
@@ -71,7 +71,7 @@ func TestBridge(t *testing.T) {
 
 	// Origin Chain
 	originChainID := uint32(42161)
-	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, originChainID, t)
+	anvilOriginBackend := testutil.NewAnvilBackend(testCtx, t, originChainID)
 	originContractHandler, err := testutil.NewTestContractHandlerImpl(testCtx, anvilOriginBackend, testWallet, originChainID)
 	Nil(t, err)
 	NotNil(t, originContractHandler)
@@ -79,7 +79,7 @@ func TestBridge(t *testing.T) {
 
 	// Destination Chain
 	destinationChainID := uint32(1)
-	anvilDestinationBackend := testutil.NewAnvilBackend(testCtx, destinationChainID, t)
+	anvilDestinationBackend := testutil.NewAnvilBackend(testCtx, t, destinationChainID)
 	destinationContractHandler, err := testutil.NewTestContractHandlerImpl(testCtx, anvilDestinationBackend, testWallet, destinationChainID)
 	Nil(t, err)
 	NotNil(t, destinationContractHandler)
@@ -136,8 +136,7 @@ func TestBridge(t *testing.T) {
 	Nil(t, err)
 
 	// Prove ---------------------
-	var txHash [32]byte
-	txHash = destTx.Hash()
+	txHash := [32]byte(destTx.Hash())
 	tx, err = originContractHandler.FBExecuteProve(testCtx, event.Request, txHash)
 	Nil(t, err)
 	NotNil(t, tx)

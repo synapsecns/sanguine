@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -28,7 +29,11 @@ func (r *relayerImpl) RunListeners(parentCtx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not create chain listener: %w", err)
 			}
-			return chainListener.StartListening(gCtx)
+			err = chainListener.StartListening(gCtx)
+			if err != nil {
+				return fmt.Errorf("could not start chain listener: %w", err)
+			}
+			return nil
 		})
 	}
 	return nil
@@ -53,10 +58,13 @@ func (r *relayerImpl) HandleClaimEvents(parentCtx context.Context) error {
 					return fmt.Errorf("could not dequeue event: %w", qErr)
 				}
 				originBridgeEvent, qErr := r.db.GetOriginBridgeEvent(parentCtx, transactionID)
+				if qErr != nil {
+					return fmt.Errorf("could not get origin bridge event: %w", qErr)
+				}
 				requestBytes := common.Hex2Bytes(originBridgeEvent.Request)
-				nonce, qErr := r.txSubmitter.SubmitTransaction(parentCtx, big.NewInt(int64(originBridgeEvent.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				nonce, qErr := r.txSubmitter.SubmitTransaction(parentCtx, big.NewInt(int64(originBridgeEvent.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					transactor.Value = big.NewInt(0)
-					tx, err = r.contracts[originBridgeEvent.OriginChainId].Claim(transactor, requestBytes, common.HexToAddress(r.config.RelayerAddress))
+					tx, err = r.contracts[originBridgeEvent.OriginChainID].Claim(transactor, requestBytes, common.HexToAddress(r.config.RelayerAddress))
 					if err != nil {
 						logger.Errorf("could not submit transaction: %w", err)
 						return nil, fmt.Errorf("could not submit transaction: %w", err)
@@ -83,13 +91,15 @@ func (r *relayerImpl) HandleUnconfirmedEvents(parentCtx context.Context) error {
 			if utils.IsBridgeRequested(wrappedLog.Log.Topics[0], r.chainConfigs[wrappedLog.OriginChainID].ABI) {
 				bridgeEvent, err := utils.ParseBridgeRequested(wrappedLog.Log, r.chainConfigs[wrappedLog.OriginChainID].ABI)
 				if err != nil {
-					logger.Errorf("error parsing bridge requested event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
-					return err // This will trigger a restart of the relayer, and make it re-index the range.
+					localError := fmt.Errorf("error parsing bridge requested event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
+					logger.Error(localError)
+					return errors.Wrap(err, localError.Error()) // This will trigger a restart of the relayer, and make it re-index the range.
 				}
 				err = r.quoter.HandleUnconfirmedBridgeRequest(bridgeEvent)
 				if err != nil {
-					logger.Errorf("error while handling unconfirmed bridge event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
-					return err // This will trigger a restart of the relayer, and make it re-index the range.
+					localError := fmt.Errorf("error while handling unconfirmed bridge event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
+					logger.Error(err)
+					return errors.Wrap(err, localError.Error()) // This will trigger a restart of the relayer, and make it re-index the range.
 				}
 			}
 		}
@@ -104,12 +114,15 @@ func (r *relayerImpl) HandleConfirmedEvents(parentCtx context.Context) error {
 		case wrappedLog := <-r.eventChan:
 			topic := wrappedLog.Log.Topics[0]
 			abi := r.chainConfigs[wrappedLog.OriginChainID].ABI
+			// TODO: rewrite as switch
+			//nolint: gocritic, nestif
 			if utils.IsBridgeRequested(topic, abi) {
 				// Parse BridgeRequested
 				bridgeEvent, err := utils.ParseBridgeRequested(wrappedLog.Log, r.chainConfigs[wrappedLog.OriginChainID].ABI)
 				if err != nil {
-					logger.Errorf("error parsing bridge requested event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
-					return err // This will trigger a restart of the relayer, and make it re-index the range.
+					localErr := fmt.Errorf("error parsing bridge requested event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
+					logger.Error(localErr)
+					return errors.Wrap(err, localErr.Error()) // This will trigger a restart of the relayer, and make it re-index the range.
 				}
 
 				// Process BridgeRequested
@@ -121,8 +134,9 @@ func (r *relayerImpl) HandleConfirmedEvents(parentCtx context.Context) error {
 				// Parse BridgeRelayed
 				bridgeEvent, err := utils.ParseBridgeRelayed(wrappedLog.Log, r.chainConfigs[wrappedLog.OriginChainID].ABI)
 				if err != nil {
-					logger.Errorf("error parsing bridge relayed event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
-					return err // This will trigger a restart of the relayer, and make it re-index the range.
+					localErr := fmt.Errorf("error parsing bridge relayed event %v for tx %s on chain %d", wrappedLog.Log, wrappedLog.Log.TxHash.Hex(), wrappedLog.OriginChainID)
+					logger.Error(localErr)
+					return errors.Wrap(err, localErr.Error()) // This will trigger a restart of the relayer, and make it re-index the range.
 				}
 				// Process BridgeRelayed
 				err = r.TryProcessBridgeRelayed(parentCtx, bridgeEvent)
@@ -136,7 +150,8 @@ func (r *relayerImpl) HandleConfirmedEvents(parentCtx context.Context) error {
 	}
 }
 
-// ProcessBridgeRequested processes a BridgeRequested event, and executes a relay if it matches a current relayer.
+// TryProcessBridgeRequested processes a BridgeRequested event, and executes a relay if it matches a current relayer.
+// nolint: cyclop
 func (r *relayerImpl) TryProcessBridgeRequested(ctx context.Context, req *bindings.FastBridgeBridgeRequested) error {
 	transactionID := common.Bytes2Hex(req.TransactionId[:]) // keccak256 hash of the request
 	event, err := utils.Decode(req.Request)
@@ -221,15 +236,15 @@ func (r *relayerImpl) TryProcessBridgeRelayed(ctx context.Context, req *bindings
 
 	// Execute prove
 	var logs []*types.Log
-	nonce, err := r.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(originBridgeEvent.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	nonce, err := r.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(originBridgeEvent.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = big.NewInt(0)
-		tx, err = r.contracts[originBridgeEvent.OriginChainId].Prove(transactor, requestBytes, txHashBytes)
+		tx, err = r.contracts[originBridgeEvent.OriginChainID].Prove(transactor, requestBytes, txHashBytes)
 		if err != nil {
 			logger.Errorf("could not submit transaction: %w", err)
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
 
-		receipt, err := r.evmClients[originBridgeEvent.DestChainId].TransactionReceipt(ctx, tx.Hash())
+		receipt, err := r.evmClients[originBridgeEvent.DestChainID].TransactionReceipt(ctx, tx.Hash())
 		if err != nil {
 			return nil, fmt.Errorf("could not get transaction receipt: %w", err)
 		}
@@ -237,6 +252,9 @@ func (r *relayerImpl) TryProcessBridgeRelayed(ctx context.Context, req *bindings
 		logs = receipt.Logs
 		return tx, nil
 	})
+	if err != nil {
+		return fmt.Errorf("could not submit prove transaction: %w", err)
+	}
 
 	// Log success
 	logger.Infof("submitted prove at nonce %d", nonce)
@@ -246,7 +264,7 @@ func (r *relayerImpl) TryProcessBridgeRelayed(ctx context.Context, req *bindings
 
 	// Insert into database
 	for _, log := range logs {
-		if utils.IsBridgeRelayed(log.Topics[0], r.chainConfigs[originBridgeEvent.DestChainId].ABI) {
+		if utils.IsBridgeRelayed(log.Topics[0], r.chainConfigs[originBridgeEvent.DestChainID].ABI) {
 			if r.db.StoreDestinationBridgeEvent(ctx, log, originBridgeEvent) != nil {
 				return fmt.Errorf("could not store destination bridge event: %w", err)
 			}

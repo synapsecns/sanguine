@@ -1,3 +1,4 @@
+// nolint: dupl
 package balance_test
 
 import (
@@ -17,7 +18,7 @@ func (t *BalanceSuite) TestNewBalanceManager() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -48,7 +49,7 @@ func (t *BalanceSuite) TestGetBalance() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -88,7 +89,7 @@ func (t *BalanceSuite) TestIncrementBalance() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -135,7 +136,7 @@ func (t *BalanceSuite) TestDecrementBalance() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -158,6 +159,7 @@ func (t *BalanceSuite) TestDecrementBalance() {
 	}
 	balanceManager, err := balance.NewBalanceManager(clients, assets, testWallet.Address())
 	NotNil(t.T(), balanceManager)
+	NoError(t.T(), err)
 
 	// Populate
 	err = balanceManager.GetAllOnChainBalances(testCtx)
@@ -181,7 +183,7 @@ func (t *BalanceSuite) TestBalanceFloat64() {
 	testCtx := t.GetTestContext()
 	clients := make(map[uint32]EVMClient.EVM)
 	testChainID := uint32(42161)
-	anvilBackend := testutil.NewAnvilBackend(testCtx, testChainID, t.T())
+	anvilBackend := testutil.NewAnvilBackend(testCtx, t.T(), testChainID)
 	evmClient, err := testutil.NewEVMClientFromAnvil(testCtx, anvilBackend, t.metrics)
 	Nil(t.T(), err)
 	clients[testChainID] = evmClient
@@ -204,6 +206,7 @@ func (t *BalanceSuite) TestBalanceFloat64() {
 	}
 	balanceManager, err := balance.NewBalanceManager(clients, assets, testWallet.Address())
 	NotNil(t.T(), balanceManager)
+	NoError(t.T(), err)
 
 	// Populate
 	err = balanceManager.GetAllOnChainBalances(testCtx)

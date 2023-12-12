@@ -1,4 +1,5 @@
 // Package testutil implements utilities for testing the RFQ Quoter.
+// TODO: deduplicate with
 package testutil
 
 import (
