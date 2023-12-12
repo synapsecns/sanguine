@@ -95,7 +95,7 @@ func NewTestContractHandlerImpl(ctx context.Context, anvilBackend backends.Simul
 		tokenName := fmt.Sprintf("TESTTOKEN_%d", i)
 
 		// Deploy Mock ERC 20 contract
-		erc20address, erc20Tx, erc20contract, erc20Err := bindings.DeployMockERC20(auth, anvilBackend, tokenName, 6)
+		erc20address, erc20Tx, erc20contract, erc20Err := bindings.DeployMockERC20(auth, anvilBackend, tokenName, 18)
 		if erc20Err != nil {
 			return nil, erc20Err
 		}
