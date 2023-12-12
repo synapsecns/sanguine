@@ -41,8 +41,7 @@ export const ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  * SynapseCCTP contract address for all chains except ones from CCTP_ROUTER_EXCEPTION_MAP.
  */
 
-// TODO: Update to use new Router contract addresses
-const CCTP_ROUTER_ADDRESS = ''
+const CCTP_ROUTER_ADDRESS = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const CCTP_ROUTER_EXCEPTION_MAP: AddressMap = {}
 
 export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
