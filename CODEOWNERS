@@ -7,7 +7,7 @@
 .github/workflows/solidity.yml @trajan0x @ChiTimesChi
 
 .vscode/ @trajan0x @ChiTimesChi
-agents/ @trajan0x @ChiTimesChi @CryptoMaxPlanck
+agents/ @trajan0x @ChiTimesChi
 core/ @trajan0x
 charts/ @trajan0x @bsgrigorov
 docker/ @trajan0x @bsgrigorov
@@ -25,7 +25,7 @@ contrib/ @trajan0x
 
 services/explorer @trajan0x @nautsimon
 services/omnirpc @trajan0x @nautsimon
-services/scribe @trajan0x @nautsimon @CryptoMaxPlanck
+services/scribe @trajan0x @nautsimon
 
 tools/ @trajan0x
 

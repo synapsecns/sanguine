@@ -16,7 +16,7 @@ replace (
 
 require (
 	github.com/99designs/gqlgen v0.17.36
-	github.com/ClickHouse/clickhouse-go/v2 v2.3.0
+	github.com/ClickHouse/clickhouse-go/v2 v2.8.3
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Yamashou/gqlgenc v0.10.0
@@ -46,7 +46,7 @@ require (
 	go.uber.org/atomic v1.10.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/clickhouse v0.4.2
+	gorm.io/driver/clickhouse v0.5.1
 	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
 	k8s.io/apimachinery v0.25.5
 )
@@ -55,7 +55,7 @@ require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/ClickHouse/ch-go v0.47.3 // indirect
+	github.com/ClickHouse/ch-go v0.53.0 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
@@ -66,7 +66,7 @@ require (
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
-	github.com/andybalholm/brotli v1.0.4 // indirect
+	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -163,7 +163,7 @@ require (
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.15.12 // indirect
+	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
@@ -186,7 +186,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
@@ -197,11 +196,11 @@ require (
 	github.com/palantir/pkg/safejson v1.0.1 // indirect
 	github.com/palantir/pkg/safeyaml v1.0.1 // indirect
 	github.com/palantir/pkg/transform v1.0.0 // indirect
-	github.com/paulmach/orb v0.7.1 // indirect
+	github.com/paulmach/orb v0.9.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/peterh/liner v1.2.1 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
