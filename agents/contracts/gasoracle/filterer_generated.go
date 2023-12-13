@@ -35,6 +35,18 @@ type IGasOracleFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*GasOracleInitialized, error)
+	// FilterOwnershipTransferStarted is a free log retrieval operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*GasOracleOwnershipTransferStartedIterator, error)
+	// WatchOwnershipTransferStarted is a free log subscription operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *GasOracleOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error)
+	// ParseOwnershipTransferStarted is a log parse operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	ParseOwnershipTransferStarted(log types.Log) (*GasOracleOwnershipTransferStarted, error)
 	// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
@@ -47,4 +59,16 @@ type IGasOracleFilterer interface {
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
 	ParseOwnershipTransferred(log types.Log) (*GasOracleOwnershipTransferred, error)
+	// FilterSummitTipUpdated is a free log retrieval operation binding the contract event 0x15e1f1dbc35a0934d7ee04c7d1e3c76d098e57abea9687263b08cd0f7c001a3a.
+	//
+	// Solidity: event SummitTipUpdated(uint256 summitTipWei)
+	FilterSummitTipUpdated(opts *bind.FilterOpts) (*GasOracleSummitTipUpdatedIterator, error)
+	// WatchSummitTipUpdated is a free log subscription operation binding the contract event 0x15e1f1dbc35a0934d7ee04c7d1e3c76d098e57abea9687263b08cd0f7c001a3a.
+	//
+	// Solidity: event SummitTipUpdated(uint256 summitTipWei)
+	WatchSummitTipUpdated(opts *bind.WatchOpts, sink chan<- *GasOracleSummitTipUpdated) (event.Subscription, error)
+	// ParseSummitTipUpdated is a log parse operation binding the contract event 0x15e1f1dbc35a0934d7ee04c7d1e3c76d098e57abea9687263b08cd0f7c001a3a.
+	//
+	// Solidity: event SummitTipUpdated(uint256 summitTipWei)
+	ParseSummitTipUpdated(log types.Log) (*GasOracleSummitTipUpdated, error)
 }
