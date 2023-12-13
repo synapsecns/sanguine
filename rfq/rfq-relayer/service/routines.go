@@ -172,8 +172,7 @@ func (r *relayerImpl) TryProcessBridgeRequested(ctx context.Context, req *bindin
 	}
 
 	// Execute relay
-	var logs []*types.Log
-	nonce, err := r.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(event.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err = r.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(event.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = big.NewInt(0)
 		tx, err = r.contracts[event.OriginChainId].Relay(transactor, req.Request)
 		if err != nil {
@@ -186,37 +185,12 @@ func (r *relayerImpl) TryProcessBridgeRequested(ctx context.Context, req *bindin
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
 
-		// Get receipt for storing event
-		receipt, err := r.evmClients[event.OriginChainId].TransactionReceipt(ctx, tx.Hash())
-		if err != nil {
-			return nil, fmt.Errorf("could not get transaction receipt: %w", err)
-		}
-		// Get logs from receipt
-		logs = receipt.Logs
 		return tx, nil
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit relay transaction: %w", err)
 	}
 
-	// Log success
-	logger.Infof("submitted transaction at nonce %d", nonce)
-
-	// Update Balance
-	err = r.quoter.HandleCompletedBridge(transactionID, event)
-	if err != nil {
-		return fmt.Errorf("could not update balance after relaying: %w", err)
-	}
-
-	// Insert into database
-	for _, log := range logs {
-		if utils.IsBridgeRequested(log.Topics[0], r.chainConfigs[event.OriginChainId].ABI) {
-			if r.db.StoreOriginBridgeEvent(ctx, event.OriginChainId, log, req) != nil {
-				return fmt.Errorf("could not store origin bridge event: %w", err)
-			}
-			return nil
-		}
-	}
 	return nil
 }
 
