@@ -15,3 +15,6 @@ type inventoryManagerImpl struct {
 func NewInventoryManager(ctx context.Context, tokens map[int][]common.Address) {
 
 }
+
+// Ultimately this should produce a list of all balances and remove the
+// quoted amounts from the database
