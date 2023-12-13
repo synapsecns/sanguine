@@ -42,8 +42,8 @@ type contractTypeImpl int
 const (
 	// FastBridgeType is the type of the fast bridge contract.
 	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
-	// MockERC20 is a mock erc20 contract
-	MockERC20
+	// MockERC20Type is a mock erc20 contract
+	MockERC20Type
 )
 
 // ID gets the contract type as an id.
@@ -72,7 +72,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case FastBridgeType:
 		return fastbridge.Contracts["solidity/FastBridge.sol:FastBridge"]
-	case MockERC20:
+	case MockERC20Type:
 		return mockerc20.Contracts["solidity/MockERC20.sol:MockERC20"]
 	}
 	return nil

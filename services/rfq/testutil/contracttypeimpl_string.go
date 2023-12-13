@@ -9,12 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[FastBridgeType-1]
-	_ = x[MockERC20-2]
+	_ = x[MockERC20Type-2]
 }
 
-const _contractTypeImpl_name = "FastBridgeMockERC20"
+const _contractTypeImpl_name = "FastBridgeMockERC20Type"
 
-var _contractTypeImpl_index = [...]uint8{0, 10, 19}
+var _contractTypeImpl_index = [...]uint8{0, 10, 23}
 
 func (i contractTypeImpl) String() string {
 	i -= 1
