@@ -270,4 +270,4 @@ jobs:
       - name: Run forge build --sizes
         run: |
           forge build --sizes
-        working-directory: packages/contracts-core
+        working-directory: './packages/${{matrix.package}}'
