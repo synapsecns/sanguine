@@ -54,7 +54,7 @@ type MockERC20Deployer struct {
 
 func NewMockERC20Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return MockERC20Deployer{
-		deployer.NewSimpleDeployer(registry, backend, MockERC20),
+		deployer.NewSimpleDeployer(registry, backend, MockERC20Type),
 	}
 }
 

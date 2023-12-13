@@ -35,8 +35,6 @@ type inventoryManagerImpl struct {
 	tokens map[int]map[common.Address]*Token
 	// mux contains the mutex
 	mux sync.RWMutex
-	// callbacksRegisterd is wether or not callbacks have been registered
-	callbacksRegistered bool
 	// handler is the metrics handler
 	handler metrics.Handler
 	// relayerAddress contains the relayer address
@@ -59,6 +57,16 @@ var (
 
 // NewInventoryManager creates a list of tokens we should use.
 func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg config.Config, relayer common.Address) (interface{}, error) {
+	i := inventoryManagerImpl{
+		relayerAddress: relayer,
+		handler:        handler,
+		chainClient:    client,
+	}
+
+	err := i.initializeTokens(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize tokens")
+	}
 
 	return nil, nil
 }
@@ -98,11 +106,13 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 			token := common.HexToAddress(strToekn)
 			rtoken := &Token{}
 			i.tokens[chainID][token] = rtoken
+			// requires non-nil pointer
+			rtoken.balance = new(big.Int)
 
 			deferredCalls[chainID] = append(deferredCalls[chainID],
-				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
+				//eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
-				eth.CallFunc(funcName, token).Returns(&rtoken.name),
+				//eth.CallFunc(funcName, token).Returns(&rtoken.name),
 			)
 
 			deferredRegisters = append(deferredRegisters, func() error {
@@ -112,7 +122,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 		}
 	}
 
-	// run tthrough the deferred cals
+	// run through the deferred cals
 	g, gctx := errgroup.WithContext(ctx)
 	for chainID := range deferredCalls {
 		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
@@ -131,6 +141,11 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 			}
 			return nil
 		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not get tx: %w", err)
 	}
 
 	for _, register := range deferredRegisters {
