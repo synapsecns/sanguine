@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm/schema"
 	"os"
 	"time"
@@ -31,19 +32,31 @@ type Database struct {
 
 // NewDatabase creates a new instance of the database.
 // TODO: consider returning an interface instead of a concrete type.
-func NewDatabase(ctx context.Context, handler metrics.Handler, skipMigrations bool) (db *Database, err error) {
+// TODO: make dbType a string
+func NewDatabase(ctx context.Context, handler metrics.Handler, skipMigrations bool, dbType, dsn string) (db *Database, err error) {
 	// @Bobby lets adjust this to how we want the config to work
-	dbname := os.Getenv("MYSQL_DATABASE")
-	connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+	var dialector gorm.Dialector
+	// TODO: clean this up
+	if dbType == "sqlite" {
+		dialector = sqlite.Open(dsn)
+	} else {
+		connString := dsn
+		// fallback to env vars
+		if dsn == "" {
+			dbname := os.Getenv("MYSQL_DATABASE")
+			connString = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+		}
+		dialector = mysql.Open(connString)
+	}
 
-	logger.Debug("creating mysql store")
-	ctx, span := handler.Tracer().Start(ctx, "start-mysql")
+	logger.Debug("creating store")
+	ctx, span := handler.Tracer().Start(ctx, "start-db")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	// Modify this as we need
-	gdb, err := gorm.Open(mysql.Open(connString), &gorm.Config{
+	gdb, err := gorm.Open(dialector, &gorm.Config{
 		Logger:                                   common_base.GetGormLogger(logger),
 		FullSaveAssociations:                     true,
 		DisableForeignKeyConstraintWhenMigrating: true,

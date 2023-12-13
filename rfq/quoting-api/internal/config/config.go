@@ -14,6 +14,9 @@ type Config struct {
 	// AuthExpiryDelta is the delta in seconds to add to the current time to get the expiry time for the auth token.
 	// TODO: consider only exporting via getter to prevent accidental mutation
 	AuthExpiryDelta int64 `yaml:"auth_expiry_delta"`
+	// TODO: consider breaking this out
+	DBType string `yaml:"db_type"`
+	DSN    string `yaml:"dsn"`
 }
 
 // LoadConfig loads the config from the given path.

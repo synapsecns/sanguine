@@ -31,7 +31,7 @@ type APIServer struct {
 
 // NewRestAPIServer creates a new instance of the rest api server.
 func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
-	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false)
+	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false, cfg.DBType, cfg.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
@@ -61,33 +61,41 @@ func (r *APIServer) Run() error {
 }
 
 // Authenticate checks request header for EIP191 signature for a valid relayer.
-func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) {
+// TODO: this should be moved to a middleware package.
+func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) (err error) {
 	// check relayer registered with contract
 	bridge, ok := r.bridges[q.DestChainID]
 	if !ok {
-		err := fmt.Errorf("dest chain id not supported")
+		err = fmt.Errorf("dest chain id not supported")
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
 	}
 
 	// call on-chain to dest chain bridge::HasRole for relayer role
 	ops := &bind.CallOpts{Context: c}
-	role := crypto.Keccak256Hash([]byte("RELAYER_ROLE")) // keccak256("RELAYER_ROLE")
+	// TODO: change me to RELAYER_ROLE
+	role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_ROLE")
 	relayer := common.HexToAddress(q.Relayer)
 
-	if has, err := bridge.HasRole(ops, role, relayer); err != nil {
-		err := fmt.Errorf("unable to check relayer role on-chain")
+	var has bool
+	if has, err = bridge.HasRole(ops, role, relayer); err != nil {
+		err = fmt.Errorf("unable to check relayer role on-chain")
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
 	} else if !has {
-		err := fmt.Errorf("q.Relayer not an on-chain relayer")
+		err = fmt.Errorf("q.Relayer not an on-chain relayer")
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
 	}
 
 	// authenticate relayer signature with EIP191
 	deadline := time.Now().Unix() - r.cfg.AuthExpiryDelta
-	auth.EIP191Auth(q.Relayer, deadline)(c)
+	err = auth.EIP191Auth(c, q.Relayer, deadline)
+	if err != nil {
+		return fmt.Errorf("unable to authenticate relayer: %w", err)
+	}
+
+	return nil
 }
 
 // GET /ping.
@@ -104,7 +112,10 @@ func (r *APIServer) createQuote(c *gin.Context) {
 		return
 	}
 
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	id, err := r.db.InsertQuote(c, &q)
 	if err != nil {
@@ -174,7 +185,10 @@ func (r *APIServer) updateQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if uint(id) != q.ID {
 		err := fmt.Errorf(":id != quote.ID")
@@ -203,7 +217,10 @@ func (r *APIServer) deleteQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if err := r.db.DeleteQuote(c, q.ID); err != nil {
 		c.JSON(400, gin.H{"msg": err})
@@ -229,7 +246,10 @@ func (r *APIServer) pingQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if err := r.db.UpdateQuote(c, &q); err != nil {
 		c.JSON(400, gin.H{"msg": err})
