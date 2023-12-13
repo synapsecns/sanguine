@@ -28,179 +28,6 @@ var (
 	_ = event.NewSubscription
 )
 
-// SafeCastMetaData contains all meta data concerning the SafeCast contract.
-var SafeCastMetaData = &bind.MetaData{
-	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203867aadfc35fe89700b0955ff2bdbdb6b4d2f69a769de3ba815fe875e0794e6264736f6c63430008110033",
-}
-
-// SafeCastABI is the input ABI used to generate the binding from.
-// Deprecated: Use SafeCastMetaData.ABI instead.
-var SafeCastABI = SafeCastMetaData.ABI
-
-// SafeCastBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use SafeCastMetaData.Bin instead.
-var SafeCastBin = SafeCastMetaData.Bin
-
-// DeploySafeCast deploys a new Ethereum contract, binding an instance of SafeCast to it.
-func DeploySafeCast(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SafeCast, error) {
-	parsed, err := SafeCastMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SafeCastBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &SafeCast{SafeCastCaller: SafeCastCaller{contract: contract}, SafeCastTransactor: SafeCastTransactor{contract: contract}, SafeCastFilterer: SafeCastFilterer{contract: contract}}, nil
-}
-
-// SafeCast is an auto generated Go binding around an Ethereum contract.
-type SafeCast struct {
-	SafeCastCaller     // Read-only binding to the contract
-	SafeCastTransactor // Write-only binding to the contract
-	SafeCastFilterer   // Log filterer for contract events
-}
-
-// SafeCastCaller is an auto generated read-only Go binding around an Ethereum contract.
-type SafeCastCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SafeCastTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type SafeCastTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SafeCastFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type SafeCastFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SafeCastSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type SafeCastSession struct {
-	Contract     *SafeCast         // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// SafeCastCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type SafeCastCallerSession struct {
-	Contract *SafeCastCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts   // Call options to use throughout this session
-}
-
-// SafeCastTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type SafeCastTransactorSession struct {
-	Contract     *SafeCastTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts   // Transaction auth options to use throughout this session
-}
-
-// SafeCastRaw is an auto generated low-level Go binding around an Ethereum contract.
-type SafeCastRaw struct {
-	Contract *SafeCast // Generic contract binding to access the raw methods on
-}
-
-// SafeCastCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type SafeCastCallerRaw struct {
-	Contract *SafeCastCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// SafeCastTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type SafeCastTransactorRaw struct {
-	Contract *SafeCastTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewSafeCast creates a new instance of SafeCast, bound to a specific deployed contract.
-func NewSafeCast(address common.Address, backend bind.ContractBackend) (*SafeCast, error) {
-	contract, err := bindSafeCast(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &SafeCast{SafeCastCaller: SafeCastCaller{contract: contract}, SafeCastTransactor: SafeCastTransactor{contract: contract}, SafeCastFilterer: SafeCastFilterer{contract: contract}}, nil
-}
-
-// NewSafeCastCaller creates a new read-only instance of SafeCast, bound to a specific deployed contract.
-func NewSafeCastCaller(address common.Address, caller bind.ContractCaller) (*SafeCastCaller, error) {
-	contract, err := bindSafeCast(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &SafeCastCaller{contract: contract}, nil
-}
-
-// NewSafeCastTransactor creates a new write-only instance of SafeCast, bound to a specific deployed contract.
-func NewSafeCastTransactor(address common.Address, transactor bind.ContractTransactor) (*SafeCastTransactor, error) {
-	contract, err := bindSafeCast(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &SafeCastTransactor{contract: contract}, nil
-}
-
-// NewSafeCastFilterer creates a new log filterer instance of SafeCast, bound to a specific deployed contract.
-func NewSafeCastFilterer(address common.Address, filterer bind.ContractFilterer) (*SafeCastFilterer, error) {
-	contract, err := bindSafeCast(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &SafeCastFilterer{contract: contract}, nil
-}
-
-// bindSafeCast binds a generic wrapper to an already deployed contract.
-func bindSafeCast(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SafeCastABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_SafeCast *SafeCastRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _SafeCast.Contract.SafeCastCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_SafeCast *SafeCastRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SafeCast.Contract.SafeCastTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_SafeCast *SafeCastRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _SafeCast.Contract.SafeCastTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_SafeCast *SafeCastCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _SafeCast.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_SafeCast *SafeCastTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SafeCast.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_SafeCast *SafeCastTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _SafeCast.Contract.contract.Transact(opts, method, params...)
-}
-
 // TipsHarnessMetaData contains all meta data concerning the TipsHarness contract.
 var TipsHarnessMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"TipsOverflow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TipsValueTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"attestationTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"deliveryTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emptyTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"summitTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"attestationTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"executionTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"deliveryTip_\",\"type\":\"uint64\"}],\"name\":\"encodeTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"summitTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"attestationTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"executionTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deliveryTip_\",\"type\":\"uint256\"}],\"name\":\"encodeTips256\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"executionTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"leaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"Tips\",\"name\":\"tips\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newValue\",\"type\":\"uint256\"}],\"name\":\"matchValue\",\"outputs\":[{\"internalType\":\"Tips\",\"name\":\"newTips\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"summitTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"value\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"wrapPadded\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
@@ -217,7 +44,7 @@ var TipsHarnessMetaData = &bind.MetaData{
 		"c5a46ee6": "value(uint256)",
 		"138ac42f": "wrapPadded(uint256)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610666806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c806372d3f3cd11610081578063c5a46ee61161005b578063c5a46ee614610187578063ecbf034e1461019a578063f472a58a146101a857600080fd5b806372d3f3cd1461014e57806386450b8814610161578063b284b6091461017457600080fd5b80634c63c701116100b25780634c63c701146101205780634f2a6f9e14610133578063725bd4631461014657600080fd5b80630453e80e146100ce578063138ac42f146100ff575b600080fd5b6100e16100dc366004610518565b6101bb565b60405167ffffffffffffffff90911681526020015b60405180910390f35b61011261010d366004610518565b6101cd565b6040519081526020016100f6565b6100e161012e366004610518565b6101d5565b61011261014136600461054e565b6101e1565b61011261025a565b61011261015c3660046105a2565b610263565b61011261016f3660046105d4565b610272565b6100e1610182366004610518565b610285565b610112610195366004610518565b610291565b6100e161010d366004610518565b6101126101b6366004610518565b61029c565b60006101c78260801c90565b92915050565b6000816101c7565b60006101c78260401c90565b60008067ffffffffffffffff8316604085901b6fffffffffffffffff000000000000000016608087901b77ffffffffffffffff000000000000000000000000000000001660c089901b7fffffffffffffffff000000000000000000000000000000000000000000000000161717175b9695505050505050565b600080806101c7565b600080610250868686866102aa565b600061027e838361035f565b9392505050565b60006101c78260c01c90565b60006101c782610406565b6000818152602081206101c7565b60006103566102bc602087901c610476565b6102c9602087901c610476565b6102d6602087901c610476565b6102e3602087901c610476565b7fffffffffffffffff00000000000000000000000000000000000000000000000060c085901b1677ffffffffffffffff00000000000000000000000000000000608085901b16176fffffffffffffffff0000000000000000604084901b161767ffffffffffffffff821617949350505050565b95945050505050565b60008061036b84610406565b9050808310156103a7576040517f429726c100000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80830360201c67ffffffffffffffff8567ffffffffffffffff16820111156103fb576040517f1b438b3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b939093019392505050565b60008167ffffffffffffffff1661041d8360401c90565b67ffffffffffffffff166104318460801c90565b67ffffffffffffffff166104458560c01c90565b67ffffffffffffffff1661045991906105f6565b61046391906105f6565b61046d91906105f6565b60201b92915050565b600067ffffffffffffffff821115610514576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f53616665436173743a2076616c756520646f65736e27742066697420696e203660448201527f3420626974730000000000000000000000000000000000000000000000000000606482015260840160405180910390fd5b5090565b60006020828403121561052a57600080fd5b5035919050565b803567ffffffffffffffff8116811461054957600080fd5b919050565b6000806000806080858703121561056457600080fd5b61056d85610531565b935061057b60208601610531565b925061058960408601610531565b915061059760608601610531565b905092959194509250565b600080600080608085870312156105b857600080fd5b5050823594602084013594506040840135936060013592509050565b600080604083850312156105e757600080fd5b50508035926020909101359150565b808201808211156101c7577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212202bf326c68c709828f294151b246eb3e8ef02080fd2ef06a8e55892a74b63cf5264736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b50610579806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c806372d3f3cd11610081578063c5a46ee61161005b578063c5a46ee614610187578063ecbf034e1461019a578063f472a58a146101a857600080fd5b806372d3f3cd1461014e57806386450b8814610161578063b284b6091461017457600080fd5b80634c63c701116100b25780634c63c701146101205780634f2a6f9e14610133578063725bd4631461014657600080fd5b80630453e80e146100ce578063138ac42f146100ff575b600080fd5b6100e16100dc36600461042b565b6101bb565b60405167ffffffffffffffff90911681526020015b60405180910390f35b61011261010d36600461042b565b6101cd565b6040519081526020016100f6565b6100e161012e36600461042b565b6101d5565b610112610141366004610461565b6101e1565b61011261025a565b61011261015c3660046104b5565b610263565b61011261016f3660046104e7565b6102dc565b6100e161018236600461042b565b6102ef565b61011261019536600461042b565b6102fb565b6100e161010d36600461042b565b6101126101b636600461042b565b610306565b60006101c78260801c90565b92915050565b6000816101c7565b60006101c78260401c90565b60008067ffffffffffffffff8316604085901b6fffffffffffffffff000000000000000016608087901b77ffffffffffffffff000000000000000000000000000000001660c089901b7fffffffffffffffff000000000000000000000000000000000000000000000000161717175b9695505050505050565b600080806101c7565b60008067ffffffffffffffff602084811c919091169085901b6fffffffffffffffff000000000000000016606087901b77ffffffffffffffff000000000000000000000000000000001660a089901b7fffffffffffffffff00000000000000000000000000000000000000000000000016171717610250565b60006102e88383610314565b9392505050565b60006101c78260c01c90565b60006101c7826103bb565b6000818152602081206101c7565b600080610320846103bb565b90508083101561035c576040517f429726c100000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80830360201c67ffffffffffffffff8567ffffffffffffffff16820111156103b0576040517f1b438b3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b939093019392505050565b60008167ffffffffffffffff166103d28360401c90565b67ffffffffffffffff166103e68460801c90565b67ffffffffffffffff166103fa8560c01c90565b67ffffffffffffffff1661040e9190610509565b6104189190610509565b6104229190610509565b60201b92915050565b60006020828403121561043d57600080fd5b5035919050565b803567ffffffffffffffff8116811461045c57600080fd5b919050565b6000806000806080858703121561047757600080fd5b61048085610444565b935061048e60208601610444565b925061049c60408601610444565b91506104aa60608601610444565b905092959194509250565b600080600080608085870312156104cb57600080fd5b5050823594602084013594506040840135936060013592509050565b600080604083850312156104fa57600080fd5b50508035926020909101359150565b808201808211156101c7577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212209f0aa7bdc0739bafacea5e25b90d085026bc2fc02d70e140f11c1acdb137392b64736f6c63430008110033",
 }
 
 // TipsHarnessABI is the input ABI used to generate the binding from.
@@ -735,7 +562,7 @@ func (_TipsHarness *TipsHarnessCallerSession) WrapPadded(paddedTips *big.Int) (*
 // TipsLibMetaData contains all meta data concerning the TipsLib contract.
 var TipsLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122008f5e87fb7a7cba5585883a960a4e253f652c00a3c8bccf5415069ea7af73b5564736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d5578b5b4ad0066276edaecff5b95123aa98707d57007b8ed7c18e91e133678364736f6c63430008110033",
 }
 
 // TipsLibABI is the input ABI used to generate the binding from.

@@ -45,13 +45,13 @@ type inboxContract struct {
 }
 
 //nolint:dupl
-func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, stateIndex, rawSig, snapPayload, snapSignature)
+	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
@@ -82,13 +82,13 @@ func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, attestat
 	return tx, nil
 }
 
-func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, stateIndex, rawSig, snapPayload, attPayload, attSignature)
+	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, big.NewInt(stateIndex), rawSig, snapPayload, attPayload, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}

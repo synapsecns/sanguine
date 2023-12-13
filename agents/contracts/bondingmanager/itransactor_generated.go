@@ -12,10 +12,6 @@ import (
 
 // IBondingManagerTransactor ...
 type IBondingManagerTransactor interface {
-	// AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
-	//
-	// Solidity: function acceptOwnership() returns()
-	AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
 	// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
 	//
 	// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
@@ -52,10 +48,10 @@ type IBondingManagerTransactor interface {
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// ResolveDisputeWhenStuck is a paid mutator transaction binding the contract method 0xb15a707d.
+	// ResolveStuckDispute is a paid mutator transaction binding the contract method 0x89791e17.
 	//
-	// Solidity: function resolveDisputeWhenStuck(uint32 domain, address slashedAgent) returns()
-	ResolveDisputeWhenStuck(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error)
+	// Solidity: function resolveStuckDispute(uint32 domain, address slashedAgent) returns()
+	ResolveStuckDispute(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error)
 	// SlashAgent is a paid mutator transaction binding the contract method 0x2853a0e6.
 	//
 	// Solidity: function slashAgent(uint32 domain, address agent, address prover) returns()
