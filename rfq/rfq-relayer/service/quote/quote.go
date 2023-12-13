@@ -1,9 +1,7 @@
 package quote
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	EVMClient "github.com/synapsecns/sanguine/ethergo/client"
@@ -14,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/service/balance"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/utils"
 	"math/big"
-	"net/http"
 	"sync"
 )
 
@@ -158,25 +155,10 @@ func (q *quoterImpl) UpdateQuotes(quoteID string) error {
 			return fmt.Errorf("could not convert quote to API quote: %w", err)
 		}
 
-		marshalledQuote, err := json.Marshal(quoteStruct)
+		err = q.client.CreateQuote(quoteStruct)
 		if err != nil {
-			return fmt.Errorf("could not marshal quote: %w", err)
+			return fmt.Errorf("could not create quote: %w", err)
 		}
-
-		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/quote/%s", q.rfqURL, quoteID), bytes.NewBuffer(marshalledQuote))
-		if err != nil {
-			return fmt.Errorf("could not create request: %w", err)
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		_, err = http.DefaultClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("could not update quote: %w", err)
-		}
-
-		// TODO: make an interface for the API, would be cleaner
-		// TODO: /update quote
-		// @mikeyf How should we go about this http connection
 	}
 	return nil
 }

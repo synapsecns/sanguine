@@ -12,6 +12,7 @@ import (
 
 type Client interface {
 	CreateQuote(q *APIQuote) error
+	UpdateQuote(quoteID string, q *APIQuote) error
 }
 
 type clientImpl struct {
@@ -50,6 +51,17 @@ func (c clientImpl) CreateQuote(q *APIQuote) error {
 	res, err := c.rClient.R().
 		SetBody(q).
 		Post(rest.QUOTE_ROUTE)
+	// TODO: Figure out if there's anyhting to do with the response, right now it's result: 1
+	_ = res
+
+	return err
+}
+
+// UpdateQuote creates a new quote in the RFQ quoting API
+func (c clientImpl) UpdateQuote(quoteID string, q *APIQuote) error {
+	res, err := c.rClient.R().
+		SetBody(q).
+		Post(fmt.Sprintf("%s/%s", rest.QUOTE_ROUTE, quoteID))
 	// TODO: Figure out if there's anyhting to do with the response, right now it's result: 1
 	_ = res
 
