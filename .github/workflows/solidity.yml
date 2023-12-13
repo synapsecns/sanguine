@@ -97,6 +97,7 @@ jobs:
         uses: lhotari/action-upterm@v1
         env:
           VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
+          VERCEL_SECRET: ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy (Prod)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         working-directory: "packages/${{matrix.package}}/docs"
@@ -214,14 +215,14 @@ jobs:
           version: nightly
 
       - name: Run Foundry Tests
-        working-directory: "/packages/${{matrix.package}}"
+        working-directory: "./packages/${{matrix.package}}"
         run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
         with:
           action: codecov/codecov-action@v3
-          current_path: "/packages/${{matrix.package}}"
+          current_path: "./packages/${{matrix.package}}"
           with: |
             token: ${{ secrets.CODECOV }}
             fail_ci_if_error: true # optional (default = false)
