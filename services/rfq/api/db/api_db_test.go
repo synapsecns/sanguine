@@ -1,8 +1,6 @@
 package db_test
 
 import (
-	"time"
-
 	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 )
@@ -10,14 +8,13 @@ import (
 func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 	d.RunOnAllDBs(func(testDB db.ApiDB) {
 		// Arrange: Create and insert a quote
-		expectedQuote := &db.QuoteModel{
+		expectedQuote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.
 			ID:            1,
 			DestChainID:   2,
 			DestTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
 			DestAmount:    decimal.NewFromInt(1000),
 			Price:         decimal.NewFromFloat(0.01),
-			UpdatedAt:     time.Now(),
 		}
 		err := testDB.UpsertQuote(expectedQuote)
 		d.Require().NoError(err)
@@ -29,6 +26,7 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 		// Assert: Check if the retrieved quotes match the inserted quote
 		d.Len(quotes, 1)
 		d.Equal(expectedQuote.ID, quotes[0].ID)
+		d.NotEqual(quotes[0].UpdatedAt, nil)
 		// Continue asserting other fields
 	})
 }
@@ -36,14 +34,13 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 func (d *DBSuite) TestUpsertQuote() {
 	d.RunOnAllDBs(func(testDB db.ApiDB) {
 		// Arrange: Create a quote
-		quote := &db.QuoteModel{
+		quote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.
 			ID:            1,
 			DestChainID:   2,
 			DestTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
 			DestAmount:    decimal.NewFromInt(1000),
 			Price:         decimal.NewFromFloat(0.01),
-			UpdatedAt:     time.Now(),
 		}
 
 		// Act & Assert: Insert new quote
