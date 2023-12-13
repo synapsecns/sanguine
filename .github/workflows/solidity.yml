@@ -75,8 +75,8 @@ jobs:
         run: |
           PROJECT_IDS=$(cat <<END
           {
-            'contracts-core': '${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}',
-            'contracts-rfq': '${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}'
+            "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
+            "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}"
           }
           END
           )
