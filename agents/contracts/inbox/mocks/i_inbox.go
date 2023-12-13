@@ -22,6 +22,29 @@ type IInbox struct {
 	mock.Mock
 }
 
+// AcceptOwnership provides a mock function with given fields: opts
+func (_m *IInbox) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(opts)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Address provides a mock function with given fields:
 func (_m *IInbox) Address() common.Address {
 	ret := _m.Called()
@@ -284,6 +307,29 @@ func (_m *IInbox) FilterInvalidStateWithSnapshot(opts *bind.FilterOpts) (*inbox.
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterOwnershipTransferStarted provides a mock function with given fields: opts, previousOwner, newOwner
+func (_m *IInbox) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*inbox.InboxOwnershipTransferStartedIterator, error) {
+	ret := _m.Called(opts, previousOwner, newOwner)
+
+	var r0 *inbox.InboxOwnershipTransferStartedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address, []common.Address) *inbox.InboxOwnershipTransferStartedIterator); ok {
+		r0 = rf(opts, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*inbox.InboxOwnershipTransferStartedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, previousOwner, newOwner)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -759,6 +805,29 @@ func (_m *IInbox) ParseInvalidStateWithSnapshot(log types.Log) (*inbox.InboxInva
 	return r0, r1
 }
 
+// ParseOwnershipTransferStarted provides a mock function with given fields: log
+func (_m *IInbox) ParseOwnershipTransferStarted(log types.Log) (*inbox.InboxOwnershipTransferStarted, error) {
+	ret := _m.Called(log)
+
+	var r0 *inbox.InboxOwnershipTransferStarted
+	if rf, ok := ret.Get(0).(func(types.Log) *inbox.InboxOwnershipTransferStarted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*inbox.InboxOwnershipTransferStarted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *IInbox) ParseOwnershipTransferred(log types.Log) (*inbox.InboxOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -844,6 +913,29 @@ func (_m *IInbox) PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, at
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32, *big.Int, []byte) error); ok {
 		r1 = rf(opts, attNotaryIndex, attNonce, paddedTips, rcptPayload)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingOwner provides a mock function with given fields: opts
+func (_m *IInbox) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -944,11 +1036,11 @@ func (_m *IInbox) SubmitSnapshot(opts *bind.TransactOpts, snapPayload []byte, sn
 }
 
 // SubmitStateReportWithAttestation provides a mock function with given fields: opts, stateIndex, srSignature, snapPayload, attPayload, attSignature
-func (_m *IInbox) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex uint8, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, srSignature, snapPayload, attPayload, attSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, srSignature, snapPayload, attPayload, attSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -957,7 +1049,7 @@ func (_m *IInbox) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stat
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, srSignature, snapPayload, attPayload, attSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -967,11 +1059,11 @@ func (_m *IInbox) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stat
 }
 
 // SubmitStateReportWithSnapshot provides a mock function with given fields: opts, stateIndex, srSignature, snapPayload, snapSignature
-func (_m *IInbox) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex uint8, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, srSignature, snapPayload, snapSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, srSignature, snapPayload, snapSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -980,7 +1072,7 @@ func (_m *IInbox) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIn
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, srSignature, snapPayload, snapSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -990,11 +1082,11 @@ func (_m *IInbox) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIn
 }
 
 // SubmitStateReportWithSnapshotProof provides a mock function with given fields: opts, stateIndex, statePayload, srSignature, snapProof, attPayload, attSignature
-func (_m *IInbox) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex uint8, statePayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, statePayload, srSignature, snapProof, attPayload, attSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, statePayload, srSignature, snapProof, attPayload, attSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -1003,7 +1095,7 @@ func (_m *IInbox) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, st
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, []byte, [][32]byte, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, statePayload, srSignature, snapProof, attPayload, attSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -1195,11 +1287,11 @@ func (_m *IInbox) VerifyStateReport(opts *bind.TransactOpts, statePayload []byte
 }
 
 // VerifyStateWithAttestation provides a mock function with given fields: opts, stateIndex, snapPayload, attPayload, attSignature
-func (_m *IInbox) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex uint8, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, snapPayload, attPayload, attSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -1208,7 +1300,7 @@ func (_m *IInbox) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -1218,11 +1310,11 @@ func (_m *IInbox) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex
 }
 
 // VerifyStateWithSnapshot provides a mock function with given fields: opts, stateIndex, snapPayload, snapSignature
-func (_m *IInbox) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex uint8, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, snapPayload, snapSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, snapPayload, snapSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -1231,7 +1323,7 @@ func (_m *IInbox) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *b
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, snapPayload, snapSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -1241,11 +1333,11 @@ func (_m *IInbox) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *b
 }
 
 // VerifyStateWithSnapshotProof provides a mock function with given fields: opts, stateIndex, statePayload, snapProof, attPayload, attSignature
-func (_m *IInbox) VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+func (_m *IInbox) VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex uint8, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint8, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
 		r0 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
 	} else {
 		if ret.Get(0) != nil {
@@ -1254,7 +1346,7 @@ func (_m *IInbox) VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateInd
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint8, []byte, [][32]byte, []byte, []byte) error); ok {
 		r1 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
 	} else {
 		r1 = ret.Error(1)
@@ -1484,6 +1576,29 @@ func (_m *IInbox) WatchInvalidStateWithSnapshot(opts *bind.WatchOpts, sink chan<
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *inbox.InboxInvalidStateWithSnapshot) error); ok {
 		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchOwnershipTransferStarted provides a mock function with given fields: opts, sink, previousOwner, newOwner
+func (_m *IInbox) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *inbox.InboxOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, previousOwner, newOwner)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *inbox.InboxOwnershipTransferStarted, []common.Address, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *inbox.InboxOwnershipTransferStarted, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, sink, previousOwner, newOwner)
 	} else {
 		r1 = ret.Error(1)
 	}
