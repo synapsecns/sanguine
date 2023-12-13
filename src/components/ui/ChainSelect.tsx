@@ -22,8 +22,13 @@ const POLYGON = {
   name: 'Polygon',
 }
 
+const OPTIMISM = {
+  id: 10,
+  name: 'Optimism',
+}
+
 export function ChainSelect({ label, chain, onChange }: Props) {
-  const chains = [ETH, ARBITRUM, POLYGON]
+  const chains = [ETH, ARBITRUM, POLYGON, OPTIMISM]
 
   return (
     <ChainPopoverSelect

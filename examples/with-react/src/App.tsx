@@ -1,11 +1,11 @@
-import { Bridge, USDC, USDT, DAI } from '@synapsecns/widget'
+import { Bridge, USDC, USDT, DAI, ETH } from '@synapsecns/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 
-const tokens = [USDC, USDT, DAI]
+const tokens = [USDC, USDT, DAI, ETH]
 
 function App() {
   const ethersProvider = new StaticJsonRpcProvider(
@@ -21,11 +21,21 @@ function App() {
     137
   )
 
+  const optimismProvider = new StaticJsonRpcProvider(
+    'https://mainnet.optimism.io',
+    10
+  )
+
   // const providers = [ethersProvider, aribtrumProvider]
   // const chainIds = [1, 42161]
 
-  const providers = [aribtrumProvider, ethersProvider, polygonProvider]
-  const chainIds = [42161, 1, 137]
+  const providers = [
+    aribtrumProvider,
+    ethersProvider,
+    polygonProvider,
+    optimismProvider,
+  ]
+  const chainIds = [42161, 1, 137, 10]
 
   const [customTheme, setCustomTheme] = useState({})
 

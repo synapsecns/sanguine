@@ -55,8 +55,12 @@ const chains = {
     name: 'Polygon',
   },
   42161: {
-    id: '42161',
+    id: 42161,
     name: 'Arbitrum',
+  },
+  10: {
+    id: 10,
+    name: 'Optimism',
   },
 }
 

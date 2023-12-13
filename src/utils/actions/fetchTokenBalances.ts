@@ -1,4 +1,4 @@
-import { Contract, ethers, AbiCoder } from 'ethers'
+import { Contract, ethers, AbiCoder, ZeroAddress } from 'ethers'
 import { BridgeableToken } from 'types'
 import { formatBigIntToString } from '../formatBigIntToString'
 import multicallAbi from '../../constants/abis/multicall.json'
@@ -40,16 +40,33 @@ export async function fetchTokenBalances({
 
   const calls = tokens.map((token: BridgeableToken) => {
     const tokenAddress: string = token.addresses[chainId]
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      erc20Abi,
-      signerOrProvider
-    )
-    return {
-      target: tokenAddress,
-      callData: tokenContract.interface.encodeFunctionData('balanceOf', [
-        address,
-      ]),
+
+    if (tokenAddress === ZeroAddress) {
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        multicallAbi,
+        signerOrProvider
+      )
+
+      return {
+        target: multicallAddress,
+        callData: tokenContract.interface.encodeFunctionData('getEthBalance', [
+          address,
+        ]),
+      }
+    } else {
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        erc20Abi,
+        signerOrProvider
+      )
+
+      return {
+        target: tokenAddress,
+        callData: tokenContract.interface.encodeFunctionData('balanceOf', [
+          address,
+        ]),
+      }
     }
   })
 

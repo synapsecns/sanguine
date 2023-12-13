@@ -59,3 +59,4 @@ export declare function Bridge(props: any): JSX.Element
 export declare const USDC: BridgeableToken
 export declare const USDT: BridgeableToken
 export declare const DAI: BridgeableToken
+export declare const ETH: BridgeableToken

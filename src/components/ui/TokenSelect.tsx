@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { BridgeState } from '@/state/slices/bridge/reducer'
 import { BridgeableToken } from 'types'
@@ -21,11 +22,16 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
   }: BridgeState = useBridgeState()
 
   let options
+  let remainingOptions
 
   if (label === 'In') {
     options = originTokens
   } else {
     options = filterTokens(destinationTokens, tokens)
+
+    let remainingOptions = _.difference(tokens, options)
+
+    console.log(`remainingOptions,`, remainingOptions)
   }
 
   return (
