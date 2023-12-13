@@ -51,7 +51,7 @@ jobs:
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
     env:
-      WORKING_DIRECTORY: "packages/${{matrix.package}}"
+      WORKING_DIRECTORY: 'packages/${{matrix.package}}'
       VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
       VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
       NODE_ENV: 'production'
@@ -86,7 +86,7 @@ jobs:
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Docs
-        working-directory: "packages/${{matrix.package}}"
+        working-directory: 'packages/${{matrix.package}}'
         # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
         # TODO: dedupe vercel.package.json
         run: |
@@ -190,7 +190,6 @@ jobs:
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        working-directory: './packages/${matrix.package}'
         run: yarn install --immutable
 
       - name: Install Foundry
@@ -234,7 +233,6 @@ jobs:
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        working-directory: './packages/${matrix.package}'
         run: yarn install --immutable
 
       - name: Install Foundry
