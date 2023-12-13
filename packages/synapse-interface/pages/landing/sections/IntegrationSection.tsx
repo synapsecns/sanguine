@@ -49,7 +49,7 @@ export default function IntegrationSection() {
       <Grid
         cols={{ xs: 2, sm: 2, md: 3, lg: 5 }}
         gap={4}
-        className="py-6 mx-auto md:py-12 lg:py-12 2xl:w-3/4"
+        className="py-8 m-auto max-w-6xl"
       >
         {OrderedSupportedNetworks.map((network: Chain, index: number) => (
           <NetworkCard
