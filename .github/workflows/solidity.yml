@@ -100,7 +100,7 @@ jobs:
           VERCEL_SECRET: ${{ secrets.VERCEL_TOKEN }}
       - name: Deploy (Prod)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
-        working-directory: "packages/${{matrix.package}}/docs"
+#        working-directory: "packages/${{matrix.package}}/docs"
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
@@ -108,15 +108,15 @@ jobs:
         env:
           VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
       - name: Deploy
-        working-directory: "packages/${{matrix.package}}/docs"
+#        working-directory: "packages/${{matrix.package}}/docs"
         run: |
           pwd
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           echo "1"
-          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+#          vercel build --token=${{ secrets.VERCEL_TOKEN }}
           echo "2"
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-          echo "2"
+          echo "3"
         env:
           VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
 
