@@ -111,8 +111,11 @@ jobs:
         run: |
           pwd
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          echo "1"
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          echo "2"
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+          echo "2"
         env:
           VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
 
