@@ -100,7 +100,7 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 	}
 
 	// Create the quoter (balance management, unconfirmed bridge events, quoter API connection.
-	quoter, err := quote.NewQuoter(ctx, evmClients, cfg.Assets, common.HexToAddress(cfg.RelayerAddress), cfg.RFQURL)
+	quoter, err := quote.NewQuoter(ctx, evmClients, cfg.Assets, common.HexToAddress(cfg.RelayerAddress), cfg.RFQURL, signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not create quoter: %w", err)
 	}
@@ -115,14 +115,16 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 	seenChan := make(chan relayerTypes.WrappedLog, MaxEventChanSize)
 
 	return &relayerImpl{
-		eventChan:   eventChan,
-		seenChan:    seenChan,
-		db:          db,
-		txSubmitter: txSubmitter,
-		evmClients:  evmClients,
-		contracts:   fastBridgeContracts,
-		claimQueue:  claimQueue,
-		quoter:      quoter,
+		eventChan:    eventChan,
+		seenChan:     seenChan,
+		db:           db,
+		config:       cfg,
+		txSubmitter:  txSubmitter,
+		chainConfigs: listenerConfigs,
+		evmClients:   evmClients,
+		contracts:    fastBridgeContracts,
+		claimQueue:   claimQueue,
+		quoter:       quoter,
 	}, nil
 }
 

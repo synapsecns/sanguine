@@ -2,7 +2,9 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"gorm.io/gorm"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db/model"
@@ -40,7 +42,7 @@ func (s Store) GetLastIndexed(ctx context.Context, chainID uint32, address commo
 			ChainID:         chainID,
 		}).First(&lastIndexed).Error
 
-	if err != nil && err.Error() == "record not found" {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return 0, nil
 	}
 

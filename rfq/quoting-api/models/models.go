@@ -1,4 +1,5 @@
 // Package models contains teh database models
+// TODO: move back to db
 package models
 
 import (

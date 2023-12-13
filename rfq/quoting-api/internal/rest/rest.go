@@ -4,14 +4,19 @@ package rest
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
+	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/bindings"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/config"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest/auth"
-	"strconv"
-	"time"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/models"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,22 +34,46 @@ type APIServer struct {
 	bridges map[uint]*bindings.FastBridge
 }
 
+var logger = log.Logger("rest")
+
 // NewRestAPIServer creates a new instance of the rest api server.
 func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
-	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false)
+
+	// TODO: pass in metrics rather than getting from env
+	omniclient := omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, metrics.Get(), omnirpcClient.WithCaptureReqRes())
+
+	// make bridges
+	bridges := make(map[uint]*bindings.FastBridge)
+	for chainID, bridge := range cfg.Bridges {
+		chainClient, err := omniclient.GetChainClient(ctx, int(chainID))
+		if err != nil {
+			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
+		}
+		bridges[uint(chainID)], err = bindings.NewFastBridge(common.HexToAddress(bridge), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create bridge contract: %w", err)
+		}
+	}
+
+	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false, cfg.DBType, cfg.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
-	engine := gin.Default()
-	r := APIServer{cfg: cfg, db: apiDB, engine: engine}
+	engine := ginhelper.New(logger)
+	r := APIServer{cfg: cfg, db: apiDB, engine: engine, bridges: bridges}
 	return &r, nil
 }
 
+const (
+	QUOTE_ROUTE = "/quote"
+)
+
 // Setup initializes rest api server routes.
+// TODO: move this to constructor, I have no idea why this is a separate method called by the user
 func (r *APIServer) Setup() {
 	r.engine.GET("/ping", r.ping)
-	r.engine.POST("/quote", r.createQuote)
-	r.engine.GET("/quote", r.readQuotes)
+	r.engine.POST(QUOTE_ROUTE, r.createQuote)
+	r.engine.GET(QUOTE_ROUTE, r.readQuotes)
 	r.engine.GET("/quote/:id", r.readQuote)
 	r.engine.PUT("/quote/:id", r.updateQuote)
 	r.engine.DELETE("/quote/:id", r.deleteQuote)
@@ -52,42 +81,61 @@ func (r *APIServer) Setup() {
 }
 
 // Run runs the rest api server.
-func (r *APIServer) Run() error {
-	err := r.engine.Run()
+func (r *APIServer) Run(ctx context.Context) error {
+	connection := baseServer.Server{}
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", r.cfg.Port), r.engine)
 	if err != nil {
-		return fmt.Errorf("could not run rest api server: %w", err)
+		return fmt.Errorf("could not start rest api server: %w", err)
 	}
+
 	return nil
 }
 
 // Authenticate checks request header for EIP191 signature for a valid relayer.
-func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) {
+// TODO: this should be moved to a middleware package.
+func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) (err error) {
 	// check relayer registered with contract
 	bridge, ok := r.bridges[q.DestChainID]
 	if !ok {
-		err := fmt.Errorf("dest chain id not supported")
+		err = fmt.Errorf("dest chain id not supported")
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
 	}
 
 	// call on-chain to dest chain bridge::HasRole for relayer role
 	ops := &bind.CallOpts{Context: c}
-	role := crypto.Keccak256Hash([]byte("RELAYER_ROLE")) // keccak256("RELAYER_ROLE")
+	// TODO CHANGE ME TO FILLER_ROLE for prod testing
+	//role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_PROD")
+	// TODO: CHANGE ME TO FILLER_ROLE for prod testing and remove if statements
+	filler_role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("FILLER_ROLE")
+	relayer_role := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
 	relayer := common.HexToAddress(q.Relayer)
 
-	if has, err := bridge.HasRole(ops, role, relayer); err != nil {
-		err := fmt.Errorf("unable to check relayer role on-chain")
+	var has bool
+	if has, err = bridge.HasRole(ops, filler_role, relayer); err != nil {
+		err = fmt.Errorf("unable to check filler role on-chain")
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
 	} else if !has {
-		err := fmt.Errorf("q.Relayer not an on-chain relayer")
+		if has, err = bridge.HasRole(ops, relayer_role, relayer); err != nil {
+			err = fmt.Errorf("unable to check relayer role on-chain")
+		}
 		c.JSON(400, gin.H{"msg": err})
-		return
+		return err
+	} else if !has {
+		err = fmt.Errorf("q.Relayer not an on-chain relayer")
+		c.JSON(400, gin.H{"msg": err})
+		return err
 	}
 
 	// authenticate relayer signature with EIP191
 	deadline := time.Now().Unix() - r.cfg.AuthExpiryDelta
-	auth.EIP191Auth(q.Relayer, deadline)(c)
+	err = auth.EIP191Auth(c, q.Relayer, deadline)
+	if err != nil {
+		return fmt.Errorf("unable to authenticate relayer: %w", err)
+	}
+
+	return nil
 }
 
 // GET /ping.
@@ -103,8 +151,12 @@ func (r *APIServer) createQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-
-	r.Authenticate(c, &q)
+	fmt.Println("quote", q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
 
 	id, err := r.db.InsertQuote(c, &q)
 	if err != nil {
@@ -174,7 +226,10 @@ func (r *APIServer) updateQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if uint(id) != q.ID {
 		err := fmt.Errorf(":id != quote.ID")
@@ -203,7 +258,10 @@ func (r *APIServer) deleteQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if err := r.db.DeleteQuote(c, q.ID); err != nil {
 		c.JSON(400, gin.H{"msg": err})
@@ -229,7 +287,10 @@ func (r *APIServer) pingQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-	r.Authenticate(c, &q)
+	err = r.Authenticate(c, &q)
+	if err != nil {
+		return
+	}
 
 	if err := r.db.UpdateQuote(c, &q); err != nil {
 		c.JSON(400, gin.H{"msg": err})

@@ -1,0 +1,3 @@
+# prevent accidental test-signer commit
+test-signer
+*.db

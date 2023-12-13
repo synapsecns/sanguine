@@ -3,7 +3,7 @@ package db_test
 import (
 	"context"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/models"
 	"testing"
 	"time"
 

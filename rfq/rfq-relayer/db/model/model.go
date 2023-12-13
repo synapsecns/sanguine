@@ -3,12 +3,13 @@ package model
 
 import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"gorm.io/gorm"
 )
 
 // GetAllModels gets all models to migrate.
 func GetAllModels() (allModels []interface{}) {
-	return []interface{}{&OriginBridgeEvent{}, &Token{}, &LastIndexed{}, &DeadlineQueue{}, &DestinationBridgeEvent{}}
+	return append([]interface{}{&OriginBridgeEvent{}, &Token{}, &LastIndexed{}, &DeadlineQueue{}, &DestinationBridgeEvent{}}, txdb.GetAllModels()...)
 }
 
 func init() {

@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db"
+	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db/sql/sqlite"
 	"os"
 
 	"github.com/synapsecns/sanguine/core"
@@ -38,19 +40,28 @@ var relayerCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 		}
-		fmt.Printf("Config loaded: %+v\n", relayerConfig)
 
 		// Create MySQL Database connection
 		metricHandler := metrics.Get()
-		dbname := os.Getenv("MYSQL_DATABASE")
-		connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-		mysqlStore, err := mysql.NewMysqlStore(c.Context, connString, metricHandler, relayerConfig.SkipMigrations)
-		if err != nil {
-			return fmt.Errorf("failed to create mysql store: %w", err)
-		}
-		metricHandler.AddGormCallbacks(mysqlStore.DB())
 
-		relayer, err := service.NewRelayer(c.Context, &relayerConfig, mysqlStore, metricHandler)
+		var store db.DB
+
+		// TODO: move this out of here and into a db package
+		if relayerConfig.Database.Type == "mysql" {
+			dbname := os.Getenv("MYSQL_DATABASE")
+			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+			store, err = mysql.NewMysqlStore(c.Context, connString, metricHandler, relayerConfig.SkipMigrations)
+			if err != nil {
+				return fmt.Errorf("failed to create mysql store: %w", err)
+			}
+		} else {
+			store, err = sqlite.NewSqliteStore(c.Context, relayerConfig.Database.DSN, metricHandler, relayerConfig.SkipMigrations)
+			if err != nil {
+				return fmt.Errorf("failed to create sqlite store: %w", err)
+			}
+		}
+
+		relayer, err := service.NewRelayer(c.Context, &relayerConfig, store, metricHandler)
 		if err != nil {
 			return fmt.Errorf("could not create relayer: %w", err)
 		}

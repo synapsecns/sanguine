@@ -3,17 +3,16 @@ package quote
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"sync"
-	"time"
-
 	"github.com/ethereum/go-ethereum/common"
 	EVMClient "github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/client"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/bindings"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/config"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/service/balance"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/utils"
-	"gorm.io/gorm"
+	"math/big"
+	"sync"
 )
 
 const bridgeReqCacheSize = 10000
@@ -24,7 +23,7 @@ type IQuoter interface {
 	PublishQuotes() error
 	UpdateQuotes(quoteID string) error
 	GetQuotes(quoteID string) []*Quote
-	QuoteToAPIQuote(quote *Quote) (*APIQuote, error)
+	QuoteToAPIQuote(quote *Quote) (*client.APIQuote, error)
 	HandleUnconfirmedBridgeRequest(req *bindings.FastBridgeBridgeRequested) error
 	HandleCompletedBridge(transactionID string, event *bindings.IFastBridgeBridgeTransaction) error
 	HandleUncompletedBridge(transactionID string, event *bindings.IFastBridgeBridgeTransaction) error
@@ -37,6 +36,7 @@ type quoterImpl struct {
 	relayer          common.Address
 	bridgeReqHandler IBridgeReqHandler
 	rfqURL           string
+	client           client.Client
 }
 
 // Quote holds all the data for a quote.
@@ -52,30 +52,8 @@ type Quote struct {
 	// Other fields to calculate the actual fee can go here.
 }
 
-// APIQuote is the struct for the quote API.
-type APIQuote struct {
-	Relayer string `json:"relayer" binding:"required"`
-
-	OriginChainID    uint    `json:"origin_chain_id" binding:"required"`
-	OriginToken      string  `json:"origin_token" binding:"required"`
-	OriginAmount     string  `json:"origin_amount" binding:"required"`
-	OriginAmountNorm float64 `json:"origin_amount_norm" binding:"required"`
-	OriginDecimals   uint8   `json:"origin_decimals" binding:"required"`
-
-	DestChainID    uint    `json:"dest_chain_id" binding:"required"`
-	DestToken      string  `json:"dest_token" binding:"required"`
-	DestAmount     string  `json:"dest_amount" binding:"required"`
-	DestAmountNorm float64 `json:"dest_amount_norm" binding:"required"`
-	DestDecimals   uint8   `json:"dest_decimals" binding:"required"`
-
-	Price     float64        `json:"price"` // price = destAmount <quote> / originAmount <base>
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
-}
-
 // NewQuoter creates a new quoter.
-func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayer common.Address, rfqURL string) (IQuoter, error) {
+func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []config.AssetConfig, relayer common.Address, rfqURL string, signer signer.Signer) (IQuoter, error) {
 	// Create balance manager
 	balanceManager, err := balance.NewBalanceManager(clients, assets, relayer)
 	if err != nil {
@@ -89,6 +67,12 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 	}
 
 	bridgeReqHandler := NewBridgeReqs(bridgeReqCacheSize)
+
+	// TODO: move this higher up in the service chain
+	apiClient, err := client.NewClient(rfqURL, signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not create client: %w", err)
+	}
 
 	quotes := make(map[string][]*Quote)
 	for _, asset := range assets {
@@ -109,7 +93,8 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 				OriginChainID: asset.ChainID,
 				DestChainID:   destAsset.ChainID,
 				MaxVolume:     big.NewInt(0),
-				APIID:         -1,
+
+				APIID: -1,
 			}
 
 			// TODO: For add any future quote logic config here (make a helper function)
@@ -126,6 +111,7 @@ func NewQuoter(ctx context.Context, clients map[uint32]EVMClient.EVM, assets []c
 		balance:          balanceManager,
 		bridgeReqHandler: bridgeReqHandler,
 		rfqURL:           rfqURL,
+		client:           apiClient,
 	}, nil
 }
 
@@ -143,14 +129,15 @@ func (q *quoterImpl) PublishQuotes() error {
 
 	for _, quotes := range q.quotes {
 		for _, quote := range quotes {
-			_, err := q.QuoteToAPIQuote(quote)
+			quoteStruct, err := q.QuoteToAPIQuote(quote)
 			if err != nil {
 				return fmt.Errorf("could not convert quote to API quote: %w", err)
 			}
 
-			// TODO: Publish quote to quote API
-			// TODO: /publish quote
-			// @mikeyf How should we go about this http connection
+			err = q.client.CreateQuote(quoteStruct)
+			if err != nil {
+				return fmt.Errorf("could not create quote: %w", err)
+			}
 		}
 	}
 	return nil
@@ -163,14 +150,15 @@ func (q *quoterImpl) UpdateQuotes(quoteID string) error {
 
 	// Get the quote from the quote API
 	for _, quote := range q.quotes[quoteID] {
-		_, err := q.QuoteToAPIQuote(quote)
+		quoteStruct, err := q.QuoteToAPIQuote(quote)
 		if err != nil {
 			return fmt.Errorf("could not convert quote to API quote: %w", err)
 		}
 
-		// TODO: make an interface for the API, would be cleaner
-		// TODO: /update quote
-		// @mikeyf How should we go about this http connection
+		err = q.client.CreateQuote(quoteStruct)
+		if err != nil {
+			return fmt.Errorf("could not create quote: %w", err)
+		}
 	}
 	return nil
 }
@@ -197,7 +185,7 @@ func (q *quoterImpl) GetValidQuote(quoteID string, destTokenID string, destVolum
 }
 
 // QuoteToAPIQuote gets current balances and converts a quote to an APIQuote,.
-func (q *quoterImpl) QuoteToAPIQuote(quote *Quote) (*APIQuote, error) {
+func (q *quoterImpl) QuoteToAPIQuote(quote *Quote) (*client.APIQuote, error) {
 	originTokenID := utils.GenerateTokenID(quote.OriginChainID, quote.OriginToken)
 	destTokenID := utils.GenerateTokenID(quote.DestChainID, quote.DestToken)
 	originBalance := q.balance.GetBalance(originTokenID)
@@ -211,7 +199,7 @@ func (q *quoterImpl) QuoteToAPIQuote(quote *Quote) (*APIQuote, error) {
 		return nil, fmt.Errorf("could not convert dest balance to float64: %w", err)
 	}
 	normBalance := destNormBalance / originNormBalance
-	return &APIQuote{
+	return &client.APIQuote{
 		Relayer: q.relayer.String(),
 
 		OriginChainID:    uint(quote.OriginChainID),

@@ -3,6 +3,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -86,7 +87,7 @@ func (q *Queue) Dequeue(ctx context.Context) (string, error) {
 		return item.TransactionID, nil
 	}
 
-	return "", fmt.Errorf("queue is empty")
+	return "", errQueueEmpty
 }
 
 // HasLiveElements checks if the queue has any elements that are past the deadline.
@@ -97,8 +98,10 @@ func (q *Queue) HasLiveElements(currTime int64) (bool, error) {
 		}
 		return false, nil
 	}
-	return false, fmt.Errorf("queue is empty")
+	return false, errQueueEmpty
 }
+
+var errQueueEmpty = errors.New("queue is empty")
 
 // Len returns the length of the queue.
 func (q *Queue) Len() int {
