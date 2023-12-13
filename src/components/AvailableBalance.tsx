@@ -78,7 +78,7 @@ export const AvailableBalance = ({
     return (
       <div
         onClick={handleAvailableBalanceClick}
-        className="ml-px text-xs text-yellow-300 cursor-pointer hover:underline active:opacity-40"
+        className="ml-px text-xs text-[--synapse-accent] cursor-pointer hover:underline active:opacity-40"
       >
         {currentTokenBalance.parsedBalance} available
       </div>
@@ -88,7 +88,7 @@ export const AvailableBalance = ({
     return (
       <div
         onClick={handleAvailableBalanceClick}
-        className="ml-px text-xs cursor-pointer hover:text-sky-300 hover:underline active:opacity-40 text-[--synapse-text-secondary]"
+        className="ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary]"
       >
         {currentTokenBalance.parsedBalance} available
       </div>

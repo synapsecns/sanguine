@@ -4,7 +4,7 @@ import { BridgeableToken } from 'types'
 import { TokenPopoverSelect } from './TokenPopoverSelect'
 
 type Props = {
-  label: 'Out' | 'In'
+  label: 'In' | 'Out'
   onChange: (newToken: BridgeableToken) => void
   token: BridgeableToken
 }
