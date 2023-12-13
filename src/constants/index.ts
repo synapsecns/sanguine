@@ -1,5 +1,4 @@
 import { CustomThemeVariables } from 'types'
-import { Address } from 'types'
 
 export const lightThemeVariables: CustomThemeVariables = {
   '--synapse-text-primary': 'hsl(240deg 0% 7%)',

@@ -5,11 +5,12 @@ import { TokenPopoverSelect } from './TokenPopoverSelect'
 
 type Props = {
   label: 'In' | 'Out'
+  isOrigin: boolean
   onChange: (newToken: BridgeableToken) => void
   token: BridgeableToken
 }
 
-export function TokenSelect({ label, token, onChange }: Props) {
+export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
   const {
     originChainId,
     destinationChainId,
@@ -29,9 +30,9 @@ export function TokenSelect({ label, token, onChange }: Props) {
 
   return (
     <TokenPopoverSelect
-      selectedChainId={label === 'In' ? originChainId : destinationChainId}
+      selectedChainId={isOrigin ? originChainId : destinationChainId}
       options={options}
-      balances={balances}
+      balances={isOrigin ? balances : []}
       onSelect={(selected) => {
         onChange(selected)
       }}

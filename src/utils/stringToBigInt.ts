@@ -3,6 +3,10 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
     return 0n
   }
 
+  if (typeof rawDecimals !== 'number') {
+    return 0n
+  }
+
   try {
     let value = rawVal.replace(/[$,]/g, '')
     if (['.', '0.', '', '.0'].includes(value)) {
@@ -30,4 +34,4 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
   } catch (error) {
     console.log(error)
   }
-} 
+}

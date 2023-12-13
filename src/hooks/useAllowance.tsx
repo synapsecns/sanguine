@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react'
 import { fetchErc20TokenAllowance } from '@/utils/actions/fetchErc20TokenAllowance'
-import { Address } from 'types'
 
 export enum UseAllowanceError {
   REQUIRE_SPENDER_ADDRESS = 'Allowance: Missing Spender Address',
@@ -10,9 +9,9 @@ export enum UseAllowanceError {
 }
 
 interface UseAllowanceProps {
-  spenderAddress: Address
-  tokenAddress: Address
-  ownerAddress: Address
+  spenderAddress: string
+  tokenAddress: string
+  ownerAddress: string
   chainId: number
   signer: any
   provider: any

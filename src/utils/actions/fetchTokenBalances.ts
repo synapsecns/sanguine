@@ -1,12 +1,12 @@
 import { Contract, ethers, AbiCoder } from 'ethers'
 import { BridgeableToken } from 'types'
+import { formatBigIntToString } from '../formatBigIntToString'
 import multicallAbi from '../../constants/abis/multicall.json'
 import erc20Abi from '../../constants/abis/erc20.json'
-import { formatBigIntToString } from '../formatBigIntToString'
 
 const multicallAddress: string = `0xcA11bde05977b3631167028862bE2a173976CA11`
 
-function useMulticallContract(signerOrProvider: any) {
+function useMulticallContract(signerOrProvider: any): Contract {
   return new Contract(multicallAddress, multicallAbi, signerOrProvider)
 }
 
@@ -20,18 +20,31 @@ export async function fetchTokenBalances({
   address,
   chainId,
   tokens,
-  signer,
+  signerOrProvider,
 }: {
   address: string
   chainId: number
   tokens: any[]
-  signer: any
+  signerOrProvider: any // TODO: handle for two distinct types
 }): Promise<TokenBalance[]> {
-  const multicall = useMulticallContract(signer)
+  const multicall: Contract = useMulticallContract(signerOrProvider)
+
+  if (!signerOrProvider) {
+    console.error('Require valid Signer or Provider')
+    return
+  }
+  if (Number(signerOrProvider?._network.chainId.toString()) !== chainId) {
+    console.error('Signer or Provider does not match selected chainId')
+    return
+  }
 
   const calls = tokens.map((token: BridgeableToken) => {
     const tokenAddress: string = token.addresses[chainId]
-    const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, signer)
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      erc20Abi,
+      signerOrProvider
+    )
     return {
       target: tokenAddress,
       callData: tokenContract.interface.encodeFunctionData('balanceOf', [
@@ -58,7 +71,6 @@ export async function fetchTokenBalances({
       }
     })
 
-    console.log('multicall data:', data)
     return data
   } catch (error) {
     console.error('Error fetching token balances:', error)

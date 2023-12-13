@@ -16,18 +16,18 @@ export const fetchAndStoreTokenBalances = createAsyncThunk(
     address,
     chainId,
     tokens,
-    signer,
+    signerOrProvider,
   }: {
     address: string
     chainId: number
     tokens: any[]
-    signer: any
+    signerOrProvider: any
   }) => {
     const balances: TokenBalance[] = await fetchTokenBalances({
       address,
       chainId,
       tokens,
-      signer,
+      signerOrProvider,
     })
     return balances
   }

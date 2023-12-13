@@ -39,13 +39,11 @@ import {
 } from '@/state/slices/bridge/hooks'
 import { BridgeButton } from './BridgeButton'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
-import { toHexStr } from '@/utils/toHexStr'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 import { generateTheme } from '@/utils/generateTheme'
 import { fetchTokenBalances } from '@/utils/actions/fetchTokenBalances'
 import { AvailableBalance } from './AvailableBalance'
-import { Address } from 'types'
 
 const chains = {
   1: {
@@ -77,6 +75,8 @@ export const Widget = ({
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
 
+  console.log('web3Provider:', web3Provider)
+
   const {
     inputAmount,
     debouncedInputAmount,
@@ -87,6 +87,16 @@ export const Widget = ({
     tokens: allTokens,
     balances,
   } = useBridgeState()
+
+  /** Select Consumer networkProvider based on Origin ChainId */
+  const originChainProvider = useMemo(() => {
+    if (!Array.isArray(networkProviders)) return null
+    if (!originChainId) return null
+    const _provider = networkProviders.find(
+      (provider) => Number(provider?._network?.chainId) === originChainId
+    )
+    return _provider
+  }, [originChainId, networkProviders])
 
   const themeVariables = (() => {
     if (theme === 'dark') return generateTheme({ bgColor: 'dark' })
@@ -136,17 +146,18 @@ export const Widget = ({
 
   /** Fetch token balances when signer/address connected */
   useEffect(() => {
-    if (originChainId && tokens && connectedAddress && signer) {
+    if (!signer && !originChainProvider) return
+    if (originChainId && tokens && connectedAddress) {
       dispatch(
         fetchAndStoreTokenBalances({
           address: connectedAddress,
           chainId: originChainId,
           tokens: allTokens,
-          signer: signer,
+          signerOrProvider: originChainProvider ?? signer,
         })
       )
     }
-  }, [originChainId, allTokens, connectedAddress, signer])
+  }, [originChainId, allTokens, connectedAddress, signer, originChainProvider])
 
   const originTokenDecimals = useMemo(() => {
     if (typeof originToken?.decimals === 'number') return originToken?.decimals
@@ -176,26 +187,26 @@ export const Widget = ({
     synapseSDK: synapseSDK,
   })
 
-  const routerAddress: Address = quote?.routerAddress as Address
+  const routerAddress: string = quote?.routerAddress
 
   const { allowance, checkAllowanceCallback } = useAllowance({
-    spenderAddress: routerAddress as Address,
-    tokenAddress: originToken?.addresses[originChainId] as Address,
-    ownerAddress: connectedAddress as Address,
+    spenderAddress: routerAddress,
+    tokenAddress: originToken?.addresses[originChainId],
+    ownerAddress: connectedAddress,
     chainId: originToken?.addresses[originChainId],
     signer: signer,
-    provider: provider,
+    provider: originChainProvider ?? provider,
   })
 
   const useApproveCallbackArgs: UseApproveCallbackProps = {
-    spenderAddress: routerAddress as Address,
-    tokenAddress: originToken?.addresses[originChainId] as Address,
-    ownerAddress: connectedAddress as Address,
+    spenderAddress: routerAddress,
+    tokenAddress: originToken?.addresses[originChainId],
+    ownerAddress: connectedAddress,
     amount: stringToBigInt(inputAmount, originTokenDecimals),
     chainId: originChainId,
     onSuccess: checkAllowanceCallback,
     signer: signer,
-    provider: provider,
+    provider: originChainProvider ?? provider,
   }
   const {
     state: approveState,
@@ -204,12 +215,12 @@ export const Widget = ({
   } = useApproveCallback(useApproveCallbackArgs)
 
   const useBridgeCallbackArgs: UseBridgeCallbackArgs = {
-    destinationAddress: connectedAddress as Address,
+    destinationAddress: connectedAddress,
     originRouterAddress: routerAddress,
     originChainId: originChainId,
     destinationChainId: destinationChainId,
-    tokenAddress: originToken?.addresses[originChainId] as Address,
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    tokenAddress: originToken?.addresses[originChainId],
+    amount: stringToBigInt(debouncedInputAmount, originTokenDecimals),
     originQuery: quote?.originQuery,
     destinationQuery: quote?.destQuery,
     synapseSDK,
@@ -226,8 +237,8 @@ export const Widget = ({
   }, [originChainId, networkId])
 
   const formattedInputAmount: bigint = useMemo(() => {
-    return stringToBigInt(inputAmount ?? '0', originTokenDecimals)
-  }, [inputAmount, originToken])
+    return stringToBigInt(debouncedInputAmount ?? '0', originTokenDecimals)
+  }, [debouncedInputAmount, originToken])
 
   const isInputValid: boolean = useMemo(() => {
     if (debouncedInputAmount === '') return false
@@ -248,7 +259,8 @@ export const Widget = ({
       originToken &&
       destinationToken &&
       originChainId &&
-      destinationChainId
+      destinationChainId &&
+      fetchQuoteCallback
     ) {
       fetchQuoteCallback()
     } else {
@@ -336,12 +348,13 @@ export const Widget = ({
               originChainId={originChainId}
               originToken={originToken}
               inputAmount={inputAmount}
-              connectedAddress={connectedAddress as Address}
+              connectedAddress={connectedAddress}
               balances={balances}
             />
           </div>
           <TokenSelect
             label="In"
+            isOrigin={true}
             token={originToken}
             onChange={handleOriginTokenSelection}
           />
@@ -364,6 +377,7 @@ export const Widget = ({
           />
           <TokenSelect
             label="Out"
+            isOrigin={false}
             token={destinationToken}
             onChange={handleDestinationTokenSelection}
           />

@@ -1,3 +1,6 @@
+import { JsonRpcApiProvider, BrowserProvider, Provider } from 'ethers'
+// import { Provider } from '@ethersproject/abstract-provider';
+
 export interface BridgeableToken {
   addresses: {}
   decimals: number | {}
@@ -27,9 +30,10 @@ export interface WidgetProps {
   chainIds: number[]
 
   /** Consumer Web3 Provider */
-  web3Provider?: any
+  web3Provider?: JsonRpcApiProvider | BrowserProvider
 
   /** Respective Network Providers */
+  // TO DO: Pass proper ethers type
   networkProviders?: any[]
 
   /** Selected Day/Night Theme */
@@ -55,5 +59,3 @@ export declare function Bridge(props: any): JSX.Element
 export declare const USDC: BridgeableToken
 export declare const USDT: BridgeableToken
 export declare const DAI: BridgeableToken
-
-export type Address = `0x${string}`

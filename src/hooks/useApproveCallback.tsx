@@ -1,6 +1,5 @@
 import { useMemo, useCallback, useState } from 'react'
 import { approveErc20Token } from '@/utils/actions/approveErc20Token'
-import { Address } from 'types'
 
 export enum UseApproveCallbackError {
   REQUIRE_SPENDER_ADDRESS = 'Approve: Missing Spender Address',
@@ -17,9 +16,9 @@ export enum ApproveCallbackState {
 }
 
 export interface UseApproveCallbackProps {
-  spenderAddress: Address
-  tokenAddress: Address
-  ownerAddress: Address
+  spenderAddress: string
+  tokenAddress: string
+  ownerAddress: string
   amount: bigint
   chainId: number
   onSuccess: () => any
@@ -46,8 +45,8 @@ export function useApproveCallback({
       setApproveState(ApproveCallbackState.PENDING)
     },
     successApproval: async () => {
+      await onSuccess()
       setApproveState(ApproveCallbackState.SUCCESS)
-      onSuccess()
     },
     resetState: () => {
       setApproveState(ApproveCallbackState.IDLE)
@@ -83,7 +82,7 @@ export function useApproveCallback({
         provider,
         signer,
       })
-      ApproveStateCallback.successApproval()
+      await ApproveStateCallback.successApproval()
     } catch (error) {
       ApproveStateCallback.resetState()
       console.error(error)

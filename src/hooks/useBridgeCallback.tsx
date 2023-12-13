@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from 'react'
-import { Address } from 'types'
 
 export enum UseBridgeCallbackError {
   REQUIRE_TOKEN_ADDRESS = 'Bridge: Missing Token Address',
@@ -20,11 +19,11 @@ export enum BridgeCallbackState {
 }
 
 export interface UseBridgeCallbackArgs {
-  destinationAddress: Address
-  originRouterAddress: Address
+  destinationAddress: string
+  originRouterAddress: string
   originChainId: number
   destinationChainId: number
-  tokenAddress: Address
+  tokenAddress: string
   amount: bigint
   originQuery: any
   destinationQuery: any

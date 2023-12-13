@@ -4,7 +4,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { setInputAmount } from '@/state/slices/bridge/reducer'
-import { BridgeableToken, Address } from 'types'
+import { BridgeableToken } from 'types'
 
 export const AvailableBalance = ({
   originChainId,
@@ -16,13 +16,13 @@ export const AvailableBalance = ({
   originChainId: number
   originToken: BridgeableToken
   inputAmount: string
-  connectedAddress: Address
+  connectedAddress: string
   balances: TokenBalance[]
 }) => {
   const dispatch = useAppDispatch()
 
   const currentTokenBalance = useMemo(() => {
-    if (!balances) {
+    if (!Array.isArray(balances)) {
       return {
         rawBalance: null,
         parsedBalance: null,
@@ -30,7 +30,9 @@ export const AvailableBalance = ({
       }
     } else {
       const matchedTokenBalance = balances?.find(
-        (token: TokenBalance) => token?.token?.addresses[originChainId]
+        (token: TokenBalance) =>
+          token?.token?.addresses[originChainId] ===
+          originToken?.addresses[originChainId]
       )
       const decimals: number =
         typeof matchedTokenBalance?.token?.decimals === 'number'
@@ -43,21 +45,21 @@ export const AvailableBalance = ({
         decimals: decimals,
       }
     }
-  }, [balances])
+  }, [balances, originToken, originChainId, connectedAddress])
 
   const userInputGreaterThanCurrentBalance: boolean = useMemo(() => {
-    const formattedInput = stringToBigInt(
-      inputAmount,
-      currentTokenBalance.decimals
-    )
     if (
-      formattedInput === undefined ||
-      formattedInput === null ||
+      inputAmount === undefined ||
+      inputAmount === null ||
       currentTokenBalance.rawBalance === undefined ||
       currentTokenBalance.rawBalance === null
     ) {
       return false
     } else {
+      const formattedInput = stringToBigInt(
+        inputAmount,
+        currentTokenBalance.decimals
+      )
       return Boolean(formattedInput > BigInt(currentTokenBalance.rawBalance))
     }
   }, [inputAmount, originToken, originChainId, currentTokenBalance])
@@ -70,7 +72,7 @@ export const AvailableBalance = ({
         18
       ) ?? '0.0'
     dispatch(setInputAmount(maxAmount))
-  }, [dispatch, balances, currentTokenBalance])
+  }, [dispatch, balances, currentTokenBalance, originToken, originChainId])
 
   if (!connectedAddress) return
 
@@ -80,7 +82,7 @@ export const AvailableBalance = ({
         onClick={handleAvailableBalanceClick}
         className="ml-px text-xs text-[--synapse-accent] cursor-pointer hover:underline active:opacity-40"
       >
-        {currentTokenBalance.parsedBalance} available
+        {currentTokenBalance.parsedBalance ?? '0.0'} available
       </div>
     )
   }
@@ -90,7 +92,7 @@ export const AvailableBalance = ({
         onClick={handleAvailableBalanceClick}
         className="ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary]"
       >
-        {currentTokenBalance.parsedBalance} available
+        {currentTokenBalance.parsedBalance ?? '0.0'} available
       </div>
     )
   }
