@@ -81,7 +81,7 @@ jobs:
           END
           )
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
-          echo $TARGET_ID > /tmp
+          echo $TARGET_ID > /tmp/hi
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Pull Vercel Environment Information
