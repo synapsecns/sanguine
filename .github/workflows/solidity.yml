@@ -81,6 +81,7 @@ jobs:
           END
           )
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
+          echo $TARGET_ID > /tmp
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Pull Vercel Environment Information
@@ -93,6 +94,7 @@ jobs:
           forge doc
           cp vercel.package.json docs/package.json
       - name: Setup upterm session
+        working-directory: "packages/${{matrix.package}}/docs"
         uses: lhotari/action-upterm@v1
       - name: Deploy (Prod)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
