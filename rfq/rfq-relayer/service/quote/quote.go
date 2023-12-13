@@ -59,9 +59,10 @@ type Quote struct {
 type APIQuote struct {
 	Relayer string `json:"relayer" binding:"required"`
 
-	OriginChainID    uint    `json:"origin_chain_id" binding:"required"`
-	OriginToken      string  `json:"origin_token" binding:"required"`
-	OriginAmount     string  `json:"origin_amount" binding:"required"`
+	OriginChainID uint   `json:"origin_chain_id" binding:"required"`
+	OriginToken   string `json:"origin_token" binding:"required"`
+	OriginAmount  string `json:"origin_amount" binding:"required"`
+	// TODO: origin amount norm should be a string
 	OriginAmountNorm float64 `json:"origin_amount_norm" binding:"required"`
 	OriginDecimals   uint8   `json:"origin_decimals" binding:"required"`
 
@@ -146,9 +147,26 @@ func (q *quoterImpl) PublishQuotes() error {
 
 	for _, quotes := range q.quotes {
 		for _, quote := range quotes {
-			_, err := q.QuoteToAPIQuote(quote)
+			quoteStruct, err := q.QuoteToAPIQuote(quote)
 			if err != nil {
 				return fmt.Errorf("could not convert quote to API quote: %w", err)
+			}
+
+			// TODO: refcator/dedupe me
+			marshalledQuote, err := json.Marshal(quoteStruct)
+			if err != nil {
+				return fmt.Errorf("could not marshal quote: %w", err)
+			}
+
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/quote", q.rfqURL), bytes.NewBuffer(marshalledQuote))
+			if err != nil {
+				return fmt.Errorf("could not create request: %w", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			_, err = http.DefaultClient.Do(req)
+			if err != nil {
+				return fmt.Errorf("could not update quote: %w", err)
 			}
 
 			// TODO: Publish quote to quote API

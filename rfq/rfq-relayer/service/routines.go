@@ -44,12 +44,14 @@ func (r *relayerImpl) HandleClaimEvents(parentCtx context.Context) error {
 		select {
 		case <-parentCtx.Done():
 			return nil
+			// TODO: replace with min() in go 1.21.4
 		case <-time.After(time.Duration(math.Min(float64(r.config.QueuePollInterval), 1)) * time.Second):
 			// Check if head of queue is ready
 			now := time.Now().Unix()
 			deadlinePassed, err := r.claimQueue.HasLiveElements(now)
+			// TODO: check for queue empty error and only skip on that. Queue returns nothing else.
 			if err != nil {
-				return fmt.Errorf("could not peek head of queue: %w", err)
+				continue
 			}
 
 			// If deadline has passed, dequeue and execute claim
