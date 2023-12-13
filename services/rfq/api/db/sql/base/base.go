@@ -25,6 +25,7 @@ func (s Store) DB() *gorm.DB {
 // GetAllModels gets all models to migrate.
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
+	allModels = append(allModels, &Quote{})
 	return allModels
 }
 
