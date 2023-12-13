@@ -68,7 +68,7 @@ func (c contractTypeImpl) ContractName() string {
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case FastBridgeType:
-		return fastbridge.Contracts["solidity/"]
+		return fastbridge.Contracts["solidity/FastBridge.sol:FastBridge"]
 	}
 	return nil
 }

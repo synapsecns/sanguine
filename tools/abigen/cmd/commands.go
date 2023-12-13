@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 	"github.com/urfave/cli/v2"
 )
@@ -37,6 +38,20 @@ var optimizerRunsFlags = &cli.IntFlag{
 	Value: 10000,
 }
 
+var evmVersionFlags = &cli.StringFlag{
+	Name:  "evm-version",
+	Usage: "evm version to target",
+}
+
+// strToPt converts a string to a pointer
+// crucially, will return nil if stirng is empty
+func strToPt(str string) *string {
+	if str == "" {
+		return nil
+	}
+	return core.PtrTo(str)
+}
+
 // GenerateCommand generates abi using flags.
 var GenerateCommand = &cli.Command{
 	Name:  "generate",
@@ -47,10 +62,11 @@ var GenerateCommand = &cli.Command{
 		filenameFlag,
 		solVersionFlag,
 		optimizerRunsFlags,
+		evmVersionFlags,
 	},
 	Action: func(context *cli.Context) error {
 		//nolint: wrapcheck
-		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name))
+		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
 	},
 }
 

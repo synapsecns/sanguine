@@ -22,7 +22,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	// TODO: add contracts here
-	parentManager := manager.NewDeployerManager(t)
+	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer)
 	return &DeployManager{parentManager}
 }
 
