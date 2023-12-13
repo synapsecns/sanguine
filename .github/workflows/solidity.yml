@@ -148,8 +148,8 @@ jobs:
       - name: Delete Untested Files
         working-directory: './packages/${matrix.package}'
         run: |
-          rm -rf test/ | exit 0
-          rm -rf script/ | exit 0
+          rm -rf test/ || exit 0
+          rm -rf script/ || exit 0
 
       - name: Build Contracts
         run: |
@@ -198,14 +198,14 @@ jobs:
           version: nightly
 
       - name: Run Foundry Tests
-        working-directory: './packages/${matrix.package}'
+        working-directory: "/packages/${matrix.package}"
         run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
         with:
           action: codecov/codecov-action@v3
-          current_path: './packages/${matrix.package}'
+          current_path: "/packages/${matrix.package}"
           with: |
             token: ${{ secrets.CODECOV }}
             fail_ci_if_error: true # optional (default = false)

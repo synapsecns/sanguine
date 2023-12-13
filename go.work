@@ -17,5 +17,6 @@ use (
 	./services/omnirpc
 	./services/scribe
 	./services/sinner
+	./services/rfq
 	./tools
 )
