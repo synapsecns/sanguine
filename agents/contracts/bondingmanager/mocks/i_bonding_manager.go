@@ -22,6 +22,29 @@ type IBondingManager struct {
 	mock.Mock
 }
 
+// AcceptOwnership provides a mock function with given fields: opts
+func (_m *IBondingManager) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(opts)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // AddAgent provides a mock function with given fields: opts, domain, agent, proof
 func (_m *IBondingManager) AddAgent(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, domain, agent, proof)
@@ -261,6 +284,29 @@ func (_m *IBondingManager) DisputeStatus(opts *bind.CallOpts, agent common.Addre
 	return r0, r1
 }
 
+// FilterAgentRootProposed provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterAgentRootProposed(opts *bind.FilterOpts) (*bondingmanager.BondingManagerAgentRootProposedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerAgentRootProposedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerAgentRootProposedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerAgentRootProposedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterDisputeOpened provides a mock function with given fields: opts
 func (_m *IBondingManager) FilterDisputeOpened(opts *bind.FilterOpts) (*bondingmanager.BondingManagerDisputeOpenedIterator, error) {
 	ret := _m.Called(opts)
@@ -330,6 +376,29 @@ func (_m *IBondingManager) FilterInitialized(opts *bind.FilterOpts) (*bondingman
 	return r0, r1
 }
 
+// FilterOwnershipTransferStarted provides a mock function with given fields: opts, previousOwner, newOwner
+func (_m *IBondingManager) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*bondingmanager.BondingManagerOwnershipTransferStartedIterator, error) {
+	ret := _m.Called(opts, previousOwner, newOwner)
+
+	var r0 *bondingmanager.BondingManagerOwnershipTransferStartedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address, []common.Address) *bondingmanager.BondingManagerOwnershipTransferStartedIterator); ok {
+		r0 = rf(opts, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerOwnershipTransferStartedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterOwnershipTransferred provides a mock function with given fields: opts, previousOwner, newOwner
 func (_m *IBondingManager) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*bondingmanager.BondingManagerOwnershipTransferredIterator, error) {
 	ret := _m.Called(opts, previousOwner, newOwner)
@@ -346,6 +415,52 @@ func (_m *IBondingManager) FilterOwnershipTransferred(opts *bind.FilterOpts, pre
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterProposedAgentRootCancelled provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterProposedAgentRootCancelled(opts *bind.FilterOpts) (*bondingmanager.BondingManagerProposedAgentRootCancelledIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerProposedAgentRootCancelledIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerProposedAgentRootCancelledIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerProposedAgentRootCancelledIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterProposedAgentRootResolved provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterProposedAgentRootResolved(opts *bind.FilterOpts) (*bondingmanager.BondingManagerProposedAgentRootResolvedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerProposedAgentRootResolvedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerProposedAgentRootResolvedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerProposedAgentRootResolvedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -778,6 +893,29 @@ func (_m *IBondingManager) Owner(opts *bind.CallOpts) (common.Address, error) {
 	return r0, r1
 }
 
+// ParseAgentRootProposed provides a mock function with given fields: log
+func (_m *IBondingManager) ParseAgentRootProposed(log types.Log) (*bondingmanager.BondingManagerAgentRootProposed, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerAgentRootProposed
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerAgentRootProposed); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerAgentRootProposed)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseDisputeOpened provides a mock function with given fields: log
 func (_m *IBondingManager) ParseDisputeOpened(log types.Log) (*bondingmanager.BondingManagerDisputeOpened, error) {
 	ret := _m.Called(log)
@@ -847,6 +985,29 @@ func (_m *IBondingManager) ParseInitialized(log types.Log) (*bondingmanager.Bond
 	return r0, r1
 }
 
+// ParseOwnershipTransferStarted provides a mock function with given fields: log
+func (_m *IBondingManager) ParseOwnershipTransferStarted(log types.Log) (*bondingmanager.BondingManagerOwnershipTransferStarted, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerOwnershipTransferStarted
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerOwnershipTransferStarted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerOwnershipTransferStarted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *IBondingManager) ParseOwnershipTransferred(log types.Log) (*bondingmanager.BondingManagerOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -857,6 +1018,52 @@ func (_m *IBondingManager) ParseOwnershipTransferred(log types.Log) (*bondingman
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bondingmanager.BondingManagerOwnershipTransferred)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseProposedAgentRootCancelled provides a mock function with given fields: log
+func (_m *IBondingManager) ParseProposedAgentRootCancelled(log types.Log) (*bondingmanager.BondingManagerProposedAgentRootCancelled, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerProposedAgentRootCancelled
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerProposedAgentRootCancelled); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerProposedAgentRootCancelled)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseProposedAgentRootResolved provides a mock function with given fields: log
+func (_m *IBondingManager) ParseProposedAgentRootResolved(log types.Log) (*bondingmanager.BondingManagerProposedAgentRootResolved, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerProposedAgentRootResolved
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerProposedAgentRootResolved); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerProposedAgentRootResolved)
 		}
 	}
 
@@ -916,6 +1123,29 @@ func (_m *IBondingManager) ParseStatusUpdated(log types.Log) (*bondingmanager.Bo
 	return r0, r1
 }
 
+// PendingOwner provides a mock function with given fields: opts
+func (_m *IBondingManager) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RemoteSlashAgent provides a mock function with given fields: opts, msgOrigin, proofMaturity, domain, agent, prover
 func (_m *IBondingManager) RemoteSlashAgent(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, msgOrigin, proofMaturity, domain, agent, prover)
@@ -962,8 +1192,8 @@ func (_m *IBondingManager) RenounceOwnership(opts *bind.TransactOpts) (*types.Tr
 	return r0, r1
 }
 
-// ResolveStuckDispute provides a mock function with given fields: opts, domain, slashedAgent
-func (_m *IBondingManager) ResolveStuckDispute(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error) {
+// ResolveDisputeWhenStuck provides a mock function with given fields: opts, domain, slashedAgent
+func (_m *IBondingManager) ResolveDisputeWhenStuck(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, domain, slashedAgent)
 
 	var r0 *types.Transaction
@@ -1096,6 +1326,29 @@ func (_m *IBondingManager) Version(opts *bind.CallOpts) (string, error) {
 	return r0, r1
 }
 
+// WatchAgentRootProposed provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchAgentRootProposed(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerAgentRootProposed) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerAgentRootProposed) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerAgentRootProposed) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WatchDisputeOpened provides a mock function with given fields: opts, sink
 func (_m *IBondingManager) WatchDisputeOpened(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerDisputeOpened) (event.Subscription, error) {
 	ret := _m.Called(opts, sink)
@@ -1165,6 +1418,29 @@ func (_m *IBondingManager) WatchInitialized(opts *bind.WatchOpts, sink chan<- *b
 	return r0, r1
 }
 
+// WatchOwnershipTransferStarted provides a mock function with given fields: opts, sink, previousOwner, newOwner
+func (_m *IBondingManager) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, previousOwner, newOwner)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerOwnershipTransferStarted, []common.Address, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerOwnershipTransferStarted, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WatchOwnershipTransferred provides a mock function with given fields: opts, sink, previousOwner, newOwner
 func (_m *IBondingManager) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
 	ret := _m.Called(opts, sink, previousOwner, newOwner)
@@ -1181,6 +1457,52 @@ func (_m *IBondingManager) WatchOwnershipTransferred(opts *bind.WatchOpts, sink 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerOwnershipTransferred, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchProposedAgentRootCancelled provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchProposedAgentRootCancelled(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerProposedAgentRootCancelled) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerProposedAgentRootCancelled) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerProposedAgentRootCancelled) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchProposedAgentRootResolved provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchProposedAgentRootResolved(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerProposedAgentRootResolved) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerProposedAgentRootResolved) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerProposedAgentRootResolved) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}

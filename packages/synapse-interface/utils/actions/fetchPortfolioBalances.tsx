@@ -5,7 +5,7 @@ import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
-export const CCTP_ROUTER_ADDRESS = '0xd359bc471554504f683fbd4f6e36848612349ddf'
+export const CCTP_ROUTER_ADDRESS = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 
 export interface TokenAndBalance {
   token: Token

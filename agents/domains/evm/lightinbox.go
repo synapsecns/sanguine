@@ -64,14 +64,14 @@ func (a lightInboxContract) SubmitAttestation(
 }
 
 //nolint:dupl
-func (a lightInboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
 	// TODO: Is there a way to get a return value from a contractTransactor call?
-	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
+	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, stateIndex, rawSig, snapPayload, snapSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
@@ -79,8 +79,8 @@ func (a lightInboxContract) SubmitStateReportWithSnapshot(transactor *bind.Trans
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyStateWithSnapshot(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
-	tx, err = a.contract.VerifyStateWithSnapshot(transactor, big.NewInt(stateIndex), snapPayload, snapSignature)
+func (a lightInboxContract) VerifyStateWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyStateWithSnapshot(transactor, stateIndex, snapPayload, snapSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
@@ -97,8 +97,8 @@ func (a lightInboxContract) SubmitAttestationReport(transactor *bind.TransactOpt
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
-	tx, err = a.contract.VerifyStateWithAttestation(transactor, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
+func (a lightInboxContract) VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyStateWithAttestation(transactor, stateIndex, snapPayload, attPayload, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
@@ -116,13 +116,13 @@ func (a lightInboxContract) VerifyReceipt(transactor *bind.TransactOpts, rcptPay
 }
 
 //nolint:dupl
-func (a lightInboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, big.NewInt(stateIndex), rawSig, snapPayload, attPayload, attSignature)
+	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, stateIndex, rawSig, snapPayload, attPayload, attSignature)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
