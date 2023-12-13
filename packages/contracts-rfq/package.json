@@ -19,6 +19,7 @@
     "test": "forge test",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint": "forge fmt && npm run prettier && npm run solhint",
+    "build:go": "./flatten.sh contracts/*.sol",
     "prettier": "prettier --write **.sol",
     "prettier:list": "prettier --list-different **.sol",
     "prettier:check": "prettier --check **.sol",
