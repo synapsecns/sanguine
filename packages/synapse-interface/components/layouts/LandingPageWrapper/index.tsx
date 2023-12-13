@@ -58,7 +58,7 @@ export function LandingNav() {
         <div className="lg:hidden">
           <Popover.Button
             data-test-id="mobile-navbar-button"
-            className="rounded-md p-2 text-gray-400 hover:bg-gray-800 focus:outline-none"
+            className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
           >
             <span className="sr-only">Open menu</span>
             <MenuIcon className="w-8 h-8" aria-hidden="true" />
@@ -66,7 +66,7 @@ export function LandingNav() {
         </div>
         <Popover.Group
           as="nav"
-          className="hidden lg:flex flex-wrap justify-center"
+          className="flex-wrap justify-center hidden lg:flex"
           data-test-id="desktop-nav"
         >
           <TopBarButtons />
@@ -77,13 +77,10 @@ export function LandingNav() {
             <Popover className="relative">
               {({ open }) => (
                 <>
-                  <Popover.Button
-                    as="div"
-                    onMouseEnter={() => {}}
-                  >
+                  <Popover.Button as="div" onMouseEnter={() => {}}>
                     <MoreButton open={open} />
                   </Popover.Button>
-                  <PopoverPanelContainer className="left-full -translate-x-full">
+                  <PopoverPanelContainer className="-translate-x-full left-full">
                     <MoreInfoButtons />
                     <SocialButtons />
                   </PopoverPanelContainer>
@@ -103,22 +100,19 @@ export function LandingNav() {
         leaveFrom=" opacity-100"
         leaveTo=" opacity-0"
       >
-        <Popover.Panel
-          focus
-          className="absolute top-0 w-screen z-10"
-        >
+        <Popover.Panel focus className="absolute top-0 z-10 w-screen">
           <div
             className="bg-bgLight"
             // data-test-id="mobile-nav"
           >
-            <div className="flex items-center place-content-between px-4 pt-4">
+            <div className="flex items-center px-4 pt-4 place-content-between">
               <SynapseTitleLogo showText={true} />
-              <Popover.Button className="rounded-md p-2 text-gray-400 hover:bg-gray-900 focus:outline-none">
+              <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
                 <span className="sr-only">Close menu</span>
                 <XIcon className="w-8 h-8" aria-hidden="true" />
               </Popover.Button>
             </div>
-            <div className="flex flex-col gap-2 py-4">
+            <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
             <div className="px-2 py-4 bg-white/10">
@@ -249,8 +243,7 @@ function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
       target={isInternal ? undefined : '_blank'}
       className={`
         px-4 py-2 text-2xl font-medium text-white
-        ${!(isInternal && match) && 'opacity-30 hover:opacity-100'
-      }`}
+        ${!(isInternal && match) && 'opacity-30 hover:opacity-100'}`}
     >
       {labelText}
     </a>
