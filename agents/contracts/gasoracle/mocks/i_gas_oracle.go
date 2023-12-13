@@ -22,6 +22,29 @@ type IGasOracle struct {
 	mock.Mock
 }
 
+// AcceptOwnership provides a mock function with given fields: opts
+func (_m *IGasOracle) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(opts)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Address provides a mock function with given fields:
 func (_m *IGasOracle) Address() common.Address {
 	ret := _m.Called()
@@ -107,6 +130,29 @@ func (_m *IGasOracle) FilterInitialized(opts *bind.FilterOpts) (*gasoracle.GasOr
 	return r0, r1
 }
 
+// FilterOwnershipTransferStarted provides a mock function with given fields: opts, previousOwner, newOwner
+func (_m *IGasOracle) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*gasoracle.GasOracleOwnershipTransferStartedIterator, error) {
+	ret := _m.Called(opts, previousOwner, newOwner)
+
+	var r0 *gasoracle.GasOracleOwnershipTransferStartedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address, []common.Address) *gasoracle.GasOracleOwnershipTransferStartedIterator); ok {
+		r0 = rf(opts, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleOwnershipTransferStartedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterOwnershipTransferred provides a mock function with given fields: opts, previousOwner, newOwner
 func (_m *IGasOracle) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*gasoracle.GasOracleOwnershipTransferredIterator, error) {
 	ret := _m.Called(opts, previousOwner, newOwner)
@@ -123,6 +169,29 @@ func (_m *IGasOracle) FilterOwnershipTransferred(opts *bind.FilterOpts, previous
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterSummitTipUpdated provides a mock function with given fields: opts
+func (_m *IGasOracle) FilterSummitTipUpdated(opts *bind.FilterOpts) (*gasoracle.GasOracleSummitTipUpdatedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *gasoracle.GasOracleSummitTipUpdatedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *gasoracle.GasOracleSummitTipUpdatedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleSummitTipUpdatedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -407,6 +476,29 @@ func (_m *IGasOracle) ParseInitialized(log types.Log) (*gasoracle.GasOracleIniti
 	return r0, r1
 }
 
+// ParseOwnershipTransferStarted provides a mock function with given fields: log
+func (_m *IGasOracle) ParseOwnershipTransferStarted(log types.Log) (*gasoracle.GasOracleOwnershipTransferStarted, error) {
+	ret := _m.Called(log)
+
+	var r0 *gasoracle.GasOracleOwnershipTransferStarted
+	if rf, ok := ret.Get(0).(func(types.Log) *gasoracle.GasOracleOwnershipTransferStarted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleOwnershipTransferStarted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *IGasOracle) ParseOwnershipTransferred(log types.Log) (*gasoracle.GasOracleOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -423,6 +515,52 @@ func (_m *IGasOracle) ParseOwnershipTransferred(log types.Log) (*gasoracle.GasOr
 	var r1 error
 	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
 		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseSummitTipUpdated provides a mock function with given fields: log
+func (_m *IGasOracle) ParseSummitTipUpdated(log types.Log) (*gasoracle.GasOracleSummitTipUpdated, error) {
+	ret := _m.Called(log)
+
+	var r0 *gasoracle.GasOracleSummitTipUpdated
+	if rf, ok := ret.Get(0).(func(types.Log) *gasoracle.GasOracleSummitTipUpdated); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleSummitTipUpdated)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingOwner provides a mock function with given fields: opts
+func (_m *IGasOracle) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -476,13 +614,13 @@ func (_m *IGasOracle) SetGasData(opts *bind.TransactOpts, domain uint32, gasPric
 	return r0, r1
 }
 
-// SetSummitTip provides a mock function with given fields: opts, summitTipWei
-func (_m *IGasOracle) SetSummitTip(opts *bind.TransactOpts, summitTipWei *big.Int) (*types.Transaction, error) {
-	ret := _m.Called(opts, summitTipWei)
+// SetSummitTip provides a mock function with given fields: opts, summitTipWei_
+func (_m *IGasOracle) SetSummitTip(opts *bind.TransactOpts, summitTipWei_ *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, summitTipWei_)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int) *types.Transaction); ok {
-		r0 = rf(opts, summitTipWei)
+		r0 = rf(opts, summitTipWei_)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -491,7 +629,30 @@ func (_m *IGasOracle) SetSummitTip(opts *bind.TransactOpts, summitTipWei *big.In
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int) error); ok {
-		r1 = rf(opts, summitTipWei)
+		r1 = rf(opts, summitTipWei_)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SummitTipWei provides a mock function with given fields: opts
+func (_m *IGasOracle) SummitTipWei(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -633,6 +794,29 @@ func (_m *IGasOracle) WatchInitialized(opts *bind.WatchOpts, sink chan<- *gasora
 	return r0, r1
 }
 
+// WatchOwnershipTransferStarted provides a mock function with given fields: opts, sink, previousOwner, newOwner
+func (_m *IGasOracle) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *gasoracle.GasOracleOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, previousOwner, newOwner)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleOwnershipTransferStarted, []common.Address, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleOwnershipTransferStarted, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WatchOwnershipTransferred provides a mock function with given fields: opts, sink, previousOwner, newOwner
 func (_m *IGasOracle) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *gasoracle.GasOracleOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
 	ret := _m.Called(opts, sink, previousOwner, newOwner)
@@ -649,6 +833,29 @@ func (_m *IGasOracle) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleOwnershipTransferred, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchSummitTipUpdated provides a mock function with given fields: opts, sink
+func (_m *IGasOracle) WatchSummitTipUpdated(opts *bind.WatchOpts, sink chan<- *gasoracle.GasOracleSummitTipUpdated) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleSummitTipUpdated) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleSummitTipUpdated) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}
