@@ -84,6 +84,8 @@ jobs:
           echo "##[set-output name=VERCEL_PROJECT_ID;]$(echo $TARGET_ID)"
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
       - name: Build Docs
         working-directory: "packages/${{matrix.package}}"
         # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
