@@ -40,10 +40,6 @@ export default function BridgeSection() {
         </div>
       </div>
 
-      {/* <div className="flex justify-center md:hidden">
-        <BridgeImageSmall />
-      </div> */}
-
       <Grid
         cols={{ sm: 1, md: 3 }}
         gap={6}

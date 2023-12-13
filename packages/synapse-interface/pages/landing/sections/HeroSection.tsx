@@ -13,8 +13,7 @@ export default function HeroSection() {
           md:text-[46px]
         `}
       >
-        <p>Secure cross-chain</p>
-        <p>communication</p>
+        Secure cross-chain<br />communication
       </h1>
       <p className="hidden text-center text-secondaryTextColor sm:block">
         Synapse is the most widely used, extensible, secure cross-<br />
