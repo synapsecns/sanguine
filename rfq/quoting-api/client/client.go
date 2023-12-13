@@ -51,7 +51,7 @@ func (c clientImpl) CreateQuote(q models.Quote) error {
 	res, err := c.rClient.R().
 		SetBody(q).
 		Post(rest.QUOTE_ROUTE)
-	// TODO: Figure out if there's anyhting to do with the response
+	// TODO: Figure out if there's anyhting to do with the response, right now it's result: 1
 	_ = res
 
 	return err

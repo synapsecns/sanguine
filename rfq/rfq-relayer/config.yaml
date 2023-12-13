@@ -1,22 +1,35 @@
-quote_api_url: 'http://localhost:8080'
+rfq_url: 'http://localhost:8080'
 chains:
-  42:
-    chainId: 42
-    rpcUrl: 'http://localhost:8042'
-    fastBridgeContract: '0x6438CB36cb18520774EfC7A172410D8BBBe9a428'
-    fastBridgeBlockDeployed: 0
-  43:
-    chainId: 43
-    rpcUrl: 'http://localhost:8043'
-    fastBridgeContract: '0x6438CB36cb18520774EfC7A172410D8BBBe9a428'
-    fastBridgeBlockDeployed: 0
+  421614:
+    chainId: 421614
+    rpcUrl: 'https://rpc.interop-staging.com/rpc/421614'
+    fastBridgeContract: '0xc3c996af7f7a9245685722e73b6f18f3bb22db3d'
+    fastBridgeBlockDeployed: 2581398
+    pollInterval: 5000
+    maxGetLogsRange: 2000
+    confirmations: 1
+  11155111:
+    chainId: 11155111
+    rpcUrl: 'https://rpc.interop-staging.com/rpc/11155111'
+    fastBridgeContract: '0xc3c996af7f7a9245685722e73b6f18f3bb22db3d'
+    fastBridgeBlockDeployed: 4867835
+    pollInterval: 5000
+    maxGetLogsRange: 2000
+    confirmations: 1
 
+queue_poll_interval: 1
 database:
   type: 'sqlite' # Use 'mysql' for production
   dsn: 'rfq_solver_bot.db' # Or the appropriate MySQL DSN for production
 
-relayer_address: '0xa01474A3b29535A90Cbd05912af81a4fcc5276Ef'
-omnirpc_url: 'localhost:0000'
+relayer_address: '0x49357ba0Ef3a8daC25903472eEe45C41221D4F9a'
+omnirpc_url: 'https://rpc.interop-staging.com'
+#
+assets:
+  - address: '0x858355dae73bc0fa4ab220e5296cfaa77e99900e'
+    chainid: 11155111
+  - address: '0x858355dAe73bc0FA4AB220e5296cfAa77e99900e'
+    chainid: 421614
 
 
 # do not send real internet money here
@@ -26,9 +39,9 @@ unbonded_signer:
 
 submitter_config:
   chains:
-    42:
+    421614:
       supports_eip_1559: true
       gas_estimate: 7500000
-    43:
+    11155111:
       supports_eip_1559: true
       gas_bump_percentage: 100
