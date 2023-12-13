@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest/auth"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"strconv"
 	"time"
 
@@ -31,12 +32,29 @@ type APIServer struct {
 
 // NewRestAPIServer creates a new instance of the rest api server.
 func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
+
+	// TODO: pass in metrics rather than getting from env
+	omniclient := omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, metrics.Get(), omnirpcClient.WithCaptureReqRes())
+
+	// make bridges
+	bridges := make(map[uint]*bindings.FastBridge)
+	for chainID, bridge := range cfg.Bridges {
+		chainClient, err := omniclient.GetChainClient(ctx, int(chainID))
+		if err != nil {
+			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
+		}
+		bridges[uint(chainID)], err = bindings.NewFastBridge(common.HexToAddress(bridge), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create bridge contract: %w", err)
+		}
+	}
+
 	apiDB, err := db.NewDatabase(ctx, metrics.NewNullHandler(), false, cfg.DBType, cfg.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
 	engine := gin.Default()
-	r := APIServer{cfg: cfg, db: apiDB, engine: engine}
+	r := APIServer{cfg: cfg, db: apiDB, engine: engine, bridges: bridges}
 	return &r, nil
 }
 
