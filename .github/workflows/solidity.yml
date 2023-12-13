@@ -37,7 +37,7 @@ jobs:
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
+          echo 'FILTER_LENGTH=$FILTER_LENGTH' >> '$GITHUB_OUTPUT'
         env:
           FILTERED_PATHS: ${{ steps.filter_solidity.outputs.changes }}
 
@@ -75,14 +75,14 @@ jobs:
         run: |
           PROJECT_IDS=$(cat <<END
           {
-            "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
-            "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}"
+            'contracts-core': '${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}',
+            'contracts-rfq': '${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}'
           }
           END
           )
-          TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
+          TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=='${{ matrix.package }}') | .value')
           # set the vercel project id`
-          echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
+          echo 'VERCEL_PROJECT_ID=$TARGET_ID' >> $GITHUB_ENV
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Docs
@@ -146,7 +146,7 @@ jobs:
 
       # TODO: find a flag for this
       - name: Delete Untested Files
-        working-directory: "./packages/${matrix.package}"
+        working-directory: './packages/${matrix.package}'
         run: |
           rm -rf test/ | exit 0
           rm -rf script/ | exit 0
@@ -161,7 +161,7 @@ jobs:
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: "./packages/${matrix.package}"
+          target: './packages/${matrix.package}'
           ignore-compile: true
           sarif: results.sarif
           solc-version: 0.8.17
@@ -176,6 +176,7 @@ jobs:
     name: Foundry Coverage
     runs-on: ubuntu-latest
     if: ${{ needs.changes.outputs.package_count > 0 }}
+    needs: changes
     strategy:
       fail-fast: false
       matrix:
@@ -189,7 +190,7 @@ jobs:
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        working-directory: "./packages/${matrix.package}"
+        working-directory: './packages/${matrix.package}'
         run: yarn install --immutable
 
       - name: Install Foundry
@@ -198,14 +199,14 @@ jobs:
           version: nightly
 
       - name: Run Foundry Tests
-        working-directory: "./packages/${matrix.package}"
+        working-directory: './packages/${matrix.package}'
         run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
         with:
           action: codecov/codecov-action@v3
-          current_path: "./packages/${matrix.package}"
+          current_path: './packages/${matrix.package}'
           with: |
             token: ${{ secrets.CODECOV }}
             fail_ci_if_error: true # optional (default = false)
@@ -233,7 +234,7 @@ jobs:
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        working-directory: "./packages/${matrix.package}"
+        working-directory: './packages/${matrix.package}'
         run: yarn install --immutable
 
       - name: Install Foundry
@@ -241,7 +242,7 @@ jobs:
         with:
           version: nightly
       - name: Run snapshot
-        working-directory: "./packages/${matrix.package}"
+        working-directory: './packages/${matrix.package}'
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
   size-check:
     name: Foundry Size Check
