@@ -3,17 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.24...@synapsecns/sdk-router@0.3.0) (2023-12-12)
-
-
-### Features
-
-* Add Polygon support to New CCTP Router Contracts ([#1617](https://github.com/synapsecns/sanguine/issues/1617)) ([a891148](https://github.com/synapsecns/sanguine/commit/a89114852ef7fd2a0a3aaf3546ee5377f8fa9a93))
-
-
-
-
-
 ## [0.2.24](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.23...@synapsecns/sdk-router@0.2.24) (2023-12-01)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

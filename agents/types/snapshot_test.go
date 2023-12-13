@@ -69,7 +69,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 
 	Equal(t, big.NewInt(2), snapshotContractStatesAmount)
 
-	snapshotContractStateA, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, 0)
+	snapshotContractStateA, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(0))
 	Nil(t, err)
 
 	stateABytes, err := stateA.Encode()
@@ -77,7 +77,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 
 	Equal(t, stateABytes, snapshotContractStateA)
 
-	snapshotContractStateB, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, 1)
+	snapshotContractStateB, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(1))
 	Nil(t, err)
 
 	stateBBytes, err := stateB.Encode()
