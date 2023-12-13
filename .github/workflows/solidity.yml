@@ -81,9 +81,7 @@ jobs:
           END
           )
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
-          echo $TARGET_ID > /tmp/hi
-          # set the vercel project id`
-          echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
+          echo "##[set-output name=VERCEL_PROJECT_ID;]$(echo $TARGET_ID)"
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Docs
@@ -95,18 +93,23 @@ jobs:
           cp vercel.package.json docs/package.json
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
       - name: Deploy (Prod)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         working-directory: "packages/${{matrix.package}}/docs"
         run: |
           vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --prod
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
       - name: Deploy
         working-directory: "packages/${{matrix.package}}/docs"
         run: |
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
 
 
   cancel-outdated:
