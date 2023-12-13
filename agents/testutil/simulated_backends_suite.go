@@ -42,6 +42,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -355,41 +356,98 @@ func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.ExecutorUnbondedWallet.PrivateKey())
 }
 
+// Tests included here will use an anvil backend (instead of ethergo).
+var anvilTests = []string{
+	"TestGuardSuite/TestUpdateAgentStatusOnRemote",
+	"TestExecutorSuite/TestSendManagerMessage",
+}
+
+func (a *SimulatedBackendsTestSuite) shouldUseAnvil() bool {
+	for _, test := range anvilTests {
+		if a.T().Name() == test {
+			return true
+		}
+	}
+	return false
+}
+
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
-	a.TestSuite.DeferAfterSuite(a.cleanAfterTestSuite)
+	a.TestSuite.DeferAfterTest(a.cleanAfterTestSuite)
 
 	a.SetupGuard()
 	a.SetupNotary()
 	a.SetupNotaryOnOrigin()
 	a.SetupNotaryOnDestination()
 	a.SetupExecutor()
+	a.SetupBackends()
 
+	a.DBPath = filet.TmpDir(a.T(), "")
+	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ScribeTestDB = scribeSqliteStore
+	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ExecutorMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.ExecutorTestDB = sqliteStore
+	notarySqliteStore, err := notarySqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.NotaryMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryTestDB = notarySqliteStore
+	guardSqliteStore, err := guardSqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.GuardMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.GuardTestDB = guardSqliteStore
+}
+
+// SetupBackends sets up the simulated backends.
+func (a *SimulatedBackendsTestSuite) SetupBackends() {
+	useAnvil := a.shouldUseAnvil()
 	a.TestDeployManager = NewDeployManager(a.T())
 
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
-		anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
-		anvilOptsOrigin.SetBlockTime(1 * time.Second)
-		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+		if useAnvil {
+			anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
+			anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+			anvilOptsOrigin.SetBlockTime(1 * time.Second)
+			a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+			a.TestSuite.DeferAfterTest(a.TestBackendOrigin.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		}
 	}()
 	go func() {
 		defer wg.Done()
-		anvilOptsDestination := anvil.NewAnvilOptionBuilder()
-		anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
-		anvilOptsDestination.SetBlockTime(1 * time.Second)
-		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+		if useAnvil {
+			anvilOptsDestination := anvil.NewAnvilOptionBuilder()
+			anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+			anvilOptsDestination.SetBlockTime(1 * time.Second)
+			a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+			a.TestSuite.DeferAfterTest(a.TestBackendDestination.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		}
 	}()
 	go func() {
 		defer wg.Done()
-		anvilOptsSummit := anvil.NewAnvilOptionBuilder()
-		anvilOptsSummit.SetChainID(uint64(10))
-		anvilOptsSummit.SetBlockTime(1 * time.Second)
-		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+		if useAnvil {
+			anvilOptsSummit := anvil.NewAnvilOptionBuilder()
+			anvilOptsSummit.SetChainID(uint64(10))
+			anvilOptsSummit.SetBlockTime(1 * time.Second)
+			a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+			a.TestSuite.DeferAfterTest(a.TestBackendSummit.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		}
 	}()
 	wg.Wait()
 
@@ -425,28 +483,6 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	if err != nil {
 		a.T().Fatal(err)
 	}
-
-	a.DBPath = filet.TmpDir(a.T(), "")
-	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.ScribeTestDB = scribeSqliteStore
-	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ExecutorMetrics, false)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.ExecutorTestDB = sqliteStore
-	notarySqliteStore, err := notarySqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.NotaryMetrics, false)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.NotaryTestDB = notarySqliteStore
-	guardSqliteStore, err := guardSqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.GuardMetrics, false)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.GuardTestDB = guardSqliteStore
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

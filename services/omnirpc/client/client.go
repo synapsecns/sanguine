@@ -21,6 +21,7 @@ type RPCClient interface {
 	// GetDefaultEndpoint returns the endpoint with the default confirmation count for the chain id.
 	GetDefaultEndpoint(chainID int) string
 	// GetConfirmationsClient returns a client for the given chainID and confirmations.
+	// TODO: consider making confirmations iota or uint8, can be easy to confuse these params
 	GetConfirmationsClient(ctx context.Context, chainID, confirmations int) (client.EVM, error)
 	// GetChainClient returns a client for the given chainID.
 	GetChainClient(ctx context.Context, chainID int) (client.EVM, error)

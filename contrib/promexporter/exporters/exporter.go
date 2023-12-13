@@ -3,6 +3,7 @@ package exporters
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -21,6 +22,7 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"github.com/synapsecns/sanguine/core/retry"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -53,6 +55,7 @@ type exporter struct {
 }
 
 // StartExporterServer starts the exporter server.
+// nolint: cyclop
 func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
 	// the main server serves metrics since this is only a prom exporter
 	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
@@ -106,6 +109,33 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 			}
 		}
 	}
+
+	for chainID := range cfg.BridgeChecks {
+		for _, token := range cfg.VpriceCheckTokens {
+			chainID := chainID
+			token := token // capture func literals
+
+			g.Go(func() error {
+				//nolint: wrapcheck
+				return retry.WithBackoff(ctx, func(ctx context.Context) error {
+					err = exp.vpriceStats(ctx, chainID, token)
+					if errors.Is(err, errPoolNotExist) {
+						return nil
+					}
+
+					if err != nil {
+						return fmt.Errorf("error starting vprice:%w", err)
+					}
+
+					return nil
+				}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
+			})
+		}
+	}
+
+	g.Go(func() error {
+		return exp.getTokenBalances(ctx)
+	})
 
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("could not start exporter server: %w", err)

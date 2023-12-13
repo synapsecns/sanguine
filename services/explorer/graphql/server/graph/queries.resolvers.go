@@ -188,8 +188,13 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
 func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) ([]*model.DateResultByChain, error) {
+	cacheKey := fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String())
+
 	if useCache != nil && *useCache {
-		res, err := r.getDateResultByChainFromCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
+		locker := r.CacheMutex.Lock(cacheKey)
+		defer locker.Unlock()
+
+		res, err := r.getDateResultByChainFromCache(cacheKey)
 		if err == nil {
 			return res, nil
 		}

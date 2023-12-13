@@ -20,12 +20,14 @@ const useCases: useCaseProp[] = [
   {
     title: 'Universal money markets',
     image: <UniversalMoneyMarketsIcon />,
-    description: 'Swap any asset on any blockchain using Synapse’s token swaps',
+    description:
+      'Borrow and lend assets across any blockchain using Synapse’s pools',
   },
   {
     title: 'Multi-chain gaming',
     image: <MultiChainGamingIcon />,
-    description: 'Swap any asset on any blockchain using Synapse’s token swaps',
+    description:
+      'Create uniqe gaming experiences that access multiple blockchains',
   },
 ]
 

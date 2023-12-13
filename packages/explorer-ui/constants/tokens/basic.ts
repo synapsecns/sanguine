@@ -112,6 +112,7 @@ export const CCTP_USDC = new Token({
     [ChainId.ARBITRUM]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
     [ChainId.BASE]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [ChainId.OPTIMISM]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+    [ChainId.POLYGON]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
   },
   decimals: {
     [ChainId.ETH]: 6,
@@ -119,6 +120,7 @@ export const CCTP_USDC = new Token({
     [ChainId.ARBITRUM]: 6,
     [ChainId.BASE]: 6,
     [ChainId.OPTIMISM]: 6,
+    [ChainId.POLYGON]: 6,
   },
   symbol: 'USDC',
   name: 'USD Circle',
@@ -305,7 +307,7 @@ export const LUSD = new Token({
   },
   decimals: 18,
   symbol: 'LUSD',
-  name: 'Liquidity USD',
+  name: 'Liquity USD',
   logo: lusdLogo,
   swapableType: 'USD',
 })
@@ -562,6 +564,7 @@ export const FRAX = new Token({
     [ChainId.HARMONY]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [ChainId.DOGECHAIN]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
     [ChainId.ARBITRUM]: '0x17fc002b466eec40dae837fc4be5c67993ddbd6f',
+    [ChainId.POLYGON]: '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89',
   },
   decimals: 18,
   symbol: 'FRAX',
@@ -992,6 +995,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
   ],
   [ChainId.POLYGON]: [
     USDC,
+    CCTP_USDC,
     USDT,
     DAI,
     NUSD,
@@ -1003,6 +1007,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     USDB,
     H2O,
     WMATIC,
+    FRAX,
   ],
   [ChainId.FANTOM]: [
     MIM,
