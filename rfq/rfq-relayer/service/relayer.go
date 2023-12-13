@@ -115,15 +115,16 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 	seenChan := make(chan relayerTypes.WrappedLog, MaxEventChanSize)
 
 	return &relayerImpl{
-		eventChan:   eventChan,
-		seenChan:    seenChan,
-		db:          db,
-		config:      cfg,
-		txSubmitter: txSubmitter,
-		evmClients:  evmClients,
-		contracts:   fastBridgeContracts,
-		claimQueue:  claimQueue,
-		quoter:      quoter,
+		eventChan:    eventChan,
+		seenChan:     seenChan,
+		db:           db,
+		config:       cfg,
+		txSubmitter:  txSubmitter,
+		chainConfigs: listenerConfigs,
+		evmClients:   evmClients,
+		contracts:    fastBridgeContracts,
+		claimQueue:   claimQueue,
+		quoter:       quoter,
 	}, nil
 }
 
