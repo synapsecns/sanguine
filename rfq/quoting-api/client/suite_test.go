@@ -73,7 +73,7 @@ func (c *ClientSuite) SetupTest() {
 	assert.NoError(c.T(), err)
 
 	c.restAPIServer.Setup()
-	c.client, err = client.NewClient(fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(testWallet.PrivateKey()))
+	c.client, err = client.NewClient(fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(testWallet.PrivateKey()), testWallet)
 
 	go func() {
 		err = c.restAPIServer.Run(c.GetTestContext())

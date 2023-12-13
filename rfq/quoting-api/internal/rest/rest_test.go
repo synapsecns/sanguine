@@ -90,6 +90,8 @@ func getAuthHeader(t *testing.T, testWallet wallet.Wallet) (header string) {
 }
 
 func TestSetup(t *testing.T) {
+	// enable auth for this test
+	rest.AuthEnabled = true
 	testWallet, err := wallet.FromRandom()
 	assert.NoError(t, err)
 	r := getServer(t, testWallet)
