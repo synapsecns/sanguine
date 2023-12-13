@@ -36,7 +36,9 @@ jobs:
             contracts-rfq: 'packages/contracts-rfq/**'
       - id: length
         run: |
+          echo $FILTERED_PATHS
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo $FILTER_LENGTH
           echo 'FILTER_LENGTH=$FILTER_LENGTH' >> '$GITHUB_OUTPUT'
         env:
           FILTERED_PATHS: ${{ steps.filter_solidity.outputs.changes }}
