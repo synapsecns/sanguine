@@ -60,7 +60,7 @@ func NewAPI(
 
 func (r *APIServer) Run(ctx context.Context) error {
 	fmt.Println(r.engine)
-	err := r.engine.Run()
+	err := r.engine.Run(":" + r.cfg.Port)
 	if err != nil {
 		return fmt.Errorf("could not run rest api server: %w", err)
 	}

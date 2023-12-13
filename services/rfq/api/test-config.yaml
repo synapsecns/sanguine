@@ -5,4 +5,4 @@ omnirpc_url: 'http://localhost:7000'
 bridges:
   1: '0x1234'
   2: '0x5678'
-port: 8080
+port: '8080'
