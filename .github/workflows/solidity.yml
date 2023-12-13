@@ -4,13 +4,43 @@ on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      packages: ${{ steps.filter_solidity.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # if any of these packages use submodules in the future, please uncomment this line
+          # submodules: 'recursive'
+      - uses: dorny/paths-filter@v2
+        id: filter_ui
+        with:
+          #  make sure to update run-goreleaser when adding a new package here
+          # also add to the get-project-id step
+          filters: |
+            explorer-ui: 'packages/explorer-ui/**'
+            docs: 'packages/docs/**'
+            synapse-interface: 'packages/synapse-interface/**'
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
+        env:
+          FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
+
   docs:
     name: Docs
     runs-on: ubuntu-latest
