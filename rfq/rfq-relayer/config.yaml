@@ -5,7 +5,7 @@ chains:
     rpcUrl: 'https://rpc.interop-staging.com/rpc/421614'
     fastBridgeContract: '0xc3c996af7f7a9245685722e73b6f18f3bb22db3d'
     fastBridgeBlockDeployed: 2581398
-    pollInterval: 5000
+    pollInterval: 5
     maxGetLogsRange: 2000
     confirmations: 1
   11155111:
@@ -13,7 +13,7 @@ chains:
     rpcUrl: 'https://rpc.interop-staging.com/rpc/11155111'
     fastBridgeContract: '0xc3c996af7f7a9245685722e73b6f18f3bb22db3d'
     fastBridgeBlockDeployed: 4867835
-    pollInterval: 5000
+    pollInterval: 5
     maxGetLogsRange: 2000
     confirmations: 1
 

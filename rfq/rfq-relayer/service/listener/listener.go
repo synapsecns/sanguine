@@ -33,7 +33,7 @@ type IChainListener interface {
 	// StartListening starts listening for events.
 	StartListening(ctx context.Context) error
 	// IterateThroughLogs iterates through logs and sends them to their respective channels.
-	IterateThroughLogs(logs []types.Log, lastUnconfirmedBlock uint64) error
+	IterateThroughLogs(ctx context.Context, logs []types.Log, lastUnconfirmedBlock uint64) error
 }
 
 type chainListenerImpl struct {
@@ -60,6 +60,8 @@ type ChainListenerConfig struct {
 // NewChainListener creates a new chain listener.
 func NewChainListener(config *ChainListenerConfig, db db.DB, eventChan chan relayerTypes.WrappedLog, seenChan chan relayerTypes.WrappedLog) (IChainListener, error) {
 	// Create caches
+	// TODO: this doesn't make any sense, these aren't caches these are a primary data store.
+	// these should not be lru and should consist of an accesisible data store.
 	unconfirmedCache, err := lru.New(DefaultCacheSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -107,6 +109,10 @@ func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 	// Init poll interval
 	pollInterval := time.Duration(0)
 
+	if pollInterval > 100 {
+		logger.Warnf("poll interval is greater than 100 seconds, this may cause issues with the bridge.")
+	}
+
 	// Start listening for events
 	for {
 		select {
@@ -135,6 +141,7 @@ func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 				endBlock = startBlock + c.config.MaxGetLogsRange
 				// This will be used as the bottom of the range in the next iteration
 				lastUnconfirmedBlock = endBlock
+				pollInterval = 0
 			}
 
 			// Get all logs in the range
@@ -147,7 +154,7 @@ func (c *chainListenerImpl) StartListening(ctx context.Context) error {
 			}
 
 			// Iterate through logs
-			lErr = c.IterateThroughLogs(logs, lastUnconfirmedBlock)
+			lErr = c.IterateThroughLogs(ctx, logs, lastUnconfirmedBlock)
 			if lErr != nil {
 				pollInterval = b.Duration()
 				logger.Errorf("error iterating through logs: %v", lErr)
@@ -172,7 +179,7 @@ func (c *chainListenerImpl) buildFilterQuery(fromBlock *big.Int, toBlock *big.In
 }
 
 // IterateThroughLogs iterates through logs and sends them to their respective channels.
-func (c *chainListenerImpl) IterateThroughLogs(logs []types.Log, lastUnconfirmedBlock uint64) error {
+func (c *chainListenerImpl) IterateThroughLogs(ctx context.Context, logs []types.Log, lastUnconfirmedBlock uint64) error {
 	for _, log := range logs {
 		// Handle if in unconfirmed range
 		if log.BlockNumber >= lastUnconfirmedBlock {
@@ -182,8 +189,14 @@ func (c *chainListenerImpl) IterateThroughLogs(logs []types.Log, lastUnconfirmed
 			}
 			// Add to cache
 			c.unconfirmedCache.Add(log.TxHash.Hex(), log.BlockNumber)
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context was canceled")
 			// Add to channel
-			c.seenChan <- relayerTypes.WrappedLog{Log: log, OriginChainID: c.config.ChainID}
+			case c.seenChan <- relayerTypes.WrappedLog{Log: log, OriginChainID: c.config.ChainID}:
+
+			}
+
 		} else { // Handle if in confirmed range
 			// Check if in cache
 			if _, ok := c.confirmedCache.Get(log.TxHash.Hex()); ok {
@@ -192,7 +205,12 @@ func (c *chainListenerImpl) IterateThroughLogs(logs []types.Log, lastUnconfirmed
 			// Add to cache
 			c.confirmedCache.Add(log.TxHash.Hex(), log.BlockNumber)
 			// Add to channel
-			c.eventChan <- relayerTypes.WrappedLog{Log: log, OriginChainID: c.config.ChainID}
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context was canceled")
+			case c.eventChan <- relayerTypes.WrappedLog{Log: log, OriginChainID: c.config.ChainID}:
+
+			}
 		}
 	}
 	return nil

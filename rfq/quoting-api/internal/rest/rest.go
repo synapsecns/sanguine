@@ -104,7 +104,7 @@ func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) (err error) {
 	// call on-chain to dest chain bridge::HasRole for relayer role
 	ops := &bind.CallOpts{Context: c}
 	// TODO CHANGE ME TO FILLER_ROLE for prod testing
-	role := crypto.Keccak256Hash([]byte("RELAYER_ROLE")) // keccak256("FILLER_ROLE")
+	role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_PROD")
 	relayer := common.HexToAddress(q.Relayer)
 
 	var has bool
@@ -144,6 +144,7 @@ func (r *APIServer) createQuote(c *gin.Context) {
 
 	err = r.Authenticate(c, &q)
 	if err != nil {
+		c.JSON(400, gin.H{"msg": err})
 		return
 	}
 
