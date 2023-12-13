@@ -118,6 +118,7 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 		eventChan:   eventChan,
 		seenChan:    seenChan,
 		db:          db,
+		config:      cfg,
 		txSubmitter: txSubmitter,
 		evmClients:  evmClients,
 		contracts:   fastBridgeContracts,
