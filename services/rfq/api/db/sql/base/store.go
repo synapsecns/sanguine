@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*db.QuoteModel, error) {
-	var quotes []*db.QuoteModel
+func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*db.Quote, error) {
+	var quotes []*db.Quote
 	result := s.db.Where("dest_chain_id = ? AND token = ?", destChainId, destTokenAddr).Find(&quotes)
 	if result.Error != nil {
 		return nil, result.Error
@@ -14,8 +14,8 @@ func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr s
 	return quotes, nil
 }
 
-func (s *Store) UpsertQuote(quote *db.QuoteModel) error {
-	var existingQuote db.QuoteModel
+func (s *Store) UpsertQuote(quote *db.Quote) error {
+	var existingQuote db.Quote
 	result := s.db.First(&existingQuote, quote.ID)
 
 	if result.Error == gorm.ErrRecordNotFound {

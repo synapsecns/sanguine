@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type QuoteModel struct {
+type Quote struct {
 	// ID is the unique identifier saved of each quote provided
 	ID uint64 `gorm:"column:id;primaryKey;"`
 	// DestChainID is the chain which the relayer is willing to provide liquidity for
@@ -18,19 +18,19 @@ type QuoteModel struct {
 	// Price is the price per origin token provided for which a relayer is indicating willingness to relay
 	Price decimal.Decimal `gorm:"column:price"`
 	// UpdatedAt is the time that the quote was last upserted
-	UpdatedAt time.Time `gorm:"column:updated_at"`
+	UpdatedAt time.Time
 }
 
 // ApiDBReader is the interface for reading from the database.
 type ApiDBReader interface {
 	// GetQuote gets a quote from the database.
-	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*QuoteModel, error)
+	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*Quote, error)
 }
 
 // ApiDBWriter is the interface for writing to the database.
 type ApiDBWriter interface {
 	// UpsertQuote upserts a quote in the database.
-	UpsertQuote(quote *QuoteModel) error
+	UpsertQuote(quote *Quote) error
 }
 
 // ApiDB is the interface for the database service.
