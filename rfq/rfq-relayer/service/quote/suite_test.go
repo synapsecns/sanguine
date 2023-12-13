@@ -1,6 +1,9 @@
 package quote_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"sync/atomic"
 	"testing"
 
@@ -18,6 +21,7 @@ type QuoteSuite struct {
 	*testsuite.TestSuite
 	logIndex atomic.Int64 // For thread safety
 	metrics  metrics.Handler
+	signer   signer.Signer
 }
 
 // NewQuoteSuiteSuite creates a new QuoteSuite.
@@ -45,6 +49,10 @@ func (t *QuoteSuite) SetupSuite() {
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(t.T(), err)
+
+	wllet, err := wallet.FromRandom()
+	Nil(t.T(), err)
+	t.signer = localsigner.NewSigner(wllet.PrivateKey())
 }
 
 // TestDBSuite tests the Quote suite.

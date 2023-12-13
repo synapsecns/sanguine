@@ -39,7 +39,7 @@ func (t *QuoteSuite) TestNewQuoter() {
 		assets = append(assets, asset)
 	}
 
-	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "")
+	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "", t.signer)
 	Nil(t.T(), err)
 	NotNil(t.T(), quoter)
 }
@@ -89,7 +89,7 @@ func (t *QuoteSuite) TestGetValidQuote() {
 		assets = append(assets, asset)
 	}
 
-	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "")
+	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "", t.signer)
 	Nil(t.T(), err)
 	NotNil(t.T(), quoter)
 
@@ -150,7 +150,7 @@ func (t *QuoteSuite) TestQuoteToAPIQuote() {
 		assets = append(assets, asset)
 	}
 
-	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "")
+	quoter, err := quote.NewQuoter(testCtx, clients, assets, testWallet.Address(), "", t.signer)
 	Nil(t.T(), err)
 	NotNil(t.T(), quoter)
 

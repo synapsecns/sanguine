@@ -12,6 +12,7 @@ replace (
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/omnirpc => ../../services/omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../../services/scribe
+	github.com/synapsecns/sanguine/rfq/quoting-api => ../quoting-api
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 )
 

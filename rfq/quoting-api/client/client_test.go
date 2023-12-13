@@ -2,7 +2,7 @@ package client_test
 
 import (
 	"github.com/shopspring/decimal"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/models"
 )
 
 func (c *ClientSuite) TestCreateQuote() {

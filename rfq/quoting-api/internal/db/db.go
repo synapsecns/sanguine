@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
+	"github.com/synapsecns/sanguine/rfq/quoting-api/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm/schema"

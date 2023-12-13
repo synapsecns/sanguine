@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db/models"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest"
+	"gorm.io/gorm"
 	"strconv"
 	"time"
 )
 
 type Client interface {
-	CreateQuote(q models.Quote) error
+	CreateQuote(q *APIQuote) error
 }
 
 type clientImpl struct {
@@ -20,7 +19,7 @@ type clientImpl struct {
 }
 
 // NewClient creates a new client for the RFQ quoting API
-func NewClient(rfqURL string, reqSigner signer.Signer, wallet2 wallet.Wallet) (Client, error) {
+func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
@@ -47,7 +46,7 @@ func NewClient(rfqURL string, reqSigner signer.Signer, wallet2 wallet.Wallet) (C
 }
 
 // CreateQuote creates a new quote in the RFQ quoting API
-func (c clientImpl) CreateQuote(q models.Quote) error {
+func (c clientImpl) CreateQuote(q *APIQuote) error {
 	res, err := c.rClient.R().
 		SetBody(q).
 		Post(rest.QUOTE_ROUTE)
@@ -55,4 +54,27 @@ func (c clientImpl) CreateQuote(q models.Quote) error {
 	_ = res
 
 	return err
+}
+
+// APIQuote is the struct for the quote API.
+type APIQuote struct {
+	Relayer string `json:"relayer" binding:"required"`
+
+	OriginChainID uint   `json:"origin_chain_id" binding:"required"`
+	OriginToken   string `json:"origin_token" binding:"required"`
+	OriginAmount  string `json:"origin_amount" binding:"required"`
+	// TODO: origin amount norm should be a string
+	OriginAmountNorm float64 `json:"origin_amount_norm" binding:"required"`
+	OriginDecimals   uint8   `json:"origin_decimals" binding:"required"`
+
+	DestChainID    uint    `json:"dest_chain_id" binding:"required"`
+	DestToken      string  `json:"dest_token" binding:"required"`
+	DestAmount     string  `json:"dest_amount" binding:"required"`
+	DestAmountNorm float64 `json:"dest_amount_norm" binding:"required"`
+	DestDecimals   uint8   `json:"dest_decimals" binding:"required"`
+
+	Price     float64        `json:"price"` // price = destAmount <quote> / originAmount <base>
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
