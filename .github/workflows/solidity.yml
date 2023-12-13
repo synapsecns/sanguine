@@ -82,10 +82,10 @@ jobs:
           )
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
           echo "##[set-output name=VERCEL_PROJECT_ID;]$(echo $TARGET_ID)"
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
+#      - name: Pull Vercel Environment Information
+#        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+#        env:
+#          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
       - name: Build Docs
         working-directory: "packages/${{matrix.package}}"
         # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
@@ -101,6 +101,7 @@ jobs:
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         working-directory: "packages/${{matrix.package}}/docs"
         run: |
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --prod
         env:
@@ -108,6 +109,8 @@ jobs:
       - name: Deploy
         working-directory: "packages/${{matrix.package}}/docs"
         run: |
+          pwd
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }}
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
         env:
@@ -158,8 +161,8 @@ jobs:
       - name: Delete Untested Files
         working-directory: './packages/${matrix.package}'
         run: |
-          rm -rf test/ || exit 0
-          rm -rf script/ || exit 0
+          rm -rf test/ || true
+          rm -rf script/ || true
 
       - name: Build Contracts
         run: |
