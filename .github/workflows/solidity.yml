@@ -148,8 +148,8 @@ jobs:
       - name: Delete Untested Files
         working-directory: "./packages/${matrix.package}"
         run: |
-          rm -rf test/
-          rm -rf script/
+          rm -rf test/ | exit 0
+          rm -rf script/ | exit 0
 
       - name: Build Contracts
         run: |
