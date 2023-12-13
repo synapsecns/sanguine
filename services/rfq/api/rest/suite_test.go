@@ -48,11 +48,11 @@ func NewServerSuite(tb testing.TB) *ServerSuite {
 	}
 }
 
-func (c ServerSuite) SetupTest() {
+func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 }
 
-func (c ServerSuite) SetupSuite() {
+func (c *ServerSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
 	// let's create 2 mock chains
@@ -153,7 +153,7 @@ func (c ServerSuite) SetupSuite() {
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},
-		Port: 8080,
+		Port: "9000",
 	}
 	c.cfg = testConfig
 

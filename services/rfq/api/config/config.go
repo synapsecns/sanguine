@@ -22,7 +22,7 @@ type Config struct {
 	OmniRPCURL string         `yaml:"omnirpc_url"`
 	// bridges is a map of chainid->address
 	Bridges map[uint32]string `yaml:"bridges"`
-	Port    uint16            `yaml:"port"`
+	Port    string            `yaml:"port"`
 }
 
 // LoadConfig loads the config from the given path.
