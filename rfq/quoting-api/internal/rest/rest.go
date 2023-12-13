@@ -4,7 +4,10 @@ package rest
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
+	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/bindings"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/config"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/db"
@@ -30,6 +33,8 @@ type APIServer struct {
 	bridges map[uint]*bindings.FastBridge
 }
 
+var logger = log.Logger("rest")
+
 // NewRestAPIServer creates a new instance of the rest api server.
 func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, error) {
 
@@ -53,16 +58,21 @@ func NewRestAPIServer(ctx context.Context, cfg *config.Config) (*APIServer, erro
 	if err != nil {
 		return nil, fmt.Errorf("could not create db: %w", err)
 	}
-	engine := gin.Default()
+	engine := ginhelper.New(logger)
 	r := APIServer{cfg: cfg, db: apiDB, engine: engine, bridges: bridges}
 	return &r, nil
 }
 
+const (
+	QUOTE_ROUTE = "/quote"
+)
+
 // Setup initializes rest api server routes.
+// TODO: move this to constructor, I have no idea why this is a separate method called by the user
 func (r *APIServer) Setup() {
 	r.engine.GET("/ping", r.ping)
-	r.engine.POST("/quote", r.createQuote)
-	r.engine.GET("/quote", r.readQuotes)
+	r.engine.POST(QUOTE_ROUTE, r.createQuote)
+	r.engine.GET(QUOTE_ROUTE, r.readQuotes)
 	r.engine.GET("/quote/:id", r.readQuote)
 	r.engine.PUT("/quote/:id", r.updateQuote)
 	r.engine.DELETE("/quote/:id", r.deleteQuote)
@@ -70,11 +80,13 @@ func (r *APIServer) Setup() {
 }
 
 // Run runs the rest api server.
-func (r *APIServer) Run() error {
-	err := r.engine.Run()
+func (r *APIServer) Run(ctx context.Context) error {
+	connection := baseServer.Server{}
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", r.cfg.Port), r.engine)
 	if err != nil {
-		return fmt.Errorf("could not run rest api server: %w", err)
+		return fmt.Errorf("could not start rest api server: %w", err)
 	}
+
 	return nil
 }
 
@@ -91,8 +103,8 @@ func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) (err error) {
 
 	// call on-chain to dest chain bridge::HasRole for relayer role
 	ops := &bind.CallOpts{Context: c}
-	// TODO: change me to RELAYER_ROLE
-	role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_ROLE")
+	// TODO CHANGE ME TO FILLER_ROLE for prod testing
+	role := crypto.Keccak256Hash([]byte("RELAYER_ROLE")) // keccak256("FILLER_ROLE")
 	relayer := common.HexToAddress(q.Relayer)
 
 	var has bool

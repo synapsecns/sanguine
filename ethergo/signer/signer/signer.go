@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
 	"math/big"
@@ -78,6 +79,11 @@ func Encode(sg Signature) []byte {
 	return sig
 }
 
+// EncodeHex encodes a signature as a hex string.
+func EncodeHex(sg Signature) string {
+	return hexutil.Encode(Encode(sg))
+}
+
 // DecodeSignature decodes a signature.
 func DecodeSignature(sig []byte) Signature {
 	if len(sig) != crypto.SignatureLength {
@@ -90,3 +96,19 @@ func DecodeSignature(sig []byte) Signature {
 }
 
 var _ Signature = signatureImpl{}
+
+// SignHash is a helper function that calculates a hash for the given message that can be
+// safely used to calculate a signature from.
+//
+// The hash is calculated as
+//
+//	keccak256("\x19Ethereum Signed Message:\n"${message length}${message}).
+//
+// This gives context to the signed message and prevents signing of transactions.
+// TODO: when ethereum is updated, import.
+// this comes from: https://github.com/ewasm/go-ethereum/blob/v1.8.10/signer/core/api.go#L451
+// TODO: nonetheless, we should test independently.Z
+func SignHash(data []byte) ([]byte, string) {
+	msg := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(data), data)
+	return crypto.Keccak256([]byte(msg)), msg
+}

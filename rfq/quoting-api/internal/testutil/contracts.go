@@ -46,6 +46,8 @@ type ITestContractHandler interface {
 	FBExecuteProve(ctx context.Context, request []byte, destTxHash [32]byte) (*types.Transaction, error)
 	// FBExecuteClaim executes the claim function on the fast bridge contract. Will likely be unused.
 	FBExecuteClaim(ctx context.Context, request []byte, to common.Address) (*types.Transaction, error)
+	// TestWallet returns the test wallet.
+	TestWallet() wallet.Wallet
 }
 
 // TokenContract is a struct containing the address and contract of a token.
@@ -65,6 +67,7 @@ type TestContractHandlerImpl struct {
 }
 
 // NewTestContractHandlerImpl creates a new instance of the ITestContractHandler interface.
+// TODO: just get chainid from rpc, don't require passing.
 func NewTestContractHandlerImpl(ctx context.Context, anvilBackend backends.SimulatedTestBackend, testWallet wallet.Wallet, chainID uint32) (ITestContractHandler, error) {
 	fundAmount := big.NewInt(params.Ether)
 	anvilBackend.FundAccount(ctx, testWallet.Address(), *fundAmount)
@@ -201,4 +204,9 @@ func (t *TestContractHandlerImpl) FBExecuteClaim(ctx context.Context, request []
 	}
 	t.anvilBackend.WaitForConfirmation(ctx, tx)
 	return tx, nil
+}
+
+// TestWallet returns the test wallet.
+func (t *TestContractHandlerImpl) TestWallet() wallet.Wallet {
+	return t.testWallet
 }

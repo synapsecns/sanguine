@@ -40,7 +40,7 @@ var quoterCommand = &cli.Command{
 			return fmt.Errorf("could not create rest api server: %w", err)
 		}
 		restAPI.Setup()
-		err = restAPI.Run()
+		err = restAPI.Run(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not run rest api server: %w", err)
 		}
