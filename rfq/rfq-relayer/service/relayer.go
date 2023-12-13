@@ -152,10 +152,6 @@ func (r *relayerImpl) Start(ctx context.Context) error {
 				return r.HandleUnconfirmedEvents(gCtx)
 			})
 
-			g.Go(func() error {
-				return r.txSubmitter.Start(gCtx)
-			})
-
 			// Check queue for events ready to claim
 			g.Go(func() error {
 				return r.HandleClaimEvents(gCtx)

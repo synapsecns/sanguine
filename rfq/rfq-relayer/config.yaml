@@ -20,7 +20,7 @@ chains:
 queue_poll_interval: 1
 database:
   type: 'sqlite' # Use 'mysql' for production
-  dsn: '/tmp/bаsfggg' # Or the appropriate MySQL DSN for production
+  dsn: 'rfq_solver_bot.db' # Or the appropriate MySQL DSN for production
 
 relayer_address: '0x49357ba0Ef3a8daC25903472eEe45C41221D4F9a'
 omnirpc_url: 'https://rpc.interop-staging.com'
@@ -41,8 +41,7 @@ submitter_config:
   chains:
     421614:
       supports_eip_1559: true
-      gas_estimate: 3500000
+      gas_estimate: 7500000
     11155111:
       supports_eip_1559: true
-      gas_bump_percentage: 10
-      gas_estimate: 1000000
+      gas_bump_percentage: 100
