@@ -18,7 +18,7 @@ var infoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use rfq relayer cli",
 	Action: func(c *cli.Context) error {
-		fmt.Println("Run relayer --config path/to/config.yaml to get sterted") // TODO: more info here w/markdown
+		fmt.Println("Run relayer --config path/to/config.yaml to get started") // TODO: more info here w/markdown
 		return nil
 	},
 }
@@ -38,6 +38,8 @@ var relayerCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 		}
+		fmt.Printf("Config loaded: %+v\n", relayerConfig)
+
 		// Create MySQL Database connection
 		metricHandler := metrics.Get()
 		dbname := os.Getenv("MYSQL_DATABASE")
