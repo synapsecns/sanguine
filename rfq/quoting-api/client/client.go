@@ -30,7 +30,7 @@ func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 				return fmt.Errorf("failed to sign request: %w", err)
 			}
 
-			request.SetHeader("Authentication", signer.EncodeHex(sig))
+			request.SetHeader("Authorization", fmt.Sprintf("%s:%s", timestamp, signer.EncodeHex(sig)))
 
 			return nil
 		})
