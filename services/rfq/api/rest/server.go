@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/metrics"
+	baseServer "github.com/synapsecns/sanguine/core/server"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
@@ -58,13 +59,14 @@ func NewAPI(
 	}, nil
 }
 
+// Run runs the rest api server.
 func (r *APIServer) Run(ctx context.Context) error {
-	fmt.Println(r.engine)
-	err := r.engine.Run(":" + r.cfg.Port)
+	connection := baseServer.Server{}
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
 	if err != nil {
-		return fmt.Errorf("could not run rest api server: %w", err)
+		return fmt.Errorf("could not start rest api server: %w", err)
 	}
-	fmt.Println("RFQ API Server is running")
+
 	return nil
 }
 
