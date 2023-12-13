@@ -181,19 +181,19 @@ export function getBridgeModuleName(
  * or the bridge token.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeNoduleName - The name of the bridge module.
+ * @param bridgeModuleName - The name of the bridge module.
  * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the bridge module is unknown for the given chain.
  */
 export function getEstimatedTime(
   this: SynapseSDK,
   originChainId: number,
-  bridgeNoduleName: string
+  bridgeModuleName: string
 ): number {
-  if (this.synapseRouterSet.bridgeModuleName === bridgeNoduleName) {
+  if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
     return this.synapseRouterSet.getEstimatedTime(originChainId)
   }
-  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeNoduleName) {
+  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeModuleName) {
     return this.synapseCCTPRouterSet.getEstimatedTime(originChainId)
   }
   throw new Error('Unknown bridge module')
