@@ -48,6 +48,8 @@ class SynapseSDK {
   public bridgeQuote = operations.bridgeQuote
   public getBridgeModuleName = operations.getBridgeModuleName
   public getEstimatedTime = operations.getEstimatedTime
+  public getBridgeID = operations.getBridgeID
+  public getBridgeTxStatus = operations.getBridgeTxStatus
 
   public getBridgeGas = operations.getBridgeGas
 

@@ -118,6 +118,44 @@ export async function bridgeQuote(
 }
 
 /**
+ * Gets the unique bridge ID for a bridge operation that happened within a given transaction.
+ * Bridge ID is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
+ * This function is meant to abstract away the differences between the two bridge modules.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param txHash - The transaction hash of the bridge operation on the origin chain.
+ * @returns A promise that resolves to the unique bridge ID of the bridge operation.
+ */
+export async function getBridgeID(
+  this: SynapseSDK,
+  originChainId: number,
+  bridgeModuleName: string,
+  txHash: string
+): Promise<string> {
+  // Placeholder logic
+  return originChainId + bridgeModuleName + txHash
+}
+
+/**
+ * Checks whether a bridge operation has been completed on the destination chain.
+ *
+ * @param destChainId - The ID of the destination chain.
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param bridgeID - The unique bridge ID of the bridge operation.
+ * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
+ */
+export async function getBridgeTxStatus(
+  this: SynapseSDK,
+  destChainId: number,
+  bridgeModuleName: string,
+  bridgeID: string
+): Promise<boolean> {
+  // Placeholder logic
+  return (destChainId + bridgeModuleName + bridgeID).length % 2 === 0
+}
+
+/**
  * Returns the name of the bridge module that emits the given event.
  * This will be either SynapseBridge or SynapseCCTP.
  *
