@@ -634,6 +634,7 @@ export const FRAX = new Token({
     [CHAINS.ETH.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
     [CHAINS.ARBITRUM.id]: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
     [CHAINS.DOGE.id]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
+    [CHAINS.POLYGON.id]: '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89',
   },
   decimals: 18,
   symbol: 'FRAX',
