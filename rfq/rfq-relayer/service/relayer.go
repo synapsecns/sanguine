@@ -110,12 +110,6 @@ func NewRelayer(ctx context.Context, cfg *config.Config, db db.DB, handler metri
 		return nil, fmt.Errorf("could not create queue: %w", err)
 	}
 
-	// TODO: this probably doesn't belong here
-	err = quoter.PublishQuotes()
-	if err != nil {
-		return nil, fmt.Errorf("could not publish quotes: %w", err)
-	}
-
 	// Listener Channels
 	eventChan := make(chan relayerTypes.WrappedLog, MaxEventChanSize)
 	seenChan := make(chan relayerTypes.WrappedLog, MaxEventChanSize)
