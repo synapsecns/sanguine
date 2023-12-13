@@ -6,11 +6,15 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/config"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 	"math"
 	"math/big"
 	"sync"
@@ -27,12 +31,18 @@ type InventoryManager interface {
 }
 
 type inventoryManagerImpl struct {
-	// map chainID->address->
-	tokens map[int]map[common.Address]Token
+	// map chainID->address->Token
+	tokens map[int]map[common.Address]*Token
 	// mux contains the mutex
 	mux sync.RWMutex
 	// callbacksRegisterd is wether or not callbacks have been registered
 	callbacksRegistered bool
+	// handler is the metrics handler
+	handler metrics.Handler
+	// relayerAddress contains the relayer address
+	relayerAddress common.Address
+	// chainClient is an omnirpc client
+	chainClient omnirpcClient.RPCClient
 }
 
 type Token struct {
@@ -49,47 +59,118 @@ var (
 
 // NewInventoryManager creates a list of tokens we should use.
 func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg config.Config, relayer common.Address) (interface{}, error) {
-	meter := handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
 
-	chainTokens := make(map[int]map[common.Address]*Token)
+	return nil, nil
+}
+
+const maxBatchSize = 10
+
+// initlalizes tokens converts the configuration into a data structure we can use to determine inventory
+// it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
+func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg config.Config) (err error) {
+	i.mux.Lock()
+	defer i.mux.Unlock()
+
+	ctx, span := i.handler.Tracer().Start(parentCtx, "initializeTokens", trace.WithAttributes(
+		attribute.String("relayer_address", i.relayerAddress.String()),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+
+	// TODO: this needs to be a struct bound variable otherwise will be stuck.
+	i.tokens = make(map[int]map[common.Address]*Token)
+
+	type registerCall func() error
+	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
+	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
+	var deferredRegisters []registerCall
+	deferredCalls := make(map[int][]w3types.Caller)
+
+	// iterate through all tokens to get the metadata
 	for chainID, tokens := range cfg.Tokens {
-		chainTokens[chainID] = map[common.Address]*Token{}
+		i.tokens[chainID] = map[common.Address]*Token{}
 
 		for _, strToekn := range tokens {
-			balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
-			if err != nil {
-				return nil, fmt.Errorf("could not create gauge: %w", err)
-			}
-
 			token := common.HexToAddress(strToekn)
 			rtoken := &Token{}
-			chainTokens[chainID][token] = rtoken
+			i.tokens[chainID][token] = rtoken
 
-			eth.CallFunc(funcBalanceOf, token, relayer).Returns(rtoken.balance)
-			eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals)
-			eth.CallFunc(funcName, token).Returns(&rtoken.name)
+			deferredCalls[chainID] = append(deferredCalls[chainID],
+				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
+				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
+				eth.CallFunc(funcName, token).Returns(&rtoken.name),
+			)
 
-			// register the callback. This only needs to happen once
-			if _, err := meter.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
-				tokenData, ok := chainTokens[chainID][token]
-				if !ok {
-					return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
-				}
-
-				attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", relayer.String()),
-					attribute.String("token_name", tokenData.name), attribute.Int("decimals", int(tokenData.decimals)),
-					attribute.String("token_address", token.String()))
-
-				observer.ObserveFloat64(balanceGauge, bigToDecimals(tokenData.balance, tokenData.decimals), metric.WithAttributeSet(attributes))
-
-				return nil
-			}, balanceGauge); err != nil {
-				return nil, fmt.Errorf("could not register callback: %w", err)
-			}
+			deferredRegisters = append(deferredRegisters, func() error {
+				//nolint: wrapcheck
+				return i.registerMetric(meter, chainID, token)
+			})
 		}
 	}
 
-	return nil, nil
+	// run tthrough the deferred cals
+	g, gctx := errgroup.WithContext(ctx)
+	for chainID := range deferredCalls {
+		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return fmt.Errorf("can't initialize tokens, no chain client available for chain %d: %w", chainID, err)
+		}
+
+		g.Go(func() error {
+			// TODO: add retries
+			batches := core.ChunkSlice(deferredCalls[chainID], maxBatchSize)
+			for _, batch := range batches {
+				err = chainClient.BatchWithContext(gctx, batch...)
+				if err != nil {
+					return fmt.Errorf("could not batch: %w", err)
+				}
+			}
+			return nil
+		})
+	}
+
+	for _, register := range deferredRegisters {
+		err = register()
+		if err != nil {
+			return fmt.Errorf("could not register func: %w", err)
+		}
+	}
+
+	return
+
+}
+
+func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, token common.Address) error {
+	balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
+	if err != nil {
+		return fmt.Errorf("could not create gauge: %w", err)
+	}
+
+	if _, err := meter.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
+		i.mux.RLock()
+		defer i.mux.RUnlock()
+
+		// TODO: make sure this doesn't get called until we're done
+		tokenData, ok := i.tokens[chainID][token]
+		if !ok {
+			return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
+		}
+
+		attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
+			attribute.String("token_name", tokenData.name), attribute.Int("decimals", int(tokenData.decimals)),
+			attribute.String("token_address", token.String()))
+
+		observer.ObserveFloat64(balanceGauge, bigToDecimals(tokenData.balance, tokenData.decimals), metric.WithAttributeSet(attributes))
+
+		return nil
+	}, balanceGauge); err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+	return nil
 }
 
 // refreshBalances refreshes all the token balances.
