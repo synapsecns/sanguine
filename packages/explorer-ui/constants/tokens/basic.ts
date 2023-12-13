@@ -562,6 +562,7 @@ export const FRAX = new Token({
     [ChainId.HARMONY]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [ChainId.DOGECHAIN]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
     [ChainId.ARBITRUM]: '0x17fc002b466eec40dae837fc4be5c67993ddbd6f',
+    [ChainId.POLYGON]: '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89',
   },
   decimals: 18,
   symbol: 'FRAX',
@@ -1003,6 +1004,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     USDB,
     H2O,
     WMATIC,
+    FRAX,
   ],
   [ChainId.FANTOM]: [
     MIM,
