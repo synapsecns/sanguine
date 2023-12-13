@@ -110,9 +110,9 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 			rtoken.balance = new(big.Int)
 
 			deferredCalls[chainID] = append(deferredCalls[chainID],
-				//eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
+				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
-				//eth.CallFunc(funcName, token).Returns(&rtoken.name),
+				eth.CallFunc(funcName, token).Returns(&rtoken.name),
 			)
 
 			deferredRegisters = append(deferredRegisters, func() error {
@@ -125,6 +125,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 	// run through the deferred cals
 	g, gctx := errgroup.WithContext(ctx)
 	for chainID := range deferredCalls {
+		chainID := chainID // capture func literal
+
 		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return fmt.Errorf("can't initialize tokens, no chain client available for chain %d: %w", chainID, err)
@@ -136,6 +138,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 			for _, batch := range batches {
 				err = chainClient.BatchWithContext(gctx, batch...)
 				if err != nil {
+
 					return fmt.Errorf("could not batch: %w", err)
 				}
 			}
