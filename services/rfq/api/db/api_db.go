@@ -23,10 +23,14 @@ type QuoteModel struct {
 
 // ApiDBReader is the interface for reading from the database.
 type ApiDBReader interface {
+	// GetQuote gets a quote from the database.
+	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*QuoteModel, error)
 }
 
 // ApiDBWriter is the interface for writing to the database.
 type ApiDBWriter interface {
+	// UpsertQuote upserts a quote in the database.
+	UpsertQuote(quote *QuoteModel) error
 }
 
 // ApiDB is the interface for the database service.
