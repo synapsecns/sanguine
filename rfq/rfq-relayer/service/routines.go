@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
+	"math"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -43,7 +44,7 @@ func (r *relayerImpl) HandleClaimEvents(parentCtx context.Context) error {
 		select {
 		case <-parentCtx.Done():
 			return nil
-		case <-time.After(time.Duration(r.config.QueuePollInterval) * time.Second):
+		case <-time.After(time.Duration(math.Min(float64(r.config.QueuePollInterval), 1)) * time.Second):
 			// Check if head of queue is ready
 			now := time.Now().Unix()
 			deadlinePassed, err := r.claimQueue.HasLiveElements(now)

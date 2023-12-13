@@ -3,9 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	gormLogger "gorm.io/gorm/logger"
 	"os"
 
-	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db/model"
 	"github.com/synapsecns/sanguine/rfq/rfq-relayer/db/sql/base"
@@ -39,7 +39,8 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		DisableForeignKeyConstraintWhenMigrating: true,
 		FullSaveAssociations:                     true,
 		SkipDefaultTransaction:                   true,
-		Logger:                                   common_base.GetGormLogger(logger),
+		// TODO: undo me
+		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
