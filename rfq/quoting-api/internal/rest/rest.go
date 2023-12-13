@@ -4,6 +4,9 @@ package rest
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -14,8 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/rfq/quoting-api/internal/rest/auth"
 	"github.com/synapsecns/sanguine/rfq/quoting-api/models"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"strconv"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -104,12 +105,21 @@ func (r *APIServer) Authenticate(c *gin.Context, q *models.Quote) (err error) {
 	// call on-chain to dest chain bridge::HasRole for relayer role
 	ops := &bind.CallOpts{Context: c}
 	// TODO CHANGE ME TO FILLER_ROLE for prod testing
-	role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_PROD")
+	//role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("RELAYER_PROD")
+	// TODO: CHANGE ME TO FILLER_ROLE for prod testing and remove if statements
+	filler_role := crypto.Keccak256Hash([]byte("FILLER_ROLE")) // keccak256("FILLER_ROLE")
+	relayer_role := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
 	relayer := common.HexToAddress(q.Relayer)
 
 	var has bool
-	if has, err = bridge.HasRole(ops, role, relayer); err != nil {
-		err = fmt.Errorf("unable to check relayer role on-chain")
+	if has, err = bridge.HasRole(ops, filler_role, relayer); err != nil {
+		err = fmt.Errorf("unable to check filler role on-chain")
+		c.JSON(400, gin.H{"msg": err})
+		return err
+	} else if !has {
+		if has, err = bridge.HasRole(ops, relayer_role, relayer); err != nil {
+			err = fmt.Errorf("unable to check relayer role on-chain")
+		}
 		c.JSON(400, gin.H{"msg": err})
 		return err
 	} else if !has {
@@ -141,7 +151,7 @@ func (r *APIServer) createQuote(c *gin.Context) {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-
+	fmt.Println("quote", q)
 	err = r.Authenticate(c, &q)
 	if err != nil {
 		c.JSON(400, gin.H{"msg": err})
