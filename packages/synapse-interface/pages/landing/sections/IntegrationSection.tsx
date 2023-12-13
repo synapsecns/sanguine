@@ -25,15 +25,15 @@ export default function IntegrationSection() {
           lg:flex lg:justify-center
         `}
       >
-        <div
+        <h2
           className={`
             mr-6 pr-6 text-3xl text-white
             border-r-0 md:border-r md:border-b-1 md:border-white
           `}
         >
           Widely integrated
-        </div>
-        <div
+        </h2>
+        <p
           className={`
             mt-2 text-left md:mt-0
             text-secondaryTextColor
@@ -43,7 +43,7 @@ export default function IntegrationSection() {
           Synapse is widely integrated across the most-used Layer 1 and{' '}
           <br className="hidden md:block" />
           Layer 2 networks for a seamless cross-chain experience.
-        </div>
+        </p>
       </div>
 
       <Grid
