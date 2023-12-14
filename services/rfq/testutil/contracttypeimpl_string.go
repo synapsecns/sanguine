@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[FastBridgeType-1]
 	_ = x[MockERC20Type-2]
+	_ = x[FastBridgeMockType-3]
 }
 
-const _contractTypeImpl_name = "FastBridgeMockERC20Type"
+const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMock"
 
-var _contractTypeImpl_index = [...]uint8{0, 10, 23}
+var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

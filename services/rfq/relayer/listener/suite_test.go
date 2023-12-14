@@ -93,3 +93,7 @@ func (l *ListenerTestSuite) TestStartBlock() {
 	l.Equal(cid, uint64(chainID))
 	l.Equal(startBlock, expectedLastIndexed)
 }
+
+func (l *ListenerTestSuite) TestListen() {
+
+}

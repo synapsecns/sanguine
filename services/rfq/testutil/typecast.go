@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 )
 
 // GetFastBridge gets the pre-created fast bridge contract.

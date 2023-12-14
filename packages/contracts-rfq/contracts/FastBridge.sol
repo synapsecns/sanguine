@@ -38,7 +38,7 @@ contract FastBridge is IFastBridge, Admin {
     /// @dev to prevent replays
     uint256 public nonce;
     // @dev the block the contract was deployed at
-    uint256 public deployBlock;
+    uint256 public immutable deployBlock;
 
     constructor(address _owner) Admin(_owner) {
         deployBlock = block.number;

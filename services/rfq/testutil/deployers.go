@@ -10,7 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	mockerc202 "github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	// TODO: add contracts here
-	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer)
+	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer)
 	return &DeployManager{parentManager}
 }
 
@@ -66,8 +67,26 @@ const MockERC20Name = "token"
 
 func (m MockERC20Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return mockerc20.DeployMockERC20(transactOps, backend, MockERC20Name, MockERC20Decimals)
+		return mockerc202.DeployMockERC20(transactOps, backend, MockERC20Name, MockERC20Decimals)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return mockerc20.NewMockerc20Ref(address, backend)
+		return mockerc202.NewMockerc20Ref(address, backend)
+	})
+}
+
+type MockFastBridgeDeployer struct {
+	*deployer.BaseDeployer
+}
+
+func NewMockFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MockFastBridgeDeployer{
+		deployer.NewSimpleDeployer(registry, backend, FastBridgeMockType),
+	}
+}
+
+func (m MockFastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return fastbridgemock.DeployFastBridgeMock(transactOps, backend, transactOps.From)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return fastbridgemock.NewFastBridgeMockRef(address, backend)
 	})
 }

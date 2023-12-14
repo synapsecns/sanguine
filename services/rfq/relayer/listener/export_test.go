@@ -29,8 +29,7 @@ type TestChainListenerArgs struct {
 }
 
 func NewTestChainListener(args TestChainListenerArgs) TestChainListener {
-	return chainListener{
-		address:  args.Address,
+	return &chainListener{
 		client:   args.Client,
 		contract: args.Contract,
 		store:    args.Store,
