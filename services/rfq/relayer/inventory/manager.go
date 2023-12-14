@@ -15,7 +15,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
 	"math/big"
 	"sync"
 )
@@ -180,7 +179,7 @@ func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, t
 			attribute.String("token_name", tokenData.name), attribute.Int("decimals", int(tokenData.decimals)),
 			attribute.String("token_address", token.String()))
 
-		observer.ObserveFloat64(balanceGauge, bigToDecimals(tokenData.balance, tokenData.decimals), metric.WithAttributeSet(attributes))
+		observer.ObserveFloat64(balanceGauge, core.BigToDecimals(tokenData.balance, tokenData.decimals), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, balanceGauge); err != nil {
@@ -196,19 +195,3 @@ func (i *inventoryManagerImpl) refreshBalances() {
 
 // Ultimately this should produce a list of all balances and remove the
 // quoted amounts from the database
-
-// TODO: move me.
-func bigToDecimals(bigInt *big.Int, decimals uint8) float64 {
-	// Convert vpriceMetric to *big.Float
-	bigVPrice := new(big.Float).SetInt(bigInt)
-
-	// Calculate the divisor for decimals
-	divisor := new(big.Float).SetFloat64(math.Pow10(int(decimals)))
-
-	// Divide bigVPrice by the divisor to account for decimals
-	realVPrice := new(big.Float).Quo(bigVPrice, divisor)
-
-	// Convert the final value to float64
-	floatVPrice, _ := realVPrice.Float64()
-	return floatVPrice
-}
