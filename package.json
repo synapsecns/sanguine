@@ -1,7 +1,7 @@
 {
   "name": "@abtestingalpha/widget",
   "description": "Test Widget",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "ISC",
   "type": "module",
   "main": "dist/cjs/index.js",
@@ -19,13 +19,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "blockchain",
-    "bridge",
-    "cross-chain",
-    "dapp",
-    "interoperability",
-    "synapse",
-    "web3",
     "widget"
   ],
   "peerDependencies": {
