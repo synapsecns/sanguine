@@ -133,8 +133,9 @@ export async function getBridgeID(
   bridgeModuleName: string,
   txHash: string
 ): Promise<string> {
-  // Placeholder logic
-  return originChainId + bridgeModuleName + txHash
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getBridgeID(originChainId, txHash)
 }
 
 /**
@@ -151,8 +152,9 @@ export async function getBridgeTxStatus(
   bridgeModuleName: string,
   bridgeID: string
 ): Promise<boolean> {
-  // Placeholder logic
-  return (destChainId + bridgeModuleName + bridgeID).length % 2 === 0
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getBridgeTxStatus(destChainId, bridgeID)
 }
 
 /**

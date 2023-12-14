@@ -62,6 +62,25 @@ export abstract class Router {
   ): Promise<PopulatedTransaction>
 
   /**
+   * Returns the bridge transaction ID for a given transaction hash on the current chain.
+   * This is used to track the status of a bridge transaction originating from the current chain.
+   *
+   * @param txHash - The transaction hash of the bridge transaction.
+   * @returns A promise that resolves to the bridge transaction ID.
+   */
+  abstract getBridgeID(txHash: string): Promise<string>
+
+  /**
+   * Checks whether a bridge transaction has been completed on the current chain.
+   * This is used to track the status of a bridge transaction originating from another chain, having
+   * current chain as the destination chain.
+   *
+   * @param bridgeID - The unique bridge ID of the bridge transaction.
+   * @returns A promise that resolves to a boolean indicating whether the bridge transaction has been completed.
+   */
+  abstract getBridgeTxStatus(bridgeID: string): Promise<boolean>
+
+  /**
    * Fetches bridge tokens for a destination chain and output token.
    *
    * Checks the cache first, and fetches from the router if not cached. Filters invalid tokens and caches the result.

@@ -114,4 +114,18 @@ export class SynapseCCTPRouter extends Router {
       narrowToCCTPRouterQuery(destQuery)
     )
   }
+
+  /**
+   * @inheritdoc Router.getBridgeID
+   */
+  public async getBridgeID(txHash: string): Promise<string> {
+    return txHash
+  }
+
+  /**
+   * @inheritdoc Router.getBridgeTxStatus
+   */
+  public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
+    return bridgeID.length % 2 === 0
+  }
 }

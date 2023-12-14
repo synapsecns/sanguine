@@ -137,6 +137,20 @@ export class SynapseRouter extends Router {
     )
   }
 
+  /**
+   * @inheritdoc Router.getBridgeID
+   */
+  public async getBridgeID(txHash: string): Promise<string> {
+    return txHash
+  }
+
+  /**
+   * @inheritdoc Router.getBridgeTxStatus
+   */
+  public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
+    return bridgeID.length % 2 === 0
+  }
+
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
 
   private async getBridgeContract(): Promise<Contract> {
