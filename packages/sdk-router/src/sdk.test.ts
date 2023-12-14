@@ -737,6 +737,10 @@ describe('SynapseSDK', () => {
 
     describe('getBridgeID', () => {
       describe('SynapseBridge', () => {
+        const ethSynBridge = '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
+        const events =
+          'TokenDeposit, TokenDepositAndSwap, TokenRedeem, TokenRedeemAndRemove, TokenRedeemAndSwap, TokenRedeemV2'
+
         it('ETH -> ARB', async () => {
           const bridgeID = await synapse.getBridgeID(
             SupportedChainId.ETH,
@@ -754,9 +758,48 @@ describe('SynapseSDK', () => {
           )
           expect(bridgeID).toEqual(bridgeArbToEthTx.bridgeID)
         })
+
+        it('Throws when given a txHash that does not exist', async () => {
+          // Use txHash for another chain
+          await expect(
+            synapse.getBridgeID(
+              SupportedChainId.ETH,
+              'SynapseBridge',
+              bridgeArbToEthTx.txHash
+            )
+          ).rejects.toThrow('Failed to get transaction receipt')
+        })
+
+        it('Throws when origin tx does not refer to SynapseBridge', async () => {
+          const errorMsg =
+            `Contract ${ethSynBridge} in transaction ${cctpEthToArbTx.txHash}` +
+            ` did not emit any of the expected events: ${events}`
+          await expect(
+            synapse.getBridgeID(
+              SupportedChainId.ETH,
+              'SynapseBridge',
+              cctpEthToArbTx.txHash
+            )
+          ).rejects.toThrow(errorMsg)
+        })
+
+        it('Throws when given a destination tx', async () => {
+          // Destination tx hash for ARB -> ETH
+          const txHash =
+            '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
+          const errorMsg =
+            `Contract ${ethSynBridge} in transaction ${txHash}` +
+            ` did not emit any of the expected events: ${events}`
+          await expect(
+            synapse.getBridgeID(SupportedChainId.ETH, 'SynapseBridge', txHash)
+          ).rejects.toThrow(errorMsg)
+        })
       })
 
       describe('SynapseCCTP', () => {
+        const ethSynCCTP = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        const events = 'CircleRequestSent'
+
         it('ETH -> ARB', async () => {
           const bridgeID = await synapse.getBridgeID(
             SupportedChainId.ETH,
@@ -781,31 +824,34 @@ describe('SynapseSDK', () => {
             synapse.getBridgeID(
               SupportedChainId.ETH,
               'SynapseCCTP',
-              bridgeArbToEthTx.txHash
+              cctpArbToEthTx.txHash
             )
           ).rejects.toThrow('Failed to get transaction receipt')
         })
 
         it('Throws when origin tx does not refer to SynapseCCTP', async () => {
+          const errorMsg =
+            `Contract ${ethSynCCTP} in transaction ${bridgeEthToArbTx.txHash}` +
+            ` did not emit any of the expected events: ${events}`
           await expect(
             synapse.getBridgeID(
               SupportedChainId.ETH,
               'SynapseCCTP',
               bridgeEthToArbTx.txHash
             )
-          ).rejects.toThrow('CircleRequestSent log not found')
+          ).rejects.toThrow(errorMsg)
         })
 
         it('Throws when given a destination tx', async () => {
           // Destination tx hash for ARB -> ETH
-          // Has CircleRequestFulfilled log, which should be ignored
+          const txHash =
+            '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
+          const errorMsg =
+            `Contract ${ethSynCCTP} in transaction ${txHash}` +
+            ` did not emit any of the expected events: ${events}`
           await expect(
-            synapse.getBridgeID(
-              SupportedChainId.ETH,
-              'SynapseCCTP',
-              '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
-            )
-          ).rejects.toThrow('CircleRequestSent log not found')
+            synapse.getBridgeID(SupportedChainId.ETH, 'SynapseCCTP', txHash)
+          ).rejects.toThrow(errorMsg)
         })
       })
 
