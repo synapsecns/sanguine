@@ -6,6 +6,7 @@ import { DownArrow } from '../icons/DownArrow'
 type PopoverSelectProps = {
   selectedChainId: number
   options: BridgeableToken[]
+  remaining: BridgeableToken[]
   balances: TokenBalance[]
   onSelect: (selected: BridgeableToken) => void
   selected: BridgeableToken
@@ -15,6 +16,7 @@ type PopoverSelectProps = {
 export function TokenPopoverSelect({
   selectedChainId,
   options,
+  remaining,
   balances,
   onSelect,
   selected,
@@ -52,30 +54,67 @@ export function TokenPopoverSelect({
             )
             const parsedBalance: string = matchedTokenBalance?.parsedBalance
             return (
-              <div
-                data-test-id="token-option"
-                key={index}
-                className={`w-full cursor-pointer px-2 py-2.5 ${
-                  option.symbol === selected?.symbol
-                    ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-                    : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
-                }`}
-                onClick={() => handleSelect(option)}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="mr-3">{option.symbol}</div>
-                  <div className="flex gap-1 ml-auto text-xs">
-                    {parsedBalance && <div>{parsedBalance}</div>}
-                    <div className="text-[--synapse-text-secondary]">
-                      {option.symbol}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <TokenOption
+                option={option}
+                index={index}
+                onSelect={handleSelect}
+                selected={selected}
+                parsedBalance={parsedBalance}
+              />
+            )
+          })}
+          {remaining?.map((option: BridgeableToken, index) => {
+            const matchedTokenBalance: TokenBalance = balances?.find(
+              (token: TokenBalance) => token.token === option
+            )
+            const parsedBalance: string = matchedTokenBalance?.parsedBalance
+            return (
+              <TokenOption
+                option={option}
+                index={index}
+                onSelect={handleSelect}
+                selected={selected}
+                parsedBalance={parsedBalance}
+              />
             )
           })}
         </div>
       )}
+    </div>
+  )
+}
+
+const TokenOption = ({
+  option,
+  index,
+  onSelect,
+  selected,
+  parsedBalance,
+}: {
+  option: BridgeableToken
+  index: number
+  onSelect: (option: BridgeableToken) => void
+  selected: BridgeableToken
+  parsedBalance: string
+}) => {
+  return (
+    <div
+      data-test-id="token-option"
+      key={index}
+      className={`w-full cursor-pointer px-2 py-2.5 ${
+        option.symbol === selected?.symbol
+          ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
+          : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+      }`}
+      onClick={() => onSelect(option)}
+    >
+      <div className="flex items-center gap-2">
+        <div className="mr-3">{option.symbol}</div>
+        <div className="flex gap-1 ml-auto text-xs">
+          {parsedBalance && <div>{parsedBalance}</div>}
+          <div className="text-[--synapse-text-secondary]">{option.symbol}</div>
+        </div>
+      </div>
     </div>
   )
 }

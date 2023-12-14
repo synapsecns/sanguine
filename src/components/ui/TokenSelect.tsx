@@ -26,18 +26,19 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
 
   if (label === 'In') {
     options = originTokens
+
+    remainingOptions = _.difference(tokens, options)
   } else {
     options = filterTokens(destinationTokens, tokens)
 
-    let remainingOptions = _.difference(tokens, options)
-
-    console.log(`remainingOptions,`, remainingOptions)
+    remainingOptions = _.difference(tokens, options)
   }
 
   return (
     <TokenPopoverSelect
       selectedChainId={isOrigin ? originChainId : destinationChainId}
       options={options}
+      remaining={remainingOptions}
       balances={isOrigin ? balances : []}
       onSelect={(selected) => {
         onChange(selected)
