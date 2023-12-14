@@ -24,7 +24,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 			auth := l.backend.GetTxContext(l.GetTestContext(), nil)
 
 			txID := [32]byte(crypto.Keccak256(testAddress.Bytes()))
-			bridgeRequestTX, err := handle.MockBridgeRequested(auth.TransactOpts, txID, testAddress, []byte(gofakeit.Sentence(10)))
+			bridgeRequestTX, err := handle.MockBridgeRequestRaw(auth.TransactOpts, txID, testAddress, []byte(gofakeit.Sentence(10)))
 			l.NoError(err)
 
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeRequestTX)
