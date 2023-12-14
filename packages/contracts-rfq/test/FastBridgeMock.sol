@@ -15,6 +15,10 @@ contract FastBridgeMock is IFastBridge, Admin {
     /// @dev to prevent replays
     uint256 public nonce;
 
+    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
+        return abi.decode(request, (BridgeTransaction));
+    }
+
     function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
         bytes memory request = abi.encode(
             BridgeTransaction({

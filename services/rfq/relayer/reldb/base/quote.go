@@ -41,3 +41,27 @@ func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.Quo
 	}
 	return qr, nil
 }
+
+func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...reldb.QuoteRequestStatus) (res []reldb.QuoteRequest, _ error) {
+	var quoteResults []RequestForQuote
+
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	// TODO: consider pagination
+	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&quoteResults)
+	if tx.Error != nil {
+		return []reldb.QuoteRequest{}, fmt.Errorf("could not get db results: %w", tx.Error)
+	}
+
+	for _, result := range quoteResults {
+		marshalled, err := result.ToQuoteRequest()
+		if err != nil {
+			return []reldb.QuoteRequest{}, fmt.Errorf("could not get quotes")
+		}
+		res = append(res, *marshalled)
+	}
+	return res, nil
+}

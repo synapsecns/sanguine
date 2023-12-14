@@ -24,6 +24,8 @@ type Reader interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	// GetQuoteRequestByID gets a quote request by id. Should return ErrNoQuoteForID if not found
 	GetQuoteRequestByID(ctx context.Context, id [32]byte) (*QuoteRequest, error)
+	// GetQuoteResultsByStatus gets quote results by status
+	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
 }
 
 type Service interface {
