@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
@@ -67,7 +68,7 @@ func (i *InventoryTestSuite) SetupTest() {
 		i.NoError(err)
 	}()
 
-	for it := 1; it < 5; it++ {
+	for it := 1; it < 3; it++ {
 		wg.Add(1)
 		it := it // capture func literal
 		go func() {
@@ -78,14 +79,8 @@ func (i *InventoryTestSuite) SetupTest() {
 			allBackends = append(allBackends, backend)
 			mux.Unlock()
 
-			// mint differing amounts on each chain of 1 eth * chainID.
-			dc, mockContract := i.manager.GetMockERC20(i.GetTestContext(), i.backends[it])
-			txContext := backend.GetTxContext(i.GetTestContext(), dc.OwnerPtr())
-
-			tx, err := mockContract.Mint(txContext.TransactOpts, i.relayer.Address(), new(big.Int).Mul(big.NewInt(int64(it)), big.NewInt(params.Ether)))
-			i.Require().NoError(err)
-
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
+			backend.Store(base.WalletToKey(i.T(), i.relayer))
+			backend.FundAccount(i.GetTestContext(), i.relayer.Address(), *new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10)))
 		}()
 	}
 

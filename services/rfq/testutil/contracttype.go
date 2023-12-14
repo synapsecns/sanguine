@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
@@ -59,7 +60,9 @@ const (
 	// USDTType is the tether type
 	USDTType // USDTType
 	// USDCType is the type of the usdc contract
-	USDCType // USDCType is the usdc type
+	USDCType // USDCType
+	// DAIType is the dai contract
+	DAIType // DAIType is the dai contract type
 )
 
 // ID gets the contract type as an id.
@@ -98,6 +101,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		panic("method not supported, token is verification blacklisted")
 	case USDCType:
 		return usdc.Contracts["/solidity/FiatToken.sol:FiatTokenV2"]
+	case DAIType:
+		return dai.Contracts["/solidity/dai.sol:Dai"]
 
 	}
 	return nil

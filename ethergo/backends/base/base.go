@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"math/big"
 	"os"
 	"sync"
@@ -51,6 +52,8 @@ type Backend struct {
 	tenderly *tenderly.Tenderly
 	// provider is the stack trace provider
 	provider *debug.Provider
+	// store stores the accounts
+	store *InMemoryKeyStore
 }
 
 // T returns the testing object.
@@ -62,6 +65,14 @@ func (b *Backend) T() *testing.T {
 func (b *Backend) SetT(t *testing.T) {
 	t.Helper()
 	b.t = t
+}
+
+func (b *Backend) Store(key *keystore.Key) {
+	b.store.Store(key)
+}
+
+func (b *Backend) GetAccount(a common.Address) *keystore.Key {
+	return b.store.GetAccount(a)
 }
 
 // NewBaseBackend creates a new base backend.
@@ -76,6 +87,7 @@ func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backen
 		t:        t,
 		Manager:  nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
 		provider: debug.NewStackTraceProvider(),
+		store:    NewInMemoryKeyStore(),
 	}
 
 	return b, nil
@@ -311,3 +323,22 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 //nolint:staticcheck
 var _ chain.Chain = &Backend{}
+
+// WalletToKey converts a wallet into a storable key
+// TODO: test me
+func WalletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
+	tb.Helper()
+
+	kstr := keystore.NewKeyStore(filet.TmpDir(tb, ""), VeryLightScryptN, VeryLightScryptP)
+	password := gofakeit.Password(true, true, true, false, false, 10)
+
+	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
+	require.Nil(tb, err)
+
+	data, err := os.ReadFile(acct.URL.Path)
+	require.Nil(tb, err)
+
+	key, err := keystore.DecryptKey(data, password)
+	require.Nil(tb, err)
+	return key
+}

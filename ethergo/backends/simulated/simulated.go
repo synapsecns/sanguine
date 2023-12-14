@@ -38,8 +38,6 @@ type Backend struct {
 	faucetAddr *keystore.Key
 	// gasLimit is the block gas limit
 	gasLimit uint64
-	// store stores the accounts
-	store *base.InMemoryKeyStore
 	// chainConfig is the chainConfig for this chain
 	chainConfig *params.ChainConfig
 }
@@ -131,7 +129,7 @@ func (s *Backend) ChainConfig() *params.ChainConfig {
 func (s *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
 	key := s.MockAccount()
 
-	s.store.Store(key)
+	s.Store(key)
 
 	s.FundAccount(ctx, key.Address, *requestBalance)
 
@@ -166,12 +164,6 @@ func (s *Backend) SendTransaction(ctx context.Context, tx *types.Transaction) er
 	return err
 }
 
-// GetAccount gets the private key for an account
-// nil if the account doesn't exist.
-func (s *Backend) GetAccount(address common.Address) *keystore.Key {
-	return s.store.GetAccount(address)
-}
-
 // GetTxContext gets a signed transaction from full backend.
 func (s *Backend) GetTxContext(ctx context.Context, address *common.Address) (res commonBackend.AuthType) {
 	ctx, cancel := onecontext.Merge(ctx, s.Context())
@@ -180,14 +172,14 @@ func (s *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = s.store.GetAccount(*address)
+		acct = s.GetAccount(*address)
 		if acct == nil {
 			s.T().Errorf("could not get account %s", address.String())
 			return res
 		}
 	} else {
 		acct = s.GetFundedAccount(ctx, big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(10)))
-		s.store.Store(acct)
+		s.Store(acct)
 	}
 
 	auth, err := s.NewKeyedTransactorFromKey(acct.PrivateKey)
@@ -253,7 +245,6 @@ func NewSimulatedBackendWithConfig(ctx context.Context, t *testing.T, config *pa
 	backend := Backend{
 		Backend:          baseBackend,
 		simulatedBackend: simulatedBackend,
-		store:            base.NewInMemoryKeyStore(),
 		chainConfig:      config,
 	}
 	backend.SetT(t)

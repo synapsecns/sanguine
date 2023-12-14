@@ -56,4 +56,6 @@ type SimulatedTestBackend interface {
 	ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error
 	// EVM is the evm client
 	client.EVM
+	// Store stores an account
+	Store(key *keystore.Key)
 }

@@ -2,12 +2,14 @@ package testutil
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	mockerc202 "github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdt"
@@ -91,8 +93,38 @@ func NewUSDCDeployer(registry deployer.GetOnlyContractRegistry, backend backends
 // Deploy deploys the usdt token.
 func (d USDCDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return usdc.DeployFiatTokenV21(transactOps, backend)
+		tmpAddress, tx, handle, err := usdc.DeployFiatTokenV21(transactOps, backend)
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		auth := d.Backend().GetTxContext(ctx, &transactOps.From)
+
+		// see https://etherscan.io/token/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48#writeProxyContract
+		initializedTx, err := handle.Initialize(auth.TransactOpts, "USDC Coin", "USDC", "USD", uint8(6), auth.From, auth.From, auth.From, auth.From)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize usdc contract")
+		}
+		d.Backend().WaitForConfirmation(ctx, initializedTx)
+		return tmpAddress, tx, handle, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return usdc.NewUSDCRef(address, backend)
+	})
+}
+
+// DAIDeployer deploys a mock erc20 contract.
+type DAIDeployer struct {
+	*deployer.BaseDeployer
+}
+
+func NewDAIDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return DAIDeployer{
+		deployer.NewSimpleDeployer(registry, backend, DAIType),
+	}
+}
+
+func (m DAIDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return dai.DeployDai(transactOps, backend, m.Backend().GetBigChainID())
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return dai.NewDaiRef(address, backend)
 	})
 }

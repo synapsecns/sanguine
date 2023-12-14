@@ -7,13 +7,10 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	"math"
 	"math/big"
-	"os"
 	"strings"
 	"sync"
 	"testing"
 
-	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -46,8 +43,6 @@ type Backend struct {
 	// fundingMux is used to lock the wallets while funding
 	// since FundAccount is expected to add to existing balance
 	fundingMux mapmutex.StringerMapMutex
-	// store stores the accounts
-	store *base.InMemoryKeyStore
 	// chainConfig is the chain config
 	chainConfig *params.ChainConfig
 	// impersonationMux is used to lock the impersonation
@@ -173,7 +168,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	backend := Backend{
 		Backend:     baseBackend,
 		fundingMux:  mapmutex.NewStringerMapMutex(),
-		store:       base.NewInMemoryKeyStore(),
 		chainConfig: chainConfig,
 		pool:        pool,
 		resource:    resource,
@@ -280,27 +274,9 @@ func (f *Backend) storeWallets(args *OptionBuilder) error {
 			return fmt.Errorf("could not get seed phrase: %w", err)
 		}
 
-		f.store.Store(walletToKey(f.Backend.T(), wall))
+		f.Store(base.WalletToKey(f.Backend.T(), wall))
 	}
 	return nil
-}
-
-// TODO(trajan0x): add a test for this.
-func walletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
-	tb.Helper()
-
-	kstr := keystore.NewKeyStore(filet.TmpDir(tb, ""), base.VeryLightScryptN, base.VeryLightScryptP)
-	password := gofakeit.Password(true, true, true, false, false, 10)
-
-	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
-	require.Nil(tb, err)
-
-	data, err := os.ReadFile(acct.URL.Path)
-	require.Nil(tb, err)
-
-	key, err := keystore.DecryptKey(data, password)
-	require.Nil(tb, err)
-	return key
 }
 
 // ChainConfig gets the chain config.
@@ -370,7 +346,7 @@ func isZero(val *big.Int) bool {
 func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
 	key := f.MockAccount()
 
-	f.store.Store(key)
+	f.Store(key)
 
 	f.FundAccount(ctx, key.Address, *requestBalance)
 
@@ -386,14 +362,14 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = f.store.GetAccount(*address)
+		acct = f.GetAccount(*address)
 		if acct == nil {
 			f.T().Errorf("could not get account %s", address.String())
 			return res
 		}
 	} else {
 		acct = f.GetFundedAccount(ctx, new(big.Int).SetUint64(math.MaxUint64))
-		f.store.Store(acct)
+		f.Store(acct)
 	}
 
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)

@@ -122,8 +122,6 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	err = embedded.ethBackend.APIBackend.StartMining(0)
 	assert.Nil(t, err)
 
-	embedded.store = base.NewInMemoryKeyStore()
-
 	// add debugger for node stop
 	go func() {
 		embedded.Node.Wait()
@@ -166,8 +164,6 @@ type Backend struct {
 	*node.Node
 	// faucet addr is they key store used for etherbase
 	faucetAddr *keystore.Key
-	// store stores the accounts
-	store *base.InMemoryKeyStore
 	// ethBackend is the eth backend
 	ethBackend *eth.Ethereum
 }
@@ -205,14 +201,14 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = f.store.GetAccount(*address)
+		acct = f.GetAccount(*address)
 		if acct == nil {
 			f.T().Errorf("could not get account %s", address.String())
 			return res
 		}
 	} else {
 		acct = f.GetFundedAccount(ctx, big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(10)))
-		f.store.Store(acct)
+		f.Store(acct)
 	}
 
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
@@ -344,7 +340,7 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
 	key := f.MockAccount()
 
-	f.store.Store(key)
+	f.Store(key)
 
 	f.FundAccount(ctx, key.Address, *requestBalance)
 
