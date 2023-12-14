@@ -107,7 +107,10 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			return ctx.Err()
 		case <-time.After(dbSelectorInterval * time.Second):
 			// TODO: add context w/ timeout
-			r.processDB(ctx)
+			err := r.processDB(ctx)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -125,6 +128,7 @@ func (r *Relayer) processDB(ctx context.Context) error {
 
 		switch request.Status {
 		case reldb.Seen:
+			// TODO: check it deadline expired
 			// get destination commitable balancs
 			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
 			if err != nil {
@@ -136,11 +140,11 @@ func (r *Relayer) processDB(ctx context.Context) error {
 			}
 			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.Committed)
 			if err != nil {
-				return fmt.Errorf("")
+				return fmt.Errorf("could not update request status: %w", err)
 			}
 
 		case reldb.NotEnoughInventory:
-			// TODO: implement me
+			// TODO: recheck if there's enough inventory. Also if it's in this state, you can see if deadline expired
 
 		case reldb.Committed:
 			// TODO: build this in somehwere else  afte rwe commit

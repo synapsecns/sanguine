@@ -69,8 +69,7 @@ func (m *QuoterManager) SubmitAllQuotes() error {
 					if tokenID == fmt.Sprintf("%d-%s", chain_id, address.Hex()) {
 						// Create a new quote
 						quote := rfqAPIClient.APIQuotePutRequest{
-							ID:              1,
-							OriginChainID:   strings.Split(keyTokenID, "-")[0],
+							ID: 1, OriginChainID: strings.Split(keyTokenID, "-")[0],
 							OriginTokenAddr: strings.Split(keyTokenID, "-")[1],
 							DestChainID:     string(chain_id),
 							DestTokenAddr:   address.Hex(),
