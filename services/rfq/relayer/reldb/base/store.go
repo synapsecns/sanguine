@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Store implements the service
+// Store implements the service.
 type Store struct {
 	db             *gorm.DB
 	submitterStore submitterDB.Service

@@ -42,7 +42,7 @@ type contractTypeImpl int
 const (
 	// FastBridgeType is the type of the fast bridge contract.
 	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
-	// MockERC20Type is a mock erc20 contract
+	// MockERC20Type is a mock erc20 contract.
 	MockERC20Type
 )
 

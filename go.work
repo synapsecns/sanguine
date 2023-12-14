@@ -15,8 +15,8 @@ use (
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc
+	./services/rfq
 	./services/scribe
 	./services/sinner
-	./services/rfq
 	./tools
 )

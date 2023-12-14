@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-// DeployManager wraps DeployManager and allows typed contract handles to be returned
+// DeployManager wraps DeployManager and allows typed contract handles to be returned.
 type DeployManager struct {
 	*manager.DeployerManager
 }
@@ -27,12 +27,12 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	return &DeployManager{parentManager}
 }
 
-// FastBridgeDeployer deplyos a fast bridge contract for testing
+// FastBridgeDeployer deplyos a fast bridge contract for testing.
 type FastBridgeDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewFastBridgeDeployer deploys a fast bridge contract
+// NewFastBridgeDeployer deploys a fast bridge contract.
 func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return FastBridgeDeployer{
 		deployer.NewSimpleDeployer(registry, backend, FastBridgeType),
@@ -47,7 +47,7 @@ func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 	})
 }
 
-// MockERC20Deployer deploys a mock erc20 contract
+// MockERC20Deployer deploys a mock erc20 contract.
 type MockERC20Deployer struct {
 	*deployer.BaseDeployer
 }
@@ -58,10 +58,10 @@ func NewMockERC20Deployer(registry deployer.GetOnlyContractRegistry, backend bac
 	}
 }
 
-// MockERC20Decimals is the default number of mock erc20 decimals
+// MockERC20Decimals is the default number of mock erc20 decimals.
 const MockERC20Decimals uint8 = 10
 
-// MockERC20Name is the name of hte mock erc20
+// MockERC20Name is the name of hte mock erc20.
 const MockERC20Name = "token"
 
 func (m MockERC20Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {

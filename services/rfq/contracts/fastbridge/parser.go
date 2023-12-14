@@ -31,7 +31,6 @@ func NewParser(fastBridgeAddress common.Address) (Parser, error) {
 	}
 
 	return &parserImpl{filterer: parser}, nil
-
 }
 
 func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}, ok bool) {
@@ -62,7 +61,6 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, requested, true
-
 	}
 
 	return eventType, nil, true

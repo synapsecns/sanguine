@@ -20,7 +20,7 @@ func NewHandler(db db.ApiDB) *Handler {
 }
 
 // PUT /quotes
-// @dev Protected Method: Authentication is handled through middleware in server.go
+// @dev Protected Method: Authentication is handled through middleware in server.go.
 func (h *Handler) ModifyQuote(c *gin.Context) {
 	// Retrieve the request from context
 	req, exists := c.Get("putRequest")
@@ -64,7 +64,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// GET /quotes
+// GET /quotes.
 func (h *Handler) GetQuotes(c *gin.Context) {
 	destChainIdStr := c.Query("destChainId")
 	destTokenAddr := c.Query("destTokenAddr")
@@ -96,7 +96,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	// Implement logic to fetch and return quotes
 }
 
-// GET /quotes?destChainId=&destTokenAddr=&destAmount=
+// GET /quotes?destChainId=&destTokenAddr=&destAmount=.
 func (h *Handler) GetFilteredQuotes(c *gin.Context) {
 	// Implement logic to fetch and return filtered quotes
 }

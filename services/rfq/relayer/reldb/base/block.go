@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// PutLatestBlock upserts the latest block into the database
+// PutLatestBlock upserts the latest block into the database.
 func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
 	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: chainIDFieldName}},

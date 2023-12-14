@@ -71,7 +71,6 @@ func NewAPI(
 
 // Run runs the rest api server.
 func (r *APIServer) Run(ctx context.Context) error {
-
 	// TODO: Use Gin Helper
 	engine := gin.Default()
 	h := NewHandler(r.db)

@@ -14,7 +14,7 @@ type FastBridgeRef struct {
 	address common.Address
 }
 
-// Address gets the ocntract address
+// Address gets the ocntract address.
 func (f *FastBridgeRef) Address() common.Address {
 	return f.address
 }

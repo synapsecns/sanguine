@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
-// Relayer is the core of the relayer application
+// Relayer is the core of the relayer application.
 type Relayer struct {
 	cfg     relconfig.Config
 	metrics metrics.Handler
@@ -76,7 +76,6 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 				_ = event
 			case *fastbridge.FastBridgeBridgeRelayed:
 				panic("implement me")
-
 			}
 
 			return nil

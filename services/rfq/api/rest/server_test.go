@@ -85,7 +85,6 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 
 // TestEIP191_SuccessfulPutSubmission tests a successful PUT request submission.
 func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
-
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startAPIServer()
 

@@ -1,6 +1,6 @@
 package relconfig
 
-// TODO: validation function
+// TODO: validation function.
 type Config struct {
 	// ChainID: address
 	Tokens map[int][]string `yaml:"tokens"`

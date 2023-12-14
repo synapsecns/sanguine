@@ -19,7 +19,7 @@ import (
 	"testing"
 )
 
-// InventoryTestSuite is the test suite used for testing the inventory manager
+// InventoryTestSuite is the test suite used for testing the inventory manager.
 type InventoryTestSuite struct {
 	*testsuite.TestSuite
 	backends   map[int]backends.SimulatedTestBackend

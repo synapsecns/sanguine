@@ -20,10 +20,10 @@ import (
 	"sync"
 )
 
-// What we actaully want to be able to do here is
+// What we actaully want to be able to do here is.
 type InventoryManager interface {
 	// GetCommittableBalance gets the total balance available for quotes
-	// this does not include on-chain balances commited in previous quotes that may be
+	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
 	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption)
 	// GetCommitableBalances gets the total balances commitable for all tracked tokens.
@@ -138,7 +138,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			for _, batch := range batches {
 				err = chainClient.BatchWithContext(gctx, batch...)
 				if err != nil {
-
 					return fmt.Errorf("could not batch: %w", err)
 				}
 			}
@@ -198,7 +197,7 @@ func (i *inventoryManagerImpl) refreshBalances() {
 // Ultimately this should produce a list of all balances and remove the
 // quoted amounts from the database
 
-// TODO: move me
+// TODO: move me.
 func bigToDecimals(bigInt *big.Int, decimals uint8) float64 {
 	// Convert vpriceMetric to *big.Float
 	bigVPrice := new(big.Float).SetInt(bigInt)

@@ -14,7 +14,7 @@ type MockERC20Ref struct {
 	address common.Address
 }
 
-// Address gets the ocntract address
+// Address gets the ocntract address.
 func (f *MockERC20Ref) Address() common.Address {
 	return f.address
 }
