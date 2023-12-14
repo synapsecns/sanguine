@@ -3,7 +3,7 @@ import { BigNumber, providers } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
 import {
-  PUBLIC_PROVIDER_URLS,
+  getTestProviderUrl,
   CCTP_ROUTER_ADDRESS_MAP,
   SupportedChainId,
   ETH_USDC,
@@ -15,7 +15,7 @@ import { BridgeToken, DestRequest } from './types'
 describe('SynapseCCTPRouter', () => {
   const ethAddress = CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
   const ethProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ETH]
+    getTestProviderUrl(SupportedChainId.ETH)
   )
 
   const recipient = '0x0000000000000000000000000000000000001337'

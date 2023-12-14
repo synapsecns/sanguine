@@ -24,8 +24,8 @@ import {
   ETH_USDT,
   MEDIAN_TIME_BRIDGE,
   MEDIAN_TIME_CCTP,
-  PUBLIC_PROVIDER_URLS,
   ROUTER_ADDRESS_MAP,
+  getTestProviderUrl,
   SupportedChainId,
 } from './constants'
 import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './router'
@@ -122,24 +122,24 @@ const createSwapQuoteTests = (
 
 describe('SynapseSDK', () => {
   const ethProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ETH]
+    getTestProviderUrl(SupportedChainId.ETH)
   )
 
   const arbProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ARBITRUM]
+    getTestProviderUrl(SupportedChainId.ARBITRUM)
   )
 
   const avaxProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.AVALANCHE]
+    getTestProviderUrl(SupportedChainId.AVALANCHE)
   )
 
   const bscProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.BSC]
+    getTestProviderUrl(SupportedChainId.BSC)
   )
 
   // Chain where CCTP is unlikely to be deployed
   const moonbeamProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.MOONBEAM]
+    getTestProviderUrl(SupportedChainId.MOONBEAM)
   )
 
   describe('#constructor', () => {

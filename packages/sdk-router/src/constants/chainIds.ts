@@ -39,4 +39,5 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
   SupportedChainId.BASE,
+  SupportedChainId.POLYGON, // Circle domain 7
 ]

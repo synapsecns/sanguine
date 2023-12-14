@@ -5,7 +5,7 @@ import { AddressZero } from '@ethersproject/constants'
 import {
   ETH_NUSD,
   ETH_USDC,
-  PUBLIC_PROVIDER_URLS,
+  getTestProviderUrl,
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
 } from '../constants'
@@ -16,7 +16,7 @@ import { BridgeToken, DestRequest } from './types'
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
   const ethProvider: Provider = new providers.JsonRpcProvider(
-    PUBLIC_PROVIDER_URLS[SupportedChainId.ETH]
+    getTestProviderUrl(SupportedChainId.ETH)
   )
 
   const recipient = '0x0000000000000000000000000000000000001337'

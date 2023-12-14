@@ -279,7 +279,9 @@ func (r Resolver) parseAndStoreLog(ctx context.Context, chainID uint32, logs []e
 		return nil, fmt.Errorf("could not parse logs with explorer parser: %w", err)
 	}
 	go func() {
-		r.storeBridgeEvent(parsedLogs[0])
+		for _, parsedLog := range parsedLogs {
+			r.storeBridgeEvent(parsedLog)
+		}
 	}()
 	parsedLog := interface{}(nil)
 	for _, log := range parsedLogs {
@@ -310,7 +312,9 @@ func (r Resolver) parseAndStoreLogCCTP(ctx context.Context, chainID uint32, logs
 		return nil, fmt.Errorf("could not parse logs: %w", err)
 	}
 	go func() {
-		r.storeBridgeEvent(parsedLogs[0])
+		for _, parsedLog := range parsedLogs {
+			r.storeBridgeEvent(parsedLog)
+		}
 	}()
 	parsedLog := interface{}(nil)
 	for _, log := range parsedLogs {
@@ -484,6 +488,7 @@ func (r Resolver) checkRequestIDExists(ctx context.Context, requestID string, ch
 	return exists
 }
 
+// will ignore non-bridge events
 func (r Resolver) storeBridgeEvent(bridgeEvent interface{}) {
 	storeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
