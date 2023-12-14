@@ -69,6 +69,10 @@ func NewAPI(
 	}, nil
 }
 
+const (
+	QUOTE_ROUTE = "/quotes"
+)
+
 // Run runs the rest api server.
 func (r *APIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
@@ -80,6 +84,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
 	// GET routes without the AuthMiddleware
+	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET("/quotes", h.GetQuotes)
 	engine.GET("/quotes/filter", h.GetFilteredQuotes)
 

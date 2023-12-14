@@ -18,7 +18,7 @@ import (
 func (c *ServerSuite) TestNewAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startAPIServer()
-	resp, err := http.Get("http://localhost:9000/quotes")
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/quotes", c.port))
 	c.Nil(err)
 	defer resp.Body.Close()
 	c.Equal(http.StatusOK, resp.StatusCode)
@@ -122,7 +122,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 
 	// Send GET request to verify the PUT
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%d/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", c.port), nil)
 	c.Nil(err)
 
 	getResp, err := client.Do(req)

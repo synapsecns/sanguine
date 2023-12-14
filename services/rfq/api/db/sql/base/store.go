@@ -18,7 +18,7 @@ func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr s
 func (s *Store) GetQuotesByOriginAndDestination(originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 
-	result := s.db.Where("origin_chain_id = ? AND origin_token = ? AND dest_chain_id = ? AND dest_token = ?", destChainId, destTokenAddr).Find(&quotes)
+	result := s.db.Where("origin_chain_id = ? AND origin_token = ? AND dest_chain_id = ? AND dest_token = ?", originChainId, originTokenAddr, destChainId, destTokenAddr).Find(&quotes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

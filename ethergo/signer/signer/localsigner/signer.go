@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 // Signer is a new local signer.
@@ -56,7 +57,7 @@ func decodeSignature(sig []byte) signer.Signature {
 	if len(sig) != crypto.SignatureLength {
 		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
 	}
-	v := new(big.Int).SetBytes([]byte{sig[64] + 27})
+	v := new(big.Int).SetBytes([]byte{sig[64]})
 	r := new(big.Int).SetBytes(sig[:32])
 	s := new(big.Int).SetBytes(sig[32:64])
 

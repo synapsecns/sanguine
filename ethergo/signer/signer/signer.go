@@ -4,11 +4,12 @@ package signer
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 // Signer provides a common interface for signing/transacting.
@@ -85,7 +86,7 @@ func DecodeSignature(sig []byte) Signature {
 	}
 	r := new(big.Int).SetBytes(sig[:32])
 	s := new(big.Int).SetBytes(sig[32:64])
-	v := new(big.Int).SetBytes([]byte{sig[64] + 27})
+	v := new(big.Int).SetBytes([]byte{sig[64]})
 	return NewSignature(v, r, s)
 }
 
