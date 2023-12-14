@@ -50,6 +50,12 @@ func NewServerSuite(tb testing.TB) *ServerSuite {
 
 func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
+	// TODO: Cannot re-use same port on multiple tests?
+	// go func() {
+	// 	err := c.APIServer.Run(c.GetTestContext())
+	// 	c.Nil(err)
+	// }()
+	// time.Sleep(2 * time.Second) // Wait for the server to start.
 }
 
 func (c *ServerSuite) SetupSuite() {
