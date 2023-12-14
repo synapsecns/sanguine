@@ -27,6 +27,16 @@ func (s *Store) GetQuotesByOriginAndDestination(originChainId uint64, originToke
 	return quotes, nil
 }
 
+func (s *Store) GetQuotesByRelayerAddress(relayerAddr string) ([]*db.Quote, error) {
+	var quotes []*db.Quote
+
+	result := s.db.Where("relayer_address = ?", relayerAddr).Find(&quotes)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return quotes, nil
+}
+
 // This function retrieves all quotes from the database.
 func (s *Store) GetAllQuotes() ([]*db.Quote, error) {
 	var quotes []*db.Quote

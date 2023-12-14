@@ -28,6 +28,11 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request not found"})
 		return
 	}
+	relayerAddr, exists := c.Get("relayerAddr")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
+		return
+	}
 	putRequest, ok := req.(*PutRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
@@ -68,6 +73,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		DestAmount:      destAmount,
 		Price:           price,
 		MaxOriginAmount: maxOriginAmount,
+		RelayerAddr:     relayerAddr.(string),
 	}
 	err = h.db.UpsertQuote(quote)
 	if err != nil {
@@ -83,6 +89,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	originTokenAddr := c.Query("originTokenAddr")
 	destChainIDStr := c.Query("destChainId")
 	destTokenAddr := c.Query("destTokenAddr")
+	relayerAddr := c.Query("relayerAddr")
 
 	if originChainIDStr != "" && originTokenAddr != "" && destChainIDStr != "" && destTokenAddr != "" {
 		destChainID, err := strconv.ParseUint(destChainIDStr, 10, 64)
@@ -103,6 +110,13 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 			return
 		}
 
+		c.JSON(http.StatusOK, quotes)
+	} else if relayerAddr != "" {
+		quotes, err := h.db.GetQuotesByRelayerAddress(relayerAddr)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusOK, quotes)
 	} else {
 		// Pseudocode for retrieving all quotes from the database

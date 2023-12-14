@@ -70,3 +70,35 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 	}
 	c.Assert().True(found, "Newly added quote not found")
 }
+
+func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
+	putData := client.APIQuotePutRequest{
+		ID:              123,
+		OriginChainID:   "1",
+		OriginTokenAddr: "0xOriginTokenAddr",
+		DestChainID:     "42161",
+		DestTokenAddr:   "0xDestTokenAddr",
+		DestAmount:      "100.0",
+		Price:           "50.0",
+		MaxOriginAmount: "200.0",
+	}
+
+	err := c.client.PutQuote(&putData)
+	fmt.Println("err", err)
+	c.Require().NoError(err)
+
+	relayerAddr := c.testWallet.Address().Hex()
+
+	quotes, err := c.client.GetQuoteByRelayerAddress(relayerAddr)
+	c.Require().NoError(err)
+	fmt.Println(quotes)
+
+	found := false
+	for _, q := range quotes {
+		if q.RelayerAddr == relayerAddr {
+			found = true
+			break
+		}
+	}
+	c.Assert().True(found, "Quote for given relayer address not found")
+}

@@ -169,6 +169,7 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 		fmt.Println("Authentication successful for:", addressRecovered.Hex())
 		// Store the request in context after binding and validation
 		c.Set("putRequest", &req)
+		c.Set("relayerAddr", addressRecovered.Hex())
 		c.Next()
 	}
 }

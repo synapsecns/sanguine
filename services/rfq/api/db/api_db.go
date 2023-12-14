@@ -24,6 +24,8 @@ type Quote struct {
 	Price decimal.Decimal `gorm:"column:price"`
 	// MaxOriginAmount is the maximum amount of origin tokens bridgeable, calculated by dividing the DestAmount by the Price
 	MaxOriginAmount decimal.Decimal `gorm:"column:max_origin_amount"`
+	// Address of the relayer providing the quote
+	RelayerAddr string `gorm:"column:relayer_address"`
 	// UpdatedAt is the time that the quote was last upserted
 	UpdatedAt time.Time
 }
@@ -33,6 +35,7 @@ type ApiDBReader interface {
 	// GetQuote gets a quote from the database.
 	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*Quote, error)
 	GetQuotesByOriginAndDestination(originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*Quote, error)
+	GetQuotesByRelayerAddress(relayerAddress string) ([]*Quote, error)
 	// GetAllQuotes retrieves all quotes from the database.
 	GetAllQuotes() ([]*Quote, error)
 }

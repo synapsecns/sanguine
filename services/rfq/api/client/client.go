@@ -18,6 +18,7 @@ type Client interface {
 	PutQuote(q *APIQuotePutRequest) error
 	GetAllQuotes() ([]*db.Quote, error)
 	GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error)
+	GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error)
 }
 
 type clientImpl struct {
@@ -98,6 +99,26 @@ func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quot
 			"originTokenAddr": q.OriginTokenAddr,
 			"destChainId":     q.DestChainID,
 			"destTokenAddr":   q.DestTokenAddr,
+		}).
+		SetResult(&quotes).
+		Get(rest.QuoteRoute)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from server: %s", resp.Status())
+	}
+
+	return quotes, nil
+}
+
+func (c *clientImpl) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error) {
+	var quotes []*db.Quote
+	resp, err := c.rClient.R().
+		SetQueryParams(map[string]string{
+			"relayerAddr": relayerAddr,
 		}).
 		SetResult(&quotes).
 		Get(rest.QuoteRoute)

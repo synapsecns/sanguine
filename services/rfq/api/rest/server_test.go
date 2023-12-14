@@ -161,6 +161,48 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	c.Assert().True(found, "Newly added quote not found")
 }
 
+func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
+	c.startAPIServer()
+
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Require().NoError(err)
+
+	// Send PUT request
+	putResp, err := c.sendPutRequest(header)
+	c.Require().NoError(err)
+	defer func() {
+		err = putResp.Body.Close()
+		c.Require().NoError(err)
+	}()
+	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
+
+	// Send GET request to verify the PUT
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?relayerAddress=%s", c.port, c.testWallet.Address().Hex()), nil)
+	c.Require().NoError(err)
+
+	getResp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		_ = getResp.Body.Close()
+	}()
+	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	var quotes []rest.PutRequest
+	err = json.NewDecoder(getResp.Body).Decode(&quotes)
+	c.Require().NoError(err)
+
+	// Check if the newly added quote is present
+	found := false
+	for _, q := range quotes {
+		if q.ID == 123 {
+			found = true
+			break
+		}
+	}
+	c.Assert().True(found, "Newly added quote not found")
+}
+
 // startAPIServer starts the API server and waits for it to initialize.
 func (c *ServerSuite) startAPIServer() {
 	go func() {
