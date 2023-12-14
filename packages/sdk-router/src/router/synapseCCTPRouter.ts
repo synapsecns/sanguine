@@ -131,6 +131,9 @@ export class SynapseCCTPRouter extends Router {
     )
     // Iterate through logs to find CircleRequestSent event emitted by SynapseCCTP in the provided tx
     const txReceipt = await this.provider.getTransactionReceipt(txHash)
+    if (!txReceipt) {
+      throw new Error('Failed to get transaction receipt')
+    }
     const cctpLog = txReceipt.logs.find((log) => {
       return (
         log.address === cctpContract.address &&
