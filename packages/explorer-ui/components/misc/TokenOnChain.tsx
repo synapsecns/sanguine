@@ -9,7 +9,7 @@ import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
 
 export function TokenOnChain({ tokenAddress, chainId }) {
-  const {chainName} = CHAINS_BY_ID[chainId].name
+  const chainName = CHAINS_BY_ID[chainId].name
   const token = TOKEN_HASH_MAP[chainId][tokenAddress] ?? {}
   const { name } = token.symbol
 
