@@ -81,4 +81,5 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 			return nil
 		})
 	}
+	return nil
 }
