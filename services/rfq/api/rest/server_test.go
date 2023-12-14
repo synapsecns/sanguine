@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
 
 func (c *ServerSuite) TestNewAPIServer() {
@@ -81,6 +83,67 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 	c.Equal(http.StatusBadRequest, resp.StatusCode)
 }
 
+// TestEIP191_SuccessfulPutSubmission tests a successful PUT request submission.
+func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
+
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startAPIServer()
+
+	// Prepare the authorization header with a signed timestamp.
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Nil(err)
+
+	// Perform a PUT request to the API server with the authorization header.
+	resp, err := c.sendPutRequest(header)
+	c.Nil(err)
+	defer resp.Body.Close()
+
+	// Log the response body for debugging.
+	body, err := ioutil.ReadAll(resp.Body)
+	c.Nil(err)
+	fmt.Println(string(body))
+
+	// Assert that the response status code is HTTP 200 OK.
+	c.Assert().Equal(http.StatusOK, resp.StatusCode)
+}
+
+func (c *ServerSuite) TestPutAndGetQuote() {
+	c.startAPIServer()
+
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Nil(err)
+
+	// Send PUT request
+	putResp, err := c.sendPutRequest(header)
+	c.Nil(err)
+	defer putResp.Body.Close()
+	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
+
+	// Send GET request to verify the PUT
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?destChainId=1&destTokenAddr=0xTokenAddr", nil)
+	c.Nil(err)
+
+	getResp, err := client.Do(req)
+	c.Nil(err)
+	defer getResp.Body.Close()
+	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	var quotes []rest.PutRequest
+	err = json.NewDecoder(getResp.Body).Decode(&quotes)
+	c.Nil(err)
+
+	// Check if the newly added quote is present
+	found := false
+	for _, q := range quotes {
+		if q.ID == 123 {
+			found = true
+			break
+		}
+	}
+	c.Assert().True(found, "Newly added quote not found")
+}
+
 // startAPIServer starts the API server and waits for it to initialize.
 func (c *ServerSuite) startAPIServer() {
 	go func() {
@@ -114,8 +177,19 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
-	jsonData := `{"dest_chain_id":"1"}`
-	req, err := http.NewRequest("PUT", "http://localhost:9000/quotes", bytes.NewBuffer([]byte(jsonData)))
+	putData := rest.PutRequest{
+		ID:            123,
+		DestChainID:   "1",
+		DestTokenAddr: "0xTokenAddr",
+		DestAmount:    "100.0",
+		Price:         "50.0",
+	}
+	jsonData, err := json.Marshal(putData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal putData: %w", err)
+	}
+
+	req, err := http.NewRequest("PUT", "http://localhost:9000/quotes", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 )
 
@@ -21,18 +22,46 @@ func NewHandler(db db.ApiDB) *Handler {
 // PUT /quotes
 // @dev Protected Method: Authentication is handled through middleware in server.go
 func (h *Handler) ModifyQuote(c *gin.Context) {
+	// Retrieve the request from context
+	req, exists := c.Get("putRequest")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request not found"})
+		return
+	}
+	putRequest, ok := req.(*PutRequest)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
+		return
+	}
+
+	destChainID, err := strconv.ParseUint(putRequest.DestChainID, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestChainID"})
+		return
+	}
+	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
+		return
+	}
+	price, err := decimal.NewFromString(putRequest.Price)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Price"})
+		return
+	}
+	quote := &db.Quote{
+		ID:            uint64(putRequest.ID),
+		DestChainID:   destChainID,
+		DestTokenAddr: putRequest.DestTokenAddr,
+		DestAmount:    destAmount,
+		Price:         price,
+	}
+	err = h.db.UpsertQuote(quote)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.Status(http.StatusOK)
-	// var quote db.Quote
-	// if err := c.BindJSON(&quote); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// err := db.ApiDB.UpsertQuote(&quote)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// c.Status(http.StatusOK)
 }
 
 // GET /quotes
