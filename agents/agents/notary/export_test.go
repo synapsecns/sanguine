@@ -17,3 +17,11 @@ func (n *Notary) LoadMyLatestStates(ctx context.Context) {
 func (n *Notary) MyLatestStates(ctx context.Context) map[uint32]types.State {
 	return n.myLatestStates
 }
+
+func (n *Notary) LoadGuardLatestStates(ctx context.Context) {
+	n.loadGuardLatestStates(ctx)
+}
+
+func (n *Notary) GuardLatestStates(ctx context.Context) map[uint32]types.State {
+	return n.guardLatestStates
+}

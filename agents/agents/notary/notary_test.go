@@ -312,7 +312,7 @@ func (u *NotarySuite) TestEnsureNotaryActive() {
 	verifyStatus(notaryWallet.Address(), types.AgentFlagActive)
 }
 
-func (u *NotarySuite) TestLoadMyLatestStates() {
+func (u *NotarySuite) TestLoadStates() {
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -365,21 +365,26 @@ func (u *NotarySuite) TestLoadMyLatestStates() {
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
 
-	go func() {
-		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = guard.Start(u.GetTestContext())
-	}()
-
-	go func() {
-		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = notary.Start(u.GetTestContext())
-	}()
+	// Fetch the guard's latest states.
+	notary.LoadGuardLatestStates(u.GetTestContext())
+	guardLatestStates := notary.GuardLatestStates(u.GetTestContext())
+	expectedStates := map[uint32]types.State{}
+	u.Equal(expectedStates, guardLatestStates)
 
 	// Fetch the notary's latest states.
 	notary.LoadMyLatestStates(u.GetTestContext())
 	myLatestStates := notary.MyLatestStates(u.GetTestContext())
-	expectedStates := map[uint32]types.State{}
 	u.Equal(expectedStates, myLatestStates)
+
+	// Start the agents.
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = guard.Start(u.GetTestContext())
+	}()
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = notary.Start(u.GetTestContext())
+	}()
 
 	// Send a message, which should generate a new State.
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
@@ -402,7 +407,18 @@ func (u *NotarySuite) TestLoadMyLatestStates() {
 	u.Nil(err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
-	// Verify that the newly generated state can be loaded by the Notary.
+	// Verify that the newly generated guard state can be loaded by the Notary.
+	u.Eventually(func() bool {
+		notary.LoadGuardLatestStates(u.GetTestContext())
+		guardLatestStates := notary.GuardLatestStates(u.GetTestContext())
+		originState, ok := guardLatestStates[u.OriginDomainClient.Config().DomainID]
+		if !ok {
+			return false
+		}
+		return originState.Nonce() == 1
+	})
+
+	// Verify that the newly generated notary state can be loaded by the Notary.
 	u.Eventually(func() bool {
 		notary.LoadMyLatestStates(u.GetTestContext())
 		myLatestStates := notary.MyLatestStates(u.GetTestContext())
