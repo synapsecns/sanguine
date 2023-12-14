@@ -190,13 +190,9 @@ export function getEstimatedTime(
   originChainId: number,
   bridgeModuleName: string
 ): number {
-  if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
-    return this.synapseRouterSet.getEstimatedTime(originChainId)
-  }
-  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeModuleName) {
-    return this.synapseCCTPRouterSet.getEstimatedTime(originChainId)
-  }
-  throw new Error('Unknown bridge module')
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getEstimatedTime(originChainId)
 }
 
 /**
@@ -211,4 +207,14 @@ export async function getBridgeGas(
   chainId: number
 ): Promise<BigNumber> {
   return this.synapseRouterSet.getSynapseRouter(chainId).chainGasAmount()
+}
+
+function getRouterSet(this: SynapseSDK, bridgeModuleName: string): RouterSet {
+  if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
+    return this.synapseRouterSet
+  }
+  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeModuleName) {
+    return this.synapseCCTPRouterSet
+  }
+  throw new Error('Unknown bridge module')
 }
