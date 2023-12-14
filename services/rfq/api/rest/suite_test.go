@@ -85,7 +85,6 @@ func (c *ServerSuite) SetupTest() {
 
 	c.APIServer = APIServer
 
-	// TODO: Cannot re-use same port on multiple tests?
 	// go func() {
 	// 	err := c.APIServer.Run(c.GetTestContext())
 	// 	c.Require().NoError(err)
