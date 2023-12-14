@@ -1,4 +1,4 @@
-import { Bridge, USDC, USDT, DAI, ETH } from '@synapsecns/widget'
+import { Bridge, USDC, USDT, DAI, ETH } from '@abtestingalpha/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, useState } from 'react'
