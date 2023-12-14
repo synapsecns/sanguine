@@ -95,11 +95,14 @@ func (r *APIServer) Run(ctx context.Context) error {
 }
 
 type PutRequest struct {
-	ID            int    `json:"id"`
-	DestChainID   string `json:"dest_chain_id"`
-	DestTokenAddr string `json:"dest_token_addr"`
-	DestAmount    string `json:"dest_amount"`
-	Price         string `json:"price"`
+	ID              int    `json:"id"`
+	OriginChainID   string `json:"origin_chain_id"`
+	OriginTokenAddr string `json:"origin_token_addr"`
+	DestChainID     string `json:"dest_chain_id"`
+	DestTokenAddr   string `json:"dest_token_addr"`
+	DestAmount      string `json:"dest_amount"`
+	Price           string `json:"price"`
+	MaxOriginAmount string `json:"max_origin_amount"`
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.

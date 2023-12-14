@@ -44,17 +44,30 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
 		return
 	}
+	originChainId, err := strconv.ParseUint(putRequest.OriginChainID, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestChainID"})
+		return
+	}
+	maxOriginAmount, err := decimal.NewFromString(putRequest.MaxOriginAmount)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
+		return
+	}
 	price, err := decimal.NewFromString(putRequest.Price)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Price"})
 		return
 	}
 	quote := &db.Quote{
-		ID:            uint64(putRequest.ID),
-		DestChainID:   destChainID,
-		DestTokenAddr: putRequest.DestTokenAddr,
-		DestAmount:    destAmount,
-		Price:         price,
+		ID:              uint64(putRequest.ID),
+		OriginChainID:   originChainId,
+		OriginTokenAddr: putRequest.OriginTokenAddr,
+		DestChainID:     destChainID,
+		DestTokenAddr:   putRequest.DestTokenAddr,
+		DestAmount:      destAmount,
+		Price:           price,
+		MaxOriginAmount: maxOriginAmount,
 	}
 	err = h.db.UpsertQuote(quote)
 	if err != nil {

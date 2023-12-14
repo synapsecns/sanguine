@@ -120,7 +120,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 
 	// Send GET request to verify the PUT
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?destChainId=1&destTokenAddr=0xTokenAddr", nil)
+	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?destChainId=42161&destTokenAddr=0xDestTokenAddr", nil)
 	c.Nil(err)
 
 	getResp, err := client.Do(req)
@@ -177,11 +177,14 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
 	putData := rest.PutRequest{
-		ID:            123,
-		DestChainID:   "1",
-		DestTokenAddr: "0xTokenAddr",
-		DestAmount:    "100.0",
-		Price:         "50.0",
+		ID:              123,
+		OriginChainID:   "1",
+		OriginTokenAddr: "0xOriginTokenAddr",
+		DestChainID:     "42161",
+		DestTokenAddr:   "0xDestTokenAddr",
+		DestAmount:      "100.0",
+		Price:           "50.0",
+		MaxOriginAmount: "200.0",
 	}
 	jsonData, err := json.Marshal(putData)
 	if err != nil {
