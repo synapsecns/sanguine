@@ -121,7 +121,28 @@ export class SynapseCCTPRouter extends Router {
    * @inheritdoc Router.getBridgeID
    */
   public async getBridgeID(txHash: string): Promise<string> {
-    return txHash
+    const cctpContract = await this.getCctpContract()
+    // Extract the CircleRequestSent event topic
+    // We know it always exists as we are using the correct ABI
+    const circleRequestSentTopic = cctpContract.interface.getEventTopic(
+      Object.values(cctpContract.interface.events).find(
+        (event) => event.name === 'CircleRequestSent'
+      )!
+    )
+    // Iterate through logs to find CircleRequestSent event emitted by SynapseCCTP in the provided tx
+    const txReceipt = await this.provider.getTransactionReceipt(txHash)
+    const cctpLog = txReceipt.logs.find((log) => {
+      return (
+        log.address === cctpContract.address &&
+        log.topics[0] === circleRequestSentTopic
+      )
+    })
+    if (!cctpLog) {
+      throw new Error('CircleRequestSent log not found')
+    }
+    // RequestID always exists in the log as we are using the correct ABI
+    const parsedLog = cctpContract.interface.parseLog(cctpLog)
+    return parsedLog.args.requestID
   }
 
   /**
