@@ -11,7 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -165,12 +165,12 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 	}
 
 	// TODO: replcae w/ an IERC20 contract for readability. Using mock here doesn't break anything
-	originERC20, err := mockerc20.NewMockerc20Ref(bridgeTx.OriginToken, originClient)
+	originERC20, err := ierc20.NewIERC20(bridgeTx.OriginToken, originClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin token")
 	}
 
-	destERC20, err := mockerc20.NewMockerc20Ref(bridgeTx.DestToken, destClient)
+	destERC20, err := ierc20.NewIERC20(bridgeTx.DestToken, destClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest token")
 	}
@@ -198,7 +198,6 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 	}
 
 	return &res, nil
-
 }
 
 type decimalsRes struct {
