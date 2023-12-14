@@ -241,25 +241,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 }
 
 func (u *NotarySuite) TestEnsureNotaryActive() {
-	guardTestConfig := config.AgentConfig{
-		Domains: map[string]config.DomainConfig{
-			"origin_client":      u.OriginDomainClient.Config(),
-			"destination_client": u.DestinationDomainClient.Config(),
-			"summit_client":      u.SummitDomainClient.Config(),
-		},
-		DomainID:       uint32(0),
-		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
-		},
-		UnbondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
-		},
-		RefreshIntervalSeconds: 5,
-	}
-
 	// Use a new wallet for Unknown notary.
 	notaryWallet, err := wallet.FromRandom()
 	u.Nil(err)
@@ -303,14 +284,6 @@ func (u *NotarySuite) TestEnsureNotaryActive() {
 		Nil(u.T(), scribeErr)
 	}()
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
-	Nil(u.T(), err)
-
-	go func() {
-		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = guard.Start(u.GetTestContext())
-	}()
-
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
 
@@ -337,4 +310,106 @@ func (u *NotarySuite) TestEnsureNotaryActive() {
 	err = notary.EnsureNotaryActive(u.GetTestContext())
 	Nil(u.T(), err)
 	verifyStatus(notaryWallet.Address(), types.AgentFlagActive)
+}
+
+func (u *NotarySuite) TestLoadMyLatestStates() {
+	guardTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+
+	notaryTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       u.DestinationDomainClient.Config().DomainID,
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.NotaryMetrics, omniClient.WithCaptureReqRes())
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		Nil(u.T(), scribeErr)
+	}()
+
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
+	Nil(u.T(), err)
+
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
+	Nil(u.T(), err)
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = guard.Start(u.GetTestContext())
+	}()
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = notary.Start(u.GetTestContext())
+	}()
+
+	// Fetch the notary's latest states.
+	notary.LoadMyLatestStates(u.GetTestContext())
+	myLatestStates := notary.MyLatestStates(u.GetTestContext())
+	expectedStates := map[uint32]types.State{}
+	u.Equal(expectedStates, myLatestStates)
+
+	// Send a message, which should generate a new State.
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
+	optimisticSeconds := uint32(10)
+	body := []byte{byte(gofakeit.Uint32())}
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
+	gasLimit := uint64(10000000)
+	version := uint32(1)
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
+		txContextTestClientOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		u.TestClientMetadataOnDestination.Address(),
+		optimisticSeconds,
+		gasLimit,
+		version,
+		body)
+
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
+
+	// Verify that the newly generated state can be loaded by the Notary.
+	u.Eventually(func() bool {
+		notary.LoadMyLatestStates(u.GetTestContext())
+		myLatestStates := notary.MyLatestStates(u.GetTestContext())
+		originState, ok := myLatestStates[u.OriginDomainClient.Config().DomainID]
+		if !ok {
+			return false
+		}
+		return originState.Nonce() == 1
+	})
 }
