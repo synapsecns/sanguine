@@ -87,7 +87,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 }
 
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "getMetadata")
+	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll")
 	c.pollInterval = defaultPollInterval
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.

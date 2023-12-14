@@ -95,7 +95,9 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 	// Perform a PUT request to the API server with the authorization header.
 	resp, err := c.sendPutRequest(header)
 	c.Nil(err)
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	// Log the response body for debugging.
 	body, err := ioutil.ReadAll(resp.Body)
@@ -191,7 +193,7 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to marshal putData: %w", err)
 	}
 
-	req, err := http.NewRequest("PUT", "http://localhost:9000/quotes", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}

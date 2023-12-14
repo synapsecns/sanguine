@@ -1,20 +1,18 @@
 package rest_test
 
 import (
-	"math/big"
-	"testing"
-	"time"
-
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/phayes/freeport"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
@@ -24,6 +22,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"golang.org/x/sync/errgroup"
+	"math/big"
+	"testing"
 )
 
 // Server suite is the main API server test suite.
@@ -38,6 +38,7 @@ type ServerSuite struct {
 	testWallet           wallet.Wallet
 	handler              metrics.Handler
 	APIServer            *rest.APIServer
+	port                 uint16
 }
 
 // NewServerSuite creates a end-to-end test suite.
@@ -50,6 +51,38 @@ func NewServerSuite(tb testing.TB) *ServerSuite {
 
 func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
+
+	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRpcTestBackends...)
+	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
+	c.omniRPCClient = omniRPCClient
+
+	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
+	c.Assert().True(ok)
+	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
+	c.Assert().True(ok)
+	port, err := freeport.GetFreePort()
+	c.port = uint16(port)
+	c.NoError(err)
+
+	testConfig := config.Config{
+		Database: config.DatabaseConfig{
+			Type: "sqlite",
+			DSN:  "memory",
+		},
+		OmniRPCURL: testOmnirpc,
+		Bridges: map[uint32]string{
+			1:     ethFastBridgeAddress.Hex(),
+			42161: arbFastBridgeAddress.Hex(),
+		},
+		Port: fmt.Sprintf("%d", port),
+	}
+	c.cfg = testConfig
+
+	APIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
+	c.Nil(err)
+
+	c.APIServer = APIServer
+
 	// TODO: Cannot re-use same port on multiple tests?
 	// go func() {
 	// 	err := c.APIServer.Run(c.GetTestContext())
@@ -71,10 +104,11 @@ func (c *ServerSuite) SetupSuite() {
 		chainID := chainID // capture func literal
 		g.Go(func() error {
 			// Setup Anvil backend for the suite to have RPC support
-			anvilOpts := anvil.NewAnvilOptionBuilder()
-			anvilOpts.SetChainID(chainID)
-			anvilOpts.SetBlockTime(1 * time.Second)
-			backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+			//anvilOpts := anvil.NewAnvilOptionBuilder()
+			//anvilOpts.SetChainID(chainID)
+			//anvilOpts.SetBlockTime(1 * time.Second)
+			//backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends
 			c.testBackends[chainID] = backend
@@ -138,35 +172,7 @@ func (c *ServerSuite) SetupSuite() {
 	c.handler = metricsHandler
 	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, "memory", metricsHandler)
 	c.database = testDB
-
-	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetSuiteContext(), c.T(), c.omniRpcTestBackends...)
-	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, metricsHandler, omniClient.WithCaptureReqRes())
-	c.omniRPCClient = omniRPCClient
-
 	// setup config
-
-	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
-	c.Assert().True(ok)
-	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
-	c.Assert().True(ok)
-	testConfig := config.Config{
-		Database: config.DatabaseConfig{
-			Type: "sqlite",
-			DSN:  "memory",
-		},
-		OmniRPCURL: testOmnirpc,
-		Bridges: map[uint32]string{
-			1:     ethFastBridgeAddress.Hex(),
-			42161: arbFastBridgeAddress.Hex(),
-		},
-		Port: "9000",
-	}
-	c.cfg = testConfig
-
-	APIServer, err := rest.NewAPI(c.GetSuiteContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
-	c.Nil(err)
-
-	c.APIServer = APIServer
 }
 
 // TestConfigSuite runs the integration test suite.
