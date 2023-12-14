@@ -775,6 +775,17 @@ describe('SynapseSDK', () => {
           expect(bridgeID).toEqual(cctpArbToEthTx.bridgeID)
         })
 
+        it('Throws when given a txHash that does not exist', async () => {
+          // Use txHash for another chain
+          await expect(
+            synapse.getBridgeID(
+              SupportedChainId.ETH,
+              'SynapseCCTP',
+              bridgeArbToEthTx.txHash
+            )
+          ).rejects.toThrow('Failed to get transaction receipt')
+        })
+
         it('Throws when origin tx does not refer to SynapseCCTP', async () => {
           await expect(
             synapse.getBridgeID(
