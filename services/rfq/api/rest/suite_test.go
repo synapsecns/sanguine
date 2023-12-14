@@ -2,6 +2,10 @@ package rest_test
 
 import (
 	"fmt"
+	"math/big"
+	"testing"
+
+	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -22,8 +26,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"testing"
 )
 
 // Server suite is the main API server test suite.
@@ -67,7 +69,7 @@ func (c *ServerSuite) SetupTest() {
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
 			Type: "sqlite",
-			DSN:  "memory",
+			DSN:  filet.TmpFile(c.T(), "", "").Name(),
 		},
 		OmniRPCURL: testOmnirpc,
 		Bridges: map[uint32]string{
@@ -170,6 +172,7 @@ func (c *ServerSuite) SetupSuite() {
 	c.Nil(err)
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
+	// TODO use temp file / in memory sqlite3 to not create in directory files
 	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, "memory", metricsHandler)
 	c.database = testDB
 	// setup config
