@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import * as CHAINS from '@constants-new/chains/master'
+import * as CHAINS from '../../constants/chains/master'
 import { getAddress } from '@ethersproject/address'
 
 export type Chain = {

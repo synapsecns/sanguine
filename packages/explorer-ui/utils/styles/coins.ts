@@ -36,8 +36,8 @@ import {
   PLS,
   AGEUR,
   NOTE,
-} from '@constants-new/tokens/bridgeable'
-import { MIM, AVWETH } from '@constants-new/tokens/auxilliary'
+} from '../../constants/tokens/bridgeable'
+import { MIM, AVWETH } from '../../constants/tokens/auxilliary'
 
 const COLOR_COIN_MAP = {
   gray: [FRAX, GOHM, SDT, VSTA],

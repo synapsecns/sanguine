@@ -1,5 +1,5 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
+import { TOKEN_HASH_MAP } from '@constants/tokens/index'
 import { getTokenAddressUrl } from '@urls'
 import Image from 'next/image'
 
@@ -27,9 +27,6 @@ export function AssetImage({ tokenAddress, chainId, className }) {
 }
 
 function hasRequiredData({ tokenAddress, chainId }) {
-  console.log('tokenAddress:', tokenAddress);
-  console.log('chainId:', chainId);
-  console.log('TOKEN_HASH_MAP[chainId][tokenAddress]:', TOKEN_HASH_MAP[chainId]?.[tokenAddress]);
   return tokenAddress && chainId && TOKEN_HASH_MAP[chainId] && TOKEN_HASH_MAP[chainId][tokenAddress];
 }
 

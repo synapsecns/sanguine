@@ -25,11 +25,17 @@
       "@assets/icons/": [
         "./assets/icons"
       ],
-      "@assets/networks/": [
-        "./assets/networks"
-      ],
       "@assets/*": [
         "./assets/*"
+      ],
+      "@constants/": [
+        "./constants"
+      ],
+      "@constants/chains/": [
+        "./constants/chains"
+      ],
+      "@constants/*": [
+        "./constants/*"
       ],
       "@components": [
         "./components"
@@ -66,18 +72,6 @@
       ],
       "@utils/*": [
         "./utils/*"
-      ],
-      "@constants": [
-        "./constants"
-      ],
-      "@constants/*": [
-        "./constants/*"
-      ],
-      "@constants-new": [
-        "./constants-new"
-      ],
-      "@constants-new/*": [
-        "./constants-new/*"
       ],
       "@graphql": [
         "./graphql"

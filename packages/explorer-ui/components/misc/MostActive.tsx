@@ -1,10 +1,10 @@
 import _ from 'lodash'
-import { CHAIN_INFO_MAP } from '@constants/networks'
-import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
+import { TOKEN_HASH_MAP } from '../../constants/tokens/index'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'
 import Tooltip from '@components/tailwind/Tooltip'
+import { CHAINS_BY_ID } from '../../constants/chains'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
@@ -20,8 +20,8 @@ export function MostActive({ data }) {
 }
 
 function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
-  const { chainName, chainLogo } = CHAIN_INFO_MAP[chainId]
-  const token = TOKEN_HASH_MAP[chainId][_.toLower(tokenAddress)] ?? {}
+  const chain = CHAINS_BY_ID[chainId]
+  const token = TOKEN_HASH_MAP[chainId][tokenAddress] ?? {}
   const { name } = token
 
   return (
@@ -36,7 +36,7 @@ function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
             />
             <span className={getCoinTextColor(token)}>{name}</span> on{' '}
             <ChainImage chainId={chainId} className="ml-1 mr-1" />
-            <span className={getNetworkTextColor(chainId)}>{chainName}</span>
+            <span className={getNetworkTextColor(chainId)}>{chain.name}</span>
           </div>
         </Grid>
       }

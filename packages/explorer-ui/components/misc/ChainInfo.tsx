@@ -1,7 +1,7 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline';
 import { getChainUrl, getExplorerTxUrl } from '@urls';
-import { CHAIN_INFO_MAP } from '@constants/networks';
 import Image from 'next/image';
+import { CHAINS_BY_ID } from '@constants/chains';
 
 interface ChainInfoProps {
   chainId?: any;
@@ -22,7 +22,7 @@ export function ChainInfo({
   useExplorerLink = false,
   noLink = false,
 }: ChainInfoProps) {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId] ?? {};
+  const chain = CHAINS_BY_ID[chainId]
   let link = '';
 
   if (txHash) {
@@ -33,17 +33,17 @@ export function ChainInfo({
     link = getChainUrl({ chainId });
   }
 
-  if (chainName) {
+  if (chain) {
     return (
       <div className="w-full relative">
         <div className="flex justify-between ">
           <div className="flex flex-row w-[90%] items-center">
             <Image
               className={`inline mr-[.5rem] rounded-full ${imgClassName}`}
-              src={chainImg}
-              alt={chainName}
+              src={chain?.chainImg}
+              alt={chain?.name}
             />
-            <p className={textClassName}>{chainName}</p>
+            <p className={textClassName}>{chain.name}</p>
           </div>
           {noLink ? null : (
             <div className="flex items-center">

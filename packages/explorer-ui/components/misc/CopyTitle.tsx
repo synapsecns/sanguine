@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import copyImg from '@assets/icons-old/copy.png'
+import copyImg from '@assets/icons/copy.png'
 import { useState, useEffect } from 'react'
 
 export default function CopyTitle({ title }) {

@@ -1,6 +1,6 @@
 import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
-import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
+import { TOKEN_HASH_MAP } from '@constants/tokens/index'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -130,7 +130,7 @@ export default function chainId() {
           className={`w-9 h-9 inline mr-3 rounded-lg`}
         />
         <h3 className="text-white text-5xl font-semibold">
-          {TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol}{' '}
+          {TOKEN_HASH_MAP[tokenChainID]?.[address]?.symbol}{' '}
         </h3>
       </div>
       <CopyTitle title={address} />
