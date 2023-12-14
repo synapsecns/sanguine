@@ -158,6 +158,11 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 	var errMux sync.Mutex
 	var wg sync.WaitGroup
 
+	// skip items on the blacklist.
+	if IsVerificationBlacklisted(contractType) {
+		return nil
+	}
+
 	//nolint: nestif
 	// disable this on CI, as it dramatically slows down builds
 	if EnableLocalDebug {

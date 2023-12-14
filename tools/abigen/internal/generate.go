@@ -32,7 +32,7 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		return fmt.Errorf("could not get contract source for address %s: %w", contractAddress, err)
 	}
 
-	solFile, err := os.CreateTemp("", fmt.Sprintf("%s.sol", path.Base(fileName)))
+	solFile, err := os.Create(fmt.Sprintf("%s/%s.sol", os.TempDir(), path.Base(fileName)))
 	if err != nil {
 		return fmt.Errorf("could not determine wd: %w", err)
 	}

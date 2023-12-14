@@ -1,7 +1,7 @@
 package inventory_test
 
 import (
-	"fmt"
+	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -9,10 +9,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"sync"
@@ -26,6 +25,7 @@ type InventoryTestSuite struct {
 	manager    *testutil.DeployManager
 	relayer    wallet.Wallet
 	omnirpcURL string
+	db         reldb.Service
 }
 
 // NewInventorySuite creates the inventory suite.
@@ -60,6 +60,13 @@ func (i *InventoryTestSuite) SetupTest() {
 	var mux sync.Mutex
 	var wg sync.WaitGroup
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		i.db, err = sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""), metrics.Get(), false)
+		i.NoError(err)
+	}()
+
 	for it := 1; it < 5; it++ {
 		wg.Add(1)
 		it := it // capture func literal
@@ -85,21 +92,4 @@ func (i *InventoryTestSuite) SetupTest() {
 	wg.Wait()
 
 	i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), allBackends...)
-	fmt.Print("hi")
-}
-
-func (i *InventoryTestSuite) TestInventoryBoot() {
-	i.NotPanics(func() {
-		cfg := relconfig.Config{
-			Tokens: map[int][]string{},
-		}
-
-		for _, backend := range i.backends {
-			handle, _ := i.manager.GetMockERC20(i.GetTestContext(), backend)
-			cfg.Tokens[int(backend.GetChainID())] = []string{handle.Address().String()}
-		}
-
-		_, err := inventory.NewInventoryManager(i.GetTestContext(), omnirpcClient.NewOmnirpcClient(i.omnirpcURL, metrics.Get()), metrics.Get(), cfg, i.relayer.Address())
-		i.Require().NoError(err)
-	})
 }

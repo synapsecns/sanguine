@@ -208,6 +208,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 		g.Go(func() error {
 			// TODO: add retries
+			// TODO: we should see if we can move this to ethergo and deduplicate. We do this a lot, especially in
+			// the prom exporter
 			batches := core.ChunkSlice(deferredCalls[chainID], maxBatchSize)
 			for _, batch := range batches {
 				err = chainClient.BatchWithContext(gctx, batch...)
