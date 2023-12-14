@@ -218,7 +218,7 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		res.originDecimals, err = originERC20.Decimals(&bind.CallOpts{})
+		res.originDecimals, err = originERC20.Decimals(&bind.CallOpts{Context: ctx})
 		if err != nil {
 			return fmt.Errorf("could not get dest decimals: %w", err)
 		}
@@ -226,7 +226,7 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 	})
 
 	g.Go(func() error {
-		res.destDecimals, err = destERC20.Decimals(&bind.CallOpts{})
+		res.destDecimals, err = destERC20.Decimals(&bind.CallOpts{Context: ctx})
 		if err != nil {
 			return fmt.Errorf("could not get origin decimals: %w", err)
 		}

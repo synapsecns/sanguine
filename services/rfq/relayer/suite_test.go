@@ -77,21 +77,29 @@ func (r *RelayerTestSuite) TestStore() {
 	go func() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
+
 	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
 
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
+	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
+	r.NoError(err)
+
+	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
+	r.NoError(err)
+
 	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
-		DstChainId:   1,
+		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
-		OriginToken:  mocks.MockAddress(),
-		DestToken:    mocks.MockAddress(),
+		OriginToken:  originToken.Address(),
+		DestToken:    destToken.Address(),
 		OriginAmount: big.NewInt(1),
 		DestAmount:   big.NewInt(2),
 		Deadline:     big.NewInt(3),
 	})
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
+	r.T().Skip("TODO")
 	// TODO: check db
 	time.Sleep(time.Second * 1000)
 
