@@ -29,16 +29,18 @@ import (
 // Notary checks the Summit for that latest states signed by guards, validates those states on origin,
 // then signs and submits the snapshot to Summit.
 type Notary struct {
-	bondedSigner            signer.Signer
-	unbondedSigner          signer.Signer
-	ownerSigner             signer.Signer
-	domains                 []domains.DomainClient
-	summitDomain            domains.DomainClient
-	destinationDomain       domains.DomainClient
-	refreshInterval         time.Duration
-	summitMyLatestStates    map[uint32]types.State
-	summitGuardLatestStates map[uint32]types.State
-	notaryStatus            types.AgentStatus
+	bondedSigner      signer.Signer
+	unbondedSigner    signer.Signer
+	ownerSigner       signer.Signer
+	domains           []domains.DomainClient
+	summitDomain      domains.DomainClient
+	destinationDomain domains.DomainClient
+	refreshInterval   time.Duration
+	// myLatestStates is a map of states (on summit) corresponding to this notary's address
+	myLatestStates map[uint32]types.State
+	// guardLatestStates is a map of states (on summit) corresponding to the guards
+	guardLatestStates map[uint32]types.State
+	notaryStatus      types.AgentStatus
 	// currentSnapRoot is the snapRoot corresponding to the last snapshot submitted by the notary.
 	currentSnapRoot [32]byte
 	// attestedSnapRoot is the snapRoot corresponding to the last attestation submitted by the notary.
@@ -88,8 +90,8 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 		}
 	}
 
-	notary.summitMyLatestStates = make(map[uint32]types.State, len(notary.domains))
-	notary.summitGuardLatestStates = make(map[uint32]types.State, len(notary.domains))
+	notary.myLatestStates = make(map[uint32]types.State, len(notary.domains))
+	notary.guardLatestStates = make(map[uint32]types.State, len(notary.domains))
 
 	notary.summitParser, err = summit.NewParser(common.HexToAddress(notary.summitDomain.Config().SummitAddress))
 	if err != nil {
@@ -188,9 +190,9 @@ func (n *Notary) addAgent(parentCtx context.Context) (err error) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
+func (n *Notary) loadMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
-		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadMyLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
@@ -207,7 +209,7 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 			continue
 		}
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
-			n.summitMyLatestStates[originID] = myLatestState
+			n.myLatestStates[originID] = myLatestState
 			span.AddEvent("got latest summit state", trace.WithAttributes(
 				attribute.Int(metrics.StateNonce, int(myLatestState.Nonce())),
 				attribute.Int(metrics.Origin, int(originID)),
@@ -219,10 +221,10 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
+func (n *Notary) loadGuardLatestStates(parentCtx context.Context) {
 	for _, d := range n.domains {
 		domain := d
-		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadGuardLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
@@ -237,7 +239,7 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 			))
 		}
 		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
-			n.summitGuardLatestStates[originID] = guardLatestState
+			n.guardLatestStates[originID] = guardLatestState
 			span.AddEvent("Got guard latest state", trace.WithAttributes(
 				attribute.Int(metrics.StateNonce, int(guardLatestState.Nonce())),
 				attribute.Int(metrics.Origin, int(originID)),
@@ -615,11 +617,11 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		))
 
 		originID := domain.Config().DomainID
-		summitMyLatest, ok := n.summitMyLatestStates[originID]
+		summitMyLatest, ok := n.myLatestStates[originID]
 		if !ok || summitMyLatest == nil || summitMyLatest.Nonce() == 0 {
 			summitMyLatest = nil
 		}
-		summitGuardLatest, ok := n.summitGuardLatestStates[originID]
+		summitGuardLatest, ok := n.guardLatestStates[originID]
 		if !ok || summitGuardLatest == nil || summitGuardLatest.Nonce() == 0 {
 			continue
 		}
@@ -723,7 +725,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 		}
 		// update our view of summit states
 		for originID, state := range statesToSubmit {
-			n.summitMyLatestStates[originID] = state
+			n.myLatestStates[originID] = state
 		}
 	}
 }
@@ -899,7 +901,7 @@ func (n *Notary) Start(parentCtx context.Context) error {
 	}
 
 	// Load latest states from Summit
-	n.loadSummitMyLatestStates(ctx)
+	n.loadMyLatestStates(ctx)
 
 	g.Go(func() error {
 		err := n.txSubmitter.Start(ctx)
@@ -917,7 +919,7 @@ func (n *Notary) Start(parentCtx context.Context) error {
 				logger.Info("Notary exiting without error")
 				return nil
 			case <-time.After(n.refreshInterval):
-				n.loadSummitGuardLatestStates(ctx)
+				n.loadGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
 				shouldRegisterNotary := n.shouldRegisterNotaryOnDestination(ctx)
 				notaryRegistered := true
