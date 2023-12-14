@@ -56,7 +56,7 @@ func decodeSignature(sig []byte) signer.Signature {
 	if len(sig) != crypto.SignatureLength {
 		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
 	}
-	v := new(big.Int).SetBytes([]byte{sig[64]})
+	v := new(big.Int).SetBytes([]byte{sig[64] + 27})
 	r := new(big.Int).SetBytes(sig[:32])
 	s := new(big.Int).SetBytes(sig[32:64])
 
