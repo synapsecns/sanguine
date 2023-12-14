@@ -10,6 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func (c *ServerSuite) TestNewAPIServer() {
@@ -26,7 +27,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 	c.startAPIServer()
 
 	// Prepare the authorization header with a signed timestamp.
-	header, err := c.prepareAuthHeader()
+	header, err := c.prepareAuthHeader(c.testWallet)
 	if err != nil {
 		c.Error(err)
 		return
@@ -48,6 +49,36 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 }
 
+// TestEIP191_UnsuccessfulSignature tests the EIP191 signature process with an incorrect wallet signature.
+func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startAPIServer()
+
+	// Prepare the authorization header with a signed timestamp using an incorrect wallet.
+	randomWallet, err := wallet.FromRandom()
+	c.Nil(err)
+	header, err := c.prepareAuthHeader(randomWallet)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	// Perform a PUT request to the API server with the incorrect authorization header.
+	resp, err := c.sendPutRequest(header)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Log the response body for debugging.
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
+
+	// Assert that the response status code is HTTP 400 Bad Request.
+	c.Equal(http.StatusBadRequest, resp.StatusCode)
+}
+
 // startAPIServer starts the API server and waits for it to initialize.
 func (c *ServerSuite) startAPIServer() {
 	go func() {
@@ -57,8 +88,8 @@ func (c *ServerSuite) startAPIServer() {
 	time.Sleep(2 * time.Second) // Wait for the server to start.
 }
 
-// prepareAuthHeader generates an authorization header using EIP191 signature.
-func (c *ServerSuite) prepareAuthHeader() (string, error) {
+// prepareAuthHeader generates an authorization header using EIP191 signature with the given private key.
+func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 	// Get the current Unix timestamp as a string.
 	now := strconv.Itoa(int(time.Now().Unix()))
 
@@ -66,8 +97,8 @@ func (c *ServerSuite) prepareAuthHeader() (string, error) {
 	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now
 	digest := crypto.Keccak256([]byte(data))
 
-	// Sign the data.
-	sig, err := crypto.Sign(digest, c.testWallet.PrivateKey())
+	// Sign the data with the provided private key.
+	sig, err := crypto.Sign(digest, wallet.PrivateKey())
 	if err != nil {
 		return "", err
 	}
