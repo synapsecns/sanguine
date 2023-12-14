@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.206",
+  "version": "0.1.207",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -55,7 +55,7 @@
     "@vercel/analytics": "^1.0.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/core": "^1.4.5",
+    "@wagmi/core": "^1.4.12",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
