@@ -8,6 +8,7 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 
@@ -15,6 +16,7 @@ import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -236,4 +238,103 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
 	})
+}
+
+func (u *NotarySuite) TestEnsureNotaryActive() {
+	guardTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+
+	// Use a new wallet for Unknown notary.
+	notaryWallet, err := wallet.FromRandom()
+	u.Nil(err)
+
+	// Fetch the owner signer for calls to BondingManager.
+	_, bondingManagerHarnessContract := u.TestDeployManager.GetBondingManagerHarness(u.GetTestContext(), u.TestBackendSummit)
+	bondingManagerHarnessOwnerPtr, err := bondingManagerHarnessContract.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: u.GetTestContext()})
+	u.Nil(err)
+	bondingManagerHarnessOwnerAuth := u.TestBackendSummit.GetTxContext(u.GetTestContext(), &bondingManagerHarnessOwnerPtr)
+	ownerWallet, err := wallet.FromPrivateKey(bondingManagerHarnessOwnerAuth.PrivateKey)
+	u.Nil(err)
+
+	notaryTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       u.DestinationDomainClient.Config().DomainID,
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", notaryWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", notaryWallet.PrivateKeyHex()).Name(),
+		},
+		OwnerSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", ownerWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.NotaryMetrics, omniClient.WithCaptureReqRes())
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		Nil(u.T(), scribeErr)
+	}()
+
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
+	Nil(u.T(), err)
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = guard.Start(u.GetTestContext())
+	}()
+
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
+	Nil(u.T(), err)
+
+	// Verify that the notary is Unknown.
+	verifyStatus := func(agent common.Address, flag types.AgentFlagType) {
+		u.Eventually(func() bool {
+			status, err := u.SummitDomainClient.BondingManager().GetAgentStatus(u.GetTestContext(), agent)
+			Nil(u.T(), err)
+			if status.Flag() == flag {
+				return true
+			}
+			return false
+		})
+	}
+	verifyStatus(notaryWallet.Address(), types.AgentFlagUnknown)
+
+	// Ensure that the notary is active. Since it is currently Unknown, this should result in a call
+	// to BondingManager.addAgent().
+	err = notary.EnsureNotaryActive(u.GetTestContext())
+	Nil(u.T(), err)
+	verifyStatus(notaryWallet.Address(), types.AgentFlagActive)
+
+	// Ensure that the notary is now active.
+	err = notary.EnsureNotaryActive(u.GetTestContext())
+	Nil(u.T(), err)
+	verifyStatus(notaryWallet.Address(), types.AgentFlagActive)
 }
