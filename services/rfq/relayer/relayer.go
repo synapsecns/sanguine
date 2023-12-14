@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -43,12 +44,29 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 }
 
 func (r *Relayer) Start(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		err := r.startChainParser(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start chain parser: %w", err)
+		}
+		return nil
+	})
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not start: %w", err)
+	}
+
 	return nil
 }
 
 func (r *Relayer) startChainParser(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
 	for chainID, bridgeStr := range r.cfg.Bridges {
+		chainID := chainID //capture func literal
 		// TODO: consider getter for this convert step
 		bridge := common.HexToAddress(bridgeStr)
 		chainClient, err := r.client.GetChainClient(ctx, chainID)
@@ -66,36 +84,51 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 			return fmt.Errorf("could not get chain listener: %w", err)
 		}
 
-		err = chainListener.Listen(ctx, func(ctx context.Context, log types.Log) error {
-			_, parsedEvent, ok := parser.ParseEvent(log)
-			// handle unknown event
-			if !ok {
-				if len(log.Topics) != 0 {
-					logger.Warnf("unknown event %s", log.Topics[0])
+		g.Go(func() error {
+			err = chainListener.Listen(ctx, func(ctx context.Context, log types.Log) error {
+				_, parsedEvent, ok := parser.ParseEvent(log)
+				// handle unknown event
+				if !ok {
+					if len(log.Topics) != 0 {
+						logger.Warnf("unknown event %s", log.Topics[0])
+					}
+					return nil
 				}
+
+				switch event := parsedEvent.(type) {
+				case *fastbridge.FastBridgeBridgeRequested:
+					// TODO store this if not already seen
+					err = r.handleRequest(ctx, event, uint64(chainID))
+					if err != nil {
+						return fmt.Errorf("could not handle request: %w", err)
+					}
+				case *fastbridge.FastBridgeBridgeRelayed:
+					panic("implement me")
+				}
+
 				return nil
-			}
+			})
 
-			switch event := parsedEvent.(type) {
-			case *fastbridge.FastBridgeBridgeRequested:
-				// TODO store this if not already seen
-				err = r.handleRequest(ctx, event, uint64(chainID))
-				if err != nil {
-					return fmt.Errorf("could not handle request: %w", err)
-				}
-			case *fastbridge.FastBridgeBridgeRelayed:
-				panic("implement me")
+			if err != nil {
+				return fmt.Errorf("listener failed: %w", err)
 			}
-
 			return nil
 		})
 	}
 	return nil
 }
 
-func (r *Relayer) handleRequest(ctx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) error {
+func (r *Relayer) handleRequest(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "getDecimals", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// TODO: consider a mapmutex
-	_, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
+	_, err = r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	// expect no results
 	if !errors.Is(err, reldb.ErrNoQuoteForID) {
 		// maybe a db err? if so error out & try again later
@@ -164,13 +197,12 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 		return nil, fmt.Errorf("could not get dest client: %w", err)
 	}
 
-	// TODO: replcae w/ an IERC20 contract for readability. Using mock here doesn't break anything
-	originERC20, err := mockerc20.NewMockerc20Ref(bridgeTx.OriginToken, originClient)
+	originERC20, err := ierc20.NewIERC20(bridgeTx.OriginToken, originClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin token")
 	}
 
-	destERC20, err := mockerc20.NewMockerc20Ref(bridgeTx.DestToken, destClient)
+	destERC20, err := ierc20.NewIERC20(bridgeTx.DestToken, destClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest token")
 	}
@@ -198,7 +230,6 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 	}
 
 	return &res, nil
-
 }
 
 type decimalsRes struct {
