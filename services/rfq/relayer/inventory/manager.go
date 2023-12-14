@@ -159,7 +159,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg c
 	}
 
 	return
-
 }
 
 func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, token common.Address) error {
