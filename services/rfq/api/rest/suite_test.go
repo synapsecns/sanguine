@@ -105,7 +105,7 @@ func (c *ServerSuite) SetupSuite() {
 		g.Go(func() error {
 			// Setup Anvil backend for the suite to have RPC support
 			// anvilOpts := anvil.NewAnvilOptionBuilder()
-			//anvilOpts.SetChainID(chainID)
+			// anvilOpts.SetChainID(chainID)
 			//anvilOpts.SetBlockTime(1 * time.Second)
 			//backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
