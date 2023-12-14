@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 	"time"
 )
 
@@ -19,12 +22,19 @@ type ChainListener interface {
 }
 
 type chainListener struct {
-	address  common.Address
 	client   client.EVM
 	contract *fastbridge.FastBridgeRef
 	store    db.Service
 	handler  metrics.Handler
+	backoff  *backoff.Backoff
+	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
+	// set in the constructor
+	startBlock, chainID uint64
+	pollInterval        time.Duration
+	//latestBlock         uint64
 }
+
+var logger = log.Logger("chainlistener-logger")
 
 func NewChainListener(ctx context.Context, omnirpcClient client.EVM, store db.Service, address common.Address, handler metrics.Handler) (ChainListener, error) {
 	fastBridge, err := fastbridge.NewFastBridgeRef(address, omnirpcClient)
@@ -33,36 +43,87 @@ func NewChainListener(ctx context.Context, omnirpcClient client.EVM, store db.Se
 	}
 
 	return chainListener{
-		address:  address,
 		handler:  handler,
 		store:    store,
 		client:   omnirpcClient,
 		contract: fastBridge,
+		backoff:  newBackoffConfig(),
 	}, nil
 }
 
-func (c chainListener) Listen(ctx context.Context) (err error) {
-	startBlock, chainID, err := c.getMetadata(ctx)
+// defaultPollInterval
+const (
+	// TODO: replace w/ config param if needed
+	defaultPollInterval = 4
+	maxGetLogsRange     = 2000
+)
+
+func (c *chainListener) Listen(ctx context.Context) (err error) {
+	c.startBlock, c.chainID, err = c.getMetadata(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get metadata: %w", err)
 	}
 
-	b := newBackoffConfig()
-	_ = startBlock
-	_ = b
-	_ = chainID
-
-	// defaultPollInterval
-	// TODO: replace w/ config param if needed
-	const defaultPollInterval = 4
+	c.pollInterval = time.Duration(0)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
+		case <-time.After(time.Second * c.pollInterval):
+			err = c.doPoll(ctx)
+			if err != nil {
+				logger.Warn(err)
+			}
 		}
 
 	}
+}
+
+func (c *chainListener) doPoll(parentCtx context.Context) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "getMetadata")
+	c.pollInterval = defaultPollInterval
+
+	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+		if err != nil {
+			c.pollInterval = c.backoff.Duration()
+		}
+	}()
+
+	latestBlock, err := c.client.BlockNumber(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get block number: %w", err)
+	}
+
+	// Check if latest block is the same as start block (for chains with slow block times)
+
+	if latestBlock == c.startBlock {
+		return
+	}
+
+	// Handle if the listener is more than one get logs range behind the head
+	// Note: this does not cover the edge case of a reorg that includes a new tx
+	endBlock := latestBlock
+	lastUnconfirmedBlock := latestBlock
+	if c.startBlock+maxGetLogsRange < latestBlock {
+		endBlock = c.startBlock + maxGetLogsRange
+		// This will be used as the bottom of the range in the next iteration
+		lastUnconfirmedBlock = endBlock
+		c.pollInterval = 0
+	}
+
+	filterQuery := c.buildFilterQuery(c.startBlock, endBlock)
+	logs, err := c.client.FilterLogs(ctx, filterQuery)
+	if err != nil {
+		return fmt.Errorf("could not filter logs: %w", err)
+	}
+
+	_ = logs // TODO: do something with logs
+
+	c.startBlock = lastUnconfirmedBlock
+	return nil
 }
 
 func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error) {
@@ -128,5 +189,14 @@ func newBackoffConfig() *backoff.Backoff {
 		Jitter: true,
 		Min:    10 * time.Millisecond,
 		Max:    1 * time.Second,
+	}
+}
+
+func (c chainListener) buildFilterQuery(fromBlock, toBlock uint64) ethereum.FilterQuery {
+	return ethereum.FilterQuery{
+		FromBlock: new(big.Int).SetUint64(fromBlock),
+		ToBlock:   new(big.Int).SetUint64(toBlock),
+		Addresses: []common.Address{c.contract.Address()},
+		Topics:    [][]common.Hash{{fastbridge.BridgeRequestedTopic, fastbridge.BridgeRelayedTopic}},
 	}
 }
