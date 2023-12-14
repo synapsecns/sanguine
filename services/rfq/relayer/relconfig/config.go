@@ -7,4 +7,5 @@ type Config struct {
 	// ChainID: bridge
 	Bridges    map[int]string `yaml:"bridges"`
 	OmnirpcURL string         `yaml:"omnirpc_url"`
+	DBConfig   string
 }

@@ -1,13 +1,14 @@
 package relayer_test
 
 import (
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/relayer"
@@ -60,9 +61,10 @@ func (r *RelayerTestSuite) SetupTest() {
 	originContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
 	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
 	r.cfg = relconfig.Config{
+		DBConfig: filet.TmpDir(r.T(), ""),
 		Bridges: map[int]string{
-			int(r.originBackend.GetChainID()): originContract.String(),
-			int(r.destBackend.GetChainID()):   destContract.String(),
+			int(r.originBackend.GetChainID()): originContract.Address().String(),
+			int(r.destBackend.GetChainID()):   destContract.Address().String(),
 		},
 		OmnirpcURL: serverURL,
 	}
@@ -79,19 +81,18 @@ func (r *RelayerTestSuite) TestStore() {
 
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
-	_, err = oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), common.Address{}, fastbridgemock.IFastBridgeBridgeParams{
-		DstChainId:   0,
-		To:           common.Address{},
-		OriginToken:  common.Address{},
-		DestToken:    common.Address{},
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+		DstChainId:   1,
+		To:           mocks.MockAddress(),
+		OriginToken:  mocks.MockAddress(),
+		DestToken:    mocks.MockAddress(),
 		OriginAmount: big.NewInt(1),
 		DestAmount:   big.NewInt(2),
-		Deadline:     big.NewInt(3"
-		"),
+		Deadline:     big.NewInt(3),
 	})
-	r.originBackend.WaitForConfirmation(r.GetTestContext(), nil)
+	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
 	// TODO: check db
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 1000)
 
 }

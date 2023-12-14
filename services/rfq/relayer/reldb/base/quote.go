@@ -26,9 +26,7 @@ func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest
 
 func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.QuoteRequest, error) {
 	var modelResult RequestForQuote
-	tx := s.DB().WithContext(ctx).Where(RequestForQuote{
-		TransactionID: hexutil.Encode(id[:]),
-	}).First(&modelResult)
+	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).First(&modelResult)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, reldb.ErrNoQuoteForID
 	}

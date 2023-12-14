@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -32,15 +33,23 @@ type Relayer struct {
 var logger = log.Logger("relayer")
 
 // NewRelayer creates a new relayer.
-func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (Relayer, error) {
+func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
 	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
 
+	// TODO: pull from config
+	store, err := sqlite.NewSqliteStore(ctx, cfg.DBConfig, metricHandler, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not make db: %w", err)
+	}
+
 	// TODO: add bd
-	return Relayer{
+	rel := Relayer{
+		db:      store,
 		client:  omniClient,
 		metrics: metricHandler,
 		cfg:     cfg,
-	}, nil
+	}
+	return &rel, nil
 }
 
 func (r *Relayer) Start(ctx context.Context) error {
