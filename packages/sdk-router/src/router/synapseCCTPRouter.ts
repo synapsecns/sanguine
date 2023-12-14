@@ -8,6 +8,7 @@ import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
 import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
+import cctpAbi from '../abi/SynapseCCTP.json'
 import { BigintIsh } from '../constants'
 import {
   BridgeToken,
@@ -27,6 +28,7 @@ export class SynapseCCTPRouter extends Router {
   public readonly address: string
 
   private readonly routerContract: SynapseCCTPRouterContract
+  private cctpContractCache: Contract | undefined
 
   constructor(chainId: number, provider: Provider, address: string) {
     // Parent constructor throws if chainId or provider are undefined
@@ -126,6 +128,21 @@ export class SynapseCCTPRouter extends Router {
    * @inheritdoc Router.getBridgeTxStatus
    */
   public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
-    return bridgeID.length % 2 === 0
+    const cctpContract = await this.getCctpContract()
+    return cctpContract.isRequestFulfilled(bridgeID)
+  }
+
+  private async getCctpContract(): Promise<Contract> {
+    // Populate the cache if necessary
+    if (!this.cctpContractCache) {
+      const cctpAddress = await this.routerContract.synapseCCTP()
+      this.cctpContractCache = new Contract(
+        cctpAddress,
+        new Interface(cctpAbi),
+        this.provider
+      )
+    }
+    // Return the cached contract
+    return this.cctpContractCache
   }
 }
