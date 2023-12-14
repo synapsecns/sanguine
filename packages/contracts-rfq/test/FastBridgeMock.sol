@@ -12,7 +12,29 @@ contract FastBridgeMock is IFastBridge, Admin {
         deployBlock = block.number;
     }
 
-    function mockBridgeRequested(bytes32  transactionId, address sender, bytes memory request) external  {
+    /// @dev to prevent replays
+    uint256 public nonce;
+
+    function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
+        bytes memory request = abi.encode(
+            BridgeTransaction({
+                originChainId: uint32(block.chainid),
+                destChainId: params.dstChainId,
+                originSender: msg.sender,
+                destRecipient: params.to,
+                originToken: params.originToken,
+                destToken: params.destToken,
+                originAmount: params.originAmount, // includes relayer fee
+                destAmount: params.destAmount,
+                deadline: params.deadline,
+                nonce: nonce++ // increment nonce on every bridge
+            })
+        );
+
+        emit BridgeRequested(transactionId, msg.sender, request);
+    }
+
+    function mockBridgeRequestRaw(bytes32  transactionId, address sender, bytes memory request) external  {
         emit BridgeRequested(transactionId, sender, request);
     }
 
