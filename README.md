@@ -57,7 +57,7 @@ yarn
 4. Link widget to allow use in consumer app
 
 ```
-yarn link @synapsecns/widget
+yarn link @abtestingalpha/widget
 ```
 
 5. Start consumer app
