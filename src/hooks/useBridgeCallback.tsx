@@ -1,3 +1,5 @@
+import { stringToBigInt } from '@/utils/stringToBigInt'
+import { ZeroAddress } from 'ethers'
 import { useState, useCallback, useMemo } from 'react'
 
 export enum UseBridgeCallbackError {
@@ -98,7 +100,17 @@ export function useBridgeCallback({
         originQuery,
         destinationQuery
       )
-      const transactionHash = await signer.sendTransaction(data)
+
+      const payload =
+        tokenAddress === ZeroAddress
+          ? {
+              data: data.data,
+              to: data.to,
+              value: amount,
+            }
+          : data
+
+      const transactionHash = await signer.sendTransaction(payload)
 
       BridgeStateCallback.successBridge()
       return transactionHash

@@ -44,6 +44,7 @@ import { switchNetwork } from '@/utils/actions/switchNetwork'
 import { generateTheme } from '@/utils/generateTheme'
 import { fetchTokenBalances } from '@/utils/actions/fetchTokenBalances'
 import { AvailableBalance } from './AvailableBalance'
+import { ZeroAddress } from 'ethers'
 
 const chains = {
   1: {
@@ -249,6 +250,7 @@ export const Widget = ({
   }, [debouncedInputAmount])
 
   const isApproved: boolean = useMemo(() => {
+    if (originToken?.addresses[originChainId] === ZeroAddress) return true
     if (allowance === null) return true
     if (!formattedInputAmount) return true
     return formattedInputAmount <= allowance
