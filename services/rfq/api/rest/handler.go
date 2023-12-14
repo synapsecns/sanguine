@@ -44,7 +44,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
 		return
 	}
-	originChainId, err := strconv.ParseUint(putRequest.OriginChainID, 10, 64)
+	originChainID, err := strconv.ParseUint(putRequest.OriginChainID, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestChainID"})
 		return
@@ -61,7 +61,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 	}
 	quote := &db.Quote{
 		ID:              uint64(putRequest.ID),
-		OriginChainID:   originChainId,
+		OriginChainID:   originChainID,
 		OriginTokenAddr: putRequest.OriginTokenAddr,
 		DestChainID:     destChainID,
 		DestTokenAddr:   putRequest.DestTokenAddr,
@@ -79,25 +79,25 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 
 // GET /quotes.
 func (h *Handler) GetQuotes(c *gin.Context) {
-	originChainIdStr := c.Query("originChainId")
+	originChainIDStr := c.Query("originChainID")
 	originTokenAddr := c.Query("originTokenAddr")
-	destChainIdStr := c.Query("destChainId")
+	destChainIDStr := c.Query("destChainId")
 	destTokenAddr := c.Query("destTokenAddr")
 
-	if originChainIdStr != "" && originTokenAddr != "" && destChainIdStr != "" && destTokenAddr != "" {
-		destChainId, err := strconv.ParseUint(destChainIdStr, 10, 64)
+	if originChainIDStr != "" && originTokenAddr != "" && destChainIDStr != "" && destTokenAddr != "" {
+		destChainID, err := strconv.ParseUint(destChainIDStr, 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destChainId"})
 			return
 		}
 
-		originChainId, err := strconv.ParseUint(originChainIdStr, 10, 64)
+		originChainID, err := strconv.ParseUint(originChainIDStr, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid originChainId"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid originChainID"})
 			return
 		}
 
-		quotes, err := h.db.GetQuotesByOriginAndDestination(originChainId, originTokenAddr, destChainId, destTokenAddr)
+		quotes, err := h.db.GetQuotesByOriginAndDestination(originChainID, originTokenAddr, destChainID, destTokenAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

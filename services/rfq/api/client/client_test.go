@@ -7,7 +7,6 @@ import (
 )
 
 func (c *ClientSuite) TestPutAndGetQuote() {
-
 	putData := client.APIQuotePutRequest{
 		ID:              123,
 		OriginChainID:   "1",
@@ -21,10 +20,10 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 
 	err := c.client.PutQuote(&putData)
 	fmt.Println("err", err)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	quotes, err := c.client.GetAllQuotes()
-	c.Nil(err)
+	c.Require().NoError(err)
 	fmt.Println(quotes)
 
 	found := false
@@ -35,12 +34,9 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
-
-	// TODO: Make sure the quote is there
 }
 
 func (c *ClientSuite) TestGetSpecificQuote() {
-
 	putData := client.APIQuotePutRequest{
 		ID:              123,
 		OriginChainID:   "1",
@@ -54,7 +50,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 
 	err := c.client.PutQuote(&putData)
 	fmt.Println("err", err)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	quotes, err := c.client.GetSpecificQuote(&client.APIQuoteSpecificGetRequest{
 		OriginChainID:   "1",
@@ -62,7 +58,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
 	})
-	c.Nil(err)
+	c.Require().NoError(err)
 	fmt.Println(quotes)
 
 	found := false

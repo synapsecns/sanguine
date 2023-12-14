@@ -18,9 +18,15 @@ import (
 func (c *ServerSuite) TestNewAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startAPIServer()
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/quotes", c.port))
-	c.Nil(err)
-	defer resp.Body.Close()
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(c.GetTestContext(), "GET", fmt.Sprintf("http://localhost:%d/quotes", c.port), nil)
+	c.Require().NoError(err)
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 	c.GetTestContext().Done()
 }
@@ -43,7 +49,10 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 		c.Error(err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
 
 	// Log the response body for debugging.
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -60,7 +69,7 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 
 	// Prepare the authorization header with a signed timestamp using an incorrect wallet.
 	randomWallet, err := wallet.FromRandom()
-	c.Nil(err)
+	c.Require().NoError(err)
 	header, err := c.prepareAuthHeader(randomWallet)
 	if err != nil {
 		c.Error(err)
@@ -73,8 +82,10 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 		c.Error(err)
 		return
 	}
-	defer resp.Body.Close()
-
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
 	// Log the response body for debugging.
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
@@ -90,18 +101,18 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 
 	// Prepare the authorization header with a signed timestamp.
 	header, err := c.prepareAuthHeader(c.testWallet)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	// Perform a PUT request to the API server with the authorization header.
 	resp, err := c.sendPutRequest(header)
-	c.Nil(err)
+	c.Require().NoError(err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	// Log the response body for debugging.
 	body, err := ioutil.ReadAll(resp.Body)
-	c.Nil(err)
+	c.Require().NoError(err)
 	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 200 OK.
@@ -112,21 +123,24 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	c.startAPIServer()
 
 	header, err := c.prepareAuthHeader(c.testWallet)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	// Send PUT request
 	putResp, err := c.sendPutRequest(header)
-	c.Nil(err)
-	defer putResp.Body.Close()
+	c.Require().NoError(err)
+	defer func() {
+		err = putResp.Body.Close()
+		c.Require().NoError(err)
+	}()
 	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
 
 	// Send GET request to verify the PUT
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%d/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", c.port), nil)
-	c.Nil(err)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", c.port), nil)
+	c.Require().NoError(err)
 
 	getResp, err := client.Do(req)
-	c.Nil(err)
+	c.Require().NoError(err)
 	defer func() {
 		_ = getResp.Body.Close()
 	}()
@@ -134,7 +148,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 
 	var quotes []rest.PutRequest
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	// Check if the newly added quote is present
 	found := false
@@ -151,7 +165,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 func (c *ServerSuite) startAPIServer() {
 	go func() {
 		err := c.APIServer.Run(c.GetTestContext())
-		c.Nil(err)
+		c.Require().NoError(err)
 	}()
 	time.Sleep(2 * time.Second) // Wait for the server to start.
 }
@@ -195,7 +209,7 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to marshal putData: %w", err)
 	}
 
-	req, err := http.NewRequest("PUT", fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(c.GetTestContext(), "PUT", fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}

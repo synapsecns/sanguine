@@ -1,3 +1,4 @@
+// Package cmd provides the command line interface for the RFQ API service.
 package cmd
 
 import (

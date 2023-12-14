@@ -12,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
 
+// Client is an interface for the RFQ API.
+// It provides methods for creating, retrieving and updating quotes.
 type Client interface {
 	PutQuote(q *APIQuotePutRequest) error
 	GetAllQuotes() ([]*db.Quote, error)
@@ -22,7 +24,7 @@ type clientImpl struct {
 	rClient *resty.Client
 }
 
-// NewClient creates a new client for the RFQ quoting API
+// NewClient creates a new client for the RFQ quoting API.
 func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).
@@ -57,24 +59,24 @@ func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 	}, nil
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API
+// CreateQuote creates a new quote in the RFQ quoting API.
 func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
 	res, err := c.rClient.R().
 		SetBody(q).
-		Put(rest.QUOTE_ROUTE)
+		Put(rest.QuoteRoute)
 
-	// TODO: Figure out if there's anyhting to do with the response, right now it's result: Status Code 200 OK
+	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
 	_ = res
 
 	return err
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API
+// CreateQuote creates a new quote in the RFQ quoting API.
 func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
 		SetResult(&quotes).
-		Get(rest.QUOTE_ROUTE)
+		Get(rest.QuoteRoute)
 
 	if err != nil {
 		return nil, err
@@ -87,7 +89,7 @@ func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 	return quotes, nil
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API
+// CreateQuote creates a new quote in the RFQ quoting API.
 func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
@@ -98,7 +100,7 @@ func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quot
 			"destTokenAddr":   q.DestTokenAddr,
 		}).
 		SetResult(&quotes).
-		Get(rest.QUOTE_ROUTE)
+		Get(rest.QuoteRoute)
 
 	if err != nil {
 		return nil, err
@@ -111,7 +113,7 @@ func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quot
 	return quotes, nil
 }
 
-// APIQuote is the struct for the quote API.
+// APIQuotePutRequest is the struct for the quote API.
 type APIQuotePutRequest struct {
 	ID              int    `json:"id"`
 	OriginChainID   string `json:"origin_chain_id"`
@@ -123,7 +125,7 @@ type APIQuotePutRequest struct {
 	MaxOriginAmount string `json:"max_origin_amount"`
 }
 
-// APIQuote is the struct for the quote API.
+// APIQuoteSpecificGetRequest is the struct for the quote API.
 type APIQuoteSpecificGetRequest struct {
 	OriginChainID   string `json:"originChainId"`
 	OriginTokenAddr string `json:"originTokenAddr"`

@@ -1,3 +1,4 @@
+// Package db provides the database interfaces and types for the RFQ API.
 package db
 
 import (

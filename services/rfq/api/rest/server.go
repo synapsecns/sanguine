@@ -1,3 +1,4 @@
+// Package rest provides RESTful API services for RFQ
 package rest
 
 import (
@@ -19,6 +20,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
 
+// APIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// It is used to initialize and run the API server.
 type APIServer struct {
 	cfg                 config.Config
 	db                  db.ApiDB
@@ -28,6 +31,8 @@ type APIServer struct {
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
 }
 
+// APIServer struct holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// It is used to initialize and run the API server.
 func NewAPI(
 	ctx context.Context,
 	cfg config.Config,
@@ -69,8 +74,9 @@ func NewAPI(
 	}, nil
 }
 
+// QuoteRoute is the API endpoint for handling quote related requests
 const (
-	QUOTE_ROUTE = "/quotes"
+	QuoteRoute = "/quotes"
 )
 
 // Run runs the rest api server.
@@ -99,6 +105,8 @@ func (r *APIServer) Run(ctx context.Context) error {
 	return nil
 }
 
+// PutRequest is used to handle PUT requests to the "/quotes" endpoint.
+// It contains the necessary information to modify a quote in the API.
 type PutRequest struct {
 	ID              int    `json:"id"`
 	OriginChainID   string `json:"origin_chain_id"`

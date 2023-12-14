@@ -59,12 +59,12 @@ func (c *ServerSuite) SetupTest() {
 	c.omniRPCClient = omniRPCClient
 
 	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
-	c.Assert().True(ok)
+	c.True(ok)
 	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
-	c.Assert().True(ok)
+	c.True(ok)
 	port, err := freeport.GetFreePort()
 	c.port = uint16(port)
-	c.NoError(err)
+	c.Require().NoError(err)
 
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
@@ -81,14 +81,14 @@ func (c *ServerSuite) SetupTest() {
 	c.cfg = testConfig
 
 	APIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
-	c.Nil(err)
+	c.Require().NoError(err)
 
 	c.APIServer = APIServer
 
 	// TODO: Cannot re-use same port on multiple tests?
 	// go func() {
 	// 	err := c.APIServer.Run(c.GetTestContext())
-	// 	c.Nil(err)
+	// 	c.Require().NoError(err)
 	// }()
 	// time.Sleep(2 * time.Second) // Wait for the server to start.
 }
@@ -108,7 +108,7 @@ func (c *ServerSuite) SetupSuite() {
 			// Setup Anvil backend for the suite to have RPC support
 			// anvilOpts := anvil.NewAnvilOptionBuilder()
 			// anvilOpts.SetChainID(chainID)
-			//anvilOpts.SetBlockTime(1 * time.Second)
+			// anvilOpts.SetBlockTime(1 * time.Second)
 			//backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
@@ -125,7 +125,7 @@ func (c *ServerSuite) SetupSuite() {
 	}
 
 	testWallet, err := wallet.FromRandom()
-	c.Nil(err)
+	c.Require().NoError(err)
 	c.testWallet = testWallet
 	for _, backend := range c.testBackends {
 		backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
@@ -143,20 +143,20 @@ func (c *ServerSuite) SetupSuite() {
 			}
 			// Create an auth to interact with the blockchain
 			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)
-			c.Nil(err)
+			c.Require().NoError(err)
 
 			// Deploy the FastBridge contract
 			fastBridgeAddress, tx, _, err := fastbridge.DeployFastBridge(auth, backend, c.testWallet.Address())
-			c.Nil(err)
+			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
 			// Save the contracts to the map
 			c.fastBridgeAddressMap.Store(chainID.Uint64(), fastBridgeAddress)
 
 			fastBridgeInstance, err := fastbridge.NewFastBridge(fastBridgeAddress, backend)
-			c.Nil(err)
+			c.Require().NoError(err)
 			tx, err = fastBridgeInstance.AddRelayer(auth, c.testWallet.Address())
-			c.Nil(err)
+			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
 			return nil
@@ -169,7 +169,7 @@ func (c *ServerSuite) SetupSuite() {
 	}
 
 	dbType, err := dbcommon.DBTypeFromString("sqlite")
-	c.Nil(err)
+	c.Require().NoError(err)
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
 	// TODO use temp file / in memory sqlite3 to not create in directory files

@@ -62,12 +62,12 @@ func (c *ClientSuite) SetupTest() {
 	c.omniRPCClient = omniRPCClient
 
 	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
-	c.Assert().True(ok)
+	c.True(ok)
 	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
-	c.Assert().True(ok)
+	c.True(ok)
 	port, err := freeport.GetFreePort()
 	c.port = uint16(port)
-	c.NoError(err)
+	c.Require().NoError(err)
 
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
@@ -84,16 +84,17 @@ func (c *ClientSuite) SetupTest() {
 	c.cfg = testConfig
 
 	APIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
-	c.Nil(err)
+	c.Require().NoError(err)
 	c.APIServer = APIServer
 
 	go func() {
 		err := c.APIServer.Run(c.GetTestContext())
-		c.Nil(err)
+		c.Require().NoError(err)
 	}()
 	time.Sleep(2 * time.Second) // Wait for the server to start.
 
 	c.client, err = client.NewClient(fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(c.testWallet.PrivateKey()))
+	c.Require().NoError(err)
 }
 
 func (c *ClientSuite) SetupSuite() {
@@ -108,11 +109,7 @@ func (c *ClientSuite) SetupSuite() {
 	for _, chainID := range chainIDs {
 		chainID := chainID // capture func literal
 		g.Go(func() error {
-			// Setup Anvil backend for the suite to have RPC support
-			// anvilOpts := anvil.NewAnvilOptionBuilder()
-			//anvilOpts.SetChainID(chainID)
-			//anvilOpts.SetBlockTime(1 * time.Second)
-			//backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+			// Setup backend for the suite to have RPC support
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends
@@ -128,7 +125,7 @@ func (c *ClientSuite) SetupSuite() {
 	}
 
 	testWallet, err := wallet.FromRandom()
-	c.Nil(err)
+	c.Require().NoError(err)
 	c.testWallet = testWallet
 	for _, backend := range c.testBackends {
 		backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
@@ -146,20 +143,20 @@ func (c *ClientSuite) SetupSuite() {
 			}
 			// Create an auth to interact with the blockchain
 			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)
-			c.Nil(err)
+			c.Require().NoError(err)
 
 			// Deploy the FastBridge contract
 			fastBridgeAddress, tx, _, err := fastbridge.DeployFastBridge(auth, backend, c.testWallet.Address())
-			c.Nil(err)
+			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
 			// Save the contracts to the map
 			c.fastBridgeAddressMap.Store(chainID.Uint64(), fastBridgeAddress)
 
 			fastBridgeInstance, err := fastbridge.NewFastBridge(fastBridgeAddress, backend)
-			c.Nil(err)
+			c.Require().NoError(err)
 			tx, err = fastBridgeInstance.AddRelayer(auth, c.testWallet.Address())
-			c.Nil(err)
+			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
 			return nil
@@ -172,7 +169,7 @@ func (c *ClientSuite) SetupSuite() {
 	}
 
 	dbType, err := dbcommon.DBTypeFromString("sqlite")
-	c.Nil(err)
+	c.Require().NoError(err)
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
 	// TODO use temp file / in memory sqlite3 to not create in directory files

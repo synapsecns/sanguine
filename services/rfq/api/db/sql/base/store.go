@@ -1,6 +1,8 @@
 package base
 
 import (
+	"errors"
+
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,7 @@ func (s *Store) GetQuotesByOriginAndDestination(originChainId uint64, originToke
 	return quotes, nil
 }
 
+// This function retrieves all quotes from the database.
 func (s *Store) GetAllQuotes() ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	result := s.db.Find(&quotes)
@@ -34,11 +37,12 @@ func (s *Store) GetAllQuotes() ([]*db.Quote, error) {
 	return quotes, nil
 }
 
+// UpsertQuote inserts a new quote into the database or updates an existing one.
 func (s *Store) UpsertQuote(quote *db.Quote) error {
 	var existingQuote db.Quote
 	result := s.db.First(&existingQuote, quote.ID)
 
-	if result.Error == gorm.ErrRecordNotFound {
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		// Create new record if not found
 		return s.db.Create(quote).Error
 	} else if result.Error != nil {
