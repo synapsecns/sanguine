@@ -9,6 +9,7 @@ import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/Syn
 import { Router } from './router'
 import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
 import cctpAbi from '../abi/SynapseCCTP.json'
+import { getMatchingTxLog } from '../utils/logs'
 import { BigintIsh } from '../constants'
 import {
   BridgeToken,
@@ -29,6 +30,9 @@ export class SynapseCCTPRouter extends Router {
 
   private readonly routerContract: SynapseCCTPRouterContract
   private cctpContractCache: Contract | undefined
+
+  // All possible events emitted by the SynapseCCTP contract in the origin transaction
+  private readonly originEvents = ['CircleRequestSent']
 
   constructor(chainId: number, provider: Provider, address: string) {
     // Parent constructor throws if chainId or provider are undefined
@@ -122,27 +126,12 @@ export class SynapseCCTPRouter extends Router {
    */
   public async getBridgeID(txHash: string): Promise<string> {
     const cctpContract = await this.getCctpContract()
-    // Extract the CircleRequestSent event topic
-    // We know it always exists as we are using the correct ABI
-    const circleRequestSentTopic = cctpContract.interface.getEventTopic(
-      Object.values(cctpContract.interface.events).find(
-        (event) => event.name === 'CircleRequestSent'
-      )!
+    const cctpLog = await getMatchingTxLog(
+      this.provider,
+      txHash,
+      cctpContract,
+      this.originEvents
     )
-    // Iterate through logs to find CircleRequestSent event emitted by SynapseCCTP in the provided tx
-    const txReceipt = await this.provider.getTransactionReceipt(txHash)
-    if (!txReceipt) {
-      throw new Error('Failed to get transaction receipt')
-    }
-    const cctpLog = txReceipt.logs.find((log) => {
-      return (
-        log.address === cctpContract.address &&
-        log.topics[0] === circleRequestSentTopic
-      )
-    })
-    if (!cctpLog) {
-      throw new Error('CircleRequestSent log not found')
-    }
     // RequestID always exists in the log as we are using the correct ABI
     const parsedLog = cctpContract.interface.parseLog(cctpLog)
     return parsedLog.args.requestID
