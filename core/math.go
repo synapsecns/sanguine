@@ -6,6 +6,7 @@ import (
 )
 
 // BigToDecimals converts a big to decimals
+// TODO: unit test.
 func BigToDecimals(bigInt *big.Int, decimals uint8) float64 {
 	// Convert vpriceMetric to *big.Float
 	bigVPrice := new(big.Float).SetInt(CopyBigInt(bigInt))
