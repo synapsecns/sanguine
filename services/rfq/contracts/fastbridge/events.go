@@ -24,8 +24,8 @@ func init() {
 		panic(err)
 	}
 
-	BridgeRequestedTopic = parsedABI.Events["BridgeRequestedEvent"].ID
-	BridgeRelayedTopic = parsedABI.Events["BridgeRelayedEvent"].ID
+	BridgeRequestedTopic = parsedABI.Events["BridgeRequested"].ID
+	BridgeRelayedTopic = parsedABI.Events["BridgeRelayed"].ID
 
 	_, err = parsedABI.EventByID(BridgeRequestedTopic)
 	if err != nil {
