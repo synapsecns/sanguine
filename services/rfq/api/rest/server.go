@@ -80,7 +80,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut := engine.Group("/quotes")
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
-
+	// engine.PUT("/quotes", h.ModifyQuote)
 	// GET routes without the AuthMiddleware
 	engine.GET("/quotes", h.GetQuotes)
 	engine.GET("/quotes/filter", h.GetFilteredQuotes)
@@ -97,7 +97,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 }
 
 type PutRequest struct {
-	ID            string `json:"id"`
+	ID            int    `json:"id"`
 	DestChainID   string `json:"dest_chain_id"`
 	DestTokenAddr string `json:"dest_token_addr"`
 	DestAmount    string `json:"dest_amount"`
@@ -153,6 +153,8 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 
 		// Log and pass to the next middleware if authentication succeeds
 		fmt.Println("Authentication successful for:", addressRecovered.Hex())
+		// Store the request in context after binding and validation
+		c.Set("putRequest", &req)
 		c.Next()
 	}
 }
