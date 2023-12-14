@@ -80,7 +80,6 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut := engine.Group("/quotes")
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
-	// engine.PUT("/quotes", h.ModifyQuote)
 	// GET routes without the AuthMiddleware
 	engine.GET("/quotes", h.GetQuotes)
 	engine.GET("/quotes/filter", h.GetFilteredQuotes)

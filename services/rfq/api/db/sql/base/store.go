@@ -7,7 +7,7 @@ import (
 
 func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
-	result := s.db.Where("dest_chain_id = ? AND token = ?", destChainId, destTokenAddr).Find(&quotes)
+	result := s.db.Where("dest_chain_id = ? AND dest_token = ?", destChainId, destTokenAddr).Find(&quotes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

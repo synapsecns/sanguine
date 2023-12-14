@@ -10,11 +10,14 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 		// Arrange: Create and insert a quote
 		expectedQuote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.
-			ID:            1,
-			DestChainID:   2,
-			DestTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
-			DestAmount:    decimal.NewFromInt(1000),
-			Price:         decimal.NewFromFloat(0.01),
+			ID:              1,
+			OriginChainID:   1,
+			OriginTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+			DestChainID:     42161,
+			DestTokenAddr:   "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+			DestAmount:      decimal.NewFromInt(1000),
+			Price:           decimal.NewFromFloat(0.01),
+			MaxOriginAmount: decimal.NewFromInt(1000).Div(decimal.NewFromFloat(0.01)),
 		}
 		err := testDB.UpsertQuote(expectedQuote)
 		d.Require().NoError(err)
@@ -26,6 +29,14 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 		// Assert: Check if the retrieved quotes match the inserted quote
 		d.Len(quotes, 1)
 		d.Equal(expectedQuote.ID, quotes[0].ID)
+		d.Equal(expectedQuote.OriginChainID, quotes[0].OriginChainID)
+		d.Equal(expectedQuote.OriginTokenAddr, quotes[0].OriginTokenAddr)
+		d.Equal(expectedQuote.DestChainID, quotes[0].DestChainID)
+		d.Equal(expectedQuote.DestTokenAddr, quotes[0].DestTokenAddr)
+		// TODO: decimal comparison
+		// d.Equal(expectedQuote.DestAmount, quotes[0].DestAmount)
+		// d.Equal(expectedQuote.Price, quotes[0].Price)
+		// d.Equal(expectedQuote.MaxOriginAmount, quotes[0].MaxOriginAmount)
 		d.NotEqual(quotes[0].UpdatedAt, nil)
 		// Continue asserting other fields
 	})
@@ -36,11 +47,14 @@ func (d *DBSuite) TestUpsertQuote() {
 		// Arrange: Create a quote
 		quote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.
-			ID:            1,
-			DestChainID:   2,
-			DestTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
-			DestAmount:    decimal.NewFromInt(1000),
-			Price:         decimal.NewFromFloat(0.01),
+			ID:              1,
+			OriginChainID:   1,
+			OriginTokenAddr: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+			DestChainID:     42161,
+			DestTokenAddr:   "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+			DestAmount:      decimal.NewFromInt(1000),
+			Price:           decimal.NewFromFloat(0.01),
+			MaxOriginAmount: decimal.NewFromInt(1000).Div(decimal.NewFromFloat(0.01)),
 		}
 
 		// Act & Assert: Insert new quote
