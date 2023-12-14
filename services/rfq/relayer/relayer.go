@@ -13,6 +13,7 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -20,14 +21,17 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"time"
 )
 
 // Relayer is the core of the relayer application.
 type Relayer struct {
-	cfg     relconfig.Config
-	metrics metrics.Handler
-	db      reldb.Service
-	client  omnirpcClient.RPCClient
+	cfg            relconfig.Config
+	metrics        metrics.Handler
+	db             reldb.Service
+	client         omnirpcClient.RPCClient
+	chainListeners map[int]listener.ChainListener
+	inventory      inventory.InventoryManager
 }
 
 var logger = log.Logger("relayer")
@@ -41,13 +45,36 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	if err != nil {
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
+	chainListeners := make(map[int]listener.ChainListener)
 
-	// TODO: add bd
+	// setup chain listeners
+	for chainID, chainCFG := range cfg.Bridges {
+		// TODO: consider getter for this convert step
+		bridge := common.HexToAddress(chainCFG.Bridge)
+		chainClient, err := omniClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain client: %w", err)
+		}
+
+		chainListener, err := listener.NewChainListener(chainClient, store, bridge, metricHandler)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain listener: %w", err)
+		}
+		chainListeners[chainID] = chainListener
+	}
+
+	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, cfg.RelayerAddress, store)
+	if err != nil {
+		return nil, fmt.Errorf("could not add imanager")
+	}
+
 	rel := Relayer{
-		db:      store,
-		client:  omniClient,
-		metrics: metricHandler,
-		cfg:     cfg,
+		db:             store,
+		client:         omniClient,
+		metrics:        metricHandler,
+		cfg:            cfg,
+		inventory:      im,
+		chainListeners: chainListeners,
 	}
 	return &rel, nil
 }
@@ -70,27 +97,80 @@ func (r *Relayer) Start(ctx context.Context) error {
 	return nil
 }
 
+// TODO: make this configurable
+const dbSelectorInterval = 3
+
+func (r *Relayer) runDBSelector(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(dbSelectorInterval * time.Second):
+			// TODO: add context w/ timeout
+			r.processDB(ctx)
+		}
+	}
+
+}
+
+func (r *Relayer) processDB(ctx context.Context) error {
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen)
+	if err != nil {
+		return nil
+	}
+	// Obviously, these are only seen.
+	for _, request := range requests {
+		originID := int(request.Transaction.OriginChainId)
+		destID := int(request.Transaction.DestChainId)
+
+		switch request.Status {
+		case reldb.Seen:
+			// get destination commitable balancs
+			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
+			if err != nil {
+				return fmt.Errorf("could not get commitable balance: %w", err)
+			}
+			// if commitableBalance > destAmount
+			if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
+				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
+			}
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.Committed)
+			if err != nil {
+				return fmt.Errorf("")
+			}
+
+		case reldb.NotEnoughInventory:
+			// TODO: implement me
+
+		case reldb.Committed:
+			// TODO: build this in somehwere else  afte rwe commit
+			// need to see if we can complete
+			earliestConfirmBlock := request.BlockNumber + r.cfg.Bridges[originID].Confirmations
+			// can't complete, yet do nothing
+			if earliestConfirmBlock < r.chainListeners[originID].LatestBlock() {
+				continue
+			}
+
+			continue
+
+		}
+	}
+	return nil
+}
+
 func (r *Relayer) startChainParser(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
-	for chainID, bridgeStr := range r.cfg.Bridges {
-		chainID := chainID //capture func literal
-		// TODO: consider getter for this convert step
-		bridge := common.HexToAddress(bridgeStr)
-		chainClient, err := r.client.GetChainClient(ctx, chainID)
-		if err != nil {
-			return fmt.Errorf("could not get chain client: %w", err)
-		}
+	for chainID, chainCFG := range r.cfg.Bridges {
+		chainID := chainID   //capture func literal
+		chainCFG := chainCFG //capture func literal
 
-		parser, err := fastbridge.NewParser(bridge)
+		chainListener := r.chainListeners[chainID]
+
+		parser, err := fastbridge.NewParser(common.HexToAddress(chainCFG.Bridge))
 		if err != nil {
 			return fmt.Errorf("could not parse: %w", err)
-		}
-
-		chainListener, err := listener.NewChainListener(chainClient, r.db, bridge, r.metrics)
-		if err != nil {
-			return fmt.Errorf("could not get chain listener: %w", err)
 		}
 
 		g.Go(func() error {
@@ -107,7 +187,7 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 				switch event := parsedEvent.(type) {
 				case *fastbridge.FastBridgeBridgeRequested:
 					// TODO store this if not already seen
-					err = r.handleRequest(ctx, event, uint64(chainID))
+					err = r.handleNewRequestLog(ctx, event, uint64(chainID))
 					if err != nil {
 						return fmt.Errorf("could not handle request: %w", err)
 					}
@@ -127,7 +207,7 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 	return nil
 }
 
-func (r *Relayer) handleRequest(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
+func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "getDecimals", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
 	))

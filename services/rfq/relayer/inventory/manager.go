@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ipfs/go-log"
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
@@ -11,12 +12,14 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"sync"
+	"time"
 )
 
 // What we actually want to be able to do here is.
@@ -24,9 +27,9 @@ type InventoryManager interface {
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
-	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption)
+	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error)
 	// GetCommitableBalances gets the total balances commitable for all tracked tokens.
-	GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) map[int]map[common.Address]*big.Int
+	GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
 }
 
 type inventoryManagerImpl struct {
@@ -40,6 +43,56 @@ type inventoryManagerImpl struct {
 	relayerAddress common.Address
 	// chainClient is an omnirpc client
 	chainClient omnirpcClient.RPCClient
+	db          reldb.Service
+}
+
+// GetCommittableBalance gets the commitable balances
+func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
+	commitableBalances, err := i.GetCommitableBalances(ctx, options...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get balances: %w", err)
+	}
+	return commitableBalances[chainID][token], nil
+}
+
+func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
+	reqOptions := makeOptions(options)
+	// TODO: hard fail if cache skip breaks
+	if reqOptions.skipCache {
+		// TODO; no need for this if refresh already in flight
+		_ = i.refreshBalances(ctx)
+	}
+	// get db first
+	// Add other committed, but incomplete statuses here
+	// TODO: clean me up
+	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.Committed)
+	if err != nil {
+		return nil, fmt.Errorf("could not get in flight quotes: %w", err)
+	}
+
+	// TODO: lock should be context aware
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+	res = make(map[int]map[common.Address]*big.Int)
+	for chainID, tokenMap := range i.tokens {
+		res[chainID] = map[common.Address]*big.Int{}
+		for address, tokenData := range tokenMap {
+			res[chainID][address] = core.CopyBigInt(tokenData.balance)
+			// now subtract by in flight quotes.
+			// Yeah, this is an algorithmically atrocious for
+			// TODO: fix, but we're really talking about 4 tokens
+			for _, quote := range inFlightQuotes {
+				if quote.Transaction.DestToken == address && quote.Transaction.DestChainId == uint32(chainID) {
+					res[chainID][address] = new(big.Int).Sub(res[chainID][address], quote.Transaction.DestAmount)
+				}
+			}
+
+		}
+	}
+
+	// TODO: db subtraction
+
+	return res, nil
 }
 
 type Token struct {
@@ -54,12 +107,16 @@ var (
 	funcDecimals  = w3.MustNewFunc("decimals()", "uint8")
 )
 
+// TODO: replace w/ config
+const defaultPollPeriod = 5
+
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address) (interface{}, error) {
+func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (InventoryManager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
 		chainClient:    client,
+		db:             db,
 	}
 
 	err := i.initializeTokens(ctx, cfg)
@@ -67,7 +124,25 @@ func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, ha
 		return nil, fmt.Errorf("could not initialize tokens")
 	}
 
-	return nil, nil
+	// TODO: move
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(defaultPollPeriod * time.Second):
+				// this returning an error isn't really possible unless a config error happens
+				// TODO: need better error handling.
+				err = i.refreshBalances(ctx)
+				if err != nil {
+					logger.Errorf("could not refresh balances")
+					return
+				}
+			}
+		}
+	}()
+
+	return &i, nil
 }
 
 const maxBatchSize = 10
@@ -159,6 +234,41 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	return
 }
 
+var logger = log.Logger("inventory")
+
+// refreshBalances refreshes all the token balances.
+func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
+	i.mux.Lock()
+	defer i.mux.Unlock()
+	var wg sync.WaitGroup
+	wg.Add(len(i.tokens))
+
+	for chainID, tokenMap := range i.tokens {
+		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
+		var deferredCalls []w3types.Caller
+
+		for tokenAddress, token := range tokenMap {
+			// update the balance
+			// TODO: make sure Returns does nothing on error
+			deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+		}
+
+		chainID := chainID // capture func literal
+		go func() {
+			defer wg.Done()
+			err = chainClient.BatchWithContext(ctx, deferredCalls...)
+			if err != nil {
+				logger.Warnf("coulld not refresh balances on %d: %v", chainID, err)
+			}
+		}()
+	}
+	wg.Wait()
+	return nil
+}
+
 func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, token common.Address) error {
 	balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
 	if err != nil {
@@ -186,11 +296,6 @@ func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, t
 		return fmt.Errorf("could not register callback: %w", err)
 	}
 	return nil
-}
-
-// refreshBalances refreshes all the token balances.
-func (i *inventoryManagerImpl) refreshBalances() {
-
 }
 
 // Ultimately this should produce a list of all balances and remove the

@@ -17,6 +17,8 @@ type Writer interface {
 	// StoreQuoteRequest stores a quote reuquest. If one already exists, only  the status will be updated
 	// TODO: find a better way to describe this in the name
 	StoreQuoteRequest(ctx context.Context, request QuoteRequest) error
+	// UpdateQuoteRequestStatus updates the status of a quote request
+	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
 }
 
 type Reader interface {
@@ -43,6 +45,7 @@ var (
 
 // QuoteRequest is the quote request object
 type QuoteRequest struct {
+	BlockNumber         uint64
 	OriginTokenDecimals uint8
 	DestTokenDecimals   uint8
 	TransactionId       [32]byte
@@ -57,6 +60,8 @@ type QuoteRequestStatus uint8
 
 const (
 	Seen QuoteRequestStatus = iota + 1
+	NotEnoughInventory
+	Committed
 )
 
 func (q QuoteRequestStatus) Int() uint8 {

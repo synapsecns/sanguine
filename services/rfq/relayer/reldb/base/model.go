@@ -89,7 +89,8 @@ type RequestForQuote struct {
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
 	// Status is the current status of the event
-	Status reldb.QuoteRequestStatus
+	Status      reldb.QuoteRequestStatus
+	BlockNumber uint64
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -113,6 +114,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		Deadline:             time.Unix(int64(request.Transaction.Deadline.Uint64()), 0),
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
+		BlockNumber:          request.BlockNumber,
 	}
 }
 
@@ -126,6 +128,7 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		DestTokenDecimals:   r.DestTokenDecimals,
 		TransactionId:       [32]byte(txID),
 		Sender:              common.HexToAddress(r.OriginSender),
+		BlockNumber:         r.BlockNumber,
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: r.OriginChainId,
 			DestChainId:   r.DestChainId,

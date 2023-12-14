@@ -22,6 +22,9 @@ import (
 // ChainListener listens for chain events and calls HandleLog.
 type ChainListener interface {
 	Listen(ctx context.Context, handler HandleLog) error
+	// LatestBlock gets the last recorded latest block from the rpc.
+	// this is NOT last indexed. It is provided as a helper for checking confirmation count
+	LatestBlock() uint64
 }
 
 // HandleLog is the handler for a log event
@@ -36,8 +39,8 @@ type chainListener struct {
 	backoff  *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
 	// set in the constructor
-	startBlock, chainID uint64
-	pollInterval        time.Duration
+	startBlock, chainID, latestBlock uint64
+	pollInterval                     time.Duration
 	// latestBlock         uint64
 }
 
@@ -86,6 +89,10 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	}
 }
 
+func (c *chainListener) LatestBlock() uint64 {
+	return c.latestBlock
+}
+
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll")
 	c.pollInterval = defaultPollInterval
@@ -98,22 +105,22 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 		}
 	}()
 
-	latestBlock, err := c.client.BlockNumber(ctx)
+	c.latestBlock, err = c.client.BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get block number: %w", err)
 	}
 
 	// Check if latest block is the same as start block (for chains with slow block times)
 
-	if latestBlock == c.startBlock {
+	if c.latestBlock == c.startBlock {
 		return
 	}
 
 	// Handle if the listener is more than one get logs range behind the head
 	// Note: this does not cover the edge case of a reorg that includes a new tx
-	endBlock := latestBlock
-	lastUnconfirmedBlock := latestBlock
-	if c.startBlock+maxGetLogsRange < latestBlock {
+	endBlock := c.latestBlock
+	lastUnconfirmedBlock := c.latestBlock
+	if c.startBlock+maxGetLogsRange < c.latestBlock {
 		endBlock = c.startBlock + maxGetLogsRange
 		// This will be used as the bottom of the range in the next iteration
 		lastUnconfirmedBlock = endBlock
