@@ -42,9 +42,13 @@ import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 import { generateTheme } from '@/utils/generateTheme'
-import { fetchTokenBalances } from '@/utils/actions/fetchTokenBalances'
+import {
+  fetchTokenBalances,
+  TokenBalance,
+} from '@/utils/actions/fetchTokenBalances'
 import { AvailableBalance } from './AvailableBalance'
 import { ZeroAddress } from 'ethers'
+import { checkExists } from '@/utils/checkExists'
 
 const chains = {
   1: {
@@ -79,8 +83,6 @@ export const Widget = ({
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
-
-  console.log('web3Provider:', web3Provider)
 
   const {
     inputAmount,
@@ -250,11 +252,60 @@ export const Widget = ({
   }, [debouncedInputAmount])
 
   const isApproved: boolean = useMemo(() => {
-    if (originToken?.addresses[originChainId] === ZeroAddress) return true
-    if (allowance === null) return true
+    if (
+      originToken?.addresses[originChainId] === ZeroAddress &&
+      !checkExists(allowance)
+    ) {
+      return true
+    }
     if (!formattedInputAmount) return true
     return formattedInputAmount <= allowance
   }, [formattedInputAmount, allowance])
+
+  const currentTokenBalance: {
+    rawBalance: bigint
+    parsedBalance: string
+    decimals: number
+  } = useMemo(() => {
+    if (!Array.isArray(balances) || !originToken) {
+      return {
+        rawBalance: null,
+        parsedBalance: null,
+        decimals: null,
+      }
+    } else {
+      const matchedTokenBalance = balances?.find(
+        (token: TokenBalance) =>
+          token?.token?.addresses[originChainId] ===
+          originToken?.addresses[originChainId]
+      )
+      const decimals: number =
+        typeof matchedTokenBalance?.token?.decimals === 'number'
+          ? matchedTokenBalance?.token?.decimals
+          : matchedTokenBalance?.token?.decimals[originChainId]
+
+      return {
+        rawBalance: matchedTokenBalance?.balance,
+        parsedBalance: matchedTokenBalance?.parsedBalance,
+        decimals: decimals,
+      }
+    }
+  }, [balances, originToken, originChainId, connectedAddress])
+
+  const inputGreaterThanBalance: boolean = useMemo(() => {
+    if (
+      !checkExists(inputAmount) ||
+      !checkExists(currentTokenBalance.rawBalance)
+    ) {
+      return false
+    } else {
+      const formattedInput = stringToBigInt(
+        inputAmount,
+        currentTokenBalance.decimals
+      )
+      return Boolean(formattedInput > BigInt(currentTokenBalance.rawBalance))
+    }
+  }, [inputAmount, originToken, originChainId, currentTokenBalance])
 
   /** Handle refreshing quotes */
   useEffect(() => {
@@ -340,28 +391,28 @@ export const Widget = ({
           chain={chains[originChainId]}
           onChange={handleOriginChainSelection}
         />
-        <div className="flex pb-2">
-          <div className="flex flex-col items-start">
-            <input
-              className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
-              placeholder="0"
-              value={inputAmount}
-              onChange={handleUserInput}
+        <div className="flex">
+          <input
+            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
+            placeholder="0"
+            value={inputAmount}
+            onChange={handleUserInput}
+          />
+          <div className="flex flex-col items-end space-y-1">
+            <TokenSelect
+              label="In"
+              isOrigin={true}
+              token={originToken}
+              onChange={handleOriginTokenSelection}
             />
             <AvailableBalance
               originChainId={originChainId}
               originToken={originToken}
-              inputAmount={inputAmount}
+              tokenBalance={currentTokenBalance}
               connectedAddress={connectedAddress}
-              balances={balances}
+              inputGreaterThanBalance={inputGreaterThanBalance}
             />
           </div>
-          <TokenSelect
-            label="In"
-            isOrigin={true}
-            token={originToken}
-            onChange={handleOriginTokenSelection}
-          />
         </div>
       </div>
       <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
@@ -370,7 +421,7 @@ export const Widget = ({
           chain={chains[destinationChainId]}
           onChange={handleDestinationChainSelection}
         />
-        <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center justify-between">
           <input
             className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed"
             disabled={true}
@@ -399,8 +450,10 @@ export const Widget = ({
       <BridgeButton
         originChain={chains[originChainId]}
         isApproved={isApproved}
-        isDisabled={!isInputValid}
+        isValidQuote={Boolean(quote)}
+        isValidAmount={isInputValid}
         isWrongNetwork={!isConnectedNetworkSelectedOriginNetwork}
+        isInputGreaterThanBalance={inputGreaterThanBalance}
         handleApprove={approveCallback}
         handleBridge={bridgeCallback}
         handleSwitchNetwork={handleSwitchNetwork}

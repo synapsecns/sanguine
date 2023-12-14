@@ -8,7 +8,7 @@ export const lightThemeVariables: CustomThemeVariables = {
   '--synapse-bg-surface': 'hsl(240deg 0% 100%)',
   '--synapse-bg-root': 'hsl(240deg 0% 96%)',
   '--synapse-border': 'hsl(240deg 0% 86%)',
-  '--synapse-accent': 'hsl(285deg 100% 50%)',
+  '--synapse-accent': 'hsl(330, 100%, 45%, 1)',
 }
 
 export const darkThemeVariables: CustomThemeVariables = {
@@ -19,7 +19,7 @@ export const darkThemeVariables: CustomThemeVariables = {
   '--synapse-bg-surface': 'hsl(240deg 0% 13%)',
   '--synapse-bg-root': 'hsl(240deg 0% 7%)',
   '--synapse-border': 'hsl(240deg 0% 13%)',
-  '--synapse-accent': 'hsl(285deg 100% 67%)',
+  '--synapse-accent': 'hsl(330, 100%, 45%, 1)',
 }
 
 export const MAX_UINT256 =

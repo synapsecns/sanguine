@@ -5,95 +5,59 @@ import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { setInputAmount } from '@/state/slices/bridge/reducer'
 import { BridgeableToken } from 'types'
+import { Warning } from './icons/Warning'
+import { Tooltip } from './Tooltip'
 
 export const AvailableBalance = ({
   originChainId,
   originToken,
-  inputAmount,
+  tokenBalance,
   connectedAddress,
-  balances,
+  inputGreaterThanBalance,
 }: {
   originChainId: number
   originToken: BridgeableToken
-  inputAmount: string
+  tokenBalance: {
+    rawBalance: bigint
+    parsedBalance: string
+    decimals: number
+  }
   connectedAddress: string
-  balances: TokenBalance[]
+  inputGreaterThanBalance: boolean
 }) => {
   const dispatch = useAppDispatch()
-
-  const currentTokenBalance = useMemo(() => {
-    if (!Array.isArray(balances)) {
-      return {
-        rawBalance: null,
-        parsedBalance: null,
-        decimals: null,
-      }
-    } else {
-      const matchedTokenBalance = balances?.find(
-        (token: TokenBalance) =>
-          token?.token?.addresses[originChainId] ===
-          originToken?.addresses[originChainId]
-      )
-      const decimals: number =
-        typeof matchedTokenBalance?.token?.decimals === 'number'
-          ? matchedTokenBalance?.token?.decimals
-          : matchedTokenBalance?.token?.decimals[originChainId]
-
-      return {
-        rawBalance: matchedTokenBalance?.balance,
-        parsedBalance: matchedTokenBalance?.parsedBalance,
-        decimals: decimals,
-      }
-    }
-  }, [balances, originToken, originChainId, connectedAddress])
-
-  const userInputGreaterThanCurrentBalance: boolean = useMemo(() => {
-    if (
-      inputAmount === undefined ||
-      inputAmount === null ||
-      currentTokenBalance.rawBalance === undefined ||
-      currentTokenBalance.rawBalance === null
-    ) {
-      return false
-    } else {
-      const formattedInput = stringToBigInt(
-        inputAmount,
-        currentTokenBalance.decimals
-      )
-      return Boolean(formattedInput > BigInt(currentTokenBalance.rawBalance))
-    }
-  }, [inputAmount, originToken, originChainId, currentTokenBalance])
 
   const handleAvailableBalanceClick = useCallback(() => {
     const maxAmount: string =
       formatBigIntToString(
-        BigInt(currentTokenBalance.rawBalance ?? 0),
-        currentTokenBalance.decimals ?? 0,
+        BigInt(tokenBalance.rawBalance ?? 0),
+        tokenBalance.decimals ?? 0,
         18
       ) ?? '0.0'
     dispatch(setInputAmount(maxAmount))
-  }, [dispatch, balances, currentTokenBalance, originToken, originChainId])
+  }, [dispatch, tokenBalance, originToken, originChainId])
 
   if (!connectedAddress) return
 
-  if (userInputGreaterThanCurrentBalance) {
+  if (!originToken) {
     return (
-      <div
-        onClick={handleAvailableBalanceClick}
-        className="ml-px text-xs text-[--synapse-accent] cursor-pointer hover:underline active:opacity-40"
-      >
-        {currentTokenBalance.parsedBalance ?? '0.0'} available
+      <div className="text-xs text-[--synapse-text-secondary] whitespace-nowrap">
+        Select source token
       </div>
     )
   }
-  if (connectedAddress) {
-    return (
-      <div
-        onClick={handleAvailableBalanceClick}
-        className="ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary]"
-      >
-        {currentTokenBalance.parsedBalance ?? '0.0'} available
-      </div>
-    )
-  }
+
+  return (
+    <div
+      onClick={handleAvailableBalanceClick}
+      className="flex ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary] whitespace-nowrap"
+    >
+      Available {tokenBalance.parsedBalance ?? '0.0'}
+      {inputGreaterThanBalance && (
+        <Tooltip hoverText="Amount may not exceed available balance">
+          <Warning styles="w-3" />
+        </Tooltip>
+      )}
+    </div>
+  )
 }
