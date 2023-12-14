@@ -11,7 +11,7 @@ module.exports = {
         'wavylines-stretch': "url('wavylinesstretch.svg')",
         'synapse-radial':
           'radial-gradient(249.66% 351.84% at -119.61% 97.91%, rgba(255, 0, 255, 0.33) 0%, rgba(172, 143, 255, 0.33) 100%)',
-        'synapse-logo': "url('../assets/icons/synapselogo.svg')",
+        'synapse-logo': "url('../assets/icons-old/synapselogo.svg')",
       },
       colors: {
         synapse: '#100C13',

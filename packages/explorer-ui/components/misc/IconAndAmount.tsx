@@ -2,7 +2,8 @@ import { getCoinTextColor } from '@styles/coins'
 import { formatAmount } from '@utils/formatAmount'
 import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
+// import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
 import { addressToDecimals } from '@utils/addressToDecimals'
 
 export function IconAndAmount({
@@ -14,7 +15,6 @@ export function IconAndAmount({
   iconSize = 'w-6 h-6',
   styledCoin = false,
 }) {
-  tokenAddress = tokenAddress && tokenAddress.toLowerCase()
   const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
 
   let styledCoinClass

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { CHAIN_INFO_MAP } from '@constants/networks'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'

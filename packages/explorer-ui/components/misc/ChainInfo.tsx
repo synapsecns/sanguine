@@ -1,6 +1,6 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline';
 import { getChainUrl, getExplorerTxUrl } from '@urls';
-import { CHAIN_EXPLORER_URLS, CHAIN_INFO_MAP } from '@constants/networks';
+import { CHAIN_INFO_MAP } from '@constants/networks';
 import Image from 'next/image';
 
 interface ChainInfoProps {
@@ -14,14 +14,14 @@ interface ChainInfoProps {
 }
 
 export function ChainInfo({
-                            chainId,
-                            imgClassName = 'w-4 h-4 rounded-full',
-                            linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
-                            textClassName = 'pl-1 whitespace-nowrap text-sm text-white',
-                            txHash,
-                            useExplorerLink = false,
-                            noLink = false,
-                          }: ChainInfoProps) {
+  chainId,
+  imgClassName = 'w-4 h-4 rounded-full',
+  linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
+  textClassName = 'pl-1 whitespace-nowrap text-sm text-white',
+  txHash,
+  useExplorerLink = false,
+  noLink = false,
+}: ChainInfoProps) {
   const { chainName, chainImg } = CHAIN_INFO_MAP[chainId] ?? {};
   let link = '';
 

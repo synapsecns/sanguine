@@ -73,6 +73,12 @@
       "@constants/*": [
         "./constants/*"
       ],
+      "@constants-new": [
+        "./constants-new"
+      ],
+      "@constants-new/*": [
+        "./constants-new/*"
+      ],
       "@graphql": [
         "./graphql"
       ],
@@ -94,5 +100,7 @@
     "**/*.tsx",
     "**/*.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

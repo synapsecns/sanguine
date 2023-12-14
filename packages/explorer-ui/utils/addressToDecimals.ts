@@ -1,4 +1,4 @@
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
 
 export function addressToDecimals({ tokenAddress, chainId }) {
   let decimals =

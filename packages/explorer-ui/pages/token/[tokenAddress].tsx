@@ -1,23 +1,18 @@
 import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '@constants-new/tokens/index'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
 import CopyTitle from '@components/misc/CopyTitle'
 import { checksumAddress } from '@utils/checksum'
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  DAILY_STATISTICS_BY_CHAIN,
-} from '@graphql/queries'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
 

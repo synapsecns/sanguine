@@ -13,16 +13,9 @@ import { validateAndParseHash } from '@utils/validateAndParseHash'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import Box from '@mui/material/Box'
-import InputLabel from '@mui/material/InputLabel'
 import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
-import { ChainId } from '@constants/networks'
-import dayjs from 'dayjs'
-import { CHAIN_ENUM_BY_ID } from '@constants/networks'
+import { ChainId, CHAIN_ENUM_BY_ID } from '@constants/networks'
 
-import { SearchBox } from './SearchBox'
 
 export function UniversalSearch({
   placeholder,
