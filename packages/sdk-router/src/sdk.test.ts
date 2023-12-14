@@ -784,6 +784,18 @@ describe('SynapseSDK', () => {
             )
           ).rejects.toThrow('CircleRequestSent log not found')
         })
+
+        it('Throws when given a destination tx', async () => {
+          // Destination tx hash for ARB -> ETH
+          // Has CircleRequestFulfilled log, which should be ignored
+          await expect(
+            synapse.getBridgeID(
+              SupportedChainId.ETH,
+              'SynapseCCTP',
+              '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
+            )
+          ).rejects.toThrow('CircleRequestSent log not found')
+        })
       })
 
       it('Throws when bridge module name is invalid', async () => {
