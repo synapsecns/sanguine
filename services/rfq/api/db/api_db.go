@@ -31,6 +31,7 @@ type Quote struct {
 type ApiDBReader interface {
 	// GetQuote gets a quote from the database.
 	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*Quote, error)
+	GetQuotesByOriginAndDestination(originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*Quote, error)
 	// GetAllQuotes retrieves all quotes from the database.
 	GetAllQuotes() ([]*Quote, error)
 }
