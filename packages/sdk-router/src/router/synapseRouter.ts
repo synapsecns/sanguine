@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { solidityKeccak256 } from 'ethers/lib/utils'
 
 import routerAbi from '../abi/SynapseRouter.json'
 import {
@@ -141,14 +142,15 @@ export class SynapseRouter extends Router {
    * @inheritdoc Router.getBridgeID
    */
   public async getBridgeID(txHash: string): Promise<string> {
-    return txHash
+    return solidityKeccak256(['string'], [txHash])
   }
 
   /**
    * @inheritdoc Router.getBridgeTxStatus
    */
   public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
-    return bridgeID.length % 2 === 0
+    const bridgeContract = await this.getBridgeContract()
+    return bridgeContract.kappaExists(bridgeID)
   }
 
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
