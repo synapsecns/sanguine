@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@abtestingalpha/widget@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@abtestingalpha/widget/-/widget-0.0.4.tgz#72b3eabeeb46d3879833036f68d359c614aceea5"
-  integrity sha512-5Wfe702xio1Gamm185Guihznx4qbz/AVxrHNDMJMZUYS8v0YRkDFxhcOej+9RXLkYR2alZg6648OhC/W7m05mw==
+"@abtestingalpha/widget@0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@abtestingalpha/widget/-/widget-0.0.5.tgz#468c6c74968b5cfbce3bb2a96f17797d01543715"
+  integrity sha512-sKniMEvjFtkP8Ei1rqovvnAZi6deYPmkNLQkBGnPsmakeQ7gM66CM/Kc6ZKlgkTeq1dIynZVgif+Eze4K8VVag==
   dependencies:
     "@reduxjs/toolkit" "^2.0.1"
     "@synapsecns/sdk-router" "^0.2.23"
