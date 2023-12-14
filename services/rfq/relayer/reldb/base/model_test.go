@@ -16,7 +16,7 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 	// Step 1: Setup
 	originalRequest := reldb.QuoteRequest{
 		OriginTokenDecimals: 18,
-		DestTokenDecimals:   18,
+		DestTokenDecimals:   6,
 		TransactionId:       [32]byte{},
 		Sender:              common.Address{},
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{

@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -132,10 +133,11 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			DestRecipient: common.HexToAddress(r.DestRecipient),
 			OriginToken:   common.HexToAddress(r.OriginToken),
 			DestToken:     common.HexToAddress(r.DestToken),
-			OriginAmount:  r.OriginAmount.BigInt(),
-			DestAmount:    r.DestAmount.BigInt(),
-			Deadline:      big.NewInt(r.Deadline.Unix()),
-			Nonce:         big.NewInt(int64(r.OriginNonce)),
+			OriginAmount:  new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
+			// OriginAmount: new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(r.OriginTokenDecimals))),
+			DestAmount: new(big.Int).Div(r.DestAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.DestTokenDecimals))))),
+			Deadline:   big.NewInt(r.Deadline.Unix()),
+			Nonce:      big.NewInt(int64(r.OriginNonce)),
 		},
 		Status: r.Status,
 	}, nil
