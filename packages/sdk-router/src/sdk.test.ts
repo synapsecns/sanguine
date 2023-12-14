@@ -693,6 +693,203 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('Bridge Tx Status', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+
+    // https://etherscan.io/tx/0xe3f0f0c1d139c48730492c900f9978449d70c0939c654d5abbfd6b191f9c7b3d
+    // https://arbiscan.io/tx/0xb13d5c9156e2d88662fa2f252bd2e1d77d768f0de9d27ca60a79e40b493f6ef2
+    const bridgeEthToArbTx = {
+      txHash:
+        '0xe3f0f0c1d139c48730492c900f9978449d70c0939c654d5abbfd6b191f9c7b3d',
+      bridgeID:
+        '0x2f223fb1509f04f777b5c9dd2287931b6e63d994a6a697db7a08cfbe784b5e90',
+    }
+
+    // https://arbiscan.io/tx/0xe226c7e38e4b83072aa9d947e533be32c8bb38120bbdd8f490c5c6a5894e62c9
+    // https://etherscan.io/tx/0xb88feb2a92690448b840851dff41dbc7cdc975c1fb740f0523b5c2e407ac9f38
+    const bridgeArbToEthTx = {
+      txHash:
+        '0xe226c7e38e4b83072aa9d947e533be32c8bb38120bbdd8f490c5c6a5894e62c9',
+      bridgeID:
+        '0xf7b8085d96b1ea3f6bf7a07ad93d1861b8fcd551ef56665d6a22c9fb7633a097',
+    }
+
+    // https://etherscan.io/tx/0x1a25b0dfde1e2cc43f1dc659ba60f2b8e7ff8177555773fea0c4fba2d6e9c393
+    // https://arbiscan.io/tx/0x0166c1e99b0ec8942ed10527cd7ac9003111ee697e0c0519312228e669a61378
+    const cctpEthToArbTx = {
+      txHash:
+        '0x1a25b0dfde1e2cc43f1dc659ba60f2b8e7ff8177555773fea0c4fba2d6e9c393',
+      bridgeID:
+        '0x492b923b5a0ace2715a8d0a80fb93c094bf6d35b142a010bdc3761b8613439fc',
+    }
+
+    // https://arbiscan.io/tx/0x2a6d04ba5a48331454f00d136b3666869d03f004395fea25d97d42715c119096
+    // https://etherscan.io/tx/0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7
+    const cctpArbToEthTx = {
+      txHash:
+        '0x2a6d04ba5a48331454f00d136b3666869d03f004395fea25d97d42715c119096',
+      bridgeID:
+        '0xed98b02f712c940d3b37a1aa9005a5986ecefa5cdbb4505118a22ae65d4903af',
+    }
+
+    describe('getBridgeID', () => {
+      describe('SynapseBridge', () => {
+        it('ETH -> ARB', async () => {
+          const bridgeID = await synapse.getBridgeID(
+            SupportedChainId.ETH,
+            'SynapseBridge',
+            bridgeEthToArbTx.txHash
+          )
+          expect(bridgeID).toEqual(bridgeEthToArbTx.bridgeID)
+        })
+
+        it('ARB -> ETH', async () => {
+          const bridgeID = await synapse.getBridgeID(
+            SupportedChainId.ARBITRUM,
+            'SynapseBridge',
+            bridgeArbToEthTx.txHash
+          )
+          expect(bridgeID).toEqual(bridgeArbToEthTx.bridgeID)
+        })
+      })
+
+      describe('SynapseCCTP', () => {
+        it('ETH -> ARB', async () => {
+          const bridgeID = await synapse.getBridgeID(
+            SupportedChainId.ETH,
+            'SynapseCCTP',
+            cctpEthToArbTx.txHash
+          )
+          expect(bridgeID).toEqual(cctpEthToArbTx.bridgeID)
+        })
+
+        it('ARB -> ETH', async () => {
+          const bridgeID = await synapse.getBridgeID(
+            SupportedChainId.ARBITRUM,
+            'SynapseCCTP',
+            cctpArbToEthTx.txHash
+          )
+          expect(bridgeID).toEqual(cctpArbToEthTx.bridgeID)
+        })
+
+        it('Throws when origin tx does not refer to SynapseCCTP', async () => {
+          await expect(
+            synapse.getBridgeID(
+              SupportedChainId.ETH,
+              'SynapseCCTP',
+              bridgeEthToArbTx.txHash
+            )
+          ).rejects.toThrow('CircleRequestSent log not found')
+        })
+      })
+
+      it('Throws when bridge module name is invalid', async () => {
+        await expect(
+          synapse.getBridgeID(
+            SupportedChainId.ETH,
+            'SynapseSynapse',
+            bridgeEthToArbTx.txHash
+          )
+        ).rejects.toThrow('Unknown bridge module')
+      })
+    })
+
+    describe('getBridgeTxStatus', () => {
+      describe('SynapseBridge', () => {
+        it('ETH -> ARB', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ARBITRUM,
+            'SynapseBridge',
+            bridgeEthToArbTx.bridgeID
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('ARB -> ETH', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseBridge',
+            bridgeArbToEthTx.bridgeID
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('Returns false when unknown bridgeID', async () => {
+          // Using txHash instead of bridgeID
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseBridge',
+            bridgeArbToEthTx.txHash
+          )
+          expect(txStatus).toBe(false)
+        })
+
+        it('Returns false when origin chain is used instead of destination', async () => {
+          // First argument should be destination chainId
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseBridge',
+            bridgeEthToArbTx.bridgeID
+          )
+          expect(txStatus).toBe(false)
+        })
+      })
+
+      describe('SynapseCCTP', () => {
+        it('ETH -> ARB', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ARBITRUM,
+            'SynapseCCTP',
+            cctpEthToArbTx.bridgeID
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('ARB -> ETH', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseCCTP',
+            cctpArbToEthTx.bridgeID
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('Returns false when unknown bridgeID', async () => {
+          // Using txHash instead of bridgeID
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseCCTP',
+            cctpArbToEthTx.txHash
+          )
+          expect(txStatus).toBe(false)
+        })
+
+        it('Returns false when origin chain is used instead of destination', async () => {
+          // First argument should be destination chainId
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseCCTP',
+            cctpEthToArbTx.bridgeID
+          )
+          expect(txStatus).toBe(false)
+        })
+      })
+
+      it('Throws when bridge module name is invalid', async () => {
+        await expect(
+          synapse.getBridgeTxStatus(
+            SupportedChainId.ETH,
+            'SynapseSynapse',
+            bridgeEthToArbTx.txHash
+          )
+        ).rejects.toThrow('Unknown bridge module')
+      })
+    })
+  })
+
   describe('getBridgeModuleName', () => {
     const synapse = new SynapseSDK([], [])
 
