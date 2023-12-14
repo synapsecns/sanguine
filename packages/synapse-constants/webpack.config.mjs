@@ -11,6 +11,7 @@ const config = {
     extensions: ['.ts', '.js'],
   },
   mode: 'production',
+  devtool: 'source-map',
   entry: './dist/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -19,7 +20,7 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|ts)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',

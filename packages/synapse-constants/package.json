@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/bundle.js",
   "types": "index.d.ts",
