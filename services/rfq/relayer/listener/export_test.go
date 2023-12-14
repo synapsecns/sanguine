@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
 // TestChainListener wraps chain listener for testing
@@ -24,7 +24,7 @@ type TestChainListenerArgs struct {
 	Address  common.Address
 	Client   client.EVM
 	Contract *fastbridge.FastBridgeRef
-	Store    db.Service
+	Store    reldb.Service
 	Handler  metrics.Handler
 }
 

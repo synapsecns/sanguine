@@ -6,7 +6,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db/base"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/base"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

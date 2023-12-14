@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/config"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -56,7 +56,7 @@ var (
 )
 
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg config.Config, relayer common.Address) (interface{}, error) {
+func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address) (interface{}, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
@@ -75,7 +75,7 @@ const maxBatchSize = 10
 
 // initlalizes tokens converts the configuration into a data structure we can use to determine inventory
 // it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
-func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg config.Config) (err error) {
+func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg relconfig.Config) (err error) {
 	i.mux.Lock()
 	defer i.mux.Unlock()
 

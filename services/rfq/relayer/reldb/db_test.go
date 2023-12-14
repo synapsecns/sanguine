@@ -1,15 +1,15 @@
-package db_test
+package reldb_test
 
 import (
 	"errors"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
 func (d *DBSuite) TestBlock() {
-	d.RunOnAllDBs(func(testDB db.Service) {
+	d.RunOnAllDBs(func(testDB reldb.Service) {
 		const testChainID = 5
 		_, err := testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
-		d.True(errors.Is(err, db.ErrNoLatestBlockForChainID))
+		d.True(errors.Is(err, reldb.ErrNoLatestBlockForChainID))
 
 		testHeight := 10
 

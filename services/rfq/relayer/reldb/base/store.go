@@ -4,7 +4,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 )
 
@@ -36,4 +36,4 @@ func GetAllModels() (allModels []interface{}) {
 	return allModels
 }
 
-var _ db.Service = &Store{}
+var _ reldb.Service = &Store{}
