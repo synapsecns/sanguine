@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { ZeroAddress, ethers } from 'ethers'
 import erc20ABI from '../../constants/abis/erc20.json'
 
 export const fetchErc20TokenAllowance = async ({
@@ -25,6 +25,8 @@ export const fetchErc20TokenAllowance = async ({
     if (!provider) {
       throw new Error('Require Provider')
     }
+
+    if (tokenAddress === ZeroAddress) return
 
     // Create a new instance of Contract
     const tokenContract = new ethers.Contract(tokenAddress, erc20ABI, provider)

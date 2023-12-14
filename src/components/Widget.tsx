@@ -252,15 +252,13 @@ export const Widget = ({
   }, [debouncedInputAmount])
 
   const isApproved: boolean = useMemo(() => {
-    if (
-      originToken?.addresses[originChainId] === ZeroAddress &&
-      !checkExists(allowance)
-    ) {
+    if (originToken?.addresses[originChainId] === ZeroAddress) {
       return true
     }
+    if (!checkExists(allowance)) return true
     if (!formattedInputAmount) return true
     return formattedInputAmount <= allowance
-  }, [formattedInputAmount, allowance])
+  }, [formattedInputAmount, allowance, originToken, originChainId])
 
   const currentTokenBalance: {
     rawBalance: bigint
