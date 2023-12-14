@@ -62,15 +62,21 @@ func (r *RelayerTestSuite) SetupTest() {
 	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
 	r.cfg = relconfig.Config{
 		DBConfig: filet.TmpDir(r.T(), ""),
-		Bridges: map[int]string{
-			int(r.originBackend.GetChainID()): originContract.Address().String(),
-			int(r.destBackend.GetChainID()):   destContract.Address().String(),
+		Bridges: map[int]relconfig.ChainConfig{
+			int(r.originBackend.GetChainID()): {
+				Bridge: originContract.Address().String(),
+			},
+			int(r.destBackend.GetChainID()): {
+				Bridge: destContract.Address().String(),
+			},
 		},
 		OmnirpcURL: serverURL,
 	}
 }
 
 func (r *RelayerTestSuite) TestStore() {
+	r.T().Skip("TODO, test storage")
+
 	rel, err := relayer.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
 	r.NoError(err)
 
@@ -99,7 +105,43 @@ func (r *RelayerTestSuite) TestStore() {
 	})
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
-	r.T().Skip("TODO")
+	r.T().Skip("TODO, test storage")
+	// TODO: check db
+	time.Sleep(time.Second * 1000)
+}
+
+func (r *RelayerTestSuite) TestCommit() {
+	r.T().Skip("TODO, test storage")
+
+	rel, err := relayer.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
+	r.NoError(err)
+
+	go func() {
+		r.NoError(rel.StartChainParser(r.GetTestContext()))
+	}()
+
+	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+
+	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
+
+	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
+	r.NoError(err)
+
+	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
+	r.NoError(err)
+
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+		DstChainId:   uint32(r.destBackend.GetChainID()),
+		To:           mocks.MockAddress(),
+		OriginToken:  originToken.Address(),
+		DestToken:    destToken.Address(),
+		OriginAmount: big.NewInt(1),
+		DestAmount:   big.NewInt(2),
+		Deadline:     big.NewInt(3),
+	})
+	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
+
+	r.T().Skip("TODO, test storage")
 	// TODO: check db
 	time.Sleep(time.Second * 1000)
 

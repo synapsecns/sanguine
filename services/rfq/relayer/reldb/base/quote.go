@@ -65,3 +65,14 @@ func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...rel
 	}
 	return res, nil
 }
+
+// UpdateQuoteRequestStatus todo: db test
+func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus) error {
+	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
+		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
+		Update(statusFieldName, status)
+	if tx.Error != nil {
+		return fmt.Errorf("could not update: %w", tx.Error)
+	}
+	return nil
+}
