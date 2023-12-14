@@ -37,8 +37,12 @@ contract FastBridge is IFastBridge, Admin {
 
     /// @dev to prevent replays
     uint256 public nonce;
+    // @dev the block the contract was deployed at
+    uint256 public deployBlock;
 
-    constructor(address _owner) Admin(_owner) {}
+    constructor(address _owner) Admin(_owner) {
+        deployBlock = block.number;
+    }
 
     /// @notice Pulls a requested token from the user to the requested recipient.
     /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)

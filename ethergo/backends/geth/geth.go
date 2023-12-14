@@ -30,7 +30,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/chain"
-	"github.com/synapsecns/sanguine/ethergo/chain/client"
+	legacyClient "github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -147,7 +147,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	baseClient := embedded.makeClient(t)
 
-	chn, err := chain.NewFromClient(ctx, &client.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.HTTPEndpoint()}}, baseClient)
+	chn, err := chain.NewFromClient(ctx, &legacyClient.Config{ChainID: int(config.ChainID.Int64()), RPCUrl: []string{embedded.Node.HTTPEndpoint()}}, baseClient)
 
 	assert.Nil(t, err)
 	chn.SetChainConfig(config)
@@ -170,6 +170,10 @@ type Backend struct {
 	store *base.InMemoryKeyStore
 	// ethBackend is the eth backend
 	ethBackend *eth.Ethereum
+}
+
+func (f *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+	return f.BatchContext(ctx, calls...)
 }
 
 // ChainConfig gets the chain config for the backend.
@@ -228,7 +232,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	}
 }
 
-// wrappedClient wraps the client in one that contains a chain config.
+// wrappedClient wraps the legacyClient in one that contains a chain config.
 type wrappedClient struct {
 	*ethclient.Client
 	rpcClient   *rpc.Client
@@ -236,18 +240,18 @@ type wrappedClient struct {
 	chainConfig *params.ChainConfig
 }
 
-// ChainConfig gets the chain config from the wrapped client.
+// ChainConfig gets the chain config from the wrapped legacyClient.
 func (w wrappedClient) ChainConfig() *params.ChainConfig {
 	return w.chainConfig
 }
 
-// CallContext calls the call context method on the underlying client.
+// CallContext calls the call context method on the underlying legacyClient.
 func (w wrappedClient) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) error {
 	//nolint:wrapcheck
 	return w.rpcClient.CallContext(ctx, result, method, args...)
 }
 
-// BatchCallContext calls the batch call method on the underlying client.
+// BatchCallContext calls the batch call method on the underlying legacyClient.
 func (w wrappedClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 	//nolint:wrapcheck
 	return w.rpcClient.BatchCallContext(ctx, b)
@@ -258,7 +262,7 @@ func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.Caller
 	return w.w3Client.CallCtx(ctx, calls...)
 }
 
-// EVMClient gets a client for the backend.
+// EVMClient gets a legacyClient for the backend.
 func (f *Backend) makeClient(tb testing.TB) *wrappedClient {
 	tb.Helper()
 	handler, err := f.RPCHandler()
@@ -271,7 +275,7 @@ func (f *Backend) makeClient(tb testing.TB) *wrappedClient {
 	return &wrappedClient{Client: rawClient, chainConfig: f.ChainConfig(), rpcClient: rpcClient, w3Client: w3Client}
 }
 
-// ReachGasLimit spins an insta-mining client with no-op transactions until target gas limit is achieved
+// ReachGasLimit spins an insta-mining legacyClient with no-op transactions until target gas limit is achieved
 // see https://github.com/cgewecke/geth-dev-assistant/blob/b7f840baa21f7589a0b18297b60c385a01d72ad1/lib/app.js for details.
 func (f *Backend) ReachGasLimit() {
 	panic("not yet implemented")

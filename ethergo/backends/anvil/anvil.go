@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/lmittmann/w3/w3types"
 	"math"
 	"math/big"
 	"os"
@@ -199,6 +200,10 @@ func (b *Backend) TearDown() {
 	if err != nil {
 		logger.Errorf("error purging anvil container: %w", err)
 	}
+}
+
+func (f *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+	return f.BatchContext(ctx, calls...)
 }
 
 func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {

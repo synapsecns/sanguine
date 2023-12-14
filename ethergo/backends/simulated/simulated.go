@@ -2,6 +2,7 @@ package simulated
 
 import (
 	"context"
+	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/stretchr/testify/assert"
 	commonBackend "github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
@@ -40,6 +42,10 @@ type Backend struct {
 	store *base.InMemoryKeyStore
 	// chainConfig is the chainConfig for this chain
 	chainConfig *params.ChainConfig
+}
+
+func (s *Backend) BatchWithContext(_ context.Context, _ ...w3types.Caller) error {
+	return errors.New("rpc calls not supported on simulated backend")
 }
 
 // Signer gets the signer for the backend.
