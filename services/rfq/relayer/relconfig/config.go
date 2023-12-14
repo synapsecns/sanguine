@@ -8,9 +8,10 @@ type Config struct {
 	// TODO(aurelius): move under ChainConfig
 	Tokens map[int][]string `yaml:"tokens"`
 	// ChainID: bridge
-	Bridges    map[int]ChainConfig `yaml:"bridges"`
-	OmnirpcURL string              `yaml:"omnirpc_url"`
-	DBConfig   string
+	Bridges        map[int]ChainConfig `yaml:"bridges"`
+	OmnirpcURL     string              `yaml:"omnirpc_url"`
+	DBConfig       string
+	QuotableTokens map[string][]string `yaml:"quotable_tokens"`
 	// TODO: remove, replace w/ pkey recover
 	RelayerAddress common.Address
 }

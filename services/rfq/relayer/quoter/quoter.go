@@ -3,6 +3,8 @@ package quoter
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
@@ -21,22 +23,25 @@ type Quoter interface {
 
 type QuoterManager struct {
 	// inventoryManager is used to get the relayer's inventory.
-	inventoryManager *inventory.InventoryManager
+	inventoryManager inventory.InventoryManager
 	// rfqClient is used to communicate with the RFQ API.
 	rfqClient rfqAPIClient.Client
 	// relayerSigner is the signer used by the relayer to interact on chain
 	relayerSigner signer.Signer
+	// quotableTokens are tokens that the relayer is willing to relay to & from
+	quotableTokens map[string][]string
 	// rfqAPIURL is the URL of the RFQ API.
 	rfqAPIURL string
 }
 
-func NewQuoterManager(ctx context.Context, inventoryManager *inventory.InventoryManager, rfqAPIUrl string, relayerSigner signer.Signer) (*QuoterManager, error) {
+func NewQuoterManager(ctx context.Context, quotableTokens map[string][]string, inventoryManager inventory.InventoryManager, rfqAPIUrl string, relayerSigner signer.Signer) (*QuoterManager, error) {
 	rfqAPIClient, err := rfqAPIClient.NewClient(rfqAPIUrl, relayerSigner)
 	if err != nil {
 		return nil, err
 	}
 
 	return &QuoterManager{
+		quotableTokens:   quotableTokens,
 		inventoryManager: inventoryManager,
 		rfqClient:        rfqAPIClient,
 		relayerSigner:    relayerSigner,
@@ -45,14 +50,45 @@ func NewQuoterManager(ctx context.Context, inventoryManager *inventory.Inventory
 
 func (m *QuoterManager) SubmitAllQuotes() error {
 	// Get the relayer's inventory.
-	inv, err := m.inventoryManager.GetCommitableBalances()
+	inv, err := m.inventoryManager.GetCommitableBalances(context.Background())
 	if err != nil {
 		return err
 	}
+	// Extract the chain_id and associated balances (composed of token address + balance) from inventory manager
+	for chain_id, balances := range inv {
+		// Iterate through the chain_id balances for each supported token
+		for address, balance := range balances {
+			// With an address and a balance, we can create a destination quote for it.
+			// To find the tokens we are willing to accept on origin chain, we use quotableTokens,
+			// a mapping of [ID-Token] -> [ID-Token, ID-Token, ID-Token]
+			// quotableTokens now breaks up into the keyTokenID & destinationTokenIDs
+			for keyTokenID, destinationTokenIDs := range m.quotableTokens {
+				// Look through all the destination token IDs to match against the inventory balance info
+				for _, tokenID := range destinationTokenIDs {
+					// If we've hit a match between inventory balancer tokens & a quotable token origin
+					if tokenID == fmt.Sprintf("%d-%s", chain_id, address.Hex()) {
+						// Create a new quote
+						quote := rfqAPIClient.APIQuotePutRequest{
+							ID:              1,
+							OriginChainID:   strings.Split(keyTokenID, "-")[0],
+							OriginTokenAddr: strings.Split(keyTokenID, "-")[1],
+							DestChainID:     string(chain_id),
+							DestTokenAddr:   address.Hex(),
+							DestAmount:      balance.String(),
+							Price:           "1",
+							MaxOriginAmount: balance.String(),
+						}
 
-	for chainID, addressMap := range inv {
-		for address, balance := range addressMap {
-			// Do something with chainID, address, and balance
+						// Submit the quote
+						err = m.rfqClient.PutQuote(&quote)
+						if err != nil {
+							return err
+						}
+						// Quote successfully submitted
+					}
+				}
+
+			}
 		}
 	}
 
