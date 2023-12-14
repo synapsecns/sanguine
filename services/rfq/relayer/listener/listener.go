@@ -120,6 +120,11 @@ func (c *chainListener) doPoll(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not filter logs: %w", err)
 	}
 
+	err = c.store.PutLatestBlock(ctx, c.chainID, endBlock)
+	if err != nil {
+		return fmt.Errorf("could not put lastest block: %w", err)
+	}
+
 	_ = logs // TODO: do something with logs
 
 	c.startBlock = lastUnconfirmedBlock
