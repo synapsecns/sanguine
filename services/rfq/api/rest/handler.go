@@ -14,6 +14,7 @@ func NewHandler() *Handler {
 }
 
 // PUT /quotes
+// @dev Protected Method: Authentication is handled through middleware in server.go
 func (h *Handler) ModifyQuote(c *gin.Context) {
 	c.Status(http.StatusOK)
 	// var quote db.Quote

@@ -82,7 +82,12 @@ func (r *APIServer) Run(ctx context.Context) error {
 	engine := gin.Default()
 	h := NewHandler()
 
-	engine.Use(r.AuthMiddleware()).PUT("/quotes", h.ModifyQuote)
+	// Apply AuthMiddleware only to the PUT route
+	quotesPut := engine.Group("/quotes")
+	quotesPut.Use(r.AuthMiddleware())
+	quotesPut.PUT("", h.ModifyQuote)
+
+	// GET routes without the AuthMiddleware
 	engine.GET("/quotes", h.GetQuotes)
 	engine.GET("/quotes/filter", h.GetFilteredQuotes)
 
@@ -105,71 +110,55 @@ type PutRequest struct {
 	Price         string `json:"price"`
 }
 
-func (r *APIServer) Authenticate(c *gin.Context) (err error) {
-
-	var req PutRequest
-	fmt.Println("Request:", req)
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return err
-	}
-
-	destChainID, err := strconv.ParseUint(req.DestChainID, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dest_chain_id"})
-		return err
-	}
-	// Now you can access DestChainID as req.DestChainID
-	fmt.Println("DestChainID:", req.DestChainID)
-	// check relayer registered with contract
-	bridge, ok := r.fastBridgeContracts[uint32(destChainID)]
-	if !ok {
-		err = fmt.Errorf("dest chain id not supported")
-		c.JSON(400, gin.H{"msg": err})
-		return err
-	}
-
-	// // call on-chain to dest chain bridge::HasRole for relayer role
-	ops := &bind.CallOpts{Context: c}
-	relayer_role := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
-
-	// authenticate relayer signature with EIP191
-	deadline := time.Now().Unix() - 1000 // TODO: Replace with some type of r.cfg.AuthExpiryDelta
-	addressRecovered, err := EIP191Auth(c, deadline)
-	if err != nil {
-		return fmt.Errorf("unable to authenticate relayer: %w", err)
-	}
-
-	var has bool
-
-	if has, err = bridge.HasRole(ops, relayer_role, addressRecovered); err != nil {
-		err = fmt.Errorf("unable to check relayer role on-chain")
-		c.JSON(400, gin.H{"msg": err})
-		return err
-	}
-
-	if !has {
-		err = fmt.Errorf("q.Relayer not an on-chain relayer")
-		c.JSON(400, gin.H{"msg": err})
-		return err
-	}
-
-	fmt.Printf("HAS:" + fmt.Sprintf("%t", has))
-	return nil
-}
-
-// AuthMiddleware is a placeholder for Gin authentication middleware.
+// AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
 func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: Implement the actual authentication logic here.
-
-		// For now, just log a message or pass through.
-		fmt.Println("AuthMiddleware: Logic to be implemented")
-		err := r.Authenticate(c)
-		if err != nil {
-			fmt.Println("Auth Error:", err)
+		var req PutRequest
+		if err := c.BindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Abort()
+			return
 		}
-		// Pass on to the next-in-chain
+
+		destChainID, err := strconv.ParseUint(req.DestChainID, 10, 32)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dest_chain_id"})
+			c.Abort()
+			return
+		}
+
+		bridge, ok := r.fastBridgeContracts[uint32(destChainID)]
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "dest chain id not supported"})
+			c.Abort()
+			return
+		}
+
+		ops := &bind.CallOpts{Context: c}
+		relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
+
+		// authenticate relayer signature with EIP191
+		deadline := time.Now().Unix() - 1000 // TODO: Replace with some type of r.cfg.AuthExpiryDelta
+		addressRecovered, err := EIP191Auth(c, deadline)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("unable to authenticate relayer: %v", err)})
+			c.Abort()
+			return
+		}
+
+		has, err := bridge.HasRole(ops, relayerRole, addressRecovered)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "unable to check relayer role on-chain"})
+			c.Abort()
+			return
+		} else if !has {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "q.Relayer not an on-chain relayer"})
+			c.Abort()
+			return
+		}
+
+		// Log and pass to the next middleware if authentication succeeds
+		fmt.Println("Authentication successful for:", addressRecovered.Hex())
 		c.Next()
 	}
 }

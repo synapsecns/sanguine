@@ -14,6 +14,8 @@ import (
 )
 
 func (c *ServerSuite) TestNewAPIServer() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startAPIServer()
 	resp, err := http.Get("http://localhost:9000/quotes")
 	c.Nil(err)
 	defer resp.Body.Close()
