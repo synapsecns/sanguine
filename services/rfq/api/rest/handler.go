@@ -79,17 +79,25 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 
 // GET /quotes.
 func (h *Handler) GetQuotes(c *gin.Context) {
+	originChainIdStr := c.Query("originChainId")
+	originTokenAddr := c.Query("originTokenAddr")
 	destChainIdStr := c.Query("destChainId")
 	destTokenAddr := c.Query("destTokenAddr")
 
-	if destChainIdStr != "" && destTokenAddr != "" {
+	if originChainIdStr != "" && originTokenAddr != "" && destChainIdStr != "" && destTokenAddr != "" {
 		destChainId, err := strconv.ParseUint(destChainIdStr, 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destChainId"})
 			return
 		}
 
-		quotes, err := h.db.GetQuotesByDestChainAndToken(destChainId, destTokenAddr)
+		originChainId, err := strconv.ParseUint(originChainIdStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid originChainId"})
+			return
+		}
+
+		quotes, err := h.db.GetQuotesByOriginAndDestination(originChainId, originTokenAddr, destChainId, destTokenAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

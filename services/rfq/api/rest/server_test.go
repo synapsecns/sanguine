@@ -120,7 +120,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 
 	// Send GET request to verify the PUT
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?destChainId=42161&destTokenAddr=0xDestTokenAddr", nil)
+	req, err := http.NewRequest("GET", "http://localhost:9000/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", nil)
 	c.Nil(err)
 
 	getResp, err := client.Do(req)
