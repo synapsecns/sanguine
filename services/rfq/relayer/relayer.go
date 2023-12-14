@@ -37,6 +37,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 }
 
 func (r *Relayer) Start(ctx context.Context) error {
+	return nil
 }
 
 func (r *Relayer) startChainParser(ctx context.Context) error {
