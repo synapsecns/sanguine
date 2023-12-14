@@ -4,8 +4,8 @@ import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
 import image from '@rollup/plugin-image'
-import json from "@rollup/plugin-json";
-
+import json from '@rollup/plugin-json'
+import terser from '@rollup/plugin-terser'
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -35,7 +35,8 @@ export default [
         plugins: [],
       }),
       image(),
-      json()
+      json(),
+      terser(),
     ],
     watch: {
       buildDelay: 200,
