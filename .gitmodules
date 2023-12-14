@@ -20,3 +20,6 @@
 [submodule "packages/contracts-rfq/lib/openzeppelin-contracts"]
 	path = packages/contracts-rfq/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "services/rfq/external/canonical-weth"]
+	path = services/rfq/external/canonical-weth
+	url = https://github.com/gnosis/canonical-weth

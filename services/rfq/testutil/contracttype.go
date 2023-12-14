@@ -2,22 +2,28 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/weth9"
 )
 
 // set all contact types.
 func init() {
+	base.AddToVerificationBlacklist(USDTType)
 	for i := 0; i < len(_contractTypeImpl_index)-1; i++ {
 		contractType := contractTypeImpl(i + 1)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
 		var _ contracts.ContractType = contractType
 		// boot time assertion
-		if contractType.ContractInfo() == nil {
-			panic("contract info is nil")
+		if !base.IsVerificationBlacklisted(contractType) {
+			if contractType.ContractInfo() == nil {
+				panic("contract info is nil")
+			}
 		}
 	}
 }
@@ -48,6 +54,12 @@ const (
 	// FastBridgeMockType is a mock contract for testing fast bridge interactions
 	// TODO: rename  contract to MockFastBridge.
 	FastBridgeMockType // FastBridgeMock
+	// WETH9Type  is the weth 9 contract
+	WETH9Type // WETH9
+	// USDTType is the tether type
+	USDTType // USDTType
+	// USDCType is the type of the usdc contract
+	USDCType // USDCType is the usdc type
 )
 
 // ID gets the contract type as an id.
@@ -80,6 +92,13 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return mockerc20.Contracts["solidity/MockERC20.sol:MockERC20"]
 	case FastBridgeMockType:
 		return fastbridgemock.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
+	case WETH9Type:
+		return weth9.Contracts["/solidity/WETH9.sol:WETH9"]
+	case USDTType:
+		panic("method not supported, token is verification blacklisted")
+	case USDCType:
+		return usdc.Contracts["/solidity/FiatToken.sol:FiatTokenV2"]
+
 	}
 	return nil
 }

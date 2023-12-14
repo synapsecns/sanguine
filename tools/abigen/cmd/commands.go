@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 	"github.com/urfave/cli/v2"
+	"os"
 )
 
 var solFlag = &cli.StringFlag{
@@ -30,6 +32,17 @@ var solVersionFlag = &cli.StringFlag{
 var urlFlag = &cli.StringFlag{
 	Name:  "url",
 	Usage: "url of the etherscan api to use",
+}
+
+var disableCI = &cli.BoolFlag{
+	Name:  "disable-ci",
+	Usage: "wether or not to disable regeneration on ci",
+}
+
+var disableCIEtherscan = &cli.BoolFlag{
+	Name:  disableCI.Name,
+	Usage: "wether or not to disable regeneration on ci, this is disabled on etherscan by default because of api keys",
+	Value: true,
 }
 
 var optimizerRunsFlags = &cli.IntFlag{
@@ -63,8 +76,13 @@ var GenerateCommand = &cli.Command{
 		solVersionFlag,
 		optimizerRunsFlags,
 		evmVersionFlags,
+		disableCI,
 	},
 	Action: func(context *cli.Context) error {
+		if context.Bool(disableCI.Name) && os.Getenv("CI") != "" {
+			fmt.Print("skipping generation")
+			return nil
+		}
 		//nolint: wrapcheck
 		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
 	},
@@ -91,10 +109,15 @@ var EtherscanCommand = &cli.Command{
 		filenameFlag,
 		solVersionFlag,
 		urlFlag,
+		disableCIEtherscan,
 	},
 	// TODO this needs to embed optimizations, etc from the real deployed contract.
 	Action: func(context *cli.Context) error {
+		if context.Bool(disableCIEtherscan.Name) && os.Getenv("CI") != "" {
+			fmt.Print("skipping generation")
+			return nil
+		}
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.Name), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
 	},
 }

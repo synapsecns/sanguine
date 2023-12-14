@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/weth9"
 )
 
 // GetFastBridge gets the pre-created fast bridge contract.
@@ -29,4 +30,11 @@ func (d *DeployManager) GetMockFastBridge(ctx context.Context, backend backends.
 	d.T().Helper()
 
 	return manager.GetContract[*fastbridgemock.FastBridgeMockRef](ctx, d.T(), d, backend, FastBridgeMockType)
+}
+
+// GetWETH9 gets the weth9 contract.
+func (d *DeployManager) GetWETH9(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *weth9.Weth9Ref) {
+	d.T().Helper()
+
+	return manager.GetContract[*weth9.Weth9Ref](ctx, d.T(), d, backend, WETH9Type)
 }
