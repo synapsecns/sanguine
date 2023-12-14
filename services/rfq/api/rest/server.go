@@ -35,12 +35,6 @@ func NewAPI(
 	omniRPCClient omniClient.RPCClient,
 	store db.ApiDB,
 ) (*APIServer, error) {
-	fmt.Println("Context:", ctx)
-	fmt.Println("Config:", cfg)
-	fmt.Println("Handler:", handler)
-	fmt.Println("OmniRPCClient:", omniRPCClient)
-	fmt.Println("Store:", store)
-
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
 	}
@@ -80,7 +74,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 
 	// TODO: Use Gin Helper
 	engine := gin.Default()
-	h := NewHandler()
+	h := NewHandler(r.db)
 
 	// Apply AuthMiddleware only to the PUT route
 	quotesPut := engine.Group("/quotes")
