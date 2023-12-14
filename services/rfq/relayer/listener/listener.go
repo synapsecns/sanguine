@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-// ChainListener listens for chain events and calls HandleLog
+// ChainListener listens for chain events and calls HandleLog.
 type ChainListener interface {
 	Listen(ctx context.Context, handler HandleLog) error
 }
@@ -38,7 +38,7 @@ type chainListener struct {
 	// set in the constructor
 	startBlock, chainID uint64
 	pollInterval        time.Duration
-	//latestBlock         uint64
+	// latestBlock         uint64
 }
 
 var logger = log.Logger("chainlistener-logger")
@@ -58,9 +58,9 @@ func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address com
 	}, nil
 }
 
-// defaultPollInterval
+// defaultPollInterval.
 const (
-	// TODO: replace w/ config param if needed
+	// TODO: replace w/ config param if needed.
 	defaultPollInterval = 4
 	maxGetLogsRange     = 2000
 )
@@ -76,7 +76,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
+			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(time.Second * c.pollInterval):
 			err = c.doPoll(ctx, handler)
 			if err != nil {

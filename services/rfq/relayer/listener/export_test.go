@@ -9,13 +9,13 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
-// TestChainListener wraps chain listener for testing
+// TestChainListener wraps chain listener for testing.
 type TestChainListener interface {
 	ChainListener
 	GetMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error)
 }
 
-// GetMetadata wraps chain listener for testing
+// GetMetadata wraps chain listener for testing.
 func (c chainListener) GetMetadata(ctx context.Context) (startBlock, chainID uint64, err error) {
 	return c.getMetadata(ctx)
 }

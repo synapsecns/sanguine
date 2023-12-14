@@ -44,10 +44,10 @@ const (
 	// FastBridgeType is the type of the fast bridge contract.
 	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
 	// MockERC20Type is a mock erc20 contract.
-	MockERC20Type //MockERC20
+	MockERC20Type // MockERC20
 	// FastBridgeMockType is a mock contract for testing fast bridge interactions
-	// TODO: rename  contract to MockFastBridge
-	FastBridgeMockType //FastBridgeMock
+	// TODO: rename  contract to MockFastBridge.
+	FastBridgeMockType // FastBridgeMock
 )
 
 // ID gets the contract type as an id.

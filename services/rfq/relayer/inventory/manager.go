@@ -20,7 +20,7 @@ import (
 	"sync"
 )
 
-// What we actaully want to be able to do here is.
+// What we actually want to be able to do here is.
 type InventoryManager interface {
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be

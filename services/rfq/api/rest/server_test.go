@@ -127,7 +127,9 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 
 	getResp, err := client.Do(req)
 	c.Nil(err)
-	defer getResp.Body.Close()
+	defer func() {
+		_ = getResp.Body.Close()
+	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
 
 	var quotes []rest.PutRequest
