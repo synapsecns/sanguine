@@ -14,6 +14,15 @@ func (s *Store) GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr s
 	return quotes, nil
 }
 
+func (s *Store) GetAllQuotes() ([]*db.Quote, error) {
+	var quotes []*db.Quote
+	result := s.db.Find(&quotes)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return quotes, nil
+}
+
 func (s *Store) UpsertQuote(quote *db.Quote) error {
 	var existingQuote db.Quote
 	result := s.db.First(&existingQuote, quote.ID)
