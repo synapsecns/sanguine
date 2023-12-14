@@ -198,7 +198,6 @@ export const Widget = ({
     tokenAddress: originToken?.addresses[originChainId],
     ownerAddress: connectedAddress,
     chainId: originToken?.addresses[originChainId],
-    signer: signer,
     provider: originChainProvider ?? provider,
   })
 
@@ -210,7 +209,6 @@ export const Widget = ({
     chainId: originChainId,
     onSuccess: checkAllowanceCallback,
     signer: signer,
-    provider: originChainProvider ?? provider,
   }
   const {
     state: approveState,

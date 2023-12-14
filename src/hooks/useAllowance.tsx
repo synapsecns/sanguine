@@ -13,7 +13,6 @@ interface UseAllowanceProps {
   tokenAddress: string
   ownerAddress: string
   chainId: number
-  signer: any
   provider: any
 }
 
@@ -22,7 +21,6 @@ export function useAllowance({
   tokenAddress,
   ownerAddress,
   chainId,
-  signer,
   provider,
 }: UseAllowanceProps): {
   allowance: bigint
@@ -39,8 +37,6 @@ export function useAllowance({
         spenderAddress: spenderAddress,
         tokenAddress: tokenAddress,
         ownerAddress: ownerAddress,
-        // chainId: chainId,
-        signer: signer,
         provider: provider,
       })
       console.log('fetched allowance: ', allowance)

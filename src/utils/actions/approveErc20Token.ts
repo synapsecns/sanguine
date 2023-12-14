@@ -1,18 +1,27 @@
 import { MAX_UINT256 } from '@/constants/index'
-import { ethers } from 'ethers'
+import { JsonRpcApiProvider, BrowserProvider, ethers } from 'ethers'
 import erc20ABI from '../../constants/abis/erc20.json'
 
 export const approveErc20Token = async ({
   spenderAddress,
   tokenAddress,
   amount,
-  provider,
   signer,
+}: {
+  spenderAddress: string
+  tokenAddress: string
+  amount: bigint
+  signer: JsonRpcApiProvider | BrowserProvider
 }) => {
   try {
-    if (!provider || !signer) {
-      console.error('Web3 provider or signer is not available')
-      throw new Error('Web3 provider or signer is not available')
+    if (!spenderAddress) {
+      throw new Error('Require Spender Address')
+    }
+    if (!tokenAddress) {
+      throw new Error('Require Token Address')
+    }
+    if (!signer) {
+      throw new Error('Require Signer')
     }
     // Create a new instance of Contract with the signer
     const tokenContract = new ethers.Contract(tokenAddress, erc20ABI, signer)
@@ -30,7 +39,7 @@ export const approveErc20Token = async ({
 
     return receipt
   } catch (error) {
-    console.error('Error in approveErc20Token: ', error)
+    console.error('approveErc20Token: ', error)
     return error
   }
 }

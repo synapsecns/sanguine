@@ -6,12 +6,24 @@ export const fetchErc20TokenAllowance = async ({
   tokenAddress,
   ownerAddress,
   provider,
-  signer,
+}: {
+  spenderAddress: string
+  tokenAddress: string
+  ownerAddress: string
+  provider: any
 }) => {
   try {
-    if (!provider || !signer) {
-      console.error('Web3 provider or signer is not available')
-      throw new Error('Web3 provider or signer is not available')
+    if (!spenderAddress) {
+      throw new Error('Require Spender Address')
+    }
+    if (!tokenAddress) {
+      throw new Error('Require Token Address')
+    }
+    if (!ownerAddress) {
+      throw new Error('Require Token Owner Address')
+    }
+    if (!provider) {
+      throw new Error('Require Provider')
     }
 
     // Create a new instance of Contract
@@ -26,7 +38,7 @@ export const fetchErc20TokenAllowance = async ({
     // Convert the returned value to a bigint for consistency
     return BigInt(allowance.toString())
   } catch (error) {
-    console.error('Error in fetchErc20TokenAllowance: ', error)
+    console.error('fetchErc20TokenAllowance: ', error)
     return error
   }
 }

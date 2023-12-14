@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState } from 'react'
+import { JsonRpcApiProvider, BrowserProvider } from 'ethers'
 import { approveErc20Token } from '@/utils/actions/approveErc20Token'
 
 export enum UseApproveCallbackError {
@@ -22,8 +23,7 @@ export interface UseApproveCallbackProps {
   amount: bigint
   chainId: number
   onSuccess: () => any
-  signer: any
-  provider: any
+  signer: JsonRpcApiProvider | BrowserProvider
 }
 
 export function useApproveCallback({
@@ -34,7 +34,6 @@ export function useApproveCallback({
   chainId,
   onSuccess,
   signer,
-  provider,
 }: UseApproveCallbackProps) {
   const [approveState, setApproveState] = useState<ApproveCallbackState>(
     ApproveCallbackState.IDLE
@@ -74,12 +73,9 @@ export function useApproveCallback({
 
       ApproveStateCallback.initiateApproval()
       await approveErc20Token({
-        // chainId,
         spenderAddress,
         tokenAddress,
-        // ownerAddress,
         amount,
-        provider,
         signer,
       })
       await ApproveStateCallback.successApproval()
