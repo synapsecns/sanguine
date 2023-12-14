@@ -1,6 +1,7 @@
 package fastbridge
 
 import (
+	"bytes"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
@@ -23,8 +24,8 @@ func init() {
 		panic(err)
 	}
 
-	BridgeRequestedTopic = parsedABI.Events["BridgeRequested"].ID
-	BridgeRelayedTopic = parsedABI.Events["BridgeRelayed"].ID
+	BridgeRequestedTopic = parsedABI.Events["BridgeRequestedEvent"].ID
+	BridgeRelayedTopic = parsedABI.Events["BridgeRelayedEvent"].ID
 
 	_, err = parsedABI.EventByID(BridgeRequestedTopic)
 	if err != nil {
@@ -36,4 +37,24 @@ func init() {
 		panic(err)
 	}
 
+}
+
+// topicMap maps events to topics.
+// this is returned as a function to assert immutability.
+func topicMap() map[EventType]common.Hash {
+	return map[EventType]common.Hash{
+		BridgeRequestedEvent: BridgeRequestedTopic,
+		BridgeRelayedEvent:   BridgeRelayedTopic,
+	}
+}
+
+// eventTypeFromTopic gets the event type from the topic
+// returns nil if the topic is not found.
+func eventTypeFromTopic(ogTopic common.Hash) *EventType {
+	for eventType, topic := range topicMap() {
+		if bytes.Equal(ogTopic.Bytes(), topic.Bytes()) {
+			return &eventType
+		}
+	}
+	return nil
 }

@@ -11,9 +11,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db/sqlite"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"testing"
@@ -25,7 +25,7 @@ type ListenerTestSuite struct {
 	*testsuite.TestSuite
 	manager            *testutil.DeployManager
 	backend            backends.SimulatedTestBackend
-	store              db.Service
+	store              reldb.Service
 	metrics            metrics.Handler
 	fastBridge         *fastbridge.FastBridgeRef
 	fastBridgeMetadata contracts.DeployedContract

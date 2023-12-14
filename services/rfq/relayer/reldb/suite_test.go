@@ -1,12 +1,12 @@
-package db_test
+package reldb_test
 
 import (
 	dbSQL "database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/rfq/api/metadata"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db/mysql"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db/sqlite"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/mysql"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
 	"os"
 	"sync"
 	"testing"
@@ -24,7 +24,7 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs     []db.Service
+	dbs     []reldb.Service
 	metrics metrics.Handler
 }
 
@@ -33,7 +33,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.Service{},
+		dbs:       []reldb.Service{},
 	}
 }
 func (d *DBSuite) SetupSuite() {
@@ -60,7 +60,7 @@ func (d *DBSuite) SetupTest() {
 	sqliteStore, err := sqlite.NewSqliteStore(d.GetTestContext(), filet.TmpDir(d.T(), ""), d.metrics, false)
 	Nil(d.T(), err)
 
-	d.dbs = []db.Service{sqliteStore}
+	d.dbs = []reldb.Service{sqliteStore}
 	d.setupMysqlDB()
 }
 
@@ -89,14 +89,14 @@ func (d *DBSuite) setupMysqlDB() {
 	d.dbs = append(d.dbs, mysqlStore)
 }
 
-func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.Service)) {
+func (d *DBSuite) RunOnAllDBs(testFunc func(testDB reldb.Service)) {
 	d.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for _, testDB := range d.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.Service) {
+		go func(testDB reldb.Service) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

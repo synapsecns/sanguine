@@ -11,8 +11,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/config"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"sync"
@@ -90,7 +90,7 @@ func (i *InventoryTestSuite) SetupTest() {
 
 func (i *InventoryTestSuite) TestInventoryBoot() {
 	i.NotPanics(func() {
-		cfg := config.Config{
+		cfg := relconfig.Config{
 			Tokens: map[int][]string{},
 		}
 

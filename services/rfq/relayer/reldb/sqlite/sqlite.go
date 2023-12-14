@@ -3,8 +3,8 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db/base"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/base"
 	"os"
 
 	"github.com/ipfs/go-log"
@@ -59,4 +59,4 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	return &Store{base.NewStore(gdb, handler)}, nil
 }
 
-var _ db.Service = &Store{}
+var _ reldb.Service = &Store{}

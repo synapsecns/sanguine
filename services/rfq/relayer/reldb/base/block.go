@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -30,7 +30,7 @@ func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64,
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, db.ErrNoLatestBlockForChainID
+			return 0, reldb.ErrNoLatestBlockForChainID
 		}
 		return 0, fmt.Errorf("could not fetch latest block: %w", err)
 	}

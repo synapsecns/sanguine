@@ -7,24 +7,31 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/db"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
 )
 
+// ChainListener listens for chain events and calls HandleLog
 type ChainListener interface {
+	Listen(ctx context.Context, handler HandleLog) error
 }
+
+// HandleLog is the handler for a log event
+// in the event this errors, the range will be reparsed.
+type HandleLog func(ctx context.Context, log types.Log) error
 
 type chainListener struct {
 	client   client.EVM
 	contract *fastbridge.FastBridgeRef
-	store    db.Service
+	store    reldb.Service
 	handler  metrics.Handler
 	backoff  *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
@@ -36,13 +43,13 @@ type chainListener struct {
 
 var logger = log.Logger("chainlistener-logger")
 
-func NewChainListener(ctx context.Context, omnirpcClient client.EVM, store db.Service, address common.Address, handler metrics.Handler) (ChainListener, error) {
+func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address common.Address, handler metrics.Handler) (ChainListener, error) {
 	fastBridge, err := fastbridge.NewFastBridgeRef(address, omnirpcClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
 	}
 
-	return chainListener{
+	return &chainListener{
 		handler:  handler,
 		store:    store,
 		client:   omnirpcClient,
@@ -58,7 +65,7 @@ const (
 	maxGetLogsRange     = 2000
 )
 
-func (c *chainListener) Listen(ctx context.Context) (err error) {
+func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
 	c.startBlock, c.chainID, err = c.getMetadata(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get metadata: %w", err)
@@ -71,16 +78,15 @@ func (c *chainListener) Listen(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-time.After(time.Second * c.pollInterval):
-			err = c.doPoll(ctx)
+			err = c.doPoll(ctx, handler)
 			if err != nil {
 				logger.Warn(err)
 			}
 		}
-
 	}
 }
 
-func (c *chainListener) doPoll(parentCtx context.Context) (err error) {
+func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getMetadata")
 	c.pollInterval = defaultPollInterval
 
@@ -120,12 +126,17 @@ func (c *chainListener) doPoll(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not filter logs: %w", err)
 	}
 
+	for _, newLog := range logs {
+		err = handler(ctx, newLog)
+		if err != nil {
+			return fmt.Errorf("handle log failed, will reparse: %w", err)
+		}
+	}
+
 	err = c.store.PutLatestBlock(ctx, c.chainID, endBlock)
 	if err != nil {
 		return fmt.Errorf("could not put lastest block: %w", err)
 	}
-
-	_ = logs // TODO: do something with logs
 
 	c.startBlock = lastUnconfirmedBlock
 	return nil
@@ -165,7 +176,7 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 		chainID = rpcChainID.Uint64()
 
 		lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
-		if errors.Is(err, db.ErrNoLatestBlockForChainID) {
+		if errors.Is(err, reldb.ErrNoLatestBlockForChainID) {
 			// TODO: consider making this negative 1, requires type change
 			lastIndexed = 0
 			return nil
