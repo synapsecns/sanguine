@@ -73,6 +73,10 @@ contract FastBridgeMock is IFastBridge, Admin {
     function prove(bytes memory request, bytes32 destTxHash) external {
         revert("not implemented");
     }
+    
+    function canClaim(bytes32 transactionid, address relayer) external view returns (bool) {
+        revert("not implemented");
+    }
 
     function claim(bytes memory request, address to) external {
         revert("not implemented");

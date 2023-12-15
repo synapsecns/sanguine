@@ -68,6 +68,7 @@ contract FastBridge is IFastBridge, Admin {
         }
     }
 
+    /// @inheritdoc IFastBridge
     function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
         return abi.decode(request, (BridgeTransaction));
     }
@@ -152,10 +153,11 @@ contract FastBridge is IFastBridge, Admin {
         }
     }
 
-    // @notice Checks if a bridge deposit can be claimed
-    function canClaim(bytes32 transactionId) external view returns (bool) {
+    /// @inheritdoc IFastBridge
+    function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
         if (bridgeStatuses[transactionId] != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         BridgeProof memory proof = bridgeProofs[transactionId];
+        if (proof.relayer != relayer) revert SenderIncorrect();
         return _timeSince(proof) > DISPUTE_PERIOD;
     }
 

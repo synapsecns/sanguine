@@ -67,4 +67,15 @@ interface IFastBridge {
     /// @param request The encoded bridge transaction to refund
     /// @param to The recipient address of the funds
     function refund(bytes memory request, address to) external;
+    
+    // ============ Views ============
+
+    /// @notice Decodes bridge request into a bridge transaction
+    /// @param request The bridge request to decode
+    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory);
+    
+    /// @notice Checks if the dispute period has passed so bridge deposit can be claimed
+    /// @param transactionId The transaction id associated with the encoded bridge transaction to check
+    /// @param relayer The address of the relayer attempting to claim
+    function canClaim(bytes32 transactionId, address relayer) external view returns (bool);
 }
