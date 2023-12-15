@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 )
 
+// Config represents the configuration for the relayer.
 // TODO: validation function.
 type Config struct {
 	// ChainID: address

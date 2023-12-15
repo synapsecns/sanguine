@@ -87,7 +87,7 @@ dockers:
       - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/rfq-relayer.Dockerfile
     ids:
-      - rfq-relayer
+      - relayer
   # Docker AMD64
   - goos: linux
     goarch: amd64
@@ -103,7 +103,7 @@ dockers:
       - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/rfq-api.Dockerfile
     ids:
-      - rfq-api
+      - api
 # track sizes
 report_sizes: true
 
