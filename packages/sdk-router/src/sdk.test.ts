@@ -29,6 +29,7 @@ import {
   SupportedChainId,
 } from './constants'
 import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './router'
+import * as operations from './operations'
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -1290,6 +1291,30 @@ describe('SynapseSDK', () => {
       expect(result.routerAddress).toEqual(
         ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
       )
+    })
+  })
+
+  describe('Internal functions', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+    describe('getRouterSet', () => {
+      it('Returns correct set for SynapseBridge', () => {
+        const routerSet = operations.getRouterSet.call(synapse, 'SynapseBridge')
+        expect(routerSet).toEqual(synapse.synapseRouterSet)
+      })
+
+      it('Returns correct set for SynapseCCTP', () => {
+        const routerSet = operations.getRouterSet.call(synapse, 'SynapseCCTP')
+        expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
+      })
+
+      it('Throws when bridge module name is invalid', () => {
+        expect(() =>
+          operations.getRouterSet.call(synapse, 'SynapseSynapse')
+        ).toThrow('Unknown bridge module')
+      })
     })
   })
 })

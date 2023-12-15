@@ -211,7 +211,17 @@ export async function getBridgeGas(
   return this.synapseRouterSet.getSynapseRouter(chainId).chainGasAmount()
 }
 
-function getRouterSet(this: SynapseSDK, bridgeModuleName: string): RouterSet {
+/**
+ * Extracts the RouterSet from the SynapseSDK based on the given bridge module name.
+ *
+ * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
+ * @returns The corresponding RouterSet.
+ * @throws Will throw an error if the bridge module is unknown.
+ */
+export function getRouterSet(
+  this: SynapseSDK,
+  bridgeModuleName: string
+): RouterSet {
   if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
     return this.synapseRouterSet
   }
