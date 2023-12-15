@@ -5,6 +5,7 @@ import { useCurrentTokenBalance } from './useCurrentTokenBalance'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { Web3Context } from 'providers/Web3Provider'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
+import { useWalletState } from '@/state/slices/wallet/hooks'
 
 export const useValidations = (): {
   hasValidSelections: boolean
@@ -20,8 +21,9 @@ export const useValidations = (): {
     originToken,
     destinationChainId,
     destinationToken,
-    balances,
   } = useBridgeState()
+
+  const { balances } = useWalletState()
 
   const currentTokenBalance = useCurrentTokenBalance()
 

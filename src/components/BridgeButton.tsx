@@ -41,7 +41,6 @@ export const BridgeButton = ({
     originToken,
     destinationChainId,
     destinationToken,
-    balances,
   } = useBridgeState()
 
   const { hasEnoughBalance, isInputValid, onSelectedChain } = useValidations()

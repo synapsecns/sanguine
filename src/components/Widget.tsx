@@ -33,10 +33,8 @@ import {
   setDebouncedInputAmount,
   setInputAmount,
 } from '@/state/slices/bridge/reducer'
-import {
-  fetchAndStoreTokenBalances,
-  useBridgeState,
-} from '@/state/slices/bridge/hooks'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { fetchAndStoreTokenBalances } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from './BridgeButton'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 
@@ -89,7 +87,6 @@ export const Widget = ({
     destinationChainId,
     destinationToken,
     tokens: allTokens,
-    balances,
   } = useBridgeState()
 
   /** Select Consumer networkProvider based on Origin ChainId */

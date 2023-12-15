@@ -3,6 +3,7 @@ import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { BridgeState } from '@/state/slices/bridge/reducer'
 import { BridgeableToken } from 'types'
 import { TokenPopoverSelect } from './TokenPopoverSelect'
+import { useWalletState } from '@/state/slices/wallet/hooks'
 
 type Props = {
   label: 'In' | 'Out'
@@ -17,9 +18,10 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
     destinationChainId,
     originTokens,
     destinationTokens,
-    balances,
     tokens,
   }: BridgeState = useBridgeState()
+
+  const { balances } = useWalletState()
 
   let options
   let remainingOptions

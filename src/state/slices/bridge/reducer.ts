@@ -13,15 +13,6 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findValidToken } from '@/utils/findValidTokens'
 import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
-import { fetchAndStoreTokenBalances } from './hooks'
-import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
-
-export enum FetchState {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  VALID = 'valid',
-  INVALID = 'invalid',
-}
 
 export interface BridgeState {
   inputAmount: string
@@ -35,10 +26,6 @@ export interface BridgeState {
   destinationChainIds: number[]
   destinationTokens: BridgeableToken[]
   tokens: BridgeableToken[]
-  // Thunk States
-  balances: TokenBalance[]
-  status: FetchState
-  error?: any
 }
 
 const initialState: BridgeState = {
@@ -53,9 +40,6 @@ const initialState: BridgeState = {
   destinationChainIds: [],
   destinationTokens: [],
   tokens: [],
-  balances: [],
-  status: FetchState.IDLE,
-  error: null,
 }
 
 export const bridgeSlice = createSlice({
@@ -442,21 +426,6 @@ export const bridgeSlice = createSlice({
     ) => {
       state.tokens = action.payload
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchAndStoreTokenBalances.pending, (state) => {
-        state.status = FetchState.LOADING
-      })
-      .addCase(
-        fetchAndStoreTokenBalances.fulfilled,
-        (state, action: PayloadAction<TokenBalance[]>) => {
-          state.balances = action.payload
-        }
-      )
-      .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
-        state.error = action.payload
-      })
   },
 })
 

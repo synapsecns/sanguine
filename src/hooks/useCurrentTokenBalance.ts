@@ -2,11 +2,13 @@ import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { useContext, useMemo } from 'react'
 import { Web3Context } from 'providers/Web3Provider'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
+import { useWalletState } from '@/state/slices/wallet/hooks'
 
 export const useCurrentTokenBalance = () => {
   const web3Context = useContext(Web3Context)
   const { connectedAddress } = web3Context.web3Provider
-  const { originChainId, originToken, balances } = useBridgeState()
+  const { originChainId, originToken } = useBridgeState()
+  const { balances } = useWalletState()
 
   return useMemo(() => {
     if (!Array.isArray(balances) || !originToken) {
