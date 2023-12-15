@@ -14,11 +14,12 @@ func _() {
 	_ = x[WETH9Type-4]
 	_ = x[USDTType-5]
 	_ = x[USDCType-6]
+	_ = x[DAIType-7]
 }
 
-const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockWETH9USDTTypeUSDCType is the usdc type"
+const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockWETH9USDTTypeUSDCTypeDAIType is the dai contract type"
 
-var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 38, 46, 71}
+var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 38, 46, 54, 86}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

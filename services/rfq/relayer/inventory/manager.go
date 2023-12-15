@@ -171,7 +171,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 
 		for address, token := range tokenMap {
 			// if startAllowance is 0
-			if token.startAllowance.Cmp(big.NewInt(0)) == -0 {
+			if token.startAllowance.Cmp(big.NewInt(0)) == 0 {
 				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
 				_, err = submitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					erc20, err := ierc20.NewIERC20(address, backendClient)
@@ -179,7 +179,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 						return nil, fmt.Errorf("could not get erc20: %w", err)
 					}
 
-					approveAmount, err := erc20.Approve(transactor, i.relayerAddress, abi.MaxInt256)
+					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(i.cfg.Bridges[chainID].Bridge), abi.MaxInt256)
 					if err != nil {
 						return nil, fmt.Errorf("could not approve: %w", err)
 					}

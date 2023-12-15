@@ -3,6 +3,6 @@ database:
   dsn: '/tmp/server.db'
 omnirpc_url: 'https://rpc.interop-staging.com'
 bridges:
-  421614: '0x9a8093fd24d2ad109d273db9f5e575d2681657b2'
-  11155111: '0x7b1597266adb8d4f24bdce1eaf3b089bcdd44819'
+  421614: '0x58dBd847C0CBFc9a4B9942847124BFC3589c70aA'
+  11155111: '0x6EBdE77d635496Dea99364E0DA18ad8A1AFA9F27'
 port: '8080'
