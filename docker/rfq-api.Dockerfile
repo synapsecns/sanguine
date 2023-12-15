@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description="RFQ API Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot cctp-relayer /app/api
+COPY --chown=nonroot:nonroot api /app/api
 
 ENTRYPOINT ["/app/api"]
