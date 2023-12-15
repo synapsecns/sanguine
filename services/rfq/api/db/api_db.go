@@ -2,22 +2,21 @@
 package db
 
 import (
+	"context"
 	"time"
 
 	"github.com/shopspring/decimal"
 )
 
 type Quote struct {
-	// ID is the unique identifier saved of each quote provided
-	ID uint64 `gorm:"column:id;primaryKey;"`
 	// OriginChainID is the chain which the relayer is willing to relay from
-	OriginChainID uint64 `gorm:"column:origin_chain_id;index"`
+	OriginChainID uint64 `gorm:"column:origin_chain_id;index;primaryKey"`
 	// OriginTokenAddr is the token address for which the relayer willing to relay from
-	OriginTokenAddr string `gorm:"column:origin_token;index"`
+	OriginTokenAddr string `gorm:"column:origin_token;index;primaryKey"`
 	// DestChainID is the chain which the relayer is willing to relay to
-	DestChainID uint64 `gorm:"column:dest_chain_id;index"`
+	DestChainID uint64 `gorm:"column:dest_chain_id;index;primaryKey'"`
 	// DestToken is the token address for which the relayer willing to relay to
-	DestTokenAddr string `gorm:"column:dest_token;index"`
+	DestTokenAddr string `gorm:"column:dest_token;index;primaryKey"`
 	// DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals
 	DestAmount decimal.Decimal `gorm:"column:dest_amount"`
 	// Price is the price per origin token provided for which a relayer is indicating willingness to relay
@@ -25,7 +24,7 @@ type Quote struct {
 	// MaxOriginAmount is the maximum amount of origin tokens bridgeable, calculated by dividing the DestAmount by the Price
 	MaxOriginAmount decimal.Decimal `gorm:"column:max_origin_amount"`
 	// Address of the relayer providing the quote
-	RelayerAddr string `gorm:"column:relayer_address"`
+	RelayerAddr string `gorm:"column:relayer_address;primaryKey"`
 	// UpdatedAt is the time that the quote was last upserted
 	UpdatedAt time.Time
 }
@@ -33,17 +32,17 @@ type Quote struct {
 // ApiDBReader is the interface for reading from the database.
 type ApiDBReader interface {
 	// GetQuote gets a quote from the database.
-	GetQuotesByDestChainAndToken(destChainId uint64, destTokenAddr string) ([]*Quote, error)
-	GetQuotesByOriginAndDestination(originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*Quote, error)
-	GetQuotesByRelayerAddress(relayerAddress string) ([]*Quote, error)
+	GetQuotesByDestChainAndToken(ctx context.Context, destChainId uint64, destTokenAddr string) ([]*Quote, error)
+	GetQuotesByOriginAndDestination(ctx context.Context, originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*Quote, error)
+	GetQuotesByRelayerAddress(ctx context.Context, relayerAddress string) ([]*Quote, error)
 	// GetAllQuotes retrieves all quotes from the database.
-	GetAllQuotes() ([]*Quote, error)
+	GetAllQuotes(ctx context.Context) ([]*Quote, error)
 }
 
 // ApiDBWriter is the interface for writing to the database.
 type ApiDBWriter interface {
 	// UpsertQuote upserts a quote in the database.
-	UpsertQuote(quote *Quote) error
+	UpsertQuote(ctx context.Context, quote *Quote) error
 }
 
 // ApiDB is the interface for the database service.

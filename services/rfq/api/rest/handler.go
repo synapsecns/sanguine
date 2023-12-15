@@ -65,7 +65,6 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 	quote := &db.Quote{
-		ID:              uint64(putRequest.ID),
 		OriginChainID:   originChainID,
 		OriginTokenAddr: putRequest.OriginTokenAddr,
 		DestChainID:     destChainID,
@@ -75,7 +74,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		MaxOriginAmount: maxOriginAmount,
 		RelayerAddr:     relayerAddr.(string),
 	}
-	err = h.db.UpsertQuote(quote)
+	err = h.db.UpsertQuote(c, quote)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -104,7 +103,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 			return
 		}
 
-		quotes, err := h.db.GetQuotesByOriginAndDestination(originChainID, originTokenAddr, destChainID, destTokenAddr)
+		quotes, err := h.db.GetQuotesByOriginAndDestination(c, originChainID, originTokenAddr, destChainID, destTokenAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -112,7 +111,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 
 		c.JSON(http.StatusOK, quotes)
 	} else if relayerAddr != "" {
-		quotes, err := h.db.GetQuotesByRelayerAddress(relayerAddr)
+		quotes, err := h.db.GetQuotesByRelayerAddress(c, relayerAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -120,7 +119,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		c.JSON(http.StatusOK, quotes)
 	} else {
 		// Pseudocode for retrieving all quotes from the database
-		quotes, err := h.db.GetAllQuotes()
+		quotes, err := h.db.GetAllQuotes(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
