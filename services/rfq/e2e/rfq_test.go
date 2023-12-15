@@ -150,16 +150,44 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 			select {
 			case <-i.GetTestContext().Done():
 				return
-			case <-time.After(time.Second * 1):
+			case <-time.After(time.Second * 4):
 				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
 				// we don't need to worry about deadline since we're only doing this on origin
 				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+				i.NoError(err)
+
+				// because can claim works on last block timestamp, we need to do something
+				err = anvilClient.Mine(i.GetTestContext(), 1)
 				i.NoError(err)
 			}
 		}
 
 	}()
 
-	time.Sleep(time.Second * 30)
-	// TODO: verify, I'm using breakpoitns for now
+	// since relayer started w/ 0 usdc, once they're offering the inventory up on origin chain we know the workflow completed
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		relayerAPIClient, err := client.NewClient(i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := relayerAPIClient.GetAllQuotes()
+		i.NoError(err)
+
+		// let's figure out the amount of usdc we need
+
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == originUSDC.Address() && quote.DestChainID == originBackendChainID {
+
+				// we should now have some usdc on the origin chain since we claimed
+				// this should be offered up as inventory
+				if quote.DestAmount.BigInt().Cmp(big.NewInt(0)) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+
 }

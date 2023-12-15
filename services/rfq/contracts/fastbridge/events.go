@@ -15,6 +15,8 @@ var (
 	BridgeRelayedTopic common.Hash
 	// BridgeProofProvidedTopic is the topic emitted by a bridge relay.
 	BridgeProofProvidedTopic common.Hash
+	// BridgeDepositClaimedTopic is the topic emitted by a bridge relay.
+	BridgeDepositClaimedTopic common.Hash
 )
 
 // static checks to make sure topics actually exist.
@@ -29,6 +31,7 @@ func init() {
 	BridgeRequestedTopic = parsedABI.Events["BridgeRequested"].ID
 	BridgeRelayedTopic = parsedABI.Events["BridgeRelayed"].ID
 	BridgeProofProvidedTopic = parsedABI.Events["BridgeProofProvided"].ID
+	BridgeDepositClaimedTopic = parsedABI.Events["BridgeDepositClaimed"].ID
 
 	_, err = parsedABI.EventByID(BridgeRequestedTopic)
 	if err != nil {
@@ -51,9 +54,10 @@ func init() {
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		BridgeRequestedEvent:     BridgeRequestedTopic,
-		BridgeRelayedEvent:       BridgeRelayedTopic,
-		BridgeProofProvidedEvent: BridgeProofProvidedTopic,
+		BridgeRequestedEvent:      BridgeRequestedTopic,
+		BridgeRelayedEvent:        BridgeRelayedTopic,
+		BridgeProofProvidedEvent:  BridgeProofProvidedTopic,
+		BridgeDepositClaimedEvent: BridgeDepositClaimedTopic,
 	}
 }
 

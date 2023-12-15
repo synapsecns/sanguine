@@ -169,7 +169,7 @@ func (r *Relayer) Start(ctx context.Context) error {
 }
 
 // TODO: make this configurable
-const dbSelectorInterval = 3
+const dbSelectorInterval = 1
 
 func (r *Relayer) runDBSelector(ctx context.Context) error {
 	for {
@@ -322,18 +322,24 @@ func (r *Relayer) processDB(ctx context.Context) error {
 				return fmt.Errorf("could not check if can claim: %w", err)
 			}
 
-			if canClaim {
-				_, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(destID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					tx, err = originFastBridge.Claim(transactor, request.RawRequest, transactor.From)
-					if err != nil {
-						return nil, fmt.Errorf("could not relay: %w", err)
-					}
-
-					return tx, nil
-				})
+			if !canClaim {
+				continue
+			}
+			_, err = r.submitter.SubmitTransaction(ctx, big.NewInt(int64(originID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				tx, err = originFastBridge.Claim(transactor, request.RawRequest, transactor.From)
 				if err != nil {
-					return fmt.Errorf("could not submit transaction: %w", err)
+					return nil, fmt.Errorf("could not relay: %w", err)
 				}
+
+				return tx, nil
+			})
+			if err != nil {
+				return fmt.Errorf("could not submit transaction: %w", err)
+			}
+
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ClaimPending)
+			if err != nil {
+				return fmt.Errorf("could not update request status: %w", err)
 			}
 
 		}
@@ -380,6 +386,9 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 					if err != nil {
 						return fmt.Errorf("could not handle proof provided: %w", err)
 					}
+				case *fastbridge.FastBridgeBridgeDepositClaimed:
+					r.handleDepositClaimed(ctx, event)
+
 				}
 
 				return nil
@@ -392,6 +401,12 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 		})
 	}
 	return nil
+}
+
+func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) {
+	// TODO: err
+	_ = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+
 }
 
 func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {

@@ -68,6 +68,8 @@ const (
 	RelayCompleted
 	ProvePosting
 	ProvePosted
+	ClaimPending
+	ClaimCompleted
 )
 
 func (q QuoteRequestStatus) Int() uint8 {

@@ -15,6 +15,7 @@ const (
 	BridgeRequestedEvent EventType = iota + 1
 	BridgeRelayedEvent
 	BridgeProofProvidedEvent
+	BridgeDepositClaimedEvent
 )
 
 // Parser parses events from the fastbridge contracat.
@@ -37,7 +38,7 @@ func NewParser(fastBridgeAddress common.Address) (Parser, error) {
 func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}, ok bool) {
 	// return an unknown event to avoid cases where user failed to check the event type
 	// make it high enough to make it obvious (we start iotas at +1, see uber style guide for details)
-	noOpEvent := EventType(len(topicMap()))
+	noOpEvent := EventType(len(topicMap()) + 2)
 
 	if len(log.Topics) == 0 {
 		return noOpEvent, nil, false
@@ -68,6 +69,12 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, proven, true
+	case BridgeDepositClaimedEvent:
+		claimed, err := p.filterer.ParseBridgeDepositClaimed(log)
+		if err != nil {
+			return noOpEvent, nil, false
+		}
+		return eventType, claimed, true
 	}
 
 	return eventType, nil, true
