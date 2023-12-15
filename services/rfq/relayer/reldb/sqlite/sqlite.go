@@ -36,7 +36,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not create sqlite store")
 	}
 
-	logger.Warnf("cctp database is at %s/synapse.db", dbPath)
+	logger.Warnf("rfq database is at %s/synapse.db", dbPath)
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
