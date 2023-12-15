@@ -234,17 +234,19 @@ jobs:
           fi
 
           # Iterate through each docker configuration
-          for (( i=0; i<docker_configs; i++ )); do
+            i=0
+          while [ "$i" -lt "$docker_configs" ]; do
             # Extract the first image template
             image_template=$(yq e ".dockers[$i].image_templates[0]" dist/config.yaml)
 
             # Extract the base name from the image template
             image_name=$(echo "$image_template" | sed -E 's|^(.*):[^:]+$|\1|')
 
-
             # Tag and push the docker image
             docker tag "$image_name:latest" "$image_name:${GITHUB_SHA}"
             docker push "$image_name:${GITHUB_SHA}"
+
+            i=$((i + 1))
           done
         env:
           image_name: ${{ steps.project_id.outputs.project_name }}

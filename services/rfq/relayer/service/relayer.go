@@ -141,7 +141,7 @@ func (r *Relayer) Start(ctx context.Context) error {
 		for {
 			select {
 			case <-ctx.Done():
-				return nil
+				return fmt.Errorf("could not start db selector: %w", ctx.Err())
 			case <-time.After(defaultPostInterval * time.Second):
 				err := r.quoter.SubmitAllQuotes()
 				if err != nil {
@@ -191,6 +191,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			return fmt.Errorf("could not run db selector: %w", ctx.Err())
 		case <-time.After(dbSelectorInterval * time.Second):
 			// TODO: add context w/ timeout
+			// TODO: add trigger
 			err := r.processDB(ctx)
 			if err != nil {
 				return err
@@ -236,7 +237,11 @@ func (r *Relayer) processDB(ctx context.Context) error {
 
 		switch request.Status {
 		case reldb.Seen:
+			if !r.quoter.ShouldProcess(request) {
+				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.WillNotProcess)
+			}
 			// TODO: check it deadline expired
+			// TODO: check token validity
 			// get destination commitable balancs
 			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
 			if err != nil {

@@ -4,6 +4,7 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"math/big"
 	"strings"
 
@@ -54,6 +55,13 @@ func NewQuoterManager(ctx context.Context, quotableTokens map[string][]string, i
 		rfqClient:        rfqAPIClient,
 		relayerSigner:    relayerSigner,
 	}, nil
+}
+
+func (m *QuoterManager) ShouldProcess(quote reldb.QuoteRequest) bool {
+	// first check if token is valid
+	// then check if we'll make money on it
+
+	return false
 }
 
 // Gets the inventory and prepares quotes.
