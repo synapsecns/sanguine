@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// StoreQuoteRequest stores a quote request
+// StoreQuoteRequest stores a quote request.
 func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest) error {
 	rq := FromQuoteRequest(request)
 
@@ -57,16 +57,16 @@ func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...rel
 	}
 
 	for _, result := range quoteResults {
-		marshalled, err := result.ToQuoteRequest()
+		marshaled, err := result.ToQuoteRequest()
 		if err != nil {
 			return []reldb.QuoteRequest{}, fmt.Errorf("could not get quotes")
 		}
-		res = append(res, *marshalled)
+		res = append(res, *marshaled)
 	}
 	return res, nil
 }
 
-// UpdateQuoteRequestStatus todo: db test
+// UpdateQuoteRequestStatus todo: db test.
 func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus) error {
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
 		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).

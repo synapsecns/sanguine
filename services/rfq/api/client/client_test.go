@@ -28,13 +28,13 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 	fmt.Println(quotes)
 
 	// found := false
-	//for _, q := range quotes {
+	// for _, q := range quotes {
 	//	if q.MaxOriginAmount == 123 {
 	//		found = true
 	//		break
 	//	}
 	//}
-	//c.Assert().True(found, "Newly added quote not found")
+	// c.Assert().True(found, "Newly added quote not found")
 }
 
 func (c *ClientSuite) TestGetSpecificQuote() {
@@ -63,13 +63,13 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 	fmt.Println(quotes)
 	//
 	// found := false
-	//for _, q := range quotes {
+	// for _, q := range quotes {
 	//	if q.ID == 123 {
 	//		found = true
 	//		break
 	//	}
 	//}
-	//c.Assert().True(found, "Newly added quote not found")
+	// c.Assert().True(found, "Newly added quote not found")
 }
 
 func (c *ClientSuite) TestGetQuoteByRelayerAddress() {

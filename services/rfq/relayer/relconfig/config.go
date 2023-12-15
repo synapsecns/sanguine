@@ -1,9 +1,14 @@
 package relconfig
 
 import (
-	"github.com/ethereum/go-ethereum/common"
+	"fmt"
+	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	"gopkg.in/yaml.v2"
+	"os"
+
+	"path/filepath"
 )
 
 // TODO: validation function.
@@ -13,13 +18,12 @@ type Config struct {
 	// TODO: this can actually be replaced by quotable tokens.
 	Tokens map[int][]string `yaml:"tokens"`
 	// ChainID: bridge
-	Bridges        map[int]ChainConfig `yaml:"bridges"`
-	OmnirpcURL     string              `yaml:"omnirpc_url"`
-	RfqAPIURL      string              `yaml:"rfq_api_url"`
-	DBConfig       string
-	QuotableTokens map[string][]string `yaml:"quotable_tokens"`
-	// TODO: remove, replace w/ pkey recover
-	RelayerAddress  common.Address
+	Bridges         map[int]ChainConfig `yaml:"bridges"`
+	OmniRPCURL      string              `yaml:"omnirpc_url"`
+	RfqAPIURL       string              `yaml:"rfq_api_url"`
+	DBConfig        string
+	Database        DatabaseConfig      `yaml:"database"`
+	QuotableTokens  map[string][]string `yaml:"quotable_tokens"`
 	Signer          config.SignerConfig
 	SubmitterConfig submitterConfig.Config
 }
@@ -29,4 +33,23 @@ type ChainConfig struct {
 	Bridge string `yaml:"address"`
 	// Confirmations is the number of required confirmations
 	Confirmations uint64 `yaml:"confirmations"`
+}
+
+// DatabaseConfig represents the configuration for the database.
+type DatabaseConfig struct {
+	Type string `yaml:"type"`
+	DSN  string `yaml:"dsn"` // Data Source Name
+}
+
+// LoadConfig loads the config from the given path.
+func LoadConfig(path string) (config Config, err error) {
+	input, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to read file: %w", err)
+	}
+	err = yaml.Unmarshal(input, &config)
+	if err != nil {
+		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+	}
+	return config, nil
 }

@@ -47,7 +47,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 // topicMap maps events to topics.

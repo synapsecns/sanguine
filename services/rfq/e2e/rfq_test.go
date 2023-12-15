@@ -13,7 +13,7 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"testing"
@@ -30,7 +30,7 @@ type IntegrationSuite struct {
 	omniClient    omnirpcClient.RPCClient
 	metrics       metrics.Handler
 	apiServer     string
-	relayer       *relayer.Relayer
+	relayer       *service.Relayer
 	relayerWallet wallet.Wallet
 	userWallet    wallet.Wallet
 }

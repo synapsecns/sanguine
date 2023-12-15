@@ -23,8 +23,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"net/http"
@@ -200,12 +200,14 @@ func (i *IntegrationSuite) setupRelayer() {
 				Confirmations: 0,
 			},
 		},
-		OmnirpcURL: i.omniServer,
+		OmniRPCURL: i.omniServer,
 		// TODO: need to stop hardcoding
-		DBConfig: dsn,
+		Database: relconfig.DatabaseConfig{
+			Type: dbcommon.Sqlite.String(),
+			DSN:  dsn,
+		},
 		// generated ex-post facto
 		QuotableTokens: map[string][]string{},
-		RelayerAddress: i.relayerWallet.Address(),
 		RfqAPIURL:      i.apiServer,
 		Signer: signerConfig.SignerConfig{
 			Type: signerConfig.FileType.String(),
@@ -244,7 +246,7 @@ func (i *IntegrationSuite) setupRelayer() {
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
 	var err error
-	i.relayer, err = relayer.NewRelayer(i.GetTestContext(), i.metrics, cfg)
+	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
 	go func() {
 		err = i.relayer.Start(i.GetTestContext())

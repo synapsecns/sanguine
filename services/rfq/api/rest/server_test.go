@@ -224,7 +224,7 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 	// Sign the data with the provided private key.
 	sig, err := crypto.Sign(digest, wallet.PrivateKey())
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to sign data: %w", err)
 	}
 	signature := hexutil.Encode(sig)
 
@@ -253,11 +253,15 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 
 	req, err := http.NewRequestWithContext(c.GetTestContext(), "PUT", fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create PUT request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Authorization", header)
 
 	// Send the request to the server.
-	return client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send PUT request: %w", err)
+	}
+	return resp, nil
 }

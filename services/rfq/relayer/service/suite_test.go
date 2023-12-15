@@ -1,9 +1,10 @@
-package relayer_test
+package service_test
 
 import (
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -11,8 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
-	"github.com/synapsecns/sanguine/services/rfq/relayer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"sync"
@@ -62,6 +63,10 @@ func (r *RelayerTestSuite) SetupTest() {
 	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
 	r.cfg = relconfig.Config{
 		DBConfig: filet.TmpDir(r.T(), ""),
+		Database: relconfig.DatabaseConfig{
+			Type: dbcommon.Sqlite.String(),
+			DSN:  filet.TmpDir(r.T(), ""),
+		},
 		Bridges: map[int]relconfig.ChainConfig{
 			int(r.originBackend.GetChainID()): {
 				Bridge: originContract.Address().String(),
@@ -70,14 +75,14 @@ func (r *RelayerTestSuite) SetupTest() {
 				Bridge: destContract.Address().String(),
 			},
 		},
-		OmnirpcURL: serverURL,
+		OmniRPCURL: serverURL,
 	}
 }
 
 func (r *RelayerTestSuite) TestStore() {
 	r.T().Skip("TODO, test storage")
 
-	rel, err := relayer.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
+	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
 	r.NoError(err)
 
 	go func() {
@@ -113,7 +118,7 @@ func (r *RelayerTestSuite) TestStore() {
 func (r *RelayerTestSuite) TestCommit() {
 	r.T().Skip("TODO, test storage")
 
-	rel, err := relayer.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
+	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
 	r.NoError(err)
 
 	go func() {

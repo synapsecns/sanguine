@@ -1,6 +1,7 @@
 package base
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -28,9 +29,9 @@ var (
 	chainIDFieldName string
 	// blockNumberFieldName is the name of the block number field.
 	blockNumberFieldName string
-	//statusFieldName is the field name for status
+
 	statusFieldName string
-	// transactionIDFieldName is the transaciton id field name
+	// transactionIDFieldName is the transaciton id field name.
 	transactionIDFieldName string
 )
 
@@ -96,7 +97,7 @@ type RequestForQuote struct {
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
-// TODO: roundtripper test
+// TODO: roundtripper test.
 func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 	return RequestForQuote{
 		TransactionID:        hexutil.Encode(request.TransactionId[:]),
@@ -131,10 +132,15 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		return nil, fmt.Errorf("could not get request: %w", err)
 	}
 
+	transactionID, err := sliceToArray(txID)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert transaction id: %w", err)
+	}
+
 	return &reldb.QuoteRequest{
 		OriginTokenDecimals: r.OriginTokenDecimals,
 		DestTokenDecimals:   r.DestTokenDecimals,
-		TransactionId:       [32]byte(txID),
+		TransactionId:       transactionID,
 		RawRequest:          req,
 		Sender:              common.HexToAddress(r.OriginSender),
 		BlockNumber:         r.BlockNumber,
@@ -153,4 +159,13 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		},
 		Status: r.Status,
 	}, nil
+}
+
+func sliceToArray(slice []byte) ([32]byte, error) {
+	var arr [32]byte
+	if len(slice) != 32 {
+		return arr, errors.New("slice is not 32 bytes long")
+	}
+	copy(arr[:], slice)
+	return arr, nil
 }

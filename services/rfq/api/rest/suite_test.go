@@ -135,10 +135,11 @@ func (c *ServerSuite) SetupSuite() {
 	g, _ = errgroup.WithContext(c.GetSuiteContext())
 	for _, backend := range c.testBackends {
 		backend := backend
+		// TODO: functionalize me
 		g.Go(func() error {
 			chainID, err := backend.ChainID(c.GetSuiteContext())
 			if err != nil {
-				return err
+				return fmt.Errorf("could not get chain id: %w", err)
 			}
 			// Create an auth to interact with the blockchain
 			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)

@@ -1,4 +1,4 @@
-package relayer
+package service
 
 import (
 	"context"
@@ -11,8 +11,10 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
 	_ "github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -22,7 +24,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -40,6 +42,7 @@ type Relayer struct {
 	inventory      inventory.InventoryManager
 	quoter         *quoter.QuoterManager
 	submitter      submitter.TransactionSubmitter
+	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
 }
 
@@ -47,10 +50,15 @@ var logger = log.Logger("relayer")
 
 // NewRelayer creates a new relayer.
 func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
-	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omnirpcClient.WithCaptureReqRes())
 
 	// TODO: pull from config
-	store, err := sqlite.NewSqliteStore(ctx, cfg.DBConfig, metricHandler, false)
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	if err != nil {
+		return nil, fmt.Errorf("could not get db type: %w", err)
+	}
+
+	store, err := connect.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
 	if err != nil {
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
@@ -72,22 +80,22 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		chainListeners[chainID] = chainListener
 	}
 
-	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, cfg.RelayerAddress, store)
-	if err != nil {
-		return nil, fmt.Errorf("could not add imanager")
-	}
-
-	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not get signer")
 	}
 
-	q, err := quoter.NewQuoterManager(ctx, cfg.QuotableTokens, im, cfg.RfqAPIURL, signer)
+	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
+	if err != nil {
+		return nil, fmt.Errorf("could not add imanager")
+	}
+
+	q, err := quoter.NewQuoterManager(ctx, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
 
-	sm := submitter.NewTransactionSubmitter(metricHandler, signer, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
@@ -99,6 +107,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		cfg:            cfg,
 		inventory:      im,
 		submitter:      sm,
+		signer:         sg,
 		chainListeners: chainListeners,
 	}
 	return &rel, nil
@@ -168,14 +177,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 	return nil
 }
 
-// TODO: make this configurable
+// TODO: make this configurable.
 const dbSelectorInterval = 1
 
 func (r *Relayer) runDBSelector(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("could not run db selector: %w", ctx.Err())
 		case <-time.After(dbSelectorInterval * time.Second):
 			// TODO: add context w/ timeout
 			err := r.processDB(ctx)
@@ -184,7 +193,6 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			}
 		}
 	}
-
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
@@ -317,7 +325,7 @@ func (r *Relayer) processDB(ctx context.Context) error {
 
 			r.claimCache.Set(request.TransactionId, true, 30*time.Second)
 
-			canClaim, err := originFastBridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionId)
+			canClaim, err := originFastBridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionId, r.signer.Address())
 			if err != nil {
 				return fmt.Errorf("could not check if can claim: %w", err)
 			}
@@ -341,7 +349,6 @@ func (r *Relayer) processDB(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
-
 		}
 	}
 	return nil
@@ -352,8 +359,8 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
 	for chainID, chainCFG := range r.cfg.Bridges {
-		chainID := chainID   //capture func literal
-		chainCFG := chainCFG //capture func literal
+		chainID := chainID   // capture func literal
+		chainCFG := chainCFG // capture func literal
 
 		g.Go(func() error {
 			chainListener := r.chainListeners[chainID]
@@ -388,7 +395,6 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 					}
 				case *fastbridge.FastBridgeBridgeDepositClaimed:
 					r.handleDepositClaimed(ctx, event)
-
 				}
 
 				return nil
@@ -406,7 +412,6 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) {
 	// TODO: err
 	_ = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
-
 }
 
 func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {
@@ -437,7 +442,6 @@ func (r *Relayer) handleNewRelayLog(ctx context.Context, req *fastbridge.FastBri
 		logger.Errorf("could not update request status: %v", err)
 		return
 	}
-
 }
 
 func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {

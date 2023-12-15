@@ -70,9 +70,9 @@ func (m *QuoterManager) prepareAndSubmitQuotes(inv map[int]map[common.Address]*b
 	var allQuotes []rfqAPIClient.APIQuotePutRequest
 
 	// First, generate all quotes
-	for chain_id, balances := range inv {
+	for chainId, balances := range inv {
 		for address, balance := range balances {
-			quotes, err := m.GenerateQuotes(chain_id, address, balance)
+			quotes, err := m.GenerateQuotes(chainId, address, balance)
 			if err != nil {
 				return err
 			}
@@ -94,8 +94,8 @@ func (m *QuoterManager) prepareAndSubmitQuotes(inv map[int]map[common.Address]*b
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *QuoterManager) GenerateQuotes(chain_id int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
-	destTokenId := fmt.Sprintf("%d-%s", chain_id, address.Hex())
+func (m *QuoterManager) GenerateQuotes(chainId int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
+	destTokenId := fmt.Sprintf("%d-%s", chainId, address.Hex())
 	var quotes []rfqAPIClient.APIQuotePutRequest
 	for keyTokenID, itemTokenIds := range m.quotableTokens {
 		for _, tokenID := range itemTokenIds {
@@ -103,7 +103,7 @@ func (m *QuoterManager) GenerateQuotes(chain_id int, address common.Address, bal
 				quote := rfqAPIClient.APIQuotePutRequest{
 					OriginChainID:   strings.Split(keyTokenID, "-")[0],
 					OriginTokenAddr: strings.Split(keyTokenID, "-")[1],
-					DestChainID:     fmt.Sprint(chain_id),
+					DestChainID:     fmt.Sprint(chainId),
 					DestTokenAddr:   address.Hex(),
 					DestAmount:      balance.String(),
 					Price:           "1",
