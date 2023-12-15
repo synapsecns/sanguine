@@ -8,6 +8,9 @@ import { store } from '@/state/store'
 
 import * as BRIDGEABLE from '@/constants/bridgeable'
 
+// TODO: After separating required fields need two types: BridgeProps (consumer) and WidgetProps (internal)
+// TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
+
 export const Bridge = ({
   chainIds,
   web3Provider,
@@ -18,11 +21,10 @@ export const Bridge = ({
   toChainId,
 }: WidgetProps) => {
   return (
-    <Web3Provider>
+    <Web3Provider config={web3Provider}>
       <Provider store={store}>
         <Widget
           chainIds={chainIds}
-          web3Provider={web3Provider}
           networkProviders={networkProviders}
           theme={theme}
           customTheme={customTheme}

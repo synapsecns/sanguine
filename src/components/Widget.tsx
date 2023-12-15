@@ -66,13 +66,12 @@ const chains = {
 
 export const Widget = ({
   chainIds,
-  web3Provider,
   networkProviders,
   theme,
   customTheme,
   tokens,
   toChainId,
-}: WidgetProps) => {
+}) => {
   const dispatch = useAppDispatch()
   const synapseSDK = new SynapseSDK(chainIds, networkProviders)
   const web3Context = useContext(Web3Context)
@@ -104,28 +103,6 @@ export const Widget = ({
     if (customTheme) return generateTheme(customTheme)
     return generateTheme()
   })()
-
-  /** Fetch Web3 Provider Data */
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const signer = await web3Provider.getSigner()
-        const address = await signer.getAddress()
-        const network = await web3Provider.getNetwork()
-
-        web3Context.setWeb3Provider({
-          connectedAddress: address,
-          networkId: Number(network?.chainId),
-          signer,
-          provider: web3Provider,
-        })
-      } catch (e) {
-        console.log('Error', e)
-      }
-    }
-
-    web3Provider && fetchData()
-  }, [web3Provider])
 
   useEffect(() => {
     dispatch(setTokens(tokens))
