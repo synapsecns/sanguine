@@ -1,7 +1,5 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
+const path = require('path');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const config = {
   stats: {
@@ -35,10 +33,10 @@ const config = {
         ],
       },
       {
-        test: /\.(png|jpe?g|gif)$/i,
+        test: /\.(png|jpe?g)$/i,
         use: [
           {
-            loader: 'file-loader',
+            loader: 'url-loader',
           },
         ],
       },
@@ -46,4 +44,4 @@ const config = {
   },
 };
 
-export default config;
+module.exports = config

@@ -22,18 +22,16 @@ const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 // Format is { chainId: providerUrl }
 // Replace providerUrl with new ethers.providers.JsonRpcProvider(providerUrl)
 Object.keys(providers).forEach((chainId) => {
-  console.log(providers[1])
   providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
 })
 
 // Contract addresses
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
-const SynapseCCTPRouterAddress = '0xd359bc471554504f683fbd4f6e36848612349ddf'
-const SynapseCCTPAddress = '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
-const SynapseCCTPOptimismAddress = '0x5e69c336661dde70404e3345BA61F9c01DdB4C36'
+const SynapseCCTPRouterAddress = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
+const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
 
 // Chain IDs where SynapseCCTPRouter is allowed
-const allowedChainIdsForSynapseCCTPRouter = [1, 10, 8453, 42161, 43114]
+const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
@@ -62,7 +60,7 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
     providers[chainId]
   )
   SynapseCCTPs[chainId] = new ethers.Contract(
-    chainId === 10 ? SynapseCCTPOptimismAddress : SynapseCCTPAddress,
+    SynapseCCTPAddress,
     SynapseCCTPABI,
     providers[chainId]
   )
@@ -287,7 +285,7 @@ const printMaps = async () => {
       console.log('Finished chain: ', chainId)
     })
   )
-  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/tokens/bridgeMap.ts')
+  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 
 // Extracts the list of tokens that can be swapped into a token via single on-chain swap
