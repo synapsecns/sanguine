@@ -13,6 +13,8 @@ import (
 type Wallet interface {
 	// Address gets the wallets address
 	Address() common.Address
+	// AddressPtr gets the wallets address as a pointer
+	AddressPtr() *common.Address
 	// PublicKey returns this wallet's public key as an *ecdsa.PublicKey
 	PublicKey() *ecdsa.PublicKey
 	// PrivateKey returns this wallet's private key as an *ecdsa.PrivateKey
@@ -43,6 +45,10 @@ type walletImpl struct {
 
 func (w walletImpl) Address() common.Address {
 	return w.address
+}
+
+func (w walletImpl) AddressPtr() *common.Address {
+	return &w.address
 }
 
 func (w walletImpl) PublicKey() *ecdsa.PublicKey {

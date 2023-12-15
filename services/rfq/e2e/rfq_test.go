@@ -1,15 +1,20 @@
 package e2e_test
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -26,6 +31,7 @@ type IntegrationSuite struct {
 	apiServer     string
 	relayer       *relayer.Relayer
 	relayerWallet wallet.Wallet
+	userWallet    wallet.Wallet
 }
 
 func NewIntegrationSuite(tb testing.TB) *IntegrationSuite {
@@ -58,6 +64,7 @@ func (i *IntegrationSuite) SetupTest() {
 	i.metrics = metrics.NewNullHandler()
 	// setup backends for ethereum & omnirpc
 	i.setupBackends()
+
 	// setup the api server
 	i.setupAPI()
 	i.setupRelayer()
@@ -77,5 +84,61 @@ func (i *IntegrationSuite) getOtherBackend(backend backends.SimulatedTestBackend
 
 // TODO:
 func (i *IntegrationSuite) TestUSDCtoUSDC() {
-	time.Sleep(time.Second * 90)
+	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
+	// 100k should do.
+	i.manager.MintToAddress(i.GetTestContext(), i.destBackend, testutil.USDCType, i.relayerWallet.Address(), big.NewInt(100000))
+	destUSDC := i.manager.Get(i.GetTestContext(), i.destBackend, testutil.USDCType)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	// let's give the user some money as well, $500 should do.
+	const userWantAmount = 500
+	i.manager.MintToAddress(i.GetTestContext(), i.originBackend, testutil.USDCType, i.userWallet.Address(), big.NewInt(userWantAmount))
+	originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, testutil.USDCType)
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	// non decimal adjusted user want amount
+	realWantAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(userWantAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+
+	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		userAPIClient, err := client.NewClient(i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := userAPIClient.GetAllQuotes()
+		i.NoError(err)
+
+		// let's figure out the amount of usdc we need
+
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
+
+				if quote.DestAmount.BigInt().Cmp(realWantAmount) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	// we want 499 usdc for 500 requested within a day
+	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()),
+		To:           i.userWallet.Address(),
+		OriginToken:  originUSDC.Address(),
+		DestToken:    destUSDC.Address(),
+		OriginAmount: realWantAmount,
+		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	})
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	time.Sleep(time.Second * 100)
 }

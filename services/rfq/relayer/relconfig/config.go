@@ -3,6 +3,7 @@ package relconfig
 import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 )
 
 // TODO: validation function.
@@ -18,8 +19,9 @@ type Config struct {
 	DBConfig       string
 	QuotableTokens map[string][]string `yaml:"quotable_tokens"`
 	// TODO: remove, replace w/ pkey recover
-	RelayerAddress common.Address
-	Signer         config.SignerConfig
+	RelayerAddress  common.Address
+	Signer          config.SignerConfig
+	SubmitterConfig submitterConfig.Config
 }
 
 type ChainConfig struct {

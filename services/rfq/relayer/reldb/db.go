@@ -61,7 +61,8 @@ type QuoteRequestStatus uint8
 const (
 	Seen QuoteRequestStatus = iota + 1
 	NotEnoughInventory
-	Committed
+	CommittedPending
+	CommittedConfirmed
 )
 
 func (q QuoteRequestStatus) Int() uint8 {

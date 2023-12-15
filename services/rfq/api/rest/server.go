@@ -171,7 +171,6 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Log and pass to the next middleware if authentication succeeds
-		fmt.Println("Authentication successful for:", addressRecovered.Hex())
 		// Store the request in context after binding and validation
 		c.Set("putRequest", &req)
 		c.Set("relayerAddr", addressRecovered.Hex())

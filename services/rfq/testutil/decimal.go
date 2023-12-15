@@ -10,7 +10,9 @@ import (
 	"testing"
 )
 
-func mustAdjustAmount(ctx context.Context, tb testing.TB, amount *big.Int, handler interface{}) (res *big.Int) {
+// MustAdjustAmount multiplies a token by the number of decimals in the amount.
+// see AdjustAmount
+func MustAdjustAmount(ctx context.Context, tb testing.TB, amount *big.Int, handler interface{}) (res *big.Int) {
 	tb.Helper()
 	res, err := AdjustAmount(ctx, amount, handler)
 	assert.Nil(tb, err)

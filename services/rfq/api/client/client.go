@@ -26,6 +26,7 @@ type clientImpl struct {
 }
 
 // NewClient creates a new client for the RFQ quoting API.
+// TODO: @aurelius,  you don't actually need to be authed for GET Requests
 func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).
@@ -46,7 +47,6 @@ func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 			}
 
 			res := fmt.Sprintf("%s:%s", now, hexutil.Encode(signer.Encode(sig)))
-			fmt.Println(res)
 			request.SetHeader("Authorization", res)
 
 			return nil
@@ -136,7 +136,6 @@ func (c *clientImpl) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, 
 
 // APIQuotePutRequest is the struct for the quote API.
 type APIQuotePutRequest struct {
-	ID              int    `json:"id"`
 	OriginChainID   string `json:"origin_chain_id"`
 	OriginTokenAddr string `json:"origin_token_addr"`
 	DestChainID     string `json:"dest_chain_id"`

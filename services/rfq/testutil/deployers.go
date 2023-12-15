@@ -40,7 +40,7 @@ func (d *DeployManager) MintToAddress(ctx context.Context, backend backends.Simu
 		contract, handle := d.GetDAI(ctx, backend)
 
 		auth := backend.GetTxContext(ctx, contract.OwnerPtr())
-		adjustedAmount = mustAdjustAmount(ctx, d.T(), amount, handle)
+		adjustedAmount = MustAdjustAmount(ctx, d.T(), amount, handle)
 
 		tx, err := handle.Mint(auth.TransactOpts, mintToAddress, adjustedAmount)
 		assert.NoError(d.T(), err)
@@ -49,7 +49,7 @@ func (d *DeployManager) MintToAddress(ctx context.Context, backend backends.Simu
 	case USDTType:
 		contract, handle := d.GetUSDT(ctx, backend)
 
-		adjustedAmount = mustAdjustAmount(ctx, d.T(), amount, handle)
+		adjustedAmount = MustAdjustAmount(ctx, d.T(), amount, handle)
 
 		auth := backend.GetTxContext(ctx, contract.OwnerPtr())
 		tx, err := handle.Redeem(auth.TransactOpts, adjustedAmount)
@@ -66,9 +66,10 @@ func (d *DeployManager) MintToAddress(ctx context.Context, backend backends.Simu
 	case USDCType:
 		contract, handle := d.GetUSDC(ctx, backend)
 
-		adjustedAmount = mustAdjustAmount(ctx, d.T(), amount, handle)
+		adjustedAmount = MustAdjustAmount(ctx, d.T(), amount, handle)
 
 		auth := backend.GetTxContext(ctx, contract.OwnerPtr())
+		// TODO: it's fairly likely we should just configure this w/ max mint rights to minter
 		tx, err := handle.ConfigureMinter(auth.TransactOpts, contract.Owner(), adjustedAmount)
 		assert.NoError(d.T(), err)
 		backend.WaitForConfirmation(ctx, tx)
@@ -81,7 +82,7 @@ func (d *DeployManager) MintToAddress(ctx context.Context, backend backends.Simu
 		backend.WaitForConfirmation(ctx, tx)
 	case MockERC20Type:
 		contract, handle := d.GetMockERC20(ctx, backend)
-		adjustedAmount = mustAdjustAmount(ctx, d.T(), amount, handle)
+		adjustedAmount = MustAdjustAmount(ctx, d.T(), amount, handle)
 
 		auth := backend.GetTxContext(ctx, contract.OwnerPtr())
 

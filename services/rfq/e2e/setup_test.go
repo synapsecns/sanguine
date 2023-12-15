@@ -3,11 +3,15 @@ package e2e_test
 import (
 	"fmt"
 	"github.com/Flaque/filet"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -17,11 +21,13 @@ import (
 	apiConfig "github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"net/http"
+	"slices"
 	"strconv"
 	"sync"
 )
@@ -76,26 +82,24 @@ func (i *IntegrationSuite) setupAPI() {
 func (i *IntegrationSuite) setupBackends() {
 	var wg sync.WaitGroup
 
-	// prdeploys are contracts we want to deploy before running the test to speed it up. Obviously, these can be deployed when we need them as well,
-	// but this way we can do something while we're waiting for the other backend to startup.
-	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
-	predeploys := []contracts.ContractType{testutil.FastBridgeType, testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+	// Note: we're intentionally not gonna give these guys any tokens to allow the test to do it. What we will do is give them some eth and store the keys.
+	var err error
+	i.relayerWallet, err = wallet.FromRandom()
+	i.NoError(err)
+
+	i.userWallet, err = wallet.FromRandom()
+	i.NoError(err)
 
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		i.originBackend = geth.NewEmbeddedBackendForChainID(i.GetTestContext(), i.T(), big.NewInt(originBackendChainID))
-		go func() {
-			i.manager.BulkDeploy(i.GetTestContext(), core.ToSlice(i.originBackend), predeploys...)
-		}()
-
+		i.setupBE(i.originBackend)
 	}()
 	go func() {
 		defer wg.Done()
 		i.destBackend = geth.NewEmbeddedBackendForChainID(i.GetTestContext(), i.T(), big.NewInt(destBackendChainID))
-		go func() {
-			i.manager.BulkDeploy(i.GetTestContext(), core.ToSlice(i.destBackend), predeploys...)
-		}()
+		i.setupBE(i.destBackend)
 	}()
 	wg.Wait()
 
@@ -103,11 +107,61 @@ func (i *IntegrationSuite) setupBackends() {
 	i.omniClient = omnirpcClient.NewOmnirpcClient(i.omniServer, i.metrics, omnirpcClient.WithCaptureReqRes())
 }
 
-func (i *IntegrationSuite) setupRelayer() {
-	var err error
-	i.relayerWallet, err = wallet.FromRandom()
+// setupBe sets up one backend
+func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
+	// prdeploys are contracts we want to deploy before running the test to speed it up. Obviously, these can be deployed when we need them as well,
+	// but this way we can do something while we're waiting for the other backend to startup.
+	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
+	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+	predeploys := append(predeployTokens, testutil.FastBridgeType)
+	slices.Reverse(predeploys) // return fast bridge first
+
+	ethAmount := *new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
+
+	// store the keys
+	backend.Store(base.WalletToKey(i.T(), i.relayerWallet))
+	backend.Store(base.WalletToKey(i.T(), i.userWallet))
+
+	// fund each of the wallets
+	backend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), ethAmount)
+	backend.FundAccount(i.GetTestContext(), i.userWallet.Address(), ethAmount)
+
+	go func() {
+		i.manager.BulkDeploy(i.GetTestContext(), core.ToSlice(backend), predeploys...)
+	}()
+
+	// TODO: in the case of relayer this not finishing before the test starts can lead to race conditions since
+	// nonce may be shared between submitter and relayer. Think about how to deal w/ this.
+	for _, user := range []wallet.Wallet{i.relayerWallet, i.userWallet} {
+		go func(userWallet wallet.Wallet) {
+			for _, token := range predeployTokens {
+				i.Approve(backend, i.manager.Get(i.GetTestContext(), backend, token), userWallet)
+			}
+		}(user)
+	}
+
+}
+
+// Approve checks if the token is approved and approves it if not.
+func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
+	erc20, err := ierc20.NewIERC20(token.Address(), backend)
 	i.NoError(err)
 
+	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+	i.NoError(err)
+
+	// TODO: can also use in mem cache
+	if allowance.Cmp(big.NewInt(0)) == 0 {
+		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
+		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+		i.NoError(err)
+		backend.WaitForConfirmation(i.GetTestContext(), tx)
+	}
+}
+
+func (i *IntegrationSuite) setupRelayer() {
 	// add myself as a filler
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -185,6 +239,7 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
+	var err error
 	i.relayer, err = relayer.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
 	go func() {

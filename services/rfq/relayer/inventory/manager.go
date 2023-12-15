@@ -65,7 +65,7 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 	// get db first
 	// Add other committed, but incomplete statuses here
 	// TODO: clean me up
-	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.Committed)
+	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending)
 	if err != nil {
 		return nil, fmt.Errorf("could not get in flight quotes: %w", err)
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
@@ -35,6 +36,7 @@ type Relayer struct {
 	chainListeners map[int]listener.ChainListener
 	inventory      inventory.InventoryManager
 	quoter         *quoter.QuoterManager
+	submitter      submitter.TransactionSubmitter
 }
 
 var logger = log.Logger("relayer")
@@ -81,6 +83,8 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get quoter")
 	}
 
+	sm := submitter.NewTransactionSubmitter(metricHandler, signer, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
 	rel := Relayer{
 		db:             store,
 		client:         omniClient,
@@ -88,12 +92,13 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		metrics:        metricHandler,
 		cfg:            cfg,
 		inventory:      im,
+		submitter:      sm,
 		chainListeners: chainListeners,
 	}
 	return &rel, nil
 }
 
-const defaultPostInterval = 5
+const defaultPostInterval = 1
 
 func (r *Relayer) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
@@ -117,6 +122,28 @@ func (r *Relayer) Start(ctx context.Context) error {
 				}
 			}
 		}
+	})
+
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultPostInterval * time.Second):
+				err := r.runDBSelector(ctx)
+				if err != nil {
+					return fmt.Errorf("could not start db selector: %w", err)
+				}
+			}
+		}
+	})
+
+	g.Go(func() error {
+		err := r.submitter.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start submitter: %w", err)
+		}
+		return nil
 	})
 
 	err := g.Wait()
@@ -147,7 +174,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen)
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending)
 	if err != nil {
 		return nil
 	}
@@ -155,6 +182,19 @@ func (r *Relayer) processDB(ctx context.Context) error {
 	for _, request := range requests {
 		originID := int(request.Transaction.OriginChainId)
 		destID := int(request.Transaction.DestChainId)
+		// TODO: check for deadline expired. if so mark and continue.
+
+		originClient, err := r.client.GetChainClient(ctx, originID)
+		if err != nil {
+			logger.Errorf("could not get origin client: %v", err)
+			continue
+		}
+
+		originFastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[originID].Bridge), originClient)
+		if err != nil {
+			logger.Errorf("could not get origin fast bridge: %v", err)
+			continue
+		}
 
 		switch request.Status {
 		case reldb.Seen:
@@ -168,7 +208,7 @@ func (r *Relayer) processDB(ctx context.Context) error {
 			if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
 				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
 			}
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.Committed)
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedPending)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
@@ -176,16 +216,35 @@ func (r *Relayer) processDB(ctx context.Context) error {
 		case reldb.NotEnoughInventory:
 			// TODO: recheck if there's enough inventory. Also if it's in this state, you can see if deadline expired
 
-		case reldb.Committed:
+		case reldb.CommittedPending:
 			// TODO: build this in somehwere else  afte rwe commit
 			// need to see if we can complete
 			earliestConfirmBlock := request.BlockNumber + r.cfg.Bridges[originID].Confirmations
-			// can't complete, yet do nothing
+
 			if earliestConfirmBlock < r.chainListeners[originID].LatestBlock() {
+				// can't complete, yet do nothing
 				continue
 			}
 
-			continue
+			// It's here: so at this point, we wanna check if it's still on chain.
+			// TODO: this will cover cases where this got reorged out, but they will stay in the queue forever
+			// should clean this eventually.
+			//
+			// Reorgs are rare enough that its questionable wether this is ever worth building or if we can just
+			// leave these in the queue.
+			bs, err := originFastBridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionId)
+			if err != nil {
+				return fmt.Errorf("could not get bridge status: %w", err)
+			}
+
+			// sanity check to make sure it's still requested.
+			if bs == fastbridge.REQUESTED.Int() {
+				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedConfirmed)
+				if err != nil {
+					return fmt.Errorf("could not update request status: %w", err)
+				}
+			}
+		case reldb.CommittedConfirmed:
 
 		}
 	}
@@ -282,6 +341,7 @@ func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge
 	}
 
 	err = r.db.StoreQuoteRequest(ctx, reldb.QuoteRequest{
+		BlockNumber:         req.Raw.BlockNumber,
 		OriginTokenDecimals: decimals.originDecimals,
 		DestTokenDecimals:   decimals.originDecimals,
 		TransactionId:       req.TransactionId,

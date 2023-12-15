@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Admin} from "../contracts/Admin.sol";
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+import { FastBridge } from "../contracts/FastBridge.sol";
 
 contract FastBridgeMock is IFastBridge, Admin {
     // @dev the block the contract was deployed at
@@ -17,6 +18,21 @@ contract FastBridgeMock is IFastBridge, Admin {
 
     function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
         return abi.decode(request, (BridgeTransaction));
+    }
+
+    // used for testing in go.
+    // see: https://ethereum.stackexchange.com/questions/21155/how-to-expose-enum-in-solidity-contract
+    // make sure to update fastbridge/status.go if this changes
+    // or underliyng enum changes.
+    //
+    // TODO: a foundry test should be added to ensure this is always in sync.
+    function getEnumKeyByValue (FastBridge.BridgeStatus keyValue) public pure returns (string memory) {
+        if (FastBridge.BridgeStatus.NULL == keyValue) return "NULL";
+        if (FastBridge.BridgeStatus.REQUESTED == keyValue) return "REQUESTED";
+        if (FastBridge.BridgeStatus.RELAYER_PROVED == keyValue) return "RELAYER_PROVED";
+        if (FastBridge.BridgeStatus.RELAYER_CLAIMED == keyValue) return "RELAYER_CLAIMED";
+        if (FastBridge.BridgeStatus.REFUNDED == keyValue) return "REFUNDED";
+        return "";
     }
 
     function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
