@@ -26,7 +26,7 @@ type clientImpl struct {
 }
 
 // NewClient creates a new client for the RFQ quoting API.
-// TODO: @aurelius,  you don't actually need to be authed for GET Requests
+// TODO: @aurelius,  you don't actually need to be authed for GET Requests.
 func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).

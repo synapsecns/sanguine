@@ -39,14 +39,15 @@ type Service interface {
 var (
 	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
 	ErrNoLatestBlockForChainID = errors.New("no latest block for chainId")
-	// ErrNoQuoteForID means the quote was not found
+	// ErrNoQuoteForID means the quote was not found.
 	ErrNoQuoteForID = errors.New("no quote found")
 )
 
-// QuoteRequest is the quote request object
+// QuoteRequest is the quote request object.
 type QuoteRequest struct {
 	BlockNumber         uint64
 	OriginTokenDecimals uint8
+	RawRequest          []byte
 	DestTokenDecimals   uint8
 	TransactionId       [32]byte
 	Sender              common.Address
@@ -63,6 +64,10 @@ const (
 	NotEnoughInventory
 	CommittedPending
 	CommittedConfirmed
+	RelayStarted
+	RelayCompleted
+	ProvePosting
+	ProvePosted
 )
 
 func (q QuoteRequestStatus) Int() uint8 {

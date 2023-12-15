@@ -9,11 +9,16 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Seen-1]
+	_ = x[NotEnoughInventory-2]
+	_ = x[CommittedPending-3]
+	_ = x[CommittedConfirmed-4]
+	_ = x[RelayStarted-5]
+	_ = x[RelayCompleted-6]
 }
 
-const _QuoteRequestStatus_name = "Seen"
+const _QuoteRequestStatus_name = "SeenNotEnoughInventoryCommittedPendingCommittedConfirmedRelayStartedRelayCompleted"
 
-var _QuoteRequestStatus_index = [...]uint8{0, 4}
+var _QuoteRequestStatus_index = [...]uint8{0, 4, 22, 38, 56, 68, 82}
 
 func (i QuoteRequestStatus) String() string {
 	i -= 1

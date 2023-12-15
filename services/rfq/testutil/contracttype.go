@@ -55,13 +55,13 @@ const (
 	// FastBridgeMockType is a mock contract for testing fast bridge interactions
 	// TODO: rename  contract to MockFastBridge.
 	FastBridgeMockType // FastBridgeMock
-	// WETH9Type  is the weth 9 contract
+	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9
-	// USDTType is the tether type
+	// USDTType is the tether type.
 	USDTType // USDTType
-	// USDCType is the type of the usdc contract
+	// USDCType is the type of the usdc contract.
 	USDCType // USDCType
-	// DAIType is the dai contract
+	// DAIType is the dai contract.
 	DAIType // DAIType is the dai contract type
 )
 
@@ -103,7 +103,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return usdc.Contracts["/solidity/FiatToken.sol:FiatTokenV2"]
 	case DAIType:
 		return dai.Contracts["/solidity/dai.sol:Dai"]
-
 	}
 	return nil
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
+	"github.com/jellydator/ttlcache/v3"
+	_ "github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -24,6 +26,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 	"time"
 )
 
@@ -37,6 +40,7 @@ type Relayer struct {
 	inventory      inventory.InventoryManager
 	quoter         *quoter.QuoterManager
 	submitter      submitter.TransactionSubmitter
+	claimCache     *ttlcache.Cache[common.Hash, bool]
 }
 
 var logger = log.Logger("relayer")
@@ -85,11 +89,13 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	sm := submitter.NewTransactionSubmitter(metricHandler, signer, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
+	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
 		client:         omniClient,
 		quoter:         q,
 		metrics:        metricHandler,
+		claimCache:     cache,
 		cfg:            cfg,
 		inventory:      im,
 		submitter:      sm,
@@ -109,6 +115,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		}
 		return nil
 	})
+
+	go r.claimCache.Start()
+	go func() {
+		select {
+		case <-ctx.Done():
+			r.claimCache.Stop()
+		}
+	}()
 
 	g.Go(func() error {
 		for {
@@ -174,7 +188,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending)
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted)
 	if err != nil {
 		return nil
 	}
@@ -193,6 +207,18 @@ func (r *Relayer) processDB(ctx context.Context) error {
 		originFastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[originID].Bridge), originClient)
 		if err != nil {
 			logger.Errorf("could not get origin fast bridge: %v", err)
+			continue
+		}
+
+		destClient, err := r.client.GetChainClient(ctx, destID)
+		if err != nil {
+			logger.Errorf("could not get dest client: %v", err)
+			continue
+		}
+
+		destFastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[destID].Bridge), destClient)
+		if err != nil {
+			logger.Errorf("could not get dest fast bridge: %v", err)
 			continue
 		}
 
@@ -245,6 +271,70 @@ func (r *Relayer) processDB(ctx context.Context) error {
 				}
 			}
 		case reldb.CommittedConfirmed:
+			nonce, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(destID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				tx, err = destFastBridge.Relay(transactor, request.RawRequest)
+				if err != nil {
+					return nil, fmt.Errorf("could not relay: %w", err)
+				}
+
+				return tx, nil
+			})
+			if err != nil {
+				return fmt.Errorf("could not submit transaction: %w", err)
+			}
+
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.RelayStarted)
+			// TODO:
+			_ = nonce
+
+			if err != nil {
+				return fmt.Errorf("could not update request status: %w", err)
+			}
+		case reldb.RelayCompleted:
+			// relays been completed, it's time to go back to the origin chain and try to prove
+			_, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(originID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				// MAJO MAJOR TODO should be dest tx hash
+				tx, err = originFastBridge.Prove(transactor, request.RawRequest, request.TransactionId)
+				if err != nil {
+					return nil, fmt.Errorf("could not relay: %w", err)
+				}
+
+				return tx, nil
+			})
+			if err != nil {
+				return fmt.Errorf("could not submit transaction: %w", err)
+			}
+
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ProvePosting)
+			if err != nil {
+				return fmt.Errorf("could not update request status: %w", err)
+			}
+		case reldb.ProvePosted:
+			// we use claim cache to make sure we don't hit the rpc to check to often
+			if r.claimCache.Has(request.TransactionId) {
+				continue
+			}
+
+			r.claimCache.Set(request.TransactionId, true, 30*time.Second)
+
+			canClaim, err := originFastBridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionId)
+			if err != nil {
+				return fmt.Errorf("could not check if can claim: %w", err)
+			}
+
+			if canClaim {
+				_, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(destID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					tx, err = originFastBridge.Claim(transactor, request.RawRequest, transactor.From)
+					if err != nil {
+						return nil, fmt.Errorf("could not relay: %w", err)
+					}
+
+					return tx, nil
+				})
+				if err != nil {
+					return fmt.Errorf("could not submit transaction: %w", err)
+				}
+			}
 
 		}
 	}
@@ -259,14 +349,14 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 		chainID := chainID   //capture func literal
 		chainCFG := chainCFG //capture func literal
 
-		chainListener := r.chainListeners[chainID]
-
-		parser, err := fastbridge.NewParser(common.HexToAddress(chainCFG.Bridge))
-		if err != nil {
-			return fmt.Errorf("could not parse: %w", err)
-		}
-
 		g.Go(func() error {
+			chainListener := r.chainListeners[chainID]
+
+			parser, err := fastbridge.NewParser(common.HexToAddress(chainCFG.Bridge))
+			if err != nil {
+				return fmt.Errorf("could not parse: %w", err)
+			}
+
 			err = chainListener.Listen(ctx, func(ctx context.Context, log types.Log) error {
 				_, parsedEvent, ok := parser.ParseEvent(log)
 				// handle unknown event
@@ -279,13 +369,17 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 
 				switch event := parsedEvent.(type) {
 				case *fastbridge.FastBridgeBridgeRequested:
-					// TODO store this if not already seen
 					err = r.handleNewRequestLog(ctx, event, uint64(chainID))
 					if err != nil {
 						return fmt.Errorf("could not handle request: %w", err)
 					}
 				case *fastbridge.FastBridgeBridgeRelayed:
-					panic("implement me")
+					r.handleNewRelayLog(ctx, event) // TODO: handle error
+				case *fastbridge.FastBridgeBridgeProofProvided:
+					err = r.handleProofProvided(ctx, event)
+					if err != nil {
+						return fmt.Errorf("could not handle proof provided: %w", err)
+					}
 				}
 
 				return nil
@@ -298,6 +392,37 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 		})
 	}
 	return nil
+}
+
+func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {
+	// TODO: this can still get re-orged
+	// ALso: we should make sure the previous status  is ProvePosting
+	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.ProvePosted)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %v", err)
+	}
+	return nil
+}
+
+func (r *Relayer) handleNewRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) {
+	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
+	if err != nil {
+		logger.Errorf("could not get quote request: %v", err)
+		return
+	}
+	// we might've accidentally gottent his later, if so we'll just ignore it
+	if reqID.Status != reldb.RelayStarted {
+		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionId[:]), req.Raw.TxHash)
+		return
+	}
+
+	// TODO: this can still get re-orged
+	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted)
+	if err != nil {
+		logger.Errorf("could not update request status: %v", err)
+		return
+	}
+
 }
 
 func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
@@ -342,6 +467,7 @@ func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge
 
 	err = r.db.StoreQuoteRequest(ctx, reldb.QuoteRequest{
 		BlockNumber:         req.Raw.BlockNumber,
+		RawRequest:          req.Request,
 		OriginTokenDecimals: decimals.originDecimals,
 		DestTokenDecimals:   decimals.originDecimals,
 		TransactionId:       req.TransactionId,

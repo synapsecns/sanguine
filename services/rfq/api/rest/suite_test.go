@@ -108,7 +108,7 @@ func (c *ServerSuite) SetupSuite() {
 			// anvilOpts := anvil.NewAnvilOptionBuilder()
 			// anvilOpts.SetChainID(chainID)
 			// anvilOpts.SetBlockTime(1 * time.Second)
-			//backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+			// backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends

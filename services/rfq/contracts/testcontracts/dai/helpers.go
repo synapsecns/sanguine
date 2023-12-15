@@ -7,7 +7,7 @@ import (
 )
 
 // DaiRef is a bound synfactory bridge contract that returns the address of the contract.
-//nolint: golint
+// nolint: golint
 type DaiRef struct {
 	*Dai
 	address common.Address

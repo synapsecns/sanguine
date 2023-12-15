@@ -140,5 +140,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	time.Sleep(time.Second * 100)
+	time.Sleep(time.Second * 30)
+	// TODO: verify, I'm using breakpoitns for now
 }

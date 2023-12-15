@@ -63,26 +63,26 @@ contract FastBridgeMock is IFastBridge, Admin {
     }
 
     function bridge(BridgeParams memory params) external payable{
-        // do nothing
+        revert("not implemented");
     }
 
     function relay(bytes memory request) external payable {
-        // do nothing
+        revert("not implemented");
     }
 
     function prove(bytes memory request, bytes32 destTxHash) external {
-        // do nothing
+        revert("not implemented");
     }
 
     function claim(bytes memory request, address to) external {
-        // do nothing
+        revert("not implemented");
     }
 
     function dispute(bytes32 transactionId) external {
-        // do nothing
+        revert("not implemented");
     }
 
     function refund(bytes memory request, address to) external {
-        // do nothing
+        revert("not implemented");
     }
 }

@@ -5,17 +5,17 @@ package fastbridge
 //go:generate go run golang.org/x/tools/cmd/stringer -type=BridgeStatus -linecomment
 type BridgeStatus uint8
 
-// DO NOT USE IOTA! These are meant to reflect on chain statuses
+// DO NOT USE IOTA! These are meant to reflect on chain statuses.
 const (
-	// NULL is the default value for a bridge status
+	// NULL is the default value for a bridge status.
 	NULL BridgeStatus = 0 // NULL
-	// REQUESTED is the status for a request that has been made
+	// REQUESTED is the status for a request that has been made.
 	REQUESTED BridgeStatus = 1 // REQUESTED
-	// RelayerProved is the status for a request that has been proved by a relayer
+	// RelayerProved is the status for a request that has been proved by a relayer.
 	RelayerProved BridgeStatus = 2 // RELAYER_PROVED
-	// RelayerClaimed is the status for a request that has been claimed by a relayer
+	// RelayerClaimed is the status for a request that has been claimed by a relayer.
 	RelayerClaimed BridgeStatus = 3 // RELAYER_CLAIMED
-	// REFUNDED is the status for a request that has been refunded
+	// REFUNDED is the status for a request that has been refunded.
 	REFUNDED BridgeStatus = 4 // REFUNDED
 )
 

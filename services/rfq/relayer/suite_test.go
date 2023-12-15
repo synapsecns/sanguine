@@ -143,6 +143,6 @@ func (r *RelayerTestSuite) TestCommit() {
 
 	r.T().Skip("TODO, test storage")
 	// TODO: check db
-	time.Sleep(time.Second * 1000)
+	time.Sleep(time.Second * 100000)
 
 }

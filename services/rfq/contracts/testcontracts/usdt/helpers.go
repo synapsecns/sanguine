@@ -7,7 +7,7 @@ import (
 )
 
 // USDTRef is a bound synfactory bridge contract that returns the address of the contract.
-//nolint: golint
+// nolint: golint
 type USDTRef struct {
 	*TetherToken
 	address common.Address

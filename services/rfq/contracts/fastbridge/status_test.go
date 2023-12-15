@@ -37,7 +37,7 @@ func (s *FastBridgeSuite) SetupTest() {
 	s.manager = testutil.NewDeployManager(s.T())
 }
 
-// TestStatusEnum makes sure
+// TestStatusEnum makes sure.
 func (s *FastBridgeSuite) TestStatusEnum() {
 	_, fb := s.manager.GetMockFastBridge(s.GetTestContext(), s.backend)
 	for _, status := range fastbridge.GetAllBridgeStatuses() {

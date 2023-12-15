@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[BridgeRequestedEvent-1]
 	_ = x[BridgeRelayedEvent-2]
+	_ = x[BridgeProofProvidedEvent-3]
 }
 
-const _EventType_name = "BridgeRequestedEventBridgeRelayedEvent"
+const _EventType_name = "BridgeRequestedEventBridgeRelayedEventBridgeProofProvidedEvent"
 
-var _EventType_index = [...]uint8{0, 20, 38}
+var _EventType_index = [...]uint8{0, 20, 38, 62}
 
 func (i EventType) String() string {
 	i -= 1

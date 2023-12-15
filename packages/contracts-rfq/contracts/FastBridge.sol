@@ -152,6 +152,13 @@ contract FastBridge is IFastBridge, Admin {
         }
     }
 
+    // @notice Checks if a bridge deposit can be claimed
+    function canClaim(bytes32 transactionId) external view returns (bool) {
+        if (bridgeStatuses[transactionId] != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        BridgeProof memory proof = bridgeProofs[transactionId];
+        return _timeSince(proof) > DISPUTE_PERIOD;
+    }
+
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) external onlyRelayer {
         bytes32 transactionId = keccak256(request);

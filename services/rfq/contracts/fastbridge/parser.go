@@ -14,6 +14,7 @@ type EventType uint
 const (
 	BridgeRequestedEvent EventType = iota + 1
 	BridgeRelayedEvent
+	BridgeProofProvidedEvent
 )
 
 // Parser parses events from the fastbridge contracat.
@@ -61,6 +62,12 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, requested, true
+	case BridgeProofProvidedEvent:
+		proven, err := p.filterer.ParseBridgeProofProvided(log)
+		if err != nil {
+			return noOpEvent, nil, false
+		}
+		return eventType, proven, true
 	}
 
 	return eventType, nil, true

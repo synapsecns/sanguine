@@ -76,7 +76,7 @@ func NewAPI(
 	}, nil
 }
 
-// QuoteRoute is the API endpoint for handling quote related requests
+// QuoteRoute is the API endpoint for handling quote related requests.
 const (
 	QuoteRoute = "/quotes"
 )

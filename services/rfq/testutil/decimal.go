@@ -11,7 +11,7 @@ import (
 )
 
 // MustAdjustAmount multiplies a token by the number of decimals in the amount.
-// see AdjustAmount
+// see AdjustAmount.
 func MustAdjustAmount(ctx context.Context, tb testing.TB, amount *big.Int, handler interface{}) (res *big.Int) {
 	tb.Helper()
 	res, err := AdjustAmount(ctx, amount, handler)

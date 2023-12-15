@@ -91,6 +91,7 @@ type RequestForQuote struct {
 	// Status is the current status of the event
 	Status      reldb.QuoteRequestStatus
 	BlockNumber uint64
+	RawRequest  string
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -105,6 +106,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		DestRecipient:        request.Transaction.DestRecipient.String(),
 		OriginToken:          request.Transaction.OriginToken.String(),
 		OriginTokenDecimals:  request.OriginTokenDecimals,
+		RawRequest:           hexutil.Encode(request.RawRequest),
 		DestTokenDecimals:    request.DestTokenDecimals,
 		DestToken:            request.Transaction.DestToken.String(),
 		OriginAmountOriginal: request.Transaction.OriginAmount.String(),
@@ -123,10 +125,17 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get transaction id: %w", err)
 	}
+
+	req, err := hexutil.Decode(r.RawRequest)
+	if err != nil {
+		return nil, fmt.Errorf("could not get request: %w", err)
+	}
+
 	return &reldb.QuoteRequest{
 		OriginTokenDecimals: r.OriginTokenDecimals,
 		DestTokenDecimals:   r.DestTokenDecimals,
 		TransactionId:       [32]byte(txID),
+		RawRequest:          req,
 		Sender:              common.HexToAddress(r.OriginSender),
 		BlockNumber:         r.BlockNumber,
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{

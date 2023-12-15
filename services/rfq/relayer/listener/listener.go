@@ -220,6 +220,5 @@ func (c chainListener) buildFilterQuery(fromBlock, toBlock uint64) ethereum.Filt
 		FromBlock: new(big.Int).SetUint64(fromBlock),
 		ToBlock:   new(big.Int).SetUint64(toBlock),
 		Addresses: []common.Address{c.contract.Address()},
-		Topics:    [][]common.Hash{{fastbridge.BridgeRequestedTopic, fastbridge.BridgeRelayedTopic}},
 	}
 }

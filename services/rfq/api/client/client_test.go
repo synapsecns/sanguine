@@ -27,7 +27,7 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 	c.Require().NoError(err)
 	fmt.Println(quotes)
 
-	//found := false
+	// found := false
 	//for _, q := range quotes {
 	//	if q.MaxOriginAmount == 123 {
 	//		found = true
@@ -62,7 +62,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 	c.Require().NoError(err)
 	fmt.Println(quotes)
 	//
-	//found := false
+	// found := false
 	//for _, q := range quotes {
 	//	if q.ID == 123 {
 	//		found = true

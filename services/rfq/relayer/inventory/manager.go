@@ -46,7 +46,7 @@ type inventoryManagerImpl struct {
 	db          reldb.Service
 }
 
-// GetCommittableBalance gets the commitable balances
+// GetCommittableBalance gets the commitable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
 	commitableBalances, err := i.GetCommitableBalances(ctx, options...)
 	if err != nil {
@@ -65,7 +65,7 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 	// get db first
 	// Add other committed, but incomplete statuses here
 	// TODO: clean me up
-	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending)
+	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted)
 	if err != nil {
 		return nil, fmt.Errorf("could not get in flight quotes: %w", err)
 	}
@@ -86,7 +86,6 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 					res[chainID][address] = new(big.Int).Sub(res[chainID][address], quote.Transaction.DestAmount)
 				}
 			}
-
 		}
 	}
 
@@ -107,7 +106,7 @@ var (
 	funcDecimals  = w3.MustNewFunc("decimals()", "uint8")
 )
 
-// TODO: replace w/ config
+// TODO: replace w/ config.
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.

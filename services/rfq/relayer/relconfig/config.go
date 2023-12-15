@@ -25,7 +25,7 @@ type Config struct {
 }
 
 type ChainConfig struct {
-	// Bridge is the bridge confrimation count.
+	// Bridge is the bridge confirmation count.
 	Bridge string `yaml:"address"`
 	// Confirmations is the number of required confirmations
 	Confirmations uint64 `yaml:"confirmations"`
