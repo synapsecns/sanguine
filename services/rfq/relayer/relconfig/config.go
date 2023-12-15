@@ -6,6 +6,7 @@ import "github.com/ethereum/go-ethereum/common"
 type Config struct {
 	// ChainID: address
 	// TODO(aurelius): move under ChainConfig
+	// TODO: this can actually be replaced by quotable tokens.
 	Tokens map[int][]string `yaml:"tokens"`
 	// ChainID: bridge
 	Bridges        map[int]ChainConfig `yaml:"bridges"`
