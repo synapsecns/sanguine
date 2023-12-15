@@ -85,6 +85,11 @@ contract FastBridge is IFastBridge, Admin {
         // @dev use returned originAmount in request in case of transfer fees
         uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
 
+        // track amount of origin token owed to protocol
+        uint256 originFeeAmount;
+        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+
         // set status to requested
         bytes memory request = abi.encode(
             BridgeTransaction({
@@ -94,8 +99,9 @@ contract FastBridge is IFastBridge, Admin {
                 destRecipient: params.to,
                 originToken: params.originToken,
                 destToken: params.destToken,
-                originAmount: originAmount, // includes relayer fee
+                originAmount: originAmount,
                 destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
                 deadline: params.deadline,
                 nonce: nonce++ // increment nonce on every bridge
             })
@@ -175,7 +181,10 @@ contract FastBridge is IFastBridge, Admin {
 
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_CLAIMED;
 
-        // transfer origin collateral to specified address
+        // update protocol fees if origin fee amount exists
+        if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
+
+        // transfer origin collateral less fee to specified address
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount;
         token.universalTransfer(to, amount);
@@ -208,7 +217,7 @@ contract FastBridge is IFastBridge, Admin {
 
         // transfer origin collateral back to original sender's specified recipient
         address token = transaction.originToken;
-        uint256 amount = transaction.originAmount;
+        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
         token.universalTransfer(to, amount);
 
         emit BridgeDepositRefunded(transactionId, to, token, amount);

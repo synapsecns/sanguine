@@ -36,6 +36,9 @@ contract FastBridgeMock is IFastBridge, Admin {
     }
 
     function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
+        uint256 originFeeAmount = (params.originAmount * protocolFeeRate) / FEE_BPS;
+        params.originAmount -= originFeeAmount;
+
         bytes memory request = abi.encode(
             BridgeTransaction({
                 originChainId: uint32(block.chainid),
@@ -46,6 +49,7 @@ contract FastBridgeMock is IFastBridge, Admin {
                 destToken: params.destToken,
                 originAmount: params.originAmount, // includes relayer fee
                 destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
                 deadline: params.deadline,
                 nonce: nonce++ // increment nonce on every bridge
             })

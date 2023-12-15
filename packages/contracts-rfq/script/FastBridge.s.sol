@@ -20,8 +20,10 @@ contract DeployFastBridge is Script {
             bridge.addRelayer(relayer);
         }
 
-        // set new pending owner
-        bridge.transferOwnership(owner);
+        // set new default admin as owner then renounce
+        bytes32 adminRole = bridge.DEFAULT_ADMIN_ROLE();
+        bridge.grantRole(adminRole, owner);
+        bridge.revokeRole(adminRole, msg.sender);
 
         vm.stopBroadcast();
     }

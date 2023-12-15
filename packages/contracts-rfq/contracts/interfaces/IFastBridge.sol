@@ -9,8 +9,9 @@ interface IFastBridge {
         address destRecipient; // user (dest)
         address originToken;
         address destToken;
-        uint256 originAmount;
+        uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
+        uint256 originFeeAmount;
         uint256 deadline;
         uint256 nonce;
     }
@@ -36,8 +37,8 @@ interface IFastBridge {
         address to;
         address originToken;
         address destToken;
-        uint256 originAmount;
-        uint256 destAmount;
+        uint256 originAmount; // should include protocol fee (if any)
+        uint256 destAmount; // should include relayer fee
         uint256 deadline;
     }
 
@@ -67,7 +68,7 @@ interface IFastBridge {
     /// @param request The encoded bridge transaction to refund
     /// @param to The recipient address of the funds
     function refund(bytes memory request, address to) external;
-    
+
     // ============ Views ============
 
     /// @notice Decodes bridge request into a bridge transaction
