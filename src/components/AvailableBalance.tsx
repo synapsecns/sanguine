@@ -13,7 +13,7 @@ export const AvailableBalance = ({
   originToken,
   tokenBalance,
   connectedAddress,
-  inputGreaterThanBalance,
+  hasEnoughBalance,
 }: {
   originChainId: number
   originToken: BridgeableToken
@@ -23,7 +23,7 @@ export const AvailableBalance = ({
     decimals: number
   }
   connectedAddress: string
-  inputGreaterThanBalance: boolean
+  hasEnoughBalance: boolean
 }) => {
   const dispatch = useAppDispatch()
 
@@ -53,7 +53,7 @@ export const AvailableBalance = ({
       className="flex ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary] whitespace-nowrap"
     >
       Available {tokenBalance.parsedBalance ?? '0.0'}
-      {inputGreaterThanBalance && (
+      {!hasEnoughBalance && (
         <Tooltip hoverText="Amount may not exceed available balance">
           <Warning styles="w-3" />
         </Tooltip>

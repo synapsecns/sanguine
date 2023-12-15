@@ -39,16 +39,13 @@ import {
 } from '@/state/slices/bridge/hooks'
 import { BridgeButton } from './BridgeButton'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
-import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 import { generateTheme } from '@/utils/generateTheme'
-import {
-  fetchTokenBalances,
-  TokenBalance,
-} from '@/utils/actions/fetchTokenBalances'
 import { AvailableBalance } from './AvailableBalance'
 import { ZeroAddress } from 'ethers'
 import { checkExists } from '@/utils/checkExists'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
+import { useValidations } from '@/hooks/useValidations'
 
 const chains = {
   1: {
@@ -194,10 +191,8 @@ export const Widget = ({
     synapseSDK: synapseSDK,
   })
 
-  const routerAddress: string = quote?.routerAddress
-
   const { allowance, checkAllowanceCallback } = useAllowance({
-    spenderAddress: routerAddress,
+    spenderAddress: quote?.routerAddress,
     tokenAddress: originToken?.addresses[originChainId],
     ownerAddress: connectedAddress,
     chainId: originToken?.addresses[originChainId],
@@ -205,7 +200,7 @@ export const Widget = ({
   })
 
   const useApproveCallbackArgs: UseApproveCallbackProps = {
-    spenderAddress: routerAddress,
+    spenderAddress: quote?.routerAddress,
     tokenAddress: originToken?.addresses[originChainId],
     ownerAddress: connectedAddress,
     amount: stringToBigInt(inputAmount, originTokenDecimals),
@@ -221,7 +216,7 @@ export const Widget = ({
 
   const useBridgeCallbackArgs: UseBridgeCallbackArgs = {
     destinationAddress: connectedAddress,
-    originRouterAddress: routerAddress,
+    originRouterAddress: quote?.routerAddress,
     originChainId: originChainId,
     destinationChainId: destinationChainId,
     tokenAddress: originToken?.addresses[originChainId],
@@ -237,19 +232,9 @@ export const Widget = ({
     error: bridgeError,
   } = useBridgeCallback(useBridgeCallbackArgs)
 
-  const isConnectedNetworkSelectedOriginNetwork: boolean = useMemo(() => {
-    return networkId === originChainId
-  }, [originChainId, networkId])
-
   const formattedInputAmount: bigint = useMemo(() => {
     return stringToBigInt(debouncedInputAmount ?? '0', originTokenDecimals)
   }, [debouncedInputAmount, originToken])
-
-  const isInputValid: boolean = useMemo(() => {
-    if (debouncedInputAmount === '') return false
-    if (isOnlyZeroes(debouncedInputAmount)) return false
-    return true
-  }, [debouncedInputAmount])
 
   const isApproved: boolean = useMemo(() => {
     if (originToken?.addresses[originChainId] === ZeroAddress) {
@@ -260,50 +245,9 @@ export const Widget = ({
     return formattedInputAmount <= allowance
   }, [formattedInputAmount, allowance, originToken, originChainId])
 
-  const currentTokenBalance: {
-    rawBalance: bigint
-    parsedBalance: string
-    decimals: number
-  } = useMemo(() => {
-    if (!Array.isArray(balances) || !originToken) {
-      return {
-        rawBalance: null,
-        parsedBalance: null,
-        decimals: null,
-      }
-    } else {
-      const matchedTokenBalance = balances?.find(
-        (token: TokenBalance) =>
-          token?.token?.addresses[originChainId] ===
-          originToken?.addresses[originChainId]
-      )
-      const decimals: number =
-        typeof matchedTokenBalance?.token?.decimals === 'number'
-          ? matchedTokenBalance?.token?.decimals
-          : matchedTokenBalance?.token?.decimals[originChainId]
+  const currentTokenBalance = useCurrentTokenBalance()
 
-      return {
-        rawBalance: matchedTokenBalance?.balance,
-        parsedBalance: matchedTokenBalance?.parsedBalance,
-        decimals: decimals,
-      }
-    }
-  }, [balances, originToken, originChainId, connectedAddress])
-
-  const inputGreaterThanBalance: boolean = useMemo(() => {
-    if (
-      !checkExists(inputAmount) ||
-      !checkExists(currentTokenBalance.rawBalance)
-    ) {
-      return false
-    } else {
-      const formattedInput = stringToBigInt(
-        inputAmount,
-        currentTokenBalance.decimals
-      )
-      return Boolean(formattedInput > BigInt(currentTokenBalance.rawBalance))
-    }
-  }, [inputAmount, originToken, originChainId, currentTokenBalance])
+  const { hasEnoughBalance, isInputValid } = useValidations()
 
   /** Handle refreshing quotes */
   useEffect(() => {
@@ -327,10 +271,6 @@ export const Widget = ({
     destinationChainId,
     isInputValid,
   ])
-
-  const handleSwitchNetwork = useCallback(async () => {
-    switchNetwork(originChainId, provider)
-  }, [originChainId, provider])
 
   const maxAmountOut = useMemo(() => {
     if (!quote || !quote.maxAmountOut) {
@@ -408,7 +348,7 @@ export const Widget = ({
               originToken={originToken}
               tokenBalance={currentTokenBalance}
               connectedAddress={connectedAddress}
-              inputGreaterThanBalance={inputGreaterThanBalance}
+              hasEnoughBalance={hasEnoughBalance}
             />
           </div>
         </div>
@@ -449,12 +389,8 @@ export const Widget = ({
         originChain={chains[originChainId]}
         isApproved={isApproved}
         isValidQuote={Boolean(quote)}
-        isValidAmount={isInputValid}
-        isWrongNetwork={!isConnectedNetworkSelectedOriginNetwork}
-        isInputGreaterThanBalance={inputGreaterThanBalance}
         handleApprove={approveCallback}
         handleBridge={bridgeCallback}
-        handleSwitchNetwork={handleSwitchNetwork}
         isApprovalPending={approveState === ApproveCallbackState.PENDING}
         isBridgePending={bridgeState === BridgeCallbackState.PENDING}
         approveError={approveError}

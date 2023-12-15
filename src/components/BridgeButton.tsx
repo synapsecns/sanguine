@@ -1,57 +1,56 @@
 import { Chain } from 'types'
 import { Tooltip } from './Tooltip'
+import { Web3Context } from 'providers/Web3Provider'
+import { useCallback, useContext } from 'react'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { switchNetwork } from '@/utils/actions/switchNetwork'
+import { useValidations } from '@/hooks/useValidations'
 
 interface BridgeButtonProps {
   originChain: Chain
   isApproved: boolean
   isValidQuote: boolean
-  isValidAmount: boolean
-  isWrongNetwork: boolean
-  isInputGreaterThanBalance: boolean
   handleApprove: () => any
   handleBridge: () => any
-  handleSwitchNetwork: () => Promise<any>
   isApprovalPending: boolean
   isBridgePending: boolean
   approveError: string
   bridgeError: string
 }
 
-const BridgeError = ({
-  error,
-  type,
-}: {
-  error: string
-  type: 'bridge' | 'approve'
-}) => {
-  if (error) {
-    return (
-      <div
-        data-test-id={`${type}-error`}
-        className="text-sm text-right text-red-500"
-      >
-        {error}
-      </div>
-    )
-  }
-}
-
 export const BridgeButton = ({
   originChain,
   isApproved,
   isValidQuote,
-  isValidAmount,
-  isWrongNetwork,
-  isInputGreaterThanBalance,
   handleApprove,
   handleBridge,
-  handleSwitchNetwork,
   isApprovalPending,
   isBridgePending,
   approveError,
   bridgeError,
 }: BridgeButtonProps) => {
-  if (isWrongNetwork) {
+  const web3Context = useContext(Web3Context)
+
+  const { connectedAddress, signer, provider, networkId } =
+    web3Context.web3Provider
+
+  const {
+    inputAmount,
+    debouncedInputAmount,
+    originChainId,
+    originToken,
+    destinationChainId,
+    destinationToken,
+    balances,
+  } = useBridgeState()
+
+  const { hasEnoughBalance, isInputValid, onSelectedChain } = useValidations()
+
+  const handleSwitchNetwork = useCallback(async () => {
+    switchNetwork(originChainId, provider)
+  }, [originChainId, provider])
+
+  if (!onSelectedChain) {
     return (
       <button
         onClick={handleSwitchNetwork}
@@ -65,7 +64,7 @@ export const BridgeButton = ({
       </button>
     )
   }
-  if (isInputGreaterThanBalance) {
+  if (!hasEnoughBalance) {
     return (
       <Tooltip hoverText="Amount may not exceed available balance">
         <button
@@ -81,7 +80,7 @@ export const BridgeButton = ({
       </Tooltip>
     )
   }
-  if (!isValidAmount) {
+  if (!isInputValid) {
     return (
       <Tooltip hoverText="Enter valid amount">
         <button
