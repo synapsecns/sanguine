@@ -48,7 +48,7 @@ func (l *ListenerTestSuite) SetupTest() {
 	l.backend = geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(chainID))
 	var err error
 	l.metrics = metrics.NewNullHandler()
-	l.store, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""), l.metrics, false)
+	l.store, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""), l.metrics)
 	l.Require().NoError(err)
 
 	l.fastBridgeMetadata, l.fastBridge = l.manager.GetFastBridge(l.GetTestContext(), l.backend)

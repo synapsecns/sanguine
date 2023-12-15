@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
-	_ "github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -387,7 +386,10 @@ func (r *Relayer) startChainParser(ctx context.Context) error {
 						return fmt.Errorf("could not handle request: %w", err)
 					}
 				case *fastbridge.FastBridgeBridgeRelayed:
-					r.handleNewRelayLog(ctx, event) // TODO: handle error
+					err = r.handleNewRelayLog(ctx, event)
+					if err != nil {
+						return fmt.Errorf("could not handle relay: %w", err)
+					}
 				case *fastbridge.FastBridgeBridgeProofProvided:
 					err = r.handleProofProvided(ctx, event)
 					if err != nil {
@@ -424,24 +426,23 @@ func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastB
 	return nil
 }
 
-func (r *Relayer) handleNewRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) {
+func (r *Relayer) handleNewRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
-		logger.Errorf("could not get quote request: %v", err)
-		return
+		return fmt.Errorf("could not get quote request: %v", err)
 	}
-	// we might've accidentally gottent his later, if so we'll just ignore it
+	// we might've accidentally gotten this later, if so we'll just ignore it
 	if reqID.Status != reldb.RelayStarted {
 		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionId[:]), req.Raw.TxHash)
-		return
+		return nil
 	}
 
 	// TODO: this can still get re-orged
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted)
 	if err != nil {
-		logger.Errorf("could not update request status: %v", err)
-		return
+		return fmt.Errorf("could not update request status: %v", err)
 	}
+	return nil
 }
 
 func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
@@ -488,7 +489,7 @@ func (r *Relayer) handleNewRequestLog(parentCtx context.Context, req *fastbridge
 		BlockNumber:         req.Raw.BlockNumber,
 		RawRequest:          req.Request,
 		OriginTokenDecimals: decimals.originDecimals,
-		DestTokenDecimals:   decimals.originDecimals,
+		DestTokenDecimals:   decimals.destDecimals,
 		TransactionId:       req.TransactionId,
 		Sender:              req.Sender,
 		Transaction:         bridgeTx,

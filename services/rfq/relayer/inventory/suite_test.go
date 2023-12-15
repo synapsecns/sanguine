@@ -64,7 +64,7 @@ func (i *InventoryTestSuite) SetupTest() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		i.db, err = sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""), metrics.Get(), false)
+		i.db, err = sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""), metrics.Get())
 		i.NoError(err)
 	}()
 

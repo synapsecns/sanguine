@@ -85,7 +85,7 @@ dockers:
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
-    dockerfile: ../docker/rfq-relayer.Dockerfile
+    dockerfile: ../../docker/rfq-relayer.Dockerfile
     ids:
       - rfq-relayer
   # Docker AMD64
@@ -101,7 +101,7 @@ dockers:
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
-    dockerfile: ../docker/rfq-api.Dockerfile
+    dockerfile: ../../docker/rfq-api.Dockerfile
     ids:
       - rfq-api
 # track sizes

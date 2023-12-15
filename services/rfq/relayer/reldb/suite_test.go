@@ -57,7 +57,7 @@ func (d *DBSuite) SetupSuite() {
 func (d *DBSuite) SetupTest() {
 	d.TestSuite.SetupTest()
 
-	sqliteStore, err := sqlite.NewSqliteStore(d.GetTestContext(), filet.TmpDir(d.T(), ""), d.metrics, false)
+	sqliteStore, err := sqlite.NewSqliteStore(d.GetTestContext(), filet.TmpDir(d.T(), ""), d.metrics)
 	Nil(d.T(), err)
 
 	d.dbs = []reldb.Service{sqliteStore}
