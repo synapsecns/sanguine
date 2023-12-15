@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useContext, useCallback } from 'react'
+import { useMemo, useEffect, useContext, useCallback } from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
@@ -36,7 +36,6 @@ import {
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { fetchAndStoreTokenBalances } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from './BridgeButton'
-import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 
 import { generateTheme } from '@/utils/generateTheme'
 import { AvailableBalance } from './AvailableBalance'
@@ -137,19 +136,6 @@ export const Widget = ({
     }
   }, [originChainId, allTokens, connectedAddress, signer, originChainProvider])
 
-  const originTokenDecimals = useMemo(() => {
-    if (typeof originToken?.decimals === 'number') return originToken?.decimals
-
-    return originToken?.decimals[originChainId]
-  }, [originToken])
-
-  const destinationTokenDecimals = useMemo(() => {
-    if (typeof destinationToken?.decimals === 'number')
-      return destinationToken?.decimals
-
-    return destinationToken?.decimals[destinationChainId]
-  }, [destinationToken])
-
   const {
     state: quoteState,
     callback: fetchQuoteCallback,
@@ -161,7 +147,10 @@ export const Widget = ({
     originTokenAddress: originToken?.addresses[originChainId],
     destinationChainId: destinationChainId,
     destinationTokenAddress: destinationToken?.addresses[destinationChainId],
-    amount: stringToBigInt(debouncedInputAmount, originTokenDecimals),
+    amount: stringToBigInt(
+      debouncedInputAmount,
+      originToken?.decimals[originChainId]
+    ),
     synapseSDK: synapseSDK,
   })
 
@@ -177,7 +166,7 @@ export const Widget = ({
     spenderAddress: quote?.routerAddress,
     tokenAddress: originToken?.addresses[originChainId],
     ownerAddress: connectedAddress,
-    amount: stringToBigInt(inputAmount, originTokenDecimals),
+    amount: stringToBigInt(inputAmount, originToken?.decimals[originChainId]),
     chainId: originChainId,
     onSuccess: checkAllowanceCallback,
     signer: signer,
@@ -194,7 +183,10 @@ export const Widget = ({
     originChainId: originChainId,
     destinationChainId: destinationChainId,
     tokenAddress: originToken?.addresses[originChainId],
-    amount: stringToBigInt(debouncedInputAmount, originTokenDecimals),
+    amount: stringToBigInt(
+      debouncedInputAmount,
+      originToken?.decimals[originChainId]
+    ),
     originQuery: quote?.originQuery,
     destinationQuery: quote?.destQuery,
     synapseSDK,
@@ -207,7 +199,10 @@ export const Widget = ({
   } = useBridgeCallback(useBridgeCallbackArgs)
 
   const formattedInputAmount: bigint = useMemo(() => {
-    return stringToBigInt(debouncedInputAmount ?? '0', originTokenDecimals)
+    return stringToBigInt(
+      debouncedInputAmount ?? '0',
+      originToken?.decimals[originChainId]
+    )
   }, [debouncedInputAmount, originToken])
 
   const isApproved: boolean = useMemo(() => {
@@ -253,7 +248,11 @@ export const Widget = ({
 
     const max = BigInt(quote.maxAmountOut.toString())
 
-    return formatBigIntToString(max, destinationTokenDecimals, 4)
+    return formatBigIntToString(
+      max,
+      destinationToken?.decimals[destinationChainId],
+      4
+    )
   }, [quote])
 
   const handleUserInput = useCallback(
@@ -353,8 +352,8 @@ export const Widget = ({
       <Receipt
         quote={quote ?? null}
         send={formatBigIntToString(
-          stringToBigInt(inputAmount, originTokenDecimals),
-          originTokenDecimals,
+          stringToBigInt(inputAmount, originToken?.decimals[originChainId]),
+          originToken?.decimals[originChainId],
           4
         )}
         receive={maxAmountOut}

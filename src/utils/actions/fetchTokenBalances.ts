@@ -77,10 +77,8 @@ export async function fetchTokenBalances({
     const data = response.map((encodedBalance, index) => {
       const balance: bigint = coder.decode(['uint256'], encodedBalance)[0]
       const token: BridgeableToken = tokens[index]
-      const decimals: number =
-        typeof token.decimals === 'number'
-          ? token.decimals
-          : token.decimals[chainId]
+      const decimals: number = token.decimals[chainId]
+
       return {
         token: tokens[index],
         balance: String(balance),
