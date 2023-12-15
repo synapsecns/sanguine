@@ -34,10 +34,12 @@ export const walletSlice = createSlice({
         fetchAndStoreTokenBalances.fulfilled,
         (state, action: PayloadAction<TokenBalance[]>) => {
           state.balances = action.payload
+          state.status = FetchState.VALID
         }
       )
       .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
         state.error = action.payload
+        state.status = FetchState.INVALID
       })
   },
 })
