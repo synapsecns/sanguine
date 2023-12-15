@@ -21,6 +21,10 @@ type Quoter interface {
 	SubmitAllQuotes() error
 	// GetSelfQuotes gets relayer's live quote from the RFQ API.
 	GetSelfQuotes() ([]*db.Quote, error)
+	// TOOO: Build this. ValidateQuote takes in a bridge event, and checks if the Relayer has a live quote, or should have a live quote out for this bridge event.
+	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
+	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainId+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
+	// validateQuote(BridgeEvent)
 }
 
 type QuoterManager struct {
