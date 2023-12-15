@@ -14,6 +14,7 @@ const config = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    libraryTarget: 'umd',
   },
   module: {
     rules: [
