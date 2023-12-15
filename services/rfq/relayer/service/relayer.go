@@ -256,8 +256,12 @@ func (r *Relayer) processDB(ctx context.Context) error {
 				return fmt.Errorf("could not get commitable balance: %w", err)
 			}
 			// if commitableBalance > destAmount
-			if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
+			if commitableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
+				if err != nil {
+					return fmt.Errorf("could not update request status: %w", err)
+				}
+				continue
 			}
 			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedPending)
 			if err != nil {
@@ -265,7 +269,17 @@ func (r *Relayer) processDB(ctx context.Context) error {
 			}
 
 		case reldb.NotEnoughInventory:
-			// TODO: recheck if there's enough inventory. Also if it's in this state, you can see if deadline expired
+			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
+			if err != nil {
+				return fmt.Errorf("could not get commitable balance: %w", err)
+			}
+			// if commitableBalance > destAmount
+			if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
+				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
+				if err != nil {
+					return fmt.Errorf("could not update request status: %w", err)
+				}
+			}
 
 		case reldb.CommittedPending:
 			// TODO: build this in somehwere else  afte rwe commit
