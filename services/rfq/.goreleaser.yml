@@ -1,4 +1,4 @@
-project_name: agents
+project_name: rfq
 
 monorepo:
   tag_prefix: services/rfq/
