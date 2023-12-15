@@ -62,6 +62,7 @@ type QuoteRequestStatus uint8
 const (
 	Seen QuoteRequestStatus = iota + 1
 	NotEnoughInventory
+	DeadlineExceeded
 	WillNotProcess
 	CommittedPending
 	CommittedConfirmed

@@ -235,6 +235,11 @@ func (r *Relayer) processDB(ctx context.Context) error {
 			continue
 		}
 
+		// if deadline < now
+		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.DeadlineExceeded)
+		}
+
 		switch request.Status {
 		case reldb.Seen:
 			if !r.quoter.ShouldProcess(request) {

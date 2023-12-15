@@ -44,7 +44,7 @@ builds:
     env:
       - CC=gcc
       - CXX=g++
-    main: api/main.go
+    main: relayer/main.go
     goos:
       - linux
     goarch:
