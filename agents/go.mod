@@ -22,7 +22,7 @@ require (
 	github.com/spatialcurrent/go-math v0.0.0-20211120210754-b3872f7000fe
 	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/ethergo v0.0.2
+	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/scribe v0.0.194
 	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
