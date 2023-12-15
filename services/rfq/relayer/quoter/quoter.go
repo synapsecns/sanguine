@@ -26,6 +26,7 @@ type Quoter interface {
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainId+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
+	ShouldProcess(quote reldb.QuoteRequest) bool
 }
 
 type QuoterManager struct {
@@ -61,7 +62,7 @@ func (m *QuoterManager) ShouldProcess(quote reldb.QuoteRequest) bool {
 	// first check if token is valid
 	// then check if we'll make money on it
 
-	return false
+	return true
 }
 
 // Gets the inventory and prepares quotes.
