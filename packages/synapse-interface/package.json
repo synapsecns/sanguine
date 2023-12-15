@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.206",
+  "version": "0.1.208",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -93,7 +93,7 @@
     "use-persisted-state": "^0.3.3",
     "use-window-focus": "^1.4.2",
     "viem": "^1.18.1",
-    "wagmi": "^1.4.5",
+    "wagmi": "^1.4.12",
     "yarn": "^1.22.19"
   },
   "browserslist": {
