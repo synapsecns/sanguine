@@ -18,14 +18,13 @@ type Config struct {
 	// TODO: this can actually be replaced by quotable tokens.
 	Tokens map[int][]string `yaml:"tokens"`
 	// ChainID: bridge
-	Bridges         map[int]ChainConfig `yaml:"bridges"`
-	OmniRPCURL      string              `yaml:"omnirpc_url"`
-	RfqAPIURL       string              `yaml:"rfq_api_url"`
-	DBConfig        string
-	Database        DatabaseConfig      `yaml:"database"`
-	QuotableTokens  map[string][]string `yaml:"quotable_tokens"`
-	Signer          config.SignerConfig
-	SubmitterConfig submitterConfig.Config
+	Bridges         map[int]ChainConfig    `yaml:"bridges"`
+	OmniRPCURL      string                 `yaml:"omnirpc_url"`
+	RfqAPIURL       string                 `yaml:"rfq_url"`
+	Database        DatabaseConfig         `yaml:"database"`
+	QuotableTokens  map[string][]string    `yaml:"quotable_tokens"`
+	Signer          config.SignerConfig    `yaml:"signer"`
+	SubmitterConfig submitterConfig.Config `yaml:"submitter"`
 }
 
 type ChainConfig struct {

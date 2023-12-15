@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description="RFQ Relayer Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot cctp-relayer /app/relayer
+COPY --chown=nonroot:nonroot relayer /app/relayer
 
 ENTRYPOINT ["/app/relayer"]

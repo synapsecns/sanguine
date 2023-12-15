@@ -62,7 +62,6 @@ func (r *RelayerTestSuite) SetupTest() {
 	originContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
 	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
 	r.cfg = relconfig.Config{
-		DBConfig: filet.TmpDir(r.T(), ""),
 		Database: relconfig.DatabaseConfig{
 			Type: dbcommon.Sqlite.String(),
 			DSN:  filet.TmpDir(r.T(), ""),
