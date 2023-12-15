@@ -1,6 +1,9 @@
 package relconfig
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
+)
 
 // TODO: validation function.
 type Config struct {
@@ -11,10 +14,12 @@ type Config struct {
 	// ChainID: bridge
 	Bridges        map[int]ChainConfig `yaml:"bridges"`
 	OmnirpcURL     string              `yaml:"omnirpc_url"`
+	RfqAPIURL      string              `yaml:"rfq_api_url"`
 	DBConfig       string
 	QuotableTokens map[string][]string `yaml:"quotable_tokens"`
 	// TODO: remove, replace w/ pkey recover
 	RelayerAddress common.Address
+	Signer         config.SignerConfig
 }
 
 type ChainConfig struct {

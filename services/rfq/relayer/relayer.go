@@ -10,11 +10,13 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
@@ -32,6 +34,7 @@ type Relayer struct {
 	client         omnirpcClient.RPCClient
 	chainListeners map[int]listener.ChainListener
 	inventory      inventory.InventoryManager
+	quoter         *quoter.QuoterManager
 }
 
 var logger = log.Logger("relayer")
@@ -68,9 +71,20 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager")
 	}
 
+	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not get signer")
+	}
+
+	q, err := quoter.NewQuoterManager(ctx, cfg.QuotableTokens, im, cfg.RfqAPIURL, signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not get quoter")
+	}
+
 	rel := Relayer{
 		db:             store,
 		client:         omniClient,
+		quoter:         q,
 		metrics:        metricHandler,
 		cfg:            cfg,
 		inventory:      im,
@@ -78,6 +92,8 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	}
 	return &rel, nil
 }
+
+const defaultPostInterval = 5
 
 func (r *Relayer) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
@@ -87,6 +103,20 @@ func (r *Relayer) Start(ctx context.Context) error {
 			return fmt.Errorf("could not start chain parser: %w", err)
 		}
 		return nil
+	})
+
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultPostInterval * time.Second):
+				err := r.quoter.SubmitAllQuotes()
+				if err != nil {
+					return fmt.Errorf("could not start db selector: %w", err)
+				}
+			}
+		}
 	})
 
 	err := g.Wait()

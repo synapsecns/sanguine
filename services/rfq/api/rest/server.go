@@ -4,6 +4,8 @@ package rest
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"net/http"
 	"strconv"
 	"time"
@@ -79,10 +81,12 @@ const (
 	QuoteRoute = "/quotes"
 )
 
+var logger = log.Logger("rfq-api")
+
 // Run runs the rest api server.
 func (r *APIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
-	engine := gin.Default()
+	engine := ginhelper.New(logger)
 	h := NewHandler(r.db)
 
 	// Apply AuthMiddleware only to the PUT route
@@ -97,6 +101,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	r.engine = engine
 
 	connection := baseServer.Server{}
+	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.Port)
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
 	if err != nil {
 		return fmt.Errorf("could not start rest api server: %w", err)
