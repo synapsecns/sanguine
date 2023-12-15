@@ -99,7 +99,7 @@ func (m *QuoterManager) prepareAndSubmitQuotes(inv map[int]map[common.Address]*b
 	return nil
 }
 
-// TODO: THIS LOOP IS BROKEN
+// GenerateQuotes TODO: THIS LOOP IS BROKEN
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
@@ -127,5 +127,9 @@ func (m *QuoterManager) GenerateQuotes(chainId int, address common.Address, bala
 
 // Submits a single quote.
 func (m *QuoterManager) submitQuote(quote rfqAPIClient.APIQuotePutRequest) error {
-	return m.rfqClient.PutQuote(&quote)
+	err := m.rfqClient.PutQuote(&quote)
+	if err != nil {
+		return fmt.Errorf("error submitting quote: %w", err)
+	}
+	return nil
 }

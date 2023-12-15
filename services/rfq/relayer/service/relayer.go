@@ -239,6 +239,9 @@ func (r *Relayer) processDB(ctx context.Context) error {
 		case reldb.Seen:
 			if !r.quoter.ShouldProcess(request) {
 				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.WillNotProcess)
+				if err != nil {
+					return fmt.Errorf("could not update request status: %w", err)
+				}
 			}
 			// TODO: check it deadline expired
 			// TODO: check token validity

@@ -5,7 +5,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"io"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -17,11 +16,7 @@ func ExpandOrReturnPath(path string) string {
 	if err != nil {
 		return path
 	}
-	absPath, err := filepath.Abs(expanded)
-	if err != nil {
-		return expanded
-	}
-	return absPath
+	return expanded
 }
 
 // GetEnv gets an environment variable. If it is not present, the default variable is used.
