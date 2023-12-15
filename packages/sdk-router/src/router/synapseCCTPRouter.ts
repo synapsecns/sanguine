@@ -122,9 +122,9 @@ export class SynapseCCTPRouter extends Router {
   }
 
   /**
-   * @inheritdoc Router.getBridgeID
+   * @inheritdoc Router.getSynapseTxId
    */
-  public async getBridgeID(txHash: string): Promise<string> {
+  public async getSynapseTxId(txHash: string): Promise<string> {
     const cctpContract = await this.getCctpContract()
     const cctpLog = await getMatchingTxLog(
       this.provider,
@@ -140,9 +140,9 @@ export class SynapseCCTPRouter extends Router {
   /**
    * @inheritdoc Router.getBridgeTxStatus
    */
-  public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
     const cctpContract = await this.getCctpContract()
-    return cctpContract.isRequestFulfilled(bridgeID)
+    return cctpContract.isRequestFulfilled(synapseTxId)
   }
 
   private async getCctpContract(): Promise<Contract> {

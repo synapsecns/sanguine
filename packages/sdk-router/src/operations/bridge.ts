@@ -118,16 +118,16 @@ export async function bridgeQuote(
 }
 
 /**
- * Gets the unique bridge ID for a bridge operation that happened within a given transaction.
- * Bridge ID is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
+ * Gets the unique Synapse txId for a bridge operation that happened within a given transaction.
+ * Synapse txId is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
  * This function is meant to abstract away the differences between the two bridge modules.
  *
  * @param originChainId - The ID of the origin chain.
  * @param bridgeModuleName - The name of the bridge module.
  * @param txHash - The transaction hash of the bridge operation on the origin chain.
- * @returns A promise that resolves to the unique bridge ID of the bridge operation.
+ * @returns A promise that resolves to the unique Synapse txId of the bridge operation.
  */
-export async function getBridgeID(
+export async function getSynapseTxId(
   this: SynapseSDK,
   originChainId: number,
   bridgeModuleName: string,
@@ -135,7 +135,7 @@ export async function getBridgeID(
 ): Promise<string> {
   return getRouterSet
     .call(this, bridgeModuleName)
-    .getBridgeID(originChainId, txHash)
+    .getSynapseTxId(originChainId, txHash)
 }
 
 /**
@@ -143,18 +143,18 @@ export async function getBridgeID(
  *
  * @param destChainId - The ID of the destination chain.
  * @param bridgeModuleName - The name of the bridge module.
- * @param bridgeID - The unique bridge ID of the bridge operation.
+ * @param synapseTxId - The unique Synapse txId of the bridge operation.
  * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
  */
 export async function getBridgeTxStatus(
   this: SynapseSDK,
   destChainId: number,
   bridgeModuleName: string,
-  bridgeID: string
+  synapseTxId: string
 ): Promise<boolean> {
   return getRouterSet
     .call(this, bridgeModuleName)
-    .getBridgeTxStatus(destChainId, bridgeID)
+    .getBridgeTxStatus(destChainId, synapseTxId)
 }
 
 /**

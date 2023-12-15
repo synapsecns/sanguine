@@ -29,13 +29,13 @@ export class SynapseCCTPRouterSet extends RouterSet {
   }
 
   /**
-   * @inheritdoc RouterSet.getBridgeID
+   * @inheritdoc RouterSet.getSynapseTxId
    */
-  public async getBridgeID(
+  public async getSynapseTxId(
     originChainId: number,
     txHash: string
   ): Promise<string> {
-    return this.getSynapseCCTPRouter(originChainId).getBridgeID(txHash)
+    return this.getSynapseCCTPRouter(originChainId).getSynapseTxId(txHash)
   }
 
   /**
@@ -43,9 +43,9 @@ export class SynapseCCTPRouterSet extends RouterSet {
    */
   public async getBridgeTxStatus(
     destChainId: number,
-    bridgeID: string
+    synapseTxId: string
   ): Promise<boolean> {
-    return this.getSynapseCCTPRouter(destChainId).getBridgeTxStatus(bridgeID)
+    return this.getSynapseCCTPRouter(destChainId).getBridgeTxStatus(synapseTxId)
   }
 
   /**

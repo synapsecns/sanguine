@@ -150,9 +150,9 @@ export class SynapseRouter extends Router {
   }
 
   /**
-   * @inheritdoc Router.getBridgeID
+   * @inheritdoc Router.getSynapseTxId
    */
-  public async getBridgeID(txHash: string): Promise<string> {
+  public async getSynapseTxId(txHash: string): Promise<string> {
     // Check that the transaction hash refers to an origin transaction
     const bridgeContract = await this.getBridgeContract()
     await getMatchingTxLog(
@@ -161,16 +161,16 @@ export class SynapseRouter extends Router {
       bridgeContract,
       this.originEvents
     )
-    // Once we know the transaction is an origin transaction, we can calculate the bridge ID
+    // Once we know the transaction is an origin transaction, we can calculate the Synapse txId
     return solidityKeccak256(['string'], [txHash])
   }
 
   /**
    * @inheritdoc Router.getBridgeTxStatus
    */
-  public async getBridgeTxStatus(bridgeID: string): Promise<boolean> {
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
     const bridgeContract = await this.getBridgeContract()
-    return bridgeContract.kappaExists(bridgeID)
+    return bridgeContract.kappaExists(synapseTxId)
   }
 
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════

@@ -72,25 +72,28 @@ export abstract class RouterSet {
   abstract getEstimatedTime(chainId: number): number
 
   /**
-   * Returns the bridge transaction ID for a given transaction hash on a given chain.
+   * Returns the Synapse transaction ID for a given transaction hash on a given chain.
    * This is used to track the status of a bridge transaction.
    *
    * @param originChainId - The ID of the origin chain.
    * @param txHash - The transaction hash of the bridge transaction.
-   * @returns A promise that resolves to the bridge transaction ID.
+   * @returns A promise that resolves to the Synapse transaction ID.
    */
-  abstract getBridgeID(originChainId: number, txHash: string): Promise<string>
+  abstract getSynapseTxId(
+    originChainId: number,
+    txHash: string
+  ): Promise<string>
 
   /**
    * Checks whether a bridge transaction has been completed on the destination chain.
    *
    * @param destChainId - The ID of the destination chain.
-   * @param bridgeID - The unique bridge ID of the bridge transaction.
+   * @param synapseTxId - The unique Synapse txId of the bridge transaction.
    * @returns A promise that resolves to a boolean indicating whether the bridge transaction has been completed.
    */
   abstract getBridgeTxStatus(
     destChainId: number,
-    bridgeID: string
+    synapseTxId: string
   ): Promise<boolean>
 
   /**
