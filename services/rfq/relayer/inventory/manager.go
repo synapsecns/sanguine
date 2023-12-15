@@ -3,14 +3,19 @@ package inventory
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -30,6 +35,8 @@ type InventoryManager interface {
 	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error)
 	// GetCommitableBalances gets the total balances commitable for all tracked tokens.
 	GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
+	// ApproveAllTokens approves all tokens for the relayer address.
+	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
 }
 
 type inventoryManagerImpl struct {
@@ -39,6 +46,8 @@ type inventoryManagerImpl struct {
 	mux sync.RWMutex
 	// handler is the metrics handler
 	handler metrics.Handler
+	// cfg is the config
+	cfg relconfig.Config
 	// relayerAddress contains the relayer address
 	relayerAddress common.Address
 	// chainClient is an omnirpc client
@@ -95,15 +104,17 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 }
 
 type Token struct {
-	name     string
-	balance  *big.Int
-	decimals uint8
+	name           string
+	balance        *big.Int
+	decimals       uint8
+	startAllowance *big.Int
 }
 
 var (
 	funcBalanceOf = w3.MustNewFunc("balanceOf(address)", "uint256")
 	funcName      = w3.MustNewFunc("name()", "string")
 	funcDecimals  = w3.MustNewFunc("decimals()", "uint8")
+	funcAllowance = w3.MustNewFunc("allowance(address,address)", "uint256")
 )
 
 // TODO: replace w/ config.
@@ -114,13 +125,14 @@ func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, ha
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
+		cfg:            cfg,
 		chainClient:    client,
 		db:             db,
 	}
 
 	err := i.initializeTokens(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize tokens")
+		return nil, fmt.Errorf("could not initialize tokens: %w", err)
 	}
 
 	// TODO: move
@@ -145,6 +157,40 @@ func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, ha
 }
 
 const maxBatchSize = 10
+
+// ApproveAllTokens approves all checks if allowance is set and if not approves.
+func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error {
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+
+	for chainID, tokenMap := range i.tokens {
+		backendClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
+
+		for address, token := range tokenMap {
+			// if startAllowance is 0
+			if token.startAllowance.Cmp(big.NewInt(0)) == -0 {
+				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
+				_, err = submitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					erc20, err := ierc20.NewIERC20(address, backendClient)
+					if err != nil {
+						return nil, fmt.Errorf("could not get erc20: %w", err)
+					}
+
+					approveAmount, err := erc20.Approve(transactor, i.relayerAddress, abi.MaxInt256)
+					if err != nil {
+						return nil, fmt.Errorf("could not approve: %w", err)
+					}
+
+					return approveAmount, nil
+				})
+			}
+		}
+	}
+	return nil
+}
 
 // initlalizes tokens converts the configuration into a data structure we can use to determine inventory
 // it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
@@ -181,11 +227,13 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			i.tokens[chainID][token] = rtoken
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
+			rtoken.startAllowance = new(big.Int)
 
 			deferredCalls[chainID] = append(deferredCalls[chainID],
 				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
 				eth.CallFunc(funcName, token).Returns(&rtoken.name),
+				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Bridges[chainID].Bridge)).Returns(rtoken.startAllowance),
 			)
 
 			deferredRegisters = append(deferredRegisters, func() error {

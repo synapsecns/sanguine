@@ -86,7 +86,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
 	if err != nil {
-		return nil, fmt.Errorf("could not add imanager")
+		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
 	q, err := quoter.NewQuoterManager(ctx, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg)
@@ -115,6 +115,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 const defaultPostInterval = 1
 
 func (r *Relayer) Start(ctx context.Context) error {
+	err := r.inventory.ApproveAllTokens(ctx, r.submitter)
+	if err != nil {
+		return fmt.Errorf("could not approve all tokens: %w", err)
+	}
+
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		err := r.startChainParser(ctx)
@@ -168,7 +173,7 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
-	err := g.Wait()
+	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
 	}
