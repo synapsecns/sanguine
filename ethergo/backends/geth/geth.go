@@ -271,12 +271,6 @@ func (f *Backend) makeClient(tb testing.TB) *wrappedClient {
 	return &wrappedClient{Client: rawClient, chainConfig: f.ChainConfig(), rpcClient: rpcClient, w3Client: w3Client}
 }
 
-// ReachGasLimit spins an insta-mining legacyClient with no-op transactions until target gas limit is achieved
-// see https://github.com/cgewecke/geth-dev-assistant/blob/b7f840baa21f7589a0b18297b60c385a01d72ad1/lib/app.js for details.
-func (f *Backend) ReachGasLimit() {
-	panic("not yet implemented")
-}
-
 // getFaucetTxContext gets a signed transaction from the faucet address.
 func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	ctx, cancel := onecontext.Merge(ctx, f.Context())
