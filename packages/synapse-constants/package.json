@@ -1,15 +1,16 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "This is an npm package that maintains all synapse constants",
-  "main": "dist/bundle.js",
-  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "esm/index.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no tesst specified\" && exit 1",
     "build": "node scripts/generateMaps.js",
     "prepublish": "tsc",
-    "compile": "tsc && babel dist --out-dir dist && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/constants && webpack"
+    "compile-esm": "tsc --target es2018 --outDir esm && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" esm/constants && webpack",
+    "compile-cjs": "tsc --module commonjs --outDir dist&& copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/constants && webpack"
   },
   "author": "",
   "license": "ISC",
