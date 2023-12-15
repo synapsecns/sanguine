@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -90,10 +91,13 @@ func (i *IntegrationSuite) setupBackends() {
 	i.userWallet, err = wallet.FromRandom()
 	i.NoError(err)
 
+	// Technically, we can use anvil for origin and geth for destination since only origin needs to use a block
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		i.originBackend = geth.NewEmbeddedBackendForChainID(i.GetTestContext(), i.T(), big.NewInt(originBackendChainID))
+		options := anvil.NewAnvilOptionBuilder()
+		options.SetChainID(1)
+		i.originBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
 		i.setupBE(i.originBackend)
 	}()
 	go func() {

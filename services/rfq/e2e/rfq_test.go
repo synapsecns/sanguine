@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -139,6 +140,25 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// TODO: this, but cleaner
+	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
+	i.NoError(err)
+
+	go func() {
+		for {
+			select {
+			case <-i.GetTestContext().Done():
+				return
+			case <-time.After(time.Second * 1):
+				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
+				// we don't need to worry about deadline since we're only doing this on origin
+				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+				i.NoError(err)
+			}
+		}
+
+	}()
 
 	time.Sleep(time.Second * 30)
 	// TODO: verify, I'm using breakpoitns for now
