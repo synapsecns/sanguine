@@ -31,7 +31,7 @@ var (
 	blockNumberFieldName string
 
 	statusFieldName string
-	// transactionIDFieldName is the transaciton id field name.
+	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
 )
 

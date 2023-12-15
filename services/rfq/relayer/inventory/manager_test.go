@@ -34,7 +34,6 @@ func (i *InventoryTestSuite) TestInventoryBootAndRefresh() {
 			_ = metadata
 			_ = usdt
 			_ = mintAmount
-
 		}(backend)
 	}
 	wg.Wait()
@@ -52,5 +51,4 @@ func (i *InventoryTestSuite) TestInventoryBootAndRefresh() {
 	i.Require().NoError(err)
 
 	_ = im
-
 }
