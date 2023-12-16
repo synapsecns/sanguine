@@ -8,9 +8,6 @@ export const Warning = () => {
   const isChainFantom = [fromChainId, toChainId].includes(FANTOM.id)
   const isChainDoge = [fromChainId, toChainId].includes(DOGE.id)
 
-  //@dev TO-DO: Remove Arbitrum once network congestion is over
-  const isChainArbitrum = [fromChainId, toChainId].includes(ARBITRUM.id)
-
   if (isChainHarmony) {
     return (
       <WarningMessage
@@ -48,19 +45,6 @@ export const Warning = () => {
               You may still bridge funds from Dogechain to any supported
               destination chain.
             </p>
-          </>
-        }
-      />
-    )
-  }
-  //@dev TO-DO: Remove Arbitrum once network congestion is over
-  else if (isChainArbitrum) {
-    return (
-      <WarningMessage
-        header="Alert: Transactions to Arbitrum are temporarily paused."
-        message={
-          <>
-            <p>Arbitrum bridging paused due to ongoing network congestion.</p>
           </>
         }
       />
