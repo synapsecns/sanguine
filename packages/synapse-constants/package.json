@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -13,8 +13,8 @@
     "test": "echo \"Error: no tesst specified\" && exit 1",
     "build": "node scripts/generateMaps.js",
     "prepublish": "tsc",
-    "compile-esm": "tsc --target es2019 --outDir dist/esm && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/esm/constants && copyfiles \"*.ts\" dist/esm",
-    "compile-cjs": "tsc --module commonjs --outDir dist/cjs && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/cjs/constants && copyfiles \"*.ts\" dist/cjs && webpack"
+    "compile-esm": "tsc --target es2019 --outDir dist/esm && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/esm/constants && copyfiles \"*.ts\" dist/esm && copyfiles \"constants/assets/**/*.d.ts\" dist/esm",
+    "compile-cjs": "tsc --module commonjs --outDir dist/cjs && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/cjs/constants && copyfiles \"*.ts\" dist/cjs && copyfiles \"constants/assets/**/*.d.ts\" dist/cjs && webpack"
   },
   "author": "",
   "license": "ISC",
