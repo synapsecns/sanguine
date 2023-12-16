@@ -16,6 +16,7 @@ const config = {
     filename: 'bundle.js',
     libraryTarget: 'umd',
   },
+  target: 'web',
   module: {
     rules: [
       {
