@@ -1,6 +1,6 @@
 import _ from 'lodash'
-import { Token } from '../types/index'
 
+import { Token } from '../types/index'
 import * as CHAINS from '../chains/master'
 import * as all from './bridgeable'
 import * as allPool from './poolMaster'
@@ -20,6 +20,11 @@ interface TokenByKey {
   [cID: string]: Token
 }
 
+interface TokenMap {
+  [chainId: string]: {
+    [address: string]: Token
+  }
+}
 export const sortTokens = (tokens: Token[]) =>
   Object.values(tokens).sort((a, b) => b.visibilityRank - a.visibilityRank)
 
@@ -28,7 +33,7 @@ const sortedTokens = Object.values(all).sort(
 )
 
 // Key value pairs here will override bridgeMap to hide particular chain-token pairs
-export const PAUSED_TOKENS_BY_CHAIN: { [key: string]: any }= {
+export const PAUSED_TOKENS_BY_CHAIN: { [key: string]: any } = {
   [CHAINS.ETH.id]: ['WETH'],
   [CHAINS.OPTIMISM.id]: ['WETH'],
   [CHAINS.BOBA.id]: ['WETH'],
@@ -54,12 +59,14 @@ export const findChainIdsWithPausedToken = (routeSymbol: string) => {
   )
 }
 
-const getBridgeableTokens = (): TokensByChain => {
+export const getBridgeableTokens = (): TokensByChain => {
   const bridgeableTokens: TokensByChain = {}
   Object.entries(all).map(([key, token]) => {
     for (const cID of Object.keys(token.addresses)) {
       // Skip if the token is paused on the current chain
-      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) {
+        continue
+      }
 
       if (!bridgeableTokens[cID]) {
         bridgeableTokens[cID] = [token]
@@ -73,17 +80,13 @@ const getBridgeableTokens = (): TokensByChain => {
   return bridgeableTokens
 }
 
-
-
 const getTokenHashMap = () => {
-  interface TokenMap {
-    [chainId: string]: {
-      [address: string]: Token
-    }
-  }
   const tokenHashMap: TokenMap = {}
 
-  for (const [chainId, tokensOnChain] of _.toPairs(BRIDGABLE_TOKENS) as [any, any][]) {
+  for (const [chainId, tokensOnChain] of _.toPairs(BRIDGABLE_TOKENS) as [
+    any,
+    any
+  ][]) {
     for (const token of tokensOnChain) {
       tokenHashMap[chainId] = tokenHashMap[chainId] || {}
       tokenHashMap[chainId][token.addresses[chainId]] = token
@@ -91,7 +94,9 @@ const getTokenHashMap = () => {
   }
   GMX.wrapperAddresses = GMX.wrapperAddresses as { [key: string]: any }
   if (GMX.wrapperAddresses) {
-    tokenHashMap[CHAINS.AVALANCHE.id][GMX.wrapperAddresses[CHAINS.AVALANCHE.id]] = GMX;
+    tokenHashMap[CHAINS.AVALANCHE.id][
+      GMX.wrapperAddresses[CHAINS.AVALANCHE.id]
+    ] = GMX
   }
   Object.keys(WETH.addresses).map((chain: any) => {
     tokenHashMap[chain][WETH.addresses[chain]] = ETH
@@ -111,7 +116,7 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
     const token = BRIDGABLE_TOKENS[chainId].find((token) => {
       return token.symbol === symbol
     })
-    return token as Token | undefined;
+    return token as Token | undefined
   }
 }
 export const tokenAddressToToken = (
@@ -136,16 +141,18 @@ export const TOKEN_HASH_MAP = getTokenHashMap()
 const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
 
 const getSwapPriorityRanking = () => {
-  const swapPriorityRanking: { [key: string]: any } = {};
+  const swapPriorityRanking: { [key: string]: any } = {}
   allTokensWithSwap.map((token) => {
-    if (!token.priorityPool) return
+    if (!token.priorityPool) {
+      return
+    }
     for (const cID of Object.keys(token.addresses)) {
       if (!swapPriorityRanking[cID]) {
         swapPriorityRanking[cID] = {}
       }
-      if(token.poolTokens){
+      if (token.poolTokens) {
         for (const poolToken of token.poolTokens) {
-          if(poolToken.symbol){
+          if (poolToken.symbol) {
             swapPriorityRanking[cID][poolToken.symbol] = token
           }
         }
@@ -160,7 +167,9 @@ export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
 const getPoolsByChain = (displayOnly: boolean): TokensByChain => {
   const poolTokens: TokensByChain = {}
   Object.values(allPool).map((token) => {
-    if (displayOnly && !token.display) return
+    if (displayOnly && !token.display) {
+      return
+    }
     for (const cID of Object.keys(token.addresses)) {
       if (!poolTokens[cID]) {
         poolTokens[cID] = [token]
@@ -190,7 +199,9 @@ const getChainsByPoolName = () => {
 const getTokensByPoolTypeByChain = (type: string) => {
   const poolTokens: { [key: string]: any } = {}
   Object.values(allPool).map((token) => {
-    if (!token.display || !token?.poolType?.includes(type)) return
+    if (!token.display || !token?.poolType?.includes(type)) {
+      return
+    }
     for (const cID of Object.keys(token.addresses)) {
       if (!poolTokens[cID]) {
         poolTokens[cID] = [token]
@@ -207,7 +218,9 @@ const getTokensByPoolTypeByChain = (type: string) => {
 const getLegacyTokensByChain = () => {
   const poolTokens: TokensByChain = {}
   Object.values(allPool).map((token) => {
-    if (!token.legacy) return
+    if (!token.legacy) {
+      return
+    }
     for (const cID of Object.keys(token.addresses)) {
       if (!poolTokens[cID]) {
         poolTokens[cID] = [token]
@@ -224,7 +237,7 @@ const getLegacyTokensByChain = () => {
 const getPoolByRouterIndex = () => {
   const poolTokens: TokenByKey = {}
   Object.values(allPool).map((token) => {
-    let poolTokens: { [key: string]: any } = {}
+    const poolTokens: { [key: string]: any } = {}
     if (token.routerIndex !== undefined) {
       poolTokens[token.routerIndex] = token
     }
@@ -242,7 +255,7 @@ export const ETH_POOLS_BY_CHAIN = getTokensByPoolTypeByChain('ETH')
 export const LEGACY_POOLS_BY_CHAIN = getLegacyTokensByChain()
 
 interface StakableTokens {
-  [chainId: string]: Token[];
+  [chainId: string]: Token[]
 }
 
 export const STAKABLE_TOKENS: StakableTokens = {
@@ -259,7 +272,7 @@ const getStakingMap = () => {
 
     STAKING_MAP_TOKENS[chainId] = {}
     for (const token of STAKABLE_TOKENS[chainId]) {
-      if(token.poolName){
+      if (token.poolName) {
         STAKING_MAP_TOKENS[chainId][token.poolName] = token
       }
     }

@@ -39,7 +39,7 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token',
     logo: synapseLogo,
-    poolName: 'BSC Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'BSC Stableswap Pool ',
     routerIndex: 'bscnusd',
     poolId: 1,
     poolType: 'USD',
@@ -65,7 +65,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Optimism ',
     logo: synapseLogo,
-    poolName: 'Optimism Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Optimism Stableswap Pool ',
     routerIndex: 'optimismnusd',
     poolId: 1,
     poolType: 'USD',
@@ -89,14 +89,14 @@ export const CRONOS_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Cronos ',
     logo: synapseLogo,
-    poolName: 'Cronos Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Cronos Stableswap Pool ',
     routerIndex: 'cronosnusd',
     poolId: 0,
     poolType: 'USD',
     swapAddresses: {
         [CHAINS.CRONOS.id]: '0xCb6674548586F20ca39C97A52A0ded86f48814De', //'0x3b1601c386247A127287b094F9CCB585D4D0B99b',
     },
-    poolTokens: [NUSD, USDC], // [NUSD, DAI, USDC, USDT],
+    poolTokens: [NUSD, USDC],
     description: "Synapse's 2pool stableswap LP token on Cronos",
     display: true,
     priorityPool: true,
@@ -113,7 +113,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Polygon ',
     logo: synapseLogo,
-    poolName: 'Polygon Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Polygon Stableswap Pool ',
     routerIndex: 'polygonnusd',
     poolId: 1,
     poolType: 'USD',
@@ -139,7 +139,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Avalanche',
     logo: synapseLogo,
-    poolName: 'Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Avalanche Stableswap Pool ',
     routerIndex: 'avalanchenusd',
     // poolId: 3,
     // 420 pool id sets pool to not show in staking page
@@ -164,7 +164,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Avalanche',
     logo: synapseLogo,
-    poolName: 'Legacy Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Legacy Avalanche Stableswap Pool ',
     routerIndex: 'legacyavalanchenusd',
     poolId: 1,
     poolType: 'USD',
@@ -186,7 +186,7 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Arbitrum',
     logo: synapseLogo,
-    poolName: 'Legacy Arbitrum Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Legacy Arbitrum Stableswap Pool ',
     routerIndex: 'arbitrumnusd',
     poolId: 2,
     poolType: 'USD',
@@ -212,7 +212,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Fantom',
     logo: synapseLogo,
-    poolName: 'Legacy Fantom Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Legacy Fantom Stableswap Pool ',
     routerIndex: 'fantomnusd',
     poolId: 1,
     poolType: 'USD',
@@ -238,7 +238,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Harmony',
     logo: synapseLogo,
-    poolName: 'Harmony Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Harmony Stableswap Pool ',
     routerIndex: 'harmonynusd',
     poolId: 1,
     poolType: 'USD',
@@ -264,7 +264,7 @@ export const BOBA_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Boba',
     logo: synapseLogo,
-    poolName: 'Boba Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Boba Stableswap Pool ',
     routerIndex: 'bobanusd',
     poolId: 1,
     poolType: 'USD',
@@ -290,7 +290,7 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Synapse nUSD LP Token Aurora',
     logo: synapseLogo,
-    poolName: 'Legacy Aurora Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Legacy Aurora Stableswap Pool ',
     routerIndex: 'auroranusd',
     poolId: 0,
     poolType: 'USD',
@@ -314,7 +314,7 @@ export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSD-LP',
     name: 'Trisolaris nUSD LP Token Aurora',
     logo: synapseLogo,
-    poolName: 'Aurora Trisolaris Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Aurora Trisolaris Stableswap Pool ',
     routerIndex: 'auroratrisolarisnusd',
     poolId: 0,
     poolType: 'USD',
@@ -339,7 +339,7 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSDLP',
     name: 'Synapse nUSD LP Token Arbitrum',
     logo: synapseLogo,
-    poolName: 'Arbitrum 3Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Arbitrum 3Pool ',
     routerIndex: 'arbitrum3pool',
     poolId: 3,
     poolType: 'USD',
@@ -364,7 +364,7 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSDLP',
     name: 'Synapse nUSD LP Token Fantom',
     logo: synapseLogo,
-    poolName: 'Fantom 3Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Fantom 3Pool ',
     routerIndex: 'fantom3pool',
     poolId: 3,
     poolType: 'USD',
@@ -389,7 +389,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
     symbol: 'nUSDLP',
     name: 'Synapse nUSD LP Token Metis',
     logo: synapseLogo,
-    poolName: 'Metis Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Metis Stableswap Pool ',
     routerIndex: 'metis2pool',
     poolId: 0,
     poolType: 'USD',
@@ -414,7 +414,7 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
     name: 'Synapse nUSD LP Token Canto',
     symbol: 'nUSDLP',
     logo: synapseLogo,
-    poolName: 'Canto NOTE Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Canto NOTE Stableswap Pool ',
     routerIndex: 'canto2pool',
     poolId: 0,
     poolType: 'USD',
@@ -459,7 +459,7 @@ export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
     name: 'Synapse nUSD LP Token Canto',
     symbol: 'Wrapper',
     logo: synapseLogo,
-    poolName: 'Canto Wrapper Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Canto Wrapper Pool ',
     routerIndex: 'cantowrapper',
     poolId: 420,
     notStake: true,
@@ -484,7 +484,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
     symbol: 'oUSDT-LP',
     name: 'Synapse Orbit UST LP Token Klaytn',
     logo: synapseLogo,
-    poolName: 'Klaytn Synapse & Orbit USDT Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Klaytn Synapse & Orbit USDT Pool ',
     routerIndex: 'klaytn2pool',
     poolId: 0,
     poolType: 'KLAYTN_USDT',
@@ -508,7 +508,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
     symbol: 'AVAXLP',
     name: 'AVAX LP Token Harmony ',
     logo: synapseLogo,
-    poolName: 'Harmony AVAX Swap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Harmony AVAX Swap Pool ',
     routerIndex: 'avax2pool',
     poolId: 0,
     poolType: 'AVAX',
@@ -531,7 +531,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
         [CHAINS.ARBITRUM.id]: '0xD70A52248e546A3B260849386410C7170c7BD1E9',
     },
     decimals: 18,
-    symbol: 'nETH-LP', // make sure this gets update to match conytract
+    symbol: 'nETH-LP',
     name: 'Synapse Eth LP Token Arbitrum',
     logo: synapseLogo,
     poolName: 'Arbitrum ETH Pool',
@@ -544,7 +544,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
     swapEthAddresses: {
         [CHAINS.ARBITRUM.id]: '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
     },
-    poolTokens: [NETH, WETH], // add eth token whether eth or weth here
+    poolTokens: [NETH, WETH],
     nativeTokens: [NETH, ETH],
     description: "Synapse's eth swap LP token on Arbitrum",
     display: true,
@@ -561,7 +561,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
         [CHAINS.OPTIMISM.id]: '0x4619a06ddd3b8f0f951354ec5e75c09cd1cd1aef',
     },
     decimals: 18,
-    symbol: 'nETH-LP', // make sure this gets update to match conytract
+    symbol: 'nETH-LP',
     name: 'Synapse Eth LP Token Optimism',
     logo: synapseLogo,
     poolName: 'Optimism ETH Pool',
@@ -574,7 +574,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
     swapEthAddresses: {
         [CHAINS.OPTIMISM.id]: '0x8c7d5f8A8e154e1B59C92D8FB71314A43F32ef7B',
     },
-    poolTokens: [NETH, WETH], // add eth token whether eth or weth here
+    poolTokens: [NETH, WETH],
     nativeTokens: [NETH, ETH],
     description: "Synapse's eth swap LP token on Optimism",
     display: true,
@@ -591,7 +591,7 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
         [CHAINS.BOBA.id]: '0x498657f2AF18D525049dE520dD86ee376Db9c67c',
     },
     decimals: 18,
-    symbol: 'nETH-LP', // make sure this gets update to match conytract
+    symbol: 'nETH-LP',
     name: 'Synapse Eth LP Token Boba',
     logo: synapseLogo,
     poolName: 'Boba ETH Pool',
@@ -604,7 +604,7 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
     swapEthAddresses: {
         [CHAINS.BOBA.id]: '0x4F4f66964335D7bef23C16a62Fcd3d1E89f02959',
     },
-    poolTokens: [NETH, WETH], // add eth token whether eth or weth here
+    poolTokens: [NETH, WETH],
     nativeTokens: [NETH, ETH],
     description: "Synapse's eth swap LP token on Boba",
     display: true,
@@ -621,7 +621,7 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
         [CHAINS.AVALANCHE.id]: '0x5dF1dB940dd8fEE0e0eB0C8917cb50b4dfaDF98c',
     },
     decimals: 18,
-    symbol: 'nETH-LP', // make sure this gets update to match conytract
+    symbol: 'nETH-LP',
     name: 'Synapse Eth LP Token Avalanche',
     logo: synapseLogo,
     poolName: 'Avalanche ETH Pool',
@@ -637,7 +637,7 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
     swapEthAddresses: {
         [CHAINS.AVALANCHE.id]: '0xdd60483Ace9B215a7c019A44Be2F22Aa9982652E', // '0xf7e6214E1f2b03b54f1594ECfa3834148aB26888',
     },
-    poolTokens: [NETH, AVWETH], // add eth token whether eth or weth here
+    poolTokens: [NETH, AVWETH],
     nativeTokens: [NETH, WETHE],
     depositTokens: [NETH, WETHE],
     description: "Synapse's ETH swap LP token on Avalanche",
@@ -658,7 +658,7 @@ export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
     symbol: 'nETH-LP',
     name: 'Synapse 1ETH LP Token Harmony',
     logo: synapseLogo,
-    poolName: 'Harmony 1ETH Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Harmony 1ETH Pool ',
     routerIndex: 'harmonyethpool',
     poolId: 2,
     poolType: 'ETH',
@@ -683,7 +683,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
     symbol: 'nETH-LP',
     name: 'Synapse ETH LP Token Fantom',
     logo: synapseLogo,
-    poolName: 'Fantom ETH Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Fantom ETH Pool ',
     routerIndex: 'fantomethpool',
     poolId: 2,
     poolType: 'ETH',
@@ -708,7 +708,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
     symbol: 'nETH-LP',
     name: 'Synapse ETH LP Token Metis',
     logo: synapseLogo,
-    poolName: 'Metis ETH Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Metis ETH Pool ',
     routerIndex: 'metisethpool',
     poolId: 1,
     poolType: 'ETH',
@@ -734,7 +734,7 @@ export const CANTO_WETH_SWAP_TOKEN = new Token({
     symbol: 'nETH-LP',
     name: 'Synapse ETH LP Token Canto',
     logo: synapseLogo,
-    poolName: 'Canto ETH Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Canto ETH Pool ',
     routerIndex: 'cantoethpool',
     poolId: 1,
     poolType: 'ETH',
@@ -759,7 +759,7 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
     symbol: 'JEWELP',
     name: 'Jewel LP Token Harmony ',
     logo: synapseLogo,
-    poolName: 'Harmony Jewel Swap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Harmony Jewel Swap Pool ',
     routerIndex: 'jewel2pool',
     poolId: 0,
     poolType: 'JEWEL',
@@ -814,7 +814,7 @@ export const METIS_WETH_SWAP_TOKEN_MIGRATED = new Token({
     symbol: 'nETH-LP',
     name: 'Synapse ETH LP Token Metis',
     logo: synapseLogo,
-    poolName: 'Metis ETH Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Metis ETH Pool ',
     routerIndex: 'metisethpool-migrated',
     poolId: 1,
     poolType: 'ETH',
@@ -839,7 +839,7 @@ export const METIS_POOL_SWAP_TOKEN_MIGRATED = new Token({
     symbol: 'nUSDLP',
     name: 'Synapse nUSD LP Token Metis',
     logo: synapseLogo,
-    poolName: 'Metis Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+    poolName: 'Metis Stableswap Pool ',
     routerIndex: 'metis2pool-migrated',
     poolId: 0,
     poolType: 'USD',

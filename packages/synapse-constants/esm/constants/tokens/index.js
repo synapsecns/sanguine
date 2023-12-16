@@ -29,14 +29,15 @@ export const findChainIdsWithPausedToken = (routeSymbol) => {
         return result;
     }, []);
 };
-const getBridgeableTokens = () => {
+export const getBridgeableTokens = () => {
     const bridgeableTokens = {};
     Object.entries(all).map(([key, token]) => {
         var _a, _b;
         for (const cID of Object.keys(token.addresses)) {
             // Skip if the token is paused on the current chain
-            if ((_a = PAUSED_TOKENS_BY_CHAIN[cID]) === null || _a === void 0 ? void 0 : _a.includes(key))
+            if ((_a = PAUSED_TOKENS_BY_CHAIN[cID]) === null || _a === void 0 ? void 0 : _a.includes(key)) {
                 continue;
+            }
             if (!bridgeableTokens[cID]) {
                 bridgeableTokens[cID] = [token];
             }
@@ -96,8 +97,9 @@ const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)];
 const getSwapPriorityRanking = () => {
     const swapPriorityRanking = {};
     allTokensWithSwap.map((token) => {
-        if (!token.priorityPool)
+        if (!token.priorityPool) {
             return;
+        }
         for (const cID of Object.keys(token.addresses)) {
             if (!swapPriorityRanking[cID]) {
                 swapPriorityRanking[cID] = {};
@@ -119,8 +121,9 @@ const getPoolsByChain = (displayOnly) => {
     const poolTokens = {};
     Object.values(allPool).map((token) => {
         var _a;
-        if (displayOnly && !token.display)
+        if (displayOnly && !token.display) {
             return;
+        }
         for (const cID of Object.keys(token.addresses)) {
             if (!poolTokens[cID]) {
                 poolTokens[cID] = [token];
@@ -150,8 +153,9 @@ const getTokensByPoolTypeByChain = (type) => {
     const poolTokens = {};
     Object.values(allPool).map((token) => {
         var _a, _b;
-        if (!token.display || !((_a = token === null || token === void 0 ? void 0 : token.poolType) === null || _a === void 0 ? void 0 : _a.includes(type)))
+        if (!token.display || !((_a = token === null || token === void 0 ? void 0 : token.poolType) === null || _a === void 0 ? void 0 : _a.includes(type))) {
             return;
+        }
         for (const cID of Object.keys(token.addresses)) {
             if (!poolTokens[cID]) {
                 poolTokens[cID] = [token];
@@ -169,8 +173,9 @@ const getLegacyTokensByChain = () => {
     const poolTokens = {};
     Object.values(allPool).map((token) => {
         var _a;
-        if (!token.legacy)
+        if (!token.legacy) {
             return;
+        }
         for (const cID of Object.keys(token.addresses)) {
             if (!poolTokens[cID]) {
                 poolTokens[cID] = [token];
@@ -187,7 +192,7 @@ const getLegacyTokensByChain = () => {
 const getPoolByRouterIndex = () => {
     const poolTokens = {};
     Object.values(allPool).map((token) => {
-        let poolTokens = {};
+        const poolTokens = {};
         if (token.routerIndex !== undefined) {
             poolTokens[token.routerIndex] = token;
         }
