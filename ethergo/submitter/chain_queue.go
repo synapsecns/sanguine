@@ -2,7 +2,6 @@ package submitter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -13,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -114,7 +114,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 	spanners := make([]trace.Span, len(reprocessQueue))
 
 	for i, tx := range reprocessQueue {
-		_, span := c.metrics.Tracer().Start(ctx, "chainPendingQueue.submit", trace.WithAttributes(txToAttributes(tx.Transaction)...))
+		_, span := c.metrics.Tracer().Start(ctx, "chainPendingQueue.submit", trace.WithAttributes(util.TxToAttributes(tx.Transaction)...))
 		spanners[i] = span
 		defer func() {
 			// in case this span doesn't get ended automatically below, end it here.
@@ -148,9 +148,8 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 			span := spanners[i]
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
-				var callErrs w3.CallErrors
-				ok := errors.As(err, &callErrs)
-				if ok && len(callErrs) <= i {
+				callErrs := err.(w3.CallErrors)
+				if len(callErrs) <= i {
 					span.RecordError(callErrs[i])
 				} else {
 					span.RecordError(err)
@@ -236,7 +235,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx)...))
+		span.AddEvent("add to reprocess queue", trace.WithAttributes(util.TxToAttributes(tx)...))
 
 		c.addToReprocessQueue(db.TX{
 			Transaction: tx,

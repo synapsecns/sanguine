@@ -215,7 +215,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 
 func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.StoreTX", trace.WithAttributes(
-		append(txToAttributes(tx), attribute.String("status", status.String()))...))
+		append(util.TxToAttributes(tx), attribute.String("status", status.String()))...))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -273,7 +273,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}
 
 	// then we copy the transactor, this is the one we'll modify w/ no send.
-	transactor := copyTransactOpts(parentTransactor)
+	transactor := util.CopyTransactOpts(parentTransactor)
 
 	var locker mapmutex.Unlocker
 
@@ -421,7 +421,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		if ok {
 			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
 				attribute.String("error", err.Error()),
-				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
+				attribute.String("blockNumber", util.BigPtrToString(gasBlock.Number)),
 			))
 		} else {
 			return nil, fmt.Errorf("could not get gas block: %w", err)
