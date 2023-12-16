@@ -2,9 +2,11 @@ package submitter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core"
@@ -140,12 +142,19 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 	go func() {
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
+
 		cancelStore()
 		for i := range c.reprocessQueue {
 			span := spanners[i]
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
-				span.RecordError(err)
+				var callErrs w3.CallErrors
+				ok := errors.As(err, &callErrs)
+				if ok && len(callErrs) <= i {
+					span.RecordError(callErrs[i])
+				} else {
+					span.RecordError(err)
+				}
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
 			}

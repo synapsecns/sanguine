@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -106,8 +108,31 @@ func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Call
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
 
 	defer func() {
+		if errors.Is(err, w3.CallErrors{}) {
+			var batchErr w3.CallErrors
+			_ = errors.As(err, &batchErr)
+			for i, callErr := range batchErr {
+				rawReq, err := calls[i].CreateRequest()
+				// this already happened, so it can't be failing now.
+				// just error.
+				if err != nil {
+					fmt.Println("could not create request: this should never happen", err)
+					continue
+				}
+
+				params, err := json.Marshal(rawReq.Args)
+				if err != nil {
+					fmt.Println("could not marshal params: this should never happen", err)
+					continue
+				}
+				span.RecordError(callErr, trace.WithAttributes(attribute.String("method", rawReq.Method), attribute.String("params", string(params))))
+			}
+			metrics.EndSpan(span)
+			return
+		}
 		metrics.EndSpanWithErr(span, err)
 	}()
+
 	//nolint: wrapcheck
 	return c.getW3Client().CallCtx(ctx, calls...)
 }
