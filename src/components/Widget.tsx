@@ -298,7 +298,13 @@ export const Widget = ({
       style={themeVariables}
       className="w-[374px] bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
     >
-      <Transaction />
+      <Transaction
+        originChainId={42161}
+        destinationChainId={137}
+        originTxHash="0x6c25a451f4fe26742eeafe2475a190a5c9a6cf6b6ab9cecd10348be506402f66"
+        destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
+        kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
+      />
       <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <ChainSelect
           label="From"

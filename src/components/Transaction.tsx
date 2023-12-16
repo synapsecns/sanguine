@@ -1,11 +1,42 @@
 import { useState } from 'react'
 import { DownArrow } from './icons/DownArrow'
+import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
+import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
 
 const TransactionStatus = ({ string }) => {
   return <div>{string}</div>
 }
 
-export const Transaction = () => {
+export const Transaction = ({
+  originChainId,
+  destinationChainId,
+  originTxHash,
+  destinationTxHash,
+  kappa,
+  timestamp,
+}: {
+  originChainId: number
+  destinationChainId: number
+  originTxHash?: string
+  destinationTxHash?: string
+  kappa?: string
+  timestamp?: string
+}) => {
+  const originTxExplorerLink = getTxBlockExplorerLink(
+    originChainId,
+    originTxHash
+  )
+  const destTxExplorerLink = getTxBlockExplorerLink(
+    destinationChainId,
+    destinationTxHash
+  )
+  const synapseExplorerLink = getTxSynapseExplorerLink({
+    originChainId,
+    destinationChainId,
+    txHash: originTxHash,
+    kappa,
+  })
+
   return (
     <div
       data-test-id="transaction"
@@ -19,9 +50,9 @@ export const Transaction = () => {
       <div className="flex flex-row items-center space-x-2">
         <div>5-7 min</div>
         <DropdownMenu>
-          <MenuItem text="Etherscan" link="" />
-          <MenuItem text="Arbiscan" link="" />
-          <MenuItem text="Synapse Explorer" link="" />
+          <MenuItem text="Arbiscan" link={originTxExplorerLink} />
+          <MenuItem text="Polyscan" link={destTxExplorerLink} />
+          <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
           <MenuItem text="Contact Support" link="" />
         </DropdownMenu>
       </div>
