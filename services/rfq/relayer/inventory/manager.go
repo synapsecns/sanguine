@@ -73,7 +73,7 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 	}
 	// get db first
 	// Add other committed, but incomplete statuses here
-	// TODO: clean me up
+	// TODO: clean me up: you can do this by having a IsLiquidityCommitted() method on the type.
 	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted)
 	if err != nil {
 		return nil, fmt.Errorf("could not get in flight quotes: %w", err)

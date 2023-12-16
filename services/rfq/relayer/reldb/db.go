@@ -60,10 +60,18 @@ type QuoteRequest struct {
 type QuoteRequestStatus uint8
 
 const (
+	// Seen means the quote request has been seen by the relayer, but not processed or committed to.
 	Seen QuoteRequestStatus = iota + 1
+	// NotEnoughInventory means the relayer does not have enough inventory to process the request.
+	// This can be retried at a later time.
 	NotEnoughInventory
+	// DeadlineExceeded means the quote request has exceeded the deadline.
+	// This is a terminal state.
 	DeadlineExceeded
+	// WillNotProcess means the relayer will not process the request for some reason.
+	// This is a terminal state.
 	WillNotProcess
+	// CommittedPending means the relayer has committed liquidity to the request to the chain, but it is not yet confirmed on chain.
 	CommittedPending
 	CommittedConfirmed
 	RelayStarted

@@ -11,7 +11,7 @@ import (
 
 // TestChainListener wraps chain listener for testing.
 type TestChainListener interface {
-	ChainListener
+	ContractListener
 	GetMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error)
 }
 
