@@ -28,6 +28,7 @@ The relayer consists of two main loops that contain the entire business logic of
 3. `ProvePosting`: We've called`Prove()` event from the contract. It's now time to start waiting for it to confirm and give us a log.
 4. `ProofPosted`: The proof has been sucessfully submitted to the contract. We now wait for the claim period to expire. Once it does, we mark the transaction as `ClaimPending`
 4. `ClaimComplete`: We now wait for the claim period to expire. Once it does, we mark the transaction as `ClaimComplete`
+
 ### Quote Posting
 
 The quote posting process is rather rudimentary. The relayer continously fetches a list of its on chain balances and subtraces any open commitments.
