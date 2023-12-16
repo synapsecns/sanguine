@@ -44,6 +44,8 @@ import { checkExists } from '@/utils/checkExists'
 import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
 import { useValidations } from '@/hooks/useValidations'
 
+import { Transaction } from './Transaction'
+
 const chains = {
   1: {
     id: 1,
@@ -296,6 +298,7 @@ export const Widget = ({
       style={themeVariables}
       className="w-[374px] bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
     >
+      <Transaction />
       <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <ChainSelect
           label="From"
