@@ -106,8 +106,6 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
-	t.registerMetricCallbacks(ctx)
-
 	i := 0
 	for {
 		i++
@@ -371,7 +369,6 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		if err != nil {
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
-
 	} else {
 		transactor.GasPrice, err = client.SuggestGasPrice(ctx)
 		if err != nil {
@@ -473,6 +470,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	return gasEstimate, nil
 }
 
+// TODO: test oracle fallback.
 func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EVM, chainID int) (tipCap *big.Int, err error) {
 	tipCap, err = client.SuggestGasTipCap(ctx)
 	if err != nil {
@@ -508,7 +506,7 @@ type wrappedLondonClient struct {
 
 // ChainConfig is a fake chain config.
 // since wrapped client is only used for makeSigner
-// and on london, we just enable everything
+// and on london, we just enable everything.
 func (w wrappedLondonClient) ChainConfig() *params.ChainConfig {
 	return &params.ChainConfig{
 		ChainID:                       big.NewInt(int64(w.chainID)),
