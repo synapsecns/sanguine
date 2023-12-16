@@ -96,6 +96,10 @@ func (c *clientImpl) getW3Client() *w3.Client {
 
 // BatchWithContext batches multiple w3 calls.
 func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) (err error) {
+	// Do not create an even if there are no calls
+	if len(calls) == 0 {
+		return nil
+	}
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
