@@ -73,12 +73,19 @@ const (
 	WillNotProcess
 	// CommittedPending means the relayer has committed liquidity to the request to the chain, but it is not yet confirmed on chain.
 	CommittedPending
+	// CommittedConfirmed means the relayer has committed liquidity to the request to the chain, and original bridge tx has been confirmed on chain.
 	CommittedConfirmed
+	// RelayStarted means the relayer has called Relay() on the destination chain.
 	RelayStarted
+	// RelayCompleted means the relayer has called Relay() on the destination chain, and the tx has been confirmed on chain.
 	RelayCompleted
+	// ProvePosting means the relayer has called Prove() on the origin chain.
 	ProvePosting
+	// ProvePosted means the relayer has called Prove() on the origin chain, and the tx has been confirmed on chain.
 	ProvePosted
+	// ClaimPending means the relayer has called Claim() on the origin chain.
 	ClaimPending
+	// ClaimCompleted means the relayer has called Claim() on the origin chain, and the tx has been confirmed on chain.
 	ClaimCompleted
 )
 

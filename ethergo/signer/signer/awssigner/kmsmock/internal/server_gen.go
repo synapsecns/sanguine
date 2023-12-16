@@ -16,7 +16,7 @@ import (
 func Run(port, seedPath string) {
 
 	//-----------
-	// DB Setup
+	// db Setup
 
 	database := data.NewDatabase(config.DatabasePath)
 	defer database.Close()

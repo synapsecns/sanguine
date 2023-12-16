@@ -3,9 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -14,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
@@ -212,179 +209,19 @@ func (r *Relayer) processDB(ctx context.Context) error {
 	}
 	// Obviously, these are only seen.
 	for _, request := range requests {
-		originID := int(request.Transaction.OriginChainId)
-		destID := int(request.Transaction.DestChainId)
-		// TODO: check for deadline expired. if so mark and continue.
-
-		originClient, err := r.client.GetChainClient(ctx, originID)
-		if err != nil {
-			logger.Errorf("could not get origin client: %v", err)
-			continue
-		}
-
-		originFastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[originID].Bridge), originClient)
-		if err != nil {
-			logger.Errorf("could not get origin fast bridge: %v", err)
-			continue
-		}
-
-		destClient, err := r.client.GetChainClient(ctx, destID)
-		if err != nil {
-			logger.Errorf("could not get dest client: %v", err)
-			continue
-		}
-
-		destFastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[destID].Bridge), destClient)
-		if err != nil {
-			logger.Errorf("could not get dest fast bridge: %v", err)
-			continue
-		}
-
 		// if deadline < now
 		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.DeadlineExceeded)
 		}
 
-		switch request.Status {
-		case reldb.Seen:
-			if !r.quoter.ShouldProcess(request) {
-				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.WillNotProcess)
-				if err != nil {
-					return fmt.Errorf("could not update request status: %w", err)
-				}
-			}
-			// TODO: check it deadline expired
-			// TODO: check token validity
-			// get destination commitable balancs
-			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
-			if err != nil {
-				return fmt.Errorf("could not get commitable balance: %w", err)
-			}
-			// if commitableBalance > destAmount
-			if commitableBalance.Cmp(request.Transaction.DestAmount) < 0 {
-				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
-				if err != nil {
-					return fmt.Errorf("could not update request status: %w", err)
-				}
-				continue
-			}
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedPending)
-			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
-			}
+		qr, err := r.requestToHandler(ctx, request)
+		if err != nil {
+			return fmt.Errorf("could not get request to handler: %w", err)
+		}
 
-		case reldb.NotEnoughInventory:
-			commitableBalance, err := r.inventory.GetCommittableBalance(ctx, destID, request.Transaction.DestToken)
-			if err != nil {
-				return fmt.Errorf("could not get commitable balance: %w", err)
-			}
-			// if commitableBalance > destAmount
-			if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
-				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
-				if err != nil {
-					return fmt.Errorf("could not update request status: %w", err)
-				}
-			}
-
-		case reldb.CommittedPending:
-			// TODO: build this in somehwere else  afte rwe commit
-			// need to see if we can complete
-			earliestConfirmBlock := request.BlockNumber + r.cfg.Bridges[originID].Confirmations
-
-			if earliestConfirmBlock < r.chainListeners[originID].LatestBlock() {
-				// can't complete, yet do nothing
-				continue
-			}
-
-			// It's here: so at this point, we wanna check if it's still on chain.
-			// TODO: this will cover cases where this got reorged out, but they will stay in the queue forever
-			// should clean this eventually.
-			//
-			// Reorgs are rare enough that its questionable wether this is ever worth building or if we can just
-			// leave these in the queue.
-			bs, err := originFastBridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionId)
-			if err != nil {
-				return fmt.Errorf("could not get bridge status: %w", err)
-			}
-
-			// sanity check to make sure it's still requested.
-			if bs == fastbridge.REQUESTED.Int() {
-				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedConfirmed)
-				if err != nil {
-					return fmt.Errorf("could not update request status: %w", err)
-				}
-			}
-		case reldb.CommittedConfirmed:
-			nonce, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(destID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				tx, err = destFastBridge.Relay(transactor, request.RawRequest)
-				if err != nil {
-					return nil, fmt.Errorf("could not relay: %w", err)
-				}
-
-				return tx, nil
-			})
-			if err != nil {
-				return fmt.Errorf("could not submit transaction: %w", err)
-			}
-
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.RelayStarted)
-			// TODO:
-			_ = nonce
-
-			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
-			}
-		case reldb.RelayCompleted:
-			// relays been completed, it's time to go back to the origin chain and try to prove
-			_, err := r.submitter.SubmitTransaction(ctx, big.NewInt(int64(originID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				// MAJO MAJOR TODO should be dest tx hash
-				tx, err = originFastBridge.Prove(transactor, request.RawRequest, request.TransactionId)
-				if err != nil {
-					return nil, fmt.Errorf("could not relay: %w", err)
-				}
-
-				return tx, nil
-			})
-			if err != nil {
-				return fmt.Errorf("could not submit transaction: %w", err)
-			}
-
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ProvePosting)
-			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
-			}
-		case reldb.ProvePosted:
-			// we use claim cache to make sure we don't hit the rpc to check to often
-			if r.claimCache.Has(request.TransactionId) {
-				continue
-			}
-
-			r.claimCache.Set(request.TransactionId, true, 30*time.Second)
-
-			canClaim, err := originFastBridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionId, r.signer.Address())
-			if err != nil {
-				return fmt.Errorf("could not check if can claim: %w", err)
-			}
-
-			if !canClaim {
-				continue
-			}
-			_, err = r.submitter.SubmitTransaction(ctx, big.NewInt(int64(originID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				tx, err = originFastBridge.Claim(transactor, request.RawRequest, transactor.From)
-				if err != nil {
-					return nil, fmt.Errorf("could not relay: %w", err)
-				}
-
-				return tx, nil
-			})
-			if err != nil {
-				return fmt.Errorf("could not submit transaction: %w", err)
-			}
-
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ClaimPending)
-			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
-			}
+		err = qr.Handle(ctx, request)
+		if err != nil {
+			return fmt.Errorf("could not handle request: %w", err)
 		}
 	}
 	return nil

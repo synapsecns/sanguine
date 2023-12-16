@@ -20,8 +20,14 @@ The relayer consists of two main loops that contain the entire business logic of
    1. From this step until `Relay()` is called, we check to make sure the deadline has not been exceeded.
    2. It checks with the quoter if it is valid. If not, it is marked as `WillNotProcess`
    1. It checks with the inventory manger that there's enough inventory. If not, it is marked as `NotEnoughInventory` and can be tried later.
-   2. If these chekcs pass, it's stored as `CommittedPending` because we're still not sure it's pending on chain, but we have committed our liquidity to it.
-1.
+   2. If these checks pass, it's stored as `CommittedPending` because we're still not sure it's pending on chain, but we have committed our liquidity to it.
+1. `CommitPending`: check the chain to see if transaction is finalized yet, if not wait until it is.
+1. `CommitConfirmed`: The transaction is finalized on chain, we can now relay it to the destination chain.
+1. `RelayPending`: We now listen (don't poll)  for the relay in the logs. Once we get it we mark the transaction as `RelayComplete`
+2. `RelayComplete`: We now call Prove() on the contract to prove that we relayed the transaction. Once this is done, we mark the transaction as `ProvePosting`
+3. `ProvePosting`: We've called`Prove()` event from the contract. It's now time to start waiting for it to confirm and give us a log.
+4. `ProofPosted`: The proof has been sucessfully submitted to the contract. We now wait for the claim period to expire. Once it does, we mark the transaction as `ClaimPending`
+4. `ClaimComplete`: We now wait for the claim period to expire. Once it does, we mark the transaction as `ClaimComplete`
 ### Quote Posting
 
-TODO
+The quote posting process is rather rudimentary. The relayer continously fetches a list of its on chain balances and subtraces any open commitments.
