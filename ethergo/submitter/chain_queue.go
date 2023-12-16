@@ -44,6 +44,10 @@ func (c *chainQueue) chainIDInt() int {
 }
 
 func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
+	if len(txes) == 0 {
+		return nil
+	}
+
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -85,7 +89,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 		cq.bumpTX(gCtx, tx)
 	}
-    cq.updateOldTxStatuses(gCtx)
+	cq.updateOldTxStatuses(gCtx)
 
 	err = cq.g.Wait()
 	if err != nil {
