@@ -1,8 +1,8 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "This is an npm package that maintains all synapse constants",
-  "main": "dist/index.js",
+  "main": "dist/bundle.js",
   "module": "esm/index.js",
   "types": "index.d.ts",
   "scripts": {
