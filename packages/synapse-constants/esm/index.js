@@ -1,3 +1,7 @@
+if (typeof self === 'undefined') {
+    // @ts-ignore
+    global.self = global;
+}
 export * from './constants/tokens/index';
 import * as CHAINS_1 from './constants/chains/index';
 export { CHAINS_1 as CHAINS };
