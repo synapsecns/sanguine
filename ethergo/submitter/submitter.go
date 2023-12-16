@@ -103,6 +103,8 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
+	t.registerMetricCallbacks(ctx)
+
 	i := 0
 	for {
 		i++

@@ -96,23 +96,34 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("error in chainPendingQueue: %w", err)
 	}
 
-	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
-		return cq.reprocessQueue[i].Nonce() < cq.reprocessQueue[j].Nonce()
-	})
-
-	calls := make([]w3types.Caller, len(cq.reprocessQueue))
-	txHashes := make([]common.Hash, len(cq.reprocessQueue))
-	for i, tx := range cq.reprocessQueue {
-		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
-	}
-
-	cq.storeAndSubmit(ctx, calls, span)
+	cq.storeAndSubmit(ctx, cq.reprocessQueue, span)
 
 	return nil
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
-func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
+func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX, parentSpan trace.Span) {
+	sort.Slice(reprocessQueue, func(i, j int) bool {
+		return reprocessQueue[i].Nonce() < reprocessQueue[j].Nonce()
+	})
+
+	calls := make([]w3types.Caller, len(reprocessQueue))
+	txHashes := make([]common.Hash, len(reprocessQueue))
+	spanners := make([]trace.Span, len(reprocessQueue))
+
+	for i, tx := range reprocessQueue {
+		_, span := c.metrics.Tracer().Start(ctx, "chainPendingQueue.submit", trace.WithAttributes(txToAttributes(tx.Transaction)...))
+		spanners[i] = span
+		defer func() {
+			// in case this span doesn't get ended automatically below, end it here.
+			if span.IsRecording() {
+				metrics.EndSpan(span)
+			}
+		}()
+
+		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -122,7 +133,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		defer wg.Done()
 		err := c.db.PutTXS(storeCtx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			parentSpan.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
 		}
 	}()
 
@@ -131,16 +142,19 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		err := c.client.BatchWithContext(ctx, calls...)
 		cancelStore()
 		for i := range c.reprocessQueue {
+			span := spanners[i]
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
+				span.RecordError(err)
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
 			}
+			span.End()
 		}
 
 		err = c.db.PutTXS(ctx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+			parentSpan.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
 		}
 	}()
 	wg.Wait()

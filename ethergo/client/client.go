@@ -100,6 +100,7 @@ func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Call
 	if len(calls) == 0 {
 		return nil
 	}
+
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
