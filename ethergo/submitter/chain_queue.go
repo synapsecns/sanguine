@@ -2,6 +2,7 @@ package submitter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -150,7 +151,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 				c.reprocessQueue[i].Status = db.FailedSubmit
 				callErrs := err.(w3.CallErrors)
 				if len(callErrs) <= i {
-					span.RecordError(callErrs[i])
+					span.RecordError(errors.New(callErrs[i].Error()))
 				} else {
 					span.RecordError(err)
 				}
