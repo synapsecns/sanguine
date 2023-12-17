@@ -207,9 +207,9 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		attribute.String("relayer_address", i.relayerAddress.String()),
 	))
 
-	defer func() {
+	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
-	}()
+	}(err)
 
 	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
 
