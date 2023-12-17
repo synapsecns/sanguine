@@ -45,7 +45,7 @@ type Manager struct {
 
 // NewQuoterManager creates a new QuoterManager.
 func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer) (*Manager, error) {
-	rfqAPIClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
@@ -53,7 +53,7 @@ func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string]
 	return &Manager{
 		quotableTokens:   quotableTokens,
 		inventoryManager: inventoryManager,
-		rfqClient:        rfqAPIClient,
+		rfqClient:        apiClient,
 		relayerSigner:    relayerSigner,
 	}, nil
 }
