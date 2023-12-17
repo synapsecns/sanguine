@@ -60,4 +60,4 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	return &Store{base.NewStore(gdb, handler)}, nil
 }
 
-var _ db.ApiDB = &Store{}
+var _ db.APIDB = &Store{}

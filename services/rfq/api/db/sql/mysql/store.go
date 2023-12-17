@@ -63,4 +63,4 @@ var MaxIdleConns = 10
 // NamingStrategy is for table prefixes.
 var NamingStrategy = schema.NamingStrategy{}
 
-var _ db.ApiDB = &Store{}
+var _ db.APIDB = &Store{}

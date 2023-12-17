@@ -1,3 +1,4 @@
+// Package mysql provides a common interface for starting sql-lite databases
 package mysql
 
 import (

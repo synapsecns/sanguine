@@ -6,7 +6,7 @@ import (
 )
 
 func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
-	d.RunOnAllDBs(func(testDB db.ApiDB) {
+	d.RunOnAllDBs(func(testDB db.APIDB) {
 		// Arrange: Create and insert a quote
 		expectedQuote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.
@@ -41,7 +41,7 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 }
 
 func (d *DBSuite) TestUpsertQuote() {
-	d.RunOnAllDBs(func(testDB db.ApiDB) {
+	d.RunOnAllDBs(func(testDB db.APIDB) {
 		// Arrange: Create a quote
 		quote := &db.Quote{
 			// Initialize fields like ID, DestChainID, DestTokenAddr, etc.

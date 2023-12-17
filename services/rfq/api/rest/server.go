@@ -26,21 +26,21 @@ import (
 // It is used to initialize and run the API server.
 type APIServer struct {
 	cfg                 config.Config
-	db                  db.ApiDB
+	db                  db.APIDB
 	engine              *gin.Engine
 	omnirpcClient       omniClient.RPCClient
 	handler             metrics.Handler
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
 }
 
-// APIServer struct holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 func NewAPI(
 	ctx context.Context,
 	cfg config.Config,
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
-	store db.ApiDB,
+	store db.APIDB,
 ) (*APIServer, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
@@ -113,7 +113,6 @@ func (r *APIServer) Run(ctx context.Context) error {
 // PutRequest is used to handle PUT requests to the "/quotes" endpoint.
 // It contains the necessary information to modify a quote in the API.
 type PutRequest struct {
-	ID              int    `json:"id"`
 	OriginChainID   string `json:"origin_chain_id"`
 	OriginTokenAddr string `json:"origin_token_addr"`
 	DestChainID     string `json:"dest_chain_id"`

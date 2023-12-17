@@ -98,6 +98,7 @@ func (r *RelayerTestSuite) TestStore() {
 	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
 	r.NoError(err)
 
+	//nolint: typecheck
 	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
@@ -134,6 +135,7 @@ func (r *RelayerTestSuite) TestCommit() {
 	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
 	r.NoError(err)
 
+	//nolint: typecheck
 	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),

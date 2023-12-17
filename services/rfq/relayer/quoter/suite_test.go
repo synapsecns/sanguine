@@ -11,7 +11,7 @@ import (
 // Server suite is the main API server test suite.
 type QuoterSuite struct {
 	*testsuite.TestSuite
-	manager quoter.QuoterManager
+	manager quoter.Manager
 }
 
 // NewServerSuite creates a end-to-end test suite.
@@ -25,7 +25,7 @@ func NewQuoterSuite(tb testing.TB) *QuoterSuite {
 func (c *QuoterSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 	// Setup
-	manager := quoter.QuoterManager{}
+	manager := quoter.Manager{}
 	c.manager = manager
 	c.manager.SetQuotableTokens(map[string][]string{
 		"42161-0xaf88d065e77c8cc2239327c5edb3a432268e5831": {"1-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},

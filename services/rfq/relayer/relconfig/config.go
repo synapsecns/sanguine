@@ -1,3 +1,4 @@
+// Package relconfig contains the config yaml object for the relayer.
 package relconfig
 
 import (
@@ -28,6 +29,7 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter"`
 }
 
+// ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
 	// Bridge is the bridge confirmation count.
 	Bridge string `yaml:"address"`

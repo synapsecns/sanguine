@@ -33,18 +33,14 @@ builds:
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
       - -s -w -extldflags '-static'
-    # required workaround for https://github.com/Shopify/sarama/issues/2206
-    # See: https://github.com/golang/go/issues/35067#issuecomment-544805311 because we're statically compiling,
-    # without forcing netgo, we use the cgo resolver which will not work for .local (a canonical tld in kubernetes)
-    # the other way to resolve this would be to modify the nsswitch.conf in the container, but that's a bit less clean.
-    # osusergo was included as a recommendation here: https://github.com/kubernetes/kubernetes/pull/114225#issuecomment-1348920040
+    # see above about workaround
     tags:
       - netgo
       - osusergo
     env:
       - CC=gcc
       - CXX=g++
-    main: api/main.go
+    main: relayer/main.go
     goos:
       - linux
     goarch:

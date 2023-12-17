@@ -24,6 +24,7 @@ func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest
 	return nil
 }
 
+// GetQuoteRequestByID gets a quote request by id. Should return ErrNoQuoteForID if not found.
 func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.QuoteRequest, error) {
 	var modelResult RequestForQuote
 	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).First(&modelResult)
@@ -42,6 +43,7 @@ func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.Quo
 	return qr, nil
 }
 
+// GetQuoteResultsByStatus gets quote results by status.
 func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...reldb.QuoteRequestStatus) (res []reldb.QuoteRequest, _ error) {
 	var quoteResults []RequestForQuote
 

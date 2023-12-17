@@ -9,16 +9,20 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 )
 
+// Handler is the REST API handler.
 type Handler struct {
-	db db.ApiDB
+	db db.APIDB
 }
 
-func NewHandler(db db.ApiDB) *Handler {
+// NewHandler creates a new REST API handler.
+func NewHandler(db db.APIDB) *Handler {
 	return &Handler{
 		db: db, // Store the database connection in the handler
 	}
 }
 
+// ModifyQuote upserts a quote
+//
 // PUT /quotes
 // @dev Protected Method: Authentication is handled through middleware in server.go.
 func (h *Handler) ModifyQuote(c *gin.Context) {
@@ -64,6 +68,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Price"})
 		return
 	}
+	// nolint: forcetypeassert
 	quote := &db.Quote{
 		OriginChainID:   originChainID,
 		OriginTokenAddr: putRequest.OriginTokenAddr,
@@ -72,7 +77,8 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		DestAmount:      destAmount,
 		Price:           price,
 		MaxOriginAmount: maxOriginAmount,
-		RelayerAddr:     relayerAddr.(string),
+		//nolint: forcetypeassert
+		RelayerAddr: relayerAddr.(string),
 	}
 	err = h.db.UpsertQuote(c, quote)
 	if err != nil {
@@ -82,7 +88,9 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// GetQuotes retrieves all quotes from the database.
 // GET /quotes.
+// nolint: cyclop
 func (h *Handler) GetQuotes(c *gin.Context) {
 	originChainIDStr := c.Query("originChainID")
 	originTokenAddr := c.Query("originTokenAddr")
@@ -90,6 +98,8 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	destTokenAddr := c.Query("destTokenAddr")
 	relayerAddr := c.Query("relayerAddr")
 
+	// TODO (aureliusbtc): rewrite this if
+	//nolint: gocritic, nestif
 	if originChainIDStr != "" && originTokenAddr != "" && destChainIDStr != "" && destTokenAddr != "" {
 		destChainID, err := strconv.ParseUint(destChainIDStr, 10, 64)
 		if err != nil {
@@ -130,6 +140,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	// Implement logic to fetch and return quotes
 }
 
+// GetFilteredQuotes retrieves filtered quotes from the database.
 // GET /quotes?destChainId=&destTokenAddr=&destAmount=.
 func (h *Handler) GetFilteredQuotes(c *gin.Context) {
 	// Implement logic to fetch and return filtered quotes

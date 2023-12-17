@@ -23,6 +23,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 			testAddress := common.BigToAddress(big.NewInt(int64(i)))
 			auth := l.backend.GetTxContext(l.GetTestContext(), nil)
 
+			//nolint: typecheck
 			txID := [32]byte(crypto.Keccak256(testAddress.Bytes()))
 			bridgeRequestTX, err := handle.MockBridgeRequestRaw(auth.TransactOpts, txID, testAddress, []byte(gofakeit.Sentence(10)))
 			l.NoError(err)

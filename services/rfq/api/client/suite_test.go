@@ -34,10 +34,10 @@ import (
 type ClientSuite struct {
 	*testsuite.TestSuite
 	omniRPCClient        omniClient.RPCClient
-	omniRpcTestBackends  []backends.SimulatedTestBackend
+	omniRPCTestBackends  []backends.SimulatedTestBackend
 	testBackends         map[uint64]backends.SimulatedTestBackend
 	fastBridgeAddressMap *xsync.MapOf[uint64, common.Address]
-	database             db.ApiDB
+	database             db.APIDB
 	cfg                  config.Config
 	testWallet           wallet.Wallet
 	handler              metrics.Handler
@@ -57,7 +57,7 @@ func NewTestClientSuite(tb testing.TB) *ClientSuite {
 func (c *ClientSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRpcTestBackends...)
+	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
 
@@ -114,7 +114,7 @@ func (c *ClientSuite) SetupSuite() {
 
 			// add the backend to the list of backends
 			c.testBackends[chainID] = backend
-			c.omniRpcTestBackends = append(c.omniRpcTestBackends, backend)
+			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
 			return nil
 		})
 	}
@@ -139,7 +139,7 @@ func (c *ClientSuite) SetupSuite() {
 		g.Go(func() error {
 			chainID, err := backend.ChainID(c.GetSuiteContext())
 			if err != nil {
-				return err
+				return fmt.Errorf("could not get chainID: %w", err)
 			}
 			// Create an auth to interact with the blockchain
 			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)
@@ -173,7 +173,7 @@ func (c *ClientSuite) SetupSuite() {
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
 	// TODO use temp file / in memory sqlite3 to not create in directory files
-	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, "memory", metricsHandler)
+	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
 	c.database = testDB
 	// setup config
 }

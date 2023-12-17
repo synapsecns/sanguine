@@ -1,6 +1,7 @@
 package base_test
 
 import (
+	"github.com/brianvoe/gofakeit/v6"
 	"math/big"
 	"reflect"
 	"testing"
@@ -18,7 +19,8 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 		OriginTokenDecimals: 18,
 		DestTokenDecimals:   6,
 		BlockNumber:         9,
-		TransactionId:       [32]byte{},
+		TransactionID:       [32]byte{},
+		RawRequest:          []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 		Sender:              common.Address{},
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: 1,

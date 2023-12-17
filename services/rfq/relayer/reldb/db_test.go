@@ -22,6 +22,7 @@ func (d *DBSuite) TestBlock() {
 
 		testHeight++
 		err = testDB.PutLatestBlock(d.GetTestContext(), testChainID, uint64(testHeight))
+		d.NoError(err)
 		lastHeight, err = testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
 		d.NoError(err)
 		d.Equal(lastHeight, uint64(testHeight))

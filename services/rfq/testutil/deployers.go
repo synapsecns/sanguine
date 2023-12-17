@@ -22,6 +22,7 @@ type DeployManager struct {
 	*manager.DeployerManager
 }
 
+// NewDeployManager creates a new DeployManager.
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
@@ -109,6 +110,7 @@ func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 	}
 }
 
+// Deploy deploys the fast bridge contract.
 func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return f.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return fastbridge.DeployFastBridge(transactOps, backend, transactOps.From)
@@ -117,16 +119,19 @@ func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 	})
 }
 
+// MockFastBridgeDeployer deploys a mock fast bridge contract for testing.
 type MockFastBridgeDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// NewMockFastBridgeDeployer deploys a mock fast bridge contract.
 func NewMockFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return MockFastBridgeDeployer{
 		deployer.NewSimpleDeployer(registry, backend, FastBridgeMockType),
 	}
 }
 
+// Deploy deploys the mock fast bridge contract.
 func (m MockFastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return fastbridgemock.DeployFastBridgeMock(transactOps, backend, transactOps.From)
