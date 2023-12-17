@@ -153,7 +153,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.ID == 123 {
+		if q.Price == "50" {
 			found = true
 			break
 		}
@@ -195,7 +195,7 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.ID == 123 {
+		if q.Price == "50" {
 			found = true
 			break
 		}
@@ -237,7 +237,6 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
 	putData := rest.PutRequest{
-		ID:              123,
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",

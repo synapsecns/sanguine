@@ -113,7 +113,6 @@ func (r *APIServer) Run(ctx context.Context) error {
 // PutRequest is used to handle PUT requests to the "/quotes" endpoint.
 // It contains the necessary information to modify a quote in the API.
 type PutRequest struct {
-	ID              int    `json:"id"`
 	OriginChainID   string `json:"origin_chain_id"`
 	OriginTokenAddr string `json:"origin_token_addr"`
 	DestChainID     string `json:"dest_chain_id"`
