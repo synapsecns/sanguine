@@ -197,7 +197,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 	return nil
 }
 
-// initlalizes tokens converts the configuration into a data structure we can use to determine inventory
+// initializes tokens converts the configuration into a data structure we can use to determine inventory
 // it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
 func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg relconfig.Config) (err error) {
 	i.mux.Lock()
