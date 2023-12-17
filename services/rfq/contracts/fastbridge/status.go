@@ -19,6 +19,7 @@ const (
 	REFUNDED BridgeStatus = 4 // REFUNDED
 )
 
+// Int returns the int value of the bridge status.
 func (b BridgeStatus) Int() uint8 {
 	return uint8(b)
 }

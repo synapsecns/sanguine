@@ -20,6 +20,7 @@ func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	return &Store{db: db, submitterStore: txDB}
 }
 
+// DB gets the database object for mutation outside of the lib.
 func (s Store) DB() *gorm.DB {
 	return s.db
 }

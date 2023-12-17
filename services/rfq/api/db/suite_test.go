@@ -24,7 +24,7 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs     []db.ApiDB
+	dbs     []db.APIDB
 	metrics metrics.Handler
 }
 
@@ -33,7 +33,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.ApiDB{},
+		dbs:       []db.APIDB{},
 	}
 }
 func (d *DBSuite) SetupSuite() {
@@ -60,7 +60,7 @@ func (d *DBSuite) SetupTest() {
 	sqliteStore, err := sql.Connect(d.GetTestContext(), dbcommon.Sqlite, filet.TmpDir(d.T(), ""), d.metrics)
 	Nil(d.T(), err)
 
-	d.dbs = []db.ApiDB{sqliteStore}
+	d.dbs = []db.APIDB{sqliteStore}
 	d.setupMysqlDB()
 }
 
@@ -89,14 +89,14 @@ func (d *DBSuite) setupMysqlDB() {
 	d.dbs = append(d.dbs, mysqlStore)
 }
 
-func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.ApiDB)) {
+func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.APIDB)) {
 	d.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for _, testDB := range d.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.ApiDB) {
+		go func(testDB db.APIDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

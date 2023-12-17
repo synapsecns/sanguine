@@ -25,6 +25,7 @@ func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error
 	return nil
 }
 
+// LatestBlockForChain gets the latest block for a chain.
 func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
 	blockWatchModel := LastIndexed{ChainID: chainID}
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error

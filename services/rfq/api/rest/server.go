@@ -26,21 +26,21 @@ import (
 // It is used to initialize and run the API server.
 type APIServer struct {
 	cfg                 config.Config
-	db                  db.ApiDB
+	db                  db.APIDB
 	engine              *gin.Engine
 	omnirpcClient       omniClient.RPCClient
 	handler             metrics.Handler
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
 }
 
-// APIServer struct holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 func NewAPI(
 	ctx context.Context,
 	cfg config.Config,
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
-	store db.ApiDB,
+	store db.APIDB,
 ) (*APIServer, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")

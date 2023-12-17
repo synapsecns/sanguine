@@ -36,6 +36,7 @@ func (r *Relayer) startChainIndexers(ctx context.Context) error {
 
 // runChainIndexer runs the chain indexer for a given chain.
 // any events that an action exists for are indexed.
+// nolint: cyclop
 func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) {
 	chainListener := r.chainListeners[chainID]
 

@@ -30,8 +30,8 @@ type Relayer struct {
 	db             reldb.Service
 	client         omnirpcClient.RPCClient
 	chainListeners map[int]listener.ContractListener
-	inventory      inventory.InventoryManager
-	quoter         *quoter.QuoterManager
+	inventory      inventory.Manager
+	quoter         *quoter.Manager
 	submitter      submitter.TransactionSubmitter
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
@@ -116,6 +116,7 @@ const defaultPostInterval = 1
 // 2. Start the chain parser: This will listen to and process any events on chain
 // 3. Start the db selector: This will check the db for any requests that need to be processed.
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
+// nolint: cyclop
 func (r *Relayer) Start(ctx context.Context) error {
 	err := r.inventory.ApproveAllTokens(ctx, r.submitter)
 	if err != nil {
@@ -133,10 +134,8 @@ func (r *Relayer) Start(ctx context.Context) error {
 
 	go r.claimCache.Start()
 	go func() {
-		select {
-		case <-ctx.Done():
-			r.claimCache.Stop()
-		}
+		<-ctx.Done()
+		r.claimCache.Stop()
 	}()
 
 	g.Go(func() error {
@@ -194,6 +193,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 		case <-time.After(dbSelectorInterval * time.Second):
 			// TODO: add context w/ timeout
 			// TODO: add trigger
+			// TODO: should not fail on error
 			err := r.processDB(ctx)
 			if err != nil {
 				return err
@@ -205,13 +205,16 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 func (r *Relayer) processDB(ctx context.Context) error {
 	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted)
 	if err != nil {
-		return nil
+		return fmt.Errorf("could not get quote results: %w", err)
 	}
 	// Obviously, these are only seen.
 	for _, request := range requests {
 		// if deadline < now
 		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.DeadlineExceeded)
+			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+			if err != nil {
+				return fmt.Errorf("could not update request status: %w", err)
+			}
 		}
 
 		qr, err := r.requestToHandler(ctx, request)

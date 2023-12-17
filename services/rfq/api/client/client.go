@@ -1,3 +1,5 @@
+// Package client provides a client for the RFQ quoting API.
+// nolint:,wrapcheck
 package client
 
 import (
@@ -72,7 +74,7 @@ func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
 	return err
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API.
+// GetAllQuotes retrieves all quotes from the RFQ quoting API.
 func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
@@ -80,7 +82,7 @@ func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from server: %s: %w", resp.Status(), err)
 	}
 
 	if resp.IsError() {
@@ -90,7 +92,7 @@ func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 	return quotes, nil
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API.
+// GetSpecificQuote retrieves a specific quote from the RFQ quoting API.
 func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
@@ -104,7 +106,7 @@ func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quot
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from server: %s: %w", resp.Status(), err)
 	}
 
 	if resp.IsError() {
@@ -124,7 +126,7 @@ func (c *clientImpl) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, 
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
 	}
 
 	if resp.IsError() {

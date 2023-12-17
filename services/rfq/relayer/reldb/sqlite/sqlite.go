@@ -1,3 +1,4 @@
+// Package sqlite provides a common interface for starting sql-lite databases
 package sqlite
 
 import (

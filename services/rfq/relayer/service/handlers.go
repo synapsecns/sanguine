@@ -66,7 +66,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		RawRequest:          req.Request,
 		OriginTokenDecimals: decimals.originDecimals,
 		DestTokenDecimals:   decimals.destDecimals,
-		TransactionId:       req.TransactionId,
+		TransactionID:       req.TransactionId,
 		Sender:              req.Sender,
 		Transaction:         bridgeTx,
 		Status:              reldb.Seen,
@@ -86,7 +86,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 // We check if we have enough inventory to process the request and mark it as committed pending.
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, request reldb.QuoteRequest) (err error) {
 	if !q.Quoter.ShouldProcess(request) {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.WillNotProcess)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -98,13 +98,13 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, request reldb.Quot
 	}
 	// if commitableBalance > destAmount
 	if commitableBalance.Cmp(request.Transaction.DestAmount) < 0 {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
 		return nil
 	}
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedPending)
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
@@ -128,14 +128,14 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, request r
 		return nil
 	}
 
-	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionId)
+	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
 	if err != nil {
 		return fmt.Errorf("could not get bridge status: %w", err)
 	}
 
 	// sanity check to make sure it's still requested.
 	if bs == fastbridge.REQUESTED.Int() {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.CommittedConfirmed)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -161,7 +161,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, request
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.RelayStarted)
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
 
 	// TODO: store the dest txhash connected to the nonce
 	_ = nonce
@@ -180,18 +180,18 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, request
 func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
-		return fmt.Errorf("could not get quote request: %v", err)
+		return fmt.Errorf("could not get quote request: %w", err)
 	}
 	// we might've accidentally gotten this later, if so we'll just ignore it
 	if reqID.Status != reldb.RelayStarted {
-		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionId[:]), req.Raw.TxHash)
+		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionID[:]), req.Raw.TxHash)
 		return nil
 	}
 
 	// TODO: this can still get re-orged
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted)
 	if err != nil {
-		return fmt.Errorf("could not update request status: %v", err)
+		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
 }
@@ -204,7 +204,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, request 
 	// relays been completed, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// MAJO MAJOR TODO should be dest tx hash
-		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.TransactionId)
+		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.TransactionID)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
@@ -215,7 +215,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, request 
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ProvePosting)
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ProvePosting)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
@@ -231,7 +231,7 @@ func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastB
 	// ALso: we should make sure the previous status  is ProvePosting
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.ProvePosted)
 	if err != nil {
-		return fmt.Errorf("could not update request status: %v", err)
+		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
 }
@@ -246,7 +246,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, request rel
 		return nil
 	}
 
-	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionId, q.RelayerAdress)
+	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAdress)
 	if err != nil {
 		return fmt.Errorf("could not check if can claim: %w", err)
 	}
@@ -267,7 +267,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, request rel
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.ClaimPending)
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
@@ -284,7 +284,7 @@ func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, requ
 	}
 	// if commitableBalance > destAmount
 	if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionId, reldb.NotEnoughInventory)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}

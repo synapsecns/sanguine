@@ -29,4 +29,4 @@ func GetAllModels() (allModels []interface{}) {
 	return allModels
 }
 
-var _ db.ApiDB = &Store{}
+var _ db.APIDB = &Store{}

@@ -21,6 +21,7 @@ import (
 
 // ContractListener listens for chain events and calls HandleLog.
 type ContractListener interface {
+	// Listen starts the listener and call HandleLog for each event
 	Listen(ctx context.Context, handler HandleLog) error
 	// LatestBlock gets the last recorded latest block from the rpc.
 	// this is NOT last indexed. It is provided as a helper for checking confirmation count
@@ -48,6 +49,7 @@ type chainListener struct {
 
 var logger = log.Logger("chainlistener-logger")
 
+// NewChainListener creates a new chain listener.
 func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address common.Address, handler metrics.Handler) (ContractListener, error) {
 	fastBridge, err := fastbridge.NewFastBridgeRef(address, omnirpcClient)
 	if err != nil {
@@ -82,6 +84,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
+		//nolint: durationcheck
 		case <-time.After(time.Second * c.pollInterval):
 			err = c.doPoll(ctx, handler)
 			if err != nil {

@@ -61,9 +61,9 @@ type RequestForQuote struct {
 	UpdatedAt     time.Time
 	TransactionID string `gorm:"column:chain_id;primaryKey;autoIncrement:false"`
 	// OriginChainID is the origin chain for the transactions
-	OriginChainId uint32
+	OriginChainID uint32
 	// DestChainID is the destination chain for the tx
-	DestChainId uint32
+	DestChainID uint32
 	// OriginSender is the original sender
 	OriginSender string
 	// DestRecipient is the recipient of the destination tx
@@ -90,9 +90,11 @@ type RequestForQuote struct {
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
 	// Status is the current status of the event
-	Status      reldb.QuoteRequestStatus
+	Status reldb.QuoteRequestStatus
+	// BlockNumber is the block number of the event
 	BlockNumber uint64
-	RawRequest  string
+	// RawRequest is the raw request, hex encoded.
+	RawRequest string
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -100,9 +102,9 @@ type RequestForQuote struct {
 // TODO: roundtripper test.
 func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 	return RequestForQuote{
-		TransactionID:        hexutil.Encode(request.TransactionId[:]),
-		OriginChainId:        request.Transaction.OriginChainId,
-		DestChainId:          request.Transaction.DestChainId,
+		TransactionID:        hexutil.Encode(request.TransactionID[:]),
+		OriginChainID:        request.Transaction.OriginChainId,
+		DestChainID:          request.Transaction.DestChainId,
 		OriginSender:         request.Transaction.OriginSender.String(),
 		DestRecipient:        request.Transaction.DestRecipient.String(),
 		OriginToken:          request.Transaction.OriginToken.String(),
@@ -121,6 +123,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 	}
 }
 
+// ToQuoteRequest converts a db object to a quote request.
 func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 	txID, err := hexutil.Decode(r.TransactionID)
 	if err != nil {
@@ -140,13 +143,13 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 	return &reldb.QuoteRequest{
 		OriginTokenDecimals: r.OriginTokenDecimals,
 		DestTokenDecimals:   r.DestTokenDecimals,
-		TransactionId:       transactionID,
+		TransactionID:       transactionID,
 		RawRequest:          req,
 		Sender:              common.HexToAddress(r.OriginSender),
 		BlockNumber:         r.BlockNumber,
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
-			OriginChainId: r.OriginChainId,
-			DestChainId:   r.DestChainId,
+			OriginChainId: r.OriginChainID,
+			DestChainId:   r.DestChainID,
 			OriginSender:  common.HexToAddress(r.OriginSender),
 			DestRecipient: common.HexToAddress(r.DestRecipient),
 			OriginToken:   common.HexToAddress(r.OriginToken),

@@ -27,8 +27,8 @@ import (
 	"time"
 )
 
-// What we actually want to be able to do here is.
-type InventoryManager interface {
+// Manager is the interface for the inventory manager.
+type Manager interface {
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
@@ -40,8 +40,8 @@ type InventoryManager interface {
 }
 
 type inventoryManagerImpl struct {
-	// map chainID->address->Token
-	tokens map[int]map[common.Address]*Token
+	// map chainID->address->tokenMetadata
+	tokens map[int]map[common.Address]*tokenMetadata
 	// mux contains the mutex
 	mux sync.RWMutex
 	// handler is the metrics handler
@@ -103,7 +103,7 @@ func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, option
 	return res, nil
 }
 
-type Token struct {
+type tokenMetadata struct {
 	name           string
 	balance        *big.Int
 	decimals       uint8
@@ -121,7 +121,7 @@ var (
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (InventoryManager, error) {
+func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
@@ -172,6 +172,8 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 		for address, token := range tokenMap {
 			// if startAllowance is 0
 			if token.startAllowance.Cmp(big.NewInt(0)) == 0 {
+				chainID := chainID // capture func literal
+				address := address // capture func literal
 				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
 				_, err = submitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					erc20, err := ierc20.NewIERC20(address, backendClient)
@@ -186,6 +188,9 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 
 					return approveAmount, nil
 				})
+				if err != nil {
+					return fmt.Errorf("could not submit approval: %w", err)
+				}
 			}
 		}
 	}
@@ -209,7 +214,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
 
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
-	i.tokens = make(map[int]map[common.Address]*Token)
+	i.tokens = make(map[int]map[common.Address]*tokenMetadata)
 
 	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
@@ -219,11 +224,11 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 	// iterate through all tokens to get the metadata
 	for chainID, tokens := range cfg.Tokens {
-		i.tokens[chainID] = map[common.Address]*Token{}
+		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
 
 		for _, strToekn := range tokens {
 			token := common.HexToAddress(strToekn)
-			rtoken := &Token{}
+			rtoken := &tokenMetadata{}
 			i.tokens[chainID][token] = rtoken
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
@@ -236,6 +241,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Bridges[chainID].Bridge)).Returns(rtoken.startAllowance),
 			)
 
+			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
 				//nolint: wrapcheck
 				return i.registerMetric(meter, chainID, token)
@@ -280,7 +286,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		}
 	}
 
-	return
+	return nil
 }
 
 var logger = log.Logger("inventory")

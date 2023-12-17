@@ -19,7 +19,7 @@ func (f *FastBridgeMockRef) Address() common.Address {
 	return f.address
 }
 
-// FastBridgeMockRef creates a new fast bridge mock contract with a ref.
+// NewFastBridgeMockRef creates a new fast bridge mock contract with a ref.
 func NewFastBridgeMockRef(address common.Address, backend bind.ContractBackend) (*FastBridgeMockRef, error) {
 	fastbridgemock, err := NewFastBridgeMock(address, backend)
 	if err != nil {

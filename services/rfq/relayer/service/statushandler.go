@@ -29,9 +29,9 @@ type QuoteRequestHandler struct {
 	// db is the database.
 	db reldb.Service
 	// Inventory is the inventory.
-	Inventory inventory.InventoryManager
+	Inventory inventory.Manager
 	// Quoter is the quoter.
-	Quoter *quoter.QuoterManager
+	Quoter *quoter.Manager
 	// handlers is the map of handlers.
 	handlers map[reldb.QuoteRequestStatus]func(ctx context.Context, req reldb.QuoteRequest) error
 	// claimCache is the cache of claims used for figuring out when we should retry the claim method.
@@ -66,12 +66,12 @@ func (c Chain) LatestBlock() uint64 {
 func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) (*QuoteRequestHandler, error) {
 	origin, err := r.chainIDToChain(ctx, req.Transaction.OriginChainId)
 	if err != nil {
-		return nil, fmt.Errorf("could not get origin chain: %v", err)
+		return nil, fmt.Errorf("could not get origin chain: %w", err)
 	}
 
 	dest, err := r.chainIDToChain(ctx, req.Transaction.DestChainId)
 	if err != nil {
-		return nil, fmt.Errorf("could not get dest chain: %v", err)
+		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
 	qr := &QuoteRequestHandler{
@@ -104,7 +104,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, req reldb.Qu
 	return func(ctx context.Context, req reldb.QuoteRequest) error {
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 {
-			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.DeadlineExceeded)
+			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
@@ -120,12 +120,12 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*Chain, e
 
 	chainClient, err := r.client.GetChainClient(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get origin client: %v", err)
+		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
 	fastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[id].Bridge), chainClient)
 	if err != nil {
-		return nil, fmt.Errorf("could not get origin fast bridge: %v", err)
+		return nil, fmt.Errorf("could not get origin fast bridge: %w", err)
 	}
 
 	return &Chain{
@@ -142,11 +142,11 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*Chain, e
 // if so it checks the claim method and updates the cache.
 func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool {
 	// we use claim cache to make sure we don't hit the rpc to check to often
-	if q.claimCache.Has(request.TransactionId) {
+	if q.claimCache.Has(request.TransactionID) {
 		return false
 	}
 
-	q.claimCache.Set(request.TransactionId, true, 30*time.Second)
+	q.claimCache.Set(request.TransactionID, true, 30*time.Second)
 	return true
 }
 

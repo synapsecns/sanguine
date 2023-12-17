@@ -31,6 +31,8 @@ type InventoryTestSuite struct {
 
 // NewInventorySuite creates the inventory suite.
 func NewInventorySuite(tb testing.TB) *InventoryTestSuite {
+	tb.Helper()
+
 	return &InventoryTestSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 		backends:  map[int]backends.SimulatedTestBackend{},

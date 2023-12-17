@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,7 +19,7 @@ func (c *ServerSuite) TestNewAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startAPIServer()
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), "GET", fmt.Sprintf("http://localhost:%d/quotes", c.port), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes", c.port), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -55,7 +55,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 	}()
 
 	// Log the response body for debugging.
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 200 OK.
@@ -87,7 +87,7 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 		c.Require().NoError(err)
 	}()
 	// Log the response body for debugging.
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 400 Bad Request.
@@ -111,7 +111,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 	}()
 
 	// Log the response body for debugging.
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	c.Require().NoError(err)
 	fmt.Println(string(body))
 
@@ -250,7 +250,7 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to marshal putData: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(c.GetTestContext(), "PUT", fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodPut, fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PUT request: %w", err)
 	}

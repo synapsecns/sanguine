@@ -8,26 +8,29 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 )
 
-func (s *Store) GetQuotesByDestChainAndToken(ctx context.Context, destChainId uint64, destTokenAddr string) ([]*db.Quote, error) {
+// GetQuotesByDestChainAndToken gets quotes from the database by destination chain and token.
+func (s *Store) GetQuotesByDestChainAndToken(ctx context.Context, destChainID uint64, destTokenAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 
-	result := s.db.WithContext(ctx).Where("dest_chain_id = ? AND dest_token = ?", destChainId, destTokenAddr).Find(&quotes)
+	result := s.db.WithContext(ctx).Where("dest_chain_id = ? AND dest_token = ?", destChainID, destTokenAddr).Find(&quotes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return quotes, nil
 }
 
-func (s *Store) GetQuotesByOriginAndDestination(ctx context.Context, originChainId uint64, originTokenAddr string, destChainId uint64, destTokenAddr string) ([]*db.Quote, error) {
+// GetQuotesByOriginAndDestination gets quotes from the database by origin and destination.
+func (s *Store) GetQuotesByOriginAndDestination(ctx context.Context, originChainID uint64, originTokenAddr string, destChainID uint64, destTokenAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 
-	result := s.db.WithContext(ctx).Where("origin_chain_id = ? AND origin_token = ? AND dest_chain_id = ? AND dest_token = ?", originChainId, originTokenAddr, destChainId, destTokenAddr).Find(&quotes)
+	result := s.db.WithContext(ctx).Where("origin_chain_id = ? AND origin_token = ? AND dest_chain_id = ? AND dest_token = ?", originChainID, originTokenAddr, destChainID, destTokenAddr).Find(&quotes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return quotes, nil
 }
 
+// GetQuotesByRelayerAddress gets quotes from the database by relayer address.
 func (s *Store) GetQuotesByRelayerAddress(ctx context.Context, relayerAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 
@@ -38,7 +41,7 @@ func (s *Store) GetQuotesByRelayerAddress(ctx context.Context, relayerAddr strin
 	return quotes, nil
 }
 
-// This function retrieves all quotes from the database.
+// GetAllQuotes retrieves all quotes from the database.
 func (s *Store) GetAllQuotes(ctx context.Context) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	result := s.db.WithContext(ctx).Find(&quotes)

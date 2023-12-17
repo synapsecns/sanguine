@@ -16,9 +16,7 @@ import (
 func (i *InventoryTestSuite) TestInventoryBootAndRefresh() {
 	// setup a mux to keep track of how much we're actually minting.
 	localTokens := map[int]map[common.Address]*big.Int{}
-	var mux sync.Mutex
 	_ = localTokens
-	_ = mux
 
 	var wg sync.WaitGroup
 	wg.Add(len(i.backends))
