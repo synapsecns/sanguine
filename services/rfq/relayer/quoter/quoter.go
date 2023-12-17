@@ -4,6 +4,7 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"math/big"
 	"strings"
@@ -35,7 +36,7 @@ type Manager struct {
 	// inventoryManager is used to get the relayer's inventory.
 	inventoryManager inventory.Manager
 	// rfqClient is used to communicate with the RFQ API.
-	rfqClient rfqAPIClient.Client
+	rfqClient rfqAPIClient.AuthenticatedClient
 	// relayerSigner is the signer used by the relayer to interact on chain
 	relayerSigner signer.Signer
 	// quotableTokens are tokens that the relayer is willing to relay to & from
@@ -43,8 +44,8 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(ctx context.Context, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer) (*Manager, error) {
-	rfqAPIClient, err := rfqAPIClient.NewClient(rfqAPIUrl, relayerSigner)
+func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer) (*Manager, error) {
+	rfqAPIClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}

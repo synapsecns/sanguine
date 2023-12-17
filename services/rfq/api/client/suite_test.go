@@ -3,6 +3,7 @@ package client_test
 import (
 	"fmt"
 	"math/big"
+	"sync"
 	"testing"
 	"time"
 
@@ -43,7 +44,7 @@ type ClientSuite struct {
 	handler              metrics.Handler
 	APIServer            *rest.APIServer
 	port                 uint16
-	client               client.Client
+	client               client.AuthenticatedClient
 }
 
 func NewTestClientSuite(tb testing.TB) *ClientSuite {
@@ -93,7 +94,7 @@ func (c *ClientSuite) SetupTest() {
 	}()
 	time.Sleep(2 * time.Second) // Wait for the server to start.
 
-	c.client, err = client.NewClient(fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(c.testWallet.PrivateKey()))
+	c.client, err = client.NewAuthenticatedClient(metrics.Get(), fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(c.testWallet.PrivateKey()))
 	c.Require().NoError(err)
 }
 
@@ -104,6 +105,7 @@ func (c *ClientSuite) SetupSuite() {
 	chainIDs := []uint64{1, 42161}
 
 	c.testBackends = make(map[uint64]backends.SimulatedTestBackend)
+	var mux sync.Mutex
 
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
@@ -113,6 +115,8 @@ func (c *ClientSuite) SetupSuite() {
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends
+			mux.Lock()
+			defer mux.Unlock()
 			c.testBackends[chainID] = backend
 			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
 			return nil

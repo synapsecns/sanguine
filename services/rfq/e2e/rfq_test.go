@@ -104,7 +104,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		userAPIClient, err := client.NewClient(i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := userAPIClient.GetAllQuotes()
@@ -167,7 +167,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// since relayer started w/ 0 usdc, once they're offering the inventory up on origin chain we know the workflow completed
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		relayerAPIClient, err := client.NewClient(i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
+		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := relayerAPIClient.GetAllQuotes()

@@ -4,9 +4,13 @@ package client
 
 import (
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"strconv"
 	"time"
 
+	"github.com/dubonzi/otelresty"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -14,24 +18,45 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
 
-// Client is an interface for the RFQ API.
+// AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
-type Client interface {
+type AuthenticatedClient interface {
 	PutQuote(q *APIQuotePutRequest) error
+	UnauthenticatedClient
+}
+
+// UnauthenticatedClient is an interface for the RFQ API.
+type UnauthenticatedClient interface {
 	GetAllQuotes() ([]*db.Quote, error)
 	GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error)
 	GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error)
+	resty() *resty.Client
 }
 
-type clientImpl struct {
+type unauthenticatedClient struct {
 	rClient *resty.Client
 }
 
-// NewClient creates a new client for the RFQ quoting API.
+func (c unauthenticatedClient) resty() *resty.Client {
+	return c.rClient
+}
+
+type clientImpl struct {
+	UnauthenticatedClient
+	rClient *resty.Client
+}
+
+// NewAuthenticatedClient creates a new client for the RFQ quoting API.
 // TODO: @aurelius,  you don't actually need to be authed for GET Requests.
-func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
-	client := resty.New().
-		SetBaseURL(rfqURL).
+func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner signer.Signer) (AuthenticatedClient, error) {
+	unauthedClient, err := NewUnauthenticaedClient(metrics, rfqURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not create unauthenticated client: %w", err)
+	}
+
+	// since this is a pointer, all requests going forward will be authenticated. This is assigned
+	// to a new variable for clarity.
+	authedClient := unauthedClient.resty().
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
 			// if request.Method == "PUT" && request.URL == rfqURL+rest.QUOTE_ROUTE {
 			// i.e. signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix())))
@@ -52,17 +77,28 @@ func NewClient(rfqURL string, reqSigner signer.Signer) (Client, error) {
 			request.SetHeader("Authorization", res)
 
 			return nil
-			// } else {
-			// 	return nil
-			// }
 		})
 
 	return &clientImpl{
-		rClient: client,
+		UnauthenticatedClient: unauthedClient,
+		rClient:               authedClient,
 	}, nil
 }
 
-// CreateQuote creates a new quote in the RFQ quoting API.
+// NewUnauthenticaedClient creates a new client for the RFQ quoting API.
+func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (UnauthenticatedClient, error) {
+	client := resty.New().
+		SetBaseURL(rfqURL).
+		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
+			request.Header.Add(ginhelper.RequestIDHeader, gofakeit.UUID())
+			return nil
+		})
+
+	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()))
+	return &unauthenticatedClient{client}, nil
+}
+
+// PutQuote puts a new quote in the RFQ quoting API.
 func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
 	res, err := c.rClient.R().
 		SetBody(q).
@@ -75,7 +111,7 @@ func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
-func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
+func (c *unauthenticatedClient) GetAllQuotes() ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
 		SetResult(&quotes).
@@ -93,7 +129,7 @@ func (c *clientImpl) GetAllQuotes() ([]*db.Quote, error) {
 }
 
 // GetSpecificQuote retrieves a specific quote from the RFQ quoting API.
-func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error) {
+func (c *unauthenticatedClient) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
 		SetQueryParams(map[string]string{
@@ -116,7 +152,7 @@ func (c *clientImpl) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quot
 	return quotes, nil
 }
 
-func (c *clientImpl) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error) {
+func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error) {
 	var quotes []*db.Quote
 	resp, err := c.rClient.R().
 		SetQueryParams(map[string]string{

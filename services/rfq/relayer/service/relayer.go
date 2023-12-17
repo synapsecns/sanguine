@@ -83,7 +83,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	q, err := quoter.NewQuoterManager(ctx, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg)
+	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
