@@ -365,7 +365,8 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
 		transactor.GasFeeCap = t.config.GetMaxGasPrice(chainID)
 
-		transactor.GasTipCap, err = t.SuggestGasTipCap(ctx, client, chainID)
+		// only use fallback if no previous tx
+		transactor.GasTipCap, err = t.SuggestGasTipCap(ctx, client, chainID, prevTx != nil)
 		if err != nil {
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
@@ -471,14 +472,14 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 }
 
 // TODO: test oracle fallback.
-func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EVM, chainID int) (tipCap *big.Int, err error) {
+func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EVM, chainID int, fallbackIfZero bool) (tipCap *big.Int, err error) {
 	tipCap, err = client.SuggestGasTipCap(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get gas tip cap: %w", err)
 	}
 
 	// for non-zero tip cap, use default behavior
-	if big.NewInt(0).Cmp(tipCap) != 0 {
+	if big.NewInt(0).Cmp(tipCap) != 0 && fallbackIfZero {
 		return tipCap, nil
 	}
 
