@@ -177,7 +177,8 @@ func (c *ClientSuite) SetupSuite() {
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
 	// TODO use temp file / in memory sqlite3 to not create in directory files
-	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
+	testDB, err := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
+	c.Require().NoError(err)
 	c.database = testDB
 	// setup config
 }
