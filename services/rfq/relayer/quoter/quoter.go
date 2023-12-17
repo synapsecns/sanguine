@@ -4,8 +4,10 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"golang.org/x/exp/slices"
 	"math/big"
 	"strings"
 
@@ -15,6 +17,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 )
+
+var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
 type Quoter interface {
@@ -65,10 +69,28 @@ func (m *Manager) SetQuotableTokens(tokens map[string][]string) {
 
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(quote reldb.QuoteRequest) bool {
-	// first check if token is valid
-	// then check if we'll make money on it
+	// allowed pairs for this origin token on the destination
+	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
+	if slices.Contains(destPairs, quote.GetDestIDPair()) {
+		return true
+	}
 
-	return true
+	// handle decimals.
+	// this will never get hit if we're operating correctly.
+	if quote.OriginTokenDecimals != quote.DestTokenDecimals {
+		logger.Errorf("Pairing tokens with two different decimals is disabled as a safety feature right now.")
+		return false
+	}
+
+	// then check if we'll make money on it
+	// note: this check is not comprehensive. We still need to check gas, min fees, etc.
+	// It does keep us in range though.
+	if quote.Transaction.OriginAmount.Cmp(quote.Transaction.DestAmount) < 0 {
+		// we're not making money on this
+		return false
+	}
+
+	return false
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
