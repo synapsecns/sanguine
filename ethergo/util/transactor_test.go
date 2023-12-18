@@ -74,7 +74,7 @@ func assertTransactOptsEquality(tb testing.TB, toA, toB *bind.TransactOpts) {
 	assertBigIntsCopiedEqual(tb, toA.Value, toB.Value, "Value")
 	assertBigIntsCopiedEqual(tb, toA.GasPrice, toB.GasPrice, "GasPrice")
 	assertBigIntsCopiedEqual(tb, toA.GasFeeCap, toB.GasFeeCap, "GasFeeCap")
-	assertBigIntsCopiedEqual(tb, toA.GasTipCap, toB.GasTipCap, "GasFeeCap")
+	assertBigIntsCopiedEqual(tb, toA.GasTipCap, toB.GasTipCap, "GasTipCap")
 	assert.DeepEqual(tb, toA, toB, testsuite.BigIntComparer(), cmp.AllowUnexported(context.Background()))
 }
 
