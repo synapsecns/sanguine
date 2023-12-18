@@ -8,8 +8,8 @@ import (
 
 // sortTxesByChainID sorts a slice of transactions by chain ID and then by nonce within each chain ID group.
 func sortTxesByChainID(txs []db.TX) map[uint64][]db.TX {
-	for key := range txesByChainID {
-	// put the transactions in a map by chain id
+	txesByChainID := make(map[uint64][]db.TX) // put the transactions in a map by chain id
+
 	for _, t := range txs {
 		txesByChainID[t.ChainId().Uint64()] = append(txesByChainID[t.ChainId().Uint64()], t)
 	}
