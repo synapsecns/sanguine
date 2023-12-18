@@ -150,10 +150,9 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
 				//nolint: errorlint, forcetypeassert
-				callErrs := err.(w3.CallErrors)
-				if len(callErrs) <= i {
+				if callErrs, ok := err.(w3.CallErrors); ok && len(callErrs) > i {
 					span.RecordError(errors.New(callErrs[i].Error()))
-				} else {
+				} else if err != nil {
 					span.RecordError(err)
 				}
 			} else {
