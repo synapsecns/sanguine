@@ -293,10 +293,14 @@ export const Widget = ({
     [dispatch]
   )
 
+  const cardStyle = "border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2"
+
+  const inputStyle = "text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none disabled:cursor-not-allowed font-sans"
+
   return (
     <div
       style={themeVariables}
-      className="w-[374px] bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
+      className="bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
     >
       <Transaction
         originChainId={42161}
@@ -305,7 +309,7 @@ export const Widget = ({
         destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
         kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
       />
-      <div className="border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
+      <div className={cardStyle}>
         <ChainSelect
           label="From"
           chain={chains[originChainId]}
@@ -313,7 +317,7 @@ export const Widget = ({
         />
         <div className="flex">
           <input
-            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none font-sans"
+            className={inputStyle}
             placeholder="0"
             value={inputAmount}
             onChange={handleUserInput}
@@ -335,7 +339,7 @@ export const Widget = ({
           </div>
         </div>
       </div>
-      <div className="border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
+      <div className={cardStyle}>
         <ChainSelect
           label="To"
           chain={chains[destinationChainId]}
@@ -343,7 +347,7 @@ export const Widget = ({
         />
         <div className="flex items-center justify-between">
           <input
-            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed font-sans"
+            className={inputStyle}
             disabled={true}
             placeholder=""
             value={

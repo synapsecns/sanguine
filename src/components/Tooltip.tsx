@@ -13,20 +13,16 @@ export const Tooltip = ({
       data-test-id="tool-tip"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`
-          flex items-center justify-center
-          relative group px-1
-          hover:cursor-pointer
-        `}
+      className="flex justify-center relative"
     >
       {isHovered && (
         <div
           className={`
-          absolute -top-7 z-10 p-1 rounded-md text-[14px] 
-          bg-[#F5F5F5] border border-solid border-[#DCDCDC]
+          absolute -top-7 z-10 px-2 py-1 rounded-md text-sm 
+          bg-[--synapse-bg-root] border border-solid border-[--synapse-border] cursor-default shadow
           `}
         >
-          <div>{hoverText}</div>
+          {hoverText}
         </div>
       )}
       {children}
