@@ -144,6 +144,10 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX,
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
 
+		// Optimistically store all transactions as pending in the first goroutine.
+		// The call is made concurrently in the second goroutine.
+		// If the second goroutine finishes first, updating the status,
+		// there's no need to store them as pending, hence the context is canceled early.
 		cancelStore()
 		for i := range c.reprocessQueue {
 			span := spanners[i]
