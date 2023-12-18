@@ -445,7 +445,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
+  }, [
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+    userHistoricalTransactions,
+  ])
 
   return null
 }
