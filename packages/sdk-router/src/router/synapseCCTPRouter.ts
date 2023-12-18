@@ -8,6 +8,8 @@ import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
 import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
+import cctpAbi from '../abi/SynapseCCTP.json'
+import { getMatchingTxLog } from '../utils/logs'
 import { BigintIsh } from '../constants'
 import {
   BridgeToken,
@@ -27,6 +29,10 @@ export class SynapseCCTPRouter extends Router {
   public readonly address: string
 
   private readonly routerContract: SynapseCCTPRouterContract
+  private cctpContractCache: Contract | undefined
+
+  // All possible events emitted by the SynapseCCTP contract in the origin transaction
+  private readonly originEvents = ['CircleRequestSent']
 
   constructor(chainId: number, provider: Provider, address: string) {
     // Parent constructor throws if chainId or provider are undefined
@@ -113,5 +119,43 @@ export class SynapseCCTPRouter extends Router {
       narrowToCCTPRouterQuery(originQuery),
       narrowToCCTPRouterQuery(destQuery)
     )
+  }
+
+  /**
+   * @inheritdoc Router.getSynapseTxId
+   */
+  public async getSynapseTxId(txHash: string): Promise<string> {
+    const cctpContract = await this.getCctpContract()
+    const cctpLog = await getMatchingTxLog(
+      this.provider,
+      txHash,
+      cctpContract,
+      this.originEvents
+    )
+    // RequestID always exists in the log as we are using the correct ABI
+    const parsedLog = cctpContract.interface.parseLog(cctpLog)
+    return parsedLog.args.requestID
+  }
+
+  /**
+   * @inheritdoc Router.getBridgeTxStatus
+   */
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
+    const cctpContract = await this.getCctpContract()
+    return cctpContract.isRequestFulfilled(synapseTxId)
+  }
+
+  private async getCctpContract(): Promise<Contract> {
+    // Populate the cache if necessary
+    if (!this.cctpContractCache) {
+      const cctpAddress = await this.routerContract.synapseCCTP()
+      this.cctpContractCache = new Contract(
+        cctpAddress,
+        new Interface(cctpAbi),
+        this.provider
+      )
+    }
+    // Return the cached contract
+    return this.cctpContractCache
   }
 }
