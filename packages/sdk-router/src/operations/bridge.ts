@@ -118,6 +118,46 @@ export async function bridgeQuote(
 }
 
 /**
+ * Gets the unique Synapse txId for a bridge operation that happened within a given transaction.
+ * Synapse txId is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
+ * This function is meant to abstract away the differences between the two bridge modules.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param txHash - The transaction hash of the bridge operation on the origin chain.
+ * @returns A promise that resolves to the unique Synapse txId of the bridge operation.
+ */
+export async function getSynapseTxId(
+  this: SynapseSDK,
+  originChainId: number,
+  bridgeModuleName: string,
+  txHash: string
+): Promise<string> {
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getSynapseTxId(originChainId, txHash)
+}
+
+/**
+ * Checks whether a bridge operation has been completed on the destination chain.
+ *
+ * @param destChainId - The ID of the destination chain.
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param synapseTxId - The unique Synapse txId of the bridge operation.
+ * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
+ */
+export async function getBridgeTxStatus(
+  this: SynapseSDK,
+  destChainId: number,
+  bridgeModuleName: string,
+  synapseTxId: string
+): Promise<boolean> {
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getBridgeTxStatus(destChainId, synapseTxId)
+}
+
+/**
  * Returns the name of the bridge module that emits the given event.
  * This will be either SynapseBridge or SynapseCCTP.
  *
@@ -143,22 +183,18 @@ export function getBridgeModuleName(
  * or the bridge token.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeNoduleName - The name of the bridge module.
+ * @param bridgeModuleName - The name of the bridge module.
  * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the bridge module is unknown for the given chain.
  */
 export function getEstimatedTime(
   this: SynapseSDK,
   originChainId: number,
-  bridgeNoduleName: string
+  bridgeModuleName: string
 ): number {
-  if (this.synapseRouterSet.bridgeModuleName === bridgeNoduleName) {
-    return this.synapseRouterSet.getEstimatedTime(originChainId)
-  }
-  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeNoduleName) {
-    return this.synapseCCTPRouterSet.getEstimatedTime(originChainId)
-  }
-  throw new Error('Unknown bridge module')
+  return getRouterSet
+    .call(this, bridgeModuleName)
+    .getEstimatedTime(originChainId)
 }
 
 /**
@@ -173,4 +209,24 @@ export async function getBridgeGas(
   chainId: number
 ): Promise<BigNumber> {
   return this.synapseRouterSet.getSynapseRouter(chainId).chainGasAmount()
+}
+
+/**
+ * Extracts the RouterSet from the SynapseSDK based on the given bridge module name.
+ *
+ * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
+ * @returns The corresponding RouterSet.
+ * @throws Will throw an error if the bridge module is unknown.
+ */
+export function getRouterSet(
+  this: SynapseSDK,
+  bridgeModuleName: string
+): RouterSet {
+  if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
+    return this.synapseRouterSet
+  }
+  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeModuleName) {
+    return this.synapseCCTPRouterSet
+  }
+  throw new Error('Unknown bridge module')
 }
