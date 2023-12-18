@@ -19,7 +19,7 @@ library UniversalTokenLib {
         if (token == ETH_ADDRESS) {
             /// @dev Note: this can potentially lead to executing code in `to`.
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = to.call{value: value}("");
+            (bool success,) = to.call{value: value}("");
             require(success, "ETH transfer failed");
         } else {
             IERC20(token).safeTransfer(to, value);

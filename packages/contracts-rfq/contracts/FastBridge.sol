@@ -44,27 +44,74 @@ contract FastBridge is IFastBridge, Admin {
         deployBlock = block.number;
     }
 
-    /// @notice Pulls a requested token from the user to the requested recipient.
+    /// @notice Pulls a requested token and possible gas rebate from the user to the requested recipient.
     /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
-    function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
-        if (msg.value == 0) {
+    /// @param recipient The recipient of the token amount and gas rebate
+    /// @param token The token to pull
+    /// @param amount The amount of token to send to recipient. Excludes possible gas rebate if token is ETH
+    /// @param rebate The gas rebate to send to recipient
+    function _pullToken(address recipient, address token, uint256 amount, uint256 rebate)
+        internal
+        returns (uint256 amountToken, uint256 amountRebate)
+    {
+        if (token != UniversalTokenLib.ETH_ADDRESS) {
             token.assertIsContract();
             // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(recipient);
+            amountToken = IERC20(token).balanceOf(recipient);
             // Token needs to be pulled only if msg.value is zero
             // This way user can specify WETH as the origin asset
             IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
-            // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
+            // Use the difference between the recorded balance and the current balance as the amountToken
+            amountToken = IERC20(token).balanceOf(recipient) - amountToken;
+            // msg value is the rebate in the native gas token
+            if (rebate != msg.value) revert MsgValueIncorrect();
+            // Transfer rebate to recipient if not this address
+            if (recipient != address(this) && rebate > 0) {
+                (UniversalTokenLib.ETH_ADDRESS).universalTransfer(recipient, rebate);
+            }
+            amountRebate = msg.value;
         } else {
-            // Otherwise, we need to check that ETH was specified
-            if (token != UniversalTokenLib.ETH_ADDRESS) revert TokenNotETH();
-            // And that amount matches msg.value
-            if (amount != msg.value) revert MsgValueIncorrect();
-            // Transfer value to recipient if not this address
-            if (recipient != address(this)) token.universalTransfer(recipient, amount);
-            // We will forward msg.value in the external call later, if recipient is not this contract
-            amountPulled = msg.value;
+            // total value to pull is amount + rebate
+            uint256 value = amount + rebate;
+            // Otherwise need to check total value matches msg.value
+            if (value != msg.value) revert MsgValueIncorrect();
+            // Transfer total value to recipient if not this address
+            if (recipient != address(this)) token.universalTransfer(recipient, value);
+            // set amounts to be returned
+            amountToken = amount;
+            amountRebate = rebate;
+        }
+    }
+
+    /// @notice Pushes a requested token and possible gas rebate to recipient from this address.
+    /// @dev Be careful of re-entrancy issues when sending native gas token
+    /// @param recipient The recipient of the token amount and gas rebate
+    /// @param token The token to push
+    /// @param amount The amount of token to send to recipient. Excludes possible gas rebate if token is ETH
+    /// @param rebate The gas rebate to send to recipient
+    function _pushToken(address recipient, address token, uint256 amount, uint256 rebate)
+        internal
+        returns (uint256 amountToken, uint256 amountRebate)
+    {
+        if (token != UniversalTokenLib.ETH_ADDRESS) {
+            // transfer amount in token
+            token.universalTransfer(recipient, amount);
+            // transfer rebate in native gas token
+            if (rebate > 0) {
+                (UniversalTokenLib.ETH_ADDRESS).universalTransfer(recipient, rebate);
+            }
+
+            // set amounts sent
+            amountToken = amount;
+            amountRebate = rebate;
+        } else {
+            // value to push is amount + rebate
+            uint256 value = amount + rebate;
+            token.universalTransfer(recipient, value);
+
+            // set amounts sent
+            amountToken = amount;
+            amountRebate = rebate;
         }
     }
 
@@ -81,9 +128,9 @@ contract FastBridge is IFastBridge, Admin {
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
-        // transfer tokens to bridge contract
-        // @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
+        // transfer tokens to bridge contract accounting for any origin gas rebate to relayer
+        (uint256 originAmount, uint256 originGasRebate) =
+            _pullToken(address(this), params.originToken, params.originAmount, params.originGasRebate);
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
@@ -102,6 +149,8 @@ contract FastBridge is IFastBridge, Admin {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
+                originGasRebate: originGasRebate,
+                destGasRebate: params.destGasRebate,
                 deadline: params.deadline,
                 nonce: nonce++ // increment nonce on every bridge
             })
@@ -122,13 +171,14 @@ contract FastBridge is IFastBridge, Admin {
         if (bridgeRelays[transactionId]) revert TransactionRelayed();
         bridgeRelays[transactionId] = true;
 
-        // transfer tokens to recipient on destination chain
+        // transfer tokens and gas rebate to recipient on destination chain
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
-        _pullToken(to, token, amount);
+        uint256 rebate = transaction.destGasRebate;
+        _pullToken(to, token, amount, rebate);
 
-        emit BridgeRelayed(transactionId, msg.sender, to, token, amount);
+        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
     }
 
     /// @inheritdoc IFastBridge
@@ -184,12 +234,13 @@ contract FastBridge is IFastBridge, Admin {
         // update protocol fees if origin fee amount exists
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
 
-        // transfer origin collateral less fee to specified address
+        // transfer origin collateral less fee + origin gas rebate to specified address
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount;
-        token.universalTransfer(to, amount);
+        uint256 rebate = transaction.originGasRebate;
+        _pushToken(to, token, amount, rebate);
 
-        emit BridgeDepositClaimed(transactionId, msg.sender, to, token, amount);
+        emit BridgeDepositClaimed(transactionId, msg.sender, to, token, amount, rebate);
     }
 
     /// @inheritdoc IFastBridge
@@ -218,8 +269,9 @@ contract FastBridge is IFastBridge, Admin {
         // transfer origin collateral back to original sender's specified recipient
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount + transaction.originFeeAmount;
-        token.universalTransfer(to, amount);
+        uint256 rebate = transaction.originGasRebate;
+        _pushToken(to, token, amount, rebate);
 
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
+        emit BridgeDepositRefunded(transactionId, to, token, amount, rebate);
     }
 }

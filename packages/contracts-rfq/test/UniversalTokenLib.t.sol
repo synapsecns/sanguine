@@ -60,7 +60,7 @@ contract UniversalTokenLibraryTest is Test {
         assertEq(address(libHarness).balance, amount);
         // Simply sending ETH to the harness should still revert (no receive/fallback)
         deal(address(this), amount);
-        (bool success, ) = address(libHarness).call{value: amount}("");
+        (bool success,) = address(libHarness).call{value: amount}("");
         assertEq(success, false);
     }
 
