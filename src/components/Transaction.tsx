@@ -4,7 +4,7 @@ import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
 import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
 
 const TransactionStatus = ({ string }) => {
-  return <div>{string}</div>
+  return <div className="px-1">{string}</div>
 }
 
 export const Transaction = ({
@@ -41,9 +41,9 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-row justify-between px-3 py-1
+        flex flex-row justify-between items-center px-2 py-1
         bg-[--synapse-bg-surface]
-        border border-[--synapse-border] rounded-md
+        border border-solid border-[--synapse-border] rounded-md
       `}
     >
       <TransactionStatus string="Pending" />
@@ -74,7 +74,7 @@ export const DropdownMenu = ({ children }) => {
         className={`
           p-1 cursor-pointer
           bg-[--synapse-bg-select]
-          border border-[--synapse-border] rounded-md
+          border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover] rounded-md w-4 h-4 flex place-items-center justify-center
         `}
       >
         <DownArrow />
@@ -86,7 +86,7 @@ export const DropdownMenu = ({ children }) => {
             flex flex-col 
             absolute right-0 z-10
             bg-[--synapse-bg-select] 
-            border border-[--synapse-border]
+            border border-solid border-[--synapse-border]
           `}
         >
           {children}

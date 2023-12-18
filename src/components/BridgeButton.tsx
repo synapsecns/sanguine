@@ -54,8 +54,8 @@ export const BridgeButton = ({
       <button
         onClick={handleSwitchNetwork}
         className={`
-          rounded-md w-full p-2 font-semibold 
-          bg-[--synapse-bg-surface] border border-[--synapse-accent] 
+          text-lg font-sans rounded-md w-full p-2 font-semibold 
+          bg-[--synapse-bg-surface] border border-solid border-[--synapse-accent] 
           active:opacity-40
         `}
       >
@@ -69,9 +69,9 @@ export const BridgeButton = ({
         <button
           onClick={() => null}
           className={`
-            rounded-md w-full p-2 font-semibold 
+            text-lg font-sans rounded-md w-full p-2 font-semibold 
             bg-[--synapse-bg-surface] text-[--synapse-text-secondary]
-            border border-[--synapse-border]
+            border border-solid border-[--synapse-border]
           `}
         >
           Send
@@ -85,9 +85,9 @@ export const BridgeButton = ({
         <button
           onClick={() => null}
           className={`
-            rounded-md w-full p-2 font-semibold 
+            text-lg font-sans rounded-md w-full p-2 font-semibold 
             bg-[--synapse-bg-surface] text-[--synapse-text-secondary]
-            border border-[--synapse-border]
+            border border-solid border-[--synapse-border]
           `}
         >
           Send
@@ -100,9 +100,9 @@ export const BridgeButton = ({
       <button
         onClick={() => null}
         className={`
-          rounded-md w-full p-2 font-semibold 
+          text-lg font-sans rounded-md w-full p-2 font-semibold 
           bg-[--synapse-bg-surface] text-[--synapse-text-secondary]
-          border border-[--synapse-border]
+          border border-solid border-[--synapse-border]
         `}
       >
         Send
@@ -115,9 +115,9 @@ export const BridgeButton = ({
         <button
           onClick={!isBridgePending ? handleBridge : () => null}
           className={`
-              rounded-md w-full p-2  font-semibold 
+              text-lg font-sans rounded-md w-full p-2  font-semibold 
               bg-[--synapse-bg-surface] 
-              border border-[--synapse-accent] 
+              border border-solid border-[--synapse-accent] 
               hover:border-[--synapse-brand]
               ${isBridgePending && 'opacity-40 border-[--synapse-border]'}
             `}
@@ -129,8 +129,8 @@ export const BridgeButton = ({
           <button
             onClick={!isApprovalPending ? handleApprove : () => null}
             className={`
-              rounded-md w-full p-2 font-semibold 
-              bg-[--synapse-bg-surface] border border-[--synapse-accent] 
+              text-lg font-sans rounded-md w-full p-2 font-semibold 
+              bg-[--synapse-bg-surface] border border-solid border-[--synapse-accent] 
               hover:border-[--synapse-brand]
               ${isApprovalPending && 'opacity-40 border-[--synapse-border]'}
             `}

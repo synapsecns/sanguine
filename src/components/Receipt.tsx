@@ -37,7 +37,7 @@ export const Receipt = ({ quote, send, receive }) => {
         )}
       </div>
       {isExpanded && (
-        <dl className="receipt p-2 text-sm rounded border border-[--synapse-border] grid grid-cols-2">
+        <dl className="receipt p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-2">
           <dt className="text-left">Router</dt>
           <dd className="text-right">{quote?.bridgeModuleName}</dd>
           <dt className="text-left">Origin</dt>

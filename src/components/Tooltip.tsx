@@ -23,7 +23,7 @@ export const Tooltip = ({
         <div
           className={`
           absolute -top-7 z-10 p-1 rounded-md text-[14px] 
-          bg-[#F5F5F5] border border-[#DCDCDC]
+          bg-[#F5F5F5] border border-solid border-[#DCDCDC]
           `}
         >
           <div>{hoverText}</div>

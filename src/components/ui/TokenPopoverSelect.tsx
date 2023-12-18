@@ -36,7 +36,7 @@ export function TokenPopoverSelect({
       ref={popoverRef}
     >
       <div
-        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]"
+        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}
       >
         <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
@@ -47,7 +47,7 @@ export function TokenPopoverSelect({
         </div>
       </div>
       {isOpen && (
-        <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-[--synapse-border] rounded shadow popover">
+        <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover right-0">
           {options.map((option: BridgeableToken, index) => {
             const matchedTokenBalance: TokenBalance = balances?.find(
               (token: TokenBalance) => token.token === option
@@ -101,10 +101,10 @@ const TokenOption = ({
     <div
       data-test-id="token-option"
       key={index}
-      className={`w-full cursor-pointer px-2 py-2.5 ${
+      className={`cursor-pointer px-2 py-2.5 ${
         option.symbol === selected?.symbol
-          ? 'border border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-          : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+          ? 'border border-solid border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
+          : 'border border-solid border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
       }`}
       onClick={() => onSelect(option)}
     >

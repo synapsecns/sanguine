@@ -305,7 +305,7 @@ export const Widget = ({
         destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
         kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
       />
-      <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
+      <div className="border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <ChainSelect
           label="From"
           chain={chains[originChainId]}
@@ -313,7 +313,7 @@ export const Widget = ({
         />
         <div className="flex">
           <input
-            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none"
+            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none font-sans"
             placeholder="0"
             value={inputAmount}
             onChange={handleUserInput}
@@ -335,7 +335,7 @@ export const Widget = ({
           </div>
         </div>
       </div>
-      <div className="border rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
+      <div className="border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2">
         <ChainSelect
           label="To"
           chain={chains[destinationChainId]}
@@ -343,7 +343,7 @@ export const Widget = ({
         />
         <div className="flex items-center justify-between">
           <input
-            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed"
+            className="text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none cursor-not-allowed font-sans"
             disabled={true}
             placeholder=""
             value={

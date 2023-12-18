@@ -29,7 +29,7 @@ export function ChainPopoverSelect({
       ref={popoverRef}
     >
       <div
-        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-[--synapse-border] hover:border-[--synapse-border-hover]"
+        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}
       >
         <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
@@ -46,8 +46,8 @@ export function ChainPopoverSelect({
               key={index}
               className={`cursor-pointer pl-2 pr-4 py-2.5 ${
                 option?.name === selected?.name
-                  ? 'border border-[--synapse-border-hover] rounded hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-                  : 'border border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+                  ? 'border border-solid border-[--synapse-border-hover] rounded hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
+                  : 'border border-solid border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
               }`}
               onClick={() => handleSelect(option)}
             >
