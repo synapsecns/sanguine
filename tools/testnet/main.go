@@ -312,6 +312,9 @@ func main() {
 		}
 
 		cClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(chainID, 1))
+		if err != nil {
+			panic(err)
+		}
 		destinationContracts[chainID], err = evm.NewDestinationContract(ctx, cClient, common.HexToAddress(c.DestinationAddr))
 		if err != nil {
 			panic(err)
