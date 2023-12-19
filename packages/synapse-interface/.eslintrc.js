@@ -5,7 +5,7 @@ module.exports = {
     es6: true,
   },
   ignorePatterns: ['dist', 'coverage'],
-  extends: ['plugin:prettier/recommended'],
+  extends: ['plugin:prettier/recommended', 'plugin:react-hooks/recommended'],
   parser: '@babel/eslint-parser',
   parserOptions: {
     es6: true,
