@@ -127,14 +127,12 @@ export const MostRecentTransaction = () => {
 
   let transaction
 
-  // return useMemo(() => {
   if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
     return null
   }
 
   if (!masqueradeActive && lastPendingBridgeTransaction) {
     transaction = lastPendingBridgeTransaction as PendingBridgeTransaction
-    console.log('hit 1:', transaction)
     return (
       <div
         data-test-id="most-recent-transaction-bridge-pending"
@@ -162,7 +160,6 @@ export const MostRecentTransaction = () => {
 
   if (!masqueradeActive && lastPendingTransaction) {
     transaction = lastPendingTransaction as BridgeTransaction
-    console.log('hit 2:', transaction)
     return (
       <div data-test-id="most-recent-transaction-pending" className="mt-6">
         <PendingTransaction
@@ -205,7 +202,6 @@ export const MostRecentTransaction = () => {
     !seenLastHistoricalTransaction
   ) {
     transaction = lastHistoricalTransaction as BridgeTransaction
-    console.log('hit 3:', transaction)
     return (
       <div data-test-id="most-recent-transaction-historical" className="mt-6">
         <PendingTransaction
@@ -241,22 +237,4 @@ export const MostRecentTransaction = () => {
       </div>
     )
   }
-  // }, [
-  //   currentTime,
-  //   lastPendingBridgeTransaction,
-  //   lastHistoricalTransaction,
-  //   lastPendingTransaction,
-  //   userHistoricalTransactions,
-  //   isUserHistoricalTransactionsLoading,
-  //   isUserPendingTransactionsLoading,
-  //   seenHistoricalTransactions,
-  //   pendingAwaitingCompletionTransactions,
-  //   fallbackQueryHistoricalTransactions,
-  //   fallbackQueryPendingTransactions,
-  //   pendingBridgeTransactions,
-  //   masqueradeActive,
-  //   seenLastHistoricalTransaction,
-  //   isUserHistoricalTransactionsLoading,
-  //   isUserPendingTransactionsLoading,
-  // ])
 }

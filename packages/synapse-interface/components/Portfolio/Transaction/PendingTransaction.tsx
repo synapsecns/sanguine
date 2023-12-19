@@ -78,10 +78,12 @@ export const PendingTransaction = ({
 
   const estimatedCompletionInSeconds: number = useMemo(() => {
     if (bridgeModuleName) {
+      console.log('1')
       return synapseSDK.getEstimatedTime(originChain?.id, bridgeModuleName)
     }
 
     if (formattedEventType) {
+      console.log('2')
       const fetchedBridgeModuleName: string =
         synapseSDK.getBridgeModuleName(formattedEventType)
       return synapseSDK.getEstimatedTime(
@@ -92,6 +94,7 @@ export const PendingTransaction = ({
     // Fallback last resort estimated duration calculation
     // Remove this when fallback origin queries return eventType
     // CCTP Classification
+    console.log('3')
     if (originChain.id === ARBITRUM.id || originChain.id === ETH.id) {
       const isCCTP: boolean =
         originToken.addresses[originChain.id] === USDC.addresses[originChain.id]
@@ -120,7 +123,7 @@ export const PendingTransaction = ({
     if (!isSubmitted || currentTime < startedTimestamp) {
       return 0
     } else if (startedTimestamp < currentTime) {
-      return Math.floor((currentTime - startedTimestamp) / 60)
+      return Math.ceil((currentTime - startedTimestamp) / 60)
     } else {
       return 0
     }
@@ -165,11 +168,10 @@ export const PendingTransaction = ({
   const timeRemaining: number =
     estimatedCompletionInMinutes - initialElapsedMinutes
 
-  const isDelayed: boolean = timeRemaining < -1
+  console.log('estimatedCompletionInMinutes: ', estimatedCompletionInMinutes)
+  console.log('timeRemaining: ', timeRemaining)
 
-  console.log('isDelayed:', isDelayed)
-  console.log('timeRemaining:', timeRemaining)
-  console.log('transactionHash:', transactionHash)
+  const isDelayed: boolean = timeRemaining < -1
 
   const isSignificantlyDelayed: boolean = useMemo(() => {
     if (isDelayed) {
