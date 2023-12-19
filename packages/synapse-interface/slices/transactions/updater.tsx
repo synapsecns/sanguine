@@ -212,7 +212,7 @@ export default function Updater(): null {
   // Store pending transactions until completed based on Explorer query
   useEffect(() => {
     const hasUserPendingTransactions: boolean =
-      Array.isArray(userPendingTransactions) &&
+      checkTransactionsExist(userPendingTransactions) &&
       !isUserPendingTransactionsLoading
 
     if (hasUserPendingTransactions) {
@@ -236,11 +236,11 @@ export default function Updater(): null {
   // Handle updating stored pending transactions state throughout progress
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     const hasPendingBridgeTransactions: boolean =
-      Array.isArray(pendingBridgeTransactions) &&
+      checkTransactionsExist(pendingBridgeTransactions) &&
       pendingBridgeTransactions.length > 0
 
     if (hasUserHistoricalTransactions && activeTab === PortfolioTabs.ACTIVITY) {
@@ -383,7 +383,7 @@ export default function Updater(): null {
    */
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     if (
