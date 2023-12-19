@@ -72,25 +72,24 @@ export const DropdownMenu = ({ children }) => {
       <div
         onClick={handleClick}
         className={`
-          p-1 cursor-pointer
+          rounded w-5 h-[21px] flex place-items-center justify-center
           bg-[--synapse-bg-select]
-          border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover] rounded-md w-4 h-4 flex place-items-center justify-center
+          border border-solid border-[--synapse-border]
+          hover:border-[--synapse-border-hover]
+          cursor-pointer
         `}
       >
         <DownArrow />
       </div>
 
       {open && (
-        <div
+        <ul
           className={`
-            flex flex-col 
-            absolute right-0 z-10
-            bg-[--synapse-bg-select] 
-            border border-solid border-[--synapse-border]
+            absolute z-50 mt-1 p-0 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover -right-1 list-none text-left text-sm
           `}
         >
           {children}
-        </div>
+        </ul>
       )}
     </div>
   )
@@ -98,13 +97,22 @@ export const DropdownMenu = ({ children }) => {
 
 export const MenuItem = ({ text, link }: { text: string; link: string }) => {
   return (
-    <a
-      href={link ?? ''}
-      target="_blank"
-      rel="noreferrer"
-      className="flex whitespace-nowrap"
-    >
-      {text}
-    </a>
+    <li className={`
+      rounded cursor-pointer
+      border border-solid border-transparent
+      hover:border-[--synapse-border-hover]
+      active:opacity-40
+    `}>
+      <a
+        href={link ?? ''}
+        target="_blank"
+        rel="noreferrer"
+        className={`
+          block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-text-secondary]
+        `}
+      >
+        {text}
+      </a>
+    </li>
   )
 }

@@ -1,7 +1,7 @@
 export const DoubleDownArrow = () => {
   return (
     <svg
-      className="stroke-[--synapse-text-secondary] stroke-2 fill-none"
+      className="stroke-[--synapse-text-secondary] stroke-2 fill-none inline group-open:-scale-y-100"
       width="20"
       height="21"
       viewBox="0 0 20 21"

@@ -1,43 +1,20 @@
-import { useMemo, useState } from 'react'
-import { DoubleUpArrow } from '@/components/icons/DoubleUpArrow'
+import { useMemo } from 'react'
 import { DoubleDownArrow } from '@/components/icons/DoubleDownArrow'
 
 export const Receipt = ({ quote, send, receive }) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const estTime = useMemo(() => {
     return quote?.estimatedTime / 60
   }, [quote])
 
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded)
-  }
-
   return (
-    <>
-      <div className="flex justify-end text-sm">
-        {quote ? (
-          <div
-            onClick={handleToggle}
-            className="hover:bg-[--synapse-border] flex self-end pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 cursor-pointer"
-          >
-            {estTime} min via Synapse
-            {isExpanded ? <DoubleUpArrow /> : <DoubleDownArrow />}
-          </div>
-        ) : (
-          <div className="flex self-end pl-2 pr-1 py-1 gap-1 text-[--synapse-text-secondary] cursor-default">
-            Powered by
-            <a
-              href="https://synapseprotocol.com"
-              target="_blank"
-              className="underline hover:text-[--synapse-accent] active:opacity-40"
-            >
-              Synapse
-            </a>
-          </div>
-        )}
-      </div>
-      {isExpanded && (
-        <dl className="receipt p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-2">
+    quote ? (
+      <details className="text-sm group text-right">
+        <summary
+          className="hover:bg-[--synapse-border] pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 cursor-pointer list-none inline-flex items-center"
+        >
+          {estTime} min via Synapse <DoubleDownArrow />
+        </summary>
+        <dl className="receipt mt-1 mb-0 p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-2">
           <dt className="text-left">Router</dt>
           <dd className="text-right">{quote?.bridgeModuleName}</dd>
           <dt className="text-left">Origin</dt>
@@ -49,7 +26,18 @@ export const Receipt = ({ quote, send, receive }) => {
           <dt className="text-left">Receive</dt>
           <dd className="text-right">{receive}</dd>
         </dl>
-      )}
-    </>
+      </details>
+    ) : (
+      <div className="text-sm text-right p-1 text-[--synapse-text-secondary]">
+        Powered by&nbsp;
+        <a
+          href="https://synapseprotocol.com"
+          target="_blank"
+          className="text-[--synapse-text-primary] no-underline hover:underline active:opacity-40"
+        >
+          Synapse
+        </a>
+      </div>
+    )
   )
 }

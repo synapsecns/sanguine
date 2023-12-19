@@ -36,18 +36,14 @@ export function TokenPopoverSelect({
       ref={popoverRef}
     >
       <div
-        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
+        className="cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}
       >
-        <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
-          <DownArrow />
-        </span>
-        <div className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-          {selected?.symbol || 'Token'}
-        </div>
+        {selected?.symbol || 'Token'}
+        <DownArrow />
       </div>
       {isOpen && (
-        <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover right-0">
+        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none -right-0">
           {options.map((option: BridgeableToken, index) => {
             const matchedTokenBalance: TokenBalance = balances?.find(
               (token: TokenBalance) => token.token === option
@@ -78,7 +74,7 @@ export function TokenPopoverSelect({
               />
             )
           })}
-        </div>
+        </ul>
       )}
     </div>
   )
@@ -97,24 +93,30 @@ const TokenOption = ({
   selected: BridgeableToken
   parsedBalance: string
 }) => {
+  console.log(option)
   return (
-    <div
+    <li
       data-test-id="token-option"
       key={index}
-      className={`cursor-pointer px-2 py-2.5 ${
+      className={`cursor-pointer rounded border border-solid hover:border-[--synapse-border-hover] active:opacity-40 flex gap-4 items-center justify-between ${
         option.symbol === selected?.symbol
-          ? 'border border-solid border-[--synapse-border-hover] rounded-md hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-          : 'border border-solid border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+          ? 'border-[--synapse-border-hover] hover:opacity-70'
+          : 'border-transparent'
       }`}
       onClick={() => onSelect(option)}
     >
-      <div className="flex items-center gap-2">
-        <div className="mr-3">{option.symbol}</div>
-        <div className="flex gap-1 ml-auto text-xs">
-          {parsedBalance && <div>{parsedBalance}</div>}
-          <div className="text-[--synapse-text-secondary]">{option.symbol}</div>
-        </div>
-      </div>
-    </div>
+      <abbr title={option.name} className="no-underline p-2">
+        {option.symbol}
+      </abbr>
+      <data value={parsedBalance} className={`
+        text-sm p-2
+        ${parsedBalance
+          ? 'text-[--synapse-text-secondary]' 
+          : 'text-[--synapse-border-hover]'
+        }
+      `}>
+        {parsedBalance ?? '−'}
+      </data>
+    </li>
   )
 }

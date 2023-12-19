@@ -29,34 +29,28 @@ export function ChainPopoverSelect({
       ref={popoverRef}
     >
       <div
-        className="cursor-pointer items-center grid rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
+        className="cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
         onClick={() => togglePopover()}
       >
-        <span className="col-start-1 row-start-1 pr-3 text-xs h-min justify-self-end">
-          <DownArrow />
-        </span>
-        <div className="col-start-1 row-start-1 py-1 pl-3 bg-transparent outline-none appearance-none cursor-pointer pr-7">
-          {selected?.name || 'Network'}
-        </div>
+        {selected?.name || 'Network'}
+        <DownArrow />
       </div>
       {isOpen && (
-        <div className="absolute z-50 mt-1 bg-[--synapse-bg-surface] border border-[--synapse-border] rounded shadow popover">
+        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover text-left list-none">
           {options.map((option, index) => (
-            <div
+            <li
               key={index}
-              className={`cursor-pointer pl-2 pr-4 py-2.5 ${
+              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-border-hover] active:opacity-40 ${
                 option?.name === selected?.name
-                  ? 'border border-solid border-[--synapse-border-hover] rounded hover:border-[--synapse-border-hover] hover:opacity-70 active:opacity-40'
-                  : 'border border-solid border-transparent rounded hover:bg-[--synapse-bg-select] hover:border-[--synapse-border-hover] active:opacity-40'
+                  ? 'border-[--synapse-border-hover] hover:opacity-70'
+                  : 'border-transparent'
               }`}
               onClick={() => handleSelect(option)}
             >
-              <div className="flex gap-2">
-                <div>{option?.name}</div>
-              </div>
-            </div>
+              {option?.name}
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   )

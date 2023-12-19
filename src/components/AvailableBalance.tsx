@@ -35,23 +35,28 @@ export const AvailableBalance = ({
 
   if (!originToken) {
     return (
-      <div className="text-xs text-[--synapse-text-secondary] whitespace-nowrap">
+      <div className="text-sm text-[--synapse-text-secondary] whitespace-nowrap">
         Select source token
       </div>
     )
   }
 
   return (
-    <div
-      onClick={handleAvailableBalanceClick}
-      className="flex ml-px text-xs cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary] whitespace-nowrap"
-    >
-      Available {tokenBalance.parsedBalance ?? '0.0'}
-      {!hasEnoughBalance && (
-        <Tooltip hoverText="Amount may not exceed available balance">
-          <Warning styles="w-3" />
+    <div className="flex items-center gap-1 p-1 text-sm">
+      <div
+        onClick={handleAvailableBalanceClick}
+        className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary] whitespace-nowrap"
+      >
+        Available {tokenBalance.parsedBalance ?? '0.0'}
+      </div>
+      {!hasEnoughBalance && 
+        <Tooltip
+          hoverText="Amount may not exceed available balance"
+          positionStyles="-right-1 -top-8"
+        >
+          <Warning styles="w-3.5" />
         </Tooltip>
-      )}
+      }
     </div>
   )
 }

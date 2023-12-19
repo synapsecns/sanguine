@@ -48,6 +48,8 @@ export const BridgeButton = ({
   const buttonStyle =
     'text-lg font-sans rounded-md w-full p-2 font-semibold bg-[--synapse-bg-surface border border-solid border-[--synapse-border] cursor-pointer hover:border-[--synapse-border-hover] active:opacity-40 disabled:text-[--synapse-text-secondary] disabled:bg-[--synapse-bg-surface] disabled:hover:border-[--synapse-border] disabled:cursor-not-allowed disabled:active:opacity-100'
 
+  const tooltipPositionStyle = '-top-8'
+
   if (!onSelectedChain) {
     return (
       <button className={buttonStyle} onClick={handleSwitchNetwork}>
@@ -57,7 +59,10 @@ export const BridgeButton = ({
   }
   if (!hasEnoughBalance) {
     return (
-      <Tooltip hoverText="Amount may not exceed available balance">
+      <Tooltip
+        hoverText="Amount may not exceed available balance"
+        positionStyles={tooltipPositionStyle}
+      >
         <button className={buttonStyle} disabled>
           Send
         </button>
@@ -66,7 +71,10 @@ export const BridgeButton = ({
   }
   if (!isInputValid) {
     return (
-      <Tooltip hoverText="Enter valid amount">
+      <Tooltip
+        hoverText="Enter valid amount"
+        positionStyles={tooltipPositionStyle}
+      >
         <button className={buttonStyle} disabled>
           Send
         </button>
@@ -91,7 +99,10 @@ export const BridgeButton = ({
           {isBridgePending ? 'Confirm in Wallet' : 'Send'}
         </button>
       ) : (
-        <Tooltip hoverText={isApprovalPending && 'Wallet approval required'}>
+        <Tooltip
+          hoverText={isApprovalPending && 'Wallet approval required'}
+          positionStyles={tooltipPositionStyle}
+        >
           <button
             disabled={isApprovalPending}
             onClick={!isApprovalPending && handleApprove}

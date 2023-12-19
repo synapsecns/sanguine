@@ -3,9 +3,11 @@ import { useState } from 'react'
 export const Tooltip = ({
   hoverText,
   children,
+  positionStyles
 }: {
   hoverText: string
   children: React.ReactNode
+  positionStyles?: string
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
   return (
@@ -18,8 +20,8 @@ export const Tooltip = ({
       {isHovered && (
         <div
           className={`
-          absolute -top-7 z-10 px-2 py-1 rounded-md text-sm 
-          bg-[--synapse-bg-root] border border-solid border-[--synapse-border] cursor-default shadow
+          absolute w-max z-10 px-2 py-1 rounded-md text-sm 
+          bg-[--synapse-bg-root] border border-solid border-[--synapse-border] cursor-default shadow ${positionStyles}
           `}
         >
           {hoverText}
