@@ -162,17 +162,14 @@ export const PendingTransaction = ({
     estimatedCompletionInSeconds / 60
   )
 
-  const timeRemaining: number = useMemo(() => {
-    return estimatedCompletionInMinutes - initialElapsedMinutes
-  }, [
-    estimatedCompletionInMinutes,
-    initialElapsedMinutes,
-    updatedElapsedTime,
-    startedTimestamp,
-    transactionHash,
-  ])
+  const timeRemaining: number =
+    estimatedCompletionInMinutes - initialElapsedMinutes
 
-  const isDelayed: boolean = useMemo(() => timeRemaining < -1, [timeRemaining])
+  const isDelayed: boolean = timeRemaining < -1
+
+  console.log('isDelayed:', isDelayed)
+  console.log('timeRemaining:', timeRemaining)
+  console.log('transactionHash:', transactionHash)
 
   const isSignificantlyDelayed: boolean = useMemo(() => {
     if (isDelayed) {
@@ -183,7 +180,7 @@ export const PendingTransaction = ({
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
-    () => timeRemaining >= -5 && timeRemaining <= 0 && !isCompleted,
+    () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
     [timeRemaining, isCompleted]
   )
 
