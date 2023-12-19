@@ -172,7 +172,7 @@ export const PendingTransaction = ({
     transactionHash,
   ])
 
-  const isDelayed: boolean = useMemo(() => timeRemaining < 0, [timeRemaining])
+  const isDelayed: boolean = useMemo(() => timeRemaining < -1, [timeRemaining])
 
   const isSignificantlyDelayed: boolean = useMemo(() => {
     if (isDelayed) {
@@ -183,7 +183,7 @@ export const PendingTransaction = ({
 
   // Set fallback period to extend 5 mins past estimated duration
   const useFallback: boolean = useMemo(
-    () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
+    () => timeRemaining >= -5 && timeRemaining <= 0 && !isCompleted,
     [timeRemaining, isCompleted]
   )
 
@@ -206,19 +206,15 @@ export const PendingTransaction = ({
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
-  const originFallback = useFallbackBridgeOriginQuery({
-    useFallback:
-      (isDelayed && useFallback) ||
-      (isDelayed && isReconnectedAndRetryFallback),
+  useFallbackBridgeOriginQuery({
+    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
     chainId: originChain?.id,
     txnHash: transactionHash,
     bridgeType: bridgeType,
   })
 
-  const destinationFallback = useFallbackBridgeDestinationQuery({
-    useFallback:
-      (isDelayed && useFallback) ||
-      (isDelayed && isReconnectedAndRetryFallback),
+  useFallbackBridgeDestinationQuery({
+    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
     chainId: destinationChain?.id,
     address: destinationAddress,
     kappa: kappa,
