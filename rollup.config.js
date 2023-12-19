@@ -6,6 +6,7 @@ import postcss from 'rollup-plugin-postcss'
 import image from '@rollup/plugin-image'
 import json from '@rollup/plugin-json'
 import terser from '@rollup/plugin-terser'
+import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -24,6 +25,7 @@ export default [
     ],
     external: ['react', 'react/jsx-runtime'],
     plugins: [
+      peerDepsExternal(),
       resolve(),
       commonjs(),
       typescript({
