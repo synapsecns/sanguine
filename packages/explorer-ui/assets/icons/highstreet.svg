@@ -1,1 +1,11 @@
-<svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1584 1584"><defs><linearGradient id="a" x1="376.09" x2="376.09" y2="1581.05" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00f2fe"/><stop offset=".12" stop-color="#06e9fe"/><stop offset=".31" stop-color="#16cffd"/><stop offset=".55" stop-color="#30a6fc"/><stop offset=".84" stop-color="#546dfb"/><stop offset=".99" stop-color="#694bfa"/></linearGradient><linearGradient id="b" x1="939.49" y1="787.58" x2="939.49" y2="1584" xlink:href="#a"/></defs><path style="fill:url(#a)" d="M752.18 787.58V395.26H377.56V0H0v1581.05h377.56V787.58h374.62z" transform="translate(228.6)"/><path style="fill:url(#b)" d="M752.18 787.58h374.61V1584H752.18z" transform="translate(228.6)"/></svg>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="48" height="48" rx="24" fill="url(#paint0_linear_1275_22748)"/>
+<path d="M27.5 24V17H20.5V10H13.5V38H20.5V24H27.5Z" fill="white"/>
+<path d="M27.5 24H34.5V38H27.5V24Z" fill="white"/>
+<defs>
+<linearGradient id="paint0_linear_1275_22748" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0060F6"/>
+<stop offset="1" stop-color="#06FADE"/>
+</linearGradient>
+</defs>
+</svg>
