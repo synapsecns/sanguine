@@ -211,17 +211,24 @@ export default function Updater(): null {
 
   // Store pending transactions until completed based on Explorer query
   useEffect(() => {
-    const hasUserPendingTransactions: boolean =
-      checkTransactionsExist(userPendingTransactions) &&
-      !isUserPendingTransactionsLoading
-
-    if (hasUserPendingTransactions) {
+    if (checkTransactionsExist(userPendingTransactions)) {
       userPendingTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isStored: boolean = pendingAwaitingCompletionTransactions?.some(
-            (storedTransaction: BridgeTransaction) =>
-              storedTransaction?.kappa === pendingTransaction?.kappa
-          )
+          let isStored: boolean = false
+
+          if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+            isStored = pendingAwaitingCompletionTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
+
+          if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+            isStored = fallbackQueryHistoricalTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
 
           if (!isStored) {
             dispatch(
@@ -231,7 +238,7 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userPendingTransactions])
+  }, [userPendingTransactions, fallbackQueryHistoricalTransactions])
 
   // Handle updating stored pending transactions state throughout progress
   useEffect(() => {
