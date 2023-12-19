@@ -20,6 +20,7 @@ module.exports = {
     'eslint-plugin-prefer-arrow',
     'eslint-plugin-react',
     '@typescript-eslint',
+    'react-hooks',
   ],
   overrides: [
     {
@@ -182,6 +183,8 @@ module.exports = {
       },
     ],
     'react/jsx-wrap-multilines': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     semi: 'off',
     'space-before-blocks': 'error',
     'space-before-function-paren': 'off',
