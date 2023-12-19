@@ -3,11 +3,12 @@ package relconfig
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
-	"os"
 
 	"path/filepath"
 )
@@ -27,6 +28,7 @@ type Config struct {
 	QuotableTokens  map[string][]string    `yaml:"quotable_tokens"`
 	Signer          config.SignerConfig    `yaml:"signer"`
 	SubmitterConfig submitterConfig.Config `yaml:"submitter"`
+	FeePricer       FeePricerConfig        `yaml:"fee_pricer"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -41,6 +43,20 @@ type ChainConfig struct {
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
+}
+
+// FeePricerConfig represents the configuration for the fee pricer.
+type FeePricerConfig struct {
+	// OriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
+	OriginGasEstimate int `yaml:"origin_gas_estimate"`
+	// DestinationGasEstimate is the gas required to execute relay transaction on destination chain.
+	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
+	// GasPriceCacheTTL is the TTL for the gas price cache.
+	GasPriceCacheTTL int `yaml:"gas_price_cache_ttl"`
+	// TokenPriceCacheTTL is the TTL for the token price cache.
+	TokenPriceCacheTTL int `yaml:"token_price_cache_ttl"`
+	// Tokens is a map of chain id -> token address -> token name.
+	Tokens map[uint32]map[string]string `yaml:"tokens"`
 }
 
 // LoadConfig loads the config from the given path.
