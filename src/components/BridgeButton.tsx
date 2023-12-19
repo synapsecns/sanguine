@@ -45,8 +45,15 @@ export const BridgeButton = ({
     switchNetwork(originChainId, provider)
   }, [originChainId, provider])
 
-  const buttonStyle =
-    'text-lg font-sans rounded-md w-full p-2 font-semibold bg-[--synapse-bg-surface border border-solid border-[--synapse-border] cursor-pointer hover:border-[--synapse-border-hover] active:opacity-40 disabled:text-[--synapse-text-secondary] disabled:bg-[--synapse-bg-surface] disabled:hover:border-[--synapse-border] disabled:cursor-not-allowed disabled:active:opacity-100'
+  const buttonStyle = `
+    p-2 text-lg font-sans font-semibold rounded-md w-full 
+    bg-[--synapse-bg-surface] disabled:bg-[--synapse-bg-root] 
+    border border-solid border-[--synapse-border] 
+    hover:border-[--synapse-border-hover] disabled:hover:border-[--synapse-border] 
+    active:opacity-40 disabled:opacity-70 
+    text-[--synapse-text-primary] disabled:text-[--synapse-text-secondary] 
+    cursor-pointer disabled:cursor-not-allowed 
+  `
 
   const tooltipPositionStyle = '-top-8'
 

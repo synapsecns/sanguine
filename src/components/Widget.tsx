@@ -293,11 +293,14 @@ export const Widget = ({
     [dispatch]
   )
 
-  const cardStyle =
-    'border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2'
+  const cardStyle = `
+    border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2
+  `
 
-  const inputStyle =
-    'text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none disabled:cursor-not-allowed font-sans'
+  const inputStyle = `
+    text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none 
+    text-[--synapse-text-primary] placeholder:text-[--synapse-text-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
+  `
 
   return (
     <div

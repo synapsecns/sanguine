@@ -29,7 +29,13 @@ export function ChainPopoverSelect({
       ref={popoverRef}
     >
       <div
-        className="cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full bg-[--synapse-bg-select] border border-solid border-[--synapse-border] hover:border-[--synapse-border-hover]"
+        className={`
+          cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full
+          text-[--synapse-text-primary]
+          bg-[--synapse-bg-select]
+          border border-solid border-[--synapse-border]
+          hover:border-[--synapse-border-hover]
+        `}
         onClick={() => togglePopover()}
       >
         {selected?.name || 'Network'}

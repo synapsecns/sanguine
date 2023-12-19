@@ -1,18 +1,5 @@
 export const Warning = ({ styles }: { styles: string }) => {
   return (
-    <svg
-      className={`fill-[--synapse-accent] ${styles}`}
-      width="16"
-      height="17"
-      viewBox="0 0 16 17"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect y="0.5" width="16" height="16" rx="8" />
-      <path
-        d="M8.87571 3.81818L8.68182 10.9474H6.86222L6.66335 3.81818H8.87571ZM7.77202 14.1293C7.44389 14.1293 7.16217 14.0133 6.92685 13.7812C6.69152 13.5459 6.57552 13.2642 6.57884 12.9361C6.57552 12.6113 6.69152 12.3329 6.92685 12.1009C7.16217 11.8688 7.44389 11.7528 7.77202 11.7528C8.08688 11.7528 8.36364 11.8688 8.60227 12.1009C8.84091 12.3329 8.96188 12.6113 8.9652 12.9361C8.96188 13.1548 8.90388 13.3554 8.79119 13.5376C8.68182 13.7166 8.53764 13.8608 8.35866 13.9702C8.17969 14.0762 7.98414 14.1293 7.77202 14.1293Z"
-        fill="white"
-      />
-    </svg>
+    <div className="bg-[--synapse-text-primary] text-[--synapse-bg-root] rounded-full text-xs font-bold w-3 h-3 p-0.5 inline-flex justify-center items-center">!</div>
   )
 }

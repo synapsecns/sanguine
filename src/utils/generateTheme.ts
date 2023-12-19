@@ -34,7 +34,7 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
 
   const hslString = (h: number, s: number, l: number, a: number, x: number) =>
     colorMode === 'dark' || l < 50
-      ? `hsl(${h}deg ${s}% ${l * x + x * 100}%)`
+      ? `hsl(${h}deg ${s}% ${x * 100 + l * x}%)`
       : `hsl(${h}deg ${s}% ${Math.min(100, l * (1 + x)) * x}%)`
 
   const colorMode = theme.bgColor === 'dark' ? 'dark' : 'light'
@@ -49,7 +49,7 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
     colorMode === 'dark' || l < 50
       ? {
           '--synapse-text-primary': hslString(h, s, l, a, 0.96),
-          '--synapse-text-secondary': hslString(h, s, l, a, 0.86),
+          '--synapse-text-secondary': hslString(h, s / 2, l, a, 0.59),
           '--synapse-bg-select': hslString(h, s, l, a, 0.25),
           '--synapse-bg-surface': hslString(h, s, l, a, 0.12),
           '--synapse-bg-root': hslString(h, s, l, a, 0.07),
@@ -59,8 +59,8 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
             theme.accentColor ?? 'var(--synapse-text-secondary)',
         }
       : {
-          '--synapse-text-primary': hslString(h, s, l, a, 0.07),
-          '--synapse-text-secondary': hslString(h, s, l, a, 0.41),
+          '--synapse-text-primary': hslString(h, s, l, a, 0.04),
+          '--synapse-text-secondary': hslString(h, s / 2, l, a, 0.41),
           '--synapse-bg-select': hslString(h, s, l, a, 0.96),
           '--synapse-bg-surface': hslString(h, s, l, a, 1.0),
           '--synapse-bg-root': hslString(h, s, l, a, 0.96),
