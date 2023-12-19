@@ -4,11 +4,12 @@ package rest
 import (
 	"context"
 	"fmt"
-	"github.com/ipfs/go-log"
-	"github.com/synapsecns/sanguine/core/ginhelper"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -118,8 +119,8 @@ type PutRequest struct {
 	DestChainID     string `json:"dest_chain_id"`
 	DestTokenAddr   string `json:"dest_token_addr"`
 	DestAmount      string `json:"dest_amount"`
-	Price           string `json:"price"`
 	MaxOriginAmount string `json:"max_origin_amount"`
+	FixedFee        string `json:"fixed_fee"`
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.

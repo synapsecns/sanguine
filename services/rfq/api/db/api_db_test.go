@@ -15,8 +15,8 @@ func (d *DBSuite) TestGetQuotesByDestChainAndToken() {
 			DestChainID:     42161,
 			DestTokenAddr:   "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
 			DestAmount:      decimal.NewFromInt(1000),
-			Price:           decimal.NewFromFloat(0.01),
 			MaxOriginAmount: decimal.NewFromInt(1000).Div(decimal.NewFromFloat(0.01)),
+			FixedFee:        decimal.NewFromFloat(1),
 		}
 		err := testDB.UpsertQuote(d.GetTestContext(), expectedQuote)
 		d.Require().NoError(err)
@@ -50,8 +50,8 @@ func (d *DBSuite) TestUpsertQuote() {
 			DestChainID:     42161,
 			DestTokenAddr:   "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
 			DestAmount:      decimal.NewFromInt(1000),
-			Price:           decimal.NewFromFloat(0.01),
 			MaxOriginAmount: decimal.NewFromInt(1000).Div(decimal.NewFromFloat(0.01)),
+			FixedFee:        decimal.NewFromFloat(1),
 		}
 
 		// Act & Assert: Insert new quote
@@ -65,7 +65,7 @@ func (d *DBSuite) TestUpsertQuote() {
 		// Assert other fields if necessary
 
 		// Act & Assert: Update the existing quote
-		quote.Price = decimal.NewFromFloat(0.02)
+		quote.FixedFee = decimal.NewFromFloat(2)
 		err = testDB.UpsertQuote(d.GetTestContext(), quote)
 		d.Require().NoError(err)
 
@@ -73,7 +73,7 @@ func (d *DBSuite) TestUpsertQuote() {
 		updatedQuotes, err := testDB.GetQuotesByDestChainAndToken(d.GetTestContext(), quote.DestChainID, quote.DestTokenAddr)
 		d.Require().NoError(err)
 		d.Len(updatedQuotes, 1)
-		d.Equal(quote.Price, updatedQuotes[0].Price)
+		d.Equal(quote.FixedFee, updatedQuotes[0].FixedFee)
 		// Assert other fields if necessary
 	})
 }

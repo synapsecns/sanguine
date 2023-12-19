@@ -2,9 +2,10 @@ package client_test
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
-	"strconv"
 
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 )
@@ -18,8 +19,8 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
-		Price:           "50.0",
 		MaxOriginAmount: "200.0",
+		FixedFee:        "10.0",
 	}
 
 	err := c.client.PutQuote(&putData)
@@ -37,8 +38,8 @@ func (c *ClientSuite) assertEqual(q1 client.APIQuotePutRequest, quote *db.Quote)
 	c.Assert().Equal(q1.DestChainID, strconv.Itoa(int(quote.DestChainID)))
 	c.Assert().Equal(q1.DestTokenAddr, quote.DestTokenAddr)
 	c.assertStringFloatEqual(q1.DestAmount, quote.DestAmount)
-	c.assertStringFloatEqual(q1.Price, quote.Price)
 	c.assertStringFloatEqual(q1.MaxOriginAmount, quote.MaxOriginAmount)
+	c.assertStringFloatEqual(q1.FixedFee, quote.FixedFee)
 }
 
 func (c *ClientSuite) assertStringFloatEqual(s1 string, f2 decimal.Decimal) {
@@ -58,8 +59,8 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
-		Price:           "50.0",
 		MaxOriginAmount: "200.0",
+		FixedFee:        "10.0",
 	}
 
 	err := c.client.PutQuote(&putData)
@@ -83,8 +84,8 @@ func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
-		Price:           "50.0",
 		MaxOriginAmount: "200.0",
+		FixedFee:        "10.0",
 	}
 
 	err := c.client.PutQuote(&putData)
