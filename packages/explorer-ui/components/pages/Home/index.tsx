@@ -1,18 +1,14 @@
-import { TRANSACTIONS_PATH, getBridgeTransactionUrl } from '@urls'
+import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-import { TableHeader } from '@components/TransactionTable/TableHeader'
-import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
 import TextField from '@mui/material/TextField'
 import { inputStyle } from '@utils/styles/muiStyles'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
-import { formatDate } from '@utils/formatDate'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/chains/index'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
@@ -295,7 +291,7 @@ export function Home() {
             dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
-              dailyStatisticType === 'ADDRESSES'
+                dailyStatisticType === 'ADDRESSES'
                 ? false
                 : true
             }
