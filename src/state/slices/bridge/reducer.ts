@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Chain, BridgeableToken } from 'types'
-import { DAI, USDC, USDT } from '@/constants/bridgeable'
+import { BridgeableToken } from 'types'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 

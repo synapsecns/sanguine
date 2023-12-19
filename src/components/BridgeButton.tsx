@@ -5,29 +5,24 @@ import { useCallback, useContext } from 'react'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 import { useValidations } from '@/hooks/useValidations'
+import { useWalletState } from '@/state/slices/wallet/hooks'
 
 interface BridgeButtonProps {
   originChain: Chain
-  isApproved: boolean
   isValidQuote: boolean
   handleApprove: () => any
   handleBridge: () => any
   isApprovalPending: boolean
   isBridgePending: boolean
-  approveError: string
-  bridgeError: string
 }
 
 export const BridgeButton = ({
   originChain,
-  isApproved,
   isValidQuote,
   handleApprove,
   handleBridge,
   isApprovalPending,
   isBridgePending,
-  approveError,
-  bridgeError,
 }: BridgeButtonProps) => {
   const web3Context = useContext(Web3Context)
 
@@ -43,13 +38,15 @@ export const BridgeButton = ({
     destinationToken,
   } = useBridgeState()
 
-  const { hasEnoughBalance, isInputValid, onSelectedChain } = useValidations()
+  const { hasEnoughBalance, isInputValid, onSelectedChain, isApproved } =
+    useValidations()
 
   const handleSwitchNetwork = useCallback(async () => {
     switchNetwork(originChainId, provider)
   }, [originChainId, provider])
 
-  const buttonStyle = "text-lg font-sans rounded-md w-full p-2 font-semibold bg-[--synapse-bg-surface border border-solid border-[--synapse-border] cursor-pointer hover:border-[--synapse-border-hover] active:opacity-40 disabled:text-[--synapse-text-secondary] disabled:bg-[--synapse-bg-surface] disabled:hover:border-[--synapse-border] disabled:cursor-not-allowed disabled:active:opacity-100"
+  const buttonStyle =
+    'text-lg font-sans rounded-md w-full p-2 font-semibold bg-[--synapse-bg-surface border border-solid border-[--synapse-border] cursor-pointer hover:border-[--synapse-border-hover] active:opacity-40 disabled:text-[--synapse-text-secondary] disabled:bg-[--synapse-bg-surface] disabled:hover:border-[--synapse-border] disabled:cursor-not-allowed disabled:active:opacity-100'
 
   if (!onSelectedChain) {
     return (

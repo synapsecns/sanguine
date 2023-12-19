@@ -5,6 +5,9 @@ import {
   fetchTokenBalances,
   TokenBalance,
 } from '@/utils/actions/fetchTokenBalances'
+import { fetchErc20TokenAllowance } from '@/utils/actions/fetchErc20TokenAllowance'
+import { formatBigIntToString } from '@/utils/formatBigIntToString'
+import { BridgeableToken } from 'types'
 
 export const useWalletState = (): RootState['wallet'] => {
   return useAppSelector((state) => state.wallet)
@@ -20,7 +23,7 @@ export const fetchAndStoreTokenBalances = createAsyncThunk(
   }: {
     address: string
     chainId: number
-    tokens: any[]
+    tokens: BridgeableToken[]
     signerOrProvider: any
   }) => {
     const balances: TokenBalance[] = await fetchTokenBalances({
@@ -30,5 +33,33 @@ export const fetchAndStoreTokenBalances = createAsyncThunk(
       signerOrProvider,
     })
     return balances
+  }
+)
+
+export const fetchAndStoreAllowance = createAsyncThunk(
+  'wallet/fetchAndStoreAllowance',
+  async ({
+    spenderAddress,
+    ownerAddress,
+    provider,
+    token,
+    chainId,
+  }: {
+    spenderAddress: string
+    ownerAddress: string
+    provider: any
+    token: BridgeableToken
+    chainId: number
+  }) => {
+    const tokenAddress = token?.addresses[chainId]
+
+    const allowance: bigint = await fetchErc20TokenAllowance({
+      spenderAddress,
+      tokenAddress,
+      ownerAddress,
+      provider,
+    })
+
+    return formatBigIntToString(allowance, token.decimals[chainId])
   }
 )

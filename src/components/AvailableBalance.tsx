@@ -1,31 +1,25 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useAppDispatch } from '@/state/hooks'
-import { stringToBigInt } from '@/utils/stringToBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
-import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { setInputAmount } from '@/state/slices/bridge/reducer'
-import { BridgeableToken } from 'types'
 import { Warning } from './icons/Warning'
 import { Tooltip } from './Tooltip'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
+import { useValidations } from '@/hooks/useValidations'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 export const AvailableBalance = ({
-  originChainId,
-  originToken,
-  tokenBalance,
   connectedAddress,
-  hasEnoughBalance,
 }: {
-  originChainId: number
-  originToken: BridgeableToken
-  tokenBalance: {
-    rawBalance: bigint
-    parsedBalance: string
-    decimals: number
-  }
   connectedAddress: string
-  hasEnoughBalance: boolean
 }) => {
   const dispatch = useAppDispatch()
+
+  const { originChainId, originToken } = useBridgeState()
+
+  const tokenBalance = useCurrentTokenBalance()
+
+  const { hasEnoughBalance } = useValidations()
 
   const handleAvailableBalanceClick = useCallback(() => {
     const maxAmount: string =

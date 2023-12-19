@@ -6,12 +6,13 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { Web3Context } from 'providers/Web3Provider'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 import { useWalletState } from '@/state/slices/wallet/hooks'
+import { ZeroAddress } from 'ethers'
 
 export const useValidations = (): {
   hasValidSelections: boolean
   hasEnoughBalance: boolean
   isInputValid: boolean
-  // hasEnoughApproved: boolean
+  isApproved: boolean
   onSelectedChain: boolean
 } => {
   const {
@@ -23,7 +24,7 @@ export const useValidations = (): {
     destinationToken,
   } = useBridgeState()
 
-  const { balances } = useWalletState()
+  const { balances, allowance } = useWalletState()
 
   const currentTokenBalance = useCurrentTokenBalance()
 
@@ -61,11 +62,30 @@ export const useValidations = (): {
     return networkId === originChainId
   }, [originChainId, networkId])
 
+  const formattedInputAmount: bigint = useMemo(() => {
+    return stringToBigInt(
+      debouncedInputAmount ?? '0',
+      originToken?.decimals[originChainId]
+    )
+  }, [debouncedInputAmount, originToken])
+
+  const isApproved: boolean = useMemo(() => {
+    if (originToken?.addresses[originChainId] === ZeroAddress) {
+      return true
+    }
+    if (!checkExists(allowance)) return true
+    if (!formattedInputAmount) return true
+    return (
+      formattedInputAmount <=
+      stringToBigInt(allowance, originToken?.decimals[originChainId])
+    )
+  }, [formattedInputAmount, allowance, originToken, originChainId])
+
   return {
     hasValidSelections,
     hasEnoughBalance,
     isInputValid,
-    // hasEnoughApproved,
+    isApproved,
     onSelectedChain,
   }
 }

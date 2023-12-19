@@ -24,7 +24,7 @@ export async function fetchTokenBalances({
 }: {
   address: string
   chainId: number
-  tokens: any[]
+  tokens: BridgeableToken[]
   signerOrProvider: any // TODO: handle for two distinct types
 }): Promise<TokenBalance[]> {
   const multicall: Contract = useMulticallContract(signerOrProvider)

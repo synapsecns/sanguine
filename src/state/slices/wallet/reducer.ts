@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { fetchAndStoreTokenBalances } from './hooks'
+import { fetchAndStoreTokenBalances, fetchAndStoreAllowance } from './hooks'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 
 export enum FetchState {
@@ -11,12 +11,14 @@ export enum FetchState {
 
 export interface WalletState {
   balances: TokenBalance[]
+  allowance: string
   status: FetchState
   error?: any
 }
 
 const initialState: WalletState = {
   balances: [],
+  allowance: null,
   status: FetchState.IDLE,
   error: null,
 }
@@ -38,6 +40,20 @@ export const walletSlice = createSlice({
         }
       )
       .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
+        state.error = action.payload
+        state.status = FetchState.INVALID
+      })
+      .addCase(fetchAndStoreAllowance.pending, (state) => {
+        state.status = FetchState.LOADING
+      })
+      .addCase(
+        fetchAndStoreAllowance.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.allowance = action.payload
+          state.status = FetchState.VALID
+        }
+      )
+      .addCase(fetchAndStoreAllowance.rejected, (state, action) => {
         state.error = action.payload
         state.status = FetchState.INVALID
       })

@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useContext, useCallback } from 'react'
+import { useMemo, useEffect, useContext, useCallback, useRef } from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
@@ -10,18 +10,6 @@ import { Receipt } from '@/components/Receipt'
 import { BridgeableToken, Chain, WidgetProps } from 'types'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
-import { useBridgeQuote, QuoteCallbackState } from '@/hooks/useBridgeQuote'
-import { useAllowance } from '@/hooks/useAllowance'
-import {
-  ApproveCallbackState,
-  UseApproveCallbackProps,
-  useApproveCallback,
-} from '@/hooks/useApproveCallback'
-import {
-  UseBridgeCallbackArgs,
-  useBridgeCallback,
-  BridgeCallbackState,
-} from '@/hooks/useBridgeCallback'
 
 import { useAppDispatch } from '@/state/hooks'
 import {
@@ -34,17 +22,41 @@ import {
   setInputAmount,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
-import { fetchAndStoreTokenBalances } from '@/state/slices/wallet/hooks'
+import {
+  fetchAndStoreAllowance,
+  fetchAndStoreTokenBalances,
+} from '@/state/slices/wallet/hooks'
 import { BridgeButton } from './BridgeButton'
 
 import { generateTheme } from '@/utils/generateTheme'
 import { AvailableBalance } from './AvailableBalance'
 import { ZeroAddress } from 'ethers'
-import { checkExists } from '@/utils/checkExists'
-import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
 import { useValidations } from '@/hooks/useValidations'
 
 import { Transaction } from './Transaction'
+
+import { useWalletState } from '@/state/slices/wallet/hooks'
+
+import {
+  fetchBridgeQuote,
+  useBridgeQuoteState,
+} from '@/state/slices/bridgeQuote/hooks'
+
+import {
+  EMPTY_BRIDGE_QUOTE,
+  resetQuote,
+} from '@/state/slices/bridgeQuote/reducer'
+
+import {
+  executeBridgeTxn,
+  useBridgeTransactionState,
+} from '@/state/slices/bridgeTransaction/hooks'
+import { BridgeTransactionStatus } from '@/state/slices/bridgeTransaction/reducer'
+import {
+  executeApproveTxn,
+  useApproveTransactionState,
+} from '@/state/slices/approveTransaction/hooks'
+import { ApproveTransactionStatus } from '@/state/slices/approveTransaction/reducer'
 
 const chains = {
   1: {
@@ -74,7 +86,8 @@ export const Widget = ({
   toChainId,
 }) => {
   const dispatch = useAppDispatch()
-  const synapseSDK = new SynapseSDK(chainIds, networkProviders)
+  const currentSDKRequestID = useRef(0)
+  const synapseSDK: any = new SynapseSDK(chainIds, networkProviders)
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
@@ -89,7 +102,17 @@ export const Widget = ({
     tokens: allTokens,
   } = useBridgeState()
 
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
+
+  const { allowance } = useWalletState()
+
+  const { isInputValid, hasValidSelections } = useValidations()
+
+  const { bridgeTxnStatus } = useBridgeTransactionState()
+  const { approveTxnStatus } = useApproveTransactionState()
+
   /** Select Consumer networkProvider based on Origin ChainId */
+  /** TODO: Move to helper hook */
   const originChainProvider = useMemo(() => {
     if (!Array.isArray(networkProviders)) return null
     if (!originChainId) return null
@@ -99,6 +122,7 @@ export const Widget = ({
     return _provider
   }, [originChainId, networkProviders])
 
+  /** TODO: Can this be moved into own theming context? */
   const themeVariables = (() => {
     if (theme === 'dark') return generateTheme({ bgColor: 'dark' })
     if (customTheme) return generateTheme(customTheme)
@@ -112,6 +136,7 @@ export const Widget = ({
   }, [tokens, toChainId])
 
   /** Debounce user input to fetch bridge quote (in ms) */
+  /** TODO: Can this be moved to the input component? */
   useEffect(() => {
     const DEBOUNCE_DELAY = 300
     const debounceTimer = setTimeout(() => {
@@ -124,6 +149,7 @@ export const Widget = ({
   }, [dispatch, inputAmount])
 
   /** Fetch token balances when signer/address connected */
+  /** TODO: Can this be moved into a level above? */
   useEffect(() => {
     if (!signer && !originChainProvider) return
     if (originChainId && tokens && connectedAddress) {
@@ -138,124 +164,98 @@ export const Widget = ({
     }
   }, [originChainId, allTokens, connectedAddress, signer, originChainProvider])
 
-  const {
-    state: quoteState,
-    callback: fetchQuoteCallback,
-    reset: resetQuote,
-    quote,
-    error: quoteError,
-  } = useBridgeQuote({
-    originChainId: originChainId,
-    originTokenAddress: originToken?.addresses[originChainId],
-    destinationChainId: destinationChainId,
-    destinationTokenAddress: destinationToken?.addresses[destinationChainId],
-    amount: stringToBigInt(
-      debouncedInputAmount,
-      originToken?.decimals[originChainId]
-    ),
-    synapseSDK: synapseSDK,
-  })
-
-  const { allowance, checkAllowanceCallback } = useAllowance({
-    spenderAddress: quote?.routerAddress,
-    tokenAddress: originToken?.addresses[originChainId],
-    ownerAddress: connectedAddress,
-    chainId: originToken?.addresses[originChainId],
-    provider: originChainProvider ?? provider,
-  })
-
-  const useApproveCallbackArgs: UseApproveCallbackProps = {
-    spenderAddress: quote?.routerAddress,
-    tokenAddress: originToken?.addresses[originChainId],
-    ownerAddress: connectedAddress,
-    amount: stringToBigInt(inputAmount, originToken?.decimals[originChainId]),
-    chainId: originChainId,
-    onSuccess: checkAllowanceCallback,
-    signer: signer,
-  }
-  const {
-    state: approveState,
-    callback: approveCallback,
-    error: approveError,
-  } = useApproveCallback(useApproveCallbackArgs)
-
-  const useBridgeCallbackArgs: UseBridgeCallbackArgs = {
-    destinationAddress: connectedAddress,
-    originRouterAddress: quote?.routerAddress,
-    originChainId: originChainId,
-    destinationChainId: destinationChainId,
-    tokenAddress: originToken?.addresses[originChainId],
-    amount: stringToBigInt(
-      debouncedInputAmount,
-      originToken?.decimals[originChainId]
-    ),
-    originQuery: quote?.originQuery,
-    destinationQuery: quote?.destQuery,
-    synapseSDK,
-    signer,
-  }
-  const {
-    state: bridgeState,
-    callback: bridgeCallback,
-    error: bridgeError,
-  } = useBridgeCallback(useBridgeCallbackArgs)
-
-  const formattedInputAmount: bigint = useMemo(() => {
-    return stringToBigInt(
-      debouncedInputAmount ?? '0',
-      originToken?.decimals[originChainId]
+  const executeApproval = () => {
+    dispatch(
+      executeApproveTxn({
+        spenderAddress: bridgeQuote?.routerAddress,
+        tokenAddress: originToken?.addresses[originChainId],
+        amount: stringToBigInt(
+          inputAmount,
+          originToken?.decimals[originChainId]
+        ),
+        signer,
+      })
     )
-  }, [debouncedInputAmount, originToken])
+  }
 
-  const isApproved: boolean = useMemo(() => {
-    if (originToken?.addresses[originChainId] === ZeroAddress) {
-      return true
+  const executeBridge = () => {
+    dispatch(
+      executeBridgeTxn({
+        destinationAddress: connectedAddress,
+        originRouterAddress: bridgeQuote?.routerAddress,
+        originChainId: originChainId,
+        destinationChainId: destinationChainId,
+        tokenAddress: originToken?.addresses[originChainId],
+        amount: stringToBigInt(
+          debouncedInputAmount,
+          originToken?.decimals[originChainId]
+        ),
+        originQuery: bridgeQuote?.quotes.originQuery,
+        destinationQuery: bridgeQuote?.quotes.destQuery,
+        synapseSDK,
+        signer,
+      })
+    )
+  }
+
+  /** fetch and store token allowance */
+
+  useEffect(() => {
+    if (
+      originToken?.addresses[originChainId] !== ZeroAddress &&
+      bridgeQuote?.routerAddress
+    ) {
+      dispatch(
+        fetchAndStoreAllowance({
+          spenderAddress: bridgeQuote?.routerAddress,
+          ownerAddress: connectedAddress,
+          chainId: originChainId,
+          token: originToken,
+          provider: originChainProvider ?? provider,
+        })
+      )
     }
-    if (!checkExists(allowance)) return true
-    if (!formattedInputAmount) return true
-    return formattedInputAmount <= allowance
-  }, [formattedInputAmount, allowance, originToken, originChainId])
-
-  const currentTokenBalance = useCurrentTokenBalance()
-
-  const { hasEnoughBalance, isInputValid } = useValidations()
+  }, [
+    originToken?.routeSymbol,
+    originChainId,
+    connectedAddress,
+    bridgeQuote?.routerAddress,
+  ])
 
   /** Handle refreshing quotes */
   useEffect(() => {
-    if (
-      isInputValid &&
-      originToken &&
-      destinationToken &&
-      originChainId &&
-      destinationChainId &&
-      fetchQuoteCallback
-    ) {
-      fetchQuoteCallback()
+    if (isInputValid && hasValidSelections) {
+      currentSDKRequestID.current += 1
+      const thisRequestId = currentSDKRequestID.current
+
+      if (thisRequestId === currentSDKRequestID.current) {
+        dispatch(
+          fetchBridgeQuote({
+            originChainId,
+            destinationChainId,
+            originToken,
+            destinationToken,
+            amount: stringToBigInt(
+              debouncedInputAmount,
+              originToken.decimals[originChainId]
+            ),
+            debouncedInputAmount,
+            synapseSDK,
+          })
+        )
+      }
     } else {
-      resetQuote()
+      dispatch(resetQuote())
     }
   }, [
     debouncedInputAmount,
-    originToken,
-    destinationToken,
+    originToken?.routeSymbol,
+    destinationToken?.routeSymbol,
     originChainId,
     destinationChainId,
     isInputValid,
+    hasValidSelections,
   ])
-
-  const maxAmountOut = useMemo(() => {
-    if (!quote || !quote.maxAmountOut) {
-      return 0
-    }
-
-    const max = BigInt(quote.maxAmountOut.toString())
-
-    return formatBigIntToString(
-      max,
-      destinationToken?.decimals[destinationChainId],
-      4
-    )
-  }, [quote])
 
   const handleUserInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,9 +293,11 @@ export const Widget = ({
     [dispatch]
   )
 
-  const cardStyle = "border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2"
+  const cardStyle =
+    'border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2'
 
-  const inputStyle = "text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none disabled:cursor-not-allowed font-sans"
+  const inputStyle =
+    'text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none placeholder:text-[--synapse-border-hover] focus:outline-none disabled:cursor-not-allowed font-sans'
 
   return (
     <div
@@ -329,13 +331,7 @@ export const Widget = ({
               token={originToken}
               onChange={handleOriginTokenSelection}
             />
-            <AvailableBalance
-              originChainId={originChainId}
-              originToken={originToken}
-              tokenBalance={currentTokenBalance}
-              connectedAddress={connectedAddress}
-              hasEnoughBalance={hasEnoughBalance}
-            />
+            <AvailableBalance connectedAddress={connectedAddress} />
           </div>
         </div>
       </div>
@@ -351,7 +347,13 @@ export const Widget = ({
             disabled={true}
             placeholder=""
             value={
-              quoteState === QuoteCallbackState.LOADING ? '...' : maxAmountOut
+              isLoading
+                ? '...'
+                : formatBigIntToString(
+                    bridgeQuote?.delta,
+                    destinationToken?.decimals[destinationChainId],
+                    4
+                  )
             }
           />
           <TokenSelect
@@ -363,24 +365,29 @@ export const Widget = ({
         </div>
       </div>
       <Receipt
-        quote={quote ?? null}
+        quote={bridgeQuote ?? null}
         send={formatBigIntToString(
           stringToBigInt(inputAmount, originToken?.decimals[originChainId]),
           originToken?.decimals[originChainId],
           4
         )}
-        receive={maxAmountOut}
+        receive={formatBigIntToString(
+          bridgeQuote?.delta,
+          destinationToken?.decimals[destinationChainId],
+          4
+        )}
       />
       <BridgeButton
         originChain={chains[originChainId]}
-        isApproved={isApproved}
-        isValidQuote={Boolean(quote)}
-        handleApprove={approveCallback}
-        handleBridge={bridgeCallback}
-        isApprovalPending={approveState === ApproveCallbackState.PENDING}
-        isBridgePending={bridgeState === BridgeCallbackState.PENDING}
-        approveError={approveError}
-        bridgeError={bridgeError}
+        isValidQuote={
+          Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
+        }
+        handleApprove={executeApproval}
+        handleBridge={executeBridge}
+        isApprovalPending={
+          approveTxnStatus === ApproveTransactionStatus.PENDING
+        }
+        isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
       />
     </div>
   )
