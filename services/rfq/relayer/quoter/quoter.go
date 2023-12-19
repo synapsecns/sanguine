@@ -4,12 +4,13 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"golang.org/x/exp/slices"
-	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -143,7 +144,6 @@ func (m *Manager) GenerateQuotes(chainID int, address common.Address, balance *b
 					DestChainID:     fmt.Sprint(chainID),
 					DestTokenAddr:   address.Hex(),
 					DestAmount:      balance.String(),
-					Price:           "1",
 					MaxOriginAmount: balance.String(),
 				}
 				quotes = append(quotes, quote)
