@@ -54,7 +54,6 @@ const expectCorrectPopulatedTransaction = (
   expectedValue: BigNumber = Zero
 ) => {
   expect(populatedTransaction).toBeDefined()
-  console.log(populatedTransaction)
   expect(populatedTransaction.data?.length).toBeGreaterThan(0)
   expect(populatedTransaction.to?.length).toBeGreaterThan(0)
   expect(populatedTransaction.value).toEqual(expectedValue)
