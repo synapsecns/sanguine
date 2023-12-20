@@ -497,14 +497,27 @@ const TransactionStatusDetails = ({
   }
 
   if (transactionStatus === TransactionStatus.COMPLETED) {
-    const handleExplorerClick = () => {
-      const explorerLink: string = getTransactionExplorerLink({
-        kappa,
-        fromChainId: originChain.id,
-        toChainId: destinationChain.id,
-      })
-      window.open(explorerLink, '_blank', 'noopener,noreferrer')
+    let handleExplorerClick
+
+    if (!kappa) {
+      handleExplorerClick = () => {
+        const explorerLink: string = getExplorerAddressUrl({
+          chainId: destinationChain.id,
+          address: connectedAddress as Address,
+        })
+        window.open(explorerLink, '_blank', 'noopener,noreferrer')
+      }
+    } else {
+      handleExplorerClick = () => {
+        const explorerLink: string = getTransactionExplorerLink({
+          kappa,
+          fromChainId: originChain.id,
+          toChainId: destinationChain.id,
+        })
+        window.open(explorerLink, '_blank', 'noopener,noreferrer')
+      }
     }
+
     return (
       <div
         data-test-id="completed-status"
@@ -514,7 +527,7 @@ const TransactionStatusDetails = ({
           className="flex cursor-pointer hover:bg-[#101018] rounded-sm hover:text-[#99E6FF] hover:underline py-1 px-1"
           onClick={handleExplorerClick}
         >
-          <div>Confirmed on Synapse Explorer</div>
+          <div>Confirmed on Explorer</div>
         </div>
         <TransactionOptions
           connectedAddress={connectedAddress as Address}
