@@ -9,6 +9,7 @@ import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/Syn
 import { Router } from './router'
 import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
 import cctpAbi from '../abi/SynapseCCTP.json'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
 import { BigintIsh } from '../constants'
 import {
@@ -111,13 +112,20 @@ export class SynapseCCTPRouter extends Router {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    return this.routerContract.populateTransaction.bridge(
-      to,
-      chainId,
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.bridge(
+        to,
+        chainId,
+        token,
+        amount,
+        narrowToCCTPRouterQuery(originQuery),
+        narrowToCCTPRouterQuery(destQuery)
+      )
+    // Adjust the tx.value if the token is native
+    return adjustValueIfNative(
+      populatedTransaction,
       token,
-      amount,
-      narrowToCCTPRouterQuery(originQuery),
-      narrowToCCTPRouterQuery(destQuery)
+      BigNumber.from(amount)
     )
   }
 
