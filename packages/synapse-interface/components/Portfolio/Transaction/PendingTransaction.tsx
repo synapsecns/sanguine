@@ -290,7 +290,7 @@ const TransactionStatusDetails = ({
   isSignificantlyDelayed: boolean
 }) => {
   const sharedClass: string =
-    'flex bg-tint border-t border-surface text-sm items-center'
+    'flex bg-tint border-t border-surface text-sm items-center rounded-b-lg'
 
   if (transactionStatus === TransactionStatus.PENDING_WALLET_ACTION) {
     return (
@@ -344,7 +344,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="pending-status"
-        className={`${sharedClass} p-2 flex justify-between rounded-b-lg`}
+        className={`${sharedClass} p-2 flex justify-between`}
       >
         {isDelayed && isSignificantlyDelayed && (
           <>
