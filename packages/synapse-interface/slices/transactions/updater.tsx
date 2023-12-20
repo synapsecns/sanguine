@@ -327,7 +327,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userHistoricalTransactions, activeTab])
+  }, [
+    activeTab,
+    userHistoricalTransactions,
+    fallbackQueryHistoricalTransactions,
+  ])
 
   // Handle adding completed fallback historical transaction to seen list
   useEffect(() => {
