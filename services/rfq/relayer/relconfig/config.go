@@ -37,6 +37,18 @@ type ChainConfig struct {
 	Bridge string `yaml:"address"`
 	// Confirmations is the number of required confirmations
 	Confirmations uint64 `yaml:"confirmations"`
+	// Tokens is a map of token ID -> token config.
+	Tokens map[string]TokenConfig `yaml:"tokens"`
+	// NativeToken is the native token of the chain (pays gas).
+	NativeToken string `yaml:"native_token"`
+}
+
+// TokenConfig represents the configuration for a token.
+type TokenConfig struct {
+	// Address is the token address.
+	Address string `yaml:"address"`
+	// For now, specify the USD price of the token in the config.
+	PriceUSD float64 `yaml:"price_usd"`
 }
 
 // DatabaseConfig represents the configuration for the database.
@@ -55,9 +67,6 @@ type FeePricerConfig struct {
 	GasPriceCacheTTL int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTL is the TTL for the token price cache.
 	TokenPriceCacheTTL int `yaml:"token_price_cache_ttl"`
-	// Tokens is a map of chain id -> token address -> token name.
-	Tokens           map[uint32]map[string]string `yaml:"tokens"`
-	RequestTimeoutMs int                          `yaml:"request_timeout_ms"`
 }
 
 // LoadConfig loads the config from the given path.

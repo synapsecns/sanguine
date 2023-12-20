@@ -2,11 +2,8 @@ package quoter
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"math/big"
-	"net/http"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -28,27 +25,27 @@ type FeePricer interface {
 }
 
 type feePricer struct {
+	// config is the fee pricer config.
 	config relconfig.FeePricerConfig
+	// tokenConfigs maps chain ID -> chain config.
+	chainConfigs map[int]relconfig.ChainConfig
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
 	tokenPriceCache *ttlcache.Cache[string, *big.Int]
-	omniClient      omnirpcClient.RPCClient
-	httpClient      *http.Client
+	// omnirpcClient is the omnirpc client.
+	omniClient omnirpcClient.RPCClient
 }
 
-const coingeckoURL = "https://api.coingecko.com/api/v3/simple/price?vs_currencies=USD&ids="
-
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.FeePricerConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
+func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
 	omniClient := omnirpcClient.NewOmnirpcClient(omnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
-	httpClient := &http.Client{Timeout: time.Duration(config.RequestTimeoutMs) * time.Millisecond}
 	return &feePricer{
 		config:          config,
+		chainConfigs:    chainConfigs,
 		gasPriceCache:   ttlcache.New[uint32, *big.Int](ttlcache.WithTTL[uint32, *big.Int](time.Second * time.Duration(config.GasPriceCacheTTL))),
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
 		omniClient:      omniClient,
-		httpClient:      httpClient,
 	}
 }
 
@@ -158,32 +155,15 @@ func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
-	resp, err := f.httpClient.Get(fmt.Sprintf("%s%s", coingeckoURL, token))
-	if err != nil {
-		return 0, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status code: %v", resp.Status)
-		return 0, err
-	}
-	defer resp.Body.Close()
-	respBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		err = fmt.Errorf("could not read response: %w", err)
-		return 0, err
-	}
-	var result map[string]map[string]float64
-	err = json.Unmarshal(respBytes, &result)
-	if err != nil {
-		err = fmt.Errorf("could not unmarshal response: %w", err)
-		return 0, err
-	}
-	for _, val := range result {
-		for _, num := range val {
-			return num, nil
+	for _, chainConfig := range f.chainConfigs {
+		for tokenID, tokenConfig := range chainConfig.Tokens {
+			if token == tokenID {
+				return tokenConfig.PriceUSD, nil
+			}
+
 		}
 	}
-	return 0, fmt.Errorf("could not get token price")
+	return 0, fmt.Errorf("could not get price for token: %s", token)
 }
 
 func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error) {
