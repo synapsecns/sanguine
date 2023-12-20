@@ -159,21 +159,21 @@ export const PendingTransaction = ({
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
-  // useFallbackBridgeOriginQuery({
-  //   useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-  //   chainId: originChain?.id,
-  //   txnHash: transactionHash,
-  //   bridgeType: bridgeType,
-  // })
+  useFallbackBridgeOriginQuery({
+    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
+    chainId: originChain?.id,
+    txnHash: transactionHash,
+    bridgeType: bridgeType,
+  })
 
-  // useFallbackBridgeDestinationQuery({
-  //   useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-  //   chainId: destinationChain?.id,
-  //   address: destinationAddress,
-  //   kappa: kappa,
-  //   timestamp: startedTimestamp,
-  //   bridgeType: bridgeType,
-  // })
+  useFallbackBridgeDestinationQuery({
+    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
+    chainId: destinationChain?.id,
+    address: destinationAddress,
+    kappa: kappa,
+    timestamp: startedTimestamp,
+    bridgeType: bridgeType,
+  })
 
   const _isComplete = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -181,11 +181,9 @@ export const PendingTransaction = ({
     transactionHash,
     bridgeModuleName,
     kappa,
-    checkStatus: isDelayed,
+    checkStatus: isSignificantlyDelayed,
     elapsedTime: updatedElapsedTime,
   })
-
-  console.log('_isComplete:', _isComplete)
 
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
