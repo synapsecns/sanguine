@@ -56,7 +56,8 @@ type FeePricerConfig struct {
 	// TokenPriceCacheTTL is the TTL for the token price cache.
 	TokenPriceCacheTTL int `yaml:"token_price_cache_ttl"`
 	// Tokens is a map of chain id -> token address -> token name.
-	Tokens map[uint32]map[string]string `yaml:"tokens"`
+	Tokens           map[uint32]map[string]string `yaml:"tokens"`
+	RequestTimeoutMs int                          `yaml:"request_timeout_ms"`
 }
 
 // LoadConfig loads the config from the given path.

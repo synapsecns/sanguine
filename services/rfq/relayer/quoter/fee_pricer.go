@@ -2,7 +2,11 @@ package quoter
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"math/big"
+	"net/http"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -30,16 +34,21 @@ type feePricer struct {
 	// tokenPriceCache maps token name -> token price
 	tokenPriceCache *ttlcache.Cache[string, *big.Int]
 	omniClient      omnirpcClient.RPCClient
+	httpClient      *http.Client
 }
+
+const coingeckoURL = "https://api.coingecko.com/api/v3/simple/price?vs_currencies=USD&ids="
 
 // NewFeePricer creates a new fee pricer.
 func NewFeePricer(config relconfig.FeePricerConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
 	omniClient := omnirpcClient.NewOmnirpcClient(omnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+	httpClient := &http.Client{Timeout: time.Duration(config.RequestTimeoutMs) * time.Millisecond}
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   ttlcache.New[uint32, *big.Int](ttlcache.WithTTL[uint32, *big.Int](time.Second * time.Duration(config.GasPriceCacheTTL))),
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
 		omniClient:      omniClient,
+		httpClient:      httpClient,
 	}
 }
 
@@ -149,7 +158,32 @@ func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
-	return 0, nil
+	resp, err := f.httpClient.Get(fmt.Sprintf("%s%s", coingeckoURL, token))
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("bad status code: %v", resp.Status)
+		return 0, err
+	}
+	defer resp.Body.Close()
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		err = fmt.Errorf("could not read response: %w", err)
+		return 0, err
+	}
+	var result map[string]map[string]float64
+	err = json.Unmarshal(respBytes, &result)
+	if err != nil {
+		err = fmt.Errorf("could not unmarshal response: %w", err)
+		return 0, err
+	}
+	for _, val := range result {
+		for _, num := range val {
+			return num, nil
+		}
+	}
+	return 0, fmt.Errorf("could not get token price")
 }
 
 func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error) {
