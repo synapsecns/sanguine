@@ -47,7 +47,6 @@ export const useBridgeTxStatus = ({
 
   useEffect(() => {
     if (!checkStatus) return
-    console.log('running')
     ;(async () => {
       let _kappa
 
