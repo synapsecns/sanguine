@@ -13,6 +13,8 @@ type PricerSuite struct {
 	*testsuite.TestSuite
 	feePricerConfig relconfig.FeePricerConfig
 	chainConfigs    map[int]relconfig.ChainConfig
+	origin          uint32
+	destination     uint32
 }
 
 // NewPricerSuite creates a end-to-end test suite.
@@ -26,24 +28,44 @@ func NewPricerSuite(tb testing.TB) *PricerSuite {
 func (c *PricerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 	// Setup
+	c.origin = 42161
+	c.destination = 137
 	c.feePricerConfig = relconfig.FeePricerConfig{
 		GasPriceCacheTTL:       60,
 		TokenPriceCacheTTL:     60,
-		OriginGasEstimate:      100000,
+		OriginGasEstimate:      500000,
 		DestinationGasEstimate: 100000,
 	}
 	c.chainConfigs = map[int]relconfig.ChainConfig{
-		42161: relconfig.ChainConfig{
+		int(c.origin): relconfig.ChainConfig{
 			Tokens: map[string]relconfig.TokenConfig{
 				"USDC": relconfig.TokenConfig{
 					Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
 					PriceUSD: 1,
+					Decimals: 6,
 				},
 				"ETH": relconfig.TokenConfig{
 					Address:  "",
 					PriceUSD: 2000,
+					Decimals: 18,
 				},
 			},
+			NativeToken: "ETH",
+		},
+		int(c.destination): relconfig.ChainConfig{
+			Tokens: map[string]relconfig.TokenConfig{
+				"USDC": relconfig.TokenConfig{
+					Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+					PriceUSD: 1,
+					Decimals: 6,
+				},
+				"MATIC": relconfig.TokenConfig{
+					Address:  "",
+					PriceUSD: 0.5,
+					Decimals: 18,
+				},
+			},
+			NativeToken: "MATIC",
 		},
 	}
 }
