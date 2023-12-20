@@ -1,10 +1,9 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "This is an npm package that maintains all synapse constants",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "index.d.ts",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.js",
   "files": [
     "dist",
     "abi"
@@ -13,21 +12,16 @@
     "test": "echo \"Error: no tesst specified\" && exit 1",
     "build": "node scripts/generateMaps.js",
     "prepublish": "tsc",
-    "compile-esm": "tsc --target es2019 --outDir dist/esm && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/esm/constants && copyfiles \"*.ts\" dist/esm && copyfiles \"constants/assets/**/*.d.ts\" dist/esm",
-    "compile-cjs": "tsc --module commonjs --outDir dist/cjs && copyfiles -u 1 \"constants/assets/**/!(*.ts)\" dist/cjs/constants && copyfiles \"*.ts\" dist/cjs && copyfiles \"constants/assets/**/*.d.ts\" dist/cjs && webpack"
+    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "copyfiles": "^2.4.1",
     "ethers": "5.7.2",
-    "lodash": "^4.17.21",
-    "viem": "^1.19.11"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@babel/cli": "^7.23.4",
-    "@babel/core": "^7.23.6",
-    "@babel/preset-typescript": "^7.23.3",
-    "babel-loader": "^9.1.3",
     "file-loader": "^6.2.0",
     "svg-inline-loader": "^0.8.2",
     "typescript": "^5.3.3",

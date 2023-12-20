@@ -10,11 +10,10 @@ const config = {
   },
   mode: 'production',
   devtool: 'source-map',
-  entry: './dist/cjs/index.js',
+  entry: './dist/index.js',
   output: {
-    path: path.resolve(__dirname, 'dist/cjs'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    libraryTarget: 'umd',
   },
   target: 'web',
   module: {
