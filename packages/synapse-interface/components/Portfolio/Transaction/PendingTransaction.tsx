@@ -8,8 +8,6 @@ import {
 } from '@/slices/transactions/actions'
 import { BridgeType } from '@/slices/api/generated'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { ARBITRUM, ETH } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/bridgeable'
 import {
   Transaction,
   TransactionProps,
@@ -17,7 +15,6 @@ import {
   TransactionStatus,
 } from './Transaction'
 import { ApplicationState } from '@/slices/application/reducer'
-import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
 import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
