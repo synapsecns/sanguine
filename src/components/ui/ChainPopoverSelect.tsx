@@ -25,7 +25,7 @@ export function ChainPopoverSelect({
   return (
     <div
       data-test-id="chain-popover-select"
-      className="relative w-min"
+      className="relative w-min col-span-full"
       ref={popoverRef}
     >
       <div

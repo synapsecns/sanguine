@@ -294,18 +294,23 @@ export const Widget = ({
   )
 
   const cardStyle = `
-    border border-solid rounded-md bg-[--synapse-surface] border-[--synapse-border] p-2 flex flex-col gap-2
+    grid grid-cols-[1fr_auto]
+    bg-[--synapse-surface] rounded-md p-2
+    border border-solid border-[--synapse-border]
   `
 
   const inputStyle = `
-    text-3xl w-full font-semibold bg-[--synapse-surface] border-none 
+    text-3xl w-full font-semibold bg-transparent border-none py-2
     text-[--synapse-text] placeholder:text-[--synapse-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
   `
 
   return (
     <div
       style={themeVariables}
-      className="bg-[--synapse-root] p-2 text-[--synapse-text] rounded-lg font-medium flex flex-col gap-2"
+      className={`
+        max-w-[400px]
+        bg-[--synapse-root] p-2 text-[--synapse-text] rounded-lg font-medium grid gap-2
+      `}
     >
       <Transaction
         originChainId={42161}
@@ -314,59 +319,55 @@ export const Widget = ({
         destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
         kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
       />
-      <div className={cardStyle}>
+      <section className={cardStyle}>
         <ChainSelect
           label="From"
           chain={chains[originChainId]}
           onChange={handleOriginChainSelection}
         />
-        <div className="flex">
-          <input
-            className={inputStyle}
-            placeholder="0"
-            value={inputAmount}
-            onChange={handleUserInput}
+        <input
+          className={inputStyle}
+          placeholder="0"
+          value={inputAmount}
+          onChange={handleUserInput}
+        />
+        <div className="flex flex-col items-end">
+          <TokenSelect
+            label="In"
+            isOrigin={true}
+            token={originToken}
+            onChange={handleOriginTokenSelection}
           />
-          <div className="flex flex-col items-end space-y-1">
-            <TokenSelect
-              label="In"
-              isOrigin={true}
-              token={originToken}
-              onChange={handleOriginTokenSelection}
-            />
-            <AvailableBalance connectedAddress={connectedAddress} />
-          </div>
+          <AvailableBalance connectedAddress={connectedAddress} />
         </div>
-      </div>
-      <div className={cardStyle}>
+      </section>
+      <section className={cardStyle}>
         <ChainSelect
           label="To"
           chain={chains[destinationChainId]}
           onChange={handleDestinationChainSelection}
         />
-        <div className="flex items-center justify-between">
-          <input
-            className={inputStyle}
-            disabled={true}
-            placeholder=""
-            value={
-              isLoading
-                ? '...'
-                : formatBigIntToString(
-                    bridgeQuote?.delta,
-                    destinationToken?.decimals[destinationChainId],
-                    4
-                  )
-            }
-          />
-          <TokenSelect
-            label="Out"
-            isOrigin={false}
-            token={destinationToken}
-            onChange={handleDestinationTokenSelection}
-          />
-        </div>
-      </div>
+        <input
+          className={inputStyle}
+          disabled={true}
+          placeholder=""
+          value={
+            isLoading
+              ? '...'
+              : formatBigIntToString(
+                  bridgeQuote?.delta,
+                  destinationToken?.decimals[destinationChainId],
+                  4
+                )
+          }
+        />
+        <TokenSelect
+          label="Out"
+          isOrigin={false}
+          token={destinationToken}
+          onChange={handleDestinationTokenSelection}
+        />
+      </section>
       <Receipt
         quote={bridgeQuote ?? null}
         send={formatBigIntToString(

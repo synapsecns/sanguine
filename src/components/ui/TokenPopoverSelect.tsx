@@ -32,7 +32,7 @@ export function TokenPopoverSelect({
   return (
     <div
       data-test-id="token-popover-select"
-      className="relative w-min"
+      className="relative w-min justify-self-end align-self-center"
       ref={popoverRef}
     >
       <div

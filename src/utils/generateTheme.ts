@@ -14,7 +14,11 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
     } else if (/^hsl/.test(color)) {
       let [h, s, l, a] = color.match(/\d+/g).map((a) => +a)
       return { h, s, l, a }
-    } else return undefined
+    } else {
+      return color === 'dark'
+        ? { h: 0, s: 0, l: 0, a: 100 }
+        : { h: 0, s: 0, l: 100, a: 100 }
+    }
   }
 
   function rgb2hsl({ r, g, b, a = 1 }: any) {
@@ -39,11 +43,7 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
 
   const colorMode = theme.bgColor === 'dark' ? 'dark' : 'light'
 
-  const { h, s, l, a } = theme.bgColor
-    ? str2hsl(theme.bgColor)
-    : colorMode === 'light'
-    ? { h: 0, s: 0, l: 100, a: 100 }
-    : { h: 0, s: 0, l: 0, a: 100 }
+  const { h, s, l, a } = str2hsl(theme.bgColor)
 
   const generatedTheme =
     colorMode === 'dark' || l < 50

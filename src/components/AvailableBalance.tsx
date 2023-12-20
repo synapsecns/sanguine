@@ -42,7 +42,10 @@ export const AvailableBalance = ({
   }
 
   return (
-    <div className="flex items-center gap-1 p-1 text-sm">
+    <div className={`
+      row-start-3 col-start-1 col-end-3
+      flex items-center gap-1 p-1 text-sm justify-self-end
+    `}>
       <div
         onClick={handleAvailableBalanceClick}
         className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
