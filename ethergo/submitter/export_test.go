@@ -72,4 +72,7 @@ func SetForceNoFallback(val bool) {
 }
 
 // export for testing
+// Warning! Changing this value will not change the underlying value!
+// htis is exported for testing to allow a return to underlying value after the test
+// TODO: consider doing a SetForTest
 var ForceNoFallbackIfZero = forceNoFallbackIfZero

@@ -481,8 +481,22 @@ func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EV
 		return nil, fmt.Errorf("could not get gas tip cap: %w", err)
 	}
 
-	// for non-zero tip cap, use default behavior
-	if big.NewInt(0).Cmp(tipCap) != 0 && fallbackIfZero && !forceNoFallbackIfZero {
+	// note: these ifs can be combined, but I've found the largic hard to parse if they are.
+	// if tip cap is not zero  return
+	if big.NewInt(0).Cmp(tipCap) != 0 {
+		return tipCap, nil
+	}
+
+	// past this point tip cap is 0.
+
+	// if we should force no fallback, return
+	// this is set for testing.
+	if forceNoFallbackIfZero {
+		return tipCap, nil
+	}
+
+	// if we shouldn't fallback, return
+	if !fallbackIfZero {
 		return tipCap, nil
 	}
 

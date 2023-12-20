@@ -123,7 +123,7 @@ func (s *SubmitterSuite) SetupSuite() {
 	// fallback is currently untested. For now we disable it in tests.
 	// TODO: this should be fixed, or ideally, fallback can be removed.
 	og := submitter.ForceNoFallbackIfZero
-	submitter.ForceNoFallbackIfZero = true
+	submitter.SetForceNoFallback(true)
 	s.T().Cleanup(func() {
 		submitter.SetForceNoFallback(og)
 	})
@@ -211,7 +211,7 @@ func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.Require().NoError(err)
 
 	og := submitter.ForceNoFallbackIfZero
-	submitter.ForceNoFallbackIfZero = true
+	submitter.SetForceNoFallback(true)
 	t.T().Cleanup(func() {
 		submitter.SetForceNoFallback(og)
 	})
