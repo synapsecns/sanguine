@@ -40,7 +40,9 @@ export const Completed = ({
           Today
         </div>
       ) : (
-        <div className="cursor-pointer hover:underline">{formattedTime}</div>
+        <div className="cursor-pointer hover:underline">
+          {formattedTime ? formattedTime : 'Completed'}
+        </div>
       )}
     </div>
   )

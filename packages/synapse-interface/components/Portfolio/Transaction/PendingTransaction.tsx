@@ -181,6 +181,8 @@ export const PendingTransaction = ({
     transactionHash,
     bridgeModuleName,
     kappa,
+    checkStatus: isDelayed,
+    elapsedTime: updatedElapsedTime,
   })
 
   console.log('_isComplete:', _isComplete)
@@ -263,7 +265,7 @@ export const PendingTransaction = ({
         }
         transactionHash={transactionHash}
         transactionStatus={transactionStatus}
-        isCompleted={isCompleted}
+        isCompleted={_isComplete ?? isCompleted}
         kappa={kappa}
       >
         <TransactionStatusDetails
@@ -271,7 +273,9 @@ export const PendingTransaction = ({
           originChain={originChain}
           destinationChain={destinationChain}
           transactionHash={transactionHash}
-          transactionStatus={transactionStatus}
+          transactionStatus={
+            _isComplete ? TransactionStatus.COMPLETED : transactionStatus
+          }
           isDelayed={isDelayed}
           isSignificantlyDelayed={isSignificantlyDelayed}
           kappa={kappa}

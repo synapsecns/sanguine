@@ -7,6 +7,8 @@ interface UseBridgeTxStatusProps {
   transactionHash: string
   bridgeModuleName?: string
   kappa?: string
+  checkStatus: boolean
+  elapsedTime: number // used as trigger to refetch status
 }
 
 export const useBridgeTxStatus = ({
@@ -15,6 +17,8 @@ export const useBridgeTxStatus = ({
   transactionHash,
   bridgeModuleName,
   kappa,
+  checkStatus = false,
+  elapsedTime,
 }: UseBridgeTxStatusProps) => {
   const [isComplete, setIsComplete] = useState<boolean>(false)
   const { synapseSDK } = useSynapseContext()
@@ -42,6 +46,7 @@ export const useBridgeTxStatus = ({
   }
 
   useEffect(() => {
+    if (!checkStatus) return
     console.log('running')
     ;(async () => {
       let _kappa
@@ -62,7 +67,7 @@ export const useBridgeTxStatus = ({
         setIsComplete(txStatus)
       }
     })()
-  }, [])
+  }, [elapsedTime, checkStatus])
 
   return isComplete
 }
