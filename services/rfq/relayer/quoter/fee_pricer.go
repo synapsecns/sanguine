@@ -1,6 +1,7 @@
 package quoter
 
 import (
+	"context"
 	"math/big"
 	"time"
 
@@ -15,11 +16,11 @@ type FeePricer interface {
 	// Start starts the fee pricer.
 	Start()
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetOriginFee(origin, destination uint32, denomToken string) (*big.Int, error)
+	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(origin, destination uint32, denomToken string) (*big.Int, error)
+	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
-	GetTotalFee(origin, destination uint32, denomToken string) (*big.Int, error)
+	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 }
 
 type feePricer struct {
@@ -50,8 +51,8 @@ func (f *feePricer) Start() {
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
-func (f *feePricer) GetOriginFee(origin, destination uint32, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(origin)
+func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+	gasPrice, err := f.getGasPrice(ctx, origin)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +60,11 @@ func (f *feePricer) GetOriginFee(origin, destination uint32, denomToken string) 
 	if err != nil {
 		return nil, err
 	}
-	nativeTokenPrice, err := f.getTokenPrice(nativeToken)
+	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
 	if err != nil {
 		return nil, err
 	}
-	denomTokenPrice, err := f.getTokenPrice(denomToken)
+	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +84,8 @@ func (f *feePricer) GetOriginFee(origin, destination uint32, denomToken string) 
 	return originFeeDenomDecimals, nil
 }
 
-func (f *feePricer) GetDestinationFee(origin, destination uint32, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(origin)
+func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+	gasPrice, err := f.getGasPrice(ctx, origin)
 	if err != nil {
 		return nil, err
 	}
@@ -92,11 +93,11 @@ func (f *feePricer) GetDestinationFee(origin, destination uint32, denomToken str
 	if err != nil {
 		return nil, err
 	}
-	nativeTokenPrice, err := f.getTokenPrice(nativeToken)
+	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
 	if err != nil {
 		return nil, err
 	}
-	denomTokenPrice, err := f.getTokenPrice(denomToken)
+	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +117,12 @@ func (f *feePricer) GetDestinationFee(origin, destination uint32, denomToken str
 	return originFeeDenomDecimals, nil
 }
 
-func (f *feePricer) GetTotalFee(origin, destination uint32, denomToken string) (*big.Int, error) {
-	originFee, err := f.GetOriginFee(origin, destination, denomToken)
+func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken)
 	if err != nil {
 		return nil, err
 	}
-	destFee, err := f.GetDestinationFee(origin, destination, denomToken)
+	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken)
 	if err != nil {
 		return nil, err
 	}
@@ -134,12 +135,20 @@ func (f *feePricer) getFee(origin, destination uint32, denomToken string) (*big.
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
-func (f *feePricer) getGasPrice(chainID uint32) (*big.Int, error) {
-	return nil, nil
+func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, error) {
+	client, err := f.omniClient.GetChainClient(ctx, int(chainID))
+	if err != nil {
+		return nil, err
+	}
+	header, err := client.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return header.BaseFee, nil
 }
 
 // getTokenPrice returns the price of a token in USD.
-func (f *feePricer) getTokenPrice(token string) (float64, error) {
+func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
 	return 0, nil
 }
 
