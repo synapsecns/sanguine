@@ -25,10 +25,10 @@ type FeePricer interface {
 	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
-	// GetTokenID returns the token ID for a given chainID and token address.
+	// GetTokenName returns the token name for a given chainID and token address.
 	// TODO: this can probably move into relconfig.Config, but since Quoter does not have a config,
 	// we expose this functionality here.
-	GetTokenID(chainID uint32, addr string) (string, error)
+	GetTokenName(chainID uint32, addr string) (string, error)
 }
 
 type feePricer struct {
@@ -153,25 +153,25 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 	return gasPrice, nil
 }
 
-func (f *feePricer) GetTokenID(chain uint32, addr string) (string, error) {
+func (f *feePricer) GetTokenName(chain uint32, addr string) (string, error) {
 	chainConfig, ok := f.chainConfigs[int(chain)]
 	if !ok {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
-	for tokenID, tokenConfig := range chainConfig.Tokens {
+	for tokenName, tokenConfig := range chainConfig.Tokens {
 		// TODO: probably a better way to do this.
 		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
-			return tokenID, nil
+			return tokenName, nil
 		}
 	}
-	return "", fmt.Errorf("no tokenID found for chain %d and address %s", chain, addr)
+	return "", fmt.Errorf("no tokenName found for chain %d and address %s", chain, addr)
 }
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
 	for _, chainConfig := range f.chainConfigs {
-		for tokenID, tokenConfig := range chainConfig.Tokens {
-			if token == tokenID {
+		for tokenName, tokenConfig := range chainConfig.Tokens {
+			if token == tokenName {
 				return tokenConfig.PriceUSD, nil
 			}
 
@@ -185,8 +185,8 @@ func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error
 	if !ok {
 		return 0, fmt.Errorf("could not get chain config for chainID: %d", chainID)
 	}
-	for tokenID, tokenConfig := range chainConfig.Tokens {
-		if token == tokenID {
+	for tokenName, tokenConfig := range chainConfig.Tokens {
+		if token == tokenName {
 			return tokenConfig.Decimals, nil
 		}
 	}

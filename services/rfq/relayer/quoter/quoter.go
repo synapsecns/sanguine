@@ -99,7 +99,7 @@ func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) b
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
 func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteRequest) (bool, error) {
-	destTokenID, err := m.feePricer.GetTokenID(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
+	destTokenID, err := m.feePricer.GetTokenName(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
@@ -162,7 +162,7 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
-				destToken, err := m.feePricer.GetTokenID(uint32(chainID), address.Hex())
+				destToken, err := m.feePricer.GetTokenName(uint32(chainID), address.Hex())
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}
