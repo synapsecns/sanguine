@@ -178,7 +178,16 @@ func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, e
 }
 
 func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error) {
-	return 0, nil
+	chainConfig, ok := f.chainConfigs[int(chainID)]
+	if !ok {
+		return 0, fmt.Errorf("could not get chain config for chainID: %d", chainID)
+	}
+	for tokenID, tokenConfig := range chainConfig.Tokens {
+		if token == tokenID {
+			return tokenConfig.Decimals, nil
+		}
+	}
+	return 0, fmt.Errorf("could not get token decimals for chain %d and token %s", chainID, token)
 }
 
 func (f *feePricer) getNativeToken(chainID uint32) (string, error) {

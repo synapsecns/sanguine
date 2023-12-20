@@ -47,6 +47,8 @@ type ChainConfig struct {
 type TokenConfig struct {
 	// Address is the token address.
 	Address string `yaml:"address"`
+	// Decimals is the token decimals.
+	Decimals uint8 `yaml:"decimals"`
 	// For now, specify the USD price of the token in the config.
 	PriceUSD float64 `yaml:"price_usd"`
 }
