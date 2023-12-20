@@ -15,9 +15,9 @@ type FeePricer interface {
 	// Start starts the fee pricer.
 	Start()
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetOriginFee(chainID uint32, denomToken string) (*big.Int, error)
+	GetOriginFee(origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(chainID uint32, denomToken string) (*big.Int, error)
+	GetDestinationFee(origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
 	GetTotalFee(origin, destination uint32, denomToken string) (*big.Int, error)
 }
@@ -83,12 +83,50 @@ func (f *feePricer) GetOriginFee(origin, destination uint32, denomToken string) 
 	return originFeeDenomDecimals, nil
 }
 
-func (f *feePricer) GetDestinationFee(chainID uint32, denomToken string) (*big.Int, error) {
-	return nil, nil
+func (f *feePricer) GetDestinationFee(origin, destination uint32, denomToken string) (*big.Int, error) {
+	gasPrice, err := f.getGasPrice(origin)
+	if err != nil {
+		return nil, err
+	}
+	nativeToken, err := f.getNativeToken(origin)
+	if err != nil {
+		return nil, err
+	}
+	nativeTokenPrice, err := f.getTokenPrice(nativeToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenPrice, err := f.getTokenPrice(denomToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenDecimals, err := f.getTokenDecimals(destination, denomToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute the fee in USD terms.
+	originFee := new(big.Float).SetInt(gasPrice.Mul(gasPrice, big.NewInt(int64(f.config.DestinationGasEstimate))))
+	originFeeUSD := new(big.Float).Mul(originFee, new(big.Float).SetFloat64(nativeTokenPrice))
+
+	// Convert the USD value to the deonominated token.
+	originFeeDenom := new(big.Float).Mul(originFeeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
+	originFeeDenomDecimals, _ := new(big.Float).Mul(originFeeDenom, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return originFeeDenomDecimals, nil
 }
 
 func (f *feePricer) GetTotalFee(origin, destination uint32, denomToken string) (*big.Int, error) {
-	return nil, nil
+	originFee, err := f.GetOriginFee(origin, destination, denomToken)
+	if err != nil {
+		return nil, err
+	}
+	destFee, err := f.GetDestinationFee(origin, destination, denomToken)
+	if err != nil {
+		return nil, err
+	}
+	totalFee := new(big.Int).Add(originFee, destFee)
+	return totalFee, nil
 }
 
 func (f *feePricer) getFee(origin, destination uint32, denomToken string) (*big.Int, error) {
