@@ -108,8 +108,8 @@ func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteReques
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
 	// NOTE: this logic assumes that the origin and destination tokens have the same price.
-	cost := new(big.Int).Sub(quote.Transaction.DestAmount, fee)
-	return quote.Transaction.OriginAmount.Cmp(cost) > 0, nil
+	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
+	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
