@@ -32,8 +32,8 @@ export const useBridgeTxStatus = ({
     destinationChainId: number,
     bridgeModuleName: string,
     kappa: string
-  ): Promise<boolean> => {
-    if (!destinationChainId || !bridgeModuleName || !kappa) return
+  ) => {
+    if (!destinationChainId || !bridgeModuleName || !kappa) return null
     return await synapseSDK.getBridgeTxStatus(
       destinationChainId,
       bridgeModuleName,
@@ -42,6 +42,27 @@ export const useBridgeTxStatus = ({
   }
 
   useEffect(() => {
-    console.log('this ran')
+    ;(async () => {
+      let _kappa
+      let txStatus
+
+      if (!kappa) {
+        _kappa = await getKappa()
+      } else {
+        _kappa = kappa
+      }
+
+      txStatus = await getBridgeTxStatus(
+        destinationChainId,
+        bridgeModuleName,
+        _kappa
+      )
+
+      if (txStatus !== null) {
+        setIsComplete(txStatus)
+      }
+    })()
   }, [])
+
+  return isComplete
 }

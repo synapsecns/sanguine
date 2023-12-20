@@ -25,6 +25,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { DISCORD_URL } from '@/constants/urls'
 import { useApplicationState } from '@/slices/application/hooks'
 import { getEstimatedBridgeTime } from '@/utils/getEstimatedBridgeTime'
+import { useBridgeTxStatus } from '@/utils/hooks/useBridgeTxStatus'
 
 interface PendingTransactionProps extends TransactionProps {
   eventType?: number
@@ -174,6 +175,13 @@ export const PendingTransaction = ({
     bridgeType: bridgeType,
   })
 
+  useBridgeTxStatus({
+    originChainId: originChain.id,
+    destinationChainId: destinationChain.id,
+    transactionHash,
+    bridgeModuleName,
+    kappa,
+  })
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
       const maxRetries = 3
