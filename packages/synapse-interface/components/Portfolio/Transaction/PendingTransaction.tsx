@@ -263,7 +263,7 @@ export const PendingTransaction = ({
         }
         transactionHash={transactionHash}
         transactionStatus={transactionStatus}
-        isCompleted={_isComplete ?? isCompleted}
+        isCompleted={isCompleted ?? _isComplete}
         kappa={kappa}
       >
         <TransactionStatusDetails
