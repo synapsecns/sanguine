@@ -137,22 +137,14 @@ export const PendingTransaction = ({
 
   const isDelayed: boolean = timeRemaining < -1
 
-  const isSignificantlyDelayed: boolean = useMemo(() => {
-    if (isDelayed) {
-      return timeRemaining < -5
-    }
-    return false
-  }, [timeRemaining, estimatedCompletionInMinutes, isDelayed])
+  const isSignificantlyDelayed: boolean = isDelayed && timeRemaining < -5
 
   // Set fallback period to extend 5 mins past estimated duration
-  const useFallback: boolean = useMemo(
-    () => timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted,
-    [timeRemaining, isCompleted]
-  )
+  const useFallback: boolean =
+    timeRemaining >= -5 && timeRemaining <= 1 && !isCompleted
 
-  const isReconnectedAndRetryFallback: boolean = useMemo(() => {
-    return updatedCurrentTime - lastConnectedTimestamp < 300
-  }, [lastConnectedTimestamp, updatedCurrentTime])
+  const isReconnectedAndRetryFallback: boolean =
+    updatedCurrentTime - lastConnectedTimestamp < 300
 
   const bridgeType: BridgeType = useMemo(() => {
     if (synapseSDK && formattedEventType) {
