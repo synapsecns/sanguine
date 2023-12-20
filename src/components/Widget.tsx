@@ -303,8 +303,8 @@ export const Widget = ({
     <div
       style={themeVariables}
       className={`
-        max-w-[400px]
-        bg-[--synapse-root] p-2 text-[--synapse-text] rounded-lg font-medium grid gap-2
+        max-w-[400px] rounded-lg grid gap-2 p-2
+        bg-[--synapse-root] text-[--synapse-text] font-medium 
       `}
     >
       <Transaction
@@ -326,7 +326,7 @@ export const Widget = ({
           value={inputAmount}
           onChange={handleUserInput}
         />
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col justify-center items-end">
           <TokenSelect
             label="In"
             isOrigin={true}
@@ -356,12 +356,14 @@ export const Widget = ({
                 )
           }
         />
-        <TokenSelect
-          label="Out"
-          isOrigin={false}
-          token={destinationToken}
-          onChange={handleDestinationTokenSelection}
-        />
+        <div className="flex flex-col justify-center items-end">
+          <TokenSelect
+            label="Out"
+            isOrigin={false}
+            token={destinationToken}
+            onChange={handleDestinationTokenSelection}
+          />
+        </div>
       </section>
       <Receipt
         quote={bridgeQuote ?? null}
