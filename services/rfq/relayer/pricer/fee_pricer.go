@@ -42,14 +42,14 @@ type feePricer struct {
 // NewFeePricer creates a new fee pricer.
 func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, clientFetcher submitter.ClientFetcher) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
-		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GasPriceCacheTTL)),
+		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
 	return &feePricer{
 		config:          config,
 		chainConfigs:    chainConfigs,
 		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
+		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTLSeconds))),
 		clientFetcher:   clientFetcher,
 	}
 }

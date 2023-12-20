@@ -65,10 +65,10 @@ type FeePricerConfig struct {
 	OriginGasEstimate int `yaml:"origin_gas_estimate"`
 	// DestinationGasEstimate is the gas required to execute relay transaction on destination chain.
 	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
-	// GasPriceCacheTTL is the TTL for the gas price cache.
-	GasPriceCacheTTL int `yaml:"gas_price_cache_ttl"`
-	// TokenPriceCacheTTL is the TTL for the token price cache.
-	TokenPriceCacheTTL int `yaml:"token_price_cache_ttl"`
+	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
+	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
+	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
+	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 }
 
 // LoadConfig loads the config from the given path.

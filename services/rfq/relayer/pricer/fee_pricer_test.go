@@ -113,7 +113,7 @@ func (s *PricerSuite) TestGetGasPrice() {
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
 	// Override the gas price cache TTL to 1 second.
-	s.feePricerConfig.GasPriceCacheTTL = 1
+	s.feePricerConfig.GasPriceCacheTTLSeconds = 1
 	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
