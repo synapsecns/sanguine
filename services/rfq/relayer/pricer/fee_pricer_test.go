@@ -79,3 +79,25 @@ func (s *PricerSuite) TestGetDestinationFee() {
 	s.NoError(err)
 	s.Equal(expectedFee, fee)
 }
+
+func (s *PricerSuite) TestGetTotalFee() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	clientOrigin := new(clientMocks.EVM)
+	clientDestination := new(clientMocks.EVM)
+	headerOrigin := &types.Header{BaseFee: big.NewInt(100_000_000_000)}      // 100 gwei
+	headerDestination := &types.Header{BaseFee: big.NewInt(500_000_000_000)} // 500 gwei
+	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerDestination, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
+	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
+
+	// Calculate the total fee.
+	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC")
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
+	expectedFee := big.NewInt(100_250_000) // 100.25 usd
+	s.Equal(expectedFee, fee)
+}
