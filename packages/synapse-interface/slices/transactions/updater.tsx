@@ -41,6 +41,8 @@ const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 const POLLING_INTERVAL: number = 30000 // in ms
 
+const TEST_POLLING_INTERVAL: number = 3000000
+
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
@@ -60,12 +62,16 @@ export default function Updater(): null {
     searchedBalancesAndAllowances,
   }: PortfolioState = usePortfolioState()
 
+  // TO-DO: Switch back to POLLING_INTERVAL
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: POLLING_INTERVAL })
+    useLazyGetUserHistoricalActivityQuery({
+      pollingInterval: TEST_POLLING_INTERVAL,
+    })
 
+  // TO-DO: Switch back to POLLING_INTERVAL
   const [fetchUserPendingActivity, fetchedPendingActivity] =
     useLazyGetUserPendingTransactionsQuery({
-      pollingInterval: POLLING_INTERVAL,
+      pollingInterval: TEST_POLLING_INTERVAL,
     })
 
   const { address } = useAccount({
