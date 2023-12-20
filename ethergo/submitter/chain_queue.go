@@ -99,22 +99,22 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("error in chainPendingQueue: %w", err)
 	}
 
-	cq.storeAndSubmit(ctx, cq.reprocessQueue, span)
+	cq.storeAndSubmit(ctx, span)
 
 	return nil
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
-func (c *chainQueue) storeAndSubmit(ctx context.Context, reprocessQueue []db.TX, parentSpan trace.Span) {
-	sort.Slice(reprocessQueue, func(i, j int) bool {
-		return reprocessQueue[i].Nonce() < reprocessQueue[j].Nonce()
+func (c *chainQueue) storeAndSubmit(ctx context.Context, parentSpan trace.Span) {
+	sort.Slice(c.reprocessQueue, func(i, j int) bool {
+		return c.reprocessQueue[i].Nonce() < c.reprocessQueue[j].Nonce()
 	})
 
-	calls := make([]w3types.Caller, len(reprocessQueue))
-	txHashes := make([]common.Hash, len(reprocessQueue))
-	spanners := make([]trace.Span, len(reprocessQueue))
+	calls := make([]w3types.Caller, len(c.reprocessQueue))
+	txHashes := make([]common.Hash, len(c.reprocessQueue))
+	spanners := make([]trace.Span, len(c.reprocessQueue))
 
-	for i, tx := range reprocessQueue {
+	for i, tx := range c.reprocessQueue {
 		_, span := c.metrics.Tracer().Start(ctx, "chainPendingQueue.submit", trace.WithAttributes(util.TxToAttributes(tx.Transaction)...))
 		spanners[i] = span
 		defer func() {
