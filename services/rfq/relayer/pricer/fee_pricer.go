@@ -60,76 +60,11 @@ func (f *feePricer) Start() {
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
 func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(ctx, origin)
-	if err != nil {
-		return nil, err
-	}
-	nativeToken, err := f.getNativeToken(origin)
-	if err != nil {
-		return nil, err
-	}
-	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
-	if err != nil {
-		return nil, err
-	}
-	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomTokenDecimals, err := f.getTokenDecimals(destination, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
-
-	// Compute the fee in ETH terms.
-	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(f.config.OriginGasEstimate)))
-	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
-	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-	// Note that this rounds towards zero- we may need to apply rounding here if
-	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimals, _ := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-	return feeUSDCDecimals, nil
+	return f.getFee(ctx, origin, destination, f.config.OriginGasEstimate, denomToken)
 }
 
 func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(ctx, destination)
-	if err != nil {
-		return nil, err
-	}
-	nativeToken, err := f.getNativeToken(destination)
-	if err != nil {
-		return nil, err
-	}
-	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
-	if err != nil {
-		return nil, err
-	}
-	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomTokenDecimals, err := f.getTokenDecimals(destination, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
-
-	// Compute the fee in ETH terms.
-	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(f.config.DestinationGasEstimate)))
-	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
-	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-	// Note that this rounds towards zero- we may need to apply rounding here if
-	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimals, _ := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-	fmt.Printf("feeWei: %s\n", feeWei.String())
-	fmt.Printf("feeEth: %s\n", feeEth.String())
-	fmt.Printf("feeUSD: %s\n", feeUSD.String())
-	fmt.Printf("feeUSDC: %s\n", feeUSDC.String())
-	fmt.Printf("feeUSDCDecimals: %s\n", feeUSDCDecimals.String())
-	return feeUSDCDecimals, nil
+	return f.getFee(ctx, destination, destination, f.config.DestinationGasEstimate, denomToken)
 }
 
 func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
@@ -145,8 +80,38 @@ func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32,
 	return totalFee, nil
 }
 
-func (f *feePricer) getFee(origin, destination uint32, denomToken string) (*big.Int, error) {
-	return nil, nil
+func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string) (*big.Int, error) {
+	gasPrice, err := f.getGasPrice(ctx, gasChain)
+	if err != nil {
+		return nil, err
+	}
+	nativeToken, err := f.getNativeToken(gasChain)
+	if err != nil {
+		return nil, err
+	}
+	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenDecimals, err := f.getTokenDecimals(denomChain, denomToken)
+	if err != nil {
+		return nil, err
+	}
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
+
+	// Compute the fee in ETH terms.
+	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
+	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
+	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
+	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+	// Note that this rounds towards zero- we may need to apply rounding here if
+	// we want to be conservative and lean towards overestimating fees.
+	feeUSDCDecimals, _ := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return feeUSDCDecimals, nil
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
