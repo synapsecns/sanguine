@@ -308,7 +308,7 @@ const TransactionStatusDetails = ({
     return (
       <div
         data-test-id="initializing-status"
-        className={`${sharedClass} py-2 px-3 justify-between`}
+        className={`${sharedClass} py-2 px-3 justify-between rounded-b-lg`}
       >
         <div>Initiating...</div>
         <TransactionOptions
