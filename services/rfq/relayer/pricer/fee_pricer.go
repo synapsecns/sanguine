@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -158,7 +159,8 @@ func (f *feePricer) GetTokenID(chain uint32, addr string) (string, error) {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
 	for tokenID, tokenConfig := range chainConfig.Tokens {
-		if tokenConfig.Address == addr {
+		// TODO: probably a better way to do this.
+		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
 			return tokenID, nil
 		}
 	}

@@ -155,13 +155,18 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 	var quotes []rfqAPIClient.APIQuotePutRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
-			if tokenID == destTokenID {
+			// TODO: probably a better way to do this.
+			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
-				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destTokenID)
+				destToken, err := m.feePricer.GetTokenID(uint32(chainID), address.Hex())
+				if err != nil {
+					return nil, fmt.Errorf("error getting dest token ID: %w", err)
+				}
+				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken)
 				if err != nil {
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
