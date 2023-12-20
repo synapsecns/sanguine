@@ -40,10 +40,14 @@ type feePricer struct {
 // NewFeePricer creates a new fee pricer.
 func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
 	omniClient := omnirpcClient.NewOmnirpcClient(omnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+	gasPriceCache := ttlcache.New[uint32, *big.Int](
+		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GasPriceCacheTTL)),
+		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
+	)
 	return &feePricer{
 		config:          config,
 		chainConfigs:    chainConfigs,
-		gasPriceCache:   ttlcache.New[uint32, *big.Int](ttlcache.WithTTL[uint32, *big.Int](time.Second * time.Duration(config.GasPriceCacheTTL))),
+		gasPriceCache:   gasPriceCache,
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
 		omniClient:      omniClient,
 	}
@@ -142,15 +146,24 @@ func (f *feePricer) getFee(origin, destination uint32, denomToken string) (*big.
 
 // getGasPrice returns the gas price for a given chainID in native units.
 func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, error) {
-	client, err := f.omniClient.GetChainClient(ctx, int(chainID))
-	if err != nil {
-		return nil, err
+	// Attempt to fetch gas price from cache.
+	gasPriceItem := f.gasPriceCache.Get(chainID)
+	var gasPrice *big.Int
+	if gasPriceItem == nil {
+		// Fetch gas price from omnirpc.
+		client, err := f.omniClient.GetChainClient(ctx, int(chainID))
+		if err != nil {
+			return nil, err
+		}
+		header, err := client.HeaderByNumber(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+		gasPrice = header.BaseFee
+	} else {
+		gasPrice = gasPriceItem.Value()
 	}
-	header, err := client.HeaderByNumber(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	return header.BaseFee, nil
+	return gasPrice, nil
 }
 
 // getTokenPrice returns the price of a token in USD.
