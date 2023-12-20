@@ -20,6 +20,7 @@ func (s *PricerSuite) TestGetOriginFee() {
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
 	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the origin fee.
 	fee, err := feePricer.GetOriginFee(s.GetTestContext(), s.origin, s.destination, "USDC")
@@ -54,6 +55,7 @@ func (s *PricerSuite) TestGetDestinationFee() {
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
 	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the destination fee.
 	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC")
@@ -92,6 +94,7 @@ func (s *PricerSuite) TestGetTotalFee() {
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
 	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee.
 	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC")
@@ -100,4 +103,39 @@ func (s *PricerSuite) TestGetTotalFee() {
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
 	expectedFee := big.NewInt(100_250_000) // 100.25 usd
 	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetGasPrice() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	// Override the gas price cache TTL to 1 second.
+	s.feePricerConfig.GasPriceCacheTTL = 1
+	feePricer := pricer.NewFeePricer(s.feePricerConfig, s.chainConfigs, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Fetch the mocked gas price.
+	gasPrice, err := feePricer.GetGasPrice(s.GetTestContext(), s.origin)
+	s.NoError(err)
+	expectedGasPrice := big.NewInt(100_000_000_000) // 100 gwei
+	s.Equal(expectedGasPrice, gasPrice)
+
+	// Check that the mocked gas price is cached.
+	gasPrice, err = feePricer.GetGasPrice(s.GetTestContext(), s.origin)
+	s.NoError(err)
+	s.Equal(expectedGasPrice, gasPrice)
+
+	// Check that the mocked gas price is eventually evicted from the cache,
+	// and an updated gas price is fetched.
+	currentHeader = &types.Header{BaseFee: big.NewInt(200_000_000_000)} // 200 gwei
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
+	s.Eventually(func() bool {
+		gasPrice, err = feePricer.GetGasPrice(s.GetTestContext(), s.origin)
+		s.NoError(err)
+		expectedGasPrice = big.NewInt(200_000_000_000) // 200 gwei
+		return expectedGasPrice.String() == gasPrice.String()
+	})
 }

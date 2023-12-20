@@ -9,18 +9,21 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"golang.org/x/sync/errgroup"
 )
 
 // FeePricer is the interface for the fee pricer.
 type FeePricer interface {
 	// Start starts the fee pricer.
-	Start()
+	Start(ctx context.Context)
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
 	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
+	// GetGasPrice returns the gas price for a given chainID in native units.
+	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 }
 
 type feePricer struct {
@@ -51,10 +54,18 @@ func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconf
 	}
 }
 
-func (f *feePricer) Start() {
+func (f *feePricer) Start(ctx context.Context) {
+	g, _ := errgroup.WithContext(ctx)
+
 	// Start the TTL caches.
-	f.gasPriceCache.Start()
-	f.tokenPriceCache.Start()
+	g.Go(func() error {
+		f.gasPriceCache.Start()
+		return nil
+	})
+	g.Go(func() error {
+		f.tokenPriceCache.Start()
+		return nil
+	})
 }
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
@@ -81,7 +92,7 @@ func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32,
 }
 
 func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(ctx, gasChain)
+	gasPrice, err := f.GetGasPrice(ctx, gasChain)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +126,7 @@ func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gas
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
-func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, error) {
+func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error) {
 	// Attempt to fetch gas price from cache.
 	gasPriceItem := f.gasPriceCache.Get(chainID)
 	var gasPrice *big.Int
