@@ -28,12 +28,12 @@ export const Receipt = ({ quote, send, receive }) => {
         </dl>
       </details>
     ) : (
-      <div className="text-sm text-right p-1 text-[--synapse-text-secondary]">
+      <div className="text-sm text-right p-1 text-[--synapse-secondary]">
         Powered by&nbsp;
         <a
           href="https://synapseprotocol.com"
           target="_blank"
-          className="text-[--synapse-text-primary] no-underline hover:underline active:opacity-40"
+          className="text-[--synapse-text] no-underline hover:underline active:opacity-40"
         >
           Synapse
         </a>

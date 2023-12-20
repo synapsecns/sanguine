@@ -52,36 +52,36 @@ function App() {
       bgColor: colorPicker?.value,
       accentColor: accentColorPicker?.value,
       /* Overrides */
-      // '--synapse-text-primary': hslString(h, s, l * 0.96 + 96, a),
-      // '--synapse-text-secondary': hslString(h, s, l * 0.86 + 86, a),
-      // '--synapse-bg-select': hslString(h, s, l * 0.25 + 25, a),
-      // '--synapse-bg-surface': hslString(h, s, l * 0.12 + 12, a),
-      // '--synapse-bg-root': hslString(h, s, l * 0.07 + 7, a),
+      // '--synapse-text': hslString(h, s, l * 0.96 + 96, a),
+      // '--synapse-secondary': hslString(h, s, l * 0.86 + 86, a),
+      // '--synapse-select-bg': hslString(h, s, l * 0.25 + 25, a),
+      // '--synapse-surface': hslString(h, s, l * 0.12 + 12, a),
+      // '--synapse-root': hslString(h, s, l * 0.07 + 7, a),
       // '--synapse-border': hslString(h, s, l * 0.12 + 12, a),
-      // '--synapse-border-hover': hslString(h, s, l * 0.66 + 66, a),
+      // '--synapse-focus': hslString(h, s, l * 0.66 + 66, a),
       // '--synapse-accent': accentColorPicker?.value ?? '#ffffff',
     })
   }
 
   const customThemeDFK = {
-    '--synapse-text-primary': 'rgb(62,31,5)',
-    '--synapse-text-secondary': 'rgb(62,31,5)',
-    '--synapse-bg-select': 'rgb(255,227,189)',
-    '--synapse-bg-surface': 'rgb(216,172,130)',
-    '--synapse-bg-background': 'rgb(255,227,189)',
+    '--synapse-text': 'rgb(62,31,5)',
+    '--synapse-secondary': 'rgb(62,31,5)',
+    '--synapse-select-bg': 'rgb(255,227,189)',
+    '--synapse-surface': 'rgb(216,172,130)',
+    '--synapse-background': 'rgb(255,227,189)',
     '--synapse-border': 'rgb(216,172,130)',
-    '--synapse-border-hover': 'rgb(224,228,203)',
+    '--synapse-focus': 'rgb(224,228,203)',
     '--synapse-accent': 'rgb(62,31,5)',
   }
 
   const customThemeWeird = {
-    '--synapse-text-primary': 'red',
-    '--synapse-text-secondary': 'green',
-    '--synapse-bg-select': 'gray',
-    '--synapse-bg-surface': 'purple',
-    '--synapse-bg-background': 'orange',
+    '--synapse-text': 'red',
+    '--synapse-secondary': 'green',
+    '--synapse-select-bg': 'gray',
+    '--synapse-surface': 'purple',
+    '--synapse-background': 'orange',
     '--synapse-border': 'blue',
-    '--synapse-border-hover': 'yellow',
+    '--synapse-focus': 'yellow',
     '--synapse-accent': 'red',
   }
 
@@ -191,7 +191,7 @@ tokenList = {
             <br />  accentColor: 'hsl(285deg 100% 67%)'
             <br />&#125;
           </pre> */}
-          <h3>Overrides</h3>
+          <h3>Global Overrides</h3>
           <p>
             The following CSS variables can be added to your CustomTheme to
             override the generated values. Any valid CSS color string can be
@@ -199,15 +199,28 @@ tokenList = {
           </p>
           <pre>
             {`customTheme = {
-  --synapse-text-primary: 'white'
-  --synapse-text-secondary: '#cccccc'
-
-  --synapse-bg-select: 'hsl(210deg 100% 50%)'
-  --synapse-bg-surface: 'hsl(210deg 100% 12.5%)'
-  --synapse-bg-root: 'inherit'
-
+  --synapse-text: 'white'
+  --synapse-secondary: '#cccccc'
+  --synapse-focus: 'hsl(285deg 100% 33%)'
   --synapse-border: 'hsl(210deg 100% 25%)'
-  --synapse-border-hover: 'hsl(285deg 100% 33%)'
+  --synapse-object: 'hsl(210deg 100% 50%)'
+  --synapse-surface: 'hsl(210deg 100% 12.5%)'
+  --synapse-root: 'inherit'
+}`}
+          </pre>
+          <h3>Object Overrides</h3>
+          <p>
+            Select and button elements can be specifically overriddden to introduce brand colors or custom styles.
+          </p>
+          <pre>
+            {`customTheme = {
+  --synapse-select-bg: 'var(--synapse-object)'
+  --synapse-select-text: 'white'
+  --synapse-select-border: 'var(--synapse-object)'
+
+  --synapse-button-bg: 'var(--synapse-object)'
+  --synapse-button-text: 'white'
+  --synapse-button-border: 'var(--synapse-object)'
 }`}
           </pre>
           {/* <h3>Typography — WIP, not reflected in code</h3>

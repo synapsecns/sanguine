@@ -15,13 +15,13 @@ export interface BridgeableToken {
 export interface CustomThemeVariables {
   bgColor?: string
   accentColor?: string
-  '--synapse-text-primary'?: string
-  '--synapse-text-secondary'?: string
-  '--synapse-bg-select'?: string
-  '--synapse-bg-surface'?: string
-  '--synapse-bg-root'?: string
+  '--synapse-text'?: string
+  '--synapse-secondary'?: string
+  '--synapse-select-bg'?: string
+  '--synapse-surface'?: string
+  '--synapse-root'?: string
   '--synapse-border'?: string
-  '--synapse-border-hover'?: string
+  '--synapse-focus'?: string
   '--synapse-accent'?: string
 }
 

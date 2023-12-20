@@ -35,7 +35,7 @@ export const AvailableBalance = ({
 
   if (!originToken) {
     return (
-      <div className="text-sm text-[--synapse-text-secondary] whitespace-nowrap">
+      <div className="text-sm text-[--synapse-secondary] whitespace-nowrap">
         Select source token
       </div>
     )
@@ -45,7 +45,7 @@ export const AvailableBalance = ({
     <div className="flex items-center gap-1 p-1 text-sm">
       <div
         onClick={handleAvailableBalanceClick}
-        className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-text-secondary] whitespace-nowrap"
+        className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
       >
         Available {tokenBalance.parsedBalance ?? '0.0'}
       </div>

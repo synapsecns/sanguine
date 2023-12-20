@@ -42,7 +42,7 @@ export const Transaction = ({
       data-test-id="transaction"
       className={`
         flex flex-row justify-between items-center px-2 py-1
-        bg-[--synapse-bg-surface]
+        bg-[--synapse-surface]
         border border-solid border-[--synapse-border] rounded-md
       `}
     >
@@ -73,9 +73,9 @@ export const DropdownMenu = ({ children }) => {
         onClick={handleClick}
         className={`
           rounded w-5 h-[21px] flex place-items-center justify-center
-          bg-[--synapse-bg-select]
+          bg-[--synapse-select-bg]
           border border-solid border-[--synapse-border]
-          hover:border-[--synapse-border-hover]
+          hover:border-[--synapse-focus]
           cursor-pointer
         `}
       >
@@ -85,7 +85,7 @@ export const DropdownMenu = ({ children }) => {
       {open && (
         <ul
           className={`
-            absolute z-50 mt-1 p-0 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover -right-1 list-none text-left text-sm
+            absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover -right-1 list-none text-left text-sm
           `}
         >
           {children}
@@ -100,7 +100,7 @@ export const MenuItem = ({ text, link }: { text: string; link: string }) => {
     <li className={`
       rounded cursor-pointer
       border border-solid border-transparent
-      hover:border-[--synapse-border-hover]
+      hover:border-[--synapse-focus]
       active:opacity-40
     `}>
       <a
@@ -108,7 +108,7 @@ export const MenuItem = ({ text, link }: { text: string; link: string }) => {
         target="_blank"
         rel="noreferrer"
         className={`
-          block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-text-secondary]
+          block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
         `}
       >
         {text}

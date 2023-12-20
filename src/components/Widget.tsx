@@ -294,18 +294,18 @@ export const Widget = ({
   )
 
   const cardStyle = `
-    border border-solid rounded-md bg-[--synapse-bg-surface] border-[--synapse-border] p-2 flex flex-col gap-2
+    border border-solid rounded-md bg-[--synapse-surface] border-[--synapse-border] p-2 flex flex-col gap-2
   `
 
   const inputStyle = `
-    text-3xl w-full font-semibold bg-[--synapse-bg-surface] border-none 
-    text-[--synapse-text-primary] placeholder:text-[--synapse-text-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
+    text-3xl w-full font-semibold bg-[--synapse-surface] border-none 
+    text-[--synapse-text] placeholder:text-[--synapse-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
   `
 
   return (
     <div
       style={themeVariables}
-      className="bg-[--synapse-bg-root] p-2 text-[--synapse-text-primary] rounded-lg font-medium flex flex-col gap-2"
+      className="bg-[--synapse-root] p-2 text-[--synapse-text] rounded-lg font-medium flex flex-col gap-2"
     >
       <Transaction
         originChainId={42161}

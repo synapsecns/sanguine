@@ -38,10 +38,10 @@ export function TokenPopoverSelect({
       <div
         className={`
           cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full
-          text-[--synapse-text-primary]
-          bg-[--synapse-bg-select]
-          border border-solid border-[--synapse-border]
-          hover:border-[--synapse-border-hover]
+          text-[--synapse-select-text]
+          bg-[--synapse-select-bg]
+          border border-solid border-[--synapse-select-border]
+          hover:border-[--synapse-focus]
         `}
         onClick={() => togglePopover()}
       >
@@ -49,7 +49,7 @@ export function TokenPopoverSelect({
         <DownArrow />
       </div>
       {isOpen && (
-        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-bg-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none -right-0">
+        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none -right-0">
           {options.map((option: BridgeableToken, index) => {
             const matchedTokenBalance: TokenBalance = balances?.find(
               (token: TokenBalance) => token.token === option
@@ -104,9 +104,9 @@ const TokenOption = ({
     <li
       data-test-id="token-option"
       key={index}
-      className={`cursor-pointer rounded border border-solid hover:border-[--synapse-border-hover] active:opacity-40 flex gap-4 items-center justify-between ${
+      className={`cursor-pointer rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 flex gap-4 items-center justify-between ${
         option.symbol === selected?.symbol
-          ? 'border-[--synapse-border-hover] hover:opacity-70'
+          ? 'border-[--synapse-focus] hover:opacity-70'
           : 'border-transparent'
       }`}
       onClick={() => onSelect(option)}
@@ -117,8 +117,8 @@ const TokenOption = ({
       <data value={parsedBalance} className={`
         text-sm p-2
         ${parsedBalance
-          ? 'text-[--synapse-text-secondary]' 
-          : 'text-[--synapse-border-hover]'
+          ? 'text-[--synapse-secondary]' 
+          : 'text-[--synapse-focus]'
         }
       `}>
         {parsedBalance ?? '−'}

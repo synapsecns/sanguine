@@ -21,7 +21,7 @@ export const Tooltip = ({
         <div
           className={`
           absolute w-max z-10 px-2 py-1 rounded-md text-sm 
-          bg-[--synapse-bg-root] border border-solid border-[--synapse-border] cursor-default shadow ${positionStyles}
+          bg-[--synapse-root] border border-solid border-[--synapse-border] cursor-default shadow ${positionStyles}
           `}
         >
           {hoverText}

@@ -1,23 +1,23 @@
 import { CustomThemeVariables } from 'types'
 
 export const lightThemeVariables: CustomThemeVariables = {
-  '--synapse-text-primary': 'hsl(240deg 0% 7%)',
-  '--synapse-text-secondary': 'hsl(240deg 0% 41%)',
-  '--synapse-border-hover': 'hsl(240deg 0% 66%)',
-  '--synapse-bg-select': 'hsl(240deg 0% 96%)',
-  '--synapse-bg-surface': 'hsl(240deg 0% 100%)',
-  '--synapse-bg-root': 'hsl(240deg 0% 96%)',
+  '--synapse-text': 'hsl(240deg 0% 7%)',
+  '--synapse-secondary': 'hsl(240deg 0% 41%)',
+  '--synapse-focus': 'hsl(240deg 0% 66%)',
+  '--synapse-select-bg': 'hsl(240deg 0% 96%)',
+  '--synapse-surface': 'hsl(240deg 0% 100%)',
+  '--synapse-root': 'hsl(240deg 0% 96%)',
   '--synapse-border': 'hsl(240deg 0% 86%)',
   '--synapse-accent': 'hsl(330, 100%, 45%, 1)',
 }
 
 export const darkThemeVariables: CustomThemeVariables = {
-  '--synapse-text-primary': 'hsl(240deg 0% 96%)',
-  '--synapse-text-secondary': 'hsl(240deg 0% 86%)',
-  '--synapse-border-hover': 'hsl(240deg 0% 66%)',
-  '--synapse-bg-select': 'hsl(240deg 0% 29%)',
-  '--synapse-bg-surface': 'hsl(240deg 0% 13%)',
-  '--synapse-bg-root': 'hsl(240deg 0% 7%)',
+  '--synapse-text': 'hsl(240deg 0% 96%)',
+  '--synapse-secondary': 'hsl(240deg 0% 86%)',
+  '--synapse-focus': 'hsl(240deg 0% 66%)',
+  '--synapse-select-bg': 'hsl(240deg 0% 29%)',
+  '--synapse-surface': 'hsl(240deg 0% 13%)',
+  '--synapse-root': 'hsl(240deg 0% 7%)',
   '--synapse-border': 'hsl(240deg 0% 13%)',
   '--synapse-accent': 'hsl(330, 100%, 45%, 1)',
 }

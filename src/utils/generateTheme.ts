@@ -48,26 +48,40 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
   const generatedTheme =
     colorMode === 'dark' || l < 50
       ? {
-          '--synapse-text-primary': hslString(h, s, l, a, 0.96),
-          '--synapse-text-secondary': hslString(h, s / 2, l, a, 0.59),
-          '--synapse-bg-select': hslString(h, s, l, a, 0.25),
-          '--synapse-bg-surface': hslString(h, s, l, a, 0.12),
-          '--synapse-bg-root': hslString(h, s, l, a, 0.07),
+          '--synapse-text': hslString(h, s, l, a, 0.96),
+          '--synapse-secondary': hslString(h, s / 2, l, a, 0.6),
           '--synapse-border': hslString(h, s, l, a, 0.12),
-          '--synapse-border-hover': hslString(h, s, l, a, 0.66),
-          '--synapse-accent':
-            theme.accentColor ?? 'var(--synapse-text-secondary)',
+          '--synapse-object': hslString(h, s, l, a, 0.25),
+          '--synapse-surface': hslString(h, s, l, a, 0.12),
+          '--synapse-root': hslString(h, s, l, a, 0.07),
+
+          '--synapse-focus': 'var(--synapse-secondary)',
+
+          '--synapse-select-bg': 'var(--synapse-object)',
+          '--synapse-select-text': 'var(--synapse-text)',
+          '--synapse-select-border': 'var(--synapse-object)',
+
+          '--synapse-button-bg': 'var(--synapse-surface)',
+          '--synapse-button-text': 'var(--synapse-text)',
+          '--synapse-button-border': 'var(--synapse-border)',
         }
       : {
-          '--synapse-text-primary': hslString(h, s, l, a, 0.04),
-          '--synapse-text-secondary': hslString(h, s / 2, l, a, 0.41),
-          '--synapse-bg-select': hslString(h, s, l, a, 0.96),
-          '--synapse-bg-surface': hslString(h, s, l, a, 1.0),
-          '--synapse-bg-root': hslString(h, s, l, a, 0.96),
+          '--synapse-text': hslString(h, s, l, a, 0.04),
+          '--synapse-secondary': hslString(h, s / 2, l, a, 0.41),
           '--synapse-border': hslString(h, s, l, a, 0.86),
-          '--synapse-border-hover': hslString(h, s, l, a, 0.66),
-          '--synapse-accent':
-            theme.accentColor ?? 'var(--synapse-text-secondary)',
+          '--synapse-object': hslString(h, s, l, a, 0.5),
+          '--synapse-surface': hslString(h, s, l, a, 1.0),
+          '--synapse-root': hslString(h, s, l, a, 0.96),
+
+          '--synapse-focus': 'var(--synapse-secondary)',
+
+          '--synapse-select-bg': 'var(--synapse-root)',
+          '--synapse-select-text': 'var(--synapse-text)',
+          '--synapse-select-border': 'var(--synapse-border)',
+
+          '--synapse-button-bg': 'var(--synapse-surface)',
+          '--synapse-button-text': 'var(--synapse-text)',
+          '--synapse-button-border': 'var(--synapse-border)',
         }
 
   for (const key in theme) if (/^--/.test(key)) generatedTheme[key] = theme[key]

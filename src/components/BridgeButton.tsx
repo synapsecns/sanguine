@@ -47,12 +47,12 @@ export const BridgeButton = ({
 
   const buttonStyle = `
     p-2 text-lg font-sans font-semibold rounded-md w-full 
-    bg-[--synapse-bg-surface] disabled:bg-[--synapse-bg-root] 
-    border border-solid border-[--synapse-border] 
-    hover:border-[--synapse-border-hover] disabled:hover:border-[--synapse-border] 
+    bg-[--synapse-button-bg] disabled:bg-[--synapse-root] 
+    border border-solid border-[--synapse-button-border] 
+    hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border] 
     active:opacity-40 disabled:opacity-70 
-    text-[--synapse-text-primary] disabled:text-[--synapse-text-secondary] 
-    cursor-pointer disabled:cursor-not-allowed 
+    text-[--synapse-button-text] disabled:text-[--synapse-secondary] 
+    cursor-pointer disabled:cursor-not-allowed
   `
 
   const tooltipPositionStyle = '-top-8'
