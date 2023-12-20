@@ -471,6 +471,9 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	return gasEstimate, nil
 }
 
+// forceNoFallbackIfZero is used to force no fallback if the tip cap is 0.
+var forceNoFallbackIfZero = false
+
 // TODO: test oracle fallback.
 func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EVM, chainID int, fallbackIfZero bool) (tipCap *big.Int, err error) {
 	tipCap, err = client.SuggestGasTipCap(ctx)
@@ -479,7 +482,7 @@ func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EV
 	}
 
 	// for non-zero tip cap, use default behavior
-	if big.NewInt(0).Cmp(tipCap) != 0 && fallbackIfZero {
+	if big.NewInt(0).Cmp(tipCap) != 0 && fallbackIfZero && !forceNoFallbackIfZero {
 		return tipCap, nil
 	}
 

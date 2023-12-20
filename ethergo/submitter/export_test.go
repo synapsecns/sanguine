@@ -65,3 +65,11 @@ func SortTxes(txs []db.TX) map[uint64][]db.TX {
 func GroupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
 	return groupTxesByNonce(txs)
 }
+
+// SetForceNoFallback exports setForceNoFallback for testing.
+func SetForceNoFallback(val bool) {
+	forceNoFallbackIfZero = val
+}
+
+// export for testing
+var ForceNoFallbackIfZero = forceNoFallbackIfZero

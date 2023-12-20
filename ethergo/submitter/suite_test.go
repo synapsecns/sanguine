@@ -119,6 +119,14 @@ func (s *SubmitterSuite) SetupSuite() {
 		}(i, chainID)
 	}
 	wg.Wait()
+
+	// fallback is currently untested. For now we disable it in tests.
+	// TODO: this should be fixed, or ideally, fallback can be removed.
+	og := submitter.ForceNoFallbackIfZero
+	submitter.ForceNoFallbackIfZero = true
+	s.T().Cleanup(func() {
+		submitter.SetForceNoFallback(og)
+	})
 }
 
 // SetupTest sets up the signer and funds the account with 10 eth on each backend.
@@ -201,6 +209,12 @@ func (t *TXSubmitterDBSuite) SetupSuite() {
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metricsHandler)
 	t.Require().NoError(err)
+
+	og := submitter.ForceNoFallbackIfZero
+	submitter.ForceNoFallbackIfZero = true
+	t.T().Cleanup(func() {
+		submitter.SetForceNoFallback(og)
+	})
 }
 
 func (t *TXSubmitterDBSuite) SetupTest() {
