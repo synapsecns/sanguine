@@ -182,5 +182,12 @@ func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error
 }
 
 func (f *feePricer) getNativeToken(chainID uint32) (string, error) {
-	return "", nil
+	chainConfig, ok := f.chainConfigs[int(chainID)]
+	if !ok {
+		return "", fmt.Errorf("could not get chain config for chainID: %d", chainID)
+	}
+	if len(chainConfig.NativeToken) == 0 {
+		return "", fmt.Errorf("chain config for chainID %d does not have a native token", chainID)
+	}
+	return chainConfig.NativeToken, nil
 }
