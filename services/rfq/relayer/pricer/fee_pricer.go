@@ -1,4 +1,4 @@
-package quoter
+package pricer
 
 import (
 	"context"
@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/synapsecns/sanguine/core/metrics"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -33,13 +32,12 @@ type feePricer struct {
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
 	tokenPriceCache *ttlcache.Cache[string, *big.Int]
-	// omnirpcClient is the omnirpc client.
-	omniClient omnirpcClient.RPCClient
+	// clientFetcher is used to fetch clients.
+	clientFetcher submitter.ClientFetcher
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
-	omniClient := omnirpcClient.NewOmnirpcClient(omnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, clientFetcher submitter.ClientFetcher) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GasPriceCacheTTL)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
@@ -49,7 +47,7 @@ func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconf
 		chainConfigs:    chainConfigs,
 		gasPriceCache:   gasPriceCache,
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
-		omniClient:      omniClient,
+		clientFetcher:   clientFetcher,
 	}
 }
 
@@ -151,7 +149,7 @@ func (f *feePricer) getGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 	var gasPrice *big.Int
 	if gasPriceItem == nil {
 		// Fetch gas price from omnirpc.
-		client, err := f.omniClient.GetChainClient(ctx, int(chainID))
+		client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return nil, err
 		}
