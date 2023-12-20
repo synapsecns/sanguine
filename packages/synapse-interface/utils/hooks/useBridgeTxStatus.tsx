@@ -42,9 +42,9 @@ export const useBridgeTxStatus = ({
   }
 
   useEffect(() => {
+    console.log('running')
     ;(async () => {
       let _kappa
-      let txStatus
 
       if (!kappa) {
         _kappa = await getKappa()
@@ -52,7 +52,7 @@ export const useBridgeTxStatus = ({
         _kappa = kappa
       }
 
-      txStatus = await getBridgeTxStatus(
+      const txStatus = await getBridgeTxStatus(
         destinationChainId,
         bridgeModuleName,
         _kappa
