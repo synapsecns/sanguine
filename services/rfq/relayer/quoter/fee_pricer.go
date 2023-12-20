@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -26,24 +28,59 @@ type feePricer struct {
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
 	tokenPriceCache *ttlcache.Cache[string, *big.Int]
+	omniClient      omnirpcClient.RPCClient
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.FeePricerConfig) FeePricer {
+func NewFeePricer(config relconfig.FeePricerConfig, omnirpcURL string, metricHandler metrics.Handler) FeePricer {
+	omniClient := omnirpcClient.NewOmnirpcClient(omnirpcURL, metricHandler, omnirpcClient.WithCaptureReqRes())
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   ttlcache.New[uint32, *big.Int](ttlcache.WithTTL[uint32, *big.Int](time.Second * time.Duration(config.GasPriceCacheTTL))),
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTL))),
+		omniClient:      omniClient,
 	}
 }
 
 func (f *feePricer) Start() {
+	// Start the TTL caches.
 	f.gasPriceCache.Start()
 	f.tokenPriceCache.Start()
 }
 
-func (f *feePricer) GetOriginFee(chainID uint32, denomToken string) (*big.Int, error) {
-	return nil, nil
+var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
+
+func (f *feePricer) GetOriginFee(origin, destination uint32, denomToken string) (*big.Int, error) {
+	gasPrice, err := f.getGasPrice(origin)
+	if err != nil {
+		return nil, err
+	}
+	nativeToken, err := f.getNativeToken(origin)
+	if err != nil {
+		return nil, err
+	}
+	nativeTokenPrice, err := f.getTokenPrice(nativeToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenPrice, err := f.getTokenPrice(denomToken)
+	if err != nil {
+		return nil, err
+	}
+	denomTokenDecimals, err := f.getTokenDecimals(destination, denomToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute the fee in USD terms.
+	originFee := new(big.Float).SetInt(gasPrice.Mul(gasPrice, big.NewInt(int64(f.config.OriginGasEstimate))))
+	originFeeUSD := new(big.Float).Mul(originFee, new(big.Float).SetFloat64(nativeTokenPrice))
+
+	// Convert the USD value to the deonominated token.
+	originFeeDenom := new(big.Float).Mul(originFeeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
+	originFeeDenomDecimals, _ := new(big.Float).Mul(originFeeDenom, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return originFeeDenomDecimals, nil
 }
 
 func (f *feePricer) GetDestinationFee(chainID uint32, denomToken string) (*big.Int, error) {
@@ -52,4 +89,26 @@ func (f *feePricer) GetDestinationFee(chainID uint32, denomToken string) (*big.I
 
 func (f *feePricer) GetTotalFee(origin, destination uint32, denomToken string) (*big.Int, error) {
 	return nil, nil
+}
+
+func (f *feePricer) getFee(origin, destination uint32, denomToken string) (*big.Int, error) {
+	return nil, nil
+}
+
+// getGasPrice returns the gas price for a given chainID in native units.
+func (f *feePricer) getGasPrice(chainID uint32) (*big.Int, error) {
+	return nil, nil
+}
+
+// getTokenPrice returns the price of a token in USD.
+func (f *feePricer) getTokenPrice(token string) (float64, error) {
+	return 0, nil
+}
+
+func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error) {
+	return 0, nil
+}
+
+func (f *feePricer) getNativeToken(chainID uint32) (string, error) {
+	return "", nil
 }
