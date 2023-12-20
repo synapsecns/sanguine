@@ -21,6 +21,9 @@ contract Admin is IAdmin, AccessControl {
 
     /// @notice Protocol fee amounts accumulated
     mapping(address => uint256) public protocolFees;
+    
+    /// @notice Chain gas amount to forward as rebate if requested
+    uint256 public chainGasAmount;
 
     modifier onlyGuard() {
         require(hasRole(GUARD_ROLE, msg.sender), "Caller is not a guard");
@@ -91,5 +94,12 @@ contract Admin is IAdmin, AccessControl {
         protocolFees[token] = 0;
         token.universalTransfer(recipient, feeAmount);
         emit FeesSwept(token, recipient, feeAmount);
+    }
+    
+    // TODO: test
+    function setChainGasAmount(uint256 newChainGasAmount) external onlyGovernor {
+        uint256 oldChainGasAmount = chainGasAmount;
+        chainGasAmount = newChainGasAmount;
+        emit ChainGasAmountUpdated(oldChainGasAmount, newChainGasAmount);
     }
 }

@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Admin} from "../contracts/Admin.sol";
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
-import { FastBridge } from "../contracts/FastBridge.sol";
+import {FastBridge} from "../contracts/FastBridge.sol";
 
 contract FastBridgeMock is IFastBridge, Admin {
     // @dev the block the contract was deployed at
@@ -26,7 +26,7 @@ contract FastBridgeMock is IFastBridge, Admin {
     // or underliyng enum changes.
     //
     // TODO: a foundry test should be added to ensure this is always in sync.
-    function getEnumKeyByValue (FastBridge.BridgeStatus keyValue) public pure returns (string memory) {
+    function getEnumKeyByValue(FastBridge.BridgeStatus keyValue) public pure returns (string memory) {
         if (FastBridge.BridgeStatus.NULL == keyValue) return "NULL";
         if (FastBridge.BridgeStatus.REQUESTED == keyValue) return "REQUESTED";
         if (FastBridge.BridgeStatus.RELAYER_PROVED == keyValue) return "RELAYER_PROVED";
@@ -50,6 +50,7 @@ contract FastBridgeMock is IFastBridge, Admin {
                 originAmount: params.originAmount, // includes relayer fee
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
                 deadline: params.deadline,
                 nonce: nonce++ // increment nonce on every bridge
             })
@@ -58,15 +59,17 @@ contract FastBridgeMock is IFastBridge, Admin {
         emit BridgeRequested(transactionId, msg.sender, request);
     }
 
-    function mockBridgeRequestRaw(bytes32  transactionId, address sender, bytes memory request) external  {
+    function mockBridgeRequestRaw(bytes32 transactionId, address sender, bytes memory request) external {
         emit BridgeRequested(transactionId, sender, request);
     }
 
-    function mockBridgeRelayer(bytes32 transactionId, address relayer, address to, address token, uint256 amount) external  {
+    function mockBridgeRelayer(bytes32 transactionId, address relayer, address to, address token, uint256 amount)
+        external
+    {
         emit BridgeRelayed(transactionId, relayer, to, token, amount);
     }
 
-    function bridge(BridgeParams memory params) external payable{
+    function bridge(BridgeParams memory params) external payable {
         revert("not implemented");
     }
 
@@ -77,7 +80,7 @@ contract FastBridgeMock is IFastBridge, Admin {
     function prove(bytes memory request, bytes32 destTxHash) external {
         revert("not implemented");
     }
-    
+
     function canClaim(bytes32 transactionid, address relayer) external view returns (bool) {
         revert("not implemented");
     }

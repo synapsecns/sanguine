@@ -15,6 +15,8 @@ interface IAdmin {
 
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
+    
+    event ChainGasAmountUpdated(uint256 oldChainGasAmount, uint256 newChainGasAmount);
 
     // ============ Methods ============
 
@@ -33,4 +35,6 @@ interface IAdmin {
     function setProtocolFeeRate(uint256 newFeeRate) external;
 
     function sweepProtocolFees(address token, address recipient) external;
+    
+    function setChainGasAmount(uint256 newChainGasAmount) external;
 }

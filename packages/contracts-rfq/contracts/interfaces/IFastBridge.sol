@@ -12,6 +12,7 @@ interface IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
+        bool sendChainGas;
         uint256 deadline;
         uint256 nonce;
     }
@@ -39,6 +40,7 @@ interface IFastBridge {
         address destToken;
         uint256 originAmount; // should include protocol fee (if any)
         uint256 destAmount; // should include relayer fee
+        bool sendChainGas;
         uint256 deadline;
     }
 
@@ -74,7 +76,7 @@ interface IFastBridge {
     /// @notice Decodes bridge request into a bridge transaction
     /// @param request The bridge request to decode
     function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory);
-    
+
     /// @notice Checks if the dispute period has passed so bridge deposit can be claimed
     /// @param transactionId The transaction id associated with the encoded bridge transaction to check
     /// @param relayer The address of the relayer attempting to claim
