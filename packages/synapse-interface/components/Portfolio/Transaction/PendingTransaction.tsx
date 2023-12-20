@@ -159,29 +159,32 @@ export const PendingTransaction = ({
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
 
-  useFallbackBridgeOriginQuery({
-    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-    chainId: originChain?.id,
-    txnHash: transactionHash,
-    bridgeType: bridgeType,
-  })
+  // useFallbackBridgeOriginQuery({
+  //   useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
+  //   chainId: originChain?.id,
+  //   txnHash: transactionHash,
+  //   bridgeType: bridgeType,
+  // })
 
-  useFallbackBridgeDestinationQuery({
-    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-    chainId: destinationChain?.id,
-    address: destinationAddress,
-    kappa: kappa,
-    timestamp: startedTimestamp,
-    bridgeType: bridgeType,
-  })
+  // useFallbackBridgeDestinationQuery({
+  //   useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
+  //   chainId: destinationChain?.id,
+  //   address: destinationAddress,
+  //   kappa: kappa,
+  //   timestamp: startedTimestamp,
+  //   bridgeType: bridgeType,
+  // })
 
-  useBridgeTxStatus({
+  const _isComplete = useBridgeTxStatus({
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     transactionHash,
     bridgeModuleName,
     kappa,
   })
+
+  console.log('_isComplete:', _isComplete)
+
   useEffect(() => {
     if (!isSubmitted && transactionHash) {
       const maxRetries = 3
