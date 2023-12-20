@@ -94,11 +94,11 @@ func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32
 }
 
 func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	gasPrice, err := f.getGasPrice(ctx, origin)
+	gasPrice, err := f.getGasPrice(ctx, destination)
 	if err != nil {
 		return nil, err
 	}
-	nativeToken, err := f.getNativeToken(origin)
+	nativeToken, err := f.getNativeToken(destination)
 	if err != nil {
 		return nil, err
 	}
@@ -114,16 +114,22 @@ func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination u
 	if err != nil {
 		return nil, err
 	}
-
-	// Compute the fee in USD terms.
-	originFee := new(big.Float).SetInt(gasPrice.Mul(gasPrice, big.NewInt(int64(f.config.DestinationGasEstimate))))
-	originFeeUSD := new(big.Float).Mul(originFee, new(big.Float).SetFloat64(nativeTokenPrice))
-
-	// Convert the USD value to the deonominated token.
-	originFeeDenom := new(big.Float).Mul(originFeeUSD, new(big.Float).SetFloat64(denomTokenPrice))
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
-	originFeeDenomDecimals, _ := new(big.Float).Mul(originFeeDenom, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-	return originFeeDenomDecimals, nil
+
+	// Compute the fee in ETH terms.
+	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(f.config.DestinationGasEstimate)))
+	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
+	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
+	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+	// Note that this rounds towards zero- we may need to apply rounding here if
+	// we want to be conservative and lean towards overestimating fees.
+	feeUSDCDecimals, _ := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	fmt.Printf("feeWei: %s\n", feeWei.String())
+	fmt.Printf("feeEth: %s\n", feeEth.String())
+	fmt.Printf("feeUSD: %s\n", feeUSD.String())
+	fmt.Printf("feeUSDC: %s\n", feeUSDC.String())
+	fmt.Printf("feeUSDCDecimals: %s\n", feeUSDCDecimals.String())
+	return feeUSDCDecimals, nil
 }
 
 func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
