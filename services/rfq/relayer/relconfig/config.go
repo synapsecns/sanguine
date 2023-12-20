@@ -31,6 +31,19 @@ type Config struct {
 	FeePricer       FeePricerConfig        `yaml:"fee_pricer"`
 }
 
+func (c Config) GetTokenID(chain int, addr string) (string, error) {
+	chainConfig, ok := c.Bridges[int(chain)]
+	if !ok {
+		return "", fmt.Errorf("no chain config for chain %d", chain)
+	}
+	for tokenID, tokenConfig := range chainConfig.Tokens {
+		if tokenConfig.Address == addr {
+			return tokenID, nil
+		}
+	}
+	return "", fmt.Errorf("no tokenID found for chain %d and address %s", chain, addr)
+}
+
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
 	// Bridge is the bridge confirmation count.

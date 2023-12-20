@@ -74,7 +74,7 @@ func (m *Manager) SetQuotableTokens(tokens map[string][]string) {
 }
 
 // ShouldProcess determines if a quote should be processed.
-func (m *Manager) ShouldProcess(quote reldb.QuoteRequest) bool {
+func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
 	if slices.Contains(destPairs, quote.GetDestIDPair()) {
@@ -89,14 +89,27 @@ func (m *Manager) ShouldProcess(quote reldb.QuoteRequest) bool {
 	}
 
 	// then check if we'll make money on it
-	// note: this check is not comprehensive. We still need to check gas, min fees, etc.
-	// It does keep us in range though.
-	if quote.Transaction.OriginAmount.Cmp(quote.Transaction.DestAmount) < 0 {
-		// we're not making money on this
+	isProfitable, err := m.isProfitableQuote(ctx, quote)
+	if err != nil {
+		logger.Errorf("Error checking if quote is profitable: %v", err)
 		return false
 	}
+	return isProfitable
+}
 
-	return false
+// isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteRequest) (bool, error) {
+	destTokenID, err := m.feePricer.GetTokenID(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
+	if err != nil {
+		return false, fmt.Errorf("error getting dest token ID: %w", err)
+	}
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID)
+	if err != nil {
+		return false, fmt.Errorf("error getting total fee: %w", err)
+	}
+	// NOTE: this logic assumes that the origin and destination tokens have the same price.
+	cost := new(big.Int).Sub(quote.Transaction.DestAmount, fee)
+	return quote.Transaction.OriginAmount.Cmp(cost) > 0, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.

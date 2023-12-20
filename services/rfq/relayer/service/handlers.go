@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -85,7 +86,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 // This is the second step in the bridge process. It is emitted when the relayer sees the request.
 // We check if we have enough inventory to process the request and mark it as committed pending.
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, request reldb.QuoteRequest) (err error) {
-	if !q.Quoter.ShouldProcess(request) {
+	if !q.Quoter.ShouldProcess(ctx, request) {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)

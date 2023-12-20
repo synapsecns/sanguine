@@ -24,6 +24,10 @@ type FeePricer interface {
 	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
+	// GetTokenID returns the token ID for a given chainID and token address.
+	// TODO: this can probably move into relconfig.Config, but since Quoter does not have a config,
+	// we expose this functionality here.
+	GetTokenID(chainID uint32, addr string) (string, error)
 }
 
 type feePricer struct {
@@ -146,6 +150,19 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 		gasPrice = gasPriceItem.Value()
 	}
 	return gasPrice, nil
+}
+
+func (f *feePricer) GetTokenID(chain uint32, addr string) (string, error) {
+	chainConfig, ok := f.chainConfigs[int(chain)]
+	if !ok {
+		return "", fmt.Errorf("no chain config for chain %d", chain)
+	}
+	for tokenID, tokenConfig := range chainConfig.Tokens {
+		if tokenConfig.Address == addr {
+			return tokenID, nil
+		}
+	}
+	return "", fmt.Errorf("no tokenID found for chain %d and address %s", chain, addr)
 }
 
 // getTokenPrice returns the price of a token in USD.
