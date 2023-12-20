@@ -28,7 +28,6 @@ import {
 } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from './BridgeButton'
 
-import { generateTheme } from '@/utils/generateTheme'
 import { AvailableBalance } from './AvailableBalance'
 import { ZeroAddress } from 'ethers'
 import { useValidations } from '@/hooks/useValidations'
@@ -57,6 +56,7 @@ import {
   useApproveTransactionState,
 } from '@/state/slices/approveTransaction/hooks'
 import { ApproveTransactionStatus } from '@/state/slices/approveTransaction/reducer'
+import { useThemeVariables } from '@/hooks/useThemeVariables'
 
 const chains = {
   1: {
@@ -111,6 +111,8 @@ export const Widget = ({
   const { bridgeTxnStatus } = useBridgeTransactionState()
   const { approveTxnStatus } = useApproveTransactionState()
 
+  const themeVariables = useThemeVariables(theme, customTheme)
+
   /** Select Consumer networkProvider based on Origin ChainId */
   /** TODO: Move to helper hook */
   const originChainProvider = useMemo(() => {
@@ -121,13 +123,6 @@ export const Widget = ({
     )
     return _provider
   }, [originChainId, networkProviders])
-
-  /** TODO: Can this be moved into own theming context? */
-  const themeVariables = (() => {
-    if (theme === 'dark') return generateTheme({ bgColor: 'dark' })
-    if (customTheme) return generateTheme(customTheme)
-    return generateTheme()
-  })()
 
   useEffect(() => {
     dispatch(setTokens(tokens))
