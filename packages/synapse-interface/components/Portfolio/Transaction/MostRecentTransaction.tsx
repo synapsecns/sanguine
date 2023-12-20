@@ -15,7 +15,6 @@ import { PendingTransaction } from './PendingTransaction'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const MostRecentTransaction = () => {
-  console.log('re-render mostrecenttransaction')
   const { address } = useAccount()
   const {
     userHistoricalTransactions,
