@@ -24,6 +24,7 @@ import {
   ETH_USDT,
   MEDIAN_TIME_BRIDGE,
   MEDIAN_TIME_CCTP,
+  NATIVE_ADDRESS,
   ROUTER_ADDRESS_MAP,
   getTestProviderUrl,
   SupportedChainId,
@@ -49,11 +50,14 @@ const expectCorrectBridgeQuote = (bridgeQuote: BridgeQuote) => {
 }
 
 const expectCorrectPopulatedTransaction = (
-  populatedTransaction: PopulatedTransaction
+  populatedTransaction: PopulatedTransaction,
+  expectedValue: BigNumber = Zero
 ) => {
   expect(populatedTransaction).toBeDefined()
+  console.log(populatedTransaction)
   expect(populatedTransaction.data?.length).toBeGreaterThan(0)
   expect(populatedTransaction.to?.length).toBeGreaterThan(0)
+  expect(populatedTransaction.value).toEqual(expectedValue)
 }
 
 const createBridgeQuoteTests = (
@@ -74,18 +78,18 @@ const createBridgeQuoteTests = (
   })
 
   it('Could be used for bridging', async () => {
-    synapse
-      .bridge(
-        '0x0000000000000000000000000000000000001337',
-        result.routerAddress,
-        originChainId,
-        destChainId,
-        token,
-        amount,
-        result.originQuery,
-        result.destQuery
-      )
-      .then(expectCorrectPopulatedTransaction)
+    const expectedValue = token === NATIVE_ADDRESS ? amount : Zero
+    const data = await synapse.bridge(
+      '0x0000000000000000000000000000000000001337',
+      result.routerAddress,
+      originChainId,
+      destChainId,
+      token,
+      amount,
+      result.originQuery,
+      result.destQuery
+    )
+    expectCorrectPopulatedTransaction(data, expectedValue)
   })
 }
 
@@ -109,15 +113,15 @@ const createSwapQuoteTests = (
   })
 
   it('Could be used for swapping', async () => {
-    synapse
-      .swap(
-        chainId,
-        '0x0000000000000000000000000000000000001337',
-        token,
-        amount,
-        result.query
-      )
-      .then(expectCorrectPopulatedTransaction)
+    const expectedValue = token === NATIVE_ADDRESS ? amount : Zero
+    const data = await synapse.swap(
+      chainId,
+      '0x0000000000000000000000000000000000001337',
+      token,
+      amount,
+      result.query
+    )
+    expectCorrectPopulatedTransaction(data, expectedValue)
   })
 }
 
