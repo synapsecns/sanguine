@@ -40,3 +40,8 @@ var fileFlag = &cli.StringFlag{
 	Name:  "file",
 	Usage: "path to json file to debug",
 }
+
+var rpcFlag = &cli.StringFlag{
+	Name:  "rpc",
+	Usage: "rpc url to rewrite requests from",
+}

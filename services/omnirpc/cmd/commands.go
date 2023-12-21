@@ -153,3 +153,22 @@ var debugResponse = &cli.Command{
 		return debug.HashDiff(diffFile)
 	},
 }
+
+// latestRewrite rewrites latest block numbers for a single rpc url
+var latestRewrite = &cli.Command{
+	Name:  "harmony-confirm",
+	Usage: "An experimental harmony confirmation client",
+	Flags: []cli.Flag{
+		rpcFlag,
+		portFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := proxy.NewSimpleProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}

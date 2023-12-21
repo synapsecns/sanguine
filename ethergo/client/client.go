@@ -74,10 +74,13 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler, opts 
 		opt(client)
 	}
 
+	// TODO: port to master wether or not pr gets merged
 	client.captureClient, err = newCaptureClient(ctx, url, handler, client.captureRequestRes)
 	if err != nil {
 		return nil, fmt.Errorf("could not create capture client: %w", err)
 	}
+
+	client.rpcClient = client.captureClient.rpcClient
 
 	return client, nil
 }
