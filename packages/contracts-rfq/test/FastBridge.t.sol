@@ -733,7 +733,9 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeRelayed(bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount);
+    event BridgeRelayed(
+        bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount, uint256 chainGasAmount
+    );
 
     // This test checks the successful relaying of a destination bridge
     function test_successfulRelayDestination() public {
@@ -755,7 +757,7 @@ contract FastBridgeTest is Test {
         assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6);
+        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6, 0);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay(request);
@@ -791,7 +793,7 @@ contract FastBridgeTest is Test {
 
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18);
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18, 0);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
@@ -837,11 +839,11 @@ contract FastBridgeTest is Test {
 
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18);
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18, 0.005e18);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
-        uint256 value = 10.97e18 + chainGasAmount;
+        uint256 value = 10.975e18;
         fastBridge.relay{value: value}(request);
 
         // Check the balances of the relayer and the user after relaying the destination bridge
@@ -884,7 +886,7 @@ contract FastBridgeTest is Test {
         assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6);
+        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6, 0.005e18);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay{value: chainGasAmount}(request);

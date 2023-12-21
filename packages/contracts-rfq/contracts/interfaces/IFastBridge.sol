@@ -25,7 +25,9 @@ interface IFastBridge {
     // ============ Events ============
 
     event BridgeRequested(bytes32 transactionId, address sender, bytes request);
-    event BridgeRelayed(bytes32 transactionId, address relayer, address to, address token, uint256 amount);
+    event BridgeRelayed(
+        bytes32 transactionId, address relayer, address to, address token, uint256 amount, uint256 chainGasAmount
+    );
     event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash);
     event BridgeProofDisputed(bytes32 transactionId, address relayer);
     event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount);
