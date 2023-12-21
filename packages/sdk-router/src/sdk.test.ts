@@ -237,15 +237,15 @@ describe('SynapseSDK', () => {
       )
     })
 
-    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag omitted)', () => {
-      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+    describe('ETH USDC -> ARB USDT (excludeCCTP flag omitted)', () => {
+      // Try to find ETH USDC -> ARB USDT quote for 1M USDC,
       // which by default is routed through USDC
       const amount = BigNumber.from(10).pow(12)
       const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
         SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
         ETH_USDC,
-        ARB_USDC_E,
+        ARB_USDT,
         amount
       )
 
@@ -274,15 +274,15 @@ describe('SynapseSDK', () => {
       })
     })
 
-    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag off)', () => {
-      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+    describe('ETH USDC -> ARB USDT (excludeCCTP flag off)', () => {
+      // Try to find ETH USDC -> ARB USDT quote for 1M USDC,
       // which by default is routed through USDC
       const amount = BigNumber.from(10).pow(12)
       const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
         SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
         ETH_USDC,
-        ARB_USDC_E,
+        ARB_USDT,
         amount,
         undefined,
         false
@@ -313,15 +313,15 @@ describe('SynapseSDK', () => {
       })
     })
 
-    describe('ETH USDC -> ARB USDC.e (excludeCCTP flag on)', () => {
-      // Try to find ETH USDC -> ARB USDC.e quote for 1M USDC,
+    describe('ETH USDC -> ARB USDT (excludeCCTP flag on)', () => {
+      // Try to find ETH USDC -> ARB USDT quote for 1M USDC,
       // which by default is routed through USDC
       const amount = BigNumber.from(10).pow(12)
       const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
         SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
         ETH_USDC,
-        ARB_USDC_E,
+        ARB_USDT,
         amount,
         undefined,
         true
