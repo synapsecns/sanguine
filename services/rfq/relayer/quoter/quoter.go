@@ -181,8 +181,11 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 						return nil, fmt.Errorf("error getting ierc20: %w", err)
 					}
 
-					name, err := imBroken.Name(&bind.CallOpts{Context: ctx})
+					fmt.Println(err)
+
+					name, newErr := imBroken.Name(&bind.CallOpts{Context: ctx})
 					fmt.Println(name)
+					fmt.Println(newErr)
 
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}

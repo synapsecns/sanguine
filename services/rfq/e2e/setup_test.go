@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/http"
 	"slices"
@@ -244,14 +245,19 @@ func (i *IntegrationSuite) setupRelayer() {
 		for _, tokenType := range tokenTypes {
 			tokenAddress := i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
 			quotableTokenID := fmt.Sprintf("%d-%s", backend.GetChainID(), tokenAddress)
+			tokenCaller, err := ierc20.NewIerc20Ref(common.HexToAddress(tokenAddress), backend)
+			i.NoError(err)
+
+			decimals, err := tokenCaller.Decimals(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
 
 			// first the simple part, add the token to the token map
 			cfg.Tokens[int(backend.GetChainID())] = append(cfg.Tokens[int(backend.GetChainID())], tokenAddress)
 			// assume USDC params for now
-			cfg.Bridges[int(backend.GetChainID())].Tokens["USDC"] = relconfig.TokenConfig{
+			cfg.Bridges[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
 				Address:  tokenAddress,
-				Decimals: 6,
-				PriceUSD: 1,
+				Decimals: decimals,
+				PriceUSD: 1, // TODO: this will break on non-stables
 			}
 
 			compatibleTokens := []contracts.ContractType{tokenType}
