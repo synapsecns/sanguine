@@ -10,5 +10,5 @@ var (
 
 // BuildInfo returns the build info for the service.
 func BuildInfo() config.BuildInfo {
-	return config.NewBuildInfo(version, commit, "omnirpc", date)
+	return config.NewBuildInfo(version, commit, "omnirpc-harmony", date)
 }
