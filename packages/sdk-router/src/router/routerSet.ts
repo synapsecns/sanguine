@@ -4,10 +4,15 @@ import invariant from 'tiny-invariant'
 
 import { Router } from './router'
 import { AddressMap, BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute, DestRequest } from './types'
+import { DestRequest } from './types'
 import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
-import { SynapseModule, SynapseModuleSet } from '../module'
-import { hasComplexBridgeAction } from './query'
+import {
+  BridgeQuote,
+  BridgeRoute,
+  SynapseModule,
+  SynapseModuleSet,
+} from '../module'
+import { hasComplexBridgeAction } from '../module/query'
 
 export type ChainProvider = {
   chainId: number

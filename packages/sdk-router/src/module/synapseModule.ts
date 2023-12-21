@@ -1,6 +1,6 @@
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
-import { Query } from '../router/query'
+import { Query } from './query'
 import { BigintIsh } from '../constants'
 
 export interface SynapseModule {

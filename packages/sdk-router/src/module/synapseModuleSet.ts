@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute } from '../router/types'
+import { BridgeQuote, BridgeRoute } from './types'
 import { SynapseModule } from './synapseModule'
 
 export abstract class SynapseModuleSet {

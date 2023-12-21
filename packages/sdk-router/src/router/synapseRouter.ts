@@ -11,18 +11,22 @@ import {
   PoolStructOutput,
 } from '../typechain/SynapseRouter'
 import { Router } from './router'
-import { Query, narrowToRouterQuery, reduceToQuery } from './query'
+import {
+  BridgeToken,
+  FeeConfig,
+  Query,
+  narrowToRouterQuery,
+  reduceToBridgeToken,
+  reduceToFeeConfig,
+  reduceToQuery,
+} from '../module'
 import bridgeAbi from '../abi/SynapseBridge.json'
 import { BigintIsh } from '../constants'
 import {
-  BridgeToken,
   DestRequest,
-  FeeConfig,
   Pool,
   PoolInfo,
   PoolToken,
-  reduceToBridgeToken,
-  reduceToFeeConfig,
   reduceToPoolToken,
 } from './types'
 import { getMatchingTxLog } from '../utils/logs'

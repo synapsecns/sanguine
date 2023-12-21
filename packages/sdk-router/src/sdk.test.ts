@@ -28,7 +28,7 @@ import {
   getTestProviderUrl,
   SupportedChainId,
 } from './constants'
-import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './router'
+import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './module'
 import * as operations from './operations'
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {

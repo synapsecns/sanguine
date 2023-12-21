@@ -4,7 +4,8 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, Query, RouterSet, findBestRoute } from '../router'
+import { BridgeQuote, Query, findBestRoute } from '../module'
+import { RouterSet } from '../router'
 
 /**
  * Executes a bridge operation between two different chains. Depending on the origin router address, the operation

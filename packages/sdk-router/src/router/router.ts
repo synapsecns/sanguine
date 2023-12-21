@@ -5,9 +5,9 @@ import invariant from 'tiny-invariant'
 import { AddressZero } from '@ethersproject/constants'
 
 import { BigintIsh } from '../constants'
-import { Query } from './query'
-import { BridgeToken, DestRequest, FeeConfig } from './types'
-import { SynapseModule } from '../module'
+import { Query } from '../module/query'
+import { DestRequest } from './types'
+import { BridgeToken, FeeConfig, SynapseModule } from '../module'
 
 /**
  * Abstract class for a router contract deployed on a chain.
