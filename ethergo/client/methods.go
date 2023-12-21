@@ -69,13 +69,14 @@ const (
 // NetMethods:.
 const (
 	// NetVersionMethod gets the network version.
-	NetVersionMethod RPCMethod = "net_version"
+	NetVersionMethod  RPCMethod = "net_version"
+	Web3VersionMethod RPCMethod = "web3_clientVersion"
 )
 
 // allMethods gets all available rpc methods.
 var allMethods = []RPCMethod{ChainIDMethod, BlockByHashMethod, BlockByNumberMethod, BlockNumberMethod,
 	BlockNumberMethod, TransactionByHashMethod, TransactionByBlockHashAndIndexMethod, TransactionCountByHashMethod,
-	TransactionReceiptByHashMethod, SyncProgressMethod, GetBalanceMethod, SubscribeMethod, NetVersionMethod}
+	TransactionReceiptByHashMethod, SyncProgressMethod, GetBalanceMethod, SubscribeMethod, NetVersionMethod, Web3VersionMethod, HarmonyGetReceiptMethod, HarmonyGetLogsMethod}
 
 var methodMap *immutable.Map[RPCMethod, string]
 

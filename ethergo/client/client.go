@@ -52,6 +52,8 @@ type EVM interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchWithContext batches multiple w3type calls
 	BatchWithContext(ctx context.Context, calls ...w3types.Caller) error
+	// Web3Version gets the web3 version
+	Web3Version(ctx context.Context) (version string, err error)
 }
 
 type clientImpl struct {
@@ -256,6 +258,22 @@ func (c *clientImpl) NetworkID(ctx context.Context) (id *big.Int, err error) {
 	}()
 
 	return c.getEthClient().NetworkID(requestCtx)
+}
+
+// Web3Version calls Web3Version on the underlying client
+//
+//nolint:wrapcheck
+func (c *clientImpl) Web3Version(ctx context.Context) (version string, err error) {
+	requestCtx, span := c.startSpan(ctx, Web3VersionMethod)
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var ver string
+	if err := c.rpcClient.CallContext(requestCtx, &ver, Web3VersionMethod.String()); err != nil {
+		return "", err
+	}
+	return ver, nil
 }
 
 // SyncProgress calls SyncProgress on the underlying client

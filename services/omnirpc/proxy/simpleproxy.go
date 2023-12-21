@@ -214,6 +214,8 @@ func (r *SimpleProxy) makeReq(ctx context.Context, body []byte) ([]byte, error) 
 	return resp.Body(), nil
 }
 
+const expectedVersion = "Harmony (C) 2023. harmony, version v8196-v2023.4.2-0-g8717ccf6 (@ 2023-12-19T10:09:52+0000)"
+
 func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte) (_ []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getHarmonyReceiptVerify")
 
@@ -234,6 +236,18 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 		harmonyReceipt, err = hmyClient.HarmonyTransactionReceipt(gCtx, txHash)
 		if err != nil {
 			return fmt.Errorf("could not get harmony receipt: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		web3Version, err := hmyClient.Web3Version(gCtx)
+		if err != nil {
+			return fmt.Errorf("could not get web3 version: %w", err)
+		}
+
+		if web3Version != expectedVersion {
+			return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
 		}
 		return nil
 	})
@@ -315,6 +329,18 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 		harmonyLogs, err = hmyClient.FilterHarmonyLogs(gCtx, query)
 		if err != nil {
 			return fmt.Errorf("could not get harmony logs: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		web3Version, err := hmyClient.Web3Version(gCtx)
+		if err != nil {
+			return fmt.Errorf("could not get web3 version: %w", err)
+		}
+
+		if web3Version != expectedVersion {
+			return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
 		}
 		return nil
 	})
