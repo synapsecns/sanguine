@@ -25,6 +25,7 @@ import {
   reduceToFeeConfig,
   reduceToPoolToken,
 } from './types'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
 
 /**
@@ -139,13 +140,20 @@ export class SynapseRouter extends Router {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    return this.routerContract.populateTransaction.bridge(
-      to,
-      chainId,
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.bridge(
+        to,
+        chainId,
+        token,
+        amount,
+        narrowToRouterQuery(originQuery),
+        narrowToRouterQuery(destQuery)
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
       token,
-      amount,
-      narrowToRouterQuery(originQuery),
-      narrowToRouterQuery(destQuery)
+      BigNumber.from(amount)
     )
   }
 
@@ -250,11 +258,18 @@ export class SynapseRouter extends Router {
     amount: BigintIsh,
     query: Query
   ): Promise<PopulatedTransaction> {
-    return this.routerContract.populateTransaction.swap(
-      to,
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.swap(
+        to,
+        token,
+        amount,
+        narrowToRouterQuery(query)
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
       token,
-      amount,
-      narrowToRouterQuery(query)
+      BigNumber.from(amount)
     )
   }
 }
