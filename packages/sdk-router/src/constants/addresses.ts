@@ -1,4 +1,9 @@
-import { CCTP_SUPPORTED_CHAIN_IDS, SUPPORTED_CHAIN_IDS } from './chainIds'
+import {
+  CCTP_SUPPORTED_CHAIN_IDS,
+  RFQ_SUPPORTED_CHAIN_IDS,
+  SUPPORTED_CHAIN_IDS,
+  SupportedChainId,
+} from './chainIds'
 
 export type AddressMap = {
   [chainId: number]: string
@@ -47,4 +52,21 @@ export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   CCTP_SUPPORTED_CHAIN_IDS,
   CCTP_ROUTER_ADDRESS,
   CCTP_ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * FastBridge contract address for all chains except ones from FAST_BRIDGE_ADDRESS.
+ *
+ * TODO: Update this address once FastBridge is deployed.
+ */
+const FAST_BRIDGE_ADDRESS = ''
+const FAST_BRIDGE_EXCEPTION_MAP: AddressMap = {
+  [SupportedChainId.OPTIMISM]: '0x630ec5A3A2FDe67960D650E494e67b808b8fB59B',
+  [SupportedChainId.ARBITRUM]: '0x5189c53173927d1E70c83e84b4C3BB466c94a265',
+}
+
+export const FAST_BRIDGE_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  FAST_BRIDGE_ADDRESS,
+  FAST_BRIDGE_EXCEPTION_MAP
 )
