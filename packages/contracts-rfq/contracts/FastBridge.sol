@@ -125,7 +125,6 @@ contract FastBridge is IFastBridge, Admin {
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
-        // TODO: test
         if (!transaction.sendChainGas) {
             // forward erc20
             _pullToken(to, token, amount);

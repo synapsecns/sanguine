@@ -492,6 +492,15 @@ contract FastBridgeTest is Test {
     }
 
     function test_successfulBridgeWithChainGas() public {
+        setUpRoles();
+
+        // Start prank with governor to set chain gas (irrelevant for this test on origin)
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
+
         // Start a prank with the user
         vm.startPrank(user);
         // Approve the fastBridge to spend 100 * 10 ** 6 of arbUSDC from the user
@@ -531,10 +540,19 @@ contract FastBridgeTest is Test {
     }
 
     function test_successfulBridgeWithETHAndChainGas() public {
+        setUpRoles();
+
         // setup eth
         deal(user, 100 * 10 ** 18);
         uint256 userBalanceBefore = user.balance;
         uint256 bridgeBalanceBefore = address(fastBridge).balance;
+
+        // Start prank with governor to set chain gas (irrelevant for this test on origin)
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
 
         // Start a prank with the user
         vm.startPrank(user);
@@ -771,6 +789,10 @@ contract FastBridgeTest is Test {
         uint256 userBalanceBefore = user.balance;
         uint256 relayerBalanceBefore = relayer.balance;
 
+        // Expect the BridgeRelayed event to be emitted
+        vm.expectEmit();
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18);
+
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         uint256 value = 10.97e18;
@@ -782,6 +804,98 @@ contract FastBridgeTest is Test {
 
         assertEq(userBalanceAfter - userBalanceBefore, value);
         assertEq(relayerBalanceBefore - relayerBalanceAfter, value);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulRelayDestinationWithETHAndChainGas() public {
+        // Set up the roles for the test
+        setUpRoles();
+
+        // deal some dest ETH to relayer
+        deal(relayer, 100e18);
+
+        // Start prank with governor to set chain gas on dest chain
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42161, 0, 0);
+
+        // Get the initial information of the bridge transaction; make sure not relayed
+        assertEq(fastBridge.bridgeRelays(transactionId), false);
+
+        // Start a prank with the relayer
+        vm.startPrank(relayer);
+        // Get the initial balances of the relayer and the user
+        uint256 userBalanceBefore = user.balance;
+        uint256 relayerBalanceBefore = relayer.balance;
+
+        // Expect the BridgeRelayed event to be emitted
+        vm.expectEmit();
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18);
+
+        // Relay the destination bridge
+        vm.chainId(1); // set to dest chain
+        uint256 value = 10.97e18 + chainGasAmount;
+        fastBridge.relay{value: value}(request);
+
+        // Check the balances of the relayer and the user after relaying the destination bridge
+        uint256 userBalanceAfter = user.balance;
+        uint256 relayerBalanceAfter = relayer.balance;
+
+        assertEq(userBalanceAfter - userBalanceBefore, value);
+        assertEq(relayerBalanceBefore - relayerBalanceAfter, value);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulRelayDestinationWithChainGas() public {
+        // Set up the roles for the test
+        setUpRoles();
+
+        // deal some dest ETH to relayer
+        deal(relayer, 100e18);
+
+        // Start prank with governor to set chain gas on dest chain
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+
+        // Get the initial information of the bridge transaction; make sure not relayed
+        assertEq(fastBridge.bridgeRelays(transactionId), false);
+
+        // Start a prank with the relayer
+        vm.startPrank(relayer);
+        // Approve the fastBridge to spend the maximum amount of ethUSDC from the relayer
+        ethUSDC.approve(address(fastBridge), type(uint256).max);
+        // Check the initial balances of the relayer and the user
+        assertEq(ethUSDC.balanceOf(relayer), 100 * 10 ** 6);
+        assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
+        // Expect the BridgeRelayed event to be emitted
+        vm.expectEmit();
+        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6);
+        // Relay the destination bridge
+        vm.chainId(1); // set to dest chain
+        fastBridge.relay{value: chainGasAmount}(request);
+        // Check the balances of the relayer and the user after relaying the destination bridge
+        assertEq(ethUSDC.balanceOf(relayer), 89.03e6);
+        assertEq(ethUSDC.balanceOf(user), 110.97e6);
+        assertEq(relayer.balance, 99.995e18);
+        assertEq(user.balance, 0.005e18);
+
+        // Get the returned information of the bridge transaction relays status
+        assertEq(fastBridge.bridgeRelays(transactionId), true);
 
         // We stop a prank to contain within test
         vm.stopPrank();
