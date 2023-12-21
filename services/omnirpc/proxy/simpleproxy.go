@@ -197,7 +197,13 @@ func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request,
 	return false, []byte{}, nil
 }
 
-func (r *SimpleProxy) makeReq(ctx context.Context, body []byte) ([]byte, error) {
+func (r *SimpleProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte, err error) {
+	ctx, span := r.tracer.Start(parentCtx, "makeReq")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+	span.AddEvent("http.request", trace.WithAttributes(attribute.String("body", string(body))))
+
 	req := r.client.NewRequest()
 	resp, err := req.
 		SetContext(ctx).
@@ -211,10 +217,13 @@ func (r *SimpleProxy) makeReq(ctx context.Context, body []byte) ([]byte, error) 
 		return nil, fmt.Errorf("could not get response from %s: %w", r.proxyURL, err)
 	}
 
-	return resp.Body(), nil
+	respBody := resp.Body()
+	span.AddEvent("http.response", trace.WithAttributes(attribute.String("body", string(respBody))))
+
+	return respBody, nil
 }
 
-const expectedVersion = "Harmony (C) 2023. harmony, version v8196-v2023.4.2-0-g8717ccf6 (@ 2023-12-19T10:09:52+0000)"
+const expectedVersion = "Harmony (C) 2023. harmony, version v8196-v2023.4.2-0-g8717ccf6"
 
 func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte) (_ []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getHarmonyReceiptVerify")
@@ -246,7 +255,7 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 			return fmt.Errorf("could not get web3 version: %w", err)
 		}
 
-		if web3Version != expectedVersion {
+		if !strings.Contains(web3Version, expectedVersion) {
 			return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
 		}
 		return nil
@@ -339,7 +348,7 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 			return fmt.Errorf("could not get web3 version: %w", err)
 		}
 
-		if web3Version != expectedVersion {
+		if !strings.Contains(web3Version, expectedVersion) {
 			return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
 		}
 		return nil
