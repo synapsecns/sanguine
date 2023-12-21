@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -150,7 +152,18 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, request r
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	gasAmount := big.NewInt(0)
+
+	if request.Transaction.SendChainGas {
+		gasAmount, err = q.Dest.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return fmt.Errorf("could not get chain gas amount: %w", err)
+		}
+	}
+
 	nonce, err := q.Dest.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		transactor.Value = core.CopyBigInt(gasAmount)
+
 		tx, err = q.Dest.Bridge.Relay(transactor, request.RawRequest)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)

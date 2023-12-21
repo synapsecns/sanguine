@@ -133,6 +133,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
+		SendChainGas: true,
 		DestToken:    destUSDC.Address(),
 		OriginAmount: realWantAmount,
 		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1)),
