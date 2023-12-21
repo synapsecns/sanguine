@@ -2,7 +2,7 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
-import { Query, SwapQuote } from '../router'
+import { Query, SwapQuote } from '../module'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
 import { getOriginDeadline } from '../utils/deadlines'

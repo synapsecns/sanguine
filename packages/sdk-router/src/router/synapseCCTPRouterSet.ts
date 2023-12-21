@@ -29,35 +29,11 @@ export class SynapseCCTPRouterSet extends RouterSet {
   }
 
   /**
-   * @inheritdoc RouterSet.getSynapseTxId
-   */
-  public async getSynapseTxId(
-    originChainId: number,
-    txHash: string
-  ): Promise<string> {
-    return this.getSynapseCCTPRouter(originChainId).getSynapseTxId(txHash)
-  }
-
-  /**
-   * @inheritdoc RouterSet.getBridgeTxStatus
-   */
-  public async getBridgeTxStatus(
-    destChainId: number,
-    synapseTxId: string
-  ): Promise<boolean> {
-    return this.getSynapseCCTPRouter(destChainId).getBridgeTxStatus(synapseTxId)
-  }
-
-  /**
    * Returns the existing SynapseCCTPRouter instance for the given chain.
    *
    * @throws Will throw an error if SynapseCCTPRouter is not deployed on the given chain.
    */
   public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
-    invariant(
-      this.routers[chainId],
-      `No SynapseCCTPRouter deployed on chain ${chainId}`
-    )
-    return this.routers[chainId] as SynapseCCTPRouter
+    return this.getExistingModule(chainId) as SynapseCCTPRouter
   }
 }

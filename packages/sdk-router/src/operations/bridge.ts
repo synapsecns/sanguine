@@ -4,7 +4,8 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, Query, RouterSet, findBestRoute } from '../router'
+import { BridgeQuote, Query, findBestRoute } from '../module'
+import { RouterSet } from '../router'
 
 /**
  * Executes a bridge operation between two different chains. Depending on the origin router address, the operation
@@ -42,8 +43,14 @@ export async function bridge(
   token = handleNativeToken(token)
   // Get Router instance for given chain and address
   const router =
-    this.synapseRouterSet.getRouter(originChainId, originRouterAddress) ??
-    this.synapseCCTPRouterSet.getRouter(originChainId, originRouterAddress)
+    this.synapseRouterSet.getModuleWithAddress(
+      originChainId,
+      originRouterAddress
+    ) ??
+    this.synapseCCTPRouterSet.getModuleWithAddress(
+      originChainId,
+      originRouterAddress
+    )
   // Throw if Router is not found
   invariant(router, 'Invalid router address')
   // Ask the Router to populate the bridge transaction
@@ -107,12 +114,7 @@ export async function bridgeQuote(
   invariant(allRoutes.length > 0, 'No route found')
   const bestRoute = findBestRoute(allRoutes)
   // Find the Router Set that yielded the best route
-  const bestSet: RouterSet = this.synapseRouterSet.getRouter(
-    originChainId,
-    bestRoute.originRouterAddress
-  )
-    ? this.synapseRouterSet
-    : this.synapseCCTPRouterSet
+  const bestSet: RouterSet = getRouterSet.call(this, bestRoute.bridgeModuleName)
   // Finalize the Bridge Route
   return bestSet.finalizeBridgeRoute(bestRoute, deadline)
 }

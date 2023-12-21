@@ -95,10 +95,10 @@ describe('SynapseCCTPRouterSet', () => {
     })
   })
 
-  describe('getRouter', () => {
+  describe('getModuleWithAddress', () => {
     it('Returns the correct router given correct address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.ETH,
           CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -107,7 +107,7 @@ describe('SynapseCCTPRouterSet', () => {
 
     it('Returns undefined given incorrect address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.ETH,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -116,7 +116,7 @@ describe('SynapseCCTPRouterSet', () => {
 
     it('Returns undefined given unknown chainId', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.AVALANCHE,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -125,7 +125,7 @@ describe('SynapseCCTPRouterSet', () => {
 
     it('Returns undefined given chainId without CCTP', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.MOONBEAM,
           CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -143,7 +143,7 @@ describe('SynapseCCTPRouterSet', () => {
     it('Throws error for unsupported chain', () => {
       expect(() =>
         routerSet.getSynapseCCTPRouter(SupportedChainId.AVALANCHE)
-      ).toThrow('No SynapseCCTPRouter deployed on chain 43114')
+      ).toThrow('No module found for chain 43114')
     })
   })
 

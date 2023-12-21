@@ -10,8 +10,8 @@ import {
   SupportedChainId,
 } from '../constants'
 import { SynapseRouter } from './synapseRouter'
-import { RouterQuery } from './query'
-import { BridgeToken, DestRequest } from './types'
+import { BridgeToken, RouterQuery } from '../module'
+import { DestRequest } from './types'
 
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
