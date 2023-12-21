@@ -95,6 +95,8 @@ type RequestForQuote struct {
 	BlockNumber uint64
 	// RawRequest is the raw request, hex encoded.
 	RawRequest string
+	// SendChainGas is true if we should send chain gas
+	SendChainGas bool
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -110,6 +112,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginToken:          request.Transaction.OriginToken.String(),
 		OriginTokenDecimals:  request.OriginTokenDecimals,
 		RawRequest:           hexutil.Encode(request.RawRequest),
+		SendChainGas:         request.Transaction.SendChainGas,
 		DestTokenDecimals:    request.DestTokenDecimals,
 		DestToken:            request.Transaction.DestToken.String(),
 		OriginAmountOriginal: request.Transaction.OriginAmount.String(),
@@ -151,6 +154,7 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			OriginChainId: r.OriginChainID,
 			DestChainId:   r.DestChainID,
 			OriginSender:  common.HexToAddress(r.OriginSender),
+			SendChainGas:  r.SendChainGas,
 			DestRecipient: common.HexToAddress(r.DestRecipient),
 			OriginToken:   common.HexToAddress(r.OriginToken),
 			DestToken:     common.HexToAddress(r.DestToken),
