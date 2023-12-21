@@ -63,17 +63,8 @@ export abstract class RouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getModule
    */
-  public getModule(
-    chainId: number,
-    moduleAddress: string
-  ): SynapseModule | undefined {
-    const router = this.routers[chainId]
-    // Check if router exists on chain and that router address matches
-    if (router?.address.toLowerCase() === moduleAddress.toLowerCase()) {
-      return router
-    } else {
-      return undefined
-    }
+  public getModule(chainId: number): SynapseModule | undefined {
+    return this.routers[chainId]
   }
 
   /**

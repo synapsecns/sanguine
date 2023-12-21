@@ -44,6 +44,15 @@ export abstract class SynapseModuleSet {
   ): Promise<boolean>
 
   /**
+   * Returns the existing Module instance on the given chain.
+   * Returns undefined if a Module instance does not exist on the given chain.
+   *
+   * @param chainId - The ID of the chain.
+   * @returns The Module instance, or undefined if it does not exist.
+   */
+  abstract getModule(chainId: number): SynapseModule | undefined
+
+  /**
    * Returns the existing Module instance for the given address on the given chain.
    * If the module address is not valid, it will return undefined.
    *
@@ -51,10 +60,16 @@ export abstract class SynapseModuleSet {
    * @param moduleAddress - The address of the module.
    * @returns The Module instance, or undefined if the module address is not valid.
    */
-  abstract getModule(
+  getModuleWithAddress(
     chainId: number,
     moduleAddress: string
-  ): SynapseModule | undefined
+  ): SynapseModule | undefined {
+    const module = this.getModule(chainId)
+    if (module?.address.toLowerCase() === moduleAddress.toLowerCase()) {
+      return module
+    }
+    return undefined
+  }
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.

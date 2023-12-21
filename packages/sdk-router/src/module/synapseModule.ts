@@ -4,6 +4,8 @@ import { Query } from '../router/query'
 import { BigintIsh } from '../constants'
 
 export interface SynapseModule {
+  readonly address: string
+
   /**
    * Populates the transaction data for a bridge transaction.
    *
