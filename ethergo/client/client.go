@@ -57,7 +57,6 @@ type EVM interface {
 type clientImpl struct {
 	tracing           metrics.Handler
 	captureClient     *captureClient
-	rpcClient         *rpc.Client
 	endpoint          string
 	captureRequestRes bool
 	// TODO: consider using sync.Pool for capture clients to improve performance
@@ -149,7 +148,7 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) (e
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.rpcClient.BatchCallContext(requestCtx, b)
+	return c.captureClient.rpcClient.BatchCallContext(requestCtx, b)
 }
 
 func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (context.Context, trace.Span) {
@@ -502,7 +501,7 @@ func (c *clientImpl) CallContext(ctx context.Context, result interface{}, method
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.rpcClient.CallContext(requestCtx, result, method, args...)
+	return c.captureClient.rpcClient.CallContext(requestCtx, result, method, args...)
 }
 
 // NonceAt calls NonceAt on the underlying client
