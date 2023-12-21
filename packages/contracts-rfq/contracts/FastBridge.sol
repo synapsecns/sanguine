@@ -132,11 +132,11 @@ contract FastBridge is IFastBridge, Admin {
             _pullToken(to, token, amount);
         } else if (token == UniversalTokenLib.ETH_ADDRESS) {
             // lump in gas rebate into amount in native gas token
-            _pullToken(to, token, amount + chainGasAmount);
+            _pullToken(to, token, amount + rebate);
         } else {
             // forward erc20 then forward gas rebate in native gas token
             _pullToken(to, token, amount);
-            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, chainGasAmount);
+            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
         }
 
         emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
