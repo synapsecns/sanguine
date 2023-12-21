@@ -5,6 +5,11 @@ export type ChainToken = {
   token: string
 }
 
+export type Ticker = {
+  originToken: ChainToken
+  destToken: ChainToken
+}
+
 export const marshallChainToken = (chainToken: ChainToken): string => {
   return `${chainToken.chainId}:${chainToken.token}`
 }
@@ -26,5 +31,25 @@ export const unmarshallChainToken = (chainTokenStr: string): ChainToken => {
   return {
     chainId,
     token,
+  }
+}
+
+export const marshallTicker = (ticker: Ticker): string => {
+  return `${marshallChainToken(ticker.originToken)}-${marshallChainToken(
+    ticker.destToken
+  )}`
+}
+
+export const unmarshallTicker = (tickerStr: string): Ticker => {
+  // The unmashalled string should be in the format of "originChainId:originToken-destChainId:destToken"
+  const items = tickerStr.split('-')
+  if (items.length !== 2) {
+    throw new Error(`Can not unmarshall "${tickerStr}": invalid format`)
+  }
+  const originToken = unmarshallChainToken(items[0])
+  const destToken = unmarshallChainToken(items[1])
+  return {
+    originToken,
+    destToken,
   }
 }
