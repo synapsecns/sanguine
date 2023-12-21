@@ -46,7 +46,7 @@ export const BridgeButton = ({
 
   const buttonStyle = `
     p-2 text-lg font-sans font-semibold rounded-md w-full 
-    bg-[--synapse-button-bg] disabled:bg-[--synapse-root] 
+    bg-[--synapse-button-bg]
     border border-solid border-[--synapse-button-border] 
     hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border] 
     active:opacity-40 disabled:opacity-70 

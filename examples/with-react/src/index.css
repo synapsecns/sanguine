@@ -16,9 +16,6 @@
   color: var(--primary);
 }
 
-html {
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --strong: hsl(240deg 100% 100%);
@@ -43,6 +40,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#bridge-container {
+  resize: both;
+  overflow: scroll;
+  border: 1px solid var(--separator);
+  display: grid;
+  place-content: center;
+  padding: 1rem;
 }
 
 #root {

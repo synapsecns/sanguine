@@ -14,7 +14,6 @@ export interface BridgeableToken {
 
 export interface CustomThemeVariables {
   bgColor?: string
-  accentColor?: string
   '--synapse-text'?: string
   '--synapse-secondary'?: string
   '--synapse-select-bg'?: string
@@ -41,6 +40,7 @@ export interface WidgetProps {
 
   /** Apply Custom Themes */
   customTheme?: CustomThemeVariables
+  container?: Boolean
 
   /** Supported Tokens Metadata defined by Consumer */
   tokens: BridgeableToken[]

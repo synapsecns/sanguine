@@ -38,7 +38,7 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
 
   const hslString = (h: number, s: number, l: number, a: number, x: number) =>
     colorMode === 'dark' || l < 50
-      ? `hsl(${h}deg ${s}% ${x * 100 + l * x}%)`
+      ? `hsl(${h}deg ${(s * l) / 50 + x * 10}% ${x * 100 + l * x}%)`
       : `hsl(${h}deg ${s}% ${Math.min(100, l * (1 + x)) * x}%)`
 
   const colorMode = theme.bgColor === 'dark' ? 'dark' : 'light'

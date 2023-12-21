@@ -88,6 +88,7 @@ export const Widget = ({
   networkProviders,
   theme,
   customTheme,
+  container,
   tokens,
   toChainId,
 }) => {
@@ -293,114 +294,121 @@ export const Widget = ({
     [dispatch]
   )
 
+  const containerStyle = container === false
+    ? 'p-0 w-full'
+    : 'p-2 rounded-lg max-w-[400px]'
+
   const cardStyle = `
-    grid grid-cols-[1fr_auto]
-    bg-[--synapse-surface] rounded-md p-2
+    grid grid-cols-[1fr_auto] 
+    bg-[--synapse-surface] rounded-md p-2 gap-1
     border border-solid border-[--synapse-border]
   `
 
   const inputStyle = `
-    text-3xl w-full font-semibold bg-transparent border-none py-2
+    text-3xl w-full font-semibold bg-transparent border-none py-1
     text-[--synapse-text] placeholder:text-[--synapse-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
   `
 
   return (
     <div
       style={themeVariables}
-      className={`
-        max-w-[400px] rounded-lg grid gap-2 p-2
-        bg-[--synapse-root] text-[--synapse-text] font-medium 
-      `}
+      className="synapse-widget"
     >
-      <Transaction
-        originChainId={42161}
-        destinationChainId={137}
-        originTxHash="0x6c25a451f4fe26742eeafe2475a190a5c9a6cf6b6ab9cecd10348be506402f66"
-        destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
-        kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
-      />
-      <section className={cardStyle}>
-        <ChainSelect
-          label="From"
-          chain={chains[originChainId]}
-          onChange={handleOriginChainSelection}
+      <div
+        className={`
+          bg-[--synapse-root] grid gap-2 text-[--synapse-text] ${containerStyle}
+        `}
+      >
+        <Transaction
+          originChainId={42161}
+          destinationChainId={137}
+          originTxHash="0x6c25a451f4fe26742eeafe2475a190a5c9a6cf6b6ab9cecd10348be506402f66"
+          destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
+          kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
         />
-        <input
-          className={inputStyle}
-          placeholder="0"
-          value={inputAmount}
-          onChange={handleUserInput}
-        />
-        <div className="flex flex-col items-end justify-center">
-          <TokenSelect
-            label="In"
-            isOrigin={true}
-            token={originToken}
-            onChange={handleOriginTokenSelection}
+        <section className={cardStyle}>
+          <ChainSelect
+            label="From"
+            chain={chains[originChainId]}
+            onChange={handleOriginChainSelection}
           />
-          <AvailableBalance
-            connectedAddress={connectedAddress}
-            setInputAmount={setInputAmount}
+          <input
+            className={inputStyle}
+            placeholder="0"
+            value={inputAmount}
+            onChange={handleUserInput}
           />
-        </div>
-      </section>
-      <section className={cardStyle}>
-        <ChainSelect
-          label="To"
-          chain={chains[destinationChainId]}
-          onChange={handleDestinationChainSelection}
+          <div className="flex flex-col items-end justify-center">
+            <TokenSelect
+              label="In"
+              isOrigin={true}
+              token={originToken}
+              onChange={handleOriginTokenSelection}
+            />
+            <AvailableBalance
+              connectedAddress={connectedAddress}
+              setInputAmount={setInputAmount}
+            />
+          </div>
+        </section>
+        <section className={cardStyle}>
+          <ChainSelect
+            label="To"
+            chain={chains[destinationChainId]}
+            onChange={handleDestinationChainSelection}
+          />
+          <input
+            className={inputStyle}
+            disabled={true}
+            placeholder=""
+            value={
+              isLoading
+                ? '...'
+                : formatBigIntToString(
+                    bridgeQuote?.delta,
+                    destinationToken?.decimals[destinationChainId],
+                    4
+                  )
+            }
+          />
+          <div className="flex flex-col items-end justify-center">
+            <TokenSelect
+              label="Out"
+              isOrigin={false}
+              token={destinationToken}
+              onChange={handleDestinationTokenSelection}
+            />
+          </div>
+        </section>
+        <Receipt
+          quote={bridgeQuote ?? null}
+          send={formatBigIntToString(
+            stringToBigInt(
+              debouncedInputAmount,
+              originToken?.decimals[originChainId]
+            ),
+            originToken?.decimals[originChainId],
+            4
+          )}
+          receive={formatBigIntToString(
+            bridgeQuote?.delta,
+            destinationToken?.decimals[destinationChainId],
+            4
+          )}
         />
-        <input
-          className={inputStyle}
-          disabled={true}
-          placeholder=""
-          value={
-            isLoading
-              ? '...'
-              : formatBigIntToString(
-                  bridgeQuote?.delta,
-                  destinationToken?.decimals[destinationChainId],
-                  4
-                )
+        <BridgeButton
+          originChain={chains[originChainId]}
+          isValidQuote={
+            Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
           }
+          handleApprove={executeApproval}
+          handleBridge={executeBridge}
+          isApprovalPending={
+            approveTxnStatus === ApproveTransactionStatus.PENDING
+          }
+          isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
         />
-        <div className="flex flex-col items-end justify-center">
-          <TokenSelect
-            label="Out"
-            isOrigin={false}
-            token={destinationToken}
-            onChange={handleDestinationTokenSelection}
-          />
-        </div>
-      </section>
-      <Receipt
-        quote={bridgeQuote ?? null}
-        send={formatBigIntToString(
-          stringToBigInt(
-            debouncedInputAmount,
-            originToken?.decimals[originChainId]
-          ),
-          originToken?.decimals[originChainId],
-          4
-        )}
-        receive={formatBigIntToString(
-          bridgeQuote?.delta,
-          destinationToken?.decimals[destinationChainId],
-          4
-        )}
-      />
-      <BridgeButton
-        originChain={chains[originChainId]}
-        isValidQuote={
-          Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
-        }
-        handleApprove={executeApproval}
-        handleBridge={executeBridge}
-        isApprovalPending={
-          approveTxnStatus === ApproveTransactionStatus.PENDING
-        }
-        isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
-      />
+      </div>
     </div>
   )
 }

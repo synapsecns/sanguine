@@ -17,6 +17,7 @@ export const Bridge = ({
   networkProviders,
   theme,
   customTheme,
+  container,
   tokens,
   toChainId,
 }: WidgetProps) => {
@@ -28,6 +29,7 @@ export const Bridge = ({
           networkProviders={networkProviders}
           theme={theme}
           customTheme={customTheme}
+          container={container}
           tokens={tokens}
           toChainId={toChainId}
         />

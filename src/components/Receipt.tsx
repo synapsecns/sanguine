@@ -14,17 +14,17 @@ export const Receipt = ({ quote, send, receive }) => {
         >
           {estTime} min via Synapse <DoubleDownArrow />
         </summary>
-        <dl className="receipt mt-1 mb-0 p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-2">
+        <dl className="receipt mt-1 mb-0 p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-[auto_auto]">
           <dt className="text-left">Router</dt>
-          <dd className="text-right">{quote?.bridgeModuleName}</dd>
+          <dd className="text-right m-0 justify-self-end">{quote?.bridgeModuleName}</dd>
           <dt className="text-left">Origin</dt>
-          <dd className="text-right">Ethereum</dd>
+          <dd className="text-right m-0 justify-self-end">Ethereum</dd>
           <dt className="text-left">Destination</dt>
-          <dd className="text-right">Arbitrum</dd>
+          <dd className="text-right m-0 justify-self-end">Arbitrum</dd>
           <dt className="text-left">Send</dt>
-          <dd className="text-right">{send}</dd>
+          <dd className="text-right m-0 justify-self-end">{send}</dd>
           <dt className="text-left">Receive</dt>
-          <dd className="text-right">{receive}</dd>
+          <dd className="text-right m-0 justify-self-end">{receive}</dd>
         </dl>
       </details>
     ) : (

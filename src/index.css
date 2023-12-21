@@ -2,16 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-    :root {
-        --synapse-widget-primary-color: 0, 0, 0;
-        --synapse-widget-secondary-color: 105, 105, 105;
-        --synapse-widget-accent-color: 17, 0, 255;
-        --synapse-widget-small-color: 169, 169, 169;
-        --synapse-widget-separator-color: 220, 220, 220;
-        --synapse-widget-background-color: 245, 245, 245;
-        --synapse-widget-surface-color: 255, 255, 255;
-        --synapse-widget-font-family: system-ui, -apple-system, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif, 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue'
-    }
+.synapse-widget {
+    all: initial;
+
+    display: inline-block;
+
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+
+    /* For future consideration, more complete set of customizable variables
+
+    --synapse-radius-inner: 0.25rem;
+    --synapse-radius-outer: 0.5rem;
+    --synapse-radius-full: 9999px;
+
+    --synapse-focus: var(--synapse-secondary);
+
+    --synapse-select-bg: var(--synapse-object);
+    --synapse-select-text: var(--synapse-text);
+    --synapse-select-border: var(--synapse-object);
+    --synapse-select-radius: var(--synapse-radius-full);
+    
+    --synapse-button-bg: var(--synapse-surface);
+    --synapse-button-text: var(--synapse-text);
+    --synapse-button-border: var(--synapse-border);
+    --synapse-button-radius: var(--synapse-radius-inner);
+    
+    --synapse-container-bg: var(--synapse-root);
+    --synapse-container-text: var(--synapse-text);
+    --synapse-container-border: var(--synapse-border);
+    --synapse-container-radius: var(--synapse-radius-outer);
+    
+    --synapse-card-bg: var(--synapse-surface);
+    --synapse-card-text: var(--synapse-text);
+    --synapse-card-border: var(--synapse-border);
+    --synapse-card-radius: var(--synapse-radius-inner);
+
+    */
 }

@@ -4,7 +4,7 @@ import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
 import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
 
 const TransactionStatus = ({ string }) => {
-  return <div className="px-1">{string}</div>
+  return <>{string}</>
 }
 
 export const Transaction = ({
@@ -41,14 +41,14 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-row justify-between items-center px-2 py-1
+        flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         bg-[--synapse-surface]
         border border-solid border-[--synapse-border] rounded-md
       `}
     >
       <TransactionStatus string="Pending" />
-      <div className="flex flex-row items-center space-x-2">
-        <div>5-7 min</div>
+      <div className="flex gap-2 items-center grow justify-end">
+        <div className="whitespace-nowrap">5-7 min</div>
         <DropdownMenu>
           <MenuItem text="Arbiscan" link={originTxExplorerLink} />
           <MenuItem text="Polyscan" link={destTxExplorerLink} />

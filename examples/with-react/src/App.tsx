@@ -1,7 +1,7 @@
 import { Bridge, USDC, USDT, DAI, ETH } from '@abtestingalpha/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
-import { BaseSyntheticEvent, useState } from 'react'
+import { BaseSyntheticEvent, SyntheticEvent, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 
@@ -38,6 +38,7 @@ function App() {
   const chainIds = [42161, 1, 137, 10]
 
   const [customTheme, setCustomTheme] = useState({})
+  const [container, setContainer] = useState(true)
 
   function createCustomTheme() {
     const colorPicker = document.getElementById(
@@ -88,6 +89,11 @@ function App() {
   const { web3Provider, connectedAddress, connectedNetwork } =
     useEthereumWallet()
 
+  const toggleContainer = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setContainer(e.target.checked)
+
+  const bridgeContainerDisplayProperty = container ? 'grid' : 'block'
+
   return (
     <>
       <Header />
@@ -101,27 +107,32 @@ function App() {
             Bridge to your React project
           </p>
           <div id="example-container">
-            <div id="bridge-container">
+            <div
+              id="bridge-container"
+              style={{ display: bridgeContainerDisplayProperty, }}
+            >
               <Bridge
                 chainIds={chainIds}
                 web3Provider={web3Provider}
                 networkProviders={providers}
                 tokens={tokens}
                 customTheme={customTheme}
+                container={container}
                 toChainId={137}
               />
             </div>
-            <input id="color-picker" type="color" onInput={createCustomTheme} />
+            <div style={{ display: 'flex', justifyContent: 'space-between'}}>
+              <div style={{ display: 'flex', gap: '1rem'}}>
+                <input id="color-picker" type="color" onInput={createCustomTheme} />
+                <div>
+                  <label>Container</label>&nbsp;
+                  <input type="checkbox" checked={container} onChange={toggleContainer}/>
+                </div>
+              </div>
+              Drag to resize
+            </div>
           </div>
         </header>
-        {/* <Bridge
-          chainIds={chainIds}
-          web3Provider={web3Provider}
-          networkProviders={providers}
-          tokens={tokens}
-          theme="night"
-        /> */}
-        {/* <hr /> */}
         <article>
           <h2>⬇️&nbsp; Install</h2>
           <p>Install the Synapse Widget in your Next.js or React project</p>
