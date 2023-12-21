@@ -113,12 +113,7 @@ export async function bridgeQuote(
   invariant(allRoutes.length > 0, 'No route found')
   const bestRoute = findBestRoute(allRoutes)
   // Find the Router Set that yielded the best route
-  const bestSet: RouterSet = this.synapseRouterSet.getModuleWithAddress(
-    originChainId,
-    bestRoute.originRouterAddress
-  )
-    ? this.synapseRouterSet
-    : this.synapseCCTPRouterSet
+  const bestSet: RouterSet = getRouterSet.call(this, bestRoute.bridgeModuleName)
   // Finalize the Bridge Route
   return bestSet.finalizeBridgeRoute(bestRoute, deadline)
 }

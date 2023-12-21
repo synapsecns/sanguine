@@ -123,7 +123,7 @@ export abstract class RouterSet extends SynapseModuleSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
-          originRouterAddress: originRouter.address,
+          bridgeModuleName: this.bridgeModuleName,
         })
       )
       // Return routes with non-zero minAmountOut
@@ -149,6 +149,10 @@ export abstract class RouterSet extends SynapseModuleSet {
     const originRouter = this.routers[bridgeRoute.originChainId]
     const destRouter = this.routers[bridgeRoute.destChainId]
     invariant(originRouter && destRouter, 'Route not supported')
+    invariant(
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      'Invalid bridge module name'
+    )
     const { originQuery, destQuery, bridgeToken } = bridgeRoute
     // Set origin deadline to 10 mins if not provided
     originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
@@ -169,7 +173,7 @@ export abstract class RouterSet extends SynapseModuleSet {
       originQuery,
       destQuery,
       estimatedTime,
-      bridgeModuleName: this.bridgeModuleName,
+      bridgeModuleName: bridgeRoute.bridgeModuleName,
     }
   }
 }
