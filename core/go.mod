@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/core
 
-go 1.20
+go 1.21
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 

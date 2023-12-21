@@ -32,3 +32,7 @@ The relayer consists of two main loops that contain the entire business logic of
 ### Quote Posting
 
 The quote posting process is rather rudimentary. The relayer continously fetches a list of its on chain balances and subtraces any open commitments.
+
+Currently, the quotes are standalone; that is, they are not responding to any client requests. The quoter specifies a `FixedFee` parameter that is meant to account for the gas costs associated with executing transactions on the origin and destinations chains.
+
+In a future version, quotes may be issued in a more classic RFQ-style, where they are posted in response to a client request. In that case we can incorporate more precise pricing logic.

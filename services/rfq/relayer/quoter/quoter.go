@@ -5,10 +5,12 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"golang.org/x/exp/slices"
 
@@ -46,10 +48,12 @@ type Manager struct {
 	relayerSigner signer.Signer
 	// quotableTokens are tokens that the relayer is willing to relay to & from
 	quotableTokens map[string][]string
+	// feePricer is used to price fees.
+	feePricer pricer.FeePricer
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer) (*Manager, error) {
+func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer, feePricer pricer.FeePricer) (*Manager, error) {
 	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
@@ -60,6 +64,7 @@ func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string]
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
 		relayerSigner:    relayerSigner,
+		feePricer:        feePricer,
 	}, nil
 }
 
@@ -69,7 +74,7 @@ func (m *Manager) SetQuotableTokens(tokens map[string][]string) {
 }
 
 // ShouldProcess determines if a quote should be processed.
-func (m *Manager) ShouldProcess(quote reldb.QuoteRequest) bool {
+func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
 	if slices.Contains(destPairs, quote.GetDestIDPair()) {
@@ -84,33 +89,46 @@ func (m *Manager) ShouldProcess(quote reldb.QuoteRequest) bool {
 	}
 
 	// then check if we'll make money on it
-	// note: this check is not comprehensive. We still need to check gas, min fees, etc.
-	// It does keep us in range though.
-	if quote.Transaction.OriginAmount.Cmp(quote.Transaction.DestAmount) < 0 {
-		// we're not making money on this
+	isProfitable, err := m.isProfitableQuote(ctx, quote)
+	if err != nil {
+		logger.Errorf("Error checking if quote is profitable: %v", err)
 		return false
 	}
+	return isProfitable
+}
 
-	return false
+// isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteRequest) (bool, error) {
+	destTokenID, err := m.feePricer.GetTokenName(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
+	if err != nil {
+		return false, fmt.Errorf("error getting dest token ID: %w", err)
+	}
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID)
+	if err != nil {
+		return false, fmt.Errorf("error getting total fee: %w", err)
+	}
+	// NOTE: this logic assumes that the origin and destination tokens have the same price.
+	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
+	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
-func (m *Manager) SubmitAllQuotes() error {
-	inv, err := m.inventoryManager.GetCommitableBalances(context.Background())
+func (m *Manager) SubmitAllQuotes(ctx context.Context) error {
+	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting commitable balances: %w", err)
 	}
-	return m.prepareAndSubmitQuotes(inv)
+	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
 // Prepares and submits quotes based on inventory.
-func (m *Manager) prepareAndSubmitQuotes(inv map[int]map[common.Address]*big.Int) error {
+func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) error {
 	var allQuotes []rfqAPIClient.APIQuotePutRequest
 
 	// First, generate all quotes
 	for chainID, balances := range inv {
 		for address, balance := range balances {
-			quotes, err := m.GenerateQuotes(chainID, address, balance)
+			quotes, err := m.GenerateQuotes(ctx, chainID, address, balance)
 			if err != nil {
 				return err
 			}
@@ -132,19 +150,34 @@ func (m *Manager) prepareAndSubmitQuotes(inv map[int]map[common.Address]*big.Int
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) GenerateQuotes(chainID int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
+func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 	var quotes []rfqAPIClient.APIQuotePutRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
-			if tokenID == destTokenID {
+			// TODO: probably a better way to do this.
+			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
+				originStr := strings.Split(keyTokenID, "-")[0]
+				origin, err := strconv.Atoi(originStr)
+				if err != nil {
+					return nil, fmt.Errorf("error converting origin chainID: %w", err)
+				}
+				destToken, err := m.feePricer.GetTokenName(uint32(chainID), address.Hex())
+				if err != nil {
+					return nil, fmt.Errorf("error getting dest token ID: %w", err)
+				}
+				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken)
+				if err != nil {
+					return nil, fmt.Errorf("error getting total fee: %w", err)
+				}
 				quote := rfqAPIClient.APIQuotePutRequest{
-					OriginChainID:   strings.Split(keyTokenID, "-")[0],
+					OriginChainID:   originStr,
 					OriginTokenAddr: strings.Split(keyTokenID, "-")[1],
 					DestChainID:     fmt.Sprint(chainID),
 					DestTokenAddr:   address.Hex(),
 					DestAmount:      balance.String(),
 					MaxOriginAmount: balance.String(),
+					FixedFee:        fee.String(),
 				}
 				quotes = append(quotes, quote)
 			}

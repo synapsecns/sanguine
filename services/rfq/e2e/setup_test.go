@@ -2,6 +2,13 @@ package e2e_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
+	"net/http"
+	"slices"
+	"strconv"
+	"sync"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,11 +33,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
-	"math/big"
-	"net/http"
-	"slices"
-	"strconv"
-	"sync"
 )
 
 func (i *IntegrationSuite) setupAPI() {
@@ -194,10 +196,24 @@ func (i *IntegrationSuite) setupRelayer() {
 			originBackendChainID: {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
+				Tokens: map[string]relconfig.TokenConfig{
+					"ETH": relconfig.TokenConfig{
+						PriceUSD: 2000,
+						Decimals: 18,
+					},
+				},
+				NativeToken: "ETH",
 			},
 			destBackendChainID: {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
+				Tokens: map[string]relconfig.TokenConfig{
+					"MATIC": relconfig.TokenConfig{
+						PriceUSD: 0.5,
+						Decimals: 18,
+					},
+				},
+				NativeToken: "MATIC",
 			},
 		},
 		OmniRPCURL: i.omniServer,
@@ -213,6 +229,12 @@ func (i *IntegrationSuite) setupRelayer() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
+		FeePricer: relconfig.FeePricerConfig{
+			GasPriceCacheTTLSeconds:   60,
+			TokenPriceCacheTTLSeconds: 60,
+			OriginGasEstimate:         500000,
+			DestinationGasEstimate:    1000000,
+		},
 	}
 
 	// in the first backend, we want to deploy a bunch of different tokens
@@ -224,8 +246,20 @@ func (i *IntegrationSuite) setupRelayer() {
 			tokenAddress := i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
 			quotableTokenID := fmt.Sprintf("%d-%s", backend.GetChainID(), tokenAddress)
 
+			tokenCaller, err := ierc20.NewIerc20Ref(common.HexToAddress(tokenAddress), backend)
+			i.NoError(err)
+
+			decimals, err := tokenCaller.Decimals(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
 			// first the simple part, add the token to the token map
 			cfg.Tokens[int(backend.GetChainID())] = append(cfg.Tokens[int(backend.GetChainID())], tokenAddress)
+
+			cfg.Bridges[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
+				Address:  tokenAddress,
+				Decimals: decimals,
+				PriceUSD: 1, // TODO: this will break on non-stables
+			}
 
 			compatibleTokens := []contracts.ContractType{tokenType}
 			// DAI/USDT are fungible

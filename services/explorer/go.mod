@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/services/explorer
 
-go 1.20
+go 1.21
 
 replace (
 	github.com/Yamashou/gqlgenc => github.com/synapsecns/gqlgenc v0.10.0-hotfix
