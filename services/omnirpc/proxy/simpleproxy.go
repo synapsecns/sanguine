@@ -111,7 +111,7 @@ func (r *SimpleProxy) ProxyRequest(c *gin.Context) (err error) {
 	rpcRequest := rpcRequests[0]
 
 	span.SetAttributes(attribute.String("original-body", string(rawBody)))
-	customHandler, rawResp, err := r.verifyHarmonyRequest(ctx, rpcRequest)
+	customHandler, rawResp, err := r.verifyHarmonyRequest(ctx, rpcRequest, rawBody)
 	if err != nil {
 		return fmt.Errorf("could not verify harmony request: %w", err)
 	}
@@ -145,7 +145,7 @@ func (r *SimpleProxy) ProxyRequest(c *gin.Context) (err error) {
 	return nil
 }
 
-func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request) (willHandle bool, resp []byte, err error) {
+func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request, rawBody []byte) (willHandle bool, resp []byte, err error) {
 	switch client.RPCMethod(req.Method) {
 	case client.GetLogsMethod:
 		if len(req.Params) != 1 {
@@ -172,7 +172,7 @@ func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request)
 			Topics:    fq.Topics,
 		}
 
-		resp, err = r.getLogsHarmonyVerify(ctx, query)
+		resp, err = r.getLogsHarmonyVerify(ctx, query, rawBody)
 		if err != nil {
 			return true, resp, fmt.Errorf("could not get logs: %w", err)
 		}
@@ -186,7 +186,7 @@ func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request)
 		params := req.Params[0]
 		txHash := common.HexToHash(strings.Trim(string(params), "\""))
 
-		resp, err := r.getHarmonyReceiptVerify(ctx, txHash, req)
+		resp, err = r.getHarmonyReceiptVerify(ctx, txHash, rawBody)
 		if err != nil {
 			return true, resp, fmt.Errorf("could not get receipt: %w", err)
 		}
@@ -197,7 +197,24 @@ func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request)
 	return false, []byte{}, nil
 }
 
-func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, req rpc.Request) (_ []byte, err error) {
+func (r *SimpleProxy) makeReq(ctx context.Context, body []byte) ([]byte, error) {
+	req := r.client.NewRequest()
+	resp, err := req.
+		SetContext(ctx).
+		SetRequestURI(r.proxyURL).
+		SetBody(body).
+		SetHeaderBytes(omniHTTP.XForwardedFor, []byte(r.proxyURL)).
+		SetHeaderBytes(omniHTTP.ContentType, omniHTTP.JSONType).
+		SetHeaderBytes(omniHTTP.Accept, omniHTTP.JSONType).
+		Do()
+	if err != nil {
+		return nil, fmt.Errorf("could not get response from %s: %w", r.proxyURL, err)
+	}
+
+	return resp.Body(), nil
+}
+
+func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte) (_ []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getHarmonyReceiptVerify")
 
 	defer func() {
@@ -210,6 +227,7 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 	}
 
 	var harmonyReceipt, ethReceipt *types.Receipt
+	var rawResp []byte
 	g, gCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -221,9 +239,20 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 	})
 
 	g.Go(func() error {
-		ethReceipt, err = hmyClient.TransactionReceipt(gCtx, txHash)
+		rawResp, err = r.makeReq(ctx, rawBody)
 		if err != nil {
-			return fmt.Errorf("could not get eth receipt: %w", err)
+			return fmt.Errorf("could not make req: %w", err)
+		}
+
+		var rpcMessage JSONRPCMessage
+		err = json.Unmarshal(rawResp, &rpcMessage)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal: %w", err)
+		}
+
+		err = json.Unmarshal(rpcMessage.Result, &ethReceipt)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal eth receipt: %w", err)
 		}
 		return nil
 	})
@@ -264,26 +293,10 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 		}
 	}
 
-	rawReceipt, err := json.Marshal(ethReceipt)
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal receipt: %w", err)
-	}
-
-	resp := JSONRPCMessage{
-		Version: "2.0",
-		ID:      req.ID,
-		Result:  rawReceipt,
-	}
-
-	rawResp, err := json.Marshal(resp)
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal response: %w", err)
-	}
-
 	return rawResp, nil
 }
 
-func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethereum.FilterQuery) (_ []byte, err error) {
+func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethereum.FilterQuery, rawBody []byte) (rawResp []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getLogsHarmonyVerify")
 
 	defer func() {
@@ -307,10 +320,22 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 	})
 
 	g.Go(func() error {
-		ethLogs, err = hmyClient.FilterLogs(gCtx, query)
+		rawResp, err = r.makeReq(ctx, rawBody)
 		if err != nil {
-			return fmt.Errorf("could not get eth logs: %w", err)
+			return fmt.Errorf("could not make req: %w", err)
 		}
+
+		var rpcMessage JSONRPCMessage
+		err = json.Unmarshal(rawResp, &rpcMessage)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal: %w", err)
+		}
+
+		err = json.Unmarshal(rpcMessage.Result, &ethLogs)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal eth receipt: %w", err)
+		}
+
 		return nil
 	})
 
@@ -331,7 +356,7 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 
 	}
 
-	return json.Marshal(ethLogs)
+	return rawResp, nil
 }
 
 // compareTX makes sure all logs are equal except for the tx hash
