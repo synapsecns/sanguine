@@ -125,8 +125,10 @@ contract FastBridge is IFastBridge, Admin {
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
+        uint256 rebate = chainGasAmount;
         if (!transaction.sendChainGas) {
             // forward erc20
+            rebate = 0;
             _pullToken(to, token, amount);
         } else if (token == UniversalTokenLib.ETH_ADDRESS) {
             // lump in gas rebate into amount in native gas token
@@ -137,7 +139,7 @@ contract FastBridge is IFastBridge, Admin {
             _pullToken(to, UniversalTokenLib.ETH_ADDRESS, chainGasAmount);
         }
 
-        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, chainGasAmount);
+        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
     }
 
     /// @inheritdoc IFastBridge

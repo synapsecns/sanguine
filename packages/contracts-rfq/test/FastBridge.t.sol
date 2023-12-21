@@ -742,6 +742,13 @@ contract FastBridgeTest is Test {
         // Set up the roles for the test
         setUpRoles();
 
+        // Start prank with governor to set chain gas on dest chain
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
+
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
 
@@ -778,6 +785,13 @@ contract FastBridgeTest is Test {
 
         // deal some dest ETH to relayer
         deal(relayer, 100e18);
+
+        // Start prank with governor to set chain gas on dest chain
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42161, 0, 0);

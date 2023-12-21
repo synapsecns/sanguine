@@ -63,9 +63,14 @@ contract FastBridgeMock is IFastBridge, Admin {
         emit BridgeRequested(transactionId, sender, request);
     }
 
-    function mockBridgeRelayer(bytes32 transactionId, address relayer, address to, address token, uint256 amount, uint256 chainGasAmount)
-        external
-    {
+    function mockBridgeRelayer(
+        bytes32 transactionId,
+        address relayer,
+        address to,
+        address token,
+        uint256 amount,
+        uint256 chainGasAmount
+    ) external {
         emit BridgeRelayed(transactionId, relayer, to, token, amount, chainGasAmount);
     }
 
