@@ -26,10 +26,9 @@ export abstract class SynapseModuleSet {
    * @param txHash - The transaction hash of the bridge transaction.
    * @returns A promise that resolves to the Synapse transaction ID.
    */
-  abstract getSynapseTxId(
-    originChainId: number,
-    txHash: string
-  ): Promise<string>
+  getSynapseTxId(originChainId: number, txHash: string): Promise<string> {
+    return this.getExistingModule(originChainId).getSynapseTxId(txHash)
+  }
 
   /**
    * Checks whether a bridge transaction has been completed on the destination chain.
@@ -38,10 +37,12 @@ export abstract class SynapseModuleSet {
    * @param synapseTxId - The unique Synapse txId of the bridge transaction.
    * @returns A promise that resolves to a boolean indicating whether the bridge transaction has been completed.
    */
-  abstract getBridgeTxStatus(
+  getBridgeTxStatus(
     destChainId: number,
     synapseTxId: string
-  ): Promise<boolean>
+  ): Promise<boolean> {
+    return this.getExistingModule(destChainId).getBridgeTxStatus(synapseTxId)
+  }
 
   /**
    * Returns the existing Module instance on the given chain.
@@ -69,6 +70,21 @@ export abstract class SynapseModuleSet {
       return module
     }
     return undefined
+  }
+
+  /**
+   * Returns the existing Module instance for the given chain.
+   *
+   * @param chainId - The ID of the chain.
+   * @returns The Module instance.
+   * @throws Will throw an error if the module does not exist.
+   */
+  getExistingModule(chainId: number): SynapseModule {
+    const module = this.getModule(chainId)
+    if (!module) {
+      throw new Error(`No module found for chain ${chainId}`)
+    }
+    return module
   }
 
   /**

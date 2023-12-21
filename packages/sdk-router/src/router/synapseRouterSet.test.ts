@@ -115,7 +115,7 @@ describe('SynapseRouterSet', () => {
     it('Throws error for unsupported chain', () => {
       expect(() =>
         routerSet.getSynapseRouter(SupportedChainId.AVALANCHE)
-      ).toThrow('No SynapseRouter deployed on chain 43114')
+      ).toThrow('No module found for chain 43114')
     })
   })
 

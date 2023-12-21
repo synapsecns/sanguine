@@ -143,7 +143,7 @@ describe('SynapseCCTPRouterSet', () => {
     it('Throws error for unsupported chain', () => {
       expect(() =>
         routerSet.getSynapseCCTPRouter(SupportedChainId.AVALANCHE)
-      ).toThrow('No SynapseCCTPRouter deployed on chain 43114')
+      ).toThrow('No module found for chain 43114')
     })
   })
 
