@@ -1,7 +1,7 @@
 {
   "defaultOriginToken": "ETH",
   "defaultDestinationToken": "ETH",
-  "totalAvailableNetworks": 19,
+  "totalAvailableNetworks": 18,
   "availableNetworks": [
     "Arbitrum",
     "Aurora",
@@ -14,7 +14,6 @@
     "Dogechain",
     "Ethereum",
     "Fantom",
-    "Harmony",
     "Klaytn",
     "Metis",
     "Moonbeam",
