@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { Chain, useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
+import { Chain } from 'viem'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
 import { setSwapChainId } from '@/slices/swap/reducer'
