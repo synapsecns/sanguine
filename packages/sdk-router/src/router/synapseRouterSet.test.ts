@@ -76,10 +76,10 @@ describe('SynapseRouterSet', () => {
     })
   })
 
-  describe('getRouter', () => {
+  describe('getModule', () => {
     it('Returns the correct router given correct address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModule(
           SupportedChainId.ETH,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -88,7 +88,7 @@ describe('SynapseRouterSet', () => {
 
     it('Returns undefined given incorrect address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModule(
           SupportedChainId.ETH,
           CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -97,7 +97,7 @@ describe('SynapseRouterSet', () => {
 
     it('Returns undefined given unknown chainId', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModule(
           SupportedChainId.AVALANCHE,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )

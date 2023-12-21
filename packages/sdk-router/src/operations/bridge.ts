@@ -42,8 +42,8 @@ export async function bridge(
   token = handleNativeToken(token)
   // Get Router instance for given chain and address
   const router =
-    this.synapseRouterSet.getRouter(originChainId, originRouterAddress) ??
-    this.synapseCCTPRouterSet.getRouter(originChainId, originRouterAddress)
+    this.synapseRouterSet.getModule(originChainId, originRouterAddress) ??
+    this.synapseCCTPRouterSet.getModule(originChainId, originRouterAddress)
   // Throw if Router is not found
   invariant(router, 'Invalid router address')
   // Ask the Router to populate the bridge transaction
@@ -107,7 +107,7 @@ export async function bridgeQuote(
   invariant(allRoutes.length > 0, 'No route found')
   const bestRoute = findBestRoute(allRoutes)
   // Find the Router Set that yielded the best route
-  const bestSet: RouterSet = this.synapseRouterSet.getRouter(
+  const bestSet: RouterSet = this.synapseRouterSet.getModule(
     originChainId,
     bestRoute.originRouterAddress
   )
