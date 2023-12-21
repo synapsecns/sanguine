@@ -9,7 +9,6 @@ const config = {
     extensions: ['.ts', '.js'],
   },
   mode: 'production',
-  devtool: 'source-map',
   entry: './dist/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),

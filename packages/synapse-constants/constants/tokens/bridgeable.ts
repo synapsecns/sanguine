@@ -38,7 +38,6 @@ import vstaLogo from '../assets/icons/vsta.svg'
 import wbtcLogo from '../assets/icons/wbtc.svg'
 import wethLogo from '../assets/icons/weth.svg'
 import { Token } from '../types'
-
 import * as CHAINS from '../chains/master'
 
 const zeroAddress = '0x0000000000000000000000000000000000000000'
@@ -392,6 +391,7 @@ export const USDC = new Token({
     [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    [CHAINS.POLYGON.id]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -407,6 +407,7 @@ export const USDC = new Token({
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.DFK.id]: 18,
     [CHAINS.BASE.id]: 6,
+    [CHAINS.POLYGON.id]: 6,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -622,6 +623,7 @@ export const FRAX = new Token({
     [CHAINS.ETH.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
     [CHAINS.ARBITRUM.id]: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
     [CHAINS.DOGE.id]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
+    [CHAINS.POLYGON.id]: '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89',
   },
   decimals: 18,
   symbol: 'FRAX',

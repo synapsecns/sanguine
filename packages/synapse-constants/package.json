@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.0.28",
+  "version": "1.1.0",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/bundle.js",
   "module": "dist/bundle.js",
@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "test": "echo \"Error: no tesst specified\" && exit 1",
-    "build": "node scripts/generateMaps.js",
+    "build": "node scripts/generateMaps.js && node scripts/findMissing.js",
     "prepublish": "tsc",
     "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack"
   },
