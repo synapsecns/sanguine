@@ -2,13 +2,8 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
-import {
-  ETH_NUSD,
-  ETH_USDC,
-  getTestProviderUrl,
-  ROUTER_ADDRESS_MAP,
-  SupportedChainId,
-} from '../constants'
+import { ETH_NUSD, ETH_USDC, getTestProviderUrl } from '../constants/testValues'
+import { ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { SynapseRouter } from './synapseRouter'
 import { BridgeToken, RouterQuery } from '../module'
 import { DestRequest } from './types'

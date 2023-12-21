@@ -17,16 +17,18 @@ import {
   AVAX_USDC_E,
   BSC_GOHM,
   BSC_USDC,
-  CCTP_ROUTER_ADDRESS_MAP,
   ETH_DAI,
   ETH_POOL_NUSD,
   ETH_USDC,
   ETH_USDT,
+  NATIVE_ADDRESS,
+  getTestProviderUrl,
+} from './constants/testValues'
+import {
+  CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
   MEDIAN_TIME_CCTP,
-  NATIVE_ADDRESS,
   ROUTER_ADDRESS_MAP,
-  getTestProviderUrl,
   SupportedChainId,
 } from './constants'
 import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './module'
