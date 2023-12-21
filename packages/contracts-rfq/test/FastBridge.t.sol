@@ -282,8 +282,39 @@ contract FastBridgeTest is Test {
         fastBridge.removeGuard(guard);
     }
 
+    /// @notice Tests to check governor add, remove
+    function test_successfulAddGovernor() public {
+        vm.startPrank(owner);
+        assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        fastBridge.addGovernor(governor);
+        assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+    }
+
+    function test_onlyAdminCanAddGovernor() public {
+        vm.startPrank(governor);
+        assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        vm.expectRevert();
+        fastBridge.addGovernor(governor);
+    }
+
+    function test_successfulRemoveGovernor() public {
+        test_successfulAddGovernor();
+        assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        vm.startPrank(owner);
+        fastBridge.removeGovernor(governor);
+        assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+    }
+
+    function test_onlyAdminCanRemoveGovernor() public {
+        test_successfulAddGovernor();
+        vm.startPrank(governor);
+        assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        vm.expectRevert();
+        fastBridge.removeGovernor(governor);
+    }
+
     function test_successfulSetProtocolFeeRate() public {
-        setUpRoles();
+        test_successfulAddGovernor();
         assertEq(fastBridge.protocolFeeRate(), 0);
 
         vm.startPrank(governor);
@@ -294,19 +325,39 @@ contract FastBridgeTest is Test {
     }
 
     function test_onlyGovernorCanSetProtocolFeeRate() public {
-        setUpRoles();
+        test_successfulAddGovernor();
         uint256 protocolFeeRate = 0.001e6;
         vm.expectRevert();
         fastBridge.setProtocolFeeRate(protocolFeeRate);
     }
 
     function test_failedSetProtocolFeeRateWhenGreaterThanMax() public {
-        setUpRoles();
+        test_successfulAddGovernor();
         uint256 protocolFeeRate = fastBridge.FEE_RATE_MAX() + 1;
         vm.startPrank(governor);
         vm.expectRevert("newFeeRate > max");
         fastBridge.setProtocolFeeRate(protocolFeeRate);
         vm.stopPrank();
+    }
+
+    // Tests to set chain gas amount
+    function test_successfulSetChainGasAmount() public {
+        test_successfulAddGovernor();
+        assertEq(fastBridge.chainGasAmount(), 0);
+
+        vm.startPrank(governor);
+        uint256 chainGasAmount = 0.005e18;
+        fastBridge.setChainGasAmount(chainGasAmount);
+        assertEq(fastBridge.chainGasAmount(), chainGasAmount);
+        vm.stopPrank();
+    }
+
+    function test_onlyGovernorCanSetChainGasAmount() public {
+        test_successfulSetChainGasAmount();
+
+        uint256 newChainGasAmount = 1e18;
+        vm.expectRevert();
+        fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
     event BridgeRequested(bytes32 transactionId, address sender, bytes request);

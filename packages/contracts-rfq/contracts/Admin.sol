@@ -96,7 +96,6 @@ contract Admin is IAdmin, AccessControl {
         emit FeesSwept(token, recipient, feeAmount);
     }
 
-    // TODO: test
     function setChainGasAmount(uint256 newChainGasAmount) external onlyGovernor {
         uint256 oldChainGasAmount = chainGasAmount;
         chainGasAmount = newChainGasAmount;
