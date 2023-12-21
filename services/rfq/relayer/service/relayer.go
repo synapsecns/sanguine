@@ -87,7 +87,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	fp := pricer.NewFeePricer(cfg.FeePricer, cfg.Bridges, omniClient)
 
-	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg, fp)
+	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg, fp, omniClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}

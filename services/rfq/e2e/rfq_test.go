@@ -111,7 +111,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		i.NoError(err)
 
 		// let's figure out the amount of usdc we need
-
 		for _, quote := range allQuotes {
 			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
 

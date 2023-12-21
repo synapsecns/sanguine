@@ -4,6 +4,9 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"math/big"
 	"strconv"
 	"strings"
@@ -50,10 +53,12 @@ type Manager struct {
 	quotableTokens map[string][]string
 	// feePricer is used to price fees.
 	feePricer pricer.FeePricer
+	// TODO: remove me once bug is fixed
+	f omnirpcClient.RPCClient
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer, feePricer pricer.FeePricer) (*Manager, error) {
+func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer, feePricer pricer.FeePricer, f omnirpcClient.RPCClient) (*Manager, error) {
 	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
@@ -64,6 +69,7 @@ func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string]
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
 		relayerSigner:    relayerSigner,
+		f:                f,
 		feePricer:        feePricer,
 	}, nil
 }
@@ -114,7 +120,7 @@ func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteReques
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
 func (m *Manager) SubmitAllQuotes(ctx context.Context) error {
-	inv, err := m.inventoryManager.GetCommitableBalances(context.Background())
+	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting commitable balances: %w", err)
 	}
@@ -164,6 +170,20 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 				}
 				destToken, err := m.feePricer.GetTokenName(uint32(chainID), address.Hex())
 				if err != nil {
+
+					rpcClient, err := m.f.GetClient(ctx, big.NewInt(int64(chainID)))
+					if err != nil {
+						return nil, fmt.Errorf("error getting rpc client: %w", err)
+					}
+
+					imBroken, err := ierc20.NewIerc20Ref(common.HexToAddress(address.Hex()), rpcClient)
+					if err != nil {
+						return nil, fmt.Errorf("error getting ierc20: %w", err)
+					}
+
+					name, err := imBroken.Name(&bind.CallOpts{Context: ctx})
+					fmt.Println(name)
+
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}
 				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken)
