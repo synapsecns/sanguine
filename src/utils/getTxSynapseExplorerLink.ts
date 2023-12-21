@@ -25,4 +25,5 @@ export const getTxSynapseExplorerLink = ({
   }
 
   console.error('Transaction Hash and Synapse Transaction ID missing')
+  return null
 }

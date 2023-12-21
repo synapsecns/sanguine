@@ -99,7 +99,7 @@ export const BridgeButton = ({
       {isApproved ? (
         <button
           disabled={isBridgePending}
-          onClick={!isBridgePending && handleBridge}
+          onClick={!isBridgePending ? handleBridge : () => null}
           className={buttonStyle}
         >
           {isBridgePending ? 'Confirm in Wallet' : 'Send'}

@@ -9,13 +9,23 @@ export enum BridgeTransactionStatus {
 }
 
 export interface BridgeTransactionState {
-  txnHash: string
+  txHash: string
+  bridgeModuleName: string
+  originChainId: number
+  destinationChainId: number
+  estimatedTime: number
+  timestamp: number
   bridgeTxnStatus: string
   error: any
 }
 
 const initialState: BridgeTransactionState = {
-  txnHash: null,
+  txHash: null,
+  bridgeModuleName: null,
+  originChainId: null,
+  destinationChainId: null,
+  estimatedTime: null,
+  timestamp: null,
   bridgeTxnStatus: BridgeTransactionStatus.IDLE,
   error: null,
 }
@@ -31,14 +41,36 @@ export const bridgeTransactionSlice = createSlice({
       })
       .addCase(
         executeBridgeTxn.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.txnHash = action.payload
+        (
+          state,
+          {
+            payload: {
+              txHash,
+              bridgeModuleName,
+              originChainId,
+              destinationChainId,
+              estimatedTime,
+              timestamp,
+            },
+          }
+        ) => {
           state.bridgeTxnStatus = BridgeTransactionStatus.SUCCESS
+          state.txHash = txHash
+          state.bridgeModuleName = bridgeModuleName
+          state.originChainId = originChainId
+          state.destinationChainId = destinationChainId
+          state.estimatedTime = estimatedTime
+          state.timestamp = timestamp
         }
       )
       .addCase(executeBridgeTxn.rejected, (state, action) => {
         state.error = action.payload
-        state.txnHash = null
+        state.txHash = null
+        state.bridgeModuleName = null
+        state.originChainId = null
+        state.destinationChainId = null
+        state.estimatedTime = null
+        state.timestamp = null
         state.bridgeTxnStatus = BridgeTransactionStatus.FAILED
       })
   },

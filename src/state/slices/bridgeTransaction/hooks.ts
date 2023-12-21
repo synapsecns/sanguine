@@ -1,7 +1,8 @@
-import { useAppSelector } from '@/state/hooks'
+import { useAppSelector, useAppDispatch } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { ZeroAddress } from 'ethers'
+import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 export const useBridgeTransactionState = (): RootState['bridgeTransaction'] => {
   return useAppSelector((state) => state.bridgeTransaction)
@@ -18,6 +19,8 @@ export const executeBridgeTxn = createAsyncThunk(
     amount,
     originQuery,
     destinationQuery,
+    bridgeModuleName,
+    estimatedTime,
     signer,
     synapseSDK,
   }: {
@@ -29,6 +32,8 @@ export const executeBridgeTxn = createAsyncThunk(
     amount: bigint
     originQuery: {}
     destinationQuery: {}
+    estimatedTime: number
+    bridgeModuleName: string
     signer: any
     synapseSDK: any
   }) => {
@@ -52,8 +57,21 @@ export const executeBridgeTxn = createAsyncThunk(
           }
         : data
 
-    const transactionHash = await signer.sendTransaction(payload)
+    const tx = await signer.sendTransaction(payload)
 
-    return transactionHash
+    const receipt = await tx.wait()
+
+    const txHash = receipt?.hash
+
+    const timestamp = getTimeMinutesFromNow(0)
+
+    return {
+      txHash,
+      bridgeModuleName,
+      originChainId,
+      destinationChainId,
+      estimatedTime,
+      timestamp,
+    }
   }
 )

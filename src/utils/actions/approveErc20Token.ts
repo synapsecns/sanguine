@@ -35,8 +35,6 @@ export const approveErc20Token = async ({
     // Wait for the transaction to be mined
     const receipt = await tx.wait()
 
-    console.log('receipt:', receipt)
-
     return receipt
   } catch (error) {
     console.error('approveErc20Token: ', error)

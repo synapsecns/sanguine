@@ -64,6 +64,8 @@ import {
 import { ApproveTransactionStatus } from '@/state/slices/approveTransaction/reducer'
 import { useThemeVariables } from '@/hooks/useThemeVariables'
 
+import { Transactions } from './Transactions'
+
 const chains = {
   1: {
     id: 1,
@@ -94,6 +96,8 @@ export const Widget = ({
 }) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
+
+  /** TODO: Possibly lift SynapseSDK into a Context to provide accesibility around widget */
   const synapseSDK: any = new SynapseSDK(chainIds, networkProviders)
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
@@ -193,6 +197,8 @@ export const Widget = ({
         ),
         originQuery: bridgeQuote?.quotes.originQuery,
         destinationQuery: bridgeQuote?.quotes.destQuery,
+        bridgeModuleName: bridgeQuote?.bridgeModuleName,
+        estimatedTime: bridgeQuote?.estimatedTime,
         synapseSDK,
         signer,
       })
@@ -294,9 +300,8 @@ export const Widget = ({
     [dispatch]
   )
 
-  const containerStyle = container === false
-    ? 'p-0 w-full'
-    : 'p-2 rounded-lg max-w-[400px]'
+  const containerStyle =
+    container === false ? 'p-0 w-full' : 'p-2 rounded-lg max-w-[400px]'
 
   const cardStyle = `
     grid grid-cols-[1fr_auto] 
@@ -310,21 +315,15 @@ export const Widget = ({
   `
 
   return (
-    <div
-      style={themeVariables}
-      className="synapse-widget"
-    >
+    <div style={themeVariables} className="synapse-widget">
       <div
         className={`
-          bg-[--synapse-root] grid gap-2 text-[--synapse-text] ${containerStyle}
+        bg-[--synapse-root] grid gap-2 text-[--synapse-text] ${containerStyle}
         `}
       >
-        <Transaction
-          originChainId={42161}
-          destinationChainId={137}
-          originTxHash="0x6c25a451f4fe26742eeafe2475a190a5c9a6cf6b6ab9cecd10348be506402f66"
-          destinationTxHash="0x2e6d03f06b3ca74a681e48a1d3cba3fa62172f3a00f1385e1084602838154540"
-          kappa="6cb14bf1a4914aac28ef173dc00427ed815306f15c495688921e8648176bb2a4"
+        <Transactions
+          synapseSDK={synapseSDK}
+          connectedAddress={connectedAddress}
         />
         <section className={cardStyle}>
           <ChainSelect

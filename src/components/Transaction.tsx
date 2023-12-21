@@ -1,34 +1,75 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useAppDispatch } from '@/state/hooks'
 import { DownArrow } from './icons/DownArrow'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
+import { getExplorerAddressUrl } from '@/utils/getExplorerAddressLink'
 import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
+import { useBridgeTxStatus } from '@/hooks/useBridgeTxStatus'
+import { isNull } from '@/utils/isNull'
+import {
+  updateTransactionKappa,
+  completeTransaction,
+  removeTransaction,
+} from '@/state/slices/transactions/reducer'
+import { useTransactionsState } from '@/state/slices/transactions/hooks'
 
 const TransactionStatus = ({ string }) => {
   return <>{string}</>
 }
 
+const TimeRemaining = ({
+  isComplete,
+  remainingTime,
+  isDelayed,
+}: {
+  isComplete: boolean
+  remainingTime: number
+  isDelayed: boolean
+}) => {
+  if (isComplete) return
+
+  if (isDelayed) {
+    return <div>Waiting...</div>
+  }
+
+  return <div>{remainingTime} min</div>
+}
+
 export const Transaction = ({
+  synapseSDK,
+  connectedAddress,
   originChainId,
   destinationChainId,
   originTxHash,
-  destinationTxHash,
+  bridgeModuleName,
+  estimatedTime,
   kappa,
   timestamp,
+  currentTime,
+  isComplete,
 }: {
+  synapseSDK: any
+  connectedAddress: string
   originChainId: number
   destinationChainId: number
-  originTxHash?: string
-  destinationTxHash?: string
+  originTxHash: string
+  bridgeModuleName: string
+  estimatedTime: number // in seconds
   kappa?: string
-  timestamp?: string
+  timestamp: number
+  currentTime: number
+  isComplete: boolean
 }) => {
-  const originTxExplorerLink = getTxBlockExplorerLink(
+  const dispatch = useAppDispatch()
+  const transactions = useTransactionsState()
+
+  const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChainId,
     originTxHash
   )
-  const destTxExplorerLink = getTxBlockExplorerLink(
+  const [destExplorerAddressLink, destExplorerName] = getExplorerAddressUrl(
     destinationChainId,
-    destinationTxHash
+    connectedAddress
   )
   const synapseExplorerLink = getTxSynapseExplorerLink({
     originChainId,
@@ -36,6 +77,49 @@ export const Transaction = ({
     txHash: originTxHash,
     kappa,
   })
+
+  const elapsedTime: number = currentTime - timestamp // in seconds
+  const remainingTime: number = estimatedTime - elapsedTime
+  const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
+
+  const isEstimatedTimeReached: boolean = useMemo(() => {
+    if (!currentTime || !estimatedTime || !timestamp) return false
+    return currentTime - timestamp > estimatedTime
+  }, [estimatedTime, currentTime, timestamp])
+
+  const [isTxComplete, _kappa] = useBridgeTxStatus({
+    synapseSDK,
+    originChainId,
+    destinationChainId,
+    originTxHash,
+    bridgeModuleName,
+    kappa,
+    checkStatus: isEstimatedTimeReached,
+    currentTime: currentTime,
+  })
+
+  /** Update tx kappa when available */
+  useEffect(() => {
+    if (_kappa && originTxHash) {
+      dispatch(updateTransactionKappa({ originTxHash, kappa: _kappa }))
+    }
+  }, [_kappa, dispatch])
+
+  /** Update tx for completion */
+  /** Check that we have not already marked tx as complete */
+  useEffect(() => {
+    const txKappa = kappa ?? _kappa
+
+    if (isTxComplete && originTxHash && txKappa) {
+      if (transactions[originTxHash].isComplete === false) {
+        dispatch(completeTransaction({ originTxHash, kappa: txKappa }))
+      }
+    }
+  }, [isTxComplete, dispatch, transactions])
+
+  const handleClearTransaction = useCallback(() => {
+    dispatch(removeTransaction({ originTxHash }))
+  }, [dispatch])
 
   return (
     <div
@@ -46,14 +130,39 @@ export const Transaction = ({
         border border-solid border-[--synapse-border] rounded-md
       `}
     >
-      <TransactionStatus string="Pending" />
+      {isComplete ? (
+        <TransactionStatus string="Complete" />
+      ) : (
+        <TransactionStatus string="Pending" />
+      )}
       <div className="flex gap-2 items-center grow justify-end">
-        <div className="whitespace-nowrap">5-7 min</div>
+        <TimeRemaining
+          isComplete={isComplete}
+          remainingTime={remainingTimeInMinutes}
+          isDelayed={isEstimatedTimeReached}
+        />
+
         <DropdownMenu>
-          <MenuItem text="Arbiscan" link={originTxExplorerLink} />
-          <MenuItem text="Polyscan" link={destTxExplorerLink} />
-          <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
-          <MenuItem text="Contact Support" link="" />
+          {!isNull(originTxExplorerLink) && (
+            <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+          )}
+          {!isNull(destExplorerAddressLink) && (
+            <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
+          )}
+          {!isNull(synapseExplorerLink) && (
+            <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
+          )}
+          <MenuItem
+            text="Contact Support"
+            link="https://discord.gg/synapseprotocol"
+          />
+          {isComplete && (
+            <MenuItem
+              text="Clear Transaction"
+              link={null}
+              onClick={handleClearTransaction}
+            />
+          )}
         </DropdownMenu>
       </div>
     </div>
@@ -95,24 +204,46 @@ export const DropdownMenu = ({ children }) => {
   )
 }
 
-export const MenuItem = ({ text, link }: { text: string; link: string }) => {
+export const MenuItem = ({
+  text,
+  link,
+  onClick,
+}: {
+  text: string
+  link: string
+  onClick?: () => any
+}) => {
   return (
-    <li className={`
+    <li
+      className={`
       rounded cursor-pointer
       border border-solid border-transparent
       hover:border-[--synapse-focus]
       active:opacity-40
-    `}>
-      <a
-        href={link ?? ''}
-        target="_blank"
-        rel="noreferrer"
-        className={`
-          block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-        `}
-      >
-        {text}
-      </a>
+    `}
+    >
+      {onClick ? (
+        <div
+          onClick={onClick}
+          className={`
+            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
+          `}
+        >
+          {text}
+        </div>
+      ) : (
+        <a
+          href={link ?? ''}
+          onClick={onClick}
+          target="_blank"
+          rel="noreferrer"
+          className={`
+            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
+          `}
+        >
+          {text}
+        </a>
+      )}
     </li>
   )
 }

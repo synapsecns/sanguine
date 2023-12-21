@@ -8,6 +8,8 @@ import { store } from '@/state/store'
 
 import * as BRIDGEABLE from '@/constants/bridgeable'
 
+import TransactionsUpdater from '@/state/slices/transactions/updater'
+
 // TODO: After separating required fields need two types: BridgeProps (consumer) and WidgetProps (internal)
 // TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
 
@@ -24,6 +26,7 @@ export const Bridge = ({
   return (
     <Web3Provider config={web3Provider}>
       <Provider store={store}>
+        <TransactionsUpdater />
         <Widget
           chainIds={chainIds}
           networkProviders={networkProviders}

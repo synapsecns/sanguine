@@ -23,7 +23,16 @@ export default [
         format: 'esm',
       },
     ],
-    external: ['react', 'react/jsx-runtime'],
+    external: [
+      'react',
+      'react/jsx-runtime',
+      'crypto',
+      'fs',
+      'path',
+      'path-browserify',
+      'ethers',
+      'provider-ipcsocket',
+    ],
     plugins: [
       peerDepsExternal(),
       resolve(),
