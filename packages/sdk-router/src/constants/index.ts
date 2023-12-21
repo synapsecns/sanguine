@@ -4,7 +4,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 export * from './addresses'
 export * from './chainIds'
 export * from './medianTime'
-export * from './testValues'
 
 // exports for external consumption
 export type BigintIsh = JSBI | BigNumber | string | number
