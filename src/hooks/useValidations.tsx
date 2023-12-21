@@ -16,7 +16,6 @@ export const useValidations = (): {
   onSelectedChain: boolean
 } => {
   const {
-    inputAmount,
     debouncedInputAmount,
     originChainId,
     originToken,
@@ -39,18 +38,18 @@ export const useValidations = (): {
 
   const hasEnoughBalance: boolean = useMemo(() => {
     if (
-      !checkExists(inputAmount) ||
+      !checkExists(debouncedInputAmount) ||
       !checkExists(currentTokenBalance.rawBalance)
     ) {
       return false
     } else {
       const formattedInput = stringToBigInt(
-        inputAmount,
+        debouncedInputAmount,
         currentTokenBalance.decimals
       )
       return Boolean(BigInt(currentTokenBalance.rawBalance) >= formattedInput)
     }
-  }, [balances, inputAmount, originToken, destinationToken])
+  }, [balances, debouncedInputAmount, originToken, destinationToken])
 
   const isInputValid: boolean = useMemo(() => {
     if (debouncedInputAmount === '') return false

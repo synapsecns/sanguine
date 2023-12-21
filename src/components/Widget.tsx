@@ -1,4 +1,11 @@
-import { useMemo, useEffect, useContext, useCallback, useRef } from 'react'
+import {
+  useMemo,
+  useEffect,
+  useContext,
+  useCallback,
+  useRef,
+  useState,
+} from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Web3Context } from 'providers/Web3Provider'
 
@@ -19,7 +26,6 @@ import {
   setDestinationToken,
   setTokens,
   setDebouncedInputAmount,
-  setInputAmount,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import {
@@ -92,8 +98,9 @@ export const Widget = ({
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
 
+  const [inputAmount, setInputAmount] = useState('')
+
   const {
-    inputAmount,
     debouncedInputAmount,
     originChainId,
     originToken,
@@ -103,8 +110,6 @@ export const Widget = ({
   } = useBridgeState()
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
-
-  const { allowance } = useWalletState()
 
   const { isInputValid, hasValidSelections } = useValidations()
 
@@ -165,7 +170,7 @@ export const Widget = ({
         spenderAddress: bridgeQuote?.routerAddress,
         tokenAddress: originToken?.addresses[originChainId],
         amount: stringToBigInt(
-          inputAmount,
+          debouncedInputAmount,
           originToken?.decimals[originChainId]
         ),
         signer,
@@ -255,9 +260,9 @@ export const Widget = ({
   const handleUserInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = cleanNumberInput(event.target.value)
-      dispatch(setInputAmount(value))
+      setInputAmount(value)
     },
-    [dispatch]
+    []
   )
 
   const handleOriginChainSelection = useCallback(
@@ -326,14 +331,17 @@ export const Widget = ({
           value={inputAmount}
           onChange={handleUserInput}
         />
-        <div className="flex flex-col justify-center items-end">
+        <div className="flex flex-col items-end justify-center">
           <TokenSelect
             label="In"
             isOrigin={true}
             token={originToken}
             onChange={handleOriginTokenSelection}
           />
-          <AvailableBalance connectedAddress={connectedAddress} />
+          <AvailableBalance
+            connectedAddress={connectedAddress}
+            setInputAmount={setInputAmount}
+          />
         </div>
       </section>
       <section className={cardStyle}>
@@ -356,7 +364,7 @@ export const Widget = ({
                 )
           }
         />
-        <div className="flex flex-col justify-center items-end">
+        <div className="flex flex-col items-end justify-center">
           <TokenSelect
             label="Out"
             isOrigin={false}
@@ -368,7 +376,10 @@ export const Widget = ({
       <Receipt
         quote={bridgeQuote ?? null}
         send={formatBigIntToString(
-          stringToBigInt(inputAmount, originToken?.decimals[originChainId]),
+          stringToBigInt(
+            debouncedInputAmount,
+            originToken?.decimals[originChainId]
+          ),
           originToken?.decimals[originChainId],
           4
         )}

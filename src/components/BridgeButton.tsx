@@ -30,7 +30,6 @@ export const BridgeButton = ({
     web3Context.web3Provider
 
   const {
-    inputAmount,
     debouncedInputAmount,
     originChainId,
     originToken,

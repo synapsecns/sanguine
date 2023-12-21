@@ -32,6 +32,7 @@ export const fetchAndStoreTokenBalances = createAsyncThunk(
       tokens,
       signerOrProvider,
     })
+
     return balances
   }
 )

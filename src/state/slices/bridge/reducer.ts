@@ -14,7 +14,6 @@ import { findValidToken } from '@/utils/findValidTokens'
 import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
 
 export interface BridgeState {
-  inputAmount: string
   debouncedInputAmount: string
   originChainId: number
   originToken: BridgeableToken
@@ -28,7 +27,6 @@ export interface BridgeState {
 }
 
 const initialState: BridgeState = {
-  inputAmount: '',
   debouncedInputAmount: '',
   originChainId: 42161,
   originToken: null,
@@ -45,9 +43,6 @@ export const bridgeSlice = createSlice({
   name: 'bridge',
   initialState,
   reducers: {
-    setInputAmount: (state: BridgeState, action: PayloadAction<string>) => {
-      state.inputAmount = action.payload
-    },
     setDebouncedInputAmount: (
       state: BridgeState,
       action: PayloadAction<string>
@@ -429,7 +424,6 @@ export const bridgeSlice = createSlice({
 })
 
 export const {
-  setInputAmount,
   setDebouncedInputAmount,
   setOriginChainId,
   setDestinationChainId,

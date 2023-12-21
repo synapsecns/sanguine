@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { useAppDispatch } from '@/state/hooks'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
-import { setInputAmount } from '@/state/slices/bridge/reducer'
 import { Warning } from './icons/Warning'
 import { Tooltip } from './Tooltip'
 import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
@@ -10,8 +9,10 @@ import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 export const AvailableBalance = ({
   connectedAddress,
+  setInputAmount,
 }: {
   connectedAddress: string
+  setInputAmount: React.Dispatch<React.SetStateAction<string>>
 }) => {
   const dispatch = useAppDispatch()
 
@@ -28,7 +29,7 @@ export const AvailableBalance = ({
         tokenBalance.decimals ?? 0,
         18
       ) ?? '0.0'
-    dispatch(setInputAmount(maxAmount))
+    setInputAmount(maxAmount)
   }, [dispatch, tokenBalance, originToken, originChainId])
 
   if (!connectedAddress) return
@@ -42,24 +43,26 @@ export const AvailableBalance = ({
   }
 
   return (
-    <div className={`
+    <div
+      className={`
       row-start-3 col-start-1 col-end-3
       flex items-center gap-1 p-1 text-sm justify-self-end
-    `}>
+    `}
+    >
       <div
         onClick={handleAvailableBalanceClick}
         className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
       >
         Available {tokenBalance.parsedBalance ?? '0.0'}
       </div>
-      {!hasEnoughBalance && 
+      {!hasEnoughBalance && (
         <Tooltip
           hoverText="Amount may not exceed available balance"
           positionStyles="-right-1 -top-8"
         >
           <Warning styles="w-3.5" />
         </Tooltip>
-      }
+      )}
     </div>
   )
 }

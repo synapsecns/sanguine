@@ -99,7 +99,6 @@ const TokenOption = ({
   selected: BridgeableToken
   parsedBalance: string
 }) => {
-  console.log(option)
   return (
     <li
       data-test-id="token-option"
@@ -111,16 +110,20 @@ const TokenOption = ({
       }`}
       onClick={() => onSelect(option)}
     >
-      <abbr title={option.name} className="no-underline p-2">
+      <abbr title={option.name} className="p-2 no-underline">
         {option.symbol}
       </abbr>
-      <data value={parsedBalance} className={`
+      <data
+        value={parsedBalance}
+        className={`
         text-sm p-2
-        ${parsedBalance
-          ? 'text-[--synapse-secondary]' 
-          : 'text-[--synapse-focus]'
+        ${
+          parsedBalance
+            ? 'text-[--synapse-secondary]'
+            : 'text-[--synapse-focus]'
         }
-      `}>
+      `}
+      >
         {parsedBalance ?? '−'}
       </data>
     </li>
