@@ -114,7 +114,7 @@ func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteReques
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
 func (m *Manager) SubmitAllQuotes(ctx context.Context) error {
-	inv, err := m.inventoryManager.GetCommitableBalances(context.Background())
+	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting commitable balances: %w", err)
 	}
