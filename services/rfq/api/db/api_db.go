@@ -15,15 +15,15 @@ type Quote struct {
 	// OriginTokenAddr is the token address for which the relayer willing to relay from
 	OriginTokenAddr string `gorm:"column:origin_token;index;primaryKey"`
 	// DestChainID is the chain which the relayer is willing to relay to
-	DestChainID uint64 `gorm:"column:dest_chain_id;index;primaryKey'"`
+	DestChainID uint64 `gorm:"column:dest_chain_id;index;primaryKey"`
 	// DestToken is the token address for which the relayer willing to relay to
 	DestTokenAddr string `gorm:"column:dest_token;index;primaryKey"`
 	// DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals
 	DestAmount decimal.Decimal `gorm:"column:dest_amount"`
-	// Price is the price per origin token provided for which a relayer is indicating willingness to relay
-	Price decimal.Decimal `gorm:"column:price"`
-	// MaxOriginAmount is the maximum amount of origin tokens bridgeable, calculated by dividing the DestAmount by the Price
+	// MaxOriginAmount is the maximum amount of origin tokens bridgeable
 	MaxOriginAmount decimal.Decimal `gorm:"column:max_origin_amount"`
+	// FixedFee is the fixed fee for the quote, provided in the destination token terms
+	FixedFee decimal.Decimal `gorm:"column:fixed_fee"`
 	// Address of the relayer providing the quote
 	RelayerAddr string `gorm:"column:relayer_address;primaryKey"`
 	// UpdatedAt is the time that the quote was last upserted

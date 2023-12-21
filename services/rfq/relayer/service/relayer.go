@@ -3,6 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
@@ -14,13 +17,12 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"time"
 )
 
 // Relayer is the core of the relayer application.
@@ -83,7 +85,9 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg)
+	fp := pricer.NewFeePricer(cfg.FeePricer, cfg.Bridges, omniClient)
+
+	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg, fp)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
@@ -144,7 +148,7 @@ func (r *Relayer) Start(ctx context.Context) error {
 			case <-ctx.Done():
 				return fmt.Errorf("could not start db selector: %w", ctx.Err())
 			case <-time.After(defaultPostInterval * time.Second):
-				err := r.quoter.SubmitAllQuotes()
+				err := r.quoter.SubmitAllQuotes(ctx)
 				if err != nil {
 					return fmt.Errorf("could not start db selector: %w", err)
 				}

@@ -58,11 +58,11 @@ const (
 	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9
 	// USDTType is the tether type.
-	USDTType // USDTType
+	USDTType // USDT
 	// USDCType is the type of the usdc contract.
-	USDCType // USDCType
+	USDCType // USDC
 	// DAIType is the dai contract.
-	DAIType // DAIType is the dai contract type
+	DAIType // DAI
 )
 
 // ID gets the contract type as an id.
