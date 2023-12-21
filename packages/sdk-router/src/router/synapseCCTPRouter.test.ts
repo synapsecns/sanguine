@@ -9,8 +9,8 @@ import {
   ETH_USDC,
 } from '../constants'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
-import { CCTPRouterQuery } from './query'
-import { BridgeToken, DestRequest } from './types'
+import { BridgeToken, CCTPRouterQuery } from '../module'
+import { DestRequest } from './types'
 
 describe('SynapseCCTPRouter', () => {
   const ethAddress = CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]

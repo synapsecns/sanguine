@@ -7,17 +7,19 @@ import { BigNumber } from '@ethersproject/bignumber'
 import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
-import { Query, narrowToCCTPRouterQuery, reduceToQuery } from './query'
+import {
+  BridgeToken,
+  FeeConfig,
+  Query,
+  narrowToCCTPRouterQuery,
+  reduceToBridgeToken,
+  reduceToQuery,
+} from '../module'
 import cctpAbi from '../abi/SynapseCCTP.json'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
 import { BigintIsh } from '../constants'
-import {
-  BridgeToken,
-  DestRequest,
-  FeeConfig,
-  reduceToBridgeToken,
-} from './types'
+import { DestRequest } from './types'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.
