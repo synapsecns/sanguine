@@ -4,11 +4,12 @@ package client
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"strconv"
-	"time"
 
 	"github.com/dubonzi/otelresty"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -179,8 +180,8 @@ type APIQuotePutRequest struct {
 	DestChainID     string `json:"dest_chain_id"`
 	DestTokenAddr   string `json:"dest_token_addr"`
 	DestAmount      string `json:"dest_amount"`
-	Price           string `json:"price"`
 	MaxOriginAmount string `json:"max_origin_amount"`
+	FixedFee        string `json:"fixed_fee"`
 }
 
 // APIQuoteSpecificGetRequest is the struct for the quote API.

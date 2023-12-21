@@ -17,9 +17,9 @@ func _() {
 	_ = x[DAIType-7]
 }
 
-const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockWETH9USDTTypeUSDCTypeDAIType is the dai contract type"
+const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockWETH9USDTUSDCDAI"
 
-var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 38, 46, 54, 86}
+var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 38, 42, 46, 49}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

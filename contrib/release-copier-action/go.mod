@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/contrib/release-copier-action
 
-go 1.20
+go 1.21
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.20.1

@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
 
@@ -146,14 +147,14 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
 
-	var quotes []rest.PutRequest
+	var quotes []*db.Quote
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
 	c.Require().NoError(err)
 
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.Price == "50" {
+		if q.FixedFee.String() == "10" {
 			found = true
 			break
 		}
@@ -188,14 +189,14 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
 
-	var quotes []rest.PutRequest
+	var quotes []*db.Quote
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
 	c.Require().NoError(err)
 
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.Price == "50" {
+		if q.FixedFee.String() == "10" {
 			found = true
 			break
 		}
@@ -242,8 +243,8 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
-		Price:           "50.0",
 		MaxOriginAmount: "200.0",
+		FixedFee:        "10.0",
 	}
 	jsonData, err := json.Marshal(putData)
 	if err != nil {

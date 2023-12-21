@@ -3,6 +3,10 @@ package inventory
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,9 +26,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"sync"
-	"time"
 )
 
 // Manager is the interface for the inventory manager.
@@ -316,7 +317,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			defer wg.Done()
 			err = chainClient.BatchWithContext(ctx, deferredCalls...)
 			if err != nil {
-				logger.Warnf("coulld not refresh balances on %d: %v", chainID, err)
+				logger.Warnf("could not refresh balances on %d: %v", chainID, err)
 			}
 		}()
 	}

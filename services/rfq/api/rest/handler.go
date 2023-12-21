@@ -63,9 +63,9 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
 		return
 	}
-	price, err := decimal.NewFromString(putRequest.Price)
+	fixedFee, err := decimal.NewFromString(putRequest.FixedFee)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Price"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid FixedFee"})
 		return
 	}
 	// nolint: forcetypeassert
@@ -75,8 +75,8 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		DestChainID:     destChainID,
 		DestTokenAddr:   putRequest.DestTokenAddr,
 		DestAmount:      destAmount,
-		Price:           price,
 		MaxOriginAmount: maxOriginAmount,
+		FixedFee:        fixedFee,
 		//nolint: forcetypeassert
 		RelayerAddr: relayerAddr.(string),
 	}
