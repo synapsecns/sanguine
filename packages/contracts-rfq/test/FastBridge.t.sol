@@ -120,6 +120,84 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
+    function _getBridgeRequestAndIdWithChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+        internal
+        returns (bytes memory request, bytes32 transactionId)
+    {
+        // Define input variables for the bridge transaction
+        address to = user;
+        address oldRelayer = relayer;
+        uint32 originChainId = uint32(chainId);
+        uint32 dstChainId = 1;
+        address originToken = address(arbUSDC);
+        address destToken = address(ethUSDC);
+        uint256 originAmount = 11 * 10 ** 6;
+        uint256 destAmount = 10.97e6;
+        uint256 deadline = block.timestamp + 3600;
+
+        uint256 originFeeAmount;
+        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
+        originAmount -= originFeeAmount;
+
+        // Calculate the expected transaction ID
+        request = abi.encode(
+            IFastBridge.BridgeTransaction({
+                originChainId: originChainId,
+                destChainId: dstChainId,
+                originSender: user,
+                destRecipient: to,
+                originToken: originToken,
+                destToken: destToken,
+                originAmount: originAmount,
+                destAmount: destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: true,
+                deadline: deadline,
+                nonce: currentNonce
+            })
+        );
+        transactionId = keccak256(request);
+    }
+
+    function _getBridgeRequestAndIdWithETHAndChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+        internal
+        returns (bytes memory request, bytes32 transactionId)
+    {
+        // Define input variables for the bridge transaction
+        address to = user;
+        address oldRelayer = relayer;
+        uint32 originChainId = uint32(chainId);
+        uint32 dstChainId = 1;
+        address originToken = UniversalTokenLib.ETH_ADDRESS;
+        address destToken = UniversalTokenLib.ETH_ADDRESS;
+        uint256 originAmount = 11 * 10 ** 18;
+        uint256 destAmount = 10.97e18;
+        uint256 deadline = block.timestamp + 3600;
+
+        uint256 originFeeAmount;
+        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
+        originAmount -= originFeeAmount;
+
+        // Calculate the expected transaction ID
+        request = abi.encode(
+            IFastBridge.BridgeTransaction({
+                originChainId: originChainId,
+                destChainId: dstChainId,
+                originSender: user,
+                destRecipient: to,
+                originToken: originToken,
+                destToken: destToken,
+                originAmount: originAmount,
+                destAmount: destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: true,
+                deadline: deadline,
+                nonce: currentNonce
+            })
+        );
+        transactionId = keccak256(request);
+    }
+
     function setUpRoles() public {
         vm.startPrank(owner);
         fastBridge.addRelayer(relayer);
@@ -281,8 +359,9 @@ contract FastBridgeTest is Test {
         // Start a prank with the user
         vm.startPrank(user);
 
-        // get current nonce
+        // get expected bridge request and tx id
         uint256 currentNonce = fastBridge.nonce();
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, currentNonce, 0);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -303,6 +382,9 @@ contract FastBridgeTest is Test {
 
         assertEq(userBalanceBefore - userBalanceAfter, 11 * 10 ** 18);
         assertEq(bridgeBalanceAfter - bridgeBalanceBefore, 11 * 10 ** 18);
+
+        // Get the information of the bridge transaction
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -401,6 +483,89 @@ contract FastBridgeTest is Test {
 
         assertEq(userBalanceBefore - userBalanceAfter, 11 * 10 ** 18);
         assertEq(bridgeBalanceAfter - bridgeBalanceBefore, 11 * 10 ** 18);
+
+        // Get the information of the bridge transaction
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulBridgeWithChainGas() public {
+        // Start a prank with the user
+        vm.startPrank(user);
+        // Approve the fastBridge to spend 100 * 10 ** 6 of arbUSDC from the user
+        arbUSDC.approve(address(fastBridge), 100 * 10 ** 6);
+
+        // get expected bridge request and tx id
+        uint256 currentNonce = fastBridge.nonce();
+        (bytes memory request, bytes32 transactionId) =
+            _getBridgeRequestAndIdWithChainGas(block.chainid, currentNonce, 0);
+
+        vm.expectEmit();
+        emit BridgeRequested(transactionId, user, request);
+
+        // Execute the bridge transaction
+        IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
+            dstChainId: 1,
+            to: user,
+            originToken: address(arbUSDC),
+            destToken: address(ethUSDC),
+            originAmount: 11 * 10 ** 6,
+            destAmount: 10.97e6,
+            sendChainGas: true,
+            deadline: block.timestamp + 3600
+        });
+        fastBridge.bridge(params);
+        // Check the state of the tokens after the bridge transaction
+        // The fastBridge should have 11 * 10 ** 6 of arbUSDC
+        assertEq(arbUSDC.balanceOf(address(fastBridge)), 11 * 10 ** 6);
+        // The user should have 89 * 10 ** 6 of arbUSDC
+        assertEq(arbUSDC.balanceOf(user), 89 * 10 ** 6);
+
+        // Get the information of the bridge transaction
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulBridgeWithETHAndChainGas() public {
+        // setup eth
+        deal(user, 100 * 10 ** 18);
+        uint256 userBalanceBefore = user.balance;
+        uint256 bridgeBalanceBefore = address(fastBridge).balance;
+
+        // Start a prank with the user
+        vm.startPrank(user);
+
+        // get expected bridge request and tx id
+        uint256 currentNonce = fastBridge.nonce();
+        (bytes memory request, bytes32 transactionId) =
+            _getBridgeRequestAndIdWithETHAndChainGas(block.chainid, currentNonce, 0);
+
+        // Execute the bridge transaction
+        IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
+            dstChainId: 1,
+            to: user,
+            originToken: UniversalTokenLib.ETH_ADDRESS,
+            destToken: UniversalTokenLib.ETH_ADDRESS,
+            originAmount: 11 * 10 ** 18,
+            destAmount: 10.97e18,
+            sendChainGas: true,
+            deadline: block.timestamp + 3600
+        });
+        fastBridge.bridge{value: params.originAmount}(params);
+
+        // Check the state of the tokens after the bridge transaction
+        uint256 userBalanceAfter = user.balance;
+        uint256 bridgeBalanceAfter = address(fastBridge).balance;
+
+        assertEq(userBalanceBefore - userBalanceAfter, 11 * 10 ** 18);
+        assertEq(bridgeBalanceAfter - bridgeBalanceBefore, 11 * 10 ** 18);
+
+        // Get the information of the bridge transaction
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
 
         // We stop a prank to contain within test
         vm.stopPrank();

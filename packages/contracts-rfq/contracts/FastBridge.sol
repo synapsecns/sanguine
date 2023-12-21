@@ -17,7 +17,6 @@ contract FastBridge is IFastBridge, Admin {
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
     /// @notice Minimum deadline period to relay a requested bridge transaction
-    // TODO: think more about what to set this deadline as
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
     enum BridgeStatus {
@@ -125,7 +124,7 @@ contract FastBridge is IFastBridge, Admin {
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
-        
+
         // TODO: test
         if (!transaction.sendChainGas) {
             // forward erc20

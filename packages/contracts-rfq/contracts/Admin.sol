@@ -21,7 +21,7 @@ contract Admin is IAdmin, AccessControl {
 
     /// @notice Protocol fee amounts accumulated
     mapping(address => uint256) public protocolFees;
-    
+
     /// @notice Chain gas amount to forward as rebate if requested
     uint256 public chainGasAmount;
 
@@ -95,7 +95,7 @@ contract Admin is IAdmin, AccessControl {
         token.universalTransfer(recipient, feeAmount);
         emit FeesSwept(token, recipient, feeAmount);
     }
-    
+
     // TODO: test
     function setChainGasAmount(uint256 newChainGasAmount) external onlyGovernor {
         uint256 oldChainGasAmount = chainGasAmount;
