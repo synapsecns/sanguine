@@ -91,13 +91,13 @@ func (r *APIServer) Run(ctx context.Context) error {
 	h := NewHandler(r.db)
 
 	// Apply AuthMiddleware only to the PUT route
-	quotesPut := engine.Group("/quotes")
+	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
-	engine.GET("/quotes", h.GetQuotes)
-	engine.GET("/quotes/filter", h.GetFilteredQuotes)
+	engine.GET("QuoteRoute", h.GetQuotes)
+	engine.GET(fmt.Sprintf("%s/filter", QuoteRoute), h.GetFilteredQuotes)
 
 	r.engine = engine
 
