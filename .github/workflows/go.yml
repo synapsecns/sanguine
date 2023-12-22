@@ -82,6 +82,7 @@ jobs:
     needs: changes
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         go-version:
           - 1.21.x
@@ -396,6 +397,7 @@ jobs:
     if: ${{ github.event_name != 'push' && needs.changes.outputs.solidity_changes == 'true' }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
@@ -516,6 +518,7 @@ jobs:
     if: ${{ github.event_name != 'push' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
