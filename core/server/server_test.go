@@ -74,5 +74,7 @@ func TestListenAndServe(t *testing.T) {
 	//nolint: gosec, noctx
 	resp, err = http.Get("http://localhost:9090/ping")
 	assert.NotNil(t, err)
-	_ = resp.Body.Close()
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
+	}
 }
