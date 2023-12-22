@@ -1,4 +1,4 @@
-package server
+package server_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/core/server"
 	"io"
 	"net/http"
 	"testing"
@@ -21,7 +22,7 @@ func TestListenAndServe(t *testing.T) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	s := &Server{}
+	s := &server.Server{}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -37,6 +38,7 @@ func TestListenAndServe(t *testing.T) {
 	// Give some time for server to start
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		// Make a request to test if server is running
+		// nolint: gosec, noctx
 		resp, err := http.Get(url)
 		if err != nil {
 			return errors.New("server has not yet started")
@@ -44,7 +46,7 @@ func TestListenAndServe(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		assert.NoError(t, err)
 		assert.Equal(t, "pong", string(body))
 
@@ -55,12 +57,13 @@ func TestListenAndServe(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Make a request to test if server is running
+	// nolint: gosec, noctx
 	resp, err := http.Get(url)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	assert.NoError(t, err)
 	assert.Equal(t, "pong", string(body))
 
@@ -68,6 +71,8 @@ func TestListenAndServe(t *testing.T) {
 	<-ctx.Done()
 
 	// make sure cancellation triggers were processed and server is closed
+	//nolint: gosec, noctx
 	resp, err = http.Get("http://localhost:9090/ping")
 	assert.NotNil(t, err)
+	_ = resp.Body.Close()
 }
