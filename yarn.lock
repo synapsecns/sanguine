@@ -899,10 +899,10 @@
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.27.8.tgz"
   integrity sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==
 
-"@synapsecns/sdk-router@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.1.tgz#9317291d3416fb8f8f26bef3a9f9443628ab72e4"
-  integrity sha512-nUgpiMDXV4y3zMMz+8EGa8aXGLtSLvLctTD3VSVT/tpZc35QZsQumndGUwr4CRRvl3rLGXEEciMuw4Dd4aqSig==
+"@synapsecns/sdk-router@0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.6.tgz#2fe8172145da642118644fd442eb2261da224f30"
+  integrity sha512-nsaxAEBzOP8gy8j9BPoexjwxSiOfGrfEiXo3M2CE+rfIYQTLg/zuFVP2Vfh0kJhu2MTYJxMLYjwpotV52znRXg==
   dependencies:
     "@babel/core" "^7.20.12"
     "@ethersproject/abi" "^5.7.0"
@@ -915,7 +915,6 @@
     babel-jest "^29.4.1"
     big.js "^5.2.2"
     decimal.js-light "^2.5.1"
-    dotenv "^16.3.1"
     ethers "^5.7.2"
     jsbi "^4.3.0"
     tiny-invariant "^1.2.0"
@@ -1538,11 +1537,6 @@ domutils@^2.8.0:
     dom-serializer "^1.0.1"
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
-
-dotenv@^16.3.1:
-  version "16.3.1"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.3.1.tgz#369034de7d7e5b120972693352a3bf112172cc3e"
-  integrity sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==
 
 electron-to-chromium@^1.4.535:
   version "1.4.596"
