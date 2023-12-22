@@ -2,12 +2,8 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
-import {
-  getTestProviderUrl,
-  CCTP_ROUTER_ADDRESS_MAP,
-  SupportedChainId,
-  ETH_USDC,
-} from '../constants'
+import { getTestProviderUrl, ETH_USDC } from '../constants/testValues'
+import { CCTP_ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { BridgeToken, CCTPRouterQuery } from '../module'
 import { DestRequest } from './types'

@@ -1,8 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { providers } from 'ethers'
 
+import { getTestProviderUrl } from '../constants/testValues'
 import {
-  getTestProviderUrl,
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_CCTP,

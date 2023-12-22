@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.33](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.32...@synapsecns/rest-api@1.0.33) (2023-12-22)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.0.32](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.31...@synapsecns/rest-api@1.0.32) (2023-12-22)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.0.31](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.30...@synapsecns/rest-api@1.0.31) (2023-12-22)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 ## [1.0.30](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.29...@synapsecns/rest-api@1.0.30) (2023-12-21)
 
 **Note:** Version bump only for package @synapsecns/rest-api
