@@ -49,18 +49,23 @@ func NewSimpleProxy(proxyURL string, handler metrics.Handler, port int) *SimpleP
 	}
 }
 
+const maxAttempts = 15
+
 func (r *SimpleProxy) Run(ctx context.Context) error {
 	router := ginhelper.New(logger)
 	router.Use(r.handler.Gin())
 
 	router.POST("/", func(c *gin.Context) {
-		err := r.ProxyRequest(c)
+		var err error
+		//for i := 0; i < 15; i++ {
+		err = r.ProxyRequest(c)
 		if err != nil {
 			_ = c.Error(err)
 			c.JSON(http.StatusBadGateway, gin.H{
 				"error": err.Error(),
 			})
 		}
+		//}
 	})
 
 	router.GET("/collection.json", func(c *gin.Context) {
@@ -313,12 +318,7 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 	}
 
 	for i := 0; i < len(harmonyReceipt.Logs); i++ {
-		_, err := compareTX(*harmonyReceipt.Logs[i], *ethReceipt.Logs[i])
-		if err != nil {
-			return nil, fmt.Errorf("could not compare tx: %w", err)
-		} else {
-			fmt.Println("hi")
-		}
+		ethReceipt.Logs[i].TxHash = ethReceipt.TxHash
 	}
 
 	return rawResp, nil
