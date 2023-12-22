@@ -13,6 +13,8 @@
     line-height: inherit;
     letter-spacing: inherit;
 
+    width: 100%;
+
     /* For future consideration, more complete set of customizable variables
 
     --synapse-radius-inner: 0.25rem;

@@ -1,6 +1,6 @@
 
 type Props = {
-  links: { label: string; url: string; selected?: boolean }[]
+  links: { label: string; url?: string; selected?: boolean }[]
 }
 
 function HeaderSection({ links }: Props) {
@@ -13,7 +13,7 @@ function HeaderSection({ links }: Props) {
             key={i}
             href={link.url}
             target="_blank" rel="noreferrer"
-            className={`${link.selected ? 'selected' : ''}`}
+            className={`cursor-pointer ${link.selected ? 'selected' : ''}`}
           >
             {link.label}
           </a>
@@ -33,14 +33,14 @@ export default function Header() {
         <picture>
           <source srcSet="synapse-logo-onLight.svg" media="(prefers-color-scheme: light)" />
           <source srcSet="synapse-logo-onDark.svg" media="(prefers-color-scheme: dark)" />
-          <img src="synapse-logo-onDark.svg" width="200" alt="Synapse Logo" />
+          <img src="synapse-logo-onDark.svg" width="180" alt="Synapse Logo" />
         </picture>
       </a>
 
       <HeaderSection
         links={[
-          { label: 'Widget', url: '#', selected: true },
-          { label: 'Docs', url: '#' },
+          { label: 'Widget', selected: true },
+          { label: 'Docs', url: 'https://docs.synapseprotocol.com/' },
           { label: 'EVM Bridge', url: 'https://synapseprotocol.com' },
           // { label: 'Synapse Interchain Network', url: '#', },
         ]}

@@ -4,6 +4,7 @@ import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, SyntheticEvent, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
+import { Install, Developer, Support } from './icons'
 
 const tokens = [USDC, USDT, DAI, ETH]
 
@@ -104,7 +105,7 @@ function App() {
           <pre>npm synapse-widget</pre>
           <p>
             Easily onboard new users by adding a custom instance of the Synapse
-            Bridge to your React project
+            Bridge to your React project.
           </p>
           <div id="example-container">
             <div
@@ -124,21 +125,20 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between'}}>
               <div style={{ display: 'flex', gap: '1rem'}}>
                 <input id="color-picker" type="color" onInput={createCustomTheme} />
-                <div>
-                  <label>Container</label>&nbsp;
-                  <input type="checkbox" checked={container} onChange={toggleContainer}/>
+                <div className="flex items-center gap-1">
+                  <label>Container</label> <input type="checkbox" checked={container} onChange={toggleContainer}/>
                 </div>
               </div>
-              Drag to resize
+              <span className="desktop-only">Drag to resize</span>
             </div>
           </div>
         </header>
         <article>
-          <h2>⬇️&nbsp; Install</h2>
+          <h2><Install />Install</h2>
           <p>Install the Synapse Widget in your Next.js or React project</p>
-          <pre>npm synapse-widget</pre>
+          <pre style={{ fontSize: '100%' }}>npm synapse-widget</pre>
 
-          <h2>⚙️&nbsp; Setup</h2>
+          <h2><Developer />Setup</h2>
           <h3>Supported tokens</h3>
           <p>
             While the Synapse Widget supports{' '}
@@ -173,14 +173,13 @@ tokenList = {
 }`}
           </pre>
 
-          <h2>🎨&nbsp; Customize</h2>
-          <h3>Dark mode</h3>
+          <h3>Appearance</h3>
+          <h4>Dark mode</h4>
           <p>
-            To override the default light theme, set &nbsp;<code>bgColor</code>
-            &nbsp; to &nbsp;<code>'dark'</code>&nbsp;.
+            To override the default light theme, set <code>bgColor</code> to <code>'dark'</code>.
           </p>
           <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
-          <h3>Auto-palette</h3>
+          <h4>Auto-palette</h4>
           <p>
             Generate a palette based on your brand colors by setting bgColor to
             any hex, rgb, or hsl color string. Hex values must contain 6
@@ -193,7 +192,7 @@ tokenList = {
   bgColor: 'hsl(210deg 100% 4%)'
 }`}
           </pre>
-          {/* <h3>Accent Color</h3>
+          {/* <h4>Accent Color</h4>
           Add an accent color to text links and button hover states by setting accentColor to any hex, rgb, or hsl color string.
           <pre>
           customTheme = &#123;
@@ -202,7 +201,7 @@ tokenList = {
             <br />  accentColor: 'hsl(285deg 100% 67%)'
             <br />&#125;
           </pre> */}
-          <h3>Global Overrides</h3>
+          <h4>Global Overrides</h4>
           <p>
             The following CSS variables can be added to your CustomTheme to
             override the generated values. Any valid CSS color string can be
@@ -219,7 +218,7 @@ tokenList = {
   --synapse-root: 'inherit'
 }`}
           </pre>
-          <h3>Object Overrides</h3>
+          <h4>Object Overrides</h4>
           <p>
             Select and button elements can be specifically overriddden to introduce brand colors or custom styles.
           </p>
@@ -242,7 +241,7 @@ tokenList = {
             <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
             <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
           </dl> */}
-          <h2>🙋&nbsp; Support</h2>
+          <h2><Support />Support</h2>
           <p>
             For help and feedback, reach out to our Support team in the{' '}
             <a href="#" target="_blank" rel="noreferrer">

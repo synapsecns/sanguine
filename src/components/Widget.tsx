@@ -300,8 +300,9 @@ export const Widget = ({
     [dispatch]
   )
 
-  const containerStyle =
-    container === false ? 'p-0 w-full' : 'p-2 rounded-lg max-w-[400px]'
+  const containerStyle = `
+    ${container === false ? 'p-0' : 'p-2 rounded-lg'
+  }`
 
   const cardStyle = `
     grid grid-cols-[1fr_auto] 
@@ -315,10 +316,13 @@ export const Widget = ({
   `
 
   return (
-    <div style={themeVariables} className="synapse-widget">
+    <div
+      style={themeVariables}
+      className={`synapse-widget ${container && 'max-w-400px'}`}
+    >
       <div
         className={`
-        bg-[--synapse-root] grid gap-2 text-[--synapse-text] ${containerStyle}
+        bg-[--synapse-root] grid gap-2 text-[--synapse-text] w-full ${containerStyle}
         `}
       >
         <Transactions
