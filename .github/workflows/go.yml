@@ -321,7 +321,7 @@ jobs:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
-        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+        package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
       - uses: actions/setup-go@v4
         with:
