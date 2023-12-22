@@ -30,7 +30,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeRequestTX)
 
-			bridgeResponseTX, err := handle.MockBridgeRelayer(auth.TransactOpts, txID, testAddress, testAddress, testAddress, new(big.Int).SetUint64(gofakeit.Uint64()))
+			bridgeResponseTX, err := handle.MockBridgeRelayer(auth.TransactOpts, txID, testAddress, testAddress, testAddress, new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 			l.NoError(err)
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeResponseTX)
 		}(i)
