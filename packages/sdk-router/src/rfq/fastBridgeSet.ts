@@ -2,7 +2,11 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 
-import { AddressMap, BigintIsh, MEDIAN_TIME_RFQ } from '../constants'
+import {
+  BigintIsh,
+  FAST_BRIDGE_ADDRESS_MAP,
+  MEDIAN_TIME_RFQ,
+} from '../constants'
 import {
   BridgeRoute,
   BridgeToken,
@@ -27,12 +31,12 @@ export class FastBridgeSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
-  constructor(chains: ChainProvider[], addressMap: AddressMap) {
+  constructor(chains: ChainProvider[]) {
     super()
     this.fastBridges = {}
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
-      const address = addressMap[chainId]
+      const address = FAST_BRIDGE_ADDRESS_MAP[chainId]
       // Skip chains without a FastBridge address
       if (address) {
         this.fastBridges[chainId] = new FastBridge(chainId, provider, address)
