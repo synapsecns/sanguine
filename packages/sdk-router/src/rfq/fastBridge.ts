@@ -1,15 +1,22 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { Interface } from '@ethersproject/abi'
 
+import fastBridgeAbi from '../abi/FastBridge.json'
+import { FastBridge as FastBridgeContract } from '../typechain/FastBridge'
 import { BigintIsh } from '../constants'
 import { SynapseModule, Query } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
 
 export class FastBridge implements SynapseModule {
+  static fastBridgeInterface = new Interface(fastBridgeAbi)
+
   public readonly address: string
   public readonly chainId: number
   public readonly provider: Provider
+
+  private readonly fastBridgeContract: FastBridgeContract
 
   // All possible events emitted by the FastBridge contract in the origin transaction (in alphabetical order)
   private readonly originEvents = ['BridgeRequested']
@@ -18,9 +25,15 @@ export class FastBridge implements SynapseModule {
     invariant(chainId, 'CHAIN_ID_UNDEFINED')
     invariant(provider, 'PROVIDER_UNDEFINED')
     invariant(address, 'ADDRESS_UNDEFINED')
+    invariant(FastBridge.fastBridgeInterface, 'INTERFACE_UNDEFINED')
     this.chainId = chainId
     this.provider = provider
     this.address = address
+    this.fastBridgeContract = new Contract(
+      address,
+      FastBridge.fastBridgeInterface,
+      provider
+    ) as FastBridgeContract
   }
 
   /**
@@ -43,15 +56,14 @@ export class FastBridge implements SynapseModule {
    * @inheritdoc SynapseModule.getSynapseTxId
    */
   public async getSynapseTxId(txHash: string): Promise<string> {
-    const fastBridgeContract = await this.getFastBridgeContract()
     const fastBridgeLog = await getMatchingTxLog(
       this.provider,
       txHash,
-      fastBridgeContract,
+      this.fastBridgeContract,
       this.originEvents
     )
     // transactionId always exists in the log as we are using the correct ABI
-    const parsedLog = fastBridgeContract.interface.parseLog(fastBridgeLog)
+    const parsedLog = this.fastBridgeContract.interface.parseLog(fastBridgeLog)
     return parsedLog.args.transactionId
   }
 
@@ -59,12 +71,6 @@ export class FastBridge implements SynapseModule {
    * @inheritdoc SynapseModule.getBridgeTxStatus
    */
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
-    const fastBridgeContract = await this.getFastBridgeContract()
-    return fastBridgeContract.bridgeRelays(synapseTxId)
-  }
-
-  private async getFastBridgeContract(): Promise<Contract> {
-    // TODO: implement
-    return null as any
+    return this.fastBridgeContract.bridgeRelays(synapseTxId)
   }
 }
