@@ -181,7 +181,7 @@ export const PendingTransaction = ({
     transactionHash,
     bridgeModuleName,
     kappa,
-    checkStatus: isSignificantlyDelayed,
+    checkStatus: isDelayed,
     elapsedTime: updatedElapsedTime,
   })
 
