@@ -4,10 +4,16 @@ import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
-import { FastBridge as FastBridgeContract } from '../typechain/FastBridge'
+import {
+  FastBridge as FastBridgeContract,
+  IFastBridge,
+} from '../typechain/FastBridge'
 import { BigintIsh } from '../constants'
 import { SynapseModule, Query } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
+
+// Define type alias
+type BridgeParams = IFastBridge.BridgeParamsStruct
 
 export class FastBridge implements SynapseModule {
   static fastBridgeInterface = new Interface(fastBridgeAbi)
@@ -47,9 +53,21 @@ export class FastBridge implements SynapseModule {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    // TODO: initiate the bridge transaction using FastBridge binding
-    console.log(to, destChainId, token, amount, originQuery, destQuery)
-    return null as any
+    // TODO: remove this once swaps on origin are supported
+    invariant(amount === originQuery.minAmountOut, 'AMOUNT_MISMATCH')
+    invariant(token === originQuery.tokenOut, 'TOKEN_MISMATCH')
+    // TODO: encode sendChainGas into destQuery.rawParams
+    const bridgeParams: BridgeParams = {
+      dstChainId: destChainId,
+      to,
+      originToken: token,
+      destToken: destQuery.tokenOut,
+      originAmount: amount,
+      destAmount: destQuery.minAmountOut,
+      sendChainGas: false,
+      deadline: destQuery.deadline,
+    }
+    return this.fastBridgeContract.populateTransaction.bridge(bridgeParams)
   }
 
   /**
