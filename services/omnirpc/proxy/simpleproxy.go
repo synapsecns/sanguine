@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/gin-gonic/gin"
@@ -257,6 +258,8 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 		return nil
 	})
 
+	var rpcMessage JSONRPCMessage
+
 	g.Go(func() error {
 		web3Version, err := hmyClient.Web3Version(gCtx)
 		if err != nil {
@@ -275,7 +278,6 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 			return fmt.Errorf("could not make req: %w", err)
 		}
 
-		var rpcMessage JSONRPCMessage
 		err = json.Unmarshal(rawResp, &rpcMessage)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal: %w", err)
@@ -321,7 +323,60 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 		ethReceipt.Logs[i].TxHash = ethReceipt.TxHash
 	}
 
+	receiptLogsMarshall, err := json.Marshal(ethReceipt.Logs)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal eth receipt logs: %w", err)
+	}
+
+	var fields map[string]json.RawMessage
+	err = json.Unmarshal(rpcMessage.Result, &fields)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal fields: %w", err)
+	}
+
+	fields["logs"] = json.RawMessage(receiptLogsMarshall)
+	rpcMessage.Result, err = json.Marshal(fields)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal fields: %w", err)
+	}
+
+	rawResp, err = json.Marshal(rpcMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal rpc message: %w", err)
+	}
+
 	return rawResp, nil
+}
+
+func MarshalJson(r *types.Receipt) ([]byte, error) {
+	type Receipt struct {
+		Type              hexutil.Uint64 `json:"type,omitempty"`
+		PostState         hexutil.Bytes  `json:"root,omitempty"`
+		Status            hexutil.Uint64 `json:"status"`
+		CumulativeGasUsed hexutil.Uint64 `json:"cumulativeGasUsed" gencodec:"required"`
+		Bloom             types.Bloom    `json:"logsBloom"         gencodec:"required"`
+		Logs              []*types.Log   `json:"logs"              gencodec:"required"`
+		TxHash            common.Hash    `json:"transactionHash" gencodec:"required"`
+		ContractAddress   common.Address `json:"contractAddress"`
+		GasUsed           hexutil.Uint64 `json:"gasUsed" gencodec:"required"`
+		BlockHash         common.Hash    `json:"blockHash,omitempty"`
+		BlockNumber       *hexutil.Big   `json:"blockNumber,omitempty"`
+		TransactionIndex  hexutil.Uint   `json:"transactionIndex"`
+	}
+	var enc Receipt
+	enc.Type = hexutil.Uint64(r.Type)
+	enc.PostState = r.PostState
+	enc.Status = hexutil.Uint64(r.Status)
+	enc.CumulativeGasUsed = hexutil.Uint64(r.CumulativeGasUsed)
+	enc.Bloom = r.Bloom
+	enc.Logs = r.Logs
+	enc.TxHash = r.TxHash
+	enc.ContractAddress = r.ContractAddress
+	enc.GasUsed = hexutil.Uint64(r.GasUsed)
+	enc.BlockHash = r.BlockHash
+	enc.BlockNumber = (*hexutil.Big)(r.BlockNumber)
+	enc.TransactionIndex = hexutil.Uint(r.TransactionIndex)
+	return json.Marshal(&enc)
 }
 
 func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethereum.FilterQuery, rawBody []byte) (rawResp []byte, err error) {
