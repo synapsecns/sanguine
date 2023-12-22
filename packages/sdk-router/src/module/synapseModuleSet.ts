@@ -4,7 +4,11 @@ import invariant from 'tiny-invariant'
 import { BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
-import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
+import {
+  ONE_WEEK,
+  TEN_MINUTES,
+  applyOptionalDeadline,
+} from '../utils/deadlines'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -140,9 +144,9 @@ export abstract class SynapseModuleSet {
     )
     const { originQuery, destQuery } = bridgeRoute
     // Set origin deadline to 10 mins if not provided
-    originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
+    originQuery.deadline = applyOptionalDeadline(deadline, TEN_MINUTES)
     // Destination deadline is always 1 week
-    destQuery.deadline = calculateDeadline(ONE_WEEK)
+    destQuery.deadline = applyOptionalDeadline(undefined, ONE_WEEK)
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
       feeAmount,
