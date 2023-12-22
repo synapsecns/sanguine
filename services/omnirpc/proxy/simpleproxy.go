@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -21,8 +20,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"io"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"math/big"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 // SimpleProxy handles simple rxoy requests to omnirpc
@@ -194,7 +196,7 @@ func (r *SimpleProxy) verifyHarmonyRequest(ctx context.Context, req rpc.Request,
 		params := req.Params[0]
 		txHash := common.HexToHash(strings.Trim(string(params), "\""))
 
-		resp, err = r.getHarmonyReceiptVerify(ctx, txHash, rawBody)
+		resp, err = r.getHarmonyReceiptVerify(ctx, txHash, rawBody, true)
 		if err != nil {
 			return true, resp, fmt.Errorf("could not get receipt: %w", err)
 		}
@@ -233,7 +235,7 @@ func (r *SimpleProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte,
 
 const expectedVersion = "Harmony (C) 2023. harmony, version v8196-v2023.4.2-0-g8717ccf6"
 
-func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte) (_ []byte, err error) {
+func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte, checkVersion bool) (_ []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getHarmonyReceiptVerify")
 
 	defer func() {
@@ -260,13 +262,16 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 	var rpcMessage JSONRPCMessage
 
 	g.Go(func() error {
-		web3Version, err := hmyClient.Web3Version(gCtx)
-		if err != nil {
-			return fmt.Errorf("could not get web3 version: %w", err)
-		}
+		/// no need to double up on this check when doing receipts
+		if checkVersion {
+			web3Version, err := hmyClient.Web3Version(gCtx)
+			if err != nil {
+				return fmt.Errorf("could not get web3 version: %w", err)
+			}
 
-		if !strings.Contains(web3Version, expectedVersion) {
-			return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
+			if !strings.Contains(web3Version, expectedVersion) {
+				return fmt.Errorf("expected version %s, got %s", expectedVersion, web3Version)
+			}
 		}
 		return nil
 	})
@@ -324,7 +329,7 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 
 	receiptLogsMarshall, err := json.Marshal(ethReceipt.Logs)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal eth receipt logs: %w", err)
+		return nil, fmt.Errorf("could not marshal eth receipt: %w", err)
 	}
 
 	var fields map[string]json.RawMessage
@@ -359,17 +364,10 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 		return nil, fmt.Errorf("could not dial harmony backend: %w", err)
 	}
 
-	var harmonyLogs, ethLogs []types.Log
+	var ethLogs []types.Log
+	var rpcMessage JSONRPCMessage
 
 	g, gCtx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		harmonyLogs, err = hmyClient.FilterHarmonyLogs(gCtx, query)
-		if err != nil {
-			return fmt.Errorf("could not get harmony logs: %w", err)
-		}
-		return nil
-	})
-
 	g.Go(func() error {
 		web3Version, err := hmyClient.Web3Version(gCtx)
 		if err != nil {
@@ -388,7 +386,6 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 			return fmt.Errorf("could not make req: %w", err)
 		}
 
-		var rpcMessage JSONRPCMessage
 		err = json.Unmarshal(rawResp, &rpcMessage)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal: %w", err)
@@ -407,55 +404,106 @@ func (r *SimpleProxy) getLogsHarmonyVerify(parentCtx context.Context, query ethe
 		return nil, fmt.Errorf("could not get logs: %w", err)
 	}
 
-	if len(harmonyLogs) != len(ethLogs) {
-		return nil, fmt.Errorf("expected %d logs, got %d", len(harmonyLogs), len(ethLogs))
+	uniqueHashes := sets.NewString()
+	for i := 0; i < len(ethLogs); i++ {
+		uniqueHashes.Insert(ethLogs[i].TxHash.String())
 	}
 
-	for i := 0; i < len(harmonyLogs); i++ {
-		_, err := compareTX(harmonyLogs[i], ethLogs[i])
-		if err != nil {
-			return nil, fmt.Errorf("could not compare tx: %w", err)
-		}
+	g, gCtx = errgroup.WithContext(ctx)
+	var logs []*types.Log
+	var mux sync.Mutex
+	for _, hash := range uniqueHashes.List() {
+		g.Go(func() error {
+			rawReqBody, err := json.Marshal(rpc.Request{
+				ID:     1,
+				Method: client.TransactionReceiptByHashMethod.String(),
+				Params: []json.RawMessage{json.RawMessage(fmt.Sprintf("\"%s\"", hash))},
+			})
 
+			resp, err := r.getHarmonyReceiptVerify(gCtx, common.HexToHash(hash), rawReqBody, false)
+			if err != nil {
+				return fmt.Errorf("could not get harmony receipt: %w", err)
+			}
+
+			var rpcMessage JSONRPCMessage
+			err = json.Unmarshal(resp, &rpcMessage)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal: %w", err)
+			}
+
+			var receipt types.Receipt
+			err = json.Unmarshal(rpcMessage.Result, &receipt)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal: %w", err)
+			}
+
+			mux.Lock()
+			logs = append(logs, receipt.Logs...)
+			mux.Unlock()
+			return nil
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("could not get logs: %w", err)
+	}
+
+	filteredLogs := filterLogs(logs, query.FromBlock, query.ToBlock, query.Addresses, query.Topics)
+	if err != nil {
+		return nil, fmt.Errorf("could not filter logs: %w", err)
+	}
+
+	rpcMessage.Result, err = json.Marshal(filteredLogs)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal fields: %w", err)
 	}
 
 	return rawResp, nil
 }
 
-// compareTX makes sure all logs are equal except for the tx hash
-// which is epected to be different owing to Ethereum Hash and Hash which both exist on harmony
-func compareTX(harmonyLog, ethLog types.Log) (bool, error) {
-	if harmonyLog.BlockHash != ethLog.BlockHash {
-		return false, fmt.Errorf("expected block hash %s, got %s", harmonyLog.BlockHash, ethLog.BlockHash)
+// filterLogs creates a slice of logs matching the given criteria.
+func filterLogs(logs []*types.Log, fromBlock, toBlock *big.Int, addresses []common.Address, topics [][]common.Hash) []*types.Log {
+	var ret []*types.Log
+Logs:
+	for _, log := range logs {
+		if fromBlock != nil && fromBlock.Int64() >= 0 && fromBlock.Uint64() > log.BlockNumber {
+			continue
+		}
+		if toBlock != nil && toBlock.Int64() >= 0 && toBlock.Uint64() < log.BlockNumber {
+			continue
+		}
+
+		if len(addresses) > 0 && !includes(addresses, log.Address) {
+			continue
+		}
+		// If the to filtered topics is greater than the amount of topics in logs, skip.
+		if len(topics) > len(log.Topics) {
+			continue
+		}
+		for i, sub := range topics {
+			match := len(sub) == 0 // empty rule set == wildcard
+			for _, topic := range sub {
+				if log.Topics[i] == topic {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue Logs
+			}
+		}
+		ret = append(ret, log)
 	}
+	return ret
+}
 
-	if harmonyLog.TxHash == ethLog.TxHash {
-		return false, fmt.Errorf("expected different tx hashes %s, got %s", harmonyLog.TxHash, ethLog.TxHash)
-	}
-
-	if harmonyLog.TxIndex != ethLog.TxIndex {
-		return false, fmt.Errorf("expected tx index %d, got %d", harmonyLog.TxIndex, ethLog.TxIndex)
-	}
-
-	if harmonyLog.Index != ethLog.Index {
-		return false, fmt.Errorf("expected index %d, got %d", harmonyLog.Index, ethLog.Index)
-	}
-
-	if len(harmonyLog.Topics) != len(ethLog.Topics) {
-		return false, fmt.Errorf("expected %d topics, got %d", len(harmonyLog.Topics), len(ethLog.Topics))
-	}
-
-	for j := 0; j < len(harmonyLog.Topics); j++ {
-		harmonyTopic := harmonyLog.Topics[j]
-		ethTopic := ethLog.Topics[j]
-
-		if harmonyTopic != ethTopic {
-			return false, fmt.Errorf("expected topic %s, got %s", harmonyTopic, ethTopic)
+func includes(addresses []common.Address, a common.Address) bool {
+	for _, addr := range addresses {
+		if addr == a {
+			return true
 		}
 	}
 
-	if !bytes.Equal(harmonyLog.Data, ethLog.Data) {
-		return false, fmt.Errorf("expected data %s, got %s", harmonyLog.Data, ethLog.Data)
-	}
-	return true, nil
+	return false
 }
