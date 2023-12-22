@@ -67,6 +67,7 @@ export const GOHM = new Token({
   visibilityRank: 40,
   priorityRank: 6,
   routeSymbol: 'gOHM',
+  coingeckoId: 'governance-ohm',
 })
 
 export const LINK = new Token({
@@ -82,6 +83,7 @@ export const LINK = new Token({
   color: 'blue',
   priorityRank: 6,
   routeSymbol: 'LINK',
+  coingeckoId: 'chainlink',
 })
 
 export const HIGH = new Token({
@@ -97,6 +99,7 @@ export const HIGH = new Token({
   color: 'cyan',
   priorityRank: 6,
   routeSymbol: 'HIGH',
+  coingeckoId: 'highstreet',
 })
 
 export const JUMP = new Token({
@@ -130,6 +133,7 @@ export const SFI = new Token({
   color: 'red',
   priorityRank: 6,
   routeSymbol: 'SFI',
+  coingeckoId: 'saffron-finance',
 })
 
 export const DOG = new Token({
@@ -147,6 +151,7 @@ export const DOG = new Token({
   color: 'yellow',
   priorityRank: 6,
   routeSymbol: 'DOG',
+  coingeckoId: 'the-doge-nft',
 })
 
 export const NFD = new Token({
@@ -165,6 +170,7 @@ export const NFD = new Token({
   color: 'yellow',
   priorityRank: 6,
   routeSymbol: 'NFD',
+  coingeckoId: 'feisty-doge-nft',
 })
 
 export const SOLAR = new Token({
@@ -200,6 +206,7 @@ export const GMX = new Token({
   priorityRank: 6,
   color: 'blue',
   routeSymbol: 'GMX',
+  coingeckoId: 'gmx',
 })
 
 export const SDT = new Token({
@@ -219,6 +226,7 @@ export const SDT = new Token({
   color: 'gray',
   priorityRank: 6,
   routeSymbol: 'SDT',
+  coingeckoId: 'stake-dao',
 })
 
 export const NEWO = new Token({
@@ -236,6 +244,7 @@ export const NEWO = new Token({
   color: 'yellow',
   priorityRank: 6,
   routeSymbol: 'NEWO',
+  coingeckoId: 'new-order',
 })
 
 export const PEPE = new Token({
@@ -251,6 +260,7 @@ export const PEPE = new Token({
   priorityRank: 6,
   routeSymbol: 'PEPE',
   color: 'green',
+  coingeckoId: 'pepe',
 })
 
 export const VSTA = new Token({
@@ -267,6 +277,7 @@ export const VSTA = new Token({
   color: 'gray',
   priorityRank: 6,
   routeSymbol: 'VSTA',
+  coingeckoId: 'vesta-finance',
 })
 
 export const H2O = new Token({
@@ -289,6 +300,7 @@ export const H2O = new Token({
   color: 'cyan',
   priorityRank: 6,
   routeSymbol: 'H2O',
+  coingeckoId: 'h2o',
 })
 
 export const L2DAO = new Token({
@@ -305,6 +317,7 @@ export const L2DAO = new Token({
   color: 'cyan',
   priorityRank: 6,
   routeSymbol: 'L2DAO',
+  coingeckoId: 'layer2dao',
 })
 
 export const PLS = new Token({
@@ -321,6 +334,7 @@ export const PLS = new Token({
   color: 'green',
   priorityRank: 6,
   routeSymbol: 'PLS',
+  coingeckoId: 'plutusdao',
 })
 
 export const AGEUR = new Token({
@@ -338,6 +352,7 @@ export const AGEUR = new Token({
   color: 'yellow',
   priorityRank: 6,
   routeSymbol: 'agEUR',
+  coingeckoId: 'ageur',
 })
 
 export const UNIDX = new Token({
@@ -357,6 +372,7 @@ export const UNIDX = new Token({
   color: 'gray',
   priorityRank: 6,
   routeSymbol: 'UNIDX',
+  coingeckoId: 'unidex',
 })
 
 export const BUSD = new Token({
@@ -373,6 +389,7 @@ export const BUSD = new Token({
   color: 'yellow',
   priorityRank: 2,
   routeSymbol: 'BUSD',
+  coingeckoId: 'binance-usd',
 })
 
 export const USDC = new Token({
@@ -434,6 +451,7 @@ export const USDC = new Token({
   color: 'blue',
   priorityRank: 1,
   routeSymbol: 'USDC',
+  coingeckoId: 'usd-coin',
 })
 
 export const METISUSDC = new Token({
@@ -502,6 +520,7 @@ export const USDT = new Token({
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'USDT',
+  coingeckoId: 'tether',
 })
 
 export const DAI = new Token({
@@ -535,6 +554,7 @@ export const DAI = new Token({
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'DAI',
+  coingeckoId: 'dai',
 })
 
 export const WBTC = new Token({
@@ -555,6 +575,7 @@ export const WBTC = new Token({
   color: 'orange',
   priorityRank: 3,
   routeSymbol: 'WBTC',
+  coingeckoId: 'wrapped-bitcoin',
 })
 
 export const WETHE = new Token({
@@ -616,6 +637,7 @@ export const SYN = new Token({
   visibilityRank: 90,
   priorityRank: 2,
   routeSymbol: 'SYN',
+  coingeckoId: 'synapse-2',
 })
 
 export const FRAX = new Token({
@@ -633,6 +655,7 @@ export const FRAX = new Token({
   color: 'gray',
   priorityRank: 6,
   routeSymbol: 'FRAX',
+  coingeckoId: 'frax',
 })
 
 export const SYNFRAX = new Token({
@@ -691,6 +714,7 @@ export const NUSD = new Token({
   visibilityRank: 50,
   priorityRank: 5,
   routeSymbol: 'nUSD',
+  coingeckoId: 'usd-coin',
 })
 
 export const NOTE = new Token({
@@ -707,6 +731,7 @@ export const NOTE = new Token({
   visibilityRank: 90,
   priorityRank: 3,
   routeSymbol: 'NOTE',
+  coingeckoId: 'note',
 })
 
 export const NETH = new Token({
@@ -740,6 +765,7 @@ export const NETH = new Token({
   visibilityRank: 50,
   priorityRank: 5,
   routeSymbol: 'nETH',
+  coingeckoId: 'ethereum',
 })
 
 export const ETH = new Token({
@@ -768,6 +794,7 @@ export const ETH = new Token({
     CHAINS.OPTIMISM.id,
   ],
   routeSymbol: 'ETH',
+  coingeckoId: 'ethereum',
 })
 
 export const MOVR = new Token({
@@ -784,6 +811,7 @@ export const MOVR = new Token({
   color: 'purple',
   priorityRank: 3,
   routeSymbol: 'MOVR',
+  coingeckoId: 'moonriver',
 })
 
 export const AVAX = new Token({
@@ -804,6 +832,7 @@ export const AVAX = new Token({
   visibilityRank: 90,
   priorityRank: 3,
   routeSymbol: 'AVAX',
+  coingeckoId: 'avalanche-2',
 })
 
 export const WMOVR = new Token({
@@ -851,6 +880,7 @@ export const JEWEL = new Token({
   swapableType: 'JEWEL',
   priorityRank: 3,
   routeSymbol: 'JEWEL',
+  coingeckoId: 'defi-kingdoms',
 })
 
 export const WJEWEL = new Token({
@@ -896,6 +926,7 @@ export const XJEWEL = new Token({
   color: 'lime',
   priorityRank: 3,
   routeSymbol: 'xJEWEL',
+  coingeckoId: 'xjewel',
 })
 
 export const USDCe = new Token({
@@ -950,6 +981,7 @@ export const SUSD = new Token({
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'sUSD',
+  coingeckoId: 'susd',
 })
 
 export const WSOHM = new Token({
@@ -971,6 +1003,7 @@ export const WSOHM = new Token({
   visibilityRank: 40,
   priorityRank: 6,
   routeSymbol: 'wsOHM',
+  coingeckoId: 'wrapped-staked-olympus',
 })
 
 export const ONEDAI = new Token({
@@ -1043,6 +1076,7 @@ export const BTCB = new Token({
   color: 'orange',
   priorityRank: 3,
   routeSymbol: 'BTC.b',
+  coingeckoId: 'binance-bitcoin',
 })
 
 export const DAIE = new Token({
@@ -1078,6 +1112,7 @@ export const KLAY = new Token({
   color: 'red',
   priorityRank: 3,
   routeSymbol: 'KLAY',
+  coingeckoId: 'klay-token',
 })
 
 export const WKLAY = new Token({
@@ -1111,6 +1146,7 @@ export const MATIC = new Token({
   visibilityRank: 90,
   priorityRank: 3,
   routeSymbol: 'MATIC',
+  coingeckoId: 'matic-network',
 })
 
 export const WMATIC = new Token({
@@ -1142,6 +1178,7 @@ export const FTM = new Token({
   color: 'blue',
   priorityRank: 5,
   routeSymbol: 'FTM',
+  coingeckoId: 'fantom',
 })
 
 export const WFTM = new Token({
@@ -1198,6 +1235,7 @@ export const CRVUSDC = new Token({
   color: 'yellow',
   priorityRank: 1,
   routeSymbol: 'crvUSD',
+  coingeckoId: 'crvusd',
 })
 
 export const USDBC = new Token({
@@ -1217,4 +1255,5 @@ export const USDBC = new Token({
   color: 'blue',
   priorityRank: 1,
   routeSymbol: 'USDbC',
+  coingeckoId: 'bridged-usd-coin-base',
 })

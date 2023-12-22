@@ -97,6 +97,7 @@ export class Token {
   depositTokens?: Token[] // list of deposit tokens
   nativeTokens?: Token[] // list of native tokens
   description?: string // token description
+  coingeckoId?: string // the tokens coingecko Id
   docUrl = '' // token doc url
   forceMeta?: boolean // force meta
   swapableType?: string // swapable type
@@ -153,6 +154,7 @@ export class Token {
     depositTokens,
     nativeTokens,
     description,
+    coingeckoId,
     docUrl = '',
     forceMeta,
     swapableType,
@@ -194,6 +196,7 @@ export class Token {
     depositTokens?: Token[]
     nativeTokens?: Token[]
     description?: string
+    coingeckoId?: string
     docUrl?: string
     forceMeta?: boolean
     swapableType?: string
@@ -247,6 +250,7 @@ export class Token {
     this.nativeTokens = nativeTokens ?? poolTokens
     this.depositTokens = depositTokens ?? this.nativeTokens
     this.description = description
+    this.coingeckoId = coingeckoId
     this.docUrl = docUrl ?? ''
 
     this.poolId = makeMultiChainObj(poolId)
