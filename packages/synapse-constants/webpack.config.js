@@ -52,7 +52,6 @@ const config = {
             // Lossless optimization with custom option
             // Feel free to experiment with options for better result for you
             plugins: [
-              ['jpegtran', { progressive: true }],
               ['optipng', { optimizationLevel: 5 }],
               // Svgo configuration here https://github.com/svg/svgo#configuration
               [
@@ -64,12 +63,8 @@ const config = {
                       params: {
                         overrides: {
                           removeViewBox: false,
-                          addAttributesToSVGElement: {
-                            params: {
-                              attributes: [
-                                { xmlns: 'http://www.w3.org/2000/svg' },
-                              ],
-                            },
+                          inlineStyles: {
+                            onlyMatchedOnce: false,
                           },
                         },
                       },
