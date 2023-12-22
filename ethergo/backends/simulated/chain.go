@@ -134,4 +134,5 @@ func (s Client) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, err err
 	return big.NewInt(0).Add(estimatedPrice, baseFee), nil
 }
 
+// nolint: staticcheck
 var _ client.EVMClient = &Client{}

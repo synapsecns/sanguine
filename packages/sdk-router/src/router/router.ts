@@ -62,6 +62,25 @@ export abstract class Router {
   ): Promise<PopulatedTransaction>
 
   /**
+   * Returns the Synapse transaction ID for a given transaction hash on the current chain.
+   * This is used to track the status of a bridge transaction originating from the current chain.
+   *
+   * @param txHash - The transaction hash of the bridge transaction.
+   * @returns A promise that resolves to the Synapse transaction ID.
+   */
+  abstract getSynapseTxId(txHash: string): Promise<string>
+
+  /**
+   * Checks whether a bridge transaction has been completed on the current chain.
+   * This is used to track the status of a bridge transaction originating from another chain, having
+   * current chain as the destination chain.
+   *
+   * @param synapseTxId - The unique Synapse txId of the bridge transaction.
+   * @returns A promise that resolves to a boolean indicating whether the bridge transaction has been completed.
+   */
+  abstract getBridgeTxStatus(synapseTxId: string): Promise<boolean>
+
+  /**
    * Fetches bridge tokens for a destination chain and output token.
    *
    * Checks the cache first, and fetches from the router if not cached. Filters invalid tokens and caches the result.
