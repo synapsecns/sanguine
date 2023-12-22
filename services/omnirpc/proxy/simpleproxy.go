@@ -57,6 +57,9 @@ func (r *SimpleProxy) Run(ctx context.Context) error {
 		err := r.ProxyRequest(c)
 		if err != nil {
 			_ = c.Error(err)
+			c.JSON(http.StatusBadGateway, gin.H{
+				"error": err.Error(),
+			})
 		}
 	})
 
@@ -313,6 +316,8 @@ func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash 
 		_, err := compareTX(*harmonyReceipt.Logs[i], *ethReceipt.Logs[i])
 		if err != nil {
 			return nil, fmt.Errorf("could not compare tx: %w", err)
+		} else {
+			fmt.Println("hi")
 		}
 	}
 
