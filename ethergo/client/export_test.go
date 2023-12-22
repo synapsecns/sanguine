@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/dwasse/w3/w3types"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 )

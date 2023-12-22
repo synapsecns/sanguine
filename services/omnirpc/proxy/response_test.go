@@ -11,7 +11,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/dwasse/w3/module/eth"
+	"github.com/lmittmann/w3/module/eth"
 	ethClient "github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 

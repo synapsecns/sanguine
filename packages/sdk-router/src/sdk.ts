@@ -5,11 +5,11 @@ import {
   SynapseRouterSet,
   SynapseCCTPRouterSet,
   ChainProvider,
-  Query,
   PoolToken,
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
+import { Query } from './module'
 
 class SynapseSDK {
   public synapseRouterSet: SynapseRouterSet
@@ -48,6 +48,8 @@ class SynapseSDK {
   public bridgeQuote = operations.bridgeQuote
   public getBridgeModuleName = operations.getBridgeModuleName
   public getEstimatedTime = operations.getEstimatedTime
+  public getSynapseTxId = operations.getSynapseTxId
+  public getBridgeTxStatus = operations.getBridgeTxStatus
 
   public getBridgeGas = operations.getBridgeGas
 

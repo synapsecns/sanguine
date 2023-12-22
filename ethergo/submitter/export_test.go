@@ -12,65 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"go.opentelemetry.io/otel/attribute"
-)
-
-// CopyTransactOpts exports copyTransactOpts for testing.
-func CopyTransactOpts(opts *bind.TransactOpts) *bind.TransactOpts {
-	return copyTransactOpts(opts)
-}
-
-// NullFieldAttribute is a constant used to test the null field attribute.
-// it exports the underlying constant for testing.
-const NullFieldAttribute = nullFieldAttribute
-
-func AddressPtrToString(address *common.Address) string {
-	return addressPtrToString(address)
-}
-
-// BigPtrToString converts a big.Int pointer to a string.
-func BigPtrToString(num *big.Int) string {
-	return bigPtrToString(num)
-}
-
-// TxToAttributes exports txToAttributes for testing.
-func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
-	return txToAttributes(transaction)
-}
-
-// SortTxes exports sortTxesByChainID for testing.
-func SortTxes(txs []db.TX) map[uint64][]db.TX {
-	return sortTxesByChainID(txs)
-}
-
-// GroupTxesByNonce exports groupTxesByNonce for testing.
-func GroupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
-	return groupTxesByNonce(txs)
-}
-
-const (
-	// HashAttr exports hashAttr for testing.
-	HashAttr = hashAttr
-	// FromAttr exports fromAttr for testing.
-	FromAttr = fromAttr
-	// ToAttr exports toAttr for testing.
-	ToAttr = toAttr
-	// DataAttr exports dataAttr for testing.
-	DataAttr = dataAttr
-	// ValueAttr exports valueAttr for testing.
-	ValueAttr = valueAttr
-	// NonceAttr exports nonceAttr for testing.
-	NonceAttr = nonceAttr
-	// GasLimitAttr exports gasLimitAttr for testing.
-	GasLimitAttr = gasLimitAttr
-	// ChainIDAttr exports chainIDAttr for testing.
-	ChainIDAttr = chainIDAttr
-	// GasPriceAttr exports gasPriceAttr for testing.
-	GasPriceAttr = gasPriceAttr
-	// GasFeeCapAttr exports gasFeeCapAttr for testing.
-	GasFeeCapAttr = gasFeeCapAttr
-	// GasTipCapAttr exports gasTipCapAttr for testing.
-	GasTipCapAttr = gasTipCapAttr
 )
 
 // NewTestTransactionSubmitter wraps TestTransactionSubmitter in a TransactionSubmitter interface.
@@ -114,3 +55,24 @@ func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, 
 func (t *txSubmitterImpl) CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
 	return t.checkAndSetConfirmation(ctx, chainClient, txes)
 }
+
+// SortTxes exports sortTxesByChainID for testing.
+func SortTxes(txs []db.TX) map[uint64][]db.TX {
+	return sortTxesByChainID(txs)
+}
+
+// GroupTxesByNonce exports groupTxesByNonce for testing.
+func GroupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
+	return groupTxesByNonce(txs)
+}
+
+// SetForceNoFallback exports setForceNoFallback for testing.
+func SetForceNoFallback(val bool) {
+	forceNoFallbackIfZero = val
+}
+
+// export for testing
+// Warning! Changing this value will not change the underlying value!
+// htis is exported for testing to allow a return to underlying value after the test
+// TODO: consider doing a SetForTest
+var ForceNoFallbackIfZero = forceNoFallbackIfZero

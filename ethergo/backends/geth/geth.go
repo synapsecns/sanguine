@@ -9,8 +9,6 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/dwasse/w3"
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/cmd/utils"
@@ -25,6 +23,8 @@ import (
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/backends"

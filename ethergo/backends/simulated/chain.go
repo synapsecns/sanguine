@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"golang.org/x/sync/errgroup"
@@ -135,4 +135,5 @@ func (s Client) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, err err
 	return big.NewInt(0).Add(estimatedPrice, baseFee), nil
 }
 
+// nolint: staticcheck
 var _ client.EVMClient = &Client{}

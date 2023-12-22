@@ -4,9 +4,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/dwasse/w3/module/eth"
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"

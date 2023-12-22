@@ -11,7 +11,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/puzpuzpuz/xsync/v2"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas/backend"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas/london"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -157,26 +160,20 @@ func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.
 	}, nil
 }
 
-func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (nonce uint64, err error) {
+func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.GetNonce", trace.WithAttributes(
 		attribute.Stringer("chainID", chainID),
 		attribute.Stringer("address", address),
 	))
 
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
-	// locks are not built into this method or the insertion level of the db
-	var onChainNonce, dbNonce uint64
-
 	defer func() {
-		span.AddEvent("Got nonce", trace.WithAttributes(
-			attribute.Int("nonce", int(nonce)),
-			attribute.Int("onChainNonce", int(onChainNonce)),
-			attribute.Int("dbNonce", int(dbNonce)),
-		))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
+	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// locks are not built into this method or the insertion level of the db
+	var onChainNonce, dbNonce uint64
 
 	chainClient, err := t.fetcher.GetClient(ctx, chainID)
 	if err != nil {
@@ -212,17 +209,15 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}
 
 	if onChainNonce > dbNonce {
-		nonce = onChainNonce
-	} else {
-		nonce = dbNonce
+		return onChainNonce, nil
 	}
 
-	return nonce, nil
+	return dbNonce, nil
 }
 
 func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.StoreTX", trace.WithAttributes(
-		append(txToAttributes(tx), attribute.String("status", status.String()))...))
+		append(util.TxToAttributes(tx), attribute.String("status", status.String()))...))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -280,7 +275,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}
 
 	// then we copy the transactor, this is the one we'll modify w/ no send.
-	transactor := copyTransactOpts(parentTransactor)
+	transactor := util.CopyTransactOpts(parentTransactor)
 
 	var locker mapmutex.Unlocker
 
@@ -293,7 +288,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
 	if err != nil {
-		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
@@ -371,7 +366,8 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
 		transactor.GasFeeCap = t.config.GetMaxGasPrice(chainID)
 
-		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
+		// only use fallback if no previous tx
+		transactor.GasTipCap, err = t.SuggestGasTipCap(ctx, client, chainID, prevTx != nil)
 		if err != nil {
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
@@ -386,7 +382,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	if prevTx != nil {
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
-			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
 			return err
 		}
 
@@ -402,23 +398,6 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		}
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
-
-	attributes := []attribute.KeyValue{}
-	if transactor.GasPrice != nil {
-		attributes = append(attributes, attribute.Int64("gasPrice", transactor.GasPrice.Int64()))
-	}
-	if transactor.GasFeeCap != nil {
-		attributes = append(attributes, attribute.Int64("gasFeeCap", transactor.GasFeeCap.Int64()))
-	}
-	if transactor.GasTipCap != nil {
-		attributes = append(attributes, attribute.Int64("gasTipCap", transactor.GasTipCap.Int64()))
-	}
-	span.AddEvent("set gas price", trace.WithAttributes(
-		attribute.Int("chainID", chainID),
-		attribute.String("gasPrice", bigPtrToString(transactor.GasPrice)),
-		attribute.String("gasFeeCap", bigPtrToString(transactor.GasFeeCap)),
-		attribute.String("gasTipCap", bigPtrToString(transactor.GasTipCap)),
-	))
 	return nil
 }
 
@@ -444,8 +423,8 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		gasBlock, ok = t.lastGasBlockCache.Load(chainID)
 		if ok {
 			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
-				attribute.String(metrics.Error, err.Error()),
-				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
+				attribute.String("error", err.Error()),
+				attribute.String("blockNumber", util.BigPtrToString(gasBlock.Number)),
 			))
 		} else {
 			return nil, fmt.Errorf("could not get gas block: %w", err)
@@ -484,7 +463,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
 		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
 			// fallback to default
 			return t.config.GetGasEstimate(chainID), nil
 		}
@@ -492,5 +471,90 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 	return gasEstimate, nil
 }
+
+// forceNoFallbackIfZero is used to force no fallback if the tip cap is 0.
+var forceNoFallbackIfZero = false
+
+// TODO: test oracle fallback.
+func (t *txSubmitterImpl) SuggestGasTipCap(ctx context.Context, client client.EVM, chainID int, fallbackIfZero bool) (tipCap *big.Int, err error) {
+	tipCap, err = client.SuggestGasTipCap(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get gas tip cap: %w", err)
+	}
+
+	// note: these ifs can be combined, but I've found the largic hard to parse if they are.
+	// if tip cap is not zero  return
+	if big.NewInt(0).Cmp(tipCap) != 0 {
+		return tipCap, nil
+	}
+
+	// past this point tip cap is 0.
+
+	// if we should force no fallback, return
+	// this is set for testing.
+	if forceNoFallbackIfZero {
+		return tipCap, nil
+	}
+
+	// if we shouldn't fallback, return
+	if !fallbackIfZero {
+		return tipCap, nil
+	}
+
+	blockHeight, err := client.BlockNumber(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get block number: %w", err)
+	}
+
+	// if on the other hand, fee is 0 we should fallback to our pricer
+	oracleConfig := gas.GetConfig()
+	oracleConfig.MaxPrice = core.CopyBigInt(t.config.GetMaxGasPrice(chainID))
+
+	feeOracle := london.NewFeeOracle(wrappedLondonClient{client, chainID}, blockHeight, oracleConfig)
+	tipCap, err = feeOracle.SuggestTipCap(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get tip cap: %w", err)
+	}
+	return tipCap, nil
+}
+
+type wrappedLondonClient struct {
+	client.EVM
+	chainID int
+}
+
+// ChainConfig is a fake chain config.
+// since wrapped client is only used for makeSigner
+// and on london, we just enable everything.
+func (w wrappedLondonClient) ChainConfig() *params.ChainConfig {
+	return &params.ChainConfig{
+		ChainID:                       big.NewInt(int64(w.chainID)),
+		HomesteadBlock:                big.NewInt(0),
+		DAOForkBlock:                  big.NewInt(0),
+		DAOForkSupport:                false,
+		EIP150Block:                   big.NewInt(0),
+		EIP150Hash:                    common.Hash{},
+		EIP155Block:                   big.NewInt(0),
+		EIP158Block:                   big.NewInt(0),
+		ByzantiumBlock:                big.NewInt(0),
+		ConstantinopleBlock:           big.NewInt(0),
+		PetersburgBlock:               big.NewInt(0),
+		IstanbulBlock:                 big.NewInt(0),
+		MuirGlacierBlock:              big.NewInt(0),
+		BerlinBlock:                   big.NewInt(0),
+		LondonBlock:                   big.NewInt(0),
+		ArrowGlacierBlock:             big.NewInt(0),
+		GrayGlacierBlock:              big.NewInt(0),
+		MergeNetsplitBlock:            big.NewInt(0),
+		ShanghaiBlock:                 big.NewInt(0),
+		CancunBlock:                   big.NewInt(0),
+		TerminalTotalDifficulty:       big.NewInt(0),
+		TerminalTotalDifficultyPassed: false,
+		Ethash:                        nil,
+		Clique:                        nil,
+	}
+}
+
+var _ backend.OracleBackendChain = &wrappedLondonClient{}
 
 var _ TransactionSubmitter = &txSubmitterImpl{}

@@ -34,10 +34,6 @@ export class SynapseCCTPRouterSet extends RouterSet {
    * @throws Will throw an error if SynapseCCTPRouter is not deployed on the given chain.
    */
   public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
-    invariant(
-      this.routers[chainId],
-      `No SynapseCCTPRouter deployed on chain ${chainId}`
-    )
-    return this.routers[chainId] as SynapseCCTPRouter
+    return this.getExistingModule(chainId) as SynapseCCTPRouter
   }
 }

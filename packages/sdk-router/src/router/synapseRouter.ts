@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { solidityKeccak256 } from 'ethers/lib/utils'
 
 import routerAbi from '../abi/SynapseRouter.json'
 import {
@@ -10,20 +11,26 @@ import {
   PoolStructOutput,
 } from '../typechain/SynapseRouter'
 import { Router } from './router'
-import { Query, narrowToRouterQuery, reduceToQuery } from './query'
+import {
+  BridgeToken,
+  FeeConfig,
+  Query,
+  narrowToRouterQuery,
+  reduceToBridgeToken,
+  reduceToFeeConfig,
+  reduceToQuery,
+} from '../module'
 import bridgeAbi from '../abi/SynapseBridge.json'
 import { BigintIsh } from '../constants'
 import {
-  BridgeToken,
   DestRequest,
-  FeeConfig,
   Pool,
   PoolInfo,
   PoolToken,
-  reduceToBridgeToken,
-  reduceToFeeConfig,
   reduceToPoolToken,
 } from './types'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
+import { getMatchingTxLog } from '../utils/logs'
 
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
@@ -58,6 +65,16 @@ export class SynapseRouter extends Router {
 
   private readonly routerContract: SynapseRouterContract
   private bridgeContractCache: Contract | undefined
+
+  // All possible events emitted by the SynapseBridge contract in the origin transaction (in alphabetical order)
+  private readonly originEvents = [
+    'TokenDeposit',
+    'TokenDepositAndSwap',
+    'TokenRedeem',
+    'TokenRedeemAndRemove',
+    'TokenRedeemAndSwap',
+    'TokenRedeemV2',
+  ]
 
   constructor(chainId: number, provider: Provider, address: string) {
     // Parent constructor throws if chainId or provider are undefined
@@ -127,14 +144,45 @@ export class SynapseRouter extends Router {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    return this.routerContract.populateTransaction.bridge(
-      to,
-      chainId,
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.bridge(
+        to,
+        chainId,
+        token,
+        amount,
+        narrowToRouterQuery(originQuery),
+        narrowToRouterQuery(destQuery)
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
       token,
-      amount,
-      narrowToRouterQuery(originQuery),
-      narrowToRouterQuery(destQuery)
+      BigNumber.from(amount)
     )
+  }
+
+  /**
+   * @inheritdoc Router.getSynapseTxId
+   */
+  public async getSynapseTxId(txHash: string): Promise<string> {
+    // Check that the transaction hash refers to an origin transaction
+    const bridgeContract = await this.getBridgeContract()
+    await getMatchingTxLog(
+      this.provider,
+      txHash,
+      bridgeContract,
+      this.originEvents
+    )
+    // Once we know the transaction is an origin transaction, we can calculate the Synapse txId
+    return solidityKeccak256(['string'], [txHash])
+  }
+
+  /**
+   * @inheritdoc Router.getBridgeTxStatus
+   */
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
+    const bridgeContract = await this.getBridgeContract()
+    return bridgeContract.kappaExists(synapseTxId)
   }
 
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
@@ -214,11 +262,18 @@ export class SynapseRouter extends Router {
     amount: BigintIsh,
     query: Query
   ): Promise<PopulatedTransaction> {
-    return this.routerContract.populateTransaction.swap(
-      to,
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.swap(
+        to,
+        token,
+        amount,
+        narrowToRouterQuery(query)
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
       token,
-      amount,
-      narrowToRouterQuery(query)
+      BigNumber.from(amount)
     )
   }
 }

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dwasse/w3/module/eth"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lmittmann/w3/module/eth"
 	"github.com/synapsecns/sanguine/core/metrics"
 	ethClient "github.com/synapsecns/sanguine/ethergo/client"
 	"go.opentelemetry.io/otel/attribute"

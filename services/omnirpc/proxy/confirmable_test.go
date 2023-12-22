@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/dwasse/w3/module/eth"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/lmittmann/w3/module/eth"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"

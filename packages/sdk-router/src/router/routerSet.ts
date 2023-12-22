@@ -4,9 +4,15 @@ import invariant from 'tiny-invariant'
 
 import { Router } from './router'
 import { AddressMap, BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute, DestRequest } from './types'
+import { DestRequest } from './types'
 import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
-import { hasComplexBridgeAction } from './query'
+import {
+  BridgeQuote,
+  BridgeRoute,
+  SynapseModule,
+  SynapseModuleSet,
+} from '../module'
+import { hasComplexBridgeAction } from '../module/query'
 
 export type ChainProvider = {
   chainId: number
@@ -29,10 +35,7 @@ export type RouterConstructor = new (
  * @property routers Collection of Router instances indexed by chainId.
  * @property providers Collection of Provider instances indexed by chainId.
  */
-export abstract class RouterSet {
-  abstract readonly bridgeModuleName: string
-  abstract readonly allEvents: string[]
-
+export abstract class RouterSet extends SynapseModuleSet {
   public routers: {
     [chainId: number]: Router
   }
@@ -49,6 +52,7 @@ export abstract class RouterSet {
     addressMap: AddressMap,
     ctor: RouterConstructor
   ) {
+    super()
     this.routers = {}
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
@@ -62,46 +66,14 @@ export abstract class RouterSet {
   }
 
   /**
-   * Returns the estimated time for a bridge transaction to be completed,
-   * when the transaction is sent from the given chain.
-   *
-   * @param chainId - The ID of the origin chain.
-   * @returns The estimated time in seconds.
-   * @throws Will throw an error if the chain ID is not supported.
+   * @inheritdoc SynapseModuleSet.getModule
    */
-  abstract getEstimatedTime(chainId: number): number
-
-  /**
-   * Returns the existing Router instance for the given address on the given chain.
-   * If the router address is not valid, it will return undefined.
-   *
-   * @param chainId - The ID of the chain.
-   * @param routerAddress - The address of the router.
-   * @returns The Router instance, or undefined if the router address is not valid.
-   */
-  public getRouter(chainId: number, routerAddress: string): Router | undefined {
-    const router = this.routers[chainId]
-    // Check if router exists on chain and that router address matches
-    if (router?.address.toLowerCase() === routerAddress.toLowerCase()) {
-      return router
-    } else {
-      return undefined
-    }
+  public getModule(chainId: number): SynapseModule | undefined {
+    return this.routers[chainId]
   }
 
   /**
-   * This method find all possible routes for a bridge transaction between two chains.
-   * It fetches the list of bridge symbols that could be used to complete the bridge transaction.
-   * For each bridge symbol, it calculates the amount of output token that would be received.
-   * It then returns all quotes that have a non-zero amount of output token.
-   *
-   * @param originChainId - The ID of the original chain.
-   * @param destChainId - The ID of the destination chain.
-   * @param tokenIn - The input token.
-   * @param tokenOut - The output token.
-   * @param amountIn - The amount of input token.
-   *
-   * @returns - A promise that resolves to the best bridge quote, or undefined if no best quote could be determined.
+   * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
   public async getBridgeRoutes(
     originChainId: number,
@@ -156,7 +128,7 @@ export abstract class RouterSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
-          originRouterAddress: originRouter.address,
+          bridgeModuleName: this.bridgeModuleName,
         })
       )
       // Return routes with non-zero minAmountOut
@@ -173,12 +145,7 @@ export abstract class RouterSet {
   }
 
   /**
-   * Finalizes the bridge route by getting fee data and setting default deadlines.
-   *
-   * @param destChainId - The ID of the destination chain.
-   * @param bridgeRoute - Bridge route to finalize.
-   * @param deadline - The deadline to use on the origin chain (default 10 mins).
-   * @returns The finalized quote with fee data and deadlines.
+   * @inheritdoc SynapseModuleSet.finalizeBridgeRoute
    */
   public async finalizeBridgeRoute(
     bridgeRoute: BridgeRoute,
@@ -187,6 +154,10 @@ export abstract class RouterSet {
     const originRouter = this.routers[bridgeRoute.originChainId]
     const destRouter = this.routers[bridgeRoute.destChainId]
     invariant(originRouter && destRouter, 'Route not supported')
+    invariant(
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      'Invalid bridge module name'
+    )
     const { originQuery, destQuery, bridgeToken } = bridgeRoute
     // Set origin deadline to 10 mins if not provided
     originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
@@ -207,7 +178,7 @@ export abstract class RouterSet {
       originQuery,
       destQuery,
       estimatedTime,
-      bridgeModuleName: this.bridgeModuleName,
+      bridgeModuleName: bridgeRoute.bridgeModuleName,
     }
   }
 }

@@ -7,13 +7,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/dwasse/w3"
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/pkg/errors"
 )
 

@@ -5,12 +5,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/near"
 )
 

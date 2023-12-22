@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dwasse/w3"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/lmittmann/w3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 )

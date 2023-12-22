@@ -5,8 +5,9 @@ import invariant from 'tiny-invariant'
 import { AddressZero } from '@ethersproject/constants'
 
 import { BigintIsh } from '../constants'
-import { Query } from './query'
-import { BridgeToken, DestRequest, FeeConfig } from './types'
+import { Query } from '../module/query'
+import { DestRequest } from './types'
+import { BridgeToken, FeeConfig, SynapseModule } from '../module'
 
 /**
  * Abstract class for a router contract deployed on a chain.
@@ -19,7 +20,7 @@ import { BridgeToken, DestRequest, FeeConfig } from './types'
  * @property chainId The chain ID of chain the router is deployed on.
  * @property provider The provider used to interact with the chain router is deployed on.
  */
-export abstract class Router {
+export abstract class Router implements SynapseModule {
   abstract readonly address: string
   public readonly chainId: number
   public readonly provider: Provider
@@ -52,6 +53,9 @@ export abstract class Router {
     isSwap: boolean
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }>
 
+  /**
+   * @inheritdoc SynapseModule.bridge
+   */
   abstract bridge(
     to: string,
     chainId: number,
@@ -60,6 +64,16 @@ export abstract class Router {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction>
+
+  /**
+   * @inheritdoc SynapseModule.getSynapseTxId
+   */
+  abstract getSynapseTxId(txHash: string): Promise<string>
+
+  /**
+   * @inheritdoc SynapseModule.getBridgeTxStatus
+   */
+  abstract getBridgeTxStatus(synapseTxId: string): Promise<boolean>
 
   /**
    * Fetches bridge tokens for a destination chain and output token.

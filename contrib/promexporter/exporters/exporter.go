@@ -11,11 +11,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/dwasse/w3/module/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
+	"github.com/lmittmann/w3/module/eth"
 	"github.com/synapsecns/sanguine/contrib/promexporter/config"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/dfk"
 	"github.com/synapsecns/sanguine/core"

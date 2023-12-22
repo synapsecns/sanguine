@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.206",
+  "version": "0.1.213",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -42,7 +42,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.3.0",
+    "@synapsecns/sdk-router": "^0.3.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
@@ -55,7 +55,7 @@
     "@vercel/analytics": "^1.0.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/core": "^1.4.5",
+    "@wagmi/core": "^1.4.12",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
@@ -93,7 +93,7 @@
     "use-persisted-state": "^0.3.3",
     "use-window-focus": "^1.4.2",
     "viem": "^1.18.1",
-    "wagmi": "^1.4.5",
+    "wagmi": "^1.4.12",
     "yarn": "^1.22.19"
   },
   "browserslist": {

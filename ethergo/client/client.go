@@ -2,17 +2,19 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 
-	"github.com/dwasse/w3"
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -97,13 +99,41 @@ func (c *clientImpl) getW3Client() *w3.Client {
 
 // BatchWithContext batches multiple w3 calls.
 func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) (err error) {
+	// Do not create an even if there are no calls
+	if len(calls) == 0 {
+		return nil
+	}
+
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
 
 	defer func() {
+		if errors.Is(err, w3.CallErrors{}) {
+			var batchErr w3.CallErrors
+			_ = errors.As(err, &batchErr)
+			for i, callErr := range batchErr {
+				rawReq, err := calls[i].CreateRequest()
+				// this already happened, so it can't be failing now.
+				// just error.
+				if err != nil {
+					fmt.Println("could not create request: this should never happen", err)
+					continue
+				}
+
+				params, err := json.Marshal(rawReq.Args)
+				if err != nil {
+					fmt.Println("could not marshal params: this should never happen", err)
+					continue
+				}
+				span.RecordError(callErr, trace.WithAttributes(attribute.String("method", rawReq.Method), attribute.String("params", string(params))))
+			}
+			metrics.EndSpan(span)
+			return
+		}
 		metrics.EndSpanWithErr(span, err)
 	}()
+
 	//nolint: wrapcheck
 	err = c.getW3Client().CallCtx(ctx, calls...)
 	if err != nil {

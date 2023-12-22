@@ -42,10 +42,6 @@ export class SynapseRouterSet extends RouterSet {
    * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
    */
   public getSynapseRouter(chainId: number): SynapseRouter {
-    invariant(
-      this.routers[chainId],
-      `No SynapseRouter deployed on chain ${chainId}`
-    )
-    return this.routers[chainId] as SynapseRouter
+    return this.getExistingModule(chainId) as SynapseRouter
   }
 }

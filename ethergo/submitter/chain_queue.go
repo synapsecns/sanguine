@@ -2,20 +2,23 @@ package submitter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/dwasse/w3/module/eth"
-	"github.com/dwasse/w3/w3types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lmittmann/w3"
+	"github.com/lmittmann/w3/module/eth"
+	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -45,10 +48,11 @@ func (c *chainQueue) chainIDInt() int {
 }
 
 func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
-	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue", trace.WithAttributes(
-		attribute.Int("chainID", int(chainID.Int64())),
-		attribute.Int("numTxes", len(txes)),
-	))
+	if len(txes) == 0 {
+		return nil
+	}
+
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -63,7 +67,6 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
-	span.AddEvent("got nonce", trace.WithAttributes(attribute.Int64("nonce", int64(currentNonce))))
 
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -82,10 +85,12 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	// we're going to handle this by updating txes in place
 	for i := range txes {
 		tx := txes[i]
+
 		if tx.Nonce() < currentNonce {
 			cq.txsHaveConfirmed = true
 			continue
 		}
+
 		cq.bumpTX(gCtx, tx)
 	}
 	cq.updateOldTxStatuses(gCtx)
@@ -95,29 +100,34 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("error in chainPendingQueue: %w", err)
 	}
 
-	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
-		return cq.reprocessQueue[i].Nonce() < cq.reprocessQueue[j].Nonce()
-	})
-
-	calls := make([]w3types.Caller, len(cq.reprocessQueue))
-	txHashes := make([]common.Hash, len(cq.reprocessQueue))
-	for i, tx := range cq.reprocessQueue {
-		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
-	}
-	attributes := []attribute.KeyValue{attribute.Int("numCalls", len(calls))}
-	if len(cq.reprocessQueue) > 0 {
-		attributes = append(attributes, attribute.Int("firstNonce", int(cq.reprocessQueue[0].Nonce())))
-		attributes = append(attributes, attribute.Int("lastNonce", int(cq.reprocessQueue[len(cq.reprocessQueue)-1].Nonce())))
-	}
-	span.AddEvent("built calls", trace.WithAttributes(attributes...))
-
-	cq.storeAndSubmit(ctx, calls, span)
+	cq.storeAndSubmit(ctx, span)
 
 	return nil
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
-func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
+func (c *chainQueue) storeAndSubmit(ctx context.Context, parentSpan trace.Span) {
+	sort.Slice(c.reprocessQueue, func(i, j int) bool {
+		return c.reprocessQueue[i].Nonce() < c.reprocessQueue[j].Nonce()
+	})
+
+	calls := make([]w3types.Caller, len(c.reprocessQueue))
+	txHashes := make([]common.Hash, len(c.reprocessQueue))
+	spanners := make([]trace.Span, len(c.reprocessQueue))
+
+	for i, tx := range c.reprocessQueue {
+		_, span := c.metrics.Tracer().Start(ctx, "chainPendingQueue.submit", trace.WithAttributes(util.TxToAttributes(tx.Transaction)...))
+		spanners[i] = span
+		defer func() {
+			// in case this span doesn't get ended automatically below, end it here.
+			if span.IsRecording() {
+				metrics.EndSpan(span)
+			}
+		}()
+
+		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -127,28 +137,38 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		defer wg.Done()
 		err := c.db.PutTXS(storeCtx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+			parentSpan.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
 		}
 	}()
 
 	go func() {
-		span.SetAttributes(attribute.Int("batchSize", len(calls)))
-		span.AddEvent("submitting batched transactions", trace.WithAttributes(attribute.Int("numCalls", len(calls))))
 		defer wg.Done()
 		err := c.client.BatchWithContext(ctx, calls...)
-		span.AddEvent("submitted batched transactions", trace.WithAttributes(attribute.String(metrics.Error, errToString(err))))
+
+		// Optimistically store all transactions as pending in the first goroutine.
+		// The call is made concurrently in the second goroutine.
+		// If the second goroutine finishes first, updating the status,
+		// there's no need to store them as pending, hence the context is canceled early.
 		cancelStore()
 		for i := range c.reprocessQueue {
+			span := spanners[i]
 			if err != nil {
 				c.reprocessQueue[i].Status = db.FailedSubmit
+				//nolint: errorlint, forcetypeassert
+				if callErrs, ok := err.(w3.CallErrors); ok && len(callErrs) > i {
+					span.RecordError(errors.New(callErrs[i].Error()))
+				} else if err != nil {
+					span.RecordError(err)
+				}
 			} else {
 				c.reprocessQueue[i].Status = db.Submitted
 			}
+			span.End()
 		}
 
 		err = c.db.PutTXS(ctx, c.reprocessQueue...)
 		if err != nil {
-			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+			parentSpan.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
 		}
 	}()
 	wg.Wait()
@@ -156,21 +176,14 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 
 // nolint: cyclop
 func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
-	var err error
-	_, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(txToAttributes(ogTx.Transaction)...))
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
-			span.AddEvent("bump interval not elapsed; adding to reprocess queue")
 			c.addToReprocessQueue(ogTx)
 			return nil
 		}
 		tx := ogTx.Transaction
 
-		ctx, span := c.metrics.Tracer().Start(parentCtx, "bump interval elapsed", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
+		ctx, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
 		defer func() {
 			metrics.EndSpanWithErr(span, err)
 		}()
@@ -228,7 +241,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx)...))
+		span.AddEvent("add to reprocess queue", trace.WithAttributes(util.TxToAttributes(tx)...))
 
 		c.addToReprocessQueue(db.TX{
 			Transaction: tx,
