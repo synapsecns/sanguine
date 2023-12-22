@@ -1,5 +1,6 @@
-const path = require('path');
+const path = require('path')
 
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin')
 
 const config = {
   stats: {
@@ -23,25 +24,65 @@ const config = {
         use: {
           loader: 'babel-loader',
         },
+        type: 'asset',
       },
       {
         test: /\.svg$/,
-        use: [
-          {
-            loader: 'svg-inline-loader',
-          },
-        ],
+        use:{
+          loader: 'svg-inline-loader',
+        },
+        type: 'asset',
       },
       {
         test: /\.(png|jpe?g)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-          },
-        ],
+        use: {
+          loader: 'url-loader',
+        },
+        type: 'asset',
       },
     ],
   },
-};
+  optimization: {
+    minimizer: [
+      '...',
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminMinify,
+          options: {
+            // Lossless optimization with custom option
+            // Feel free to experiment with options for better result for you
+            plugins: [
+              ['jpegtran', { progressive: true }],
+              ['optipng', { optimizationLevel: 5 }],
+              // Svgo configuration here https://github.com/svg/svgo#configuration
+              [
+                'svgo',
+                {
+                  plugins: [
+                    {
+                      name: 'preset-default',
+                      params: {
+                        overrides: {
+                          removeViewBox: false,
+                          addAttributesToSVGElement: {
+                            params: {
+                              attributes: [
+                                { xmlns: 'http://www.w3.org/2000/svg' },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
+  },
+}
 
 module.exports = config
