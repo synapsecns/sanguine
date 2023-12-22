@@ -69,7 +69,6 @@ export const BridgeTransactionButton = ({
   }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
 
   const isButtonDisabled =
-    true ||
     isLoading ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
@@ -100,8 +99,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
-    PAUSED_TO_CHAIN_IDS.includes(toChainId) ||
-    true
+    PAUSED_TO_CHAIN_IDS.includes(toChainId)
   ) {
     buttonProperties = {
       label: `Bridge unavailable due to network issues`,
