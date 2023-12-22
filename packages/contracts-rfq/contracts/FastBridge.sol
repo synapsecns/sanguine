@@ -17,7 +17,6 @@ contract FastBridge is IFastBridge, Admin {
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
     /// @notice Minimum deadline period to relay a requested bridge transaction
-    // TODO: think more about what to set this deadline as
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
     enum BridgeStatus {
@@ -47,7 +46,7 @@ contract FastBridge is IFastBridge, Admin {
     /// @notice Pulls a requested token from the user to the requested recipient.
     /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
     function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
-        if (msg.value == 0) {
+        if (token != UniversalTokenLib.ETH_ADDRESS) {
             token.assertIsContract();
             // Record token balance before transfer
             amountPulled = IERC20(token).balanceOf(recipient);
@@ -57,9 +56,7 @@ contract FastBridge is IFastBridge, Admin {
             // Use the difference between the recorded balance and the current balance as the amountPulled
             amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
         } else {
-            // Otherwise, we need to check that ETH was specified
-            if (token != UniversalTokenLib.ETH_ADDRESS) revert TokenNotETH();
-            // And that amount matches msg.value
+            // Otherwise, we need to check that ETH amount matches msg.value
             if (amount != msg.value) revert MsgValueIncorrect();
             // Transfer value to recipient if not this address
             if (recipient != address(this)) token.universalTransfer(recipient, amount);
@@ -102,6 +99,7 @@ contract FastBridge is IFastBridge, Admin {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
                 deadline: params.deadline,
                 nonce: nonce++ // increment nonce on every bridge
             })
@@ -122,13 +120,26 @@ contract FastBridge is IFastBridge, Admin {
         if (bridgeRelays[transactionId]) revert TransactionRelayed();
         bridgeRelays[transactionId] = true;
 
-        // transfer tokens to recipient on destination chain
+        // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
-        _pullToken(to, token, amount);
 
-        emit BridgeRelayed(transactionId, msg.sender, to, token, amount);
+        uint256 rebate = chainGasAmount;
+        if (!transaction.sendChainGas) {
+            // forward erc20
+            rebate = 0;
+            _pullToken(to, token, amount);
+        } else if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // lump in gas rebate into amount in native gas token
+            _pullToken(to, token, amount + rebate);
+        } else {
+            // forward erc20 then forward gas rebate in native gas token
+            _pullToken(to, token, amount);
+            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
+        }
+
+        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
     }
 
     /// @inheritdoc IFastBridge
