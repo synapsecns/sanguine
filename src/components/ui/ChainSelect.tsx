@@ -1,5 +1,6 @@
 import { Chain } from 'types'
 import { ChainPopoverSelect } from './ChainPopoverSelect'
+import { ARBITRUM, ETHEREUM, POLYGON, OPTIMISM } from '@/constants/chains'
 
 type Props = {
   label: 'To' | 'From'
@@ -7,28 +8,8 @@ type Props = {
   chain: Chain
 }
 
-const ETH = {
-  id: 1,
-  name: 'Ethereum',
-}
-
-const ARBITRUM = {
-  id: 42161,
-  name: 'Arbitrum',
-}
-
-const POLYGON = {
-  id: 137,
-  name: 'Polygon',
-}
-
-const OPTIMISM = {
-  id: 10,
-  name: 'Optimism',
-}
-
 export function ChainSelect({ label, chain, onChange }: Props) {
-  const chains = [ETH, ARBITRUM, POLYGON, OPTIMISM]
+  const chains = [ETHEREUM, ARBITRUM, POLYGON, OPTIMISM]
 
   return (
     <ChainPopoverSelect

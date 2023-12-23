@@ -9,6 +9,8 @@ import { store } from '@/state/store'
 import * as BRIDGEABLE from '@/constants/bridgeable'
 
 import TransactionsUpdater from '@/state/slices/transactions/updater'
+import { SynapseProvider } from 'providers/SynapseProvider'
+import { CHAINS, CHAINS_ARRAY } from './constants/chains'
 
 // TODO: After separating required fields need two types: BridgeProps (consumer) and WidgetProps (internal)
 // TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
@@ -25,18 +27,20 @@ export const Bridge = ({
 }: WidgetProps) => {
   return (
     <Web3Provider config={web3Provider}>
-      <Provider store={store}>
-        <TransactionsUpdater />
-        <Widget
-          chainIds={chainIds}
-          networkProviders={networkProviders}
-          theme={theme}
-          customTheme={customTheme}
-          container={container}
-          tokens={tokens}
-          toChainId={toChainId}
-        />
-      </Provider>
+      <SynapseProvider chains={CHAINS_ARRAY}>
+        <Provider store={store}>
+          <TransactionsUpdater />
+          <Widget
+            chainIds={chainIds}
+            networkProviders={networkProviders}
+            theme={theme}
+            customTheme={customTheme}
+            container={container}
+            tokens={tokens}
+            toChainId={toChainId}
+          />
+        </Provider>
+      </SynapseProvider>
     </Web3Provider>
   )
 }

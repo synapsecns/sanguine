@@ -13,7 +13,8 @@
       "@/hooks/*": ["hooks/*"],
       "@/utils/*": ["utils/*"],
       "@/state/*": ["state/*"],
-      "@/assets/*": ["assets/*"]
+      "@/assets/*": ["assets/*"],
+      "@/providers/*": ["providers/*"]
     }
   },
   "exclude": ["node_modules", "examples"]

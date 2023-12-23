@@ -40,6 +40,8 @@ export interface WidgetProps {
 
   /** Apply Custom Themes */
   customTheme?: CustomThemeVariables
+
+  /** Containerize Widget */
   container?: Boolean
 
   /** Supported Tokens Metadata defined by Consumer */
@@ -52,9 +54,16 @@ export interface WidgetProps {
 export interface Chain {
   id: number
   name: string
+  rpcUrls: {
+    primary: string
+    fallback: string
+  }
+  explorerUrl: string
+  explorerName: string
+  blockTime: number
 }
 
-export declare function Bridge(props: any): JSX.Element
+export declare function Bridge(props: WidgetProps): JSX.Element
 
 export declare const USDC: BridgeableToken
 export declare const USDT: BridgeableToken

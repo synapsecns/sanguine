@@ -1,88 +1,11 @@
 import { ZeroAddress } from 'ethers'
-// import ageurLogo from '@assets/icons/ageur.svg'
-// import avaxLogo from '@assets/icons/avax.svg'
-// import btcLogo from '@assets/icons/btc.svg'
-// import busdLogo from '@assets/icons/busd.svg'
-// import crvusdLogo from '@assets/icons/crvusd.svg'
-// import linkLogo from '@assets/icons/link.svg'
-// import daiLogo from '@assets/icons/dai.svg'
-// import dogLogo from '@assets/icons/dog.svg'
-// import ethLogo from '@assets/icons/eth.svg'
-// import fraxLogo from '@assets/icons/frax.svg'
-// import ftmLogo from '@assets/icons/ftm.svg'
-// import gmxLogo from '@assets/icons/gmx.svg'
-// import h2oLogo from '@assets/icons/h2o.svg'
-// import highLogo from '@assets/icons/highstreet.svg'
-// import hyperjumpLogo from '@assets/icons/hyperjump.svg'
-// import jewelLogo from '@assets/icons/jewel.svg'
-// import klayLogo from '@assets/icons/klay.svg'
-// import l2daoLogo from '@assets/icons/l2dao.svg'
-// import lusdLogo from '@assets/icons/lusd.svg'
-// import maticLogo from '@assets/icons/matic.svg'
-// import movrLogo from '@assets/icons/movr.svg'
-// import nethLogo from '@assets/icons/neth.svg'
-// import newoLogo from '@assets/icons/newo.svg'
-// import nfdLogo from '@assets/icons/nfd.svg'
-// import noteLogo from '@assets/icons/note.svg'
-// import nusdLogo from '@assets/icons/nusd.svg'
-// import ohmLogo from '@assets/icons/ohm.svg'
-// import pepeLogo from '@assets/icons/pepe.svg'
-// import plsLogo from '@assets/icons/pls.svg'
-// import sdtLogo from '@assets/icons/sdt.svg'
-// import sfiLogo from '@assets/icons/sfi.svg'
-// import solarbeamLogo from '@assets/icons/solar.svg'
-// import susdLogo from '@assets/icons/susd.svg'
-// import synapseLogo from '@assets/icons/syn.svg'
-// import unidexLogo from '@assets/icons/unidex.svg'
-// import usdcLogo from '@assets/icons/usdc.svg'
-// import usdtLogo from '@assets/icons/usdt.svg'
-// import vstaLogo from '@assets/icons/vsta.svg'
-// import wbtcLogo from '@assets/icons/wbtc.svg'
-// import wethLogo from '@assets/icons/weth.svg'
-
-// import { Token } from '@/utils/types'
-// import * as CHAINS from '@/constants/chains/master'
-
-// Priority ranks:
-// 100: chain's major stablecoins (native DAI, USDC, USDT)
-// 125: chain's major stablecoins (bridged)
-// 150: ETH (WETH if chain's native asset is ETH)
-// 200: rest of the chain's stablecoins
-// 250: SYN, biggest partner tokens (GMX, JEWEL, etc)
-// 300: chain's native asset (AVAX, FTM, MATIC, KLAY, etc)
-// 350: wrapped versions of native asset (WAVAX, WFTM, etc)
-// 400: synAssets
-// 500: nAssets
-// 600: everything else
-
-const CHAINS = {
-  ETH: { id: 1 },
-  ARBITRUM: { id: 42161 },
-  AURORA: { id: 1313161554 },
-  AVALANCHE: { id: 43114 },
-  BASE: { id: 8453 },
-  BNB: { id: 56 },
-  BOBA: { id: 288 },
-  CANTO: { id: 7700 },
-  CRONOS: { id: 25 },
-  DFK: { id: 53935 },
-  DOGE: { id: 2000 },
-  DOGECHAIN: { id: 2000 },
-  FANTOM: { id: 250 },
-  HARMONY: { id: 1666600000 },
-  KLAYTN: { id: 8217 },
-  METIS: { id: 1088 },
-  MOONBEAM: { id: 1284 },
-  MOONRIVER: { id: 1285 },
-  OPTIMISM: { id: 10 },
-  POLYGON: { id: 137 },
-}
+import { CHAINS } from '@/constants/chains'
 
 export const GOHM = {
   addresses: {
-    [CHAINS.ETH.id]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    [CHAINS.ETHEREUM.id]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     [CHAINS.OPTIMISM.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
-    [CHAINS.BNB.id]: '0x88918495892BAF4536611E38E75D771Dc6Ec0863',
+    [CHAINS.BNBCHAIN.id]: '0x88918495892BAF4536611E38E75D771Dc6Ec0863',
     [CHAINS.POLYGON.id]: '0xd8cA34fd379d9ca3C6Ee3b3905678320F5b45195',
     [CHAINS.FANTOM.id]: '0x91fa20244Fb509e8289CA630E5db3E9166233FDc',
     [CHAINS.ARBITRUM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
@@ -95,9 +18,9 @@ export const GOHM = {
     [CHAINS.METIS.id]: '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 18,
     [CHAINS.FANTOM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
@@ -112,7 +35,6 @@ export const GOHM = {
 
   symbol: 'gOHM',
   name: 'Olympus DAO',
-  //logo: ohmLogo,
   swapableType: 'OHM',
   color: 'gray',
   visibilityRank: 40,
@@ -122,16 +44,15 @@ export const GOHM = {
 
 export const LINK = {
   addresses: {
-    [CHAINS.ETH.id]: '0x514910771af9ca656af840dff83e8264ecf986ca',
+    [CHAINS.ETHEREUM.id]: '0x514910771af9ca656af840dff83e8264ecf986ca',
     [CHAINS.KLAYTN.id]: '0xfbed1abb3ad0f8c467068de9fde905887e8c9118',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.KLAYTN.id]: 18,
   },
   symbol: 'LINK',
   name: 'ChainLink Token',
-  //logo: linkLogo,
   swapableType: 'LINK',
   color: 'blue',
   priorityRank: 600,
@@ -140,13 +61,12 @@ export const LINK = {
 
 export const HIGH = {
   addresses: {
-    [CHAINS.ETH.id]: '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
-    [CHAINS.BNB.id]: '0x5f4bde007dc06b867f86ebfe4802e34a1ffeed63',
+    [CHAINS.ETHEREUM.id]: '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
+    [CHAINS.BNBCHAIN.id]: '0x5f4bde007dc06b867f86ebfe4802e34a1ffeed63',
   },
-  decimals: { [CHAINS.ETH.id]: 18, [CHAINS.BNB.id]: 18 },
+  decimals: { [CHAINS.ETHEREUM.id]: 18, [CHAINS.BNBCHAIN.id]: 18 },
   symbol: 'HIGH',
   name: 'Highstreet',
-  //logo: highLogo,
   swapableType: 'HIGH',
   color: 'cyan',
   priorityRank: 600,
@@ -155,19 +75,17 @@ export const HIGH = {
 
 export const JUMP = {
   addresses: {
-    [CHAINS.BNB.id]: '0x130025ee738a66e691e6a7a62381cb33c6d9ae83',
+    [CHAINS.BNBCHAIN.id]: '0x130025ee738a66e691e6a7a62381cb33c6d9ae83',
     [CHAINS.FANTOM.id]: '0x78DE9326792ce1d6eCA0c978753c6953Cdeedd73',
     [CHAINS.METIS.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
   },
   decimals: {
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.FANTOM.id]: 18,
     [CHAINS.METIS.id]: 18,
   },
   symbol: 'JUMP',
   name: 'HyperJump',
-  //logo: hyperjumpLogo,
-
   swapableType: 'JUMP',
   color: 'cyan',
   priorityRank: 600,
@@ -176,17 +94,15 @@ export const JUMP = {
 
 export const SFI = {
   addresses: {
-    [CHAINS.ETH.id]: '0xb753428af26e81097e7fd17f40c88aaa3e04902c',
+    [CHAINS.ETHEREUM.id]: '0xb753428af26e81097e7fd17f40c88aaa3e04902c',
     [CHAINS.AVALANCHE.id]: '0xc2Bf0A1f7D8Da50D608bc96CF701110d4A438312',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
   },
   symbol: 'SFI',
   name: 'Saffron Finance',
-  //logo: sfiLogo,
-
   swapableType: 'SFI',
   color: 'red',
   priorityRank: 600,
@@ -195,19 +111,17 @@ export const SFI = {
 
 export const DOG = {
   addresses: {
-    [CHAINS.ETH.id]: '0xBAac2B4491727D78D2b78815144570b9f2Fe8899',
-    [CHAINS.BNB.id]: '0xaa88c603d142c371ea0eac8756123c5805edee03',
+    [CHAINS.ETHEREUM.id]: '0xBAac2B4491727D78D2b78815144570b9f2Fe8899',
+    [CHAINS.BNBCHAIN.id]: '0xaa88c603d142c371ea0eac8756123c5805edee03',
     [CHAINS.POLYGON.id]: '0xeEe3371B89FC43Ea970E908536Fcddd975135D8a',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 18,
   },
   symbol: 'DOG',
   name: 'The Doge NFT',
-  //logo: dogLogo,
-
   swapableType: 'DOG',
   color: 'yellow',
   priorityRank: 600,
@@ -216,21 +130,19 @@ export const DOG = {
 
 export const NFD = {
   addresses: {
-    [CHAINS.BNB.id]: '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',
+    [CHAINS.BNBCHAIN.id]: '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',
     [CHAINS.AVALANCHE.id]: '0xf1293574ee43950e7a8c9f1005ff097a9a713959',
     [CHAINS.DOGE.id]: '0x868055ADFA27D331d5b69b1BF3469aDAAc3ba7f2',
     [CHAINS.POLYGON.id]: '0x0a5926027d407222f8fe20f24cb16e103f617046',
   },
   decimals: {
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
     [CHAINS.DOGE.id]: 18,
     [CHAINS.POLYGON.id]: 18,
   },
   symbol: 'NFD',
   name: 'Feisty Doge',
-  //logo: nfdLogo,
-
   swapableType: 'NFD',
   color: 'yellow',
   priorityRank: 600,
@@ -248,8 +160,6 @@ export const SOLAR = {
   },
   symbol: 'veSOLAR',
   name: 'Vested SolarBeam',
-  //logo: solarbeamLogo,
-
   swapableType: 'SOLAR',
   color: 'orange',
   priorityRank: 600,
@@ -270,8 +180,6 @@ export const GMX = {
   },
   symbol: 'GMX',
   name: 'GMX',
-  //logo: gmxLogo,
-
   swapableType: 'GMX',
   priorityRank: 250,
   color: 'blue',
@@ -280,14 +188,14 @@ export const GMX = {
 
 export const SDT = {
   addresses: {
-    [CHAINS.ETH.id]: '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f',
+    [CHAINS.ETHEREUM.id]: '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f',
     [CHAINS.AVALANCHE.id]: '0xCCBf7c451F81752F7d2237F2c18C371E6e089E69',
     [CHAINS.ARBITRUM.id]: '0x087d18A77465c34CDFd3a081a2504b7E86CE4EF8',
     [CHAINS.FANTOM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
     [CHAINS.HARMONY.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.FANTOM.id]: 18,
@@ -305,19 +213,17 @@ export const SDT = {
 
 export const NEWO = {
   addresses: {
-    [CHAINS.ETH.id]: '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96',
+    [CHAINS.ETHEREUM.id]: '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96',
     [CHAINS.AVALANCHE.id]: '0x4Bfc90322dD638F81F034517359BD447f8E0235a',
     [CHAINS.ARBITRUM.id]: '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
   },
   symbol: 'NEWO',
   name: 'New Order',
-  //logo: newoLogo,
-
   swapableType: 'NEWO',
   color: 'yellow',
   priorityRank: 600,
@@ -326,16 +232,15 @@ export const NEWO = {
 
 export const PEPE = {
   addresses: {
-    [CHAINS.ETH.id]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+    [CHAINS.ETHEREUM.id]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
     [CHAINS.ARBITRUM.id]: '0xA54B8e178A49F8e5405A4d44Bb31F496e5564A05',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
   },
   symbol: 'PEPE',
   name: 'Pepe',
-  //logo: pepeLogo,
   swapableType: 'PEPE',
   priorityRank: 600,
   routeSymbol: 'PEPE',
@@ -344,17 +249,15 @@ export const PEPE = {
 
 export const VSTA = {
   addresses: {
-    [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb',
+    [CHAINS.ETHEREUM.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb',
     [CHAINS.ARBITRUM.id]: '0xa684cd057951541187f288294a1e1c2646aa2d24',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
   },
   symbol: 'VSTA',
   name: 'Vesta',
-  //logo: vstaLogo,
-
   swapableType: 'VSTA',
   color: 'gray',
   priorityRank: 600,
@@ -363,20 +266,20 @@ export const VSTA = {
 
 export const H2O = {
   addresses: {
-    [CHAINS.ETH.id]: '0x0642026e7f0b6ccac5925b4e7fa61384250e1701',
+    [CHAINS.ETHEREUM.id]: '0x0642026e7f0b6ccac5925b4e7fa61384250e1701',
     [CHAINS.ARBITRUM.id]: '0xD1c6f989e9552DB523aBAE2378227fBb059a3976',
     [CHAINS.AVALANCHE.id]: '0xC6b11a4Fd833d1117E9D312c02865647cd961107',
-    [CHAINS.BNB.id]: '0x03eFca7CEb108734D3777684F3C0A0d8ad652f79',
+    [CHAINS.BNBCHAIN.id]: '0x03eFca7CEb108734D3777684F3C0A0d8ad652f79',
     [CHAINS.MOONBEAM.id]: '0xA46aDF6D5881ca0b8596EDadF8f058F8c16d8B68',
     [CHAINS.MOONRIVER.id]: '0x9c0a820bb01e2807aCcd1c682d359e92DDd41403',
     [CHAINS.OPTIMISM.id]: '0xE3c82A836Ec85311a433fBd9486EfAF4b1AFbF48',
     [CHAINS.POLYGON.id]: '0x32ba7cF7d681357529013de6a2CDF93933C0dF3f',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.MOONBEAM.id]: 18,
     [CHAINS.MOONRIVER.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
@@ -384,7 +287,6 @@ export const H2O = {
   },
   symbol: 'H2O',
   name: 'H2O',
-  //logo: h2oLogo,
   swapableType: 'H2O',
   color: 'cyan',
   priorityRank: 600,
@@ -402,8 +304,6 @@ export const L2DAO = {
   },
   symbol: 'L2DAO',
   name: 'Layer2DAO',
-  //logo: l2daoLogo,
-
   swapableType: 'L2DAO',
   color: 'cyan',
   priorityRank: 600,
@@ -421,7 +321,6 @@ export const PLS = {
   },
   symbol: 'PLS',
   name: 'Plutus',
-  //logo: plsLogo,
   swapableType: 'PLS',
   color: 'green',
   priorityRank: 600,
@@ -430,19 +329,17 @@ export const PLS = {
 
 export const AGEUR = {
   addresses: {
-    [CHAINS.ETH.id]: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8',
+    [CHAINS.ETHEREUM.id]: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8',
     [CHAINS.ARBITRUM.id]: '0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0',
     [CHAINS.OPTIMISM.id]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
   },
   symbol: 'agEUR',
   name: 'Angle Euro',
-  //logo: ageurLogo,
-
   swapableType: 'AGEUR',
   color: 'yellow',
   priorityRank: 600,
@@ -451,14 +348,14 @@ export const AGEUR = {
 
 export const UNIDX = {
   addresses: {
-    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6',
+    [CHAINS.ETHEREUM.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6',
     [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D',
     [CHAINS.FANTOM.id]: '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471',
     [CHAINS.OPTIMISM.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
     [CHAINS.BASE.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.FANTOM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
@@ -466,8 +363,6 @@ export const UNIDX = {
   },
   symbol: 'UNIDX',
   name: 'Unidex',
-  //logo: unidexLogo,
-
   swapableType: 'UNIDX',
   color: 'gray',
   priorityRank: 600,
@@ -476,16 +371,15 @@ export const UNIDX = {
 
 export const BUSD = {
   addresses: {
-    [CHAINS.BNB.id]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+    [CHAINS.BNBCHAIN.id]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     [CHAINS.DOGE.id]: '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d',
   },
   decimals: {
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.DOGE.id]: 18,
   },
   symbol: 'BUSD',
   name: 'Binance USD',
-  //logo: busdLogo,
   swapableType: 'BUSD',
   color: 'yellow',
   priorityRank: 200,
@@ -495,10 +389,10 @@ export const BUSD = {
 export const USDC = {
   visibilityRank: 101,
   addresses: {
-    [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    [CHAINS.ETHEREUM.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     [CHAINS.OPTIMISM.id]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
     [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
-    [CHAINS.BNB.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+    [CHAINS.BNBCHAIN.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     [CHAINS.BOBA.id]: '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc',
     [CHAINS.DOGE.id]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
@@ -510,10 +404,10 @@ export const USDC = {
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
   },
   decimals: {
-    [CHAINS.ETH.id]: 6,
+    [CHAINS.ETHEREUM.id]: 6,
     [CHAINS.OPTIMISM.id]: 6,
     [CHAINS.CRONOS.id]: 6,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.DOGE.id]: 6,
@@ -526,7 +420,6 @@ export const USDC = {
   },
   symbol: 'USDC',
   name: 'USD Coin',
-  //logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
   priorityRank: 100,
@@ -543,7 +436,6 @@ export const METISUSDC = {
   },
   symbol: 'm.USDC',
   name: 'Metis USD Coin',
-  //logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
   priorityRank: 125,
@@ -552,9 +444,9 @@ export const METISUSDC = {
 
 export const USDT = {
   addresses: {
-    [CHAINS.ETH.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    [CHAINS.ETHEREUM.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     [CHAINS.OPTIMISM.id]: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
-    [CHAINS.BNB.id]: '0x55d398326f99059ff775485246999027b3197955',
+    [CHAINS.BNBCHAIN.id]: '0x55d398326f99059ff775485246999027b3197955',
     [CHAINS.POLYGON.id]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.DOGE.id]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
@@ -564,9 +456,9 @@ export const USDT = {
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
   },
   decimals: {
-    [CHAINS.ETH.id]: 6,
+    [CHAINS.ETHEREUM.id]: 6,
     [CHAINS.OPTIMISM.id]: 6,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.DOGE.id]: 6,
@@ -577,7 +469,6 @@ export const USDT = {
   },
   symbol: 'USDT',
   name: 'USD Tether',
-  //logo: usdtLogo,
   color: 'lime',
   swapableType: 'USD',
   visibilityRank: 100,
@@ -587,7 +478,7 @@ export const USDT = {
 
 export const DAI = {
   addresses: {
-    [CHAINS.ETH.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
+    [CHAINS.ETHEREUM.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
     [CHAINS.OPTIMISM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
     [CHAINS.POLYGON.id]: '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',
     [CHAINS.BOBA.id]: '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
@@ -597,7 +488,7 @@ export const DAI = {
     [CHAINS.BASE.id]: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
     [CHAINS.POLYGON.id]: 18,
     [CHAINS.BOBA.id]: 18,
@@ -608,7 +499,6 @@ export const DAI = {
   },
   symbol: 'DAI',
   name: 'Dai',
-  //logo: daiLogo,
   swapableType: 'USD',
   color: 'yellow',
   visibilityRank: 100,
@@ -618,18 +508,17 @@ export const DAI = {
 
 export const WBTC = {
   addresses: {
-    [CHAINS.ETH.id]: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+    [CHAINS.ETHEREUM.id]: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
     [CHAINS.KLAYTN.id]: '0xDCbacF3f7a069922E677912998c8d57423C37dfA',
     [CHAINS.DOGE.id]: '0xD0c6179c43C00221915f1a61f8eC06A5Aa32F9EC',
   },
   decimals: {
-    [CHAINS.ETH.id]: 8,
+    [CHAINS.ETHEREUM.id]: 8,
     [CHAINS.KLAYTN.id]: 8,
     [CHAINS.DOGE.id]: 8,
   },
   symbol: 'WBTC',
   name: 'Wrapped BTC',
-  //logo: wbtcLogo,
   swapableType: 'WBTC',
   color: 'orange',
   priorityRank: 300,
@@ -645,7 +534,6 @@ export const WETHE = {
   },
   symbol: 'WETH.e',
   name: 'Wrapped ETH',
-  //logo: wethLogo,
   swapableType: 'ETH',
   color: 'sky',
   priorityRank: 150,
@@ -661,7 +549,6 @@ export const ONEETH = {
   },
   symbol: '1ETH',
   name: 'Harmony ETH',
-  //logo: wethLogo,
   swapableType: 'ETH',
   color: 'sky',
   priorityRank: 600,
@@ -670,8 +557,8 @@ export const ONEETH = {
 
 export const SYN = {
   addresses: {
-    [CHAINS.ETH.id]: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
-    [CHAINS.BNB.id]: '0xa4080f1778e69467e905b8d6f72f6e441f9e9484',
+    [CHAINS.ETHEREUM.id]: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
+    [CHAINS.BNBCHAIN.id]: '0xa4080f1778e69467e905b8d6f72f6e441f9e9484',
     [CHAINS.POLYGON.id]: '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',
     [CHAINS.FANTOM.id]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
     [CHAINS.ARBITRUM.id]: '0x080f6aed32fc474dd5717105dba5ea57268f46eb',
@@ -689,8 +576,8 @@ export const SYN = {
     [CHAINS.BASE.id]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 18,
     [CHAINS.FANTOM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
@@ -709,7 +596,6 @@ export const SYN = {
   },
   symbol: 'SYN',
   name: 'Synapse',
-  //logo: synapseLogo,
   swapableType: 'SYN',
   color: 'purple',
   visibilityRank: 90,
@@ -719,18 +605,17 @@ export const SYN = {
 
 export const FRAX = {
   addresses: {
-    [CHAINS.ETH.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
+    [CHAINS.ETHEREUM.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
     [CHAINS.ARBITRUM.id]: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
     [CHAINS.DOGE.id]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.DOGE.id]: 18,
   },
   symbol: 'FRAX',
   name: 'Frax',
-  //logo: fraxLogo,
   swapableType: 'FRAX',
   color: 'gray',
   priorityRank: 200,
@@ -752,7 +637,6 @@ export const SYNFRAX = {
   },
   symbol: 'synFRAX',
   name: 'Synapse Frax',
-  //logo: synapseLogo,
   swapableType: 'FRAX',
   color: 'gray',
   priorityRank: 400,
@@ -761,10 +645,10 @@ export const SYNFRAX = {
 
 export const NUSD = {
   addresses: {
-    [CHAINS.ETH.id]: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+    [CHAINS.ETHEREUM.id]: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
     [CHAINS.OPTIMISM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
     [CHAINS.CRONOS.id]: '0x396c9c192dd323995346632581BEF92a31AC623b',
-    [CHAINS.BNB.id]: '0x23b891e5c62e0955ae2bd185990103928ab817b3',
+    [CHAINS.BNBCHAIN.id]: '0x23b891e5c62e0955ae2bd185990103928ab817b3',
     [CHAINS.POLYGON.id]: '0xb6c473756050de474286bed418b77aeac39b02af',
     [CHAINS.FANTOM.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
     [CHAINS.BOBA.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
@@ -776,10 +660,10 @@ export const NUSD = {
     [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
     [CHAINS.CRONOS.id]: 18,
-    [CHAINS.BNB.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
     [CHAINS.POLYGON.id]: 18,
     [CHAINS.FANTOM.id]: 18,
     [CHAINS.BOBA.id]: 18,
@@ -792,7 +676,6 @@ export const NUSD = {
   },
   symbol: 'nUSD',
   name: 'Synapse nUSD',
-  //logo: nusdLogo,
   swapableType: 'USD',
   color: 'purple',
   visibilityRank: 50,
@@ -809,7 +692,6 @@ export const NOTE = {
   },
   symbol: 'NOTE',
   name: 'Canto Note',
-  //logo: noteLogo,
   swapableType: 'USD',
   color: 'green',
   visibilityRank: 90,
@@ -842,7 +724,6 @@ export const NETH = {
   },
   symbol: 'nETH',
   name: 'Synapse nETH',
-  //logo: nethLogo,
   swapableType: 'ETH',
   color: 'purple',
   visibilityRank: 50,
@@ -852,7 +733,7 @@ export const NETH = {
 
 export const ETH = {
   addresses: {
-    [CHAINS.ETH.id]: ZeroAddress,
+    [CHAINS.ETHEREUM.id]: ZeroAddress,
     [CHAINS.OPTIMISM.id]: ZeroAddress,
     [CHAINS.BOBA.id]: ZeroAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
@@ -861,7 +742,7 @@ export const ETH = {
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
     [CHAINS.BOBA.id]: 18,
     [CHAINS.CANTO.id]: 18,
@@ -871,7 +752,6 @@ export const ETH = {
   },
   symbol: 'ETH',
   name: 'Ethereum',
-  //logo: ethLogo,
   isNative: true,
   swapableType: 'ETH',
   color: 'sky',
@@ -891,7 +771,6 @@ export const MOVR = {
   },
   symbol: 'MOVR',
   name: 'MOVR',
-  //logo: movrLogo,
   isNative: true,
   swapableType: 'MOVR',
   color: 'purple',
@@ -916,7 +795,6 @@ export const AVAX = {
   },
   symbol: 'AVAX',
   name: 'AVAX',
-  //logo: avaxLogo,
   isNative: true,
   swapableType: 'AVAX',
   color: 'red',
@@ -934,7 +812,6 @@ export const WMOVR = {
   },
   symbol: 'MOVR',
   name: 'Wrapped MOVR',
-  //logo: movrLogo,
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 350,
@@ -950,7 +827,6 @@ export const WAVAX = {
   },
   symbol: 'AVAX',
   name: 'Wrapped AVAX',
-  //logo: avaxLogo,
   swapableType: 'AVAX',
   color: 'red',
   visibilityRank: 90,
@@ -973,7 +849,6 @@ export const JEWEL = {
   },
   symbol: 'JEWEL',
   name: 'JEWEL',
-  //logo: jewelLogo,
   color: 'lime',
   isNative: true,
   swapableType: 'JEWEL',
@@ -990,7 +865,6 @@ export const WJEWEL = {
   },
   symbol: 'WJEWEL',
   name: 'Wrapped JEWEL',
-  //logo: jewelLogo,
   swapableType: 'JEWEL',
   color: 'lime',
   priorityRank: 350,
@@ -1006,7 +880,6 @@ export const SYNJEWEL = {
   },
   symbol: 'synJEWEL',
   name: 'synJEWEL',
-  //logo: jewelLogo,
   swapableType: 'JEWEL',
   color: 'lime',
   priorityRank: 400,
@@ -1024,7 +897,6 @@ export const XJEWEL = {
   },
   symbol: 'xJEWEL',
   name: 'xJEWEL',
-  //logo: jewelLogo,
   swapableType: 'XJEWEL',
   color: 'lime',
   priorityRank: 350,
@@ -1046,7 +918,6 @@ export const USDCe = {
   },
   symbol: 'USDC.e',
   name: 'Bridged USDC',
-  //logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
   visibilityRank: 100,
@@ -1065,7 +936,6 @@ export const USDTe = {
   },
   symbol: 'USDT.e',
   name: 'Bridged USDT',
-  //logo: usdtLogo,
   swapableType: 'USD',
   visibilityRank: 100,
   color: 'green',
@@ -1082,7 +952,6 @@ export const SUSD = {
   },
   symbol: 'sUSD',
   name: 'Synth sUSD',
-  //logo: susdLogo,
   color: 'purple',
   swapableType: 'USD',
   visibilityRank: 100,
@@ -1092,18 +961,17 @@ export const SUSD = {
 
 export const WSOHM = {
   addresses: {
-    [CHAINS.ETH.id]: '0xCa76543Cf381ebBB277bE79574059e32108e3E65',
+    [CHAINS.ETHEREUM.id]: '0xCa76543Cf381ebBB277bE79574059e32108e3E65',
     [CHAINS.ARBITRUM.id]: '0x30bD4e574a15994B35EF9C7a5bc29002F1224821',
     [CHAINS.AVALANCHE.id]: '0x240E332Cd26AaE10622B24160D23425A17256F5d',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
   },
   symbol: 'wsOHM',
   name: 'Wrapped sOHM',
-  //logo: ohmLogo,
   color: 'gray',
   swapableType: 'OHM',
   visibilityRank: 40,
@@ -1120,7 +988,6 @@ export const ONEDAI = {
   },
   symbol: '1DAI',
   name: 'Harmony Dai Stablecoin',
-  //logo: daiLogo,
   swapableType: 'USD',
   color: 'yellow',
   visibilityRank: 100,
@@ -1138,7 +1005,6 @@ export const ONEUSDC = {
   },
   symbol: '1USDC',
   name: 'Harmony USD Coin',
-  //logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
   priorityRank: 600,
@@ -1154,7 +1020,6 @@ export const ONEUSDT = {
   },
   symbol: '1USDT',
   name: 'Harmony USD Tether',
-  //logo: usdtLogo,
   color: 'lime',
   swapableType: 'USD',
   visibilityRank: 100,
@@ -1175,7 +1040,6 @@ export const BTCB = {
   },
   symbol: 'BTC.b',
   name: 'Bitcoin',
-  //logo: btcLogo,
   swapableType: 'BTC.b',
   color: 'orange',
   priorityRank: 300,
@@ -1191,7 +1055,6 @@ export const DAIE = {
   },
   symbol: 'DAI.e',
   name: 'Dai.e Token',
-  //logo: daiLogo,
   swapableType: 'USD',
   color: 'yellow',
   visibilityRank: 100,
@@ -1210,7 +1073,6 @@ export const KLAY = {
   },
   symbol: 'KLAY',
   name: 'Klaytn',
-  //logo: klayLogo,
   isNative: true,
   swapableType: 'KLAY',
   color: 'red',
@@ -1227,7 +1089,6 @@ export const WKLAY = {
   },
   symbol: 'WKLAY',
   name: 'Wrapped Klaytn',
-  //logo: klayLogo,
   swapableType: 'WKLAY',
   color: 'red',
   priorityRank: 350,
@@ -1245,7 +1106,6 @@ export const MATIC = {
   },
   symbol: 'MATIC',
   name: 'MATIC',
-  //logo: maticLogo,
   isNative: true,
   swapableType: 'MATIC',
   color: 'blue',
@@ -1263,7 +1123,6 @@ export const WMATIC = {
   },
   symbol: 'WMATIC',
   name: 'WMATIC',
-  //logo: maticLogo,
   swapableType: 'MATIC',
   color: 'blue',
   visibilityRank: 90,
@@ -1282,7 +1141,6 @@ export const FTM = {
   },
   symbol: 'FTM',
   name: 'Fantom',
-  //logo: ftmLogo,
   swapableType: 'FTM',
   color: 'blue',
   priorityRank: 300,
@@ -1298,7 +1156,6 @@ export const WFTM = {
   },
   symbol: 'WFTM',
   name: 'Wrapped Fantom',
-  //logo: ftmLogo,
   swapableType: 'FTM',
   color: 'blue',
   priorityRank: 350,
@@ -1307,7 +1164,7 @@ export const WFTM = {
 
 export const WETH = {
   addresses: {
-    [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [CHAINS.ETHEREUM.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
     [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [CHAINS.METIS.id]: '0x420000000000000000000000000000000000000A',
@@ -1318,7 +1175,7 @@ export const WETH = {
     [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.OPTIMISM.id]: 18,
     [CHAINS.BOBA.id]: 18,
     [CHAINS.METIS.id]: 18,
@@ -1330,7 +1187,6 @@ export const WETH = {
   },
   symbol: 'WETH',
   name: 'Wrapped ETH',
-  //logo: wethLogo,
   swapableType: 'ETH',
   color: 'sky',
   priorityRank: 350,
@@ -1340,16 +1196,15 @@ export const WETH = {
 export const CRVUSD = {
   visibilityRank: 101,
   addresses: {
-    [CHAINS.ETH.id]: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
+    [CHAINS.ETHEREUM.id]: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
     [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
     [CHAINS.BASE.id]: 18,
   },
   symbol: 'crvUSD',
   name: 'Curve.fi USD',
-  //logo: crvusdLogo,
   swapableType: 'USD',
 
   color: 'yellow',
@@ -1360,14 +1215,13 @@ export const CRVUSD = {
 export const LUSD = {
   visibilityRank: 101,
   addresses: {
-    [CHAINS.ETH.id]: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
+    [CHAINS.ETHEREUM.id]: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
   },
   decimals: {
-    [CHAINS.ETH.id]: 18,
+    [CHAINS.ETHEREUM.id]: 18,
   },
   symbol: 'LUSD',
   name: 'Liquity USD',
-  //logo: lusdLogo,
   swapableType: 'USD',
 
   color: 'blue',
@@ -1385,9 +1239,7 @@ export const USDBC = {
   },
   symbol: 'USDbC',
   name: 'USD Base Coin',
-  //logo: usdcLogo,
   swapableType: 'USD',
-
   color: 'blue',
   priorityRank: 125,
   routeSymbol: 'USDbC',

@@ -6,8 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { SynapseSDK } from '@synapsecns/sdk-router'
-import { Web3Context } from 'providers/Web3Provider'
+import { Web3Context } from '@/providers/Web3Provider'
 
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
@@ -38,10 +37,6 @@ import { AvailableBalance } from './AvailableBalance'
 import { ZeroAddress } from 'ethers'
 import { useValidations } from '@/hooks/useValidations'
 
-import { Transaction } from './Transaction'
-
-import { useWalletState } from '@/state/slices/wallet/hooks'
-
 import {
   fetchBridgeQuote,
   useBridgeQuoteState,
@@ -66,24 +61,8 @@ import { useThemeVariables } from '@/hooks/useThemeVariables'
 
 import { Transactions } from './Transactions'
 
-const chains = {
-  1: {
-    id: 1,
-    name: 'Ethereum',
-  },
-  137: {
-    id: 137,
-    name: 'Polygon',
-  },
-  42161: {
-    id: 42161,
-    name: 'Arbitrum',
-  },
-  10: {
-    id: 10,
-    name: 'Optimism',
-  },
-}
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useSynapseContext } from '@/providers/SynapseProvider'
 
 export const Widget = ({
   chainIds,
@@ -97,8 +76,8 @@ export const Widget = ({
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
 
-  /** TODO: Possibly lift SynapseSDK into a Context to provide accesibility around widget */
-  const synapseSDK: any = new SynapseSDK(chainIds, networkProviders)
+  const { synapseSDK } = useSynapseContext()
+
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
@@ -301,8 +280,7 @@ export const Widget = ({
   )
 
   const containerStyle = `
-    ${container === false ? 'p-0' : 'p-2 rounded-lg'
-  }`
+    ${container === false ? 'p-0' : 'p-2 rounded-lg'}`
 
   const cardStyle = `
     grid grid-cols-[1fr_auto] 
@@ -332,7 +310,7 @@ export const Widget = ({
         <section className={cardStyle}>
           <ChainSelect
             label="From"
-            chain={chains[originChainId]}
+            chain={CHAINS_BY_ID[originChainId]}
             onChange={handleOriginChainSelection}
           />
           <input
@@ -357,7 +335,7 @@ export const Widget = ({
         <section className={cardStyle}>
           <ChainSelect
             label="To"
-            chain={chains[destinationChainId]}
+            chain={CHAINS_BY_ID[destinationChainId]}
             onChange={handleDestinationChainSelection}
           />
           <input
@@ -400,7 +378,7 @@ export const Widget = ({
           )}
         />
         <BridgeButton
-          originChain={chains[originChainId]}
+          originChain={CHAINS_BY_ID[originChainId]}
           isValidQuote={
             Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
           }
