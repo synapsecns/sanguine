@@ -5,6 +5,7 @@ import {
   FastBridgeQuoteAPI,
   marshallFastBridgeQuote,
   unmarshallFastBridgeQuote,
+  applyQuote,
 } from './quote'
 
 describe('quote', () => {
@@ -44,5 +45,37 @@ describe('quote', () => {
 
   it('should marshall a quote', () => {
     expect(marshallFastBridgeQuote(quote)).toEqual(quoteAPI)
+  })
+
+  describe('applyQuote', () => {
+    it('Returns zero if origin amount is lower than fixed fee', () => {
+      expect(applyQuote(quote, quote.fixedFee.sub(1))).toEqual(
+        BigNumber.from(0)
+      )
+    })
+
+    it('Returns zero if origin amount is equal to fixed fee', () => {
+      expect(applyQuote(quote, quote.fixedFee)).toEqual(BigNumber.from(0))
+    })
+
+    it('Returns zero if origin amount is greater than max origin amount', () => {
+      expect(applyQuote(quote, quote.maxOriginAmount.add(1))).toEqual(
+        BigNumber.from(0)
+      )
+    })
+
+    it('Returns zero if resulted quote is higher than dest amount', () => {
+      // Modify dest amount to be lower than the max origin amount
+      quote.destAmount = BigNumber.from(10).pow(18).mul(100)
+      expect(
+        applyQuote(quote, quote.destAmount.add(quote.fixedFee).add(1))
+      ).toEqual(BigNumber.from(0))
+    })
+
+    it('Returns a correct quote', () => {
+      expect(applyQuote(quote, BigNumber.from(10).pow(18).mul(100))).toEqual(
+        BigNumber.from(10).pow(18).mul(99)
+      )
+    })
   })
 })
