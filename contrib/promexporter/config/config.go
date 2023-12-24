@@ -99,7 +99,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 			Name:     "messenger",
 		},
 		{
-			Address:  "0x49357ba0Ef3a8daC25903472eEe45C41221D4F9a",
+			Address:  "0x0a1e1d0eb6a1cef79e46f0e2d35b7bf2e958a26a",
 			Name:     "cctp",
 			ChainIDs: types.ToInts(types.ETH, types.ARBITRUM, types.AVALANCHE, types.OPTIMISM),
 		},

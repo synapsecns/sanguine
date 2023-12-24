@@ -140,7 +140,6 @@ func NewFromURL(ctx context.Context, url string) (Chain, error) {
 }
 
 // NewFromClient gets a chain from client.
-// nolint: staticcheck
 func NewFromClient(ctx context.Context, config *client.Config, evmClient client.EVMClient) (chain Chain, err error) {
 	rpcURL := ""
 	if len(config.RPCUrl) > 0 {
