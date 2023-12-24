@@ -103,7 +103,6 @@ func (b *Backend) EnableTenderly() bool {
 }
 
 // Client fetches an eth client fro the backend.
-// nolint: staticcheck
 func (b *Backend) Client() client.EVMClient {
 	return b.Chain
 }
