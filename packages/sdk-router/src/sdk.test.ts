@@ -34,6 +34,13 @@ import {
 import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './module'
 import * as operations from './operations'
 
+// Override fetch to exclude RFQ from tests
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+  })
+) as any
+
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
   expect(feeConfig.bridgeFee).toBeGreaterThan(0)
