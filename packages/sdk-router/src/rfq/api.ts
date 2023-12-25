@@ -4,8 +4,8 @@ import {
   unmarshallFastBridgeQuote,
 } from './quote'
 
-// TODO: fill
-const API_URL = 'API_URL'
+// TODO: change to mainnet API URL once it's enabled
+const API_URL = 'https://rfq-api-testnet.omnirpc.io'
 
 /**
  * Hits Quoter API /quotes endpoint to get all quotes.

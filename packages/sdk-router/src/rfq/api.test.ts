@@ -55,4 +55,11 @@ describe('getAllQuotes', () => {
       unmarshallFastBridgeQuote(quotesAPI[1]),
     ])
   })
+
+  it('Integration test', async () => {
+    global.fetch = require('node-fetch')
+    const result = await getAllQuotes()
+    console.log('Quotes: ' + JSON.stringify(result, null, 2))
+    expect(result.length).toBeGreaterThan(0)
+  })
 })
