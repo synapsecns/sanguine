@@ -116,3 +116,33 @@ export const modifyDeadline = (query: Query, deadline: BigNumber): Query => {
     deadline,
   }
 }
+
+/**
+ * Applies the slippage to the query's minAmountOut (rounded down), and returns the modified query
+ * with the reduced minAmountOut.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param slipNumerator - The numerator of the slippage.
+ * @param slipDenominator - The denominator of the slippage.
+ * @returns The modified query with the reduced minAmountOut.
+ */
+export const applySlippage = (
+  query: Query,
+  slipNumerator: number,
+  slipDenominator: number
+): Query => {
+  invariant(slipDenominator > 0, 'Slippage denominator cannot be zero')
+  invariant(slipNumerator >= 0, 'Slippage numerator cannot be negative')
+  invariant(
+    slipNumerator <= slipDenominator,
+    'Slippage cannot be greater than 1'
+  )
+  const slippageAmount = query.minAmountOut
+    .mul(slipNumerator)
+    .div(slipDenominator)
+  return {
+    ...query,
+    minAmountOut: query.minAmountOut.sub(slippageAmount),
+  }
+}
