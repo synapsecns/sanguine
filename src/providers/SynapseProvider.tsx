@@ -29,7 +29,9 @@ export const SynapseProvider = memo(
     )
 
     return (
-      <SynapseContext.Provider value={{ synapseSDK, providerMap }}>
+      <SynapseContext.Provider
+        value={{ synapseSDK, providerMap, synapseProviders }}
+      >
         {children}
       </SynapseContext.Provider>
     )

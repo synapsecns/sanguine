@@ -76,7 +76,7 @@ export const Widget = ({
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
 
-  const { synapseSDK } = useSynapseContext()
+  const { synapseSDK, synapseProviders } = useSynapseContext()
 
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
@@ -102,16 +102,11 @@ export const Widget = ({
 
   const themeVariables = useThemeVariables(theme, customTheme)
 
-  /** Select Consumer networkProvider based on Origin ChainId */
-  /** TODO: Move to helper hook */
   const originChainProvider = useMemo(() => {
-    if (!Array.isArray(networkProviders)) return null
-    if (!originChainId) return null
-    const _provider = networkProviders.find(
+    return synapseProviders.find(
       (provider) => Number(provider?._network?.chainId) === originChainId
     )
-    return _provider
-  }, [originChainId, networkProviders])
+  }, [originChainId])
 
   useEffect(() => {
     dispatch(setTokens(tokens))
@@ -148,44 +143,7 @@ export const Widget = ({
     }
   }, [originChainId, allTokens, connectedAddress, signer, originChainProvider])
 
-  const executeApproval = () => {
-    dispatch(
-      executeApproveTxn({
-        spenderAddress: bridgeQuote?.routerAddress,
-        tokenAddress: originToken?.addresses[originChainId],
-        amount: stringToBigInt(
-          debouncedInputAmount,
-          originToken?.decimals[originChainId]
-        ),
-        signer,
-      })
-    )
-  }
-
-  const executeBridge = () => {
-    dispatch(
-      executeBridgeTxn({
-        destinationAddress: connectedAddress,
-        originRouterAddress: bridgeQuote?.routerAddress,
-        originChainId: originChainId,
-        destinationChainId: destinationChainId,
-        tokenAddress: originToken?.addresses[originChainId],
-        amount: stringToBigInt(
-          debouncedInputAmount,
-          originToken?.decimals[originChainId]
-        ),
-        originQuery: bridgeQuote?.quotes.originQuery,
-        destinationQuery: bridgeQuote?.quotes.destQuery,
-        bridgeModuleName: bridgeQuote?.bridgeModuleName,
-        estimatedTime: bridgeQuote?.estimatedTime,
-        synapseSDK,
-        signer,
-      })
-    )
-  }
-
-  /** fetch and store token allowance */
-
+  /** Fetch and store token allowance */
   useEffect(() => {
     if (
       originToken?.addresses[originChainId] !== ZeroAddress &&
@@ -278,6 +236,42 @@ export const Widget = ({
     },
     [dispatch]
   )
+
+  const executeApproval = () => {
+    dispatch(
+      executeApproveTxn({
+        spenderAddress: bridgeQuote?.routerAddress,
+        tokenAddress: originToken?.addresses[originChainId],
+        amount: stringToBigInt(
+          debouncedInputAmount,
+          originToken?.decimals[originChainId]
+        ),
+        signer,
+      })
+    )
+  }
+
+  const executeBridge = () => {
+    dispatch(
+      executeBridgeTxn({
+        destinationAddress: connectedAddress,
+        originRouterAddress: bridgeQuote?.routerAddress,
+        originChainId: originChainId,
+        destinationChainId: destinationChainId,
+        tokenAddress: originToken?.addresses[originChainId],
+        amount: stringToBigInt(
+          debouncedInputAmount,
+          originToken?.decimals[originChainId]
+        ),
+        originQuery: bridgeQuote?.quotes.originQuery,
+        destinationQuery: bridgeQuote?.quotes.destQuery,
+        bridgeModuleName: bridgeQuote?.bridgeModuleName,
+        estimatedTime: bridgeQuote?.estimatedTime,
+        synapseSDK,
+        signer,
+      })
+    )
+  }
 
   const containerStyle = `
     ${container === false ? 'p-0' : 'p-2 rounded-lg'}`
