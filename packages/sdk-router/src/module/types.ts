@@ -76,14 +76,3 @@ export type BridgeRoute = {
   bridgeToken: BridgeToken
   bridgeModuleName: string
 }
-
-/**
- * Finds the best route: the one with the maximum amount out in the destination query.
- */
-export const findBestRoute = (bridgeRoutes: BridgeRoute[]): BridgeRoute => {
-  return bridgeRoutes.reduce((best, current) => {
-    return current.destQuery.minAmountOut.gt(best.destQuery.minAmountOut)
-      ? current
-      : best
-  })
-}

@@ -4,7 +4,7 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, Query, findBestRoute } from '../module'
+import { BridgeQuote, Query } from '../module'
 import { RouterSet } from '../router'
 
 /**
@@ -86,37 +86,26 @@ export async function bridgeQuote(
   deadline?: BigNumber,
   excludeCCTP: boolean = false
 ): Promise<BridgeQuote> {
-  invariant(
-    originChainId !== destChainId,
-    'Origin chainId cannot be equal to destination chainId'
+  // Get the quotes sorted by maxAmountOut
+  const allQuotes = await allBridgeQuotes.call(
+    this,
+    originChainId,
+    destChainId,
+    tokenIn,
+    tokenOut,
+    amountIn,
+    deadline
   )
-  tokenOut = handleNativeToken(tokenOut)
-  tokenIn = handleNativeToken(tokenIn)
-  // Construct objects for both types of routers
-  const allSets: { set: RouterSet; exclude: boolean }[] = [
-    { set: this.synapseRouterSet, exclude: false },
-    { set: this.synapseCCTPRouterSet, exclude: excludeCCTP },
-  ]
-  // Fetch bridge routes from both types of routers
-  const allRoutesPromises = allSets.map(({ set, exclude }) =>
-    exclude
-      ? Promise.resolve([])
-      : set.getBridgeRoutes(
-          originChainId,
-          destChainId,
-          tokenIn,
-          tokenOut,
-          amountIn
-        )
+  // Get the first quote that is not excluded
+  const bestQuote = allQuotes.find(
+    (quote) =>
+      !excludeCCTP ||
+      quote.bridgeModuleName !== this.synapseCCTPRouterSet.bridgeModuleName
   )
-  // Wait for all quotes to resolve and flatten the result
-  const allRoutes = (await Promise.all(allRoutesPromises)).flat()
-  invariant(allRoutes.length > 0, 'No route found')
-  const bestRoute = findBestRoute(allRoutes)
-  // Find the Router Set that yielded the best route
-  const bestSet: RouterSet = getRouterSet.call(this, bestRoute.bridgeModuleName)
-  // Finalize the Bridge Route
-  return bestSet.finalizeBridgeRoute(bestRoute, deadline)
+  if (!bestQuote) {
+    throw new Error('No route found')
+  }
+  return bestQuote
 }
 
 /**
