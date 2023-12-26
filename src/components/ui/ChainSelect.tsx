@@ -1,6 +1,14 @@
 import { Chain } from 'types'
 import { ChainPopoverSelect } from './ChainPopoverSelect'
-import { ARBITRUM, ETHEREUM, POLYGON, OPTIMISM } from '@/constants/chains'
+import {
+  ARBITRUM,
+  ETHEREUM,
+  POLYGON,
+  OPTIMISM,
+  DFK,
+  AVALANCHE,
+  KLAYTN,
+} from '@/constants/chains'
 
 type Props = {
   label: 'To' | 'From'
@@ -9,7 +17,7 @@ type Props = {
 }
 
 export function ChainSelect({ label, chain, onChange }: Props) {
-  const chains = [ETHEREUM, ARBITRUM, POLYGON, OPTIMISM]
+  const chains = [ETHEREUM, ARBITRUM, POLYGON, OPTIMISM, DFK, AVALANCHE, KLAYTN]
 
   return (
     <ChainPopoverSelect
