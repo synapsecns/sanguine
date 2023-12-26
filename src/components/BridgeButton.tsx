@@ -5,7 +5,6 @@ import { useCallback, useContext } from 'react'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 import { useValidations } from '@/hooks/useValidations'
-import { useWalletState } from '@/state/slices/wallet/hooks'
 
 interface BridgeButtonProps {
   originChain: Chain
@@ -26,16 +25,9 @@ export const BridgeButton = ({
 }: BridgeButtonProps) => {
   const web3Context = useContext(Web3Context)
 
-  const { connectedAddress, signer, provider, networkId } =
-    web3Context.web3Provider
+  const { provider } = web3Context.web3Provider
 
-  const {
-    debouncedInputAmount,
-    originChainId,
-    originToken,
-    destinationChainId,
-    destinationToken,
-  } = useBridgeState()
+  const { originChainId } = useBridgeState()
 
   const { hasEnoughBalance, isInputValid, onSelectedChain, isApproved } =
     useValidations()
@@ -106,7 +98,7 @@ export const BridgeButton = ({
         </button>
       ) : (
         <Tooltip
-          hoverText={isApprovalPending && 'Wallet approval required'}
+          hoverText={isApprovalPending ? 'Wallet approval required' : null}
           positionStyles={tooltipPositionStyle}
         >
           <button

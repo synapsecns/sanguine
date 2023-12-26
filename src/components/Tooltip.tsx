@@ -3,7 +3,7 @@ import { useState } from 'react'
 export const Tooltip = ({
   hoverText,
   children,
-  positionStyles
+  positionStyles,
 }: {
   hoverText: string
   children: React.ReactNode
@@ -15,9 +15,9 @@ export const Tooltip = ({
       data-test-id="tool-tip"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="flex justify-center relative"
+      className="relative flex justify-center"
     >
-      {isHovered && (
+      {isHovered && hoverText && (
         <div
           className={`
           absolute w-max z-10 px-2 py-1 rounded-md text-sm 
