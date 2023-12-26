@@ -18,15 +18,21 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
 
   const { balances } = useWalletState()
 
-  const options = isOrigin
-    ? originTokens
-    : filterTokens(destinationTokens, tokens)
-  const remainingOptions = _.difference(tokens, options)
+  let options
+  let remaining
+
+  if (isOrigin) {
+    options = originTokens
+    remaining = _.difference(tokens, options)
+  } else {
+    options = filterTokens(destinationTokens, tokens)
+    remaining = _.difference(tokens, options)
+  }
 
   return (
     <TokenPopoverSelect
       options={options}
-      remaining={remainingOptions}
+      remaining={remaining}
       balances={isOrigin ? balances : []}
       onSelect={(selected) => {
         onChange(selected)

@@ -38,7 +38,12 @@ export async function fetchTokenBalances({
     return
   }
 
-  const calls = tokens.map((token: BridgeableToken) => {
+  const validTokens = tokens.filter((token: BridgeableToken) => {
+    const tokenAddress: string = token.addresses[chainId]
+    return tokenAddress !== undefined
+  })
+
+  const calls = validTokens.map((token: BridgeableToken) => {
     const tokenAddress: string = token.addresses[chainId]
 
     if (tokenAddress === ZeroAddress) {

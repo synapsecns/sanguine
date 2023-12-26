@@ -30,6 +30,7 @@ export const walletSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAndStoreTokenBalances.pending, (state) => {
+        state.balances = []
         state.status = FetchState.LOADING
       })
       .addCase(
