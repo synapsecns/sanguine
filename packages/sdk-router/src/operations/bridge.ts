@@ -145,7 +145,7 @@ export async function allBridgeQuotes(
   )
   tokenOut = handleNativeToken(tokenOut)
   tokenIn = handleNativeToken(tokenIn)
-  const allQuotes = await Promise.all(
+  const allQuotes: BridgeQuote[][] = await Promise.all(
     this.allRouterSets.map(async (routerSet) => {
       const routes = await routerSet.getBridgeRoutes(
         originChainId,
@@ -162,7 +162,10 @@ export async function allBridgeQuotes(
       )
     })
   )
-  return allQuotes.flat()
+  // Flatten the result and sort by maxAmountOut in descending order
+  return allQuotes
+    .flat()
+    .sort((a, b) => (a.maxAmountOut.gt(b.maxAmountOut) ? -1 : 1))
 }
 
 /**
