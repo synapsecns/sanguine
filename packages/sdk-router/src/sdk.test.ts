@@ -648,6 +648,55 @@ describe('SynapseSDK', () => {
     })
   })
 
+  describe('allBridgeQuotes', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
+    )
+
+    it('Fetches SynapseBridge and SynapseCCTP quotes for USDC', async () => {
+      const allQuotes = await synapse.allBridgeQuotes(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDT,
+        BigNumber.from(10).pow(9)
+      )
+      expect(allQuotes.length).toEqual(2)
+      expectCorrectBridgeQuote(allQuotes[0])
+      expectCorrectBridgeQuote(allQuotes[1])
+      // First quote should have better quote
+      expect(allQuotes[0].maxAmountOut.gte(allQuotes[1].maxAmountOut)).toBe(
+        true
+      )
+      // One should be SynapseBridge and the other SynapseCCTP
+      expect(allQuotes[0].bridgeModuleName).not.toEqual(
+        allQuotes[1].bridgeModuleName
+      )
+      expect(
+        allQuotes[0].bridgeModuleName === 'SynapseBridge' ||
+          allQuotes[1].bridgeModuleName === 'SynapseBridge'
+      ).toBe(true)
+      expect(
+        allQuotes[0].bridgeModuleName === 'SynapseCCTP' ||
+          allQuotes[1].bridgeModuleName === 'SynapseCCTP'
+      ).toBe(true)
+    })
+
+    it('Fetches only SynapseBridge quotes for ETH', async () => {
+      const allQuotes = await synapse.allBridgeQuotes(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        NATIVE_ADDRESS,
+        NATIVE_ADDRESS,
+        BigNumber.from(10).pow(18)
+      )
+      expect(allQuotes.length).toEqual(1)
+      expectCorrectBridgeQuote(allQuotes[0])
+      expect(allQuotes[0].bridgeModuleName).toEqual('SynapseBridge')
+    })
+  })
+
   describe('Errors', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.BSC],
