@@ -120,6 +120,52 @@ export async function bridgeQuote(
 }
 
 /**
+ * This method tries to fetch all available quotes from all available bridge modules.
+ *
+ * @param originChainId - The ID of the original chain.
+ * @param destChainId - The ID of the destination chain.
+ * @param tokenIn - The input token.
+ * @param tokenOut - The output token.
+ * @param amountIn - The amount of input token.
+ * @param deadline - The transaction deadline, optional.
+ * @returns - A promise that resolves to an array of bridge quotes.
+ */
+export async function allBridgeQuotes(
+  this: SynapseSDK,
+  originChainId: number,
+  destChainId: number,
+  tokenIn: string,
+  tokenOut: string,
+  amountIn: BigintIsh,
+  deadline?: BigNumber
+): Promise<BridgeQuote[]> {
+  invariant(
+    originChainId !== destChainId,
+    'Origin chainId cannot be equal to destination chainId'
+  )
+  tokenOut = handleNativeToken(tokenOut)
+  tokenIn = handleNativeToken(tokenIn)
+  const allQuotes = await Promise.all(
+    this.allRouterSets.map(async (routerSet) => {
+      const routes = await routerSet.getBridgeRoutes(
+        originChainId,
+        destChainId,
+        tokenIn,
+        tokenOut,
+        amountIn
+      )
+      // Filter out routes with zero minAmountOut and finalize the rest
+      return Promise.all(
+        routes
+          .filter((route) => route.destQuery.minAmountOut.gt(0))
+          .map((route) => routerSet.finalizeBridgeRoute(route, deadline))
+      )
+    })
+  )
+  return allQuotes.flat()
+}
+
+/**
  * Gets the unique Synapse txId for a bridge operation that happened within a given transaction.
  * Synapse txId is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
  * This function is meant to abstract away the differences between the two bridge modules.
