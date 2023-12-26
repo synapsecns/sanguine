@@ -37,6 +37,7 @@ export function ChainPopoverSelect({
           bg-[--synapse-select-bg]
           border border-solid border-[--synapse-select-border]
           hover:border-[--synapse-focus]
+          whitespace-nowrap
         `}
         onClick={() => togglePopover()}
       >
