@@ -13,13 +13,8 @@ type Props = {
 }
 
 export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
-  const {
-    originChainId,
-    destinationChainId,
-    originTokens,
-    destinationTokens,
-    tokens,
-  }: BridgeState = useBridgeState()
+  const { originTokens, destinationTokens, tokens }: BridgeState =
+    useBridgeState()
 
   const { balances } = useWalletState()
 
@@ -30,7 +25,6 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
 
   return (
     <TokenPopoverSelect
-      selectedChainId={isOrigin ? originChainId : destinationChainId}
       options={options}
       remaining={remainingOptions}
       balances={isOrigin ? balances : []}
@@ -38,7 +32,6 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
         onChange(selected)
       }}
       selected={token}
-      label={label}
     />
   )
 }

@@ -39,15 +39,17 @@ function App() {
 
   return (
     <main className="flex items-center justify-center h-screen">
-      <Bridge
-        chainIds={chainIds}
-        web3Provider={web3Provider}
-        networkProviders={providers}
-        tokens={tokens}
-        theme="light"
-        container={true}
-        toChainId={137}
-      />
+      <div className="w-[33%]">
+        <Bridge
+          chainIds={chainIds}
+          web3Provider={web3Provider}
+          networkProviders={providers}
+          tokens={tokens}
+          theme="light"
+          container={true}
+          toChainId={137}
+        />
+      </div>
     </main>
   )
 }

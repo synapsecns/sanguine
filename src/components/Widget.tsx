@@ -310,6 +310,7 @@ export const Widget = ({
         <section className={cardStyle}>
           <ChainSelect
             label="From"
+            isOrigin={true}
             chain={CHAINS_BY_ID[originChainId]}
             onChange={handleOriginChainSelection}
           />
@@ -335,6 +336,7 @@ export const Widget = ({
         <section className={cardStyle}>
           <ChainSelect
             label="To"
+            isOrigin={false}
             chain={CHAINS_BY_ID[destinationChainId]}
             onChange={handleDestinationChainSelection}
           />
@@ -343,13 +345,13 @@ export const Widget = ({
             disabled={true}
             placeholder=""
             value={
-              isLoading
+              isLoading || !bridgeQuote || !destinationToken
                 ? '...'
                 : formatBigIntToString(
                     bridgeQuote?.delta,
                     destinationToken?.decimals[destinationChainId],
                     4
-                  )
+                  ) || ''
             }
           />
           <div className="flex flex-col items-end justify-center">

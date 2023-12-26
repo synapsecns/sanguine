@@ -1,26 +1,22 @@
-import { BridgeableToken, Chain } from 'types'
+import { BridgeableToken } from 'types'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '../icons/DownArrow'
 
 type PopoverSelectProps = {
-  selectedChainId: number
   options: BridgeableToken[]
   remaining: BridgeableToken[]
   balances: TokenBalance[]
   onSelect: (selected: BridgeableToken) => void
   selected: BridgeableToken
-  label: string
 }
 
 export function TokenPopoverSelect({
-  selectedChainId,
   options,
   remaining,
   balances,
   onSelect,
   selected,
-  label,
 }: PopoverSelectProps) {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
 
@@ -58,7 +54,7 @@ export function TokenPopoverSelect({
             return (
               <TokenOption
                 option={option}
-                index={index}
+                key={index}
                 onSelect={handleSelect}
                 selected={selected}
                 parsedBalance={parsedBalance}
@@ -73,7 +69,7 @@ export function TokenPopoverSelect({
             return (
               <TokenOption
                 option={option}
-                index={index}
+                key={index}
                 onSelect={handleSelect}
                 selected={selected}
                 parsedBalance={parsedBalance}
@@ -88,13 +84,11 @@ export function TokenPopoverSelect({
 
 const TokenOption = ({
   option,
-  index,
   onSelect,
   selected,
   parsedBalance,
 }: {
   option: BridgeableToken
-  index: number
   onSelect: (option: BridgeableToken) => void
   selected: BridgeableToken
   parsedBalance: string
@@ -102,7 +96,6 @@ const TokenOption = ({
   return (
     <li
       data-test-id="token-option"
-      key={index}
       className={`cursor-pointer rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 flex gap-4 items-center justify-between ${
         option.symbol === selected?.symbol
           ? 'border-[--synapse-focus] hover:opacity-70'
