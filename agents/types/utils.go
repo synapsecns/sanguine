@@ -3,7 +3,6 @@ package types
 import (
 	"context"
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -29,14 +28,11 @@ func signEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, sal
 	}
 
 	// Sign the message.
-	sig, err := signer.SignMessage(ctx, core.BytesToSlice(hashedDigest), false)
+	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedDigest), false)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign: %w", err)
 	}
-
-	sig = NewSignature(new(big.Int).Add(big.NewInt(27), sig.V()), sig.R(), sig.S())
-
-	return sig, encoded, hashedDigest, nil
+	return signature, encoded, hashedDigest, nil
 }
 
 var EtherscanTxURLs = map[uint32]string{
