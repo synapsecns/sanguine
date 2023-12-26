@@ -7,6 +7,7 @@ import {
   reduceToQuery,
   narrowToRouterQuery,
   narrowToCCTPRouterQuery,
+  modifyDeadline,
 } from './query'
 
 describe('#query', () => {
@@ -70,6 +71,56 @@ describe('#query', () => {
       expect(() => narrowToCCTPRouterQuery(query)).toThrow(
         'routerAdapter is undefined'
       )
+    })
+  })
+
+  describe('modifyDeadline', () => {
+    describe('RouterQuery', () => {
+      it('modifies the deadline', () => {
+        const query = modifyDeadline(routerQuery, BigNumber.from(42))
+        expect(query).toEqual({
+          swapAdapter: '1',
+          tokenOut: '2',
+          minAmountOut: BigNumber.from(3),
+          deadline: BigNumber.from(42),
+          rawParams: '5',
+        })
+      })
+
+      it('does not modify the original query', () => {
+        modifyDeadline(routerQuery, BigNumber.from(42))
+        expect(routerQuery).toEqual({
+          swapAdapter: '1',
+          tokenOut: '2',
+          minAmountOut: BigNumber.from(3),
+          deadline: BigNumber.from(4),
+          rawParams: '5',
+        })
+      })
+    })
+
+    describe('CCTPRouterQuery', () => {
+      it('modifies the deadline', () => {
+        const query = modifyDeadline(cctpRouterQuery, BigNumber.from(42))
+        expect(query).toEqual({
+          routerAdapter: '6',
+          tokenOut: '7',
+          minAmountOut: BigNumber.from(8),
+          deadline: BigNumber.from(42),
+          rawParams: '10',
+        })
+      })
+
+      it('does not modify the original query', () => {
+        modifyDeadline(cctpRouterQuery, BigNumber.from(42))
+        expect(cctpRouterQuery).toEqual({
+          routerAdapter: '6',
+          tokenOut: '7',
+          minAmountOut: BigNumber.from(8),
+          deadline: BigNumber.from(9),
+          rawParams: '10',
+        })
+      })
     })
   })
 })

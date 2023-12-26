@@ -101,3 +101,18 @@ export const hasComplexBridgeAction = (destQuery: Query): boolean => {
     destQuery.tokenOut !== ETH_NATIVE_TOKEN_ADDRESS
   )
 }
+
+/**
+ * Modifies the deadline of the query and returns the modified query.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param deadline - The new deadline.
+ * @returns The modified query with the new deadline.
+ */
+export const modifyDeadline = (query: Query, deadline: BigNumber): Query => {
+  return {
+    ...query,
+    deadline,
+  }
+}

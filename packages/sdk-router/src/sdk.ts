@@ -9,7 +9,7 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import { Query } from './module'
+import { Query, modifyDeadline } from './module'
 
 class SynapseSDK {
   public synapseRouterSet: SynapseRouterSet
@@ -65,6 +65,9 @@ class SynapseSDK {
   // Define Swap operations
   public swap = operations.swap
   public swapQuote = operations.swapQuote
+
+  // Define Query operations
+  public modifyDeadline = modifyDeadline
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }
