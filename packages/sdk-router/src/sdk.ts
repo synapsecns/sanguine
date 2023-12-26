@@ -10,7 +10,12 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import { Query, modifyDeadline } from './module'
+import {
+  Query,
+  applySlippage,
+  applySlippageInBips,
+  modifyDeadline,
+} from './module'
 
 class SynapseSDK {
   public allRouterSets: RouterSet[]
@@ -71,6 +76,8 @@ class SynapseSDK {
   public swapQuote = operations.swapQuote
 
   // Define Query operations
+  public applySlippage = applySlippage
+  public applySlippageInBips = applySlippageInBips
   public modifyDeadline = modifyDeadline
 }
 
