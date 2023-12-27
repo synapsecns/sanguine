@@ -40,20 +40,14 @@ export async function bridge(
     'Origin chainId cannot be equal to destination chainId'
   )
   token = handleNativeToken(token)
-  // Get Router instance for given chain and address
-  const router =
-    this.synapseRouterSet.getModuleWithAddress(
-      originChainId,
-      originRouterAddress
-    ) ??
-    this.synapseCCTPRouterSet.getModuleWithAddress(
-      originChainId,
-      originRouterAddress
-    )
-  // Throw if Router is not found
-  invariant(router, 'Invalid router address')
-  // Ask the Router to populate the bridge transaction
-  return router.bridge(to, destChainId, token, amount, originQuery, destQuery)
+  // Find the module that is using the given router address
+  const module = this.allModuleSets
+    .map((set) => set.getModuleWithAddress(originChainId, originRouterAddress))
+    .find(Boolean)
+  if (!module) {
+    throw new Error('Invalid router address')
+  }
+  return module.bridge(to, destChainId, token, amount, originQuery, destQuery)
 }
 
 /**
