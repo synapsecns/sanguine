@@ -1,8 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute } from './types'
+import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
+import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -107,6 +109,17 @@ export abstract class SynapseModuleSet {
   ): Promise<BridgeRoute[]>
 
   /**
+   * Retrieves the fee data for a given bridge route.
+   *
+   * @param bridgeRoute - The bridge route to get fee data for.
+   * @returns A promise that resolves to the fee data.
+   */
+  abstract getFeeData(bridgeRoute: BridgeRoute): Promise<{
+    feeAmount: BigNumber
+    feeConfig: FeeConfig
+  }>
+
+  /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.
    *
    * @param destChainId - The ID of the destination chain.
@@ -114,8 +127,32 @@ export abstract class SynapseModuleSet {
    * @param deadline - The deadline to use on the origin chain (default 10 mins).
    * @returns The finalized quote with fee data and deadlines.
    */
-  abstract finalizeBridgeRoute(
+  async finalizeBridgeRoute(
     bridgeRoute: BridgeRoute,
     deadline?: BigNumber
-  ): Promise<BridgeQuote>
+  ): Promise<BridgeQuote> {
+    // Check that route is supported on both chains
+    const originModule = this.getExistingModule(bridgeRoute.originChainId)
+    this.getExistingModule(bridgeRoute.destChainId)
+    invariant(
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      'Invalid bridge module name'
+    )
+    const { originQuery, destQuery } = bridgeRoute
+    // Set origin deadline to 10 mins if not provided
+    originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
+    // Destination deadline is always 1 week
+    destQuery.deadline = calculateDeadline(ONE_WEEK)
+    const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
+    return {
+      feeAmount,
+      feeConfig,
+      routerAddress: originModule.address,
+      maxAmountOut: destQuery.minAmountOut,
+      originQuery,
+      destQuery,
+      estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
+      bridgeModuleName: bridgeRoute.bridgeModuleName,
+    }
+  }
 }
