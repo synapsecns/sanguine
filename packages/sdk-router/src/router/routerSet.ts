@@ -12,6 +12,7 @@ import {
   SynapseModuleSet,
 } from '../module'
 import { hasComplexBridgeAction } from '../module/query'
+import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export type ChainProvider = {
   chainId: number
@@ -158,5 +159,19 @@ export abstract class RouterSet extends SynapseModuleSet {
       bridgeRoute.originQuery.minAmountOut,
       hasComplexBridgeAction(bridgeRoute.destQuery)
     )
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.getDefaultPeriods
+   */
+  getDefaultPeriods(): {
+    originPeriod: number
+    destPeriod: number
+  } {
+    // Use the same default periods for SynapseBridge and SynapseCCTP modules
+    return {
+      originPeriod: TEN_MINUTES,
+      destPeriod: ONE_WEEK,
+    }
   }
 }

@@ -4,11 +4,7 @@ import invariant from 'tiny-invariant'
 import { BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
-import {
-  ONE_WEEK,
-  TEN_MINUTES,
-  applyOptionalDeadline,
-} from '../utils/deadlines'
+import { applyOptionalDeadline } from '../utils/deadlines'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -124,16 +120,28 @@ export abstract class SynapseModuleSet {
   }>
 
   /**
+   * Returns the default deadline periods for this bridge module.
+   *
+   * @returns The default deadline periods.
+   */
+  abstract getDefaultPeriods(): {
+    originPeriod: number
+    destPeriod: number
+  }
+
+  /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.
    *
    * @param destChainId - The ID of the destination chain.
    * @param bridgeRoute - Bridge route to finalize.
-   * @param deadline - The deadline to use on the origin chain (default 10 mins).
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
    * @returns The finalized quote with fee data and deadlines.
    */
   async finalizeBridgeRoute(
     bridgeRoute: BridgeRoute,
-    deadline?: BigNumber
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
   ): Promise<BridgeQuote> {
     // Check that route is supported on both chains
     const originModule = this.getExistingModule(bridgeRoute.originChainId)
@@ -143,10 +151,9 @@ export abstract class SynapseModuleSet {
       'Invalid bridge module name'
     )
     const { originQuery, destQuery } = bridgeRoute
-    // Set origin deadline to 10 mins if not provided
-    originQuery.deadline = applyOptionalDeadline(deadline, TEN_MINUTES)
-    // Destination deadline is always 1 week
-    destQuery.deadline = applyOptionalDeadline(undefined, ONE_WEEK)
+    const { originPeriod, destPeriod } = this.getDefaultPeriods()
+    originQuery.deadline = applyOptionalDeadline(originDeadline, originPeriod)
+    destQuery.deadline = applyOptionalDeadline(destDeadline, destPeriod)
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
       feeAmount,
