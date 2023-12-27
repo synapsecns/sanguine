@@ -49,3 +49,4 @@ export const ETH = BRIDGEABLE.ETH
 export const USDC = BRIDGEABLE.USDC
 export const USDT = BRIDGEABLE.USDT
 export const DAI = BRIDGEABLE.DAI
+export const USDCe = BRIDGEABLE.USDCe

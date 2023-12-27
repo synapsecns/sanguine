@@ -69,3 +69,4 @@ export declare const USDC: BridgeableToken
 export declare const USDT: BridgeableToken
 export declare const DAI: BridgeableToken
 export declare const ETH: BridgeableToken
+export declare const USDCe: BridgeableToken

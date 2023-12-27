@@ -1,8 +1,8 @@
-import { Bridge, USDC, USDT, DAI, ETH } from '@abtestingalpha/widget'
+import { Bridge, USDC, USDT, DAI, ETH, USDCe } from '@abtestingalpha/widget'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 
-const tokens = [USDC, USDT, DAI, ETH]
+const tokens = [USDC, USDT, DAI, ETH, USDCe]
 
 function App() {
   const ethersProvider = new StaticJsonRpcProvider(
