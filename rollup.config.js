@@ -3,7 +3,6 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
-import image from '@rollup/plugin-image'
 import json from '@rollup/plugin-json'
 import terser from '@rollup/plugin-terser'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
@@ -23,16 +22,7 @@ export default [
         format: 'esm',
       },
     ],
-    external: [
-      'react',
-      'react/jsx-runtime',
-      'crypto',
-      'fs',
-      'path',
-      'path-browserify',
-      'ethers',
-      'provider-ipcsocket',
-    ],
+    external: ['react', 'react/jsx-runtime', 'ethers'],
     plugins: [
       peerDepsExternal(),
       resolve(),
@@ -45,7 +35,6 @@ export default [
       postcss({
         plugins: [],
       }),
-      image(),
       json(),
       terser(),
     ],
