@@ -45,7 +45,7 @@ export function TokenPopoverSelect({
         <DownArrow />
       </div>
       {isOpen && (
-        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none right-0 overflow-y-scroll">
+        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80">
           {options.map((option: BridgeableToken, index) => {
             const matchedTokenBalance: TokenBalance = balances?.find(
               (token: TokenBalance) => token.token === option

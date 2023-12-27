@@ -45,11 +45,11 @@ export function ChainPopoverSelect({
         <DownArrow />
       </div>
       {isOpen && (
-        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover text-left list-none">
+        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60">
           {options.map((option) => (
             <li
               key={option.id}
-              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 ${
+              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
                 option?.name === selected?.name
                   ? 'border-[--synapse-focus] hover:opacity-70'
                   : 'border-transparent'
@@ -63,7 +63,7 @@ export function ChainPopoverSelect({
           {remaining.map((option) => (
             <li
               key={option.id}
-              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 ${
+              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
                 option?.name === selected?.name
                   ? 'border-[--synapse-focus] hover:opacity-70'
                   : 'border-transparent'
