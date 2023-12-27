@@ -178,5 +178,33 @@ describe('quote', () => {
 
     // Smaller decimals
     createQuoteTests(quote, 18, 6)
+
+    it('Returns zero when max origin amount is zero', () => {
+      const zeroQuote: FastBridgeQuote = {
+        ...quote,
+        maxOriginAmount: BigNumber.from(0),
+      }
+      const amount = zeroQuote.fixedFee.mul(2)
+      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+    })
+
+    it('Returns zero when dest amount is zero', () => {
+      const zeroQuote: FastBridgeQuote = {
+        ...quote,
+        destAmount: BigNumber.from(0),
+      }
+      const amount = zeroQuote.fixedFee.mul(2)
+      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+    })
+
+    it('Returns zero when max origin amount and dest amount are zero', () => {
+      const zeroQuote: FastBridgeQuote = {
+        ...quote,
+        maxOriginAmount: BigNumber.from(0),
+        destAmount: BigNumber.from(0),
+      }
+      const amount = zeroQuote.fixedFee.mul(2)
+      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+    })
   })
 })
