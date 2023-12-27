@@ -101,3 +101,67 @@ export const hasComplexBridgeAction = (destQuery: Query): boolean => {
     destQuery.tokenOut !== ETH_NATIVE_TOKEN_ADDRESS
   )
 }
+
+/**
+ * Modifies the deadline of the query and returns the modified query.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param deadline - The new deadline.
+ * @returns The modified query with the new deadline.
+ */
+export const modifyDeadline = (query: Query, deadline: BigNumber): Query => {
+  return {
+    ...query,
+    deadline,
+  }
+}
+
+/**
+ * Applies the slippage to the query's minAmountOut (rounded down), and returns the modified query
+ * with the reduced minAmountOut.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param slipNumerator - The numerator of the slippage.
+ * @param slipDenominator - The denominator of the slippage.
+ * @returns The modified query with the reduced minAmountOut.
+ * @throws If the slippage fraction is invalid (<0, >1, or NaN)
+ */
+export const applySlippage = (
+  query: Query,
+  slipNumerator: number,
+  slipDenominator: number
+): Query => {
+  invariant(slipDenominator > 0, 'Slippage denominator cannot be zero')
+  invariant(slipNumerator >= 0, 'Slippage numerator cannot be negative')
+  invariant(
+    slipNumerator <= slipDenominator,
+    'Slippage cannot be greater than 1'
+  )
+  const slippageAmount = query.minAmountOut
+    .mul(slipNumerator)
+    .div(slipDenominator)
+  return {
+    ...query,
+    minAmountOut: query.minAmountOut.sub(slippageAmount),
+  }
+}
+
+/**
+ * Applies the slippage (in basis points) to the query's minAmountOut (rounded down), and returns the modified query
+ * with the reduced minAmountOut.
+ * Note: the original query is preserved unchanged.
+ * Note: the slippage is applied as a fraction of 10000, e.g. 100 bips = 1%.
+ *
+ * @param query - The query to modify.
+ * @param slipBasisPoints - The slippage in basis points.
+ * @returns The modified query with the reduced minAmountOut.
+ * @throws If the basis points are invalid (<0, >10000)
+ */
+export const applySlippageInBips = (
+  query: Query,
+  slipBasisPoints: number
+): Query => {
+  return applySlippage(query, slipBasisPoints, 10000)
+}

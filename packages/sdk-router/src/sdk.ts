@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
 import {
+  RouterSet,
   SynapseRouterSet,
   SynapseCCTPRouterSet,
   ChainProvider,
@@ -9,9 +10,15 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import { Query } from './module'
+import {
+  Query,
+  applySlippage,
+  applySlippageInBips,
+  modifyDeadline,
+} from './module'
 
 class SynapseSDK {
+  public allRouterSets: RouterSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public providers: { [chainId: number]: Provider }
@@ -41,11 +48,13 @@ class SynapseSDK {
     // Initialize SynapseRouterSet and SynapseCCTPRouterSet
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
+    this.allRouterSets = [this.synapseRouterSet, this.synapseCCTPRouterSet]
   }
 
   // Define Bridge operations
   public bridge = operations.bridge
   public bridgeQuote = operations.bridgeQuote
+  public allBridgeQuotes = operations.allBridgeQuotes
   public getBridgeModuleName = operations.getBridgeModuleName
   public getEstimatedTime = operations.getEstimatedTime
   public getSynapseTxId = operations.getSynapseTxId
@@ -65,6 +74,11 @@ class SynapseSDK {
   // Define Swap operations
   public swap = operations.swap
   public swapQuote = operations.swapQuote
+
+  // Define Query operations
+  public applySlippage = applySlippage
+  public applySlippageInBips = applySlippageInBips
+  public modifyDeadline = modifyDeadline
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }
