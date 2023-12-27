@@ -5,7 +5,7 @@ import { BigintIsh } from '../constants'
 import { Query, SwapQuote } from '../module'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
-import { getOriginDeadline } from '../utils/deadlines'
+import { TEN_MINUTES, applyOptionalDeadline } from '../utils/deadlines'
 
 /**
  * Performs a swap through a Synapse Router.
@@ -61,6 +61,6 @@ export async function swapQuote(
   if (query.minAmountOut.isZero()) {
     throw Error('No queries found for this route')
   }
-  query.deadline = getOriginDeadline(deadline)
+  query.deadline = applyOptionalDeadline(deadline, TEN_MINUTES)
   return { routerAddress, maxAmountOut, query }
 }

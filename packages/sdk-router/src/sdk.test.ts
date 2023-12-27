@@ -1411,20 +1411,20 @@ describe('SynapseSDK', () => {
       [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
       [arbProvider, ethProvider]
     )
-    describe('getRouterSet', () => {
+    describe('getModuleSet', () => {
       it('Returns correct set for SynapseBridge', () => {
-        const routerSet = operations.getRouterSet.call(synapse, 'SynapseBridge')
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseBridge')
         expect(routerSet).toEqual(synapse.synapseRouterSet)
       })
 
       it('Returns correct set for SynapseCCTP', () => {
-        const routerSet = operations.getRouterSet.call(synapse, 'SynapseCCTP')
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseCCTP')
         expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
       })
 
       it('Throws when bridge module name is invalid', () => {
         expect(() =>
-          operations.getRouterSet.call(synapse, 'SynapseSynapse')
+          operations.getModuleSet.call(synapse, 'SynapseSynapse')
         ).toThrow('Unknown bridge module')
       })
     })
