@@ -207,13 +207,13 @@ export function getBridgeModuleName(
   this: SynapseSDK,
   eventName: string
 ): string {
-  if (this.synapseRouterSet.allEvents.includes(eventName)) {
-    return this.synapseRouterSet.bridgeModuleName
+  const moduleSet = this.allModuleSets.find((set) =>
+    set.allEvents.includes(eventName)
+  )
+  if (!moduleSet) {
+    throw new Error('Unknown event')
   }
-  if (this.synapseCCTPRouterSet.allEvents.includes(eventName)) {
-    return this.synapseCCTPRouterSet.bridgeModuleName
-  }
-  throw new Error('Unknown event')
+  return moduleSet.bridgeModuleName
 }
 
 /**
@@ -261,11 +261,11 @@ export function getModuleSet(
   this: SynapseSDK,
   bridgeModuleName: string
 ): SynapseModuleSet {
-  if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
-    return this.synapseRouterSet
+  const moduleSet = this.allModuleSets.find(
+    (set) => set.bridgeModuleName === bridgeModuleName
+  )
+  if (!moduleSet) {
+    throw new Error('Unknown bridge module')
   }
-  if (this.synapseCCTPRouterSet.bridgeModuleName === bridgeModuleName) {
-    return this.synapseCCTPRouterSet
-  }
-  throw new Error('Unknown bridge module')
+  return moduleSet
 }
