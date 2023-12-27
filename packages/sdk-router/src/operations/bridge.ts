@@ -4,8 +4,7 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, Query } from '../module'
-import { RouterSet } from '../router'
+import { BridgeQuote, SynapseModuleSet, Query } from '../module'
 
 /**
  * Executes a bridge operation between two different chains. Depending on the origin router address, the operation
@@ -135,8 +134,8 @@ export async function allBridgeQuotes(
   tokenOut = handleNativeToken(tokenOut)
   tokenIn = handleNativeToken(tokenIn)
   const allQuotes: BridgeQuote[][] = await Promise.all(
-    this.allRouterSets.map(async (routerSet) => {
-      const routes = await routerSet.getBridgeRoutes(
+    this.allModuleSets.map(async (moduleSet) => {
+      const routes = await moduleSet.getBridgeRoutes(
         originChainId,
         destChainId,
         tokenIn,
@@ -147,7 +146,7 @@ export async function allBridgeQuotes(
       return Promise.all(
         routes
           .filter((route) => route.destQuery.minAmountOut.gt(0))
-          .map((route) => routerSet.finalizeBridgeRoute(route, deadline))
+          .map((route) => moduleSet.finalizeBridgeRoute(route, deadline))
       )
     })
   )
@@ -173,7 +172,7 @@ export async function getSynapseTxId(
   bridgeModuleName: string,
   txHash: string
 ): Promise<string> {
-  return getRouterSet
+  return getModuleSet
     .call(this, bridgeModuleName)
     .getSynapseTxId(originChainId, txHash)
 }
@@ -192,7 +191,7 @@ export async function getBridgeTxStatus(
   bridgeModuleName: string,
   synapseTxId: string
 ): Promise<boolean> {
-  return getRouterSet
+  return getModuleSet
     .call(this, bridgeModuleName)
     .getBridgeTxStatus(destChainId, synapseTxId)
 }
@@ -232,7 +231,7 @@ export function getEstimatedTime(
   originChainId: number,
   bridgeModuleName: string
 ): number {
-  return getRouterSet
+  return getModuleSet
     .call(this, bridgeModuleName)
     .getEstimatedTime(originChainId)
 }
@@ -252,16 +251,16 @@ export async function getBridgeGas(
 }
 
 /**
- * Extracts the RouterSet from the SynapseSDK based on the given bridge module name.
+ * Extracts the SynapseModuleSet from the SynapseSDK based on the given bridge module name.
  *
  * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
- * @returns The corresponding RouterSet.
+ * @returns The corresponding SynapseModuleSet.
  * @throws Will throw an error if the bridge module is unknown.
  */
-export function getRouterSet(
+export function getModuleSet(
   this: SynapseSDK,
   bridgeModuleName: string
-): RouterSet {
+): SynapseModuleSet {
   if (this.synapseRouterSet.bridgeModuleName === bridgeModuleName) {
     return this.synapseRouterSet
   }
