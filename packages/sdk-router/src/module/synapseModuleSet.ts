@@ -1,8 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute } from './types'
+import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
+import { applyOptionalDeadline } from '../utils/deadlines'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -107,15 +109,61 @@ export abstract class SynapseModuleSet {
   ): Promise<BridgeRoute[]>
 
   /**
+   * Retrieves the fee data for a given bridge route.
+   *
+   * @param bridgeRoute - The bridge route to get fee data for.
+   * @returns A promise that resolves to the fee data.
+   */
+  abstract getFeeData(bridgeRoute: BridgeRoute): Promise<{
+    feeAmount: BigNumber
+    feeConfig: FeeConfig
+  }>
+
+  /**
+   * Returns the default deadline periods for this bridge module.
+   *
+   * @returns The default deadline periods.
+   */
+  abstract getDefaultPeriods(): {
+    originPeriod: number
+    destPeriod: number
+  }
+
+  /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.
    *
    * @param destChainId - The ID of the destination chain.
    * @param bridgeRoute - Bridge route to finalize.
-   * @param deadline - The deadline to use on the origin chain (default 10 mins).
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
    * @returns The finalized quote with fee data and deadlines.
    */
-  abstract finalizeBridgeRoute(
+  async finalizeBridgeRoute(
     bridgeRoute: BridgeRoute,
-    deadline?: BigNumber
-  ): Promise<BridgeQuote>
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
+  ): Promise<BridgeQuote> {
+    // Check that route is supported on both chains
+    const originModule = this.getExistingModule(bridgeRoute.originChainId)
+    this.getExistingModule(bridgeRoute.destChainId)
+    invariant(
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      'Invalid bridge module name'
+    )
+    const { originQuery, destQuery } = bridgeRoute
+    const { originPeriod, destPeriod } = this.getDefaultPeriods()
+    originQuery.deadline = applyOptionalDeadline(originDeadline, originPeriod)
+    destQuery.deadline = applyOptionalDeadline(destDeadline, destPeriod)
+    const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
+    return {
+      feeAmount,
+      feeConfig,
+      routerAddress: originModule.address,
+      maxAmountOut: destQuery.minAmountOut,
+      originQuery,
+      destQuery,
+      estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
+      bridgeModuleName: bridgeRoute.bridgeModuleName,
+    }
+  }
 }
