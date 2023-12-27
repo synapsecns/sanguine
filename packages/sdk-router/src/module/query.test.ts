@@ -183,8 +183,11 @@ describe('#query', () => {
       })
 
       it('rounds down', () => {
-        query.minAmountOut = query.minAmountOut.add(1)
-        const newQuery = applySlippage(query, 50, 10000)
+        const queryPlusOne = {
+          ...query,
+          minAmountOut: query.minAmountOut.add(1),
+        }
+        const newQuery = applySlippage(queryPlusOne, 50, 10000)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -262,8 +265,11 @@ describe('#query', () => {
       })
 
       it('rounds down', () => {
-        query.minAmountOut = query.minAmountOut.add(1)
-        const newQuery = applySlippage(query, 50, 10000)
+        const queryPlusOne = {
+          ...query,
+          minAmountOut: query.minAmountOut.add(1),
+        }
+        const newQuery = applySlippage(queryPlusOne, 50, 10000)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -342,9 +348,12 @@ describe('#query', () => {
     })
 
     it('rounds down', () => {
-      query.minAmountOut = query.minAmountOut.add(1)
-      const newQuery = applySlippage(query, 50, 10000)
-      const newQueryInBips = applySlippageInBips(query, 50)
+      const queryPlusOne = {
+        ...query,
+        minAmountOut: query.minAmountOut.add(1),
+      }
+      const newQuery = applySlippage(queryPlusOne, 50, 10000)
+      const newQueryInBips = applySlippageInBips(queryPlusOne, 50)
       expect(newQuery).toEqual(newQueryInBips)
     })
 
