@@ -96,12 +96,6 @@ const createQuoteTests = (
         parseFixed('10', originDecimals),
         parseFixed('9.0009', destDecimals)
       )
-      // Should round down 9999 * 1.0001 to 9999
-      createCorrectAmountTest(
-        quote,
-        parseFixed('11', originDecimals).add(9999),
-        parseFixed('10.001', destDecimals).add(9999)
-      )
       createZeroAmountTests(quote)
     })
 
@@ -119,14 +113,28 @@ const createQuoteTests = (
         parseFixed('10', originDecimals),
         parseFixed('8.9991', destDecimals)
       )
-      // Should round down 1 * 0.9999 to 0
-      createCorrectAmountTest(
-        quote,
-        parseFixed('11', originDecimals).add(1),
-        parseFixed('9.999', destDecimals)
-      )
       createZeroAmountTests(quote)
     })
+  })
+}
+
+const createRoundDownTest = (
+  quoteTemplate: FastBridgeQuote,
+  maxOriginAmount: BigNumber,
+  destAmount: BigNumber,
+  fixedFee: BigNumber,
+  amountIn: BigNumber,
+  expected: BigNumber
+) => {
+  describe(`Rounds down with price ${maxOriginAmount.toString()} -> ${destAmount.toString()} and fixed fee ${fixedFee.toString()}`, () => {
+    const quote: FastBridgeQuote = {
+      ...quoteTemplate,
+      maxOriginAmount,
+      destAmount,
+      fixedFee,
+    }
+
+    createCorrectAmountTest(quote, amountIn, expected)
   })
 }
 
@@ -172,12 +180,39 @@ describe('quote', () => {
   describe('applyQuote', () => {
     // Equal decimals
     createQuoteTests(quote, 18, 18)
+    createRoundDownTest(
+      quote,
+      parseFixed('1234', 18),
+      parseFixed('2345', 18),
+      parseFixed('1', 18),
+      parseFixed('2', 18),
+      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
+      BigNumber.from('1900324149108589951')
+    )
 
-    // Bigger decimals
+    // // Bigger decimals
     createQuoteTests(quote, 6, 18)
+    createRoundDownTest(
+      quote,
+      parseFixed('1234', 6),
+      parseFixed('2345', 18),
+      parseFixed('1', 6),
+      parseFixed('2', 6),
+      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
+      BigNumber.from('1900324149108589951')
+    )
 
     // Smaller decimals
     createQuoteTests(quote, 18, 6)
+    createRoundDownTest(
+      quote,
+      parseFixed('1234', 18),
+      parseFixed('2345', 6),
+      parseFixed('1', 18),
+      parseFixed('2', 18),
+      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
+      BigNumber.from('1900324')
+    )
 
     it('Returns zero when max origin amount is zero', () => {
       const zeroQuote: FastBridgeQuote = {
