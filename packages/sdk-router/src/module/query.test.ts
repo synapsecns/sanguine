@@ -193,6 +193,17 @@ describe('#query', () => {
           rawParams: '5',
         })
       })
+
+      it('does not modify the original query', () => {
+        applySlippage(query, 50, 10000)
+        expect(query).toEqual({
+          swapAdapter: '1',
+          tokenOut: '2',
+          minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
+          deadline: BigNumber.from(4),
+          rawParams: '5',
+        })
+      })
     })
 
     describe('CCTPRouterQuery', () => {
@@ -261,6 +272,17 @@ describe('#query', () => {
           rawParams: '5',
         })
       })
+
+      it('does not modify the original query', () => {
+        applySlippage(query, 50, 10000)
+        expect(query).toEqual({
+          routerAdapter: '1',
+          tokenOut: '2',
+          minAmountOut: BigNumber.from(10).pow(6).mul(1_000_000),
+          deadline: BigNumber.from(4),
+          rawParams: '5',
+        })
+      })
     })
 
     describe('errors', () => {
@@ -324,6 +346,17 @@ describe('#query', () => {
       const newQuery = applySlippage(query, 50, 10000)
       const newQueryInBips = applySlippageInBips(query, 50)
       expect(newQuery).toEqual(newQueryInBips)
+    })
+
+    it('does not modify the original query', () => {
+      applySlippageInBips(query, 50)
+      expect(query).toEqual({
+        swapAdapter: '1',
+        tokenOut: '2',
+        minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
+        deadline: BigNumber.from(4),
+        rawParams: '5',
+      })
     })
 
     it('throws if basis points are negative', () => {
