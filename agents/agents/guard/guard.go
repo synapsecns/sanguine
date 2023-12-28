@@ -258,7 +258,11 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleLog", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.Int(metrics.BlockNumber, int(log.BlockNumber)),
+	))
 	switch {
 	case isSnapshotAcceptedEvent(g.inboxParser, log):
 		return g.handleSnapshotAccepted(ctx, log)

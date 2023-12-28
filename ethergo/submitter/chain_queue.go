@@ -78,6 +78,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	// we're going to handle this by updating txes in place
 	for i := range txes {
 		tx := txes[i]
+		span.AddEvent("processing tx", trace.WithAttributes(
+			append(txToAttributes(tx.Transaction), attribute.Int("currentNonce", int(currentNonce)))...,
+		))
 
 		if tx.Nonce() < currentNonce {
 			cq.txsHaveConfirmed = true
