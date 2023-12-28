@@ -8,10 +8,9 @@ export const calculateDeadline = (seconds: number) => {
   return BigNumber.from(Math.floor(Date.now() / 1000) + seconds)
 }
 
-export const getOriginDeadline = (deadline?: BigNumber) => {
-  return deadline ?? calculateDeadline(TEN_MINUTES)
-}
-
-export const getDestinationDeadline = (deadline?: BigNumber) => {
-  return deadline ?? calculateDeadline(ONE_WEEK)
+export const applyOptionalDeadline = (
+  deadline: BigNumber | undefined,
+  defaultPeriod: number
+): BigNumber => {
+  return deadline ?? calculateDeadline(defaultPeriod)
 }

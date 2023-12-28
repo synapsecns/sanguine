@@ -131,7 +131,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 			return fmt.Errorf("failed to connect")
 		}
 
-		// nolint: staticcheck
 		res, err := rpcClient.ChainID(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get chain id: %w", err)
@@ -263,7 +262,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 var logger = log.Logger("anvil-docker")
 
 // storeWallets stores preseeded wallets w/ balances.
-func (b *Backend) storeWallets(args *OptionBuilder) error {
+func (f *Backend) storeWallets(args *OptionBuilder) error {
 	derivationPath := args.GetDerivationPath()
 	derivIter := accounts.DefaultIterator(derivationPath)
 	maxAccounts := args.GetAccounts()
@@ -275,37 +274,37 @@ func (b *Backend) storeWallets(args *OptionBuilder) error {
 			return fmt.Errorf("could not get seed phrase: %w", err)
 		}
 
-		b.Store(base.WalletToKey(b.Backend.T(), wall))
+		f.Store(base.WalletToKey(f.Backend.T(), wall))
 	}
 	return nil
 }
 
 // ChainConfig gets the chain config.
-func (b *Backend) ChainConfig() *params.ChainConfig {
-	return b.chainConfig
+func (f *Backend) ChainConfig() *params.ChainConfig {
+	return f.chainConfig
 }
 
 // Signer gets the signer for the chain.
-func (b *Backend) Signer() types.Signer {
-	latestBlock, err := b.BlockNumber(b.Context())
-	require.Nil(b.T(), err)
+func (f *Backend) Signer() types.Signer {
+	latestBlock, err := f.BlockNumber(f.Context())
+	require.Nil(f.T(), err)
 
-	return types.MakeSigner(b.ChainConfig(), new(big.Int).SetUint64(latestBlock))
+	return types.MakeSigner(f.ChainConfig(), new(big.Int).SetUint64(latestBlock))
 }
 
 // FundAccount funds an account with the given amount.
-func (b *Backend) FundAccount(ctx context.Context, address common.Address, amount big.Int) {
-	ctx, cancel := onecontext.Merge(ctx, b.Context())
+func (f *Backend) FundAccount(ctx context.Context, address common.Address, amount big.Int) {
+	ctx, cancel := onecontext.Merge(ctx, f.Context())
 	defer cancel()
 
-	anvilClient, err := Dial(ctx, b.RPCAddress())
-	require.Nilf(b.T(), err, "failed to dial anvil client on chain %d: %v", b.GetChainID(), err)
+	anvilClient, err := Dial(ctx, f.RPCAddress())
+	require.Nilf(f.T(), err, "failed to dial anvil client on chain %d: %v", f.GetChainID(), err)
 
-	unlocker := b.fundingMux.Lock(address)
+	unlocker := f.fundingMux.Lock(address)
 	defer unlocker.Unlock()
 
-	prevBalance, err := b.Backend.BalanceAt(ctx, address, nil)
-	require.Nil(b.T(), err)
+	prevBalance, err := f.Backend.BalanceAt(ctx, address, nil)
+	require.Nil(f.T(), err)
 
 	newBal := new(big.Int).Add(prevBalance, &amount)
 
@@ -320,13 +319,13 @@ func (b *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 
 	// TODO: this may cause issues when newBal overflows uint64
 	err = anvilClient.SetBalance(ctx, address, newBal.Uint64())
-	require.Nil(b.T(), err)
+	require.Nil(f.T(), err)
 }
 
 // WaitForConfirmation checks confirmation if the transaction is signed.
 // nolint: cyclop
-func (b *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
-	require.NotNil(b.T(), tx, "tx is nil")
+func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
+	require.NotNil(f.T(), tx, "tx is nil")
 	v, r, s := tx.RawSignatureValues()
 	isUnsigned := isZero(v) && isZero(r) && isZero(s)
 	if isUnsigned {
@@ -336,7 +335,7 @@ func (b *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction
 		return
 	}
 
-	b.Backend.WaitForConfirmation(ctx, tx)
+	f.Backend.WaitForConfirmation(ctx, tx)
 }
 
 func isZero(val *big.Int) bool {
@@ -344,40 +343,39 @@ func isZero(val *big.Int) bool {
 }
 
 // GetFundedAccount gets a funded account.
-func (b *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
-	key := b.MockAccount()
+func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
+	key := f.MockAccount()
 
-	b.Store(key)
-
-	b.FundAccount(ctx, key.Address, *requestBalance)
+	f.Store(key)
+	f.FundAccount(ctx, key.Address, *requestBalance)
 
 	return key
 }
 
 // GetTxContext gets the tx context for the given address.
 // TODO: dedupe w/ geth.
-func (b *Backend) GetTxContext(ctx context.Context, address *common.Address) (res backends.AuthType) {
-	ctx, cancel := onecontext.Merge(ctx, b.Context())
+func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (res backends.AuthType) {
+	ctx, cancel := onecontext.Merge(ctx, f.Context())
 	defer cancel()
 
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = b.GetAccount(*address)
+		acct = f.GetAccount(*address)
 		if acct == nil {
-			b.T().Errorf("could not get account %s", address.String())
+			f.T().Errorf("could not get account %s", address.String())
 			return res
 		}
 	} else {
-		acct = b.GetFundedAccount(ctx, new(big.Int).SetUint64(math.MaxUint64))
-		b.Store(acct)
+		acct = f.GetFundedAccount(ctx, new(big.Int).SetUint64(math.MaxUint64))
+		f.Store(acct)
 	}
 
-	auth, err := b.NewKeyedTransactorFromKey(acct.PrivateKey)
-	require.Nilf(b.T(), err, "could not get transactor for chain %d: %v", b.GetChainID(), err)
+	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
+	require.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
-	auth.GasPrice, err = b.SuggestGasPrice(ctx)
-	require.Nilf(b.T(), err, "could not get gas price for chain %d: %v", b.GetChainID(), err)
+	auth.GasPrice, err = f.SuggestGasPrice(ctx)
+	require.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasLimit = gasLimit
 
@@ -394,21 +392,21 @@ func (b *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 // in the meantime, this may cause race conditions.
 //
 // We also print a warning message to the console as an added precaution.
-func (b *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error {
-	b.impersonationMux.Lock()
-	defer b.impersonationMux.Unlock()
+func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error {
+	f.impersonationMux.Lock()
+	defer f.impersonationMux.Unlock()
 
-	b.warnImpersonation()
+	f.warnImpersonation()
 
-	anvilClient, err := Dial(ctx, b.RPCAddress())
-	require.Nilf(b.T(), err, "could not dial anvil client rpc at %s for chain %d: %v", b.RPCAddress(), b.GetChainID(), err)
+	anvilClient, err := Dial(ctx, f.RPCAddress())
+	require.Nilf(f.T(), err, "could not dial anvil client rpc at %s for chain %d: %v", f.RPCAddress(), f.GetChainID(), err)
 
 	err = anvilClient.ImpersonateAccount(ctx, address)
-	require.Nilf(b.T(), err, "could not impersonate account %s for chain %d: %v", address.String(), b.GetChainID(), err)
+	require.Nilf(f.T(), err, "could not impersonate account %s for chain %d: %v", address.String(), f.GetChainID(), err)
 
 	defer func() {
 		err = anvilClient.StopImpersonatingAccount(ctx, address)
-		require.Nilf(b.T(), err, "could not stop impersonating account %s for chain %d: %v", address.String(), b.GetChainID(), err)
+		require.Nilf(f.T(), err, "could not stop impersonating account %s for chain %d: %v", address.String(), f.GetChainID(), err)
 	}()
 
 	tx := transact(&bind.TransactOpts{
@@ -421,14 +419,14 @@ func (b *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 
 	// TODO: test both legacy and dynamic tx types
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
-	require.Nilf(b.T(), err, "could not send unsigned transaction for chain %d: %v from %s", b.GetChainID(), err, address.String())
+	require.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 
 	return nil
 }
 
-func (b *Backend) warnImpersonation() {
+func (f *Backend) warnImpersonation() {
 	warnImpersonationOnce.Do(func() {
-		b.T().Logf(`
+		f.T().Logf(`
 				Using Account Impersonation.
 				WARNING: This cannot be called concurrently with other impersonation calls.
 				Please make sure your callers are concurrency safe against account impersonation.

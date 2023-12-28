@@ -10,6 +10,8 @@ export const getTestProviderUrl = (chainId: number): string => {
   return `${sdkRpcUrl}${chainId}`
 }
 
+export const NATIVE_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+
 // Token addresses on Ethereum mainnet
 export const ETH_DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 export const ETH_NUSD = '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F'
