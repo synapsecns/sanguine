@@ -1,5 +1,4 @@
 import { Bridge, USDC, USDT, DAI, ETH } from '@abtestingalpha/widget'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, SyntheticEvent, useState } from 'react'
 import Header from './Header'
@@ -9,35 +8,6 @@ import { Install, Developer, Support } from './icons'
 const tokens = [USDC, USDT, DAI, ETH]
 
 function App() {
-  const ethersProvider = new StaticJsonRpcProvider(
-    'https://eth.llamarpc.com',
-    1
-  )
-  const aribtrumProvider = new StaticJsonRpcProvider(
-    'https://arbitrum.llamarpc.com',
-    42161
-  )
-  const polygonProvider = new StaticJsonRpcProvider(
-    'https://polygon.llamarpc.com',
-    137
-  )
-
-  const optimismProvider = new StaticJsonRpcProvider(
-    'https://mainnet.optimism.io',
-    10
-  )
-
-  // const providers = [ethersProvider, aribtrumProvider]
-  // const chainIds = [1, 42161]
-
-  const providers = [
-    aribtrumProvider,
-    ethersProvider,
-    polygonProvider,
-    optimismProvider,
-  ]
-  const chainIds = [42161, 1, 137, 10]
-
   const [customTheme, setCustomTheme] = useState({})
   const [container, setContainer] = useState(true)
 
@@ -110,23 +80,30 @@ function App() {
           <div id="example-container">
             <div
               id="bridge-container"
-              style={{ display: bridgeContainerDisplayProperty, }}
+              style={{ display: bridgeContainerDisplayProperty }}
             >
               <Bridge
-                chainIds={chainIds}
                 web3Provider={web3Provider}
-                networkProviders={providers}
                 tokens={tokens}
                 customTheme={customTheme}
                 container={container}
                 toChainId={137}
               />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between'}}>
-              <div style={{ display: 'flex', gap: '1rem'}}>
-                <input id="color-picker" type="color" onInput={createCustomTheme} />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <input
+                  id="color-picker"
+                  type="color"
+                  onInput={createCustomTheme}
+                />
                 <div className="flex items-center gap-1">
-                  <label>Container</label> <input type="checkbox" checked={container} onChange={toggleContainer}/>
+                  <label>Container</label>{' '}
+                  <input
+                    type="checkbox"
+                    checked={container}
+                    onChange={toggleContainer}
+                  />
                 </div>
               </div>
               <span className="desktop-only">Drag to resize</span>
@@ -134,11 +111,17 @@ function App() {
           </div>
         </header>
         <article>
-          <h2><Install />Install</h2>
+          <h2>
+            <Install />
+            Install
+          </h2>
           <p>Install the Synapse Widget in your Next.js or React project</p>
           <pre style={{ fontSize: '100%' }}>npm synapse-widget</pre>
 
-          <h2><Developer />Setup</h2>
+          <h2>
+            <Developer />
+            Setup
+          </h2>
           <h3>Supported tokens</h3>
           <p>
             While the Synapse Widget supports{' '}
@@ -176,7 +159,8 @@ tokenList = {
           <h3>Appearance</h3>
           <h4>Dark mode</h4>
           <p>
-            To override the default light theme, set <code>bgColor</code> to <code>'dark'</code>.
+            To override the default light theme, set <code>bgColor</code> to{' '}
+            <code>'dark'</code>.
           </p>
           <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
           <h4>Auto-palette</h4>
@@ -220,7 +204,8 @@ tokenList = {
           </pre>
           <h4>Object Overrides</h4>
           <p>
-            Select and button elements can be specifically overriddden to introduce brand colors or custom styles.
+            Select and button elements can be specifically overriddden to
+            introduce brand colors or custom styles.
           </p>
           <pre>
             {`customTheme = {
@@ -241,7 +226,10 @@ tokenList = {
             <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
             <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
           </dl> */}
-          <h2><Support />Support</h2>
+          <h2>
+            <Support />
+            Support
+          </h2>
           <p>
             For help and feedback, reach out to our Support team in the{' '}
             <a href="#" target="_blank" rel="noreferrer">

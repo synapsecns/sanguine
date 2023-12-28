@@ -16,9 +16,7 @@ import { CHAINS, CHAINS_ARRAY } from './constants/chains'
 // TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
 
 export const Bridge = ({
-  chainIds,
   web3Provider,
-  networkProviders,
   theme,
   customTheme,
   container,
@@ -31,8 +29,6 @@ export const Bridge = ({
         <Provider store={store}>
           <TransactionsUpdater />
           <Widget
-            chainIds={chainIds}
-            networkProviders={networkProviders}
             theme={theme}
             customTheme={customTheme}
             container={container}

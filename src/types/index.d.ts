@@ -25,15 +25,8 @@ export interface CustomThemeVariables {
 }
 
 export interface WidgetProps {
-  /** Supported ChainIds to Bridge defined by Consumer */
-  chainIds: number[]
-
   /** Consumer Web3 Provider */
   web3Provider?: JsonRpcApiProvider | BrowserProvider
-
-  /** Respective Network Providers */
-  // TO DO: Pass proper ethers type
-  networkProviders?: any[]
 
   /** Selected Day/Night Theme */
   theme?: 'light' | 'dark'

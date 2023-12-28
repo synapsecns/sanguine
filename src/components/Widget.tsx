@@ -65,8 +65,6 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSynapseContext } from '@/providers/SynapseProvider'
 
 export const Widget = ({
-  chainIds,
-  networkProviders,
   theme,
   customTheme,
   container,
