@@ -79,18 +79,18 @@ export class FastBridgeSet extends SynapseModuleSet {
       tokenOut
     )
     // Get queries for swaps on the origin chain into the "RFQ-supported token"
-    const originQueries = await this.getOriginQueries(
+    const filteredQuotes = await this.filterOriginQuotes(
       originChainId,
       tokenIn,
       amountIn,
-      allQuotes.map((quote) => quote.ticker.originToken.token)
+      allQuotes
     )
-    return allQuotes
-      .map((quote, index) => ({
+    return filteredQuotes
+      .map(({ quote, originQuery }) => ({
         quote,
-        originQuery: originQueries[index],
+        originQuery,
         // Apply quote to the proceeds of the origin swap
-        destAmountOut: applyQuote(quote, originQueries[index].minAmountOut),
+        destAmountOut: applyQuote(quote, originQuery.minAmountOut),
       }))
       .filter(({ destAmountOut }) => destAmountOut.gt(0))
       .map(({ quote, originQuery, destAmountOut }) => ({
@@ -134,21 +134,26 @@ export class FastBridgeSet extends SynapseModuleSet {
   }
 
   /**
-   * Returns the origin query for every "RFQ token" on the origin chain,
-   * that contains the information for tokenIn -> RFQ token swaps.
+   * Filters the list of quotes to only include those that can be used for given amount of input token.
+   * For every filtered quote, the origin query is returned with the information for tokenIn -> RFQ token swaps.
    */
-  private async getOriginQueries(
+  private async filterOriginQuotes(
     originChainId: number,
     tokenIn: string,
     amountIn: BigintIsh,
-    rfqTokens: string[]
-  ): Promise<Query[]> {
-    // Check if the RFQ token matches tokenIn
+    allQuotes: FastBridgeQuote[]
+  ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
     // TODO: change this to "find best path" once swaps on the origin chain are supported
     invariant(originChainId, 'Origin chain ID is required')
-    return rfqTokens
-      .filter((rfqToken) => rfqToken.toLowerCase() === tokenIn.toLowerCase())
-      .map((rfqToken) => createNoSwapQuery(rfqToken, BigNumber.from(amountIn)))
+    return allQuotes
+      .filter(
+        (quote) =>
+          quote.ticker.originToken.token.toLowerCase() === tokenIn.toLowerCase()
+      )
+      .map((quote) => ({
+        quote,
+        originQuery: createNoSwapQuery(tokenIn, BigNumber.from(amountIn)),
+      }))
   }
 
   /**
