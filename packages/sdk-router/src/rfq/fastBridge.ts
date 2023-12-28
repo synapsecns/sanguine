@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
 import {
@@ -54,8 +55,14 @@ export class FastBridge implements SynapseModule {
     destQuery: Query
   ): Promise<PopulatedTransaction> {
     // TODO: remove this once swaps on origin are supported
-    invariant(amount === originQuery.minAmountOut, 'AMOUNT_MISMATCH')
-    invariant(token === originQuery.tokenOut, 'TOKEN_MISMATCH')
+    invariant(
+      BigNumber.from(amount).eq(originQuery.minAmountOut),
+      'AMOUNT_MISMATCH'
+    )
+    invariant(
+      token.toLowerCase() === originQuery.tokenOut.toLowerCase(),
+      'TOKEN_MISMATCH'
+    )
     // TODO: encode sendChainGas into destQuery.rawParams
     const bridgeParams: BridgeParams = {
       dstChainId: destChainId,
