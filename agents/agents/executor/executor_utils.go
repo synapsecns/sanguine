@@ -140,6 +140,12 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	leaf, err := message.ToLeaf()
+	if err != nil {
+		return fmt.Errorf("could not convert message to leaf: %w", err)
+	}
+	span.SetAttributes(attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()))
+
 	// Sanity check to make sure that the message has come from Origin.
 	if log.Address.String() != e.chainConfigs[message.OriginDomain()].OriginAddress {
 		span.AddEvent("message is not from origin", trace.WithAttributes(
@@ -151,11 +157,6 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 	merkleIndex := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	span.SetAttributes(attribute.Int("merkle_index", int(merkleIndex)))
-
-	leaf, err := message.ToLeaf()
-	if err != nil {
-		return fmt.Errorf("could not convert message to leaf: %w", err)
-	}
 
 	// Make sure the nonce of the message is being inserted at the right index.
 	span.AddEvent("validating message nonce", trace.WithAttributes(
