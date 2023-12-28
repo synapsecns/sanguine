@@ -20,6 +20,7 @@ import { FastBridge } from './fastBridge'
 import { marshallTicker } from './ticker'
 import { FastBridgeQuote, applyQuote } from './quote'
 import { getAllQuotes } from './api'
+import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 
 export class FastBridgeSet extends SynapseModuleSet {
   public readonly bridgeModuleName = 'SynapseRFQ'
@@ -110,13 +111,19 @@ export class FastBridgeSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getFeeData
    */
-  async getFeeData(bridgeRoute: BridgeRoute): Promise<{
+  async getFeeData(): Promise<{
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // TODO: implement
-    console.log(bridgeRoute)
-    return null as any
+    // TODO: figure out if we need to report anything here
+    return {
+      feeAmount: BigNumber.from(0),
+      feeConfig: {
+        bridgeFee: 0,
+        minFee: BigNumber.from(0),
+        maxFee: BigNumber.from(0),
+      },
+    }
   }
 
   /**
@@ -126,10 +133,9 @@ export class FastBridgeSet extends SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   } {
-    // TODO: implement
     return {
-      originPeriod: 0,
-      destPeriod: 0,
+      originPeriod: TEN_MINUTES,
+      destPeriod: ONE_HOUR,
     }
   }
 
