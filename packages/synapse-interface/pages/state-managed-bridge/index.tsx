@@ -239,12 +239,13 @@ const StateManagedBridge = () => {
         )
       }
 
-      const originMinWithSlippage = subtractSlippage(
+      // TODO: do this properly (RFQ needs no slippage, others do)
+      const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
         originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
-      const destMinWithSlippage = subtractSlippage(
+      const destMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (destQuery?.minAmountOut ?? 0n) : subtractSlippage(
         destQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
