@@ -115,20 +115,20 @@ Use the above commands to recompile the packages.
 This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). To avoid issues when checking out different branches, you can use `git submodule update --init --recursive` after switching to a branch or `git checkout feat/branch-name --recurse-submodules` when switching branches.
 
 ## Contribution workflow
-<!-- TODO: this actually belongs to a contributing.md file, but answer honestly, how many people actually read those? -->
-<!-- Additionally, the two-branch approach is somewhat temporary, so having this section in the readme is probably fine. -->
+<!-- TODO: this actually belongs in a contributing.md file, but let's be honest, how many people actually read those? -->
+<!-- Additionally, the two-branch approach is somewhat temporary, so having this section in the README is probably fine. -->
 
 We use a two-branch strategy for development:
 
-- `master`: This is the main development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
-  - See [Implementing a New Feature](#scenario-1-implementing-a-new-feature) for more details.
-- `fe-release`: This branch is used for production front-end releases and is the branch that is deployed to production. The production front-end always uses the latest commit from this branch.
-  - See [Releasing a Front-end Update](#scenario-2-releasing-a-front-end-update) for more details.
+- `master`: This is the primary development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
+  - Refer to [Implementing a New Feature](#scenario-1-implementing-a-new-feature) for more details.
+- `fe-release`: This branch is used for production front-end releases and is the one that gets deployed to production. The production front-end build always uses the latest commit from this branch.
+  - Refer to [Releasing a Front-end Update](#scenario-2-releasing-a-front-end-update) for more details.
 
 > `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
-> See [Hotfixing the Production Front-end](#scenario-3-hotfixing-the-production-front-end) for more details.
+> Refer to [Hotfixing the Production Front-end](#scenario-3-hotfixing-the-production-front-end) for more details.
 
-We use following merge strategies:
+We use the following merge strategies:
 
 - **Squash merge**: All pull requests are squash merged into `master`. This keeps the commit history clean and makes it easier to revert changes if necessary.
   > On a very few occasions, we may use a regular merge when `master` needs to be updated with a few commits from `fe-release`. In this case, we will use a regular merge so that there are no merge conflicts when later merging into `fe-release`.
@@ -163,7 +163,7 @@ git checkout pkg/feature-name
 git merge master
 ```
 
-6. Alternatively, you can use rebase you branch on top of `master`. However, this will rewrite your commit history, which can be problematic if other contributors have already pulled your branch or started reviewing your code. The rule of thumb here is:
+6. Alternatively, you can rebase your branch on top of `master`. However, this will rewrite your commit history, which can be problematic if other contributors have already pulled your branch or started reviewing your code. The rule of thumb here is:
 
 - If your branch hasn't been pushed yet, **always** rebase.
 - If your branch has been pushed, but it is a draft that no one has reviewed yet, you **could** rebase.
@@ -178,7 +178,7 @@ git rebase -i master
 ```
 
 7. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. If any of the checks fail, you can fix the issues in your feature branch and push again. The CI checks will run again automatically.
-8. **Review and merge**: The PR will be reviewed. If any changes are requested, make them in your feature branch and the PR will automatically update. Once the PR is approved by at least one maintainer, it could be **squash merged** into `master` and your feature branch will be deleted.
+8. **Review and merge**: The PR will be reviewed. If any changes are requested, make them in your feature branch and the PR will automatically update. Once the PR is approved by at least one maintainer, it can be **squash merged** into `master` and your feature branch will be deleted.
 
 ### Scenario 2: Releasing a Front-end Update
 
@@ -208,7 +208,7 @@ git push -u origin release/date
 ```
 
 4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that master is passing all checks, your branch should pass all checks as well.
-5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it could be **regularly merged** into `fe-release` and your release branch will be deleted.
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it can be **regularly merged** into `fe-release` and your release branch will be deleted.
 
 ### Scenario 3: Hotfixing the Production Front-end
 
@@ -232,7 +232,7 @@ git push -u origin hotfix/date
 
 4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Depending on the severity of the hotfix, you might want to merge the PR as soon or before it passes all checks. However, **you should wait for the linting checks to pass**, as these are the fastest and easiest to fix.
 
-5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it could be **squash merged** into `fe-release` and your hotfix branch will be deleted.
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it can be **squash merged** into `fe-release` and your hotfix branch will be deleted.
 
 6. Take a deep breath and relax. You've just saved the day. 🦸‍♂️
 
@@ -253,7 +253,7 @@ git push -u origin catchup/date
 
 9. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that `fe-release` is passing all checks, your branch should pass all checks as well.
 
-10. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least one maintainer**, it could be **regularly merged** into `master` and your catchup branch will be deleted.
+10. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least one maintainer**, it can be **regularly merged** into `master` and your catchup branch will be deleted.
 
 # Building Agents Locally
 
