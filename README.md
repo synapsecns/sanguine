@@ -121,6 +121,7 @@ This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.co
 We use a two-branch strategy for development:
 
 - `master`: This is the main development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
+  - See [Implementing a New Feature](#scenario-1-implementing-a-new-feature) for more details.
 - `fe-release`: This branch is used for production front-end releases and is the branch that is deployed to production. The production front-end always uses the latest commit from this branch.
 
 > `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
@@ -131,6 +132,51 @@ We use following merge strategies:
   > On a very few occasions, we may use a regular merge when `master` needs to be updated with a few commits from `fe-release`. In this case, we will use a regular merge so that there are no merge conflicts when later merging into `fe-release`.
 - **Regular merge**: Latest changes from `master` are **regularly merged** into `fe-release`. This ensures that the production front-end always uses the latest changes from `master`, and prevents merge conflicts when merging into `fe-release`.
   > `master` branch should never be the **source branch** when merging into `fe-release`. This is because the source branch is always deleted after merging, and we don't want to delete `master`.
+
+### Scenario 1: Implementing a New Feature
+
+In this scenario you are implementing a new feature that doesn't automatically trigger a front-end release.
+
+1. **Create a new branch**: From the `master` branch, create a new branch for your feature. The branch name should be descriptive of the feature you're implementing.
+
+```bash
+git checkout master && git pull
+# pkg stands for the package you're working on
+git checkout -b pkg/feature-name
+```
+
+2. **Implement your feature**: Make your changes in this branch.
+3. **Commit your changes**: Regularly commit your changes with clear, concise commit messages.
+4. **Push your branch**: When you're ready to open a pull request, push your branch to the remote repository and open a pull request on GitHub. Add an overview of your changes and a link to the relevant issue (if applicable).
+
+```bash
+git push -u origin pkg/feature-name
+```
+
+5. **Sync with `master`**: If you need to use the latest changes from `master`, you can merge them into your branch. This is especially useful if you're working on a long-running feature branch (or if some tests are failing on your branch, which have been fixed on `master`).
+
+```bash
+git checkout master & git pull
+git checkout pkg/feature-name
+git merge master
+```
+
+6. Alternatively, you can use rebase you branch on top of `master`. However, this will rewrite your commit history, which can be problematic if other contributors have already pulled your branch or started reviewing your code. The rule of thumb here is:
+
+- If your branch hasn't been pushed yet, **always** rebase.
+- If your branch has been pushed, but it is a draft that no one has reviewed yet, you **could** rebase.
+- Otherwise, you **should** merge.
+
+```bash
+git checkout master & git pull
+git checkout pkg/feature-name
+# You might need to drop some of your commits here, if they are already in master
+# Edit the rebase-todo file to squash, drop, reorder, etc your commits
+git rebase -i master
+```
+
+7. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. If any of the checks fail, you can fix the issues in your feature branch and push again. The CI checks will run again automatically.
+8. **Review and merge**: The PR will be reviewed. If any changes are requested, make them in your feature branch and the PR will automatically update. Once the PR is approved by at least one maintainer, it could be **squash merged** into `master` and your feature branch will be deleted.
 
 # Building Agents Locally
 
