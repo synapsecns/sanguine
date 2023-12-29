@@ -14,7 +14,7 @@ import { SynapseModule, Query } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
 
 // Define type alias
-type BridgeParams = IFastBridge.BridgeParamsStruct
+export type BridgeParams = IFastBridge.BridgeParamsStruct
 
 export class FastBridge implements SynapseModule {
   static fastBridgeInterface = new Interface(fastBridgeAbi)
