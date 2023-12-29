@@ -12,6 +12,7 @@ import {
 import { BigintIsh } from '../constants'
 import { SynapseModule, Query } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -74,7 +75,14 @@ export class FastBridge implements SynapseModule {
       sendChainGas: false,
       deadline: destQuery.deadline,
     }
-    return this.fastBridgeContract.populateTransaction.bridge(bridgeParams)
+    const populatedTransaction =
+      await this.fastBridgeContract.populateTransaction.bridge(bridgeParams)
+    // Adjust the tx.value if the token is native
+    return adjustValueIfNative(
+      populatedTransaction,
+      token,
+      BigNumber.from(amount)
+    )
   }
 
   /**
