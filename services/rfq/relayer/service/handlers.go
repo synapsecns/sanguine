@@ -87,7 +87,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 // This is the second step in the bridge process. It is emitted when the relayer sees the request.
 // We check if we have enough inventory to process the request and mark it as committed pending.
-func (q *QuoteRequestHandler) handleSeen(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	if !q.Quoter.ShouldProcess(ctx, request) {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
 		if err != nil {
@@ -124,7 +124,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, request reldb.Quot
 // never relayed.
 // Reorgs are rare enough that its questionable wether this is ever worth building or if we can just
 // leave these in the queue.
-func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	earliestConfirmBlock := request.BlockNumber + q.Origin.Confirmations
 	if earliestConfirmBlock < q.Origin.LatestBlock() {
 		// can't complete yet, do nothing
@@ -151,7 +151,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, request r
 //
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
-func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	gasAmount := big.NewInt(0)
 
 	if request.Transaction.SendChainGas {
@@ -214,7 +214,7 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 // Step 6: ProvePosting
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
-func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	// relays been completed, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// MAJO MAJOR TODO should be dest tx hash
@@ -254,7 +254,7 @@ func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastB
 // Step 8: ClaimPending
 //
 // we'll wait until optimistic period is over to check if we can claim.
-func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	// we shouldnt' check the claim yet
 	if !q.shouldCheckClaim(request) {
 		return nil
@@ -291,7 +291,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, request rel
 // Error Handlers Only from this point belo
 //
 // handleNotEnoughInventory handles the not enough inventory status.
-func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	commitableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
 		return fmt.Errorf("could not get commitable balance: %w", err)

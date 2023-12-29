@@ -47,7 +47,7 @@ type QuoteRequestHandler struct {
 }
 
 // Handler is the handler for a quote request.
-type Handler func(ctx context.Context, req reldb.QuoteRequest) error
+type Handler func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 
 // Chain is a chain helper for relayer.
 // lowercase fields are private, uppercase are public.
@@ -110,8 +110,8 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 }
 
 // TODO: this is where you need ot check the deadline.
-func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, req reldb.QuoteRequest) error) func(ctx context.Context, req reldb.QuoteRequest) error {
-	return func(ctx context.Context, req reldb.QuoteRequest) error {
+func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 {
 			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
@@ -121,7 +121,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, req reldb.Qu
 			return nil
 		}
 
-		return next(ctx, req)
+		return next(ctx, span, req)
 	}
 }
 
@@ -170,5 +170,5 @@ func (q *QuoteRequestHandler) Handle(ctx context.Context, request reldb.QuoteReq
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return q.handlers[request.Status](ctx, request)
+	return q.handlers[request.Status](ctx, span, request)
 }
