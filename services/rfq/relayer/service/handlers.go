@@ -124,7 +124,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, requ
 // never relayed.
 // Reorgs are rare enough that its questionable wether this is ever worth building or if we can just
 // leave these in the queue.
-func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	earliestConfirmBlock := request.BlockNumber + q.Origin.Confirmations
 	if earliestConfirmBlock < q.Origin.LatestBlock() {
 		// can't complete yet, do nothing
@@ -135,6 +135,11 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, _ trace.S
 	if err != nil {
 		return fmt.Errorf("could not get bridge status: %w", err)
 	}
+
+	span.AddEvent("pending", trace.WithAttributes(
+		attribute.Int("latest_block", int(q.Origin.LatestBlock())),
+		attribute.Int("earliest_confirm_block", int(earliestConfirmBlock)),
+		attribute.String("chain_bridge_status", fastbridge.BridgeStatus(bs).String())))
 
 	// sanity check to make sure it's still requested.
 	if bs == fastbridge.REQUESTED.Int() {
