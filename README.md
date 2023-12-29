@@ -114,6 +114,24 @@ Use the above commands to recompile the packages.
 
 This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). To avoid issues when checking out different branches, you can use `git submodule update --init --recursive` after switching to a branch or `git checkout feat/branch-name --recurse-submodules` when switching branches.
 
+## Contribution workflow
+<!-- TODO: this actually belongs to a contributing.md file, but answer honestly, how many people actually read those? -->
+<!-- Additionally, the two-branch approach is somewhat temporary, so having this section in the readme is probably fine. -->
+
+We use a two-branch strategy for development:
+
+- `master`: This is the main development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
+- `fe-release`: This branch is used for production front-end releases and is the branch that is deployed to production. The production front-end always uses the latest commit from this branch.
+
+> `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
+
+We use following merge strategies:
+
+- **Squash merge**: All pull requests are squash merged into `master`. This keeps the commit history clean and makes it easier to revert changes if necessary.
+  > On a very few occasions, we may use a regular merge when `master` needs to be updated with a few commits from `fe-release`. In this case, we will use a regular merge so that there are no merge conflicts when later merging into `fe-release`.
+- **Regular merge**: Latest changes from `master` are **regularly merged** into `fe-release`. This ensures that the production front-end always uses the latest changes from `master`, and prevents merge conflicts when merging into `fe-release`.
+  > `master` branch should never be the **source branch** when merging into `fe-release`. This is because the source branch is always deleted after merging, and we don't want to delete `master`.
+
 # Building Agents Locally
 
 <!-- TODO: we need to move this thing into an ops docs package. Given that the docs are still a work in progress, I'm leaving this here for now. -->
