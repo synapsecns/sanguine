@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -12,6 +14,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"time"
 )
@@ -33,12 +37,17 @@ type QuoteRequestHandler struct {
 	// Quoter is the quoter.
 	Quoter *quoter.Manager
 	// handlers is the map of handlers.
-	handlers map[reldb.QuoteRequestStatus]func(ctx context.Context, req reldb.QuoteRequest) error
+	handlers map[reldb.QuoteRequestStatus]Handler
 	// claimCache is the cache of claims used for figuring out when we should retry the claim method.
 	claimCache *ttlcache.Cache[common.Hash, bool]
 	// RelayerAdress is the relayer RelayerAdress
 	RelayerAdress common.Address
+	// metrics is the metrics handler.
+	metrics metrics.Handler
 }
+
+// Handler is the handler for a quote request.
+type Handler func(ctx context.Context, req reldb.QuoteRequest) error
 
 // Chain is a chain helper for relayer.
 // lowercase fields are private, uppercase are public.
@@ -80,7 +89,8 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		db:            r.db,
 		Inventory:     r.inventory,
 		Quoter:        r.quoter,
-		handlers:      make(map[reldb.QuoteRequestStatus]func(ctx context.Context, req reldb.QuoteRequest) error),
+		handlers:      make(map[reldb.QuoteRequestStatus]Handler),
+		metrics:       r.metrics,
 		RelayerAdress: r.signer.Address(),
 		claimCache:    r.claimCache,
 	}
@@ -152,6 +162,13 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 
 // Handle handles a quote request.
 // Note: this will panic if no method is available. This is done on purpose.
-func (q *QuoteRequestHandler) Handle(ctx context.Context, request reldb.QuoteRequest) error {
+func (q *QuoteRequestHandler) Handle(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	ctx, span := q.metrics.Tracer().Start(ctx, fmt.Sprintf("handle-%s", request.Status.String()), trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	return q.handlers[request.Status](ctx, request)
 }
