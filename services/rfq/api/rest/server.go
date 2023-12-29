@@ -96,7 +96,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut.PUT("", h.ModifyQuote)
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
-	engine.GET("QuoteRoute", h.GetQuotes)
+	engine.GET("", h.GetQuotes)
 	engine.GET(fmt.Sprintf("%s/filter", QuoteRoute), h.GetFilteredQuotes)
 
 	r.engine = engine
