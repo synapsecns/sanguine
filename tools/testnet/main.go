@@ -230,7 +230,7 @@ var messages = &sync.Map{}
 var sentTxes = &sync.Map{}
 
 const eventBufferSize = 1000
-const executionTimeout = 600
+const executionTimeout = 1200
 
 func main() {
 	var loadConfigPath string
