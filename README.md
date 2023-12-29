@@ -126,6 +126,7 @@ We use a two-branch strategy for development:
   - See [Releasing a Front-end Update](#scenario-2-releasing-a-front-end-update) for more details.
 
 > `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
+> See [Hotfixing the Production Front-end](#scenario-3-hotfixing-the-production-front-end) for more details.
 
 We use following merge strategies:
 
@@ -208,6 +209,51 @@ git push -u origin release/date
 
 4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that master is passing all checks, your branch should pass all checks as well.
 5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it could be **regularly merged** into `fe-release` and your release branch will be deleted.
+
+### Scenario 3: Hotfixing the Production Front-end
+
+Sometimes, a bug is discovered in the production front-end that needs to be fixed immediately. In this scenario, you are hotfixing the production front-end without using the latest changes from `master`.
+
+1. **Create a new branch**: From the `fe-release` branch, create a new branch for the hotfix.
+
+```bash
+git checkout fe-release && git pull
+# Date format is YYYY-MM-DD (sorry my American friends)
+git checkout -b hotfix/date
+```
+
+2. **Implement your hotfix**: Make your changes in this branch.
+
+3. **Push your branch**: Push your branch to the remote repository and open a pull request on GitHub.
+
+```bash
+git push -u origin hotfix/date
+```
+
+4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Depending on the severity of the hotfix, you might want to merge the PR as soon or before it passes all checks. However, **you should wait for the linting checks to pass**, as these are the fastest and easiest to fix.
+
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it could be **squash merged** into `fe-release` and your hotfix branch will be deleted.
+
+6. Take a deep breath and relax. You've just saved the day. 🦸‍♂️
+
+7. **Catch up `master`**: now that the hotfix is released, you should catch up `master` with the latest changes from `fe-release`. This ensures that `master` branch is never behind `fe-release`.
+
+```bash
+git checkout fe-release && git pull
+git checkout master && git pull
+git checkout -b catchup/date
+git merge fe-release
+```
+
+8. **Push your branch**: Push your `catchup/date` branch to the remote repository and open a pull request on GitHub.
+
+```bash
+git push -u origin catchup/date
+```
+
+9. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that `fe-release` is passing all checks, your branch should pass all checks as well.
+
+10. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least one maintainer**, it could be **regularly merged** into `master` and your catchup branch will be deleted.
 
 # Building Agents Locally
 
