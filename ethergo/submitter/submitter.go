@@ -373,6 +373,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
 	}
+	t.applyBaseGasPrice(transactor, chainID)
 
 	//nolint: nestif
 	if prevTx != nil {
@@ -395,6 +396,22 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
 	return nil
+}
+
+// applyBaseGasPrice applies the base gas price to the transactor if a gas price value is zero.
+func (t *txSubmitterImpl) applyBaseGasPrice(transactor *bind.TransactOpts, chainID int) {
+	if t.config.SupportsEIP1559(chainID) {
+		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasFeeCap = t.config.GetBaseGasPrice(chainID)
+		}
+		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasTipCap = t.config.GetBaseGasPrice(chainID)
+		}
+	} else {
+		if transactor.GasPrice == nil || transactor.GasPrice.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasPrice = t.config.GetBaseGasPrice(chainID)
+		}
+	}
 }
 
 // getGasBlock gets the gas block for the given chain.
