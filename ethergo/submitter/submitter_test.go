@@ -44,7 +44,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	maxPrice := new(big.Int).Add(gasPrice, new(big.Int).SetUint64(1))
 	cfg.SetGlobalMaxGasPrice(maxPrice)
 
-	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Twice().Return(gasPrice, nil)
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
 
@@ -61,7 +61,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	// 3. Test with gas price set, but one that exceeds max, should return max (legacy tx)
 	cfg.SetGlobalEIP1559Support(true)
 	tipCap := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
-	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(tipCap, nil)
+	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(tipCap, nil)
 
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
@@ -69,8 +69,30 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	s.Equal(tipCap, transactor.GasTipCap, testsuite.BigIntComparer())
 	s.Equal(maxPrice, transactor.GasFeeCap, testsuite.BigIntComparer())
 
-	// 4. Test with bump (TODO)
-	// 5. Test with bump and max (TODO)
+	// 4. Test with zero gas price, should return base gas price
+	cfg.SetGlobalEIP1559Support(false)
+	baseGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
+	cfg.SetBaseGasPrice(baseGasPrice)
+	gasPrice = big.NewInt(0)
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
+
+	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	s.Require().NoError(err)
+
+	s.Equal(baseGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+
+	// 5. Test with zero gas price with EIP1559, should return base gas price
+	cfg.SetGlobalEIP1559Support(true)
+	gasPrice = big.NewInt(0)
+	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(gasPrice, nil)
+
+	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	s.Require().NoError(err)
+
+	s.Equal(baseGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
+
+	// 5. Test with bump (TODO)
+	// 6. Test with bump and max (TODO)
 }
 
 func (s *SubmitterSuite) TestGetGasBlock() {
