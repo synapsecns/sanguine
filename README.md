@@ -123,6 +123,7 @@ We use a two-branch strategy for development:
 - `master`: This is the main development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
   - See [Implementing a New Feature](#scenario-1-implementing-a-new-feature) for more details.
 - `fe-release`: This branch is used for production front-end releases and is the branch that is deployed to production. The production front-end always uses the latest commit from this branch.
+  - See [Releasing a Front-end Update](#scenario-2-releasing-a-front-end-update) for more details.
 
 > `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
 
@@ -177,6 +178,36 @@ git rebase -i master
 
 7. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. If any of the checks fail, you can fix the issues in your feature branch and push again. The CI checks will run again automatically.
 8. **Review and merge**: The PR will be reviewed. If any changes are requested, make them in your feature branch and the PR will automatically update. Once the PR is approved by at least one maintainer, it could be **squash merged** into `master` and your feature branch will be deleted.
+
+### Scenario 2: Releasing a Front-end Update
+
+In this scenario you are releasing a front-end update using the latest changes from `master`.
+
+1. **Create a new branch**: From the `fe-release` branch, create a new branch for the FE release.
+
+```bash
+git checkout fe-release && git pull
+# Date format is YYYY-MM-DD (sorry my American friends)
+git checkout -b release/date
+```
+
+2. **Merge `master` into your branch**: This ensures that the production front-end always uses the latest changes from `master`, and prevents merge conflicts when merging into `fe-release`.
+
+```bash
+git checkout master && git pull
+git checkout release/date
+# No merge conflicts should occur here
+git merge master
+```
+
+3. **Push your branch**: Push your branch to the remote repository and open a pull request on GitHub. No overview is necessary, but you can add links to the PRs that are being released.
+
+```bash
+git push -u origin release/date
+```
+
+4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that master is passing all checks, your branch should pass all checks as well.
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it could be **regularly merged** into `fe-release` and your release branch will be deleted.
 
 # Building Agents Locally
 
