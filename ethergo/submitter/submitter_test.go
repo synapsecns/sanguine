@@ -91,8 +91,8 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 
 	s.Equal(baseGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
 
-	// 5. Test with bump (TODO)
-	// 6. Test with bump and max (TODO)
+	// 6. Test with bump (TODO)
+	// 7. Test with bump and max (TODO)
 }
 
 func (s *SubmitterSuite) TestGetGasBlock() {
