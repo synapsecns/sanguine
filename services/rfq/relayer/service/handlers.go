@@ -127,12 +127,15 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, requ
 func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	earliestConfirmBlock := request.BlockNumber + q.Origin.Confirmations
 
+	latestBlock := q.Origin.LatestBlock()
+	shouldContinue := latestBlock > earliestConfirmBlock
 	span.AddEvent("pending_check", trace.WithAttributes(
-		attribute.Int("latest_block", int(q.Origin.LatestBlock())),
+		attribute.Int("latest_block", int(latestBlock)),
 		attribute.Int("earliest_confirm_block", int(earliestConfirmBlock)),
+		attribute.Bool("should_continue", shouldContinue),
 	))
 
-	if earliestConfirmBlock < q.Origin.LatestBlock() {
+	if !shouldContinue {
 		// can't complete yet, do nothing
 		return nil
 	}
