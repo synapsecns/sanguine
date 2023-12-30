@@ -20,7 +20,7 @@ import { FastBridge } from './fastBridge'
 import { marshallTicker } from './ticker'
 import { FastBridgeQuote, applyQuote } from './quote'
 import { getAllQuotes } from './api'
-import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export class FastBridgeSet extends SynapseModuleSet {
   public readonly bridgeModuleName = 'SynapseRFQ'
@@ -135,7 +135,7 @@ export class FastBridgeSet extends SynapseModuleSet {
   } {
     return {
       originPeriod: TEN_MINUTES,
-      destPeriod: ONE_HOUR,
+      destPeriod: ONE_WEEK,
     }
   }
 
