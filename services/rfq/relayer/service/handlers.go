@@ -136,6 +136,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 	))
 
 	if !shouldContinue {
+		span.AddEvent("will_not_continue")
 		// can't complete yet, do nothing
 		return nil
 	}
