@@ -50,6 +50,8 @@ type Manager struct {
 	quotableTokens map[string][]string
 	// feePricer is used to price fees.
 	feePricer pricer.FeePricer
+	// metricsHandler handles traces, etc
+	metricsHandler metrics.Handler
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -64,6 +66,7 @@ func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string]
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
 		relayerSigner:    relayerSigner,
+		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
 	}, nil
 }
@@ -113,7 +116,12 @@ func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteReques
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
-func (m *Manager) SubmitAllQuotes(ctx context.Context) error {
+func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "submitQuotes")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting commitable balances: %w", err)
