@@ -128,7 +128,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 	earliestConfirmBlock := request.BlockNumber + q.Origin.Confirmations
 
 	latestBlock := q.Origin.LatestBlock()
-	shouldContinue := latestBlock > earliestConfirmBlock
+	shouldContinue := latestBlock >= earliestConfirmBlock
 	span.AddEvent("pending_check", trace.WithAttributes(
 		attribute.Int("latest_block", int(latestBlock)),
 		attribute.Int("earliest_confirm_block", int(earliestConfirmBlock)),
