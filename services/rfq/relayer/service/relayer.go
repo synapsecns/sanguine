@@ -60,7 +60,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	chainListeners := make(map[int]listener.ContractListener)
 
 	// setup chain listeners
-	for chainID, chainCFG := range cfg.Bridges {
+	for chainID, chainCFG := range cfg.GetChains() {
 		// TODO: consider getter for this convert step
 		bridge := common.HexToAddress(chainCFG.Bridge)
 		chainClient, err := omniClient.GetChainClient(ctx, chainID)
@@ -85,9 +85,9 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	fp := pricer.NewFeePricer(cfg.FeePricer, cfg.Bridges, omniClient)
+	fp := pricer.NewFeePricer(cfg, omniClient)
 
-	q, err := quoter.NewQuoterManager(metricHandler, cfg.QuotableTokens, im, cfg.RfqAPIURL, sg, fp)
+	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}

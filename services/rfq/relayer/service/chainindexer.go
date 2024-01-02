@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -20,7 +21,7 @@ func (r *Relayer) startChainIndexers(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
-	for chainID := range r.cfg.Bridges {
+	for chainID := range r.cfg.GetChains() {
 		chainID := chainID // capture func literal
 
 		g.Go(func() error {

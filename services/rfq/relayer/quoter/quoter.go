@@ -11,6 +11,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"golang.org/x/exp/slices"
 
@@ -40,14 +41,14 @@ type Quoter interface {
 
 // Manager submits quotes to the RFQ API.
 type Manager struct {
+	// config is the relayer's config.
+	config relconfig.Config
 	// inventoryManager is used to get the relayer's inventory.
 	inventoryManager inventory.Manager
 	// rfqClient is used to communicate with the RFQ API.
 	rfqClient rfqAPIClient.AuthenticatedClient
 	// relayerSigner is the signer used by the relayer to interact on chain
 	relayerSigner signer.Signer
-	// quotableTokens are tokens that the relayer is willing to relay to & from
-	quotableTokens map[string][]string
 	// feePricer is used to price fees.
 	feePricer pricer.FeePricer
 	// metricsHandler handles traces, etc
@@ -55,14 +56,14 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string][]string, inventoryManager inventory.Manager, rfqAPIUrl string, relayerSigner signer.Signer, feePricer pricer.FeePricer) (*Manager, error) {
-	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, rfqAPIUrl, relayerSigner)
+func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer) (*Manager, error) {
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, config.GetRfqAPIURL(), relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
 
 	return &Manager{
-		quotableTokens:   quotableTokens,
+		config:           config,
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
 		relayerSigner:    relayerSigner,
@@ -71,15 +72,10 @@ func NewQuoterManager(metricsHandler metrics.Handler, quotableTokens map[string]
 	}, nil
 }
 
-// SetQuotableTokens sets the quotable tokens.
-func (m *Manager) SetQuotableTokens(tokens map[string][]string) {
-	m.quotableTokens = tokens
-}
-
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
 	// allowed pairs for this origin token on the destination
-	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
+	destPairs := m.config.QuotableTokens[quote.GetOriginIDPair()]
 	if slices.Contains(destPairs, quote.GetDestIDPair()) {
 		return true
 	}
@@ -102,7 +98,7 @@ func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) b
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
 func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteRequest) (bool, error) {
-	destTokenID, err := m.feePricer.GetTokenName(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
+	destTokenID, err := m.config.GetTokenName(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
@@ -161,7 +157,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 	var quotes []rfqAPIClient.APIQuotePutRequest
-	for keyTokenID, itemTokenIDs := range m.quotableTokens {
+	for keyTokenID, itemTokenIDs := range m.config.QuotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			// TODO: probably a better way to do this.
 			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
@@ -170,7 +166,7 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
-				destToken, err := m.feePricer.GetTokenName(uint32(chainID), address.Hex())
+				destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}

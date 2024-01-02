@@ -39,15 +39,15 @@ func (s *QuoterSuite) SetupTest() {
 	s.origin = 42161
 	s.destination = 137
 	s.config = relconfig.Config{
-		Bridges: map[int]relconfig.ChainConfig{
-			int(s.origin): relconfig.ChainConfig{
+		Chains: map[int]relconfig.ChainConfig{
+			int(s.origin): {
 				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": relconfig.TokenConfig{
+					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
 						PriceUSD: 1,
 						Decimals: 6,
 					},
-					"ETH": relconfig.TokenConfig{
+					"ETH": {
 						Address:  "",
 						PriceUSD: 2000,
 						Decimals: 18,
@@ -55,14 +55,14 @@ func (s *QuoterSuite) SetupTest() {
 				},
 				NativeToken: "ETH",
 			},
-			int(s.destination): relconfig.ChainConfig{
+			int(s.destination): {
 				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": relconfig.TokenConfig{
+					"USDC": {
 						Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
 						PriceUSD: 1,
 						Decimals: 6,
 					},
-					"MATIC": relconfig.TokenConfig{
+					"MATIC": {
 						Address:  "",
 						PriceUSD: 0.5,
 						Decimals: 18,
@@ -90,11 +90,11 @@ func (s *QuoterSuite) SetupTest() {
 	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
-	feePricer := pricer.NewFeePricer(s.config.FeePricer, s.config.Bridges, clientFetcher)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher)
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	var err error
-	s.manager, err = quoter.NewQuoterManager(metrics.NewNullHandler(), s.config.QuotableTokens, nil, "", nil, feePricer)
+	s.manager, err = quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), nil, nil, feePricer)
 	s.NoError(err)
 }
 

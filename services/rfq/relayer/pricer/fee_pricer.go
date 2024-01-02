@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -25,17 +24,11 @@ type FeePricer interface {
 	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
-	// GetTokenName returns the token name for a given chainID and token address.
-	// TODO: this can probably move into relconfig.Config, but since Quoter does not have a config,
-	// we expose this functionality here.
-	GetTokenName(chainID uint32, addr string) (string, error)
 }
 
 type feePricer struct {
-	// config is the fee pricer config.
-	config relconfig.FeePricerConfig
-	// tokenConfigs maps chain ID -> chain config.
-	chainConfigs map[int]relconfig.ChainConfig
+	// config is the relayer config.
+	config relconfig.Config
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
@@ -45,16 +38,15 @@ type feePricer struct {
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.FeePricerConfig, chainConfigs map[int]relconfig.ChainConfig, clientFetcher submitter.ClientFetcher) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
-		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GasPriceCacheTTLSeconds)),
+		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
 	return &feePricer{
 		config:          config,
-		chainConfigs:    chainConfigs,
 		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.TokenPriceCacheTTLSeconds))),
+		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds))),
 		clientFetcher:   clientFetcher,
 	}
 }
@@ -76,11 +68,11 @@ func (f *feePricer) Start(ctx context.Context) {
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
 func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	return f.getFee(ctx, origin, destination, f.config.OriginGasEstimate, denomToken)
+	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().OriginGasEstimate, denomToken)
 }
 
 func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	return f.getFee(ctx, destination, destination, f.config.DestinationGasEstimate, denomToken)
+	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken)
 }
 
 func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
@@ -101,7 +93,7 @@ func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gas
 	if err != nil {
 		return nil, err
 	}
-	nativeToken, err := f.getNativeToken(gasChain)
+	nativeToken, err := f.config.GetNativeToken(gasChain)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +105,7 @@ func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gas
 	if err != nil {
 		return nil, err
 	}
-	denomTokenDecimals, err := f.getTokenDecimals(denomChain, denomToken)
+	denomTokenDecimals, err := f.config.GetTokenDecimals(denomChain, denomToken)
 	if err != nil {
 		return nil, err
 	}
@@ -153,23 +145,9 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 	return gasPrice, nil
 }
 
-func (f *feePricer) GetTokenName(chain uint32, addr string) (string, error) {
-	chainConfig, ok := f.chainConfigs[int(chain)]
-	if !ok {
-		return "", fmt.Errorf("no chain config for chain %d", chain)
-	}
-	for tokenName, tokenConfig := range chainConfig.Tokens {
-		// TODO: probably a better way to do this.
-		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
-			return tokenName, nil
-		}
-	}
-	return "", fmt.Errorf("no tokenName found for chain %d and address %s", chain, addr)
-}
-
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
-	for _, chainConfig := range f.chainConfigs {
+	for _, chainConfig := range f.config.GetChains() {
 		for tokenName, tokenConfig := range chainConfig.Tokens {
 			if token == tokenName {
 				return tokenConfig.PriceUSD, nil
@@ -178,28 +156,4 @@ func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, e
 		}
 	}
 	return 0, fmt.Errorf("could not get price for token: %s", token)
-}
-
-func (f *feePricer) getTokenDecimals(chainID uint32, token string) (uint8, error) {
-	chainConfig, ok := f.chainConfigs[int(chainID)]
-	if !ok {
-		return 0, fmt.Errorf("could not get chain config for chainID: %d", chainID)
-	}
-	for tokenName, tokenConfig := range chainConfig.Tokens {
-		if token == tokenName {
-			return tokenConfig.Decimals, nil
-		}
-	}
-	return 0, fmt.Errorf("could not get token decimals for chain %d and token %s", chainID, token)
-}
-
-func (f *feePricer) getNativeToken(chainID uint32) (string, error) {
-	chainConfig, ok := f.chainConfigs[int(chainID)]
-	if !ok {
-		return "", fmt.Errorf("could not get chain config for chainID: %d", chainID)
-	}
-	if len(chainConfig.NativeToken) == 0 {
-		return "", fmt.Errorf("chain config for chainID %d does not have a native token", chainID)
-	}
-	return chainConfig.NativeToken, nil
 }
