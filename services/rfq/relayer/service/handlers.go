@@ -235,7 +235,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 	// relays been completed, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// MAJO MAJOR TODO should be dest tx hash
-		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.TransactionID)
+		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
