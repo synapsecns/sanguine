@@ -34,7 +34,7 @@ func copyTransactOpts(opts *bind.TransactOpts) *bind.TransactOpts {
 }
 
 const (
-	uuidAttr      = "tx.Uuid"
+	uuidAttr      = "tx.UUID"
 	hashAttr      = "tx.Hash"
 	fromAttr      = "tx.From"
 	toAttr        = "tx.To"
