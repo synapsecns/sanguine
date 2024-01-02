@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -219,6 +220,10 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
+	err = r.db.UpdateDestTxHash(ctx, req.TransactionId, req.Raw.TxHash)
+	if err != nil {
+		return fmt.Errorf("could not update dest tx hash: %w", err)
+	}
 	return nil
 }
 
@@ -230,7 +235,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 	// relays been completed, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// MAJO MAJOR TODO should be dest tx hash
-		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.TransactionID)
+		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
