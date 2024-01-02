@@ -34,8 +34,8 @@ func BigPtrToString(num *big.Int) string {
 }
 
 // TxToAttributes exports txToAttributes for testing.
-func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
-	return txToAttributes(transaction)
+func TxToAttributes(transaction *types.Transaction, UUID string) []attribute.KeyValue {
+	return txToAttributes(transaction, UUID)
 }
 
 // SortTxes exports sortTxesByChainID for testing.

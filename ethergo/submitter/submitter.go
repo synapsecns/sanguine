@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/puzpuzpuz/xsync/v2"
 	"math"
 	"math/big"
 	"reflect"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/puzpuzpuz/xsync/v2"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -211,15 +213,16 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	return dbNonce, nil
 }
 
-func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
+func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status, UUID string) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.StoreTX", trace.WithAttributes(
-		append(txToAttributes(tx), attribute.String("status", status.String()))...))
+		append(txToAttributes(tx, UUID), attribute.String("status", status.String()))...))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	err = t.db.PutTXS(ctx, db.TX{
+		UUID:        UUID,
 		Transaction: tx,
 		Status:      status,
 	})
@@ -325,7 +328,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer locker.Unlock()
 
 	// now that we've stored the tx
-	err = t.storeTX(ctx, tx, db.Stored)
+	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
 	if err != nil {
 		return 0, fmt.Errorf("could not store transaction: %w", err)
 	}

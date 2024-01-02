@@ -2,6 +2,9 @@ package submitter
 
 import (
 	"fmt"
+	"math/big"
+	"sort"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
-	"math/big"
-	"sort"
 )
 
 // copyTransactOpts creates a deep copy of the given TransactOpts struct
@@ -33,6 +34,7 @@ func copyTransactOpts(opts *bind.TransactOpts) *bind.TransactOpts {
 }
 
 const (
+	uuidAttr      = "tx.Uuid"
 	hashAttr      = "tx.Hash"
 	fromAttr      = "tx.From"
 	toAttr        = "tx.To"
@@ -47,7 +49,7 @@ const (
 )
 
 // txToAttributes converts a transaction to a slice of attribute.KeyValue.
-func txToAttributes(transaction *types.Transaction) []attribute.KeyValue {
+func txToAttributes(transaction *types.Transaction, uuid string) []attribute.KeyValue {
 	var from string
 	call, err := util.TxToCall(transaction)
 	if err != nil {
@@ -56,6 +58,7 @@ func txToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 		from = call.From.Hex()
 	}
 	var attributes = []attribute.KeyValue{
+		attribute.String(uuidAttr, uuid),
 		attribute.String(hashAttr, transaction.Hash().Hex()),
 		attribute.String(fromAttr, from),
 		attribute.String(toAttr, addressPtrToString(transaction.To())),
