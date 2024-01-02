@@ -90,30 +90,37 @@ func LoadConfig(path string) (config Config, err error) {
 	return config, nil
 }
 
+// GetChains returns the chains config.
 func (c Config) GetChains() map[int]ChainConfig {
 	return c.Chains
 }
 
+// GetOmniRPCURL returns the OmniRPCURL.
 func (c Config) GetOmniRPCURL() string {
 	return c.OmniRPCURL
 }
 
+// GetRfqAPIURL returns the RFQ API URL.
 func (c Config) GetRfqAPIURL() string {
 	return c.RfqAPIURL
 }
 
+// GetDatabase returns the database config.
 func (c Config) GetDatabase() DatabaseConfig {
 	return c.Database
 }
 
+// GetSigner returns the signer config.
 func (c Config) GetSigner() config.SignerConfig {
 	return c.Signer
 }
 
+// GetFeePricer returns the fee pricer config.
 func (c Config) GetFeePricer() FeePricerConfig {
 	return c.FeePricer
 }
 
+// GetTokenID returns the tokenID for the given chain and address.
 func (c Config) GetTokenID(chain int, addr string) (string, error) {
 	chainConfig, ok := c.Chains[int(chain)]
 	if !ok {
@@ -127,6 +134,7 @@ func (c Config) GetTokenID(chain int, addr string) (string, error) {
 	return "", fmt.Errorf("no tokenID found for chain %d and address %s", chain, addr)
 }
 
+// GetQuotableTokens returns the quotable tokens for the given token.
 func (c Config) GetQuotableTokens(token string) ([]string, error) {
 	tokens, ok := c.QuotableTokens[token]
 	if !ok {
@@ -135,6 +143,7 @@ func (c Config) GetQuotableTokens(token string) ([]string, error) {
 	return tokens, nil
 }
 
+// GetNativeToken returns the native token for the given chain.
 func (c Config) GetNativeToken(chainID uint32) (string, error) {
 	chainConfig, ok := c.Chains[int(chainID)]
 	if !ok {
@@ -146,6 +155,7 @@ func (c Config) GetNativeToken(chainID uint32) (string, error) {
 	return chainConfig.NativeToken, nil
 }
 
+// GetTokenDecimals returns the token decimals for the given chain and token.
 func (c Config) GetTokenDecimals(chainID uint32, token string) (uint8, error) {
 	chainConfig, ok := c.Chains[int(chainID)]
 	if !ok {
@@ -159,6 +169,7 @@ func (c Config) GetTokenDecimals(chainID uint32, token string) (uint8, error) {
 	return 0, fmt.Errorf("could not get token decimals for chain %d and token %s", chainID, token)
 }
 
+// GetTokens returns the tokens for the given chain.
 func (c Config) GetTokens(chainID uint32) (map[string]TokenConfig, error) {
 	chainConfig, ok := c.Chains[int(chainID)]
 	if !ok {
@@ -167,6 +178,7 @@ func (c Config) GetTokens(chainID uint32) (map[string]TokenConfig, error) {
 	return chainConfig.Tokens, nil
 }
 
+// GetTokenName returns the token name for the given chain and address.
 func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 	chainConfig, ok := c.Chains[int(chain)]
 	if !ok {
