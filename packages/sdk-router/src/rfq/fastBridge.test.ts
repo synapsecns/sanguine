@@ -174,6 +174,7 @@ describe('FastBridge', () => {
   describe('bridge', () => {
     const expectedBridgeParamsFragment = {
       dstChainId: SupportedChainId.OPTIMISM,
+      sender: '0x0000000000000000000000000000000000000001',
       to: '0x0000000000000000000000000000000000000001',
       originAmount: 1234,
       destAmount: 5678,

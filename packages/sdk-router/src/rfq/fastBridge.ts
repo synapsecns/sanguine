@@ -67,6 +67,9 @@ export class FastBridge implements SynapseModule {
     // TODO: encode sendChainGas into destQuery.rawParams
     const bridgeParams: BridgeParams = {
       dstChainId: destChainId,
+      // TODO: remove this once Router for RFQ is deployed (origin address will be derived there on-chain)
+      // SDK doesn't really have access to the msg.sender of the origin transaction, so we use the recipient address
+      sender: to,
       to,
       originToken: token,
       destToken: destQuery.tokenOut,
