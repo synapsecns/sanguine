@@ -3,7 +3,6 @@ import { useAppSelector } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { powBigInt } from '@/utils/powBigInt'
-import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
@@ -48,6 +47,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       amount
     )
 
+    /** TODO: Handle when invalid quote returns */
+
     // if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
     //   // dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
     //   // dispatch(setIsLoading(false))
@@ -63,16 +64,11 @@ export const fetchBridgeQuote = createAsyncThunk(
         ? BigInt(feeAmount)
         : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
-    const originMinWithSlippage = subtractSlippage(
-      originQuery?.minAmountOut ?? 0n,
-      'ONE_TENTH',
-      null
-    )
-    const destMinWithSlippage = subtractSlippage(
-      destQuery?.minAmountOut ?? 0n,
-      'ONE_TENTH',
-      null
-    )
+    const { minAmountOut: originMinWithSlippage } =
+      await synapseSDK.applySlippageInBips(originQuery, 10) // 10 bips = 0.1%
+
+    const { minAmountOut: destMinWithSlippage } =
+      await synapseSDK.applySlippageInBips(destQuery, 10) // 10 bips = 0.1%
 
     let newOriginQuery = { ...originQuery }
     newOriginQuery.minAmountOut = originMinWithSlippage
