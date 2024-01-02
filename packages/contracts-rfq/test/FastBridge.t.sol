@@ -379,6 +379,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -417,6 +418,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: UniversalTokenLib.ETH_ADDRESS,
             destToken: UniversalTokenLib.ETH_ADDRESS,
@@ -467,6 +469,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -518,6 +521,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: UniversalTokenLib.ETH_ADDRESS,
             destToken: UniversalTokenLib.ETH_ADDRESS,
@@ -568,6 +572,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -616,6 +621,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: UniversalTokenLib.ETH_ADDRESS,
             destToken: UniversalTokenLib.ETH_ADDRESS,
@@ -640,6 +646,45 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
+    function test_successfulBridgeWithSenderNotUser() public {
+        // Start a prank with the user
+        vm.startPrank(dstUser);
+        // Approve the fastBridge to spend 100 * 10 ** 6 of arbUSDC from the user
+        arbUSDC.approve(address(fastBridge), 100 * 10 ** 6);
+
+        // get expected bridge request and tx id
+        uint256 currentNonce = fastBridge.nonce();
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, currentNonce, 0);
+
+        vm.expectEmit();
+        emit BridgeRequested(transactionId, user, request);
+
+        // Execute the bridge transaction
+        IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
+            dstChainId: 1,
+            sender: user,
+            to: user,
+            originToken: address(arbUSDC),
+            destToken: address(ethUSDC),
+            originAmount: 11 * 10 ** 6,
+            destAmount: 10.97e6,
+            sendChainGas: false,
+            deadline: block.timestamp + 3600
+        });
+        fastBridge.bridge(params);
+        // Check the state of the tokens after the bridge transaction
+        // The fastBridge should have 11 * 10 ** 6 of arbUSDC
+        assertEq(arbUSDC.balanceOf(address(fastBridge)), 11 * 10 ** 6);
+        // The user should have 89 * 10 ** 6 of arbUSDC
+        assertEq(arbUSDC.balanceOf(dstUser), 89 * 10 ** 6);
+
+        // Get the information of the bridge transaction
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
     function test_failedBridgeSameChainId() public {
         // Start a prank with the user
         vm.startPrank(user);
@@ -649,6 +694,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: uint32(block.chainid),
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -673,6 +719,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -697,6 +744,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -721,6 +769,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(0),
             destToken: address(ethUSDC),
@@ -745,6 +794,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(0),
@@ -769,6 +819,7 @@ contract FastBridgeTest is Test {
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
             dstChainId: 1,
+            sender: user,
             to: user,
             originToken: address(arbUSDC),
             destToken: address(ethUSDC),
@@ -1619,6 +1670,39 @@ contract FastBridgeTest is Test {
 
         assertEq(postRefundBalanceUser - preRefundBalanceUser, 11 * 10 ** 18);
         assertEq(preRefundBalanceBridge - postRefundBalanceBridge, 11 * 10 ** 18);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulRefundWithSenderNotUser() public {
+        setUpRoles();
+        test_successfulBridgeWithSenderNotUser();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+
+        vm.startPrank(user);
+
+        vm.warp(block.timestamp + 61 minutes);
+
+        vm.expectEmit();
+        emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
+
+        uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
+        uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
+
+        fastBridge.refund(request, user);
+
+        // check balance changes
+        uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
+        uint256 postRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
+
+        assertEq(postRefundBalanceUser - preRefundBalanceUser, 11 * 10 ** 6);
+        assertEq(preRefundBalanceBridge - postRefundBalanceBridge, 11 * 10 ** 6);
+
+        // check bridge status updated
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REFUNDED));
 
         // We stop a prank to contain within test
         vm.stopPrank();

@@ -92,7 +92,7 @@ contract FastBridge is IFastBridge, Admin {
             BridgeTransaction({
                 originChainId: uint32(block.chainid),
                 destChainId: params.dstChainId,
-                originSender: msg.sender,
+                originSender: params.sender,
                 destRecipient: params.to,
                 originToken: params.originToken,
                 destToken: params.destToken,
@@ -107,7 +107,7 @@ contract FastBridge is IFastBridge, Admin {
         bytes32 transactionId = keccak256(request);
         bridgeStatuses[transactionId] = BridgeStatus.REQUESTED;
 
-        emit BridgeRequested(transactionId, msg.sender, request);
+        emit BridgeRequested(transactionId, params.sender, request);
     }
 
     /// @inheritdoc IFastBridge

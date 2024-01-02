@@ -37,6 +37,7 @@ interface IFastBridge {
 
     struct BridgeParams {
         uint32 dstChainId;
+        address sender;
         address to;
         address originToken;
         address destToken;
