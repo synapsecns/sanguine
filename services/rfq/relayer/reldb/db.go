@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -20,6 +21,8 @@ type Writer interface {
 	StoreQuoteRequest(ctx context.Context, request QuoteRequest) error
 	// UpdateQuoteRequestStatus updates the status of a quote request
 	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
+	// UpdateDestTxHash updates the dest tx hash of a quote request
+	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 }
 
 // Reader is the interface for reading from the database.
@@ -57,7 +60,8 @@ type QuoteRequest struct {
 	Sender              common.Address
 	Transaction         fastbridge.IFastBridgeBridgeTransaction
 	// Status is the quote request status
-	Status QuoteRequestStatus
+	Status     QuoteRequestStatus
+	DestTxHash common.Hash
 }
 
 // GetOriginIDPair gets the origin chain id and token address pair.

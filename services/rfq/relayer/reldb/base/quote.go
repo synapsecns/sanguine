@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
@@ -73,6 +75,17 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
 		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
 		Update(statusFieldName, status)
+	if tx.Error != nil {
+		return fmt.Errorf("could not update: %w", tx.Error)
+	}
+	return nil
+}
+
+// UpdateDestTxHash todo: db test.
+func (s Store) UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error {
+	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
+		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
+		Update(destTxHashFieldName, destTxHash)
 	if tx.Error != nil {
 		return fmt.Errorf("could not update: %w", tx.Error)
 	}

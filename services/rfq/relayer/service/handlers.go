@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -218,6 +219,10 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
+	}
+	err = r.db.UpdateDestTxHash(ctx, req.TransactionId, req.Raw.TxHash)
+	if err != nil {
+		return fmt.Errorf("could not update dest tx hash: %w", err)
 	}
 	return nil
 }

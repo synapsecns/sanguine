@@ -22,6 +22,7 @@ func init() {
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	statusFieldName = namer.GetConsistentName("Status")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
+	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
 }
 
 var (
@@ -33,6 +34,8 @@ var (
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
+	// destTxHashFieldName is the dest tx hash field name.
+	destTxHashFieldName string
 )
 
 // LastIndexed is used to make sure we haven't missed any events while offline.
@@ -85,7 +88,8 @@ type RequestForQuote struct {
 	DestAmountOriginal string
 	// DestAmountOriginal is the original destination amount
 	DestAmount decimal.Decimal `gorm:"index"`
-	Deadline   time.Time       `gorm:"index"`
+	DestTxHash string
+	Deadline   time.Time `gorm:"index"`
 	// OriginNonce is the nonce on the origin chain in the app.
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
@@ -115,6 +119,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		SendChainGas:         request.Transaction.SendChainGas,
 		DestTokenDecimals:    request.DestTokenDecimals,
 		DestToken:            request.Transaction.DestToken.String(),
+		DestTxHash:           request.DestTxHash.String(),
 		OriginAmountOriginal: request.Transaction.OriginAmount.String(),
 		OriginAmount:         decimal.NewFromBigInt(request.Transaction.OriginAmount, int32(request.OriginTokenDecimals)),
 		DestAmountOriginal:   request.Transaction.DestAmount.String(),
@@ -164,7 +169,8 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			Deadline:   big.NewInt(r.Deadline.Unix()),
 			Nonce:      big.NewInt(int64(r.OriginNonce)),
 		},
-		Status: r.Status,
+		Status:     r.Status,
+		DestTxHash: common.HexToHash(r.DestTxHash),
 	}, nil
 }
 
