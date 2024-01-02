@@ -462,7 +462,7 @@ jobs:
           GOGC: -1
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v11.1
+        uses: tj-actions/verify-changed-files@v12.0
         id: verify-changed-files
         with:
           files: |
