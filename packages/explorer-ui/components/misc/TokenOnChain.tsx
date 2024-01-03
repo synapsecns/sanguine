@@ -1,17 +1,17 @@
 import _ from 'lodash'
-import { CHAIN_INFO_MAP } from '@constants/networks'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '../../constants/tokens/index'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import { getChainUrl } from '@urls'
+import { CHAINS_BY_ID } from '../../constants/chains'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
 
 export function TokenOnChain({ tokenAddress, chainId }) {
-  const { chainName } = CHAIN_INFO_MAP[chainId]
-  const token = TOKEN_HASH_MAP[chainId][_.toLower(tokenAddress)] ?? {}
-  const { name } = token
+  const chainName = CHAINS_BY_ID[chainId].name
+  const token = TOKEN_HASH_MAP[chainId][tokenAddress] ?? {}
+  const { name } = token.symbol
 
   return (
     <>

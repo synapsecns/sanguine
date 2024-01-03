@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import { CHAIN_ID_NAMES_REVERSE, CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/chains/index'
 import ReactDOM from 'react-dom'
 import { formatDate } from '@utils/formatDate'
 import { TableHeader } from '@components/TransactionTable/TableHeader'

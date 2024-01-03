@@ -14,6 +14,7 @@ import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkB
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
+import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
@@ -27,6 +28,7 @@ export const FromChainListOverlay = () => {
     .pickBy((value) => _.includes(fromChainIds, value.id))
     .values()
     .value()
+    .filter((chain) => !PAUSED_FROM_CHAIN_IDS.includes(chain.id))
 
   possibleChains = sortChains(possibleChains)
 
@@ -35,7 +37,7 @@ export const FromChainListOverlay = () => {
       Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
       fromChainIds.map((id) => CHAINS_BY_ID[id])
     )
-  )
+  ).filter((chain) => !PAUSED_FROM_CHAIN_IDS.includes(chain.id))
 
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
