@@ -40,27 +40,7 @@ export const CHAINS_BY_ID = getChainsByID()
 export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => String(chain.id))
 
 export const PAUSED_FROM_CHAIN_IDS = []
-export const PAUSED_TO_CHAIN_IDS = [
-  all.DOGE.id,
-  all.ETH.id,
-  all.ARBITRUM.id,
-  all.AVALANCHE.id,
-  all.AURORA.id,
-  all.BASE.id,
-  all.BNB.id,
-  all.CANTO.id,
-  all.CRONOS.id,
-  all.DFK.id,
-  all.FANTOM.id,
-  all.HARMONY.id,
-  all.KLAYTN.id,
-  all.METIS.id,
-  all.MOONBEAM.id,
-  all.MOONRIVER.id,
-  all.OPTIMISM.id,
-  all.POLYGON.id,
-  all.BOBA.id,
-]
+export const PAUSED_TO_CHAIN_IDS = [all.DOGE.id]
 
 export const ChainId = {
   ETH: 1,
