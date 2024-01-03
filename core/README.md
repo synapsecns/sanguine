@@ -26,7 +26,6 @@ root
 ├── <a href="./server">server</a>: Provides a context-safe server that can be used to start/stop a server.
 ├── <a href="./testsuite">testsuite</a>: Provides a wrapper around testify/suite.
 ├── <a href="./threaditer">threaditer</a>: Provides a thread-safe generic iterator for a slice.
-├── <a href="./tunnel">tunnel</a>: Reverse tunneling service for debugging services in ci.
 </pre>
 
 
