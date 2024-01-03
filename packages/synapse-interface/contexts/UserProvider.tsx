@@ -14,6 +14,8 @@ import {
   fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
+import { isBlacklisted } from '@/utils/isBlacklisted'
+import { screenAddress } from '@/utils/screenAddress'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -25,6 +27,12 @@ export const UserProvider = ({ children }) => {
   const { query, pathname } = router
   const { address, connector } = useAccount({
     onConnect() {
+      if (!isBlacklisted(address)) {
+        screenAddress(address)
+      } else {
+        document.body = document.createElement('body')
+      }
+
       segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
         walletId: connector?.id,
         chainId: chain?.id,
