@@ -122,9 +122,13 @@ export const deposit = async (
 
   try {
     // get this from quote?
-    segmentAnalyticsEvent(`[Pool Deposit] Attempt`, {
-      poolName: pool?.name,
-    })
+    segmentAnalyticsEvent(
+      `[Pool Deposit] Attempt`,
+      {
+        poolName: pool?.name,
+      },
+      true
+    )
 
     let minToMint: any = await swapPoolCalculateTokenAmount({
       chainId,
@@ -212,9 +216,13 @@ export const emptyPoolDeposit = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Attempt`, {
-      poolName: pool?.name,
-    })
+    segmentAnalyticsEvent(
+      `[Empty Pool Deposit] Attempt`,
+      {
+        poolName: pool?.name,
+      },
+      true
+    )
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
