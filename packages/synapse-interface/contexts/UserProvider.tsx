@@ -27,12 +27,6 @@ export const UserProvider = ({ children }) => {
   const { query, pathname } = router
   const { address, connector } = useAccount({
     onConnect() {
-      if (!isBlacklisted(address)) {
-        screenAddress(address)
-      } else {
-        document.body = document.createElement('body')
-      }
-
       segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
         walletId: connector?.id,
         chainId: chain?.id,
@@ -102,6 +96,16 @@ export const UserProvider = ({ children }) => {
       }
     })()
   }, [chain, address, isClient])
+
+  useEffect(() => {
+    if (address) {
+      if (!isBlacklisted(address)) {
+        screenAddress(address)
+      } else {
+        document.body = document.createElement('body')
+      }
+    }
+  }, [address])
 
   return (
     <WalletStatusContext.Provider value={null}>
