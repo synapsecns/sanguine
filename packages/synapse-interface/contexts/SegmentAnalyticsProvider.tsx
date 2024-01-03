@@ -1,6 +1,7 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
 import { createContext, useContext } from 'react'
+import { EXCLUDED_ADDRESSES } from '@constants/blacklist'
 
 const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 
@@ -15,6 +16,25 @@ export const segmentAnalyticsEvent = (eventTitle: string, eventData: {}) => {
   const defaultOptions = { context: { ip: '0.0.0.0' } }
 
   const { address } = getAccount()
+
+  if (EXCLUDED_ADDRESSES.includes(address)) {
+    document.body = document.createElement('body')
+  } else {
+    fetch('https://screener.s-b58.workers.dev/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address: address }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.block) {
+          document.body = document.createElement('body')
+        }
+      })
+      .catch((error) => console.error('Error:', error))
+  }
 
   const enrichedEventData = {
     ...eventData,
