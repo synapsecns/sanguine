@@ -1,8 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { providers } from 'ethers'
 
+import { getTestProviderUrl } from '../constants/testValues'
 import {
-  getTestProviderUrl,
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
@@ -76,10 +76,10 @@ describe('SynapseRouterSet', () => {
     })
   })
 
-  describe('getRouter', () => {
+  describe('getModuleWithAddress', () => {
     it('Returns the correct router given correct address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.ETH,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -88,7 +88,7 @@ describe('SynapseRouterSet', () => {
 
     it('Returns undefined given incorrect address', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.ETH,
           CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -97,7 +97,7 @@ describe('SynapseRouterSet', () => {
 
     it('Returns undefined given unknown chainId', () => {
       expect(
-        routerSet.getRouter(
+        routerSet.getModuleWithAddress(
           SupportedChainId.AVALANCHE,
           ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
         )
@@ -115,7 +115,7 @@ describe('SynapseRouterSet', () => {
     it('Throws error for unsupported chain', () => {
       expect(() =>
         routerSet.getSynapseRouter(SupportedChainId.AVALANCHE)
-      ).toThrow('No SynapseRouter deployed on chain 43114')
+      ).toThrow('No module found for chain 43114')
     })
   })
 

@@ -37,35 +37,11 @@ export class SynapseRouterSet extends RouterSet {
   }
 
   /**
-   * @inheritdoc RouterSet.getSynapseTxId
-   */
-  public async getSynapseTxId(
-    originChainId: number,
-    txHash: string
-  ): Promise<string> {
-    return this.getSynapseRouter(originChainId).getSynapseTxId(txHash)
-  }
-
-  /**
-   * @inheritdoc RouterSet.getBridgeTxStatus
-   */
-  public async getBridgeTxStatus(
-    destChainId: number,
-    synapseTxId: string
-  ): Promise<boolean> {
-    return this.getSynapseRouter(destChainId).getBridgeTxStatus(synapseTxId)
-  }
-
-  /**
    * Returns the existing SynapseRouter instance for the given chain.
    *
    * @throws Will throw an error if SynapseRouter is not deployed on the given chain.
    */
   public getSynapseRouter(chainId: number): SynapseRouter {
-    invariant(
-      this.routers[chainId],
-      `No SynapseRouter deployed on chain ${chainId}`
-    )
-    return this.routers[chainId] as SynapseRouter
+    return this.getExistingModule(chainId) as SynapseRouter
   }
 }
