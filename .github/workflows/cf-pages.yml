@@ -1,0 +1,59 @@
+name: Cloudflare Pages Deployment
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cf-pages.yml'
+
+jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
+  cf-deploy:
+    runs-on: ubuntu-latest
+    environment: cloudflare-prod
+    permissions:
+      contents: read
+      deployments: write
+    if: ${{ contains(github.event.head_commit.message, '[fe-prod-release]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: |
+          npm run cf:build
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        id: publish
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: synapse-interface # needs to be set to cloudflare pages project name
+          directory: .vercel/output/static
+          # Optional: Enable this if you want to have GitHub Deployments triggered
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Switch what branch you are publishing to.
+          # By default this will be the branch which triggered this workflow
+          branch: master
+          # # Optional: Change the working directory
+          # workingDirectory: my-site
+          # # Optional: Change the Wrangler version, allows you to point to a specific version or a tag such as `beta`
+          # wranglerVersion: '3'
+
+      - name: Outputs
+        run: |
+          echo "ID: ${{ steps.publish.outputs.id }}"
+          echo "URL: ${{ steps.publish.outputs.url }}"
+          echo "Environment: ${{ steps.publish.outputs.environment }}"
+          echo "Alias: ${{ steps.publish.outputs.alias }}"
