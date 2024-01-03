@@ -59,6 +59,7 @@ export const PAUSED_TO_CHAIN_IDS = [
   all.MOONRIVER.id,
   all.OPTIMISM.id,
   all.POLYGON.id,
+  all.BOBA.id,
 ]
 
 export const ChainId = {
