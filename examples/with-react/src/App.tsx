@@ -1,4 +1,11 @@
-import { Bridge, USDC, USDT, DAI, ETH } from '@abtestingalpha/widget'
+import {
+  Bridge,
+  USDC,
+  USDT,
+  DAI,
+  ETH,
+  CustomFallbackRpcs,
+} from '@abtestingalpha/widget'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 import { BaseSyntheticEvent, SyntheticEvent, useState } from 'react'
 import Header from './Header'
@@ -6,6 +13,11 @@ import Footer from './Footer'
 import { Install, Developer, Support } from './icons'
 
 const tokens = [USDC, USDT, DAI, ETH]
+
+const fallbackRpcs: CustomFallbackRpcs = {
+  1: 'https://eth.llamarpc.com',
+  42161: 'https://arbitrum.llamarpc.com',
+}
 
 function App() {
   const [customTheme, setCustomTheme] = useState({})
@@ -84,6 +96,7 @@ function App() {
             >
               <Bridge
                 web3Provider={web3Provider}
+                fallbackRpcs={fallbackRpcs}
                 tokens={tokens}
                 customTheme={customTheme}
                 container={container}
@@ -146,14 +159,14 @@ function App() {
           </p>
           <pre>
             {`// Bridge in
-tokenList = {
-  source: [], destination: [ token, token, token ]
-}
+            tokenList = {
+              source: [], destination: [ token, token, token ]
+            }
 
-// Bridge out
-tokenList = {
-  source: [ token, token, token ], destination: [],
-}`}
+            // Bridge out
+            tokenList = {
+              source: [ token, token, token ], destination: [],
+            }`}
           </pre>
 
           <h3>Appearance</h3>
@@ -171,10 +184,10 @@ tokenList = {
           </p>
           <pre>
             {`customTheme = {
-  bgColor: '#000A14'
-  bgColor: 'rgb(0 10 20)'
-  bgColor: 'hsl(210deg 100% 4%)'
-}`}
+              bgColor: '#000A14'
+              bgColor: 'rgb(0 10 20)'
+              bgColor: 'hsl(210deg 100% 4%)'
+            }`}
           </pre>
           {/* <h4>Accent Color</h4>
           Add an accent color to text links and button hover states by setting accentColor to any hex, rgb, or hsl color string.
@@ -193,14 +206,14 @@ tokenList = {
           </p>
           <pre>
             {`customTheme = {
-  --synapse-text: 'white'
-  --synapse-secondary: '#cccccc'
-  --synapse-focus: 'hsl(285deg 100% 33%)'
-  --synapse-border: 'hsl(210deg 100% 25%)'
-  --synapse-object: 'hsl(210deg 100% 50%)'
-  --synapse-surface: 'hsl(210deg 100% 12.5%)'
-  --synapse-root: 'inherit'
-}`}
+              --synapse-text: 'white'
+              --synapse-secondary: '#cccccc'
+              --synapse-focus: 'hsl(285deg 100% 33%)'
+              --synapse-border: 'hsl(210deg 100% 25%)'
+              --synapse-object: 'hsl(210deg 100% 50%)'
+              --synapse-surface: 'hsl(210deg 100% 12.5%)'
+              --synapse-root: 'inherit'
+            }`}
           </pre>
           <h4>Object Overrides</h4>
           <p>
@@ -209,14 +222,14 @@ tokenList = {
           </p>
           <pre>
             {`customTheme = {
-  --synapse-select-bg: 'var(--synapse-object)'
-  --synapse-select-text: 'white'
-  --synapse-select-border: 'var(--synapse-object)'
+              --synapse-select-bg: 'var(--synapse-object)'
+              --synapse-select-text: 'white'
+              --synapse-select-border: 'var(--synapse-object)'
 
-  --synapse-button-bg: 'var(--synapse-object)'
-  --synapse-button-text: 'white'
-  --synapse-button-border: 'var(--synapse-object)'
-}`}
+              --synapse-button-bg: 'var(--synapse-object)'
+              --synapse-button-text: 'white'
+              --synapse-button-border: 'var(--synapse-object)'
+            }`}
           </pre>
           {/* <h3>Typography — WIP, not reflected in code</h3>
           <dl>

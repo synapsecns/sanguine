@@ -15,25 +15,37 @@ export const useWalletState = (): RootState['wallet'] => {
 
 export const fetchAndStoreTokenBalances = createAsyncThunk(
   'wallet/fetchAndStoreTokenBalances',
-  async ({
-    address,
-    chainId,
-    tokens,
-    signerOrProvider,
-  }: {
-    address: string
-    chainId: number
-    tokens: BridgeableToken[]
-    signerOrProvider: any
-  }) => {
-    const balances: TokenBalance[] = await fetchTokenBalances({
+  async (
+    {
       address,
       chainId,
       tokens,
       signerOrProvider,
-    })
+    }: {
+      address: string
+      chainId: number
+      tokens: BridgeableToken[]
+      signerOrProvider: any
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const balances: TokenBalance[] = await fetchTokenBalances({
+        address,
+        chainId,
+        tokens,
+        signerOrProvider,
+      })
 
-    return balances
+      /** Throw and store error when response invalid */
+      if (!Array.isArray(balances)) {
+        throw new Error(balances)
+      }
+
+      return balances
+    } catch (error) {
+      return rejectWithValue(error?.message)
+    }
   }
 )
 

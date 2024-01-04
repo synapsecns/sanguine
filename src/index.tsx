@@ -1,6 +1,6 @@
 import './index.css'
 ;('use client')
-import { WidgetProps } from 'types'
+import { WidgetProps, CustomFallbackRpcs } from 'types'
 import { Widget } from './components/Widget'
 import { Web3Provider } from 'providers/Web3Provider'
 import { Provider } from 'react-redux'
@@ -17,6 +17,7 @@ import { CHAINS, CHAINS_ARRAY } from './constants/chains'
 
 export const Bridge = ({
   web3Provider,
+  fallbackRpcs,
   theme,
   customTheme,
   container,
@@ -25,7 +26,7 @@ export const Bridge = ({
 }: WidgetProps) => {
   return (
     <Web3Provider config={web3Provider}>
-      <SynapseProvider chains={CHAINS_ARRAY}>
+      <SynapseProvider chains={CHAINS_ARRAY} fallbackRpcs={fallbackRpcs}>
         <Provider store={store}>
           <TransactionsUpdater />
           <Widget

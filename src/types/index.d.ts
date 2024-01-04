@@ -24,9 +24,17 @@ export interface CustomThemeVariables {
   '--synapse-accent'?: string
 }
 
+// TODO: Determine if this type if needed, or move to correct location
+export type CustomFallbackRpcs = {
+  [chainId: number]: string
+}
+
 export interface WidgetProps {
   /** Consumer Web3 Provider */
   web3Provider?: JsonRpcApiProvider | BrowserProvider
+
+  /** Consumer selected RPCs */
+  fallbackRpcs?: CustomFallbackRpcs
 
   /** Selected Day/Night Theme */
   theme?: 'light' | 'dark'

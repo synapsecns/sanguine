@@ -32,12 +32,14 @@ export const walletSlice = createSlice({
       .addCase(fetchAndStoreTokenBalances.pending, (state) => {
         state.balances = []
         state.status = FetchState.LOADING
+        state.error = null
       })
       .addCase(
         fetchAndStoreTokenBalances.fulfilled,
         (state, action: PayloadAction<TokenBalance[]>) => {
           state.balances = action.payload
           state.status = FetchState.VALID
+          state.error = null
         }
       )
       .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
@@ -46,12 +48,14 @@ export const walletSlice = createSlice({
       })
       .addCase(fetchAndStoreAllowance.pending, (state) => {
         state.status = FetchState.LOADING
+        state.error = null
       })
       .addCase(
         fetchAndStoreAllowance.fulfilled,
         (state, action: PayloadAction<string>) => {
           state.allowance = action.payload
           state.status = FetchState.VALID
+          state.error = null
         }
       )
       .addCase(fetchAndStoreAllowance.rejected, (state, action) => {
