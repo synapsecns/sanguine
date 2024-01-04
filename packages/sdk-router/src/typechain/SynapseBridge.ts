@@ -4,11 +4,11 @@
 import type {
   BaseContract,
   BigNumber,
+  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -24,83 +24,613 @@ import type {
   TypedEvent,
   TypedListener,
   OnEvent,
-  PromiseOrValue,
 } from './common'
 
 export interface SynapseBridgeInterface extends utils.Interface {
   functions: {
-    'admin()': FunctionFragment
-    'changeAdmin(address)': FunctionFragment
-    'implementation()': FunctionFragment
-    'upgradeTo(address)': FunctionFragment
-    'upgradeToAndCall(address,bytes)': FunctionFragment
+    'DEFAULT_ADMIN_ROLE()': FunctionFragment
+    'GOVERNANCE_ROLE()': FunctionFragment
+    'NODEGROUP_ROLE()': FunctionFragment
+    'WETH_ADDRESS()': FunctionFragment
+    'addKappas(bytes32[])': FunctionFragment
+    'bridgeVersion()': FunctionFragment
+    'chainGasAmount()': FunctionFragment
+    'deposit(address,uint256,address,uint256)': FunctionFragment
+    'depositAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)': FunctionFragment
+    'getFeeBalance(address)': FunctionFragment
+    'getRoleAdmin(bytes32)': FunctionFragment
+    'getRoleMember(bytes32,uint256)': FunctionFragment
+    'getRoleMemberCount(bytes32)': FunctionFragment
+    'grantRole(bytes32,address)': FunctionFragment
+    'hasRole(bytes32,address)': FunctionFragment
+    'initialize()': FunctionFragment
+    'kappaExists(bytes32)': FunctionFragment
+    'mint(address,address,uint256,uint256,bytes32)': FunctionFragment
+    'mintAndSwap(address,address,uint256,uint256,address,uint8,uint8,uint256,uint256,bytes32)': FunctionFragment
+    'pause()': FunctionFragment
+    'paused()': FunctionFragment
+    'redeem(address,uint256,address,uint256)': FunctionFragment
+    'redeemAndRemove(address,uint256,address,uint256,uint8,uint256,uint256)': FunctionFragment
+    'redeemAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)': FunctionFragment
+    'redeemV2(bytes32,uint256,address,uint256)': FunctionFragment
+    'renounceRole(bytes32,address)': FunctionFragment
+    'revokeRole(bytes32,address)': FunctionFragment
+    'setChainGasAmount(uint256)': FunctionFragment
+    'setWethAddress(address)': FunctionFragment
+    'startBlockNumber()': FunctionFragment
+    'unpause()': FunctionFragment
+    'withdraw(address,address,uint256,uint256,bytes32)': FunctionFragment
+    'withdrawAndRemove(address,address,uint256,uint256,address,uint8,uint256,uint256,bytes32)': FunctionFragment
+    'withdrawFees(address,address)': FunctionFragment
   }
 
   getFunction(
     nameOrSignatureOrTopic:
-      | 'admin'
-      | 'changeAdmin'
-      | 'implementation'
-      | 'upgradeTo'
-      | 'upgradeToAndCall'
+      | 'DEFAULT_ADMIN_ROLE'
+      | 'GOVERNANCE_ROLE'
+      | 'NODEGROUP_ROLE'
+      | 'WETH_ADDRESS'
+      | 'addKappas'
+      | 'bridgeVersion'
+      | 'chainGasAmount'
+      | 'deposit'
+      | 'depositAndSwap'
+      | 'getFeeBalance'
+      | 'getRoleAdmin'
+      | 'getRoleMember'
+      | 'getRoleMemberCount'
+      | 'grantRole'
+      | 'hasRole'
+      | 'initialize'
+      | 'kappaExists'
+      | 'mint'
+      | 'mintAndSwap'
+      | 'pause'
+      | 'paused'
+      | 'redeem'
+      | 'redeemAndRemove'
+      | 'redeemAndSwap'
+      | 'redeemV2'
+      | 'renounceRole'
+      | 'revokeRole'
+      | 'setChainGasAmount'
+      | 'setWethAddress'
+      | 'startBlockNumber'
+      | 'unpause'
+      | 'withdraw'
+      | 'withdrawAndRemove'
+      | 'withdrawFees'
   ): FunctionFragment
 
-  encodeFunctionData(functionFragment: 'admin', values?: undefined): string
   encodeFunctionData(
-    functionFragment: 'changeAdmin',
-    values: [PromiseOrValue<string>]
-  ): string
-  encodeFunctionData(
-    functionFragment: 'implementation',
+    functionFragment: 'DEFAULT_ADMIN_ROLE',
     values?: undefined
   ): string
   encodeFunctionData(
-    functionFragment: 'upgradeTo',
-    values: [PromiseOrValue<string>]
+    functionFragment: 'GOVERNANCE_ROLE',
+    values?: undefined
   ): string
   encodeFunctionData(
-    functionFragment: 'upgradeToAndCall',
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+    functionFragment: 'NODEGROUP_ROLE',
+    values?: undefined
+  ): string
+  encodeFunctionData(
+    functionFragment: 'WETH_ADDRESS',
+    values?: undefined
+  ): string
+  encodeFunctionData(
+    functionFragment: 'addKappas',
+    values: [BytesLike[]]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'bridgeVersion',
+    values?: undefined
+  ): string
+  encodeFunctionData(
+    functionFragment: 'chainGasAmount',
+    values?: undefined
+  ): string
+  encodeFunctionData(
+    functionFragment: 'deposit',
+    values: [string, BigNumberish, string, BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'depositAndSwap',
+    values: [
+      string,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'getFeeBalance',
+    values: [string]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'getRoleAdmin',
+    values: [BytesLike]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'getRoleMember',
+    values: [BytesLike, BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'getRoleMemberCount',
+    values: [BytesLike]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'grantRole',
+    values: [BytesLike, string]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'hasRole',
+    values: [BytesLike, string]
+  ): string
+  encodeFunctionData(functionFragment: 'initialize', values?: undefined): string
+  encodeFunctionData(
+    functionFragment: 'kappaExists',
+    values: [BytesLike]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'mint',
+    values: [string, string, BigNumberish, BigNumberish, BytesLike]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'mintAndSwap',
+    values: [
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BytesLike
+    ]
+  ): string
+  encodeFunctionData(functionFragment: 'pause', values?: undefined): string
+  encodeFunctionData(functionFragment: 'paused', values?: undefined): string
+  encodeFunctionData(
+    functionFragment: 'redeem',
+    values: [string, BigNumberish, string, BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'redeemAndRemove',
+    values: [
+      string,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'redeemAndSwap',
+    values: [
+      string,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'redeemV2',
+    values: [BytesLike, BigNumberish, string, BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'renounceRole',
+    values: [BytesLike, string]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'revokeRole',
+    values: [BytesLike, string]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'setChainGasAmount',
+    values: [BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'setWethAddress',
+    values: [string]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'startBlockNumber',
+    values?: undefined
+  ): string
+  encodeFunctionData(functionFragment: 'unpause', values?: undefined): string
+  encodeFunctionData(
+    functionFragment: 'withdraw',
+    values: [string, string, BigNumberish, BigNumberish, BytesLike]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'withdrawAndRemove',
+    values: [
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BytesLike
+    ]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'withdrawFees',
+    values: [string, string]
   ): string
 
-  decodeFunctionResult(functionFragment: 'admin', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'changeAdmin', data: BytesLike): Result
   decodeFunctionResult(
-    functionFragment: 'implementation',
+    functionFragment: 'DEFAULT_ADMIN_ROLE',
     data: BytesLike
   ): Result
-  decodeFunctionResult(functionFragment: 'upgradeTo', data: BytesLike): Result
   decodeFunctionResult(
-    functionFragment: 'upgradeToAndCall',
+    functionFragment: 'GOVERNANCE_ROLE',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'NODEGROUP_ROLE',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'WETH_ADDRESS',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'addKappas', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'bridgeVersion',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'chainGasAmount',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'deposit', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'depositAndSwap',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'getFeeBalance',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'getRoleAdmin',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'getRoleMember',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'getRoleMemberCount',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'grantRole', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'hasRole', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'kappaExists', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'mint', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'mintAndSwap', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'pause', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'paused', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'redeem', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'redeemAndRemove',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'redeemAndSwap',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'redeemV2', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'renounceRole',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'revokeRole', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'setChainGasAmount',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'setWethAddress',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'startBlockNumber',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(functionFragment: 'unpause', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'withdraw', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: 'withdrawAndRemove',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'withdrawFees',
     data: BytesLike
   ): Result
 
   events: {
-    'AdminChanged(address,address)': EventFragment
-    'Upgraded(address)': EventFragment
+    'Paused(address)': EventFragment
+    'RoleAdminChanged(bytes32,bytes32,bytes32)': EventFragment
+    'RoleGranted(bytes32,address,address)': EventFragment
+    'RoleRevoked(bytes32,address,address)': EventFragment
+    'TokenDeposit(address,uint256,address,uint256)': EventFragment
+    'TokenDepositAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)': EventFragment
+    'TokenMint(address,address,uint256,uint256,bytes32)': EventFragment
+    'TokenMintAndSwap(address,address,uint256,uint256,uint8,uint8,uint256,uint256,bool,bytes32)': EventFragment
+    'TokenRedeem(address,uint256,address,uint256)': EventFragment
+    'TokenRedeemAndRemove(address,uint256,address,uint256,uint8,uint256,uint256)': EventFragment
+    'TokenRedeemAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)': EventFragment
+    'TokenRedeemV2(bytes32,uint256,address,uint256)': EventFragment
+    'TokenWithdraw(address,address,uint256,uint256,bytes32)': EventFragment
+    'TokenWithdrawAndRemove(address,address,uint256,uint256,uint8,uint256,uint256,bool,bytes32)': EventFragment
+    'Unpaused(address)': EventFragment
   }
 
-  getEvent(nameOrSignatureOrTopic: 'AdminChanged'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'Upgraded'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'Paused'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'RoleAdminChanged'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'RoleGranted'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'RoleRevoked'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenDeposit'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenDepositAndSwap'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenMint'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenMintAndSwap'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenRedeem'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenRedeemAndRemove'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenRedeemAndSwap'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenRedeemV2'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenWithdraw'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'TokenWithdrawAndRemove'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'Unpaused'): EventFragment
 }
 
-export interface AdminChangedEventObject {
-  previousAdmin: string
-  newAdmin: string
+export interface PausedEventObject {
+  account: string
 }
-export type AdminChangedEvent = TypedEvent<
-  [string, string],
-  AdminChangedEventObject
+export type PausedEvent = TypedEvent<[string], PausedEventObject>
+
+export type PausedEventFilter = TypedEventFilter<PausedEvent>
+
+export interface RoleAdminChangedEventObject {
+  role: string
+  previousAdminRole: string
+  newAdminRole: string
+}
+export type RoleAdminChangedEvent = TypedEvent<
+  [string, string, string],
+  RoleAdminChangedEventObject
 >
 
-export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>
+export type RoleAdminChangedEventFilter =
+  TypedEventFilter<RoleAdminChangedEvent>
 
-export interface UpgradedEventObject {
-  implementation: string
+export interface RoleGrantedEventObject {
+  role: string
+  account: string
+  sender: string
 }
-export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>
+export type RoleGrantedEvent = TypedEvent<
+  [string, string, string],
+  RoleGrantedEventObject
+>
 
-export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>
+export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>
+
+export interface RoleRevokedEventObject {
+  role: string
+  account: string
+  sender: string
+}
+export type RoleRevokedEvent = TypedEvent<
+  [string, string, string],
+  RoleRevokedEventObject
+>
+
+export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>
+
+export interface TokenDepositEventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+}
+export type TokenDepositEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  TokenDepositEventObject
+>
+
+export type TokenDepositEventFilter = TypedEventFilter<TokenDepositEvent>
+
+export interface TokenDepositAndSwapEventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+  tokenIndexFrom: number
+  tokenIndexTo: number
+  minDy: BigNumber
+  deadline: BigNumber
+}
+export type TokenDepositAndSwapEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber, number, number, BigNumber, BigNumber],
+  TokenDepositAndSwapEventObject
+>
+
+export type TokenDepositAndSwapEventFilter =
+  TypedEventFilter<TokenDepositAndSwapEvent>
+
+export interface TokenMintEventObject {
+  to: string
+  token: string
+  amount: BigNumber
+  fee: BigNumber
+  kappa: string
+}
+export type TokenMintEvent = TypedEvent<
+  [string, string, BigNumber, BigNumber, string],
+  TokenMintEventObject
+>
+
+export type TokenMintEventFilter = TypedEventFilter<TokenMintEvent>
+
+export interface TokenMintAndSwapEventObject {
+  to: string
+  token: string
+  amount: BigNumber
+  fee: BigNumber
+  tokenIndexFrom: number
+  tokenIndexTo: number
+  minDy: BigNumber
+  deadline: BigNumber
+  swapSuccess: boolean
+  kappa: string
+}
+export type TokenMintAndSwapEvent = TypedEvent<
+  [
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    number,
+    number,
+    BigNumber,
+    BigNumber,
+    boolean,
+    string
+  ],
+  TokenMintAndSwapEventObject
+>
+
+export type TokenMintAndSwapEventFilter =
+  TypedEventFilter<TokenMintAndSwapEvent>
+
+export interface TokenRedeemEventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+}
+export type TokenRedeemEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  TokenRedeemEventObject
+>
+
+export type TokenRedeemEventFilter = TypedEventFilter<TokenRedeemEvent>
+
+export interface TokenRedeemAndRemoveEventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+  swapTokenIndex: number
+  swapMinAmount: BigNumber
+  swapDeadline: BigNumber
+}
+export type TokenRedeemAndRemoveEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber, number, BigNumber, BigNumber],
+  TokenRedeemAndRemoveEventObject
+>
+
+export type TokenRedeemAndRemoveEventFilter =
+  TypedEventFilter<TokenRedeemAndRemoveEvent>
+
+export interface TokenRedeemAndSwapEventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+  tokenIndexFrom: number
+  tokenIndexTo: number
+  minDy: BigNumber
+  deadline: BigNumber
+}
+export type TokenRedeemAndSwapEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber, number, number, BigNumber, BigNumber],
+  TokenRedeemAndSwapEventObject
+>
+
+export type TokenRedeemAndSwapEventFilter =
+  TypedEventFilter<TokenRedeemAndSwapEvent>
+
+export interface TokenRedeemV2EventObject {
+  to: string
+  chainId: BigNumber
+  token: string
+  amount: BigNumber
+}
+export type TokenRedeemV2Event = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  TokenRedeemV2EventObject
+>
+
+export type TokenRedeemV2EventFilter = TypedEventFilter<TokenRedeemV2Event>
+
+export interface TokenWithdrawEventObject {
+  to: string
+  token: string
+  amount: BigNumber
+  fee: BigNumber
+  kappa: string
+}
+export type TokenWithdrawEvent = TypedEvent<
+  [string, string, BigNumber, BigNumber, string],
+  TokenWithdrawEventObject
+>
+
+export type TokenWithdrawEventFilter = TypedEventFilter<TokenWithdrawEvent>
+
+export interface TokenWithdrawAndRemoveEventObject {
+  to: string
+  token: string
+  amount: BigNumber
+  fee: BigNumber
+  swapTokenIndex: number
+  swapMinAmount: BigNumber
+  swapDeadline: BigNumber
+  swapSuccess: boolean
+  kappa: string
+}
+export type TokenWithdrawAndRemoveEvent = TypedEvent<
+  [
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    number,
+    BigNumber,
+    BigNumber,
+    boolean,
+    string
+  ],
+  TokenWithdrawAndRemoveEventObject
+>
+
+export type TokenWithdrawAndRemoveEventFilter =
+  TypedEventFilter<TokenWithdrawAndRemoveEvent>
+
+export interface UnpausedEventObject {
+  account: string
+}
+export type UnpausedEvent = TypedEvent<[string], UnpausedEventObject>
+
+export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>
 
 export interface SynapseBridge extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this
@@ -129,141 +659,1203 @@ export interface SynapseBridge extends BaseContract {
   removeListener: OnEvent<this>
 
   functions: {
-    admin(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>
+
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<[string]>
+
+    NODEGROUP_ROLE(overrides?: CallOverrides): Promise<[string]>
+
+    WETH_ADDRESS(overrides?: CallOverrides): Promise<[string]>
+
+    addKappas(
+      kappas: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
-    changeAdmin(
-      newAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    bridgeVersion(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    chainGasAmount(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    deposit(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
-    implementation(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    depositAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    getFeeBalance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>
+
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>
+
+    getRoleMember(
+      role: BytesLike,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>
+
+    getRoleMemberCount(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>
+
+    initialize(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    kappaExists(kappa: BytesLike, overrides?: CallOverrides): Promise<[boolean]>
+
+    mint(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    mintAndSwap(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    pause(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    paused(overrides?: CallOverrides): Promise<[boolean]>
+
+    redeem(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    redeemAndRemove(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    redeemAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    redeemV2(
+      to: BytesLike,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    setChainGasAmount(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    startBlockNumber(overrides?: CallOverrides): Promise<[BigNumber]>
+
+    unpause(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    withdraw(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    withdrawAndRemove(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>
+
+    withdrawFees(
+      token: string,
+      to: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
   }
 
-  admin(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>
+
+  GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>
+
+  NODEGROUP_ROLE(overrides?: CallOverrides): Promise<string>
+
+  WETH_ADDRESS(overrides?: CallOverrides): Promise<string>
+
+  addKappas(
+    kappas: BytesLike[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
-  changeAdmin(
-    newAdmin: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>
+
+  chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
+
+  deposit(
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
-  implementation(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  depositAndSwap(
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    tokenIndexFrom: BigNumberish,
+    tokenIndexTo: BigNumberish,
+    minDy: BigNumberish,
+    deadline: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
-  upgradeTo(
-    newImplementation: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  getFeeBalance(
+    tokenAddress: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>
+
+  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>
+
+  getRoleMember(
+    role: BytesLike,
+    index: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>
+
+  getRoleMemberCount(
+    role: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>
+
+  grantRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
-  upgradeToAndCall(
-    newImplementation: PromiseOrValue<string>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  hasRole(
+    role: BytesLike,
+    account: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>
+
+  initialize(
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  kappaExists(kappa: BytesLike, overrides?: CallOverrides): Promise<boolean>
+
+  mint(
+    to: string,
+    token: string,
+    amount: BigNumberish,
+    fee: BigNumberish,
+    kappa: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  mintAndSwap(
+    to: string,
+    token: string,
+    amount: BigNumberish,
+    fee: BigNumberish,
+    pool: string,
+    tokenIndexFrom: BigNumberish,
+    tokenIndexTo: BigNumberish,
+    minDy: BigNumberish,
+    deadline: BigNumberish,
+    kappa: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  pause(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>
+
+  paused(overrides?: CallOverrides): Promise<boolean>
+
+  redeem(
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  redeemAndRemove(
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    swapTokenIndex: BigNumberish,
+    swapMinAmount: BigNumberish,
+    swapDeadline: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  redeemAndSwap(
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    tokenIndexFrom: BigNumberish,
+    tokenIndexTo: BigNumberish,
+    minDy: BigNumberish,
+    deadline: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  redeemV2(
+    to: BytesLike,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  renounceRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  revokeRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  setChainGasAmount(
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  setWethAddress(
+    _wethAddress: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  startBlockNumber(overrides?: CallOverrides): Promise<BigNumber>
+
+  unpause(
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  withdraw(
+    to: string,
+    token: string,
+    amount: BigNumberish,
+    fee: BigNumberish,
+    kappa: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  withdrawAndRemove(
+    to: string,
+    token: string,
+    amount: BigNumberish,
+    fee: BigNumberish,
+    pool: string,
+    swapTokenIndex: BigNumberish,
+    swapMinAmount: BigNumberish,
+    swapDeadline: BigNumberish,
+    kappa: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>
+
+  withdrawFees(
+    token: string,
+    to: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   callStatic: {
-    admin(overrides?: CallOverrides): Promise<string>
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>
 
-    changeAdmin(
-      newAdmin: PromiseOrValue<string>,
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>
+
+    NODEGROUP_ROLE(overrides?: CallOverrides): Promise<string>
+
+    WETH_ADDRESS(overrides?: CallOverrides): Promise<string>
+
+    addKappas(kappas: BytesLike[], overrides?: CallOverrides): Promise<void>
+
+    bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>
+
+    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
+
+    deposit(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>
 
-    implementation(overrides?: CallOverrides): Promise<string>
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
+    depositAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
+    getFeeBalance(
+      tokenAddress: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>
+
+    getRoleMember(
+      role: BytesLike,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>
+
+    getRoleMemberCount(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>
+
+    initialize(overrides?: CallOverrides): Promise<void>
+
+    kappaExists(kappa: BytesLike, overrides?: CallOverrides): Promise<boolean>
+
+    mint(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    mintAndSwap(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    pause(overrides?: CallOverrides): Promise<void>
+
+    paused(overrides?: CallOverrides): Promise<boolean>
+
+    redeem(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    redeemAndRemove(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    redeemAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    redeemV2(
+      to: BytesLike,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    setChainGasAmount(
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    startBlockNumber(overrides?: CallOverrides): Promise<BigNumber>
+
+    unpause(overrides?: CallOverrides): Promise<void>
+
+    withdraw(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    withdrawAndRemove(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>
+
+    withdrawFees(
+      token: string,
+      to: string,
       overrides?: CallOverrides
     ): Promise<void>
   }
 
   filters: {
-    'AdminChanged(address,address)'(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter
-    AdminChanged(previousAdmin?: null, newAdmin?: null): AdminChangedEventFilter
+    'Paused(address)'(account?: null): PausedEventFilter
+    Paused(account?: null): PausedEventFilter
 
-    'Upgraded(address)'(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter
-    Upgraded(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter
+    'RoleAdminChanged(bytes32,bytes32,bytes32)'(
+      role?: BytesLike | null,
+      previousAdminRole?: BytesLike | null,
+      newAdminRole?: BytesLike | null
+    ): RoleAdminChangedEventFilter
+    RoleAdminChanged(
+      role?: BytesLike | null,
+      previousAdminRole?: BytesLike | null,
+      newAdminRole?: BytesLike | null
+    ): RoleAdminChangedEventFilter
+
+    'RoleGranted(bytes32,address,address)'(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleGrantedEventFilter
+    RoleGranted(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleGrantedEventFilter
+
+    'RoleRevoked(bytes32,address,address)'(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleRevokedEventFilter
+    RoleRevoked(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleRevokedEventFilter
+
+    'TokenDeposit(address,uint256,address,uint256)'(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenDepositEventFilter
+    TokenDeposit(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenDepositEventFilter
+
+    'TokenDepositAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)'(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null
+    ): TokenDepositAndSwapEventFilter
+    TokenDepositAndSwap(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null
+    ): TokenDepositAndSwapEventFilter
+
+    'TokenMint(address,address,uint256,uint256,bytes32)'(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      kappa?: BytesLike | null
+    ): TokenMintEventFilter
+    TokenMint(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      kappa?: BytesLike | null
+    ): TokenMintEventFilter
+
+    'TokenMintAndSwap(address,address,uint256,uint256,uint8,uint8,uint256,uint256,bool,bytes32)'(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null,
+      swapSuccess?: null,
+      kappa?: BytesLike | null
+    ): TokenMintAndSwapEventFilter
+    TokenMintAndSwap(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null,
+      swapSuccess?: null,
+      kappa?: BytesLike | null
+    ): TokenMintAndSwapEventFilter
+
+    'TokenRedeem(address,uint256,address,uint256)'(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenRedeemEventFilter
+    TokenRedeem(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenRedeemEventFilter
+
+    'TokenRedeemAndRemove(address,uint256,address,uint256,uint8,uint256,uint256)'(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      swapTokenIndex?: null,
+      swapMinAmount?: null,
+      swapDeadline?: null
+    ): TokenRedeemAndRemoveEventFilter
+    TokenRedeemAndRemove(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      swapTokenIndex?: null,
+      swapMinAmount?: null,
+      swapDeadline?: null
+    ): TokenRedeemAndRemoveEventFilter
+
+    'TokenRedeemAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)'(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null
+    ): TokenRedeemAndSwapEventFilter
+    TokenRedeemAndSwap(
+      to?: string | null,
+      chainId?: null,
+      token?: null,
+      amount?: null,
+      tokenIndexFrom?: null,
+      tokenIndexTo?: null,
+      minDy?: null,
+      deadline?: null
+    ): TokenRedeemAndSwapEventFilter
+
+    'TokenRedeemV2(bytes32,uint256,address,uint256)'(
+      to?: BytesLike | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenRedeemV2EventFilter
+    TokenRedeemV2(
+      to?: BytesLike | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): TokenRedeemV2EventFilter
+
+    'TokenWithdraw(address,address,uint256,uint256,bytes32)'(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      kappa?: BytesLike | null
+    ): TokenWithdrawEventFilter
+    TokenWithdraw(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      kappa?: BytesLike | null
+    ): TokenWithdrawEventFilter
+
+    'TokenWithdrawAndRemove(address,address,uint256,uint256,uint8,uint256,uint256,bool,bytes32)'(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      swapTokenIndex?: null,
+      swapMinAmount?: null,
+      swapDeadline?: null,
+      swapSuccess?: null,
+      kappa?: BytesLike | null
+    ): TokenWithdrawAndRemoveEventFilter
+    TokenWithdrawAndRemove(
+      to?: string | null,
+      token?: null,
+      amount?: null,
+      fee?: null,
+      swapTokenIndex?: null,
+      swapMinAmount?: null,
+      swapDeadline?: null,
+      swapSuccess?: null,
+      kappa?: BytesLike | null
+    ): TokenWithdrawAndRemoveEventFilter
+
+    'Unpaused(address)'(account?: null): UnpausedEventFilter
+    Unpaused(account?: null): UnpausedEventFilter
   }
 
   estimateGas: {
-    admin(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+
+    NODEGROUP_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+
+    WETH_ADDRESS(overrides?: CallOverrides): Promise<BigNumber>
+
+    addKappas(
+      kappas: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
-    changeAdmin(
-      newAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>
+
+    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
+
+    deposit(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
-    implementation(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    depositAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    getFeeBalance(
+      tokenAddress: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
+
+    getRoleMember(
+      role: BytesLike,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    getRoleMemberCount(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    initialize(overrides?: Overrides & { from?: string }): Promise<BigNumber>
+
+    kappaExists(kappa: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
+
+    mint(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    mintAndSwap(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    pause(overrides?: Overrides & { from?: string }): Promise<BigNumber>
+
+    paused(overrides?: CallOverrides): Promise<BigNumber>
+
+    redeem(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    redeemAndRemove(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    redeemAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    redeemV2(
+      to: BytesLike,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    setChainGasAmount(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    startBlockNumber(overrides?: CallOverrides): Promise<BigNumber>
+
+    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>
+
+    withdraw(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    withdrawAndRemove(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>
+
+    withdrawFees(
+      token: string,
+      to: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
   }
 
   populateTransaction: {
-    admin(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    NODEGROUP_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    WETH_ADDRESS(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    addKappas(
+      kappas: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
-    changeAdmin(
-      newAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    bridgeVersion(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    chainGasAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    deposit(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
-    implementation(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    depositAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    getFeeBalance(
+      tokenAddress: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    getRoleAdmin(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    getRoleMember(
+      role: BytesLike,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    getRoleMemberCount(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    initialize(
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    kappaExists(
+      kappa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    mint(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    mintAndSwap(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    pause(
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    paused(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    redeem(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    redeemAndRemove(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    redeemAndSwap(
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      minDy: BigNumberish,
+      deadline: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    redeemV2(
+      to: BytesLike,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    setChainGasAmount(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    startBlockNumber(overrides?: CallOverrides): Promise<PopulatedTransaction>
+
+    unpause(
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    withdraw(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    withdrawAndRemove(
+      to: string,
+      token: string,
+      amount: BigNumberish,
+      fee: BigNumberish,
+      pool: string,
+      swapTokenIndex: BigNumberish,
+      swapMinAmount: BigNumberish,
+      swapDeadline: BigNumberish,
+      kappa: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>
+
+    withdrawFees(
+      token: string,
+      to: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
   }
 }
