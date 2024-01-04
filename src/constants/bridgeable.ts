@@ -1046,7 +1046,7 @@ export const BTCB = {
   routeSymbol: 'BTC.b',
 }
 
-export const DAIE = {
+export const DAIe = {
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
   },
