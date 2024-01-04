@@ -55,7 +55,10 @@ export const executeBridgeTxn = createAsyncThunk(
             to: data.to,
             value: amount,
           }
-        : data
+        : {
+            data: data.data,
+            to: data.to,
+          }
 
     const tx = await signer.sendTransaction(payload)
 
