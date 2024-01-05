@@ -11,7 +11,7 @@ const BASE_PROPERTIES = `
     text-white
     bg-[#343036]
     border border-separator
-    disabled:cursor-default disabled:opacity-40 disabled:border-transparent
+    disabled:cursor-default disabled:opacity-40 disabled:border-transparent disabled:hover:opacity-30
   `
 
 export const TransactionButton = ({
