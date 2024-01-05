@@ -23,6 +23,8 @@ import { getAllQuotes } from './api'
 import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export class FastBridgeSet extends SynapseModuleSet {
+  static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
+
   public readonly bridgeModuleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
 
@@ -156,6 +158,10 @@ export class FastBridgeSet extends SynapseModuleSet {
         (quote) =>
           quote.ticker.originToken.token.toLowerCase() === tokenIn.toLowerCase()
       )
+      .filter((quote) => {
+        const age = Date.now() - quote.updatedAt
+        return 0 <= age && age < FastBridgeSet.MAX_QUOTE_AGE_MILLISECONDS
+      })
       .map((quote) => ({
         quote,
         originQuery: createNoSwapQuery(tokenIn, BigNumber.from(amountIn)),

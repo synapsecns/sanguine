@@ -159,6 +159,8 @@ const createBridgeRoutesTests = (
         json: () => Promise.resolve(mockedQuotesAPI),
       })
     ) as any
+    // Use UpdatedAt + 1 minute as the current time
+    Date.now = jest.fn(() => Date.parse('2021-01-01T00:01:00.000Z'))
   })
 
   describe('arbA -> opA [no routes]', () => {
@@ -283,6 +285,55 @@ const createBridgeRoutesTests = (
       parseFixed('11011', originDecimals),
       []
     )
+  })
+
+  describe('timestamps', () => {
+    afterEach(() => {
+      // Use UpdatedAt + 1 minute as the current time
+      Date.now = jest.fn(() => Date.parse('2021-01-01T00:01:00.000Z'))
+    })
+
+    it('ignores quotes with negative age', async () => {
+      Date.now = jest.fn(() => Date.parse('2021-01-01T00:00:00.000Z') - 1)
+      // arbB -> opB should have two quotes for 500 by default
+      // But we expect zero quotes because the quotes are outdated
+      const routes = await fastBridgeSet.getBridgeRoutes(
+        arbB.chainId,
+        opB.chainId,
+        arbB.token,
+        opB.token,
+        parseFixed('500', originDecimals)
+      )
+      expect(routes.length).toEqual(0)
+    })
+
+    it('ignores quotes with age of 5 minutes', async () => {
+      Date.now = jest.fn(() => Date.parse('2021-01-01T00:05:00.000Z'))
+      // arbB -> opB should have two quotes for 500 by default
+      // But we expect zero quotes because the quotes are outdated
+      const routes = await fastBridgeSet.getBridgeRoutes(
+        arbB.chainId,
+        opB.chainId,
+        arbB.token,
+        opB.token,
+        parseFixed('500', originDecimals)
+      )
+      expect(routes.length).toEqual(0)
+    })
+
+    it('includes quotes with age of 5 minutes - 1 millisecond', async () => {
+      Date.now = jest.fn(() => Date.parse('2021-01-01T00:04:59.999Z'))
+      // arbB -> opB should have two quotes for 500 by default
+      // We expect two quotes because the quotes are not outdated
+      const routes = await fastBridgeSet.getBridgeRoutes(
+        arbB.chainId,
+        opB.chainId,
+        arbB.token,
+        opB.token,
+        parseFixed('500', originDecimals)
+      )
+      expect(routes.length).toEqual(2)
+    })
   })
 }
 
