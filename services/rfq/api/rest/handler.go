@@ -132,10 +132,14 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		c.JSON(http.StatusOK, quotes)
 	} else {
 		// Pseudocode for retrieving all quotes from the database
-		quotes, err := h.db.GetAllQuotes(c)
+		dbQuotes, err := h.db.GetAllQuotes(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
+		}
+		quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
+		for _, dbQuote := range dbQuotes {
+			quotes = append(quotes, model.QuoteResponseFromDbQuote(dbQuote))
 		}
 		c.JSON(http.StatusOK, quotes)
 	}
