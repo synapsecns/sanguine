@@ -21,48 +21,11 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
-import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
-import { USDC } from '@/constants/tokens/bridgeable'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { isUndefined } from 'lodash'
 
 const handleFocusOnInput = () => {
   inputRef.current.focus()
-}
-
-function checkCCTPChainConditions(
-  fromChainId: number,
-  toChainId: number
-): boolean {
-  const CctpPairs = new Set([
-    `${ETH.id}-${ARBITRUM.id}`,
-    `${ARBITRUM.id}-${ETH.id}`,
-    `${ETH.id}-${AVALANCHE.id}`,
-    `${AVALANCHE.id}-${ETH.id}`,
-    `${ARBITRUM.id}-${AVALANCHE.id}`,
-    `${AVALANCHE.id}-${ARBITRUM.id}`,
-  ])
-
-  return CctpPairs.has(`${fromChainId}-${toChainId}`)
-}
-
-function checkIfUsingCCTP({
-  fromChainId,
-  fromToken,
-  toChainId,
-  toToken,
-}: {
-  fromChainId: number
-  fromToken: Token
-  toChainId: number
-  toToken: Token
-}): boolean {
-  const isTokensUSDC: boolean = fromToken === USDC && toToken === USDC
-  const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
-    fromChainId,
-    toChainId
-  )
-
-  return isTokensUSDC && isSupportedCCTPChains
 }
 
 type PortfolioTokenAssetProps = {
@@ -99,21 +62,11 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
-  const isCCTP: boolean = checkIfUsingCCTP({
-    fromChainId,
-    fromToken,
-    toChainId,
-    toToken,
-  })
+  const isCCTP: boolean = bridgeQuote?.bridgeModuleName === 'SynapseCCTP'
 
   const tokenRouterAddress: string = bridgeQuote?.routerAddress
 
-  // isCCTP ? CCTP_ROUTER_ADDRESS : ROUTER_ADDRESS
-
   const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
-
-  console.log('tokenRouterAddress:', tokenRouterAddress)
-  console.log('bridgeAllowance:', bridgeAllowance)
 
   const parsedAllowance: string =
     bridgeAllowance &&
@@ -133,6 +86,18 @@ export const PortfolioTokenAsset = ({
     bridgeAllowance && balance > bridgeAllowance
 
   const isDisabled: boolean = false
+
+  /** Fetch allowances for current router if not already stored */
+  if (isUndefined(bridgeAllowance)) {
+    dispatch(
+      fetchAndStoreSingleTokenAllowance({
+        routerAddress: tokenRouterAddress as Address,
+        tokenAddress: tokenAddress as Address,
+        address: address as Address,
+        chainId: portfolioChainId as number,
+      })
+    )
+  }
 
   const handleTotalBalanceInputCallback = useCallback(async () => {
     await dispatch(setFromChainId(portfolioChainId as number))
