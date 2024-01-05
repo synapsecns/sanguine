@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/synapsecns/sanguine/services/rfq/relayer/cmd"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/metadata"
-	"os"
 )
 
 func main() {
