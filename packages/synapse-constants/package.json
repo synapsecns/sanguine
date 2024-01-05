@@ -9,7 +9,13 @@
     "abi"
   ],
   "scripts": {
-    "test": "echo \"Error: no tesst specified\" && exit 1",
+    "test:coverage": "echo 'No tests defined.'",
+    "ci:lint": " ",
+    "build:go": " ",
+    "build:slither": " ",
+    "lint": " ",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0",
     "build": "node scripts/generateMaps.js && node scripts/findMissing.js",
     "prepublish": "tsc",
     "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack"
