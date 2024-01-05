@@ -1,7 +1,7 @@
 {
   "transactions": [
     {
-      "hash": "0x419e3f39876faacd1fd01e61ee49a1359fda8372d9ab50080e997cdba794c644",
+      "hash": null,
       "transactionType": "CREATE",
       "contractName": "FastBridge",
       "contractAddress": "0x743fFbd0DbF88F6fCB7FaDf58fB641da93056EdF",
@@ -46,11 +46,9 @@
   ],
   "receipts": [],
   "libraries": [],
-  "pending": [
-    "0x419e3f39876faacd1fd01e61ee49a1359fda8372d9ab50080e997cdba794c644"
-  ],
+  "pending": [],
   "returns": {},
-  "timestamp": 1704475328,
+  "timestamp": 1704474700,
   "chain": 10,
   "multi": false,
   "commit": "ac81fb44"
