@@ -13,7 +13,7 @@ import (
 // TODO: @aurelius tese tests make a lot less sesnes w/ a composite index
 
 func (c *ClientSuite) TestPutAndGetQuote() {
-	putData := client.APIQuotePutRequest{
+	putData := client.model.PutQuoteRequest{
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
@@ -32,7 +32,7 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 	c.assertEqual(putData, quotes[0])
 }
 
-func (c *ClientSuite) assertEqual(q1 client.APIQuotePutRequest, quote *db.Quote) {
+func (c *ClientSuite) assertEqual(q1 client.model.PutQuoteRequest, quote *db.Quote) {
 	c.Assert().Equal(q1.OriginChainID, strconv.Itoa(int(quote.OriginChainID)))
 	c.Assert().Equal(q1.OriginTokenAddr, quote.OriginTokenAddr)
 	c.Assert().Equal(q1.DestChainID, strconv.Itoa(int(quote.DestChainID)))
@@ -53,7 +53,7 @@ func (c *ClientSuite) assertStringFloatEqual(s1 string, f2 decimal.Decimal) {
 }
 
 func (c *ClientSuite) TestGetSpecificQuote() {
-	putData := client.APIQuotePutRequest{
+	putData := client.model.PutQuoteRequest{
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
@@ -67,7 +67,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 	fmt.Println("err", err)
 	c.Require().NoError(err)
 
-	quotes, err := c.client.GetSpecificQuote(&client.APIQuoteSpecificGetRequest{
+	quotes, err := c.client.GetSpecificQuote(&client.model.GetQuoteSpecificRequest{
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
@@ -78,7 +78,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 }
 
 func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
-	putData := client.APIQuotePutRequest{
+	putData := client.model.PutQuoteRequest{
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",

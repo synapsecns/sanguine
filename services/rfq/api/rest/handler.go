@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
 // Handler is the REST API handler.
@@ -37,7 +38,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
-	putRequest, ok := req.(*PutRequest)
+	putRequest, ok := req.(*model.PutQuoteRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
 		return

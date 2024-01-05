@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
-	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -17,7 +16,7 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	s.Require().NoError(err)
 
 	// Verify the qutoes are generated as expected.
-	expectedQuotes := []rfqAPIClient.APIQuotePutRequest{
+	expectedQuotes := []rfqAPIClient.model.PutQuoteRequest{
 		{
 			OriginChainID:   strconv.Itoa(int(s.origin)),
 			OriginTokenAddr: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",

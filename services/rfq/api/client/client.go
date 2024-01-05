@@ -15,22 +15,22 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
 
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
-	PutQuote(q *APIQuotePutRequest) error
+	PutQuote(q *model.PutQuoteRequest) error
 	UnauthenticatedClient
 }
 
 // UnauthenticatedClient is an interface for the RFQ API.
 type UnauthenticatedClient interface {
-	GetAllQuotes() ([]*db.Quote, error)
-	GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error)
-	GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error)
+	GetAllQuotes() ([]*model.GetQuoteResponse, error)
+	GetSpecificQuote(q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
+	GetQuoteByRelayerAddress(relayerAddr string) ([]*model.GetQuoteResponse, error)
 	resty() *resty.Client
 }
 
@@ -100,7 +100,7 @@ func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (Unau
 }
 
 // PutQuote puts a new quote in the RFQ quoting API.
-func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
+func (c *clientImpl) PutQuote(q *model.PutQuoteRequest) error {
 	res, err := c.rClient.R().
 		SetBody(q).
 		Put(rest.QuoteRoute)
@@ -112,8 +112,8 @@ func (c *clientImpl) PutQuote(q *APIQuotePutRequest) error {
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
-func (c *unauthenticatedClient) GetAllQuotes() ([]*db.Quote, error) {
-	var quotes []*db.Quote
+func (c *unauthenticatedClient) GetAllQuotes() ([]*model.GetQuoteResponse, error) {
+	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
 		SetResult(&quotes).
 		Get(rest.QuoteRoute)
@@ -130,8 +130,8 @@ func (c *unauthenticatedClient) GetAllQuotes() ([]*db.Quote, error) {
 }
 
 // GetSpecificQuote retrieves a specific quote from the RFQ quoting API.
-func (c *unauthenticatedClient) GetSpecificQuote(q *APIQuoteSpecificGetRequest) ([]*db.Quote, error) {
-	var quotes []*db.Quote
+func (c *unauthenticatedClient) GetSpecificQuote(q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error) {
+	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
 		SetQueryParams(map[string]string{
 			"originChainId":   q.OriginChainID,
@@ -153,8 +153,8 @@ func (c *unauthenticatedClient) GetSpecificQuote(q *APIQuoteSpecificGetRequest) 
 	return quotes, nil
 }
 
-func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]*db.Quote, error) {
-	var quotes []*db.Quote
+func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]*model.GetQuoteResponse, error) {
+	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
 		SetQueryParams(map[string]string{
 			"relayerAddr": relayerAddr,
@@ -171,25 +171,4 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]
 	}
 
 	return quotes, nil
-}
-
-// APIQuotePutRequest is the struct for the quote API.
-type APIQuotePutRequest struct {
-	OriginChainID           string `json:"origin_chain_id"`
-	OriginTokenAddr         string `json:"origin_token_addr"`
-	DestChainID             string `json:"dest_chain_id"`
-	DestTokenAddr           string `json:"dest_token_addr"`
-	DestAmount              string `json:"dest_amount"`
-	MaxOriginAmount         string `json:"max_origin_amount"`
-	FixedFee                string `json:"fixed_fee"`
-	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
-	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
-}
-
-// APIQuoteSpecificGetRequest is the struct for the quote API.
-type APIQuoteSpecificGetRequest struct {
-	OriginChainID   string `json:"originChainId"`
-	OriginTokenAddr string `json:"originTokenAddr"`
-	DestChainID     string `json:"destChainId"`
-	DestTokenAddr   string `json:"destTokenAddr"`
 }
