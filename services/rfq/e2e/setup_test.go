@@ -2,12 +2,13 @@ package e2e_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/http"
 	"slices"
 	"strconv"
 	"sync"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -191,13 +192,12 @@ func (i *IntegrationSuite) setupRelayer() {
 	dsn := filet.TmpDir(i.T(), "")
 	cfg := relconfig.Config{
 		// generated ex-post facto
-		Tokens: map[int][]string{},
-		Bridges: map[int]relconfig.ChainConfig{
+		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
-					"ETH": relconfig.TokenConfig{
+					"ETH": {
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -208,7 +208,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
-					"MATIC": relconfig.TokenConfig{
+					"MATIC": {
 						PriceUSD: 0.5,
 						Decimals: 18,
 					},
@@ -253,9 +253,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			i.NoError(err)
 
 			// first the simple part, add the token to the token map
-			cfg.Tokens[int(backend.GetChainID())] = append(cfg.Tokens[int(backend.GetChainID())], tokenAddress)
-
-			cfg.Bridges[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
+			cfg.Chains[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
 				Address:  tokenAddress,
 				Decimals: decimals,
 				PriceUSD: 1, // TODO: this will break on non-stables

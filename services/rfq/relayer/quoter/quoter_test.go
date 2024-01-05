@@ -28,7 +28,7 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 			FixedFee:        "100050000",
 		},
 	}
-	s.Equal(quotes, expectedQuotes)
+	s.Equal(expectedQuotes, quotes)
 }
 
 func (s *QuoterSuite) TestShouldProcess() {

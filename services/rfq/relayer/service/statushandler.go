@@ -3,6 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
@@ -16,8 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"time"
 )
 
 // TODO: everything in this file should be moved to it's own module, at least as an interface
@@ -133,7 +134,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*Chain, e
 		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
-	fastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.Bridges[id].Bridge), chainClient)
+	fastBridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(r.cfg.GetChains()[id].Bridge), chainClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin fast bridge: %w", err)
 	}
@@ -142,7 +143,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*Chain, e
 		ChainID:       chainID,
 		Bridge:        fastBridge,
 		Client:        chainClient,
-		Confirmations: r.cfg.Bridges[id].Confirmations,
+		Confirmations: r.cfg.GetChains()[id].Confirmations,
 		listener:      r.chainListeners[id],
 		submitter:     r.submitter,
 	}, nil

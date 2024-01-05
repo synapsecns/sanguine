@@ -1,6 +1,11 @@
 package service_test
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/suite"
@@ -15,10 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
-	"math/big"
-	"sync"
-	"testing"
-	"time"
 )
 
 type RelayerTestSuite struct {
@@ -66,7 +67,7 @@ func (r *RelayerTestSuite) SetupTest() {
 			Type: dbcommon.Sqlite.String(),
 			DSN:  filet.TmpDir(r.T(), ""),
 		},
-		Bridges: map[int]relconfig.ChainConfig{
+		Chains: map[int]relconfig.ChainConfig{
 			int(r.originBackend.GetChainID()): {
 				Bridge: originContract.Address().String(),
 			},

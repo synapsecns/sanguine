@@ -182,7 +182,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 						return nil, fmt.Errorf("could not get erc20: %w", err)
 					}
 
-					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(i.cfg.Bridges[chainID].Bridge), abi.MaxInt256)
+					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(i.cfg.Chains[chainID].Bridge), abi.MaxInt256)
 					if err != nil {
 						return nil, fmt.Errorf("could not approve: %w", err)
 					}
@@ -224,11 +224,14 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	deferredCalls := make(map[int][]w3types.Caller)
 
 	// iterate through all tokens to get the metadata
-	for chainID, tokens := range cfg.Tokens {
+	for chainID, chainCfg := range cfg.GetChains() {
 		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
+		for tokenName, tokenCfg := range chainCfg.Tokens {
+			if tokenName == chainCfg.NativeToken {
+				continue
+			}
 
-		for _, strToekn := range tokens {
-			token := common.HexToAddress(strToekn)
+			token := common.HexToAddress(tokenCfg.Address)
 			rtoken := &tokenMetadata{}
 			i.tokens[chainID][token] = rtoken
 			// requires non-nil pointer
@@ -239,7 +242,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
 				eth.CallFunc(funcName, token).Returns(&rtoken.name),
-				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Bridges[chainID].Bridge)).Returns(rtoken.startAllowance),
+				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
 			)
 
 			chainID := chainID // capture func literal
