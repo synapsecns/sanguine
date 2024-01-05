@@ -24,7 +24,7 @@ export function TopBarNavLink({
   )
 
   const linkClassName = `
-    group items-center px-2 my-2 font-normal tracking-wide
+    px-2 tracking-wide
     transform-gpu transition-all duration-75
     text-white ${
       match &&
