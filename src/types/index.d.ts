@@ -29,7 +29,7 @@ export type CustomRpcs = {
   [chainId: number]: string
 }
 
-export interface WidgetProps {
+export interface BridgeProps {
   /** Consumer Web3 Provider */
   web3Provider?: JsonRpcApiProvider | BrowserProvider
 
@@ -45,11 +45,11 @@ export interface WidgetProps {
   /** Containerize Widget */
   container?: Boolean
 
-  /** Supported Tokens Metadata defined by Consumer */
-  tokens: BridgeableToken[]
+  /** Target tokens supported for Consumer */
+  targetTokens?: BridgeableToken[]
 
-  /** Destination chain selected by Consumer */
-  toChainId: number
+  /* Target chain ids of Consumer */
+  targetChainIds?: number[]
 }
 
 export interface Chain {
@@ -64,7 +64,7 @@ export interface Chain {
   blockTime: number
 }
 
-export declare function Bridge(props: WidgetProps): JSX.Element
+export declare function Bridge(props: BridgeProps): JSX.Element
 
 export declare const AGEUR: BridgeableToken
 export declare const AVAX: BridgeableToken

@@ -13,7 +13,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { Receipt } from '@/components/Receipt'
 
-import { BridgeableToken, Chain, WidgetProps } from 'types'
+import { BridgeableToken, Chain, CustomThemeVariables } from 'types'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
 
@@ -23,8 +23,9 @@ import {
   setOriginChainId,
   setOriginToken,
   setDestinationToken,
-  setTokens,
+  setTargetTokens,
   setDebouncedInputAmount,
+  setTargetChainIds,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import {
@@ -63,14 +64,25 @@ import { Transactions } from './Transactions'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSynapseContext } from '@/providers/SynapseProvider'
+import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
+import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+
+interface WidgetProps {
+  theme?: 'light' | 'dark'
+  customTheme: CustomThemeVariables
+  container?: Boolean
+  targetTokens?: BridgeableToken[]
+  targetChainIds?: number[]
+}
 
 export const Widget = ({
   theme,
   customTheme,
   container,
-  tokens,
-  toChainId,
-}) => {
+  targetChainIds,
+  targetTokens,
+}: WidgetProps) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
 
@@ -88,8 +100,18 @@ export const Widget = ({
     originToken,
     destinationChainId,
     destinationToken,
-    tokens: allTokens,
   } = useBridgeState()
+
+  const allTokens = useMemo(() => {
+    return getFromTokens({
+      fromChainId: originChainId,
+      fromTokenRouteSymbol: null,
+      toChainId: null,
+      toTokenRouteSymbol: null,
+    })
+      .map(getSymbol)
+      .map(findTokenByRouteSymbol)
+  }, [originChainId])
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
@@ -107,10 +129,15 @@ export const Widget = ({
   }, [originChainId])
 
   useEffect(() => {
-    dispatch(setTokens(tokens))
-    dispatch(setDestinationChainId(toChainId))
-    dispatch(setDestinationToken(tokens[0]))
-  }, [tokens, toChainId])
+    dispatch(setTargetTokens(targetTokens))
+    dispatch(setTargetChainIds(targetChainIds))
+    if (targetChainIds && targetChainIds.length > 0) {
+      dispatch(setDestinationChainId(targetChainIds[0]))
+    }
+    if (targetTokens && targetTokens.length > 0) {
+      dispatch(setDestinationToken(targetTokens[0]))
+    }
+  }, [targetTokens, targetChainIds, targetTokens])
 
   /** Debounce user input to fetch bridge quote (in ms) */
   /** TODO: Can this be moved to the input component? */
@@ -129,7 +156,7 @@ export const Widget = ({
   /** TODO: Can this be moved into a level above? */
   useEffect(() => {
     if (!signer && !originChainProvider) return
-    if (originChainId && tokens && connectedAddress) {
+    if (originChainId && allTokens && connectedAddress) {
       dispatch(
         fetchAndStoreTokenBalances({
           address: connectedAddress,

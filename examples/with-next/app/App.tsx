@@ -1,7 +1,7 @@
 import { Bridge, USDC, USDT, DAI, ETH, USDCe } from '@abtestingalpha/widget'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 
-const tokens = [USDC, USDT, DAI, ETH, USDCe]
+const targetTokens = [USDC, USDT, DAI, ETH, USDCe]
 
 function App() {
   const { web3Provider } = useEthereumWallet()
@@ -15,10 +15,10 @@ function App() {
       <div className="w-[33%]">
         <Bridge
           web3Provider={web3Provider}
-          tokens={tokens}
+          targetTokens={targetTokens}
+          targetChainIds={[137]}
           theme="light"
           container={true}
-          toChainId={137}
         />
       </div>
     </main>

@@ -13,7 +13,7 @@ type Props = {
 }
 
 export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
-  const { originTokens, destinationTokens, tokens }: BridgeState =
+  const { originTokens, destinationTokens, targetTokens }: BridgeState =
     useBridgeState()
 
   const { balances } = useWalletState()
@@ -23,10 +23,10 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
 
   if (isOrigin) {
     options = originTokens
-    remaining = _.difference(tokens, options)
+    remaining = _.difference(targetTokens, originTokens)
   } else {
-    options = filterTokens(destinationTokens, tokens)
-    remaining = _.difference(tokens, options)
+    options = destinationTokens
+    remaining = _.difference(targetTokens, destinationTokens)
   }
 
   return (
@@ -39,14 +39,5 @@ export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
       }}
       selected={token}
     />
-  )
-}
-
-const filterTokens = (
-  destinationTokens: BridgeableToken[],
-  tokens: BridgeableToken[]
-) => {
-  return destinationTokens.filter((destinationToken) =>
-    tokens.some((token) => token.routeSymbol === destinationToken.routeSymbol)
   )
 }

@@ -12,7 +12,7 @@ import Header from './Header'
 import Footer from './Footer'
 import { Install, Developer, Support } from './icons'
 
-const tokens = [USDC, USDT, DAI, ETH]
+const targetTokens = [USDC, USDT, DAI, ETH]
 
 const customRpcs: CustomRpcs = {
   1: 'https://eth.llamarpc.com',
@@ -97,10 +97,10 @@ function App() {
               <Bridge
                 web3Provider={web3Provider}
                 customRpcs={customRpcs}
-                tokens={tokens}
+                targetTokens={targetTokens}
                 customTheme={customTheme}
                 container={container}
-                toChainId={137}
+                targetChainIds={[137]}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>

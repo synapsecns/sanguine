@@ -4,6 +4,7 @@ import { TransactionDetails } from '@/state/slices/transactions/reducer'
 import { Transaction } from './Transaction'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
+/** TODO: Pull synapseSDK from context vs passing in */
 export const Transactions = ({
   synapseSDK,
   connectedAddress,

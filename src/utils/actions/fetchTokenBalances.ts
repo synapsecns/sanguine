@@ -39,8 +39,8 @@ export async function fetchTokenBalances({
   }
 
   const validTokens = tokens.filter((token: BridgeableToken) => {
-    const tokenAddress: string = token.addresses[chainId]
-    return tokenAddress !== undefined
+    const tokenAddress: string = token && token.addresses[chainId]
+    return token && tokenAddress !== undefined
   })
 
   const calls = validTokens.map((token: BridgeableToken) => {
@@ -81,11 +81,11 @@ export async function fetchTokenBalances({
 
     const data = response.map((encodedBalance, index) => {
       const balance: bigint = coder.decode(['uint256'], encodedBalance)[0]
-      const token: BridgeableToken = tokens[index]
+      const token: BridgeableToken = validTokens[index]
       const decimals: number = token.decimals[chainId]
 
       return {
-        token: tokens[index],
+        token: validTokens[index],
         balance: String(balance),
         parsedBalance: formatBigIntToString(balance, decimals, 4),
       }

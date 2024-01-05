@@ -1,6 +1,6 @@
 import './index.css'
 ;('use client')
-import { WidgetProps } from 'types'
+import { BridgeProps } from 'types'
 import { Widget } from './components/Widget'
 import { Web3Provider } from 'providers/Web3Provider'
 import { Provider } from 'react-redux'
@@ -21,9 +21,9 @@ export const Bridge = ({
   theme,
   customTheme,
   container,
-  tokens,
-  toChainId,
-}: WidgetProps) => {
+  targetChainIds,
+  targetTokens,
+}: BridgeProps) => {
   return (
     <Web3Provider config={web3Provider}>
       <SynapseProvider chains={CHAINS_ARRAY} customRpcs={customRpcs}>
@@ -33,8 +33,8 @@ export const Bridge = ({
             theme={theme}
             customTheme={customTheme}
             container={container}
-            tokens={tokens}
-            toChainId={toChainId}
+            targetChainIds={targetChainIds}
+            targetTokens={targetTokens}
           />
         </Provider>
       </SynapseProvider>

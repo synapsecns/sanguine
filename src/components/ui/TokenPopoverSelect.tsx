@@ -61,6 +61,7 @@ export function TokenPopoverSelect({
               />
             )
           })}
+          <div className="pl-2 text-sm underline">Other tokens</div>
           {remaining?.map((option: BridgeableToken, index) => {
             const matchedTokenBalance: TokenBalance = balances?.find(
               (token: TokenBalance) => token.token === option
