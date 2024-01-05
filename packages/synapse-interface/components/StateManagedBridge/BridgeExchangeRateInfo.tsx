@@ -19,7 +19,15 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
     (state: RootState) => state.bridge.bridgeQuote.exchangeRate
   )
   const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
-  const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
+  // TODO: this is ugly, refactor
+  const bridgeModuleName = useSelector(
+    (state: RootState) => state.bridge.bridgeQuote.bridgeModuleName
+  )
+  let { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
+  if (bridgeModuleName === 'SynapseRFQ') {
+    gasDropAmount = 0n
+    loading = false
+  }
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
