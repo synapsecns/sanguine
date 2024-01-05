@@ -155,6 +155,10 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
+	chainCfg, ok := m.config.Chains[chainID]
+	if !ok {
+		return nil, fmt.Errorf("error getting chain config for chain ID %d", chainID)
+	}
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 	var quotes []rfqAPIClient.APIQuotePutRequest
 	for keyTokenID, itemTokenIDs := range m.config.QuotableTokens {
@@ -175,13 +179,14 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
 				quote := rfqAPIClient.APIQuotePutRequest{
-					OriginChainID:   originStr,
-					OriginTokenAddr: strings.Split(keyTokenID, "-")[1],
-					DestChainID:     fmt.Sprint(chainID),
-					DestTokenAddr:   address.Hex(),
-					DestAmount:      balance.String(),
-					MaxOriginAmount: balance.String(),
-					FixedFee:        fee.String(),
+					OriginChainID:     originStr,
+					OriginTokenAddr:   strings.Split(keyTokenID, "-")[1],
+					DestChainID:       fmt.Sprint(chainID),
+					DestTokenAddr:     address.Hex(),
+					DestAmount:        balance.String(),
+					MaxOriginAmount:   balance.String(),
+					FixedFee:          fee.String(),
+					FastBridgeAddress: chainCfg.Bridge,
 				}
 				quotes = append(quotes, quote)
 			}
