@@ -182,11 +182,19 @@ export class FastBridgeSet extends SynapseModuleSet {
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
     const allQuotes = await getAllQuotes()
-    return allQuotes.filter(
-      (quote) =>
-        quote.ticker.originToken.chainId === originChainId &&
-        quote.ticker.destToken.chainId === destChainId &&
-        quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
-    )
+    return allQuotes
+      .filter(
+        (quote) =>
+          quote.ticker.originToken.chainId === originChainId &&
+          quote.ticker.destToken.chainId === destChainId &&
+          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
+      )
+      .filter(
+        (quote) =>
+          quote.originFastBridge.toLowerCase() ===
+            FAST_BRIDGE_ADDRESS_MAP[originChainId].toLowerCase() &&
+          quote.destFastBridge.toLowerCase() ===
+            FAST_BRIDGE_ADDRESS_MAP[destChainId].toLowerCase()
+      )
   }
 }
