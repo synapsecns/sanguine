@@ -370,8 +370,8 @@ describe('SynapseSDK', () => {
 
       createBridgeQuoteTests(
         synapse,
-        SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
         ETH_USDC,
         amount,
         resultPromise
@@ -404,8 +404,8 @@ describe('SynapseSDK', () => {
 
       createBridgeQuoteTests(
         synapse,
-        SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
         ETH_USDC,
         amount,
         resultPromise
@@ -444,8 +444,8 @@ describe('SynapseSDK', () => {
 
         createBridgeQuoteTests(
           synapse,
-          SupportedChainId.ETH,
           SupportedChainId.ARBITRUM,
+          SupportedChainId.ETH,
           ETH_USDC,
           amount,
           resultPromise
@@ -479,8 +479,8 @@ describe('SynapseSDK', () => {
 
         createBridgeQuoteTests(
           synapse,
-          SupportedChainId.ETH,
           SupportedChainId.ARBITRUM,
+          SupportedChainId.ETH,
           ETH_USDC,
           amount,
           resultPromise
@@ -514,8 +514,8 @@ describe('SynapseSDK', () => {
 
         createBridgeQuoteTests(
           synapse,
-          SupportedChainId.ETH,
           SupportedChainId.ARBITRUM,
+          SupportedChainId.ETH,
           ETH_USDC,
           amount,
           resultPromise
@@ -549,8 +549,8 @@ describe('SynapseSDK', () => {
 
       createBridgeQuoteTests(
         synapse,
-        SupportedChainId.ETH,
         SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
         NATIVE_ADDRESS,
         amount,
         resultPromise
@@ -591,8 +591,8 @@ describe('SynapseSDK', () => {
 
       createBridgeQuoteTests(
         synapse,
-        SupportedChainId.AVALANCHE,
         SupportedChainId.BSC,
+        SupportedChainId.AVALANCHE,
         AVAX_USDC_E,
         amount,
         resultPromise
@@ -625,8 +625,8 @@ describe('SynapseSDK', () => {
 
       createBridgeQuoteTests(
         synapse,
-        SupportedChainId.AVALANCHE,
         SupportedChainId.BSC,
+        SupportedChainId.AVALANCHE,
         AVAX_GOHM,
         amount,
         resultPromise
