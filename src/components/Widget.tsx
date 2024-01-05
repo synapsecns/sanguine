@@ -235,40 +235,86 @@ export const Widget = ({
     [dispatch]
   )
 
-  const executeApproval = () => {
-    dispatch(
-      executeApproveTxn({
-        spenderAddress: bridgeQuote?.routerAddress,
-        tokenAddress: originToken?.addresses[originChainId],
-        amount: stringToBigInt(
-          debouncedInputAmount,
-          originToken?.decimals[originChainId]
-        ),
-        signer,
-      })
-    )
+  const executeApproval = async () => {
+    try {
+      const tx = await dispatch(
+        executeApproveTxn({
+          spenderAddress: bridgeQuote?.routerAddress,
+          tokenAddress: originToken?.addresses[originChainId],
+          amount: stringToBigInt(
+            debouncedInputAmount,
+            originToken?.decimals[originChainId]
+          ),
+          signer,
+        })
+      )
+      /** Fetch allowance on successful approval tx */
+      if (tx?.payload?.hash) {
+        dispatch(
+          fetchAndStoreAllowance({
+            spenderAddress: bridgeQuote?.routerAddress,
+            ownerAddress: connectedAddress,
+            chainId: originChainId,
+            token: originToken,
+            provider: originChainProvider ?? provider,
+          })
+        )
+      }
+    } catch (error) {
+      console.error('Error approving: ', error)
+    }
   }
 
-  const executeBridge = () => {
-    dispatch(
-      executeBridgeTxn({
-        destinationAddress: connectedAddress,
-        originRouterAddress: bridgeQuote?.routerAddress,
-        originChainId: originChainId,
-        destinationChainId: destinationChainId,
-        tokenAddress: originToken?.addresses[originChainId],
-        amount: stringToBigInt(
-          debouncedInputAmount,
-          originToken?.decimals[originChainId]
-        ),
-        originQuery: bridgeQuote?.quotes.originQuery,
-        destinationQuery: bridgeQuote?.quotes.destQuery,
-        bridgeModuleName: bridgeQuote?.bridgeModuleName,
-        estimatedTime: bridgeQuote?.estimatedTime,
-        synapseSDK,
-        signer,
-      })
-    )
+  const executeBridge = async () => {
+    try {
+      const action = await dispatch(
+        executeBridgeTxn({
+          destinationAddress: connectedAddress,
+          originRouterAddress: bridgeQuote?.routerAddress,
+          originChainId: originChainId,
+          destinationChainId: destinationChainId,
+          tokenAddress: originToken?.addresses[originChainId],
+          amount: stringToBigInt(
+            debouncedInputAmount,
+            originToken?.decimals[originChainId]
+          ),
+          originQuery: bridgeQuote?.quotes.originQuery,
+          destinationQuery: bridgeQuote?.quotes.destQuery,
+          bridgeModuleName: bridgeQuote?.bridgeModuleName,
+          estimatedTime: bridgeQuote?.estimatedTime,
+          synapseSDK,
+          signer,
+        })
+      )
+
+      /** Check thunk action is fulfilled */
+      if (executeBridgeTxn.fulfilled.match(action)) {
+        const tx = action.payload
+
+        /** Fetch balance/allowance on successful bridge tx */
+        if (tx?.txHash) {
+          dispatch(
+            fetchAndStoreTokenBalances({
+              address: connectedAddress,
+              chainId: originChainId,
+              tokens: allTokens,
+              signerOrProvider: originChainProvider ?? signer,
+            })
+          )
+          dispatch(
+            fetchAndStoreAllowance({
+              spenderAddress: bridgeQuote?.routerAddress,
+              ownerAddress: connectedAddress,
+              chainId: originChainId,
+              token: originToken,
+              provider: originChainProvider ?? provider,
+            })
+          )
+        }
+      }
+    } catch (error) {
+      console.log('Error bridging: ', error)
+    }
   }
 
   const containerStyle = `
