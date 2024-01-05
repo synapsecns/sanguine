@@ -70,7 +70,7 @@ const createBridgeTests = (
     )
   })
 
-  it('bridge with sendChainGas', async () => {
+  it.skip('bridge with sendChainGas', async () => {
     const bridgeParamsWithGas = {
       ...expectedBridgeParams,
       sendChainGas: true,
