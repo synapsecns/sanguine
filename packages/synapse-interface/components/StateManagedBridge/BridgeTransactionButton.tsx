@@ -133,10 +133,8 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
     buttonProperties && (
       <TransactionButton
         style={{
-          background:
-            'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-          border: '1px solid #9B6DD7',
-          borderRadius: '4px',
+          background: 'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+          borderColor: '#9B6DD7',
         }}
         {...buttonProperties}
         disabled={isButtonDisabled}
