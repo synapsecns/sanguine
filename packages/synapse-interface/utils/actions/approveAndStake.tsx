@@ -84,10 +84,14 @@ export const stake = async (
   try {
     if (!address) throw new Error('Wallet must be connected')
 
-    segmentAnalyticsEvent(`[Stake] Attempt`, {
-      poolId,
-      inputValue,
-    })
+    segmentAnalyticsEvent(
+      `[Stake] Attempt`,
+      {
+        poolId,
+        inputValue,
+      },
+      true
+    )
 
     const tx: TransactionReceipt = await stakeLpToken({
       address,
