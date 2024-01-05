@@ -12,8 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/services/rfq/api/db"
-	"github.com/synapsecns/sanguine/services/rfq/api/rest"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
 func (c *ServerSuite) TestNewAPIServer() {
@@ -147,14 +146,14 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
 
-	var quotes []*db.Quote
+	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
 	c.Require().NoError(err)
 
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.FixedFee.String() == "10" {
+		if q.FixedFee == 10 {
 			found = true
 			break
 		}
@@ -189,14 +188,14 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
 
-	var quotes []*db.Quote
+	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
 	c.Require().NoError(err)
 
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.FixedFee.String() == "10" {
+		if q.FixedFee == 10 {
 			found = true
 			break
 		}
@@ -237,7 +236,7 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
-	putData := rest.PutRequest{
+	putData := model.PutQuoteRequest{
 		OriginChainID:   "1",
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
