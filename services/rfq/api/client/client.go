@@ -175,14 +175,15 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]
 
 // APIQuotePutRequest is the struct for the quote API.
 type APIQuotePutRequest struct {
-	OriginChainID     string `json:"origin_chain_id"`
-	OriginTokenAddr   string `json:"origin_token_addr"`
-	DestChainID       string `json:"dest_chain_id"`
-	DestTokenAddr     string `json:"dest_token_addr"`
-	DestAmount        string `json:"dest_amount"`
-	MaxOriginAmount   string `json:"max_origin_amount"`
-	FixedFee          string `json:"fixed_fee"`
-	FastBridgeAddress string `json:"fast_bridge_address"`
+	OriginChainID           string `json:"origin_chain_id"`
+	OriginTokenAddr         string `json:"origin_token_addr"`
+	DestChainID             string `json:"dest_chain_id"`
+	DestTokenAddr           string `json:"dest_token_addr"`
+	DestAmount              string `json:"dest_amount"`
+	MaxOriginAmount         string `json:"max_origin_amount"`
+	FixedFee                string `json:"fixed_fee"`
+	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
+	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
 }
 
 // APIQuoteSpecificGetRequest is the struct for the quote API.
