@@ -78,7 +78,9 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		MaxOriginAmount: maxOriginAmount,
 		FixedFee:        fixedFee,
 		//nolint: forcetypeassert
-		RelayerAddr: relayerAddr.(string),
+		RelayerAddr:             relayerAddr.(string),
+		OriginFastBridgeAddress: putRequest.OriginFastBridgeAddress,
+		DestFastBridgeAddress:   putRequest.DestFastBridgeAddress,
 	}
 	err = h.db.UpsertQuote(c, quote)
 	if err != nil {
