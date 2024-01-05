@@ -61,7 +61,9 @@ export default function Updater(): null {
   }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: POLLING_INTERVAL })
+    useLazyGetUserHistoricalActivityQuery({
+      pollingInterval: POLLING_INTERVAL,
+    })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
     useLazyGetUserPendingTransactionsQuery({
@@ -211,17 +213,24 @@ export default function Updater(): null {
 
   // Store pending transactions until completed based on Explorer query
   useEffect(() => {
-    const hasUserPendingTransactions: boolean =
-      Array.isArray(userPendingTransactions) &&
-      !isUserPendingTransactionsLoading
-
-    if (hasUserPendingTransactions) {
+    if (checkTransactionsExist(userPendingTransactions)) {
       userPendingTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isStored: boolean = pendingAwaitingCompletionTransactions?.some(
-            (storedTransaction: BridgeTransaction) =>
-              storedTransaction?.kappa === pendingTransaction?.kappa
-          )
+          let isStored: boolean = false
+
+          if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+            isStored = pendingAwaitingCompletionTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
+
+          if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+            isStored = fallbackQueryHistoricalTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
 
           if (!isStored) {
             dispatch(
@@ -231,16 +240,16 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userPendingTransactions])
+  }, [userPendingTransactions, fallbackQueryHistoricalTransactions])
 
   // Handle updating stored pending transactions state throughout progress
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     const hasPendingBridgeTransactions: boolean =
-      Array.isArray(pendingBridgeTransactions) &&
+      checkTransactionsExist(pendingBridgeTransactions) &&
       pendingBridgeTransactions.length > 0
 
     if (hasUserHistoricalTransactions && activeTab === PortfolioTabs.ACTIVITY) {
@@ -320,7 +329,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userHistoricalTransactions, activeTab])
+  }, [
+    activeTab,
+    userHistoricalTransactions,
+    fallbackQueryHistoricalTransactions,
+  ])
 
   // Handle adding completed fallback historical transaction to seen list
   useEffect(() => {
@@ -383,7 +396,7 @@ export default function Updater(): null {
    */
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     if (

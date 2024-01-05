@@ -2,6 +2,7 @@ import { Address } from 'viem'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 export const Completed = ({
   transactionCompletedTime,
@@ -20,8 +21,10 @@ export const Completed = ({
 
   const isToday: boolean = isTimestampToday(transactionCompletedTime)
 
-  const destinationIsSender: boolean =
+  const isDestinationSender: boolean =
     String(connectedAddress) === String(destinationAddress)
+
+  const isDestinationValid: boolean = isValidAddress(destinationAddress)
 
   return (
     <div
@@ -29,7 +32,7 @@ export const Completed = ({
       className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
       onClick={handleExplorerClick}
     >
-      {!destinationIsSender && (
+      {isDestinationValid && !isDestinationSender && (
         <div>to {shortenAddress(destinationAddress)} </div>
       )}
       {isToday ? (
@@ -37,7 +40,9 @@ export const Completed = ({
           Today
         </div>
       ) : (
-        <div className="cursor-pointer hover:underline">{formattedTime}</div>
+        <div className="cursor-pointer hover:underline">
+          {formattedTime ? formattedTime : 'Completed'}
+        </div>
       )}
     </div>
   )
