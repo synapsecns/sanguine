@@ -58,7 +58,7 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
     onClick: any
     toolTipLabel?: string
   } = {
-    label: 'Bridge',
+    label: `Bridge ${fromToken?.symbol ?? ''}`,
     pendingLabel: 'Bridging',
     onClick: null,
   }
