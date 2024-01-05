@@ -23,12 +23,16 @@ const createQuoteTokenFragment = (
   OriginTokenAddr: string
   DestChainID: number
   DestTokenAddr: string
+  OriginFastBridgeAddress: string
+  DestFastBridgeAddress: string
 } => {
   return {
     OriginChainID: originToken.chainId,
     OriginTokenAddr: originToken.token,
     DestChainID: destToken.chainId,
     DestTokenAddr: destToken.token,
+    OriginFastBridgeAddress: FAST_BRIDGE_ADDRESS_MAP[originToken.chainId],
+    DestFastBridgeAddress: FAST_BRIDGE_ADDRESS_MAP[destToken.chainId],
   }
 }
 
