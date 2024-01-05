@@ -103,6 +103,8 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 
 	// TODO (aureliusbtc): rewrite this if
 	//nolint: gocritic, nestif
+	var dbQuotes []*db.Quote
+	var err error
 	if originChainIDStr != "" && originTokenAddr != "" && destChainIDStr != "" && destTokenAddr != "" {
 		destChainID, err := strconv.ParseUint(destChainIDStr, 10, 64)
 		if err != nil {
@@ -116,35 +118,31 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 			return
 		}
 
-		quotes, err := h.db.GetQuotesByOriginAndDestination(c, originChainID, originTokenAddr, destChainID, destTokenAddr)
+		dbQuotes, err = h.db.GetQuotesByOriginAndDestination(c, originChainID, originTokenAddr, destChainID, destTokenAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.JSON(http.StatusOK, quotes)
 	} else if relayerAddr != "" {
-		quotes, err := h.db.GetQuotesByRelayerAddress(c, relayerAddr)
+		dbQuotes, err = h.db.GetQuotesByRelayerAddress(c, relayerAddr)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, quotes)
 	} else {
-		// Pseudocode for retrieving all quotes from the database
-		dbQuotes, err := h.db.GetAllQuotes(c)
+		dbQuotes, err = h.db.GetAllQuotes(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
-		for i, dbQuote := range dbQuotes {
-			quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
-		}
-		c.JSON(http.StatusOK, quotes)
 	}
-	c.Status(http.StatusOK)
-	// Implement logic to fetch and return quotes
+
+	// Convert quotes from db model to api model
+	quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
+	for i, dbQuote := range dbQuotes {
+		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
+	}
+	c.JSON(http.StatusOK, quotes)
 }
 
 // GetFilteredQuotes retrieves filtered quotes from the database.
