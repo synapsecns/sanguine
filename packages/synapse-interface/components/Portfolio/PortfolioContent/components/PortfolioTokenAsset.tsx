@@ -83,7 +83,8 @@ export const PortfolioTokenAsset = ({
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
+  const { fromChainId, fromToken, toChainId, toToken, bridgeQuote } =
+    useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token as Token
 
@@ -105,11 +106,14 @@ export const PortfolioTokenAsset = ({
     toToken,
   })
 
-  const tokenRouterAddress: string = isCCTP
-    ? CCTP_ROUTER_ADDRESS
-    : ROUTER_ADDRESS
+  const tokenRouterAddress: string = bridgeQuote?.routerAddress
+
+  // isCCTP ? CCTP_ROUTER_ADDRESS : ROUTER_ADDRESS
 
   const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
+
+  console.log('tokenRouterAddress:', tokenRouterAddress)
+  console.log('bridgeAllowance:', bridgeAllowance)
 
   const parsedAllowance: string =
     bridgeAllowance &&
