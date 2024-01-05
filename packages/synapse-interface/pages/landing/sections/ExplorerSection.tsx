@@ -17,58 +17,50 @@ export default function ExplorerSection() {
   const totalValueLocked = getTotalValueLocked()
 
   return (
-    <SectionContainer dataTestId="landing-explorer-section">
-      <Grid
-        cols={{ sm: 1, md: 2 }}
-        gap={4}
-        className={`
-          flex items-center
-          px-8 pt-6 mx-auto md:px-12
-          absolute-lightened-bg z-10
-        `}
-      >
-        <div className="max-w-sm mx-auto mt-12 text-left">
-          <div className="mb-3 text-3xl font-medium text-white">
-            Battle-tested infrastructure
+    <SectionContainer dataTestId="landing-explorer-section" styles="-mx-4">
+      <div className="w-full bg-[#1F1D22] pb-6">
+        <Grid
+          cols={{ sm: 1, md: 2 }}
+          className="flex items-center p-6 m-auto max-w-4xl"
+        >
+          <div>
+            <h2 className="mb-3 text-3xl font-medium text-white text-center md:text-left">
+              Battle-tested infrastructure
+            </h2>
+            <p className="text-secondaryTextColor text-center md:text-left">
+              Synapse has processed millions of transactions and tens of billions
+              in bridged assets.
+            </p>
           </div>
-          <div className="text-secondaryTextColor ">
-            Synapse has processed millions of transactions and tens of billions
-            in bridged assets.
+          <div className="hidden col-span-1 text-right md:block">
+            <Link href={EXPLORER_PATH} target="_blank">
+              <Button
+                className={`
+                    border border-[#AC8FFF] text-sm
+                    px-4 py-3 hover:opacity-75
+                  `}
+                style={{
+                  background:
+                    'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
+                  borderRadius: '10px',
+                }}
+              >
+                Go to Explorer
+              </Button>
+            </Link>
           </div>
-        </div>
-        <div className="hidden col-span-1 text-center md:block">
-          <Link href={EXPLORER_PATH} target="_blank">
-            <Button
-              className={`
-                  border-[#AC8FFF] border text-sm
-                  px-4 py-3 hover:opacity-75
-                `}
-              style={{
-                background:
-                  'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
-                borderRadius: '10px',
-              }}
-            >
-              Go to Explorer
-            </Button>
-          </Link>
-        </div>
-      </Grid>
+        </Grid>
 
-      <Grid
-        cols={{ sm: 1, md: 2, lg: 3 }}
-        gap={4}
-        className={`
-            max-w-4xl pb-12
-            mx-auto space-x-0
-            absolute-lightened-bg z-10 no-mt
-            justify-center
-        `}
-      >
-        <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
-        <StatisticsCard title="Total Bridge Volume" value={totalBridgeVolume} />
-        <StatisticsCard title="Total TX Count" value={totalTxCount} />
-      </Grid>
+        <Grid
+          cols={{ sm: 1, md: 3 }}
+          gap={4}
+          className="max-w-4xl justify-center m-auto"
+        >
+          <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
+          <StatisticsCard title="Total Bridge Volume" value={totalBridgeVolume} />
+          <StatisticsCard title="Total TX Count" value={totalTxCount} />
+        </Grid>
+      </div>
     </SectionContainer>
   )
 }
@@ -84,7 +76,7 @@ function StatisticsCard({
     <Card
       title={title}
       titleClassName="text-white opacity-75"
-      className="justify-center px-2 pt-16 pb-8 bg-transparent"
+      className="justify-center p-4 bg-transparent"
       divider={false}
     >
       {value ? (

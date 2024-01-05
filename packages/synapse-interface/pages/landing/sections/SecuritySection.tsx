@@ -14,46 +14,34 @@ import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon
 export default function SecuritySection() {
   return (
     <SectionContainer
-      styles={`
-        flex-wrap items-center
-        md:justify-center lg:flex
-      `}
+      styles="flex flex-wrap gap-8 justify-center max-w-4xl m-auto"
       dataTestId="landing-security-section"
     >
-      <div className="hidden lg:block">
+      <div className="flex flex-col lg:flex-row gap-8 items-center">
         <SynapseCircuit />
-      </div>
-      <div className="flex justify-center pb-6 lg:hidden ">
-        <SynapseCircuitSmall />
-      </div>
-
-      <div className="max-w-sm md:ml-12 no-mt">
-        <div
-          className={`
-            mb-4 text-4xl font-medium
-            text-left text-white
-          `}
-        >
-          Securely connect every blockchain
+        <div className="max-w-md text-white text-center lg:text-left">
+          <h2 className="mb-4 text-4xl font-medium">
+            Securely connect every blockchain
+          </h2>
+          <div className="text-secondaryTextColor">
+            Synapse is comprised of a{' '}
+            <strong className="font-medium text-white">
+              cross-chain messaging framework
+            </strong>{' '}
+            and an{' '}
+            <strong className="font-medium text-white">
+              economically secure method
+            </strong>{' '}
+            to reach consensus on the validity of cross-chain transactions,
+            enabling developers to build truly native cross-chain apps.
+          </div>{' '}
         </div>
-        <div className="font-normal text-left text-secondaryTextColor">
-          Synapse is comprised of a{' '}
-          <span className="font-medium text-white">
-            cross-chain messaging framework
-          </span>{' '}
-          and an{' '}
-          <span className="font-medium text-white">
-            economically secure method
-          </span>{' '}
-          to reach consensus on the validity of cross-chain transactions,
-          enabling developers to build truly native cross-chain apps.
-        </div>{' '}
       </div>
 
       <Grid
         cols={{ sm: 1, md: 3 }}
-        gap={6}
-        className="mx-auto mb-4 sm:py-6 md:pt-12 md:pb-0 2xl:w-3/4"
+        gap={8}
+        className="md:p-4"
       >
         <SupportCard header="Extensible" image={<ExtensibleIcon />}>
           Synapse’s cross-chain messaging contracts can be deployed across any

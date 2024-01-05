@@ -34,6 +34,5 @@ func signEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, sal
 	}
 
 	sig = NewSignature(new(big.Int).Add(big.NewInt(27), sig.V()), sig.R(), sig.S())
-
 	return sig, encoded, hashedDigest, nil
 }

@@ -1,12 +1,16 @@
 package db
 
 import (
-	"github.com/ethereum/go-ethereum/core/types"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // TX is a superset of transaction that includes the gas price.
 type TX struct {
+	// UUID is a unique identifier for the transaction that should be reused
+	// if the transaction is bumped.
+	UUID string
 	// inherited from types.Transaction
 	*types.Transaction
 	// creationTime is the time the transaction was last updated
@@ -18,8 +22,9 @@ type TX struct {
 }
 
 // NewTX creates a new TX for use in the db package.
-func NewTX(tx *types.Transaction, status Status) TX {
+func NewTX(tx *types.Transaction, status Status, UUID string) TX {
 	return TX{
+		UUID:        UUID,
 		Transaction: tx,
 		Status:      status,
 	}
