@@ -138,8 +138,8 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 			return
 		}
 		quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
-		for _, dbQuote := range dbQuotes {
-			quotes = append(quotes, model.QuoteResponseFromDbQuote(dbQuote))
+		for i, dbQuote := range dbQuotes {
+			quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
 		}
 		c.JSON(http.StatusOK, quotes)
 	}

@@ -20,6 +20,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
 
@@ -114,7 +115,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
 func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req PutRequest
+		var req model.PutQuoteRequest
 		if err := c.BindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
