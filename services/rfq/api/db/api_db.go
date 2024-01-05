@@ -26,9 +26,9 @@ type Quote struct {
 	FixedFee decimal.Decimal `gorm:"column:fixed_fee"`
 	// Address of the relayer providing the quote
 	RelayerAddr string `gorm:"column:relayer_address;primaryKey"`
-	// OriginFastBridgeAddress is the address of the fast bridge on the origin chain
+	// OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain
 	OriginFastBridgeAddress string `gorm:"column:origin_fast_bridge_address"`
-	// DestFastBridgeAddress is the address of the fast bridge on the destination chain
+	// DestFastBridgeAddress is the address of the fast bridge contract on the destination chain
 	DestFastBridgeAddress string `gorm:"column:dest_fast_bridge_address"`
 	// UpdatedAt is the time that the quote was last upserted
 	UpdatedAt time.Time
