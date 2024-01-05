@@ -5,13 +5,11 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
 import { checksumAddress } from '@utils/checksum'
 import CopyTitle from '@components/misc/CopyTitle'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
-  DAILY_STATISTICS_BY_CHAIN,
 } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'

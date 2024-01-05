@@ -1,9 +1,10 @@
 package txdb
 
 import (
+	"time"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"time"
 )
 
 // define common field names. See package docs  for an explanation of why we have to do this.
@@ -18,6 +19,7 @@ func init() {
 	createdAtFieldName = namer.GetConsistentName("CreatedAt")
 	fromFieldName = namer.GetConsistentName("From")
 	idFieldName = namer.GetConsistentName("ID")
+	uuidFieldName = namer.GetConsistentName("UUID")
 }
 
 var (
@@ -35,11 +37,15 @@ var (
 	fromFieldName string
 	// idFieldName is the field name of the id.
 	idFieldName string
+	// uuidFieldName is the field name of the uuid.
+	uuidFieldName string
 )
 
 // ETHTX contains a raw evm transaction that is unsigned.
 type ETHTX struct {
 	ID uint64 `gorm:"column:id;primaryKey;autoIncrement:true"`
+	// UUID is a unique ID for this transaction that will persist across retries.
+	UUID string `gorm:"column:uuid;index"`
 	// CreatedAt is the time the transaction was created
 	CreatedAt time.Time
 	// TXHash is the hash of the transaction

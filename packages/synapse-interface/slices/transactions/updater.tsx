@@ -39,6 +39,8 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
+const POLLING_INTERVAL: number = 30000 // in ms
+
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
@@ -59,10 +61,14 @@ export default function Updater(): null {
   }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 3000000 })
+    useLazyGetUserHistoricalActivityQuery({
+      pollingInterval: POLLING_INTERVAL,
+    })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000000 })
+    useLazyGetUserPendingTransactionsQuery({
+      pollingInterval: POLLING_INTERVAL,
+    })
 
   const { address } = useAccount({
     onDisconnect() {
@@ -207,17 +213,24 @@ export default function Updater(): null {
 
   // Store pending transactions until completed based on Explorer query
   useEffect(() => {
-    const hasUserPendingTransactions: boolean =
-      Array.isArray(userPendingTransactions) &&
-      !isUserPendingTransactionsLoading
-
-    if (hasUserPendingTransactions) {
+    if (checkTransactionsExist(userPendingTransactions)) {
       userPendingTransactions.forEach(
         (pendingTransaction: BridgeTransaction) => {
-          const isStored: boolean = pendingAwaitingCompletionTransactions?.some(
-            (storedTransaction: BridgeTransaction) =>
-              storedTransaction?.kappa === pendingTransaction?.kappa
-          )
+          let isStored: boolean = false
+
+          if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
+            isStored = pendingAwaitingCompletionTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
+
+          if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
+            isStored = fallbackQueryHistoricalTransactions?.some(
+              (storedTransaction: BridgeTransaction) =>
+                storedTransaction?.kappa === pendingTransaction?.kappa
+            )
+          }
 
           if (!isStored) {
             dispatch(
@@ -227,16 +240,16 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userPendingTransactions])
+  }, [userPendingTransactions, fallbackQueryHistoricalTransactions])
 
   // Handle updating stored pending transactions state throughout progress
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     const hasPendingBridgeTransactions: boolean =
-      Array.isArray(pendingBridgeTransactions) &&
+      checkTransactionsExist(pendingBridgeTransactions) &&
       pendingBridgeTransactions.length > 0
 
     if (hasUserHistoricalTransactions && activeTab === PortfolioTabs.ACTIVITY) {
@@ -316,7 +329,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [userHistoricalTransactions, activeTab])
+  }, [
+    activeTab,
+    userHistoricalTransactions,
+    fallbackQueryHistoricalTransactions,
+  ])
 
   // Handle adding completed fallback historical transaction to seen list
   useEffect(() => {
@@ -379,7 +396,7 @@ export default function Updater(): null {
    */
   useEffect(() => {
     const hasUserHistoricalTransactions: boolean =
-      Array.isArray(userHistoricalTransactions) &&
+      checkTransactionsExist(userHistoricalTransactions) &&
       !isUserHistoricalTransactionsLoading
 
     if (
@@ -445,7 +462,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
+  }, [
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+    userHistoricalTransactions,
+  ])
 
   return null
 }
