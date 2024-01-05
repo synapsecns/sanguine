@@ -5,7 +5,7 @@ import { CSSProperties, useState } from 'react'
 import { LoaderIcon } from 'react-hot-toast'
 
 const BASE_PROPERTIES = `
-    py-3 px-4
+    py-2.5 px-4
     text-lg
     w-full rounded
     text-white
@@ -44,7 +44,7 @@ export const TransactionButton = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {isHovered && toolTipLabel && (
-        <div className="absolute -top-4 z-10 px-2 py-1 bg-[#151315] border border-[#343036] rounded cursor-default text-[#EEEDEF] text-sm">
+        <div className="absolute -top-6 z-10 px-2 py-1 bg-[#151315] border border-[#343036] rounded cursor-default text-[#EEEDEF] text-sm">
           {toolTipLabel}
         </div>
       )}

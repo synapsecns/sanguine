@@ -72,22 +72,22 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
   } else if (!fromChainId) {
     buttonProperties = {
       ...buttonProperties,
-      toolTipLabel: 'Origin chain required',
+      toolTipLabel: 'Select origin chain',
     }
   } else if (!fromToken) {
     buttonProperties = {
       ...buttonProperties,
-      toolTipLabel: 'Origin token required',
+      toolTipLabel: 'Select origin token',
     }
   } else if (!toChainId) {
     buttonProperties = {
       ...buttonProperties,
-      toolTipLabel: 'Destination chain required',
+      toolTipLabel: 'Select destination chain',
     }
   } else if (!toToken) {
     buttonProperties = {
       ...buttonProperties,
-      toolTipLabel: 'Destination token required',
+      toolTipLabel: 'Select destination token',
     }
   } else if (!hasInputAmount) {
     buttonProperties = {
@@ -132,7 +132,7 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
   return (
     buttonProperties && (
       <TransactionButton
-        style={{
+        style={isButtonDisabled ? {} : {
           background: 'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
           borderColor: '#9B6DD7',
         }}
