@@ -28,7 +28,6 @@ import { PageFooter } from './PageFooter'
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div
-      className="min-h-screen overflow-x-hidden bg-no-repeat"
       style={{
         background:
           'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
@@ -39,7 +38,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
       <div
         style={{
           backgroundImage: `url('landingBg.svg')`,
-          backgroundSize: '60%',
+          backgroundSize: '800px',
           backgroundPosition: 'top center',
           backgroundRepeat: 'no-repeat',
         }}
@@ -53,56 +52,41 @@ export function LandingPageWrapper({ children }: { children: any }) {
 
 export function LandingNav() {
   return (
-    <Popover className="relative px-8 pt-6">
-      <div className="w-full md:flex-1 md:flex md:items-center md:justify-between">
-        <div className="flex items-center w-full py-4 lg:px-20">
-          <div className="mr-auto">
-            <SynapseTitleLogo showText={true} />
-          </div>
-          <div className="items-center justify-center -mr-2 sm:flex lg:hidden">
-            <Popover.Button
-              data-test-id="mobile-navbar-button"
-              className={`
-                  rounded-md p-2 inline-flex items-center justify-center
-                  text-gray-400 hover:text-gray-400 hover:bg-gray-800
-                  focus:outline-none
-                `}
-            >
-              <span className="sr-only">Open menu</span>
-              <MenuIcon className="w-8 h-8" aria-hidden="true" />
-            </Popover.Button>
-          </div>
-          <Popover.Group
-            as="nav"
-            className="hidden lg:flex md:justify-space-evenly"
-            data-test-id="desktop-nav"
+    <Popover>
+      <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
+        <SynapseTitleLogo showText={true} />
+        <div className="lg:hidden">
+          <Popover.Button
+            data-test-id="mobile-navbar-button"
+            className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
           >
-            <TopBarButtons />
-          </Popover.Group>
-          <div className="justify-end hidden ml-auto lg:flex">
-            <div className="flex items-center space-x-2">
-              <Wallet />
-              <Popover className="relative inline-block">
-                {({ open }) => (
-                  <>
-                    <Popover.Button
-                      as="div"
-                      onMouseEnter={() => {}}
-                      className={`
-                      ${open ? 'text-gray-900' : 'text-purple-800'}
-                       group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
-                      `}
-                    >
-                      <MoreButton open={open} />
-                    </Popover.Button>
-                    <PopoverPanelContainer className="-translate-x-full">
-                      <MoreInfoButtons />
-                      <SocialButtons />
-                    </PopoverPanelContainer>
-                  </>
-                )}
-              </Popover>
-            </div>
+            <span className="sr-only">Open menu</span>
+            <MenuIcon className="w-8 h-8" aria-hidden="true" />
+          </Popover.Button>
+        </div>
+        <Popover.Group
+          as="nav"
+          className="flex-wrap justify-center hidden lg:flex"
+          data-test-id="desktop-nav"
+        >
+          <TopBarButtons />
+        </Popover.Group>
+        <div className="hidden lg:flex h-fit">
+          <div className="flex items-center space-x-2">
+            <Wallet />
+            <Popover className="relative">
+              {({ open }) => (
+                <>
+                  <Popover.Button as="div" onMouseEnter={() => {}}>
+                    <MoreButton open={open} />
+                  </Popover.Button>
+                  <PopoverPanelContainer className="-translate-x-full left-full">
+                    <MoreInfoButtons />
+                    <SocialButtons />
+                  </PopoverPanelContainer>
+                </>
+              )}
+            </Popover>
           </div>
         </div>
       </div>
@@ -116,44 +100,24 @@ export function LandingNav() {
         leaveFrom=" opacity-100"
         leaveTo=" opacity-0"
       >
-        <Popover.Panel
-          focus
-          className="absolute inset-x-0 top-0 z-10 transition origin-top-right transform"
-        >
+        <Popover.Panel focus className="absolute top-0 z-10 w-screen">
           <div
-            className="h-full min-h-full divide-y divide-gray-600 bg-bgLight"
+            className="bg-bgLight"
             // data-test-id="mobile-nav"
           >
-            <div className="px-4 pt-1 pb-6">
-              <div className="flex items-center justify-between mt-5 ml-3">
-                <SynapseTitleLogo showText={false} />
-                <div className="-mr-2">
-                  <Popover.Button
-                    className={`
-                        rounded-md p-2 inline-flex items-center justify-center
-                        text-gray-400 hover:text-gray-400 hover:bg-gray-900
-                        focus:outline-none
-                      `}
-                  >
-                    <span className="sr-only">Close menu</span>
-                    <XIcon className="w-6 h-6" aria-hidden="true" />
-                  </Popover.Button>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Grid
-                  cols={{ xs: 1 }}
-                  gap={2}
-                  className="py-6"
-                  data-test-id="mobile-nav"
-                >
-                  <MobileBarButtons />
-                </Grid>
-              </div>
+            <div className="flex items-center px-4 pt-4 place-content-between">
+              <SynapseTitleLogo showText={true} />
+              <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
+                <span className="sr-only">Close menu</span>
+                <XIcon className="w-8 h-8" aria-hidden="true" />
+              </Popover.Button>
             </div>
-            <Grid cols={{ xs: 1 }} gap={4} className="px-4 py-4">
+            <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
+              <MobileBarButtons />
+            </div>
+            <div className="px-2 py-4 bg-white/10">
               <Wallet />
-            </Grid>
+            </div>
           </div>
         </Popover.Panel>
       </Transition>
@@ -278,17 +242,10 @@ function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
       href={to}
       target={isInternal ? undefined : '_blank'}
       className={`
-        block
-        px-3 pt-2 pb-2 rounded-md
-        text-2xl font-semibold
-        hover:text-opacity-100
-      `}
+        px-4 py-2 text-2xl font-medium text-white
+        ${!(isInternal && match) && 'opacity-30 hover:opacity-100'}`}
     >
-      {isInternal && match ? (
-        <p className="text-white">{labelText}</p>
-      ) : (
-        <p className="text-white text-opacity-30">{labelText}</p>
-      )}
+      {labelText}
     </a>
   )
 }
@@ -347,10 +304,8 @@ function MiniInfoItem({
 
 export function SynapseTitleLogo({ showText }: { showText: boolean }) {
   return (
-    <a href={LANDING_PATH} className="flex">
-      <div className="flex items-center flex-shrink-0 py-1 ">
-        {showText ? <SynapseLogoWithTitleSvg /> : <SynapseLogoSvg />}
-      </div>
+    <a href={LANDING_PATH}>
+      {showText ? <SynapseLogoWithTitleSvg /> : <SynapseLogoSvg />}
     </a>
   )
 }

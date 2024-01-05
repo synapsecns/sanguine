@@ -1,4 +1,4 @@
-import { DOGE, FANTOM, HARMONY } from '@/constants/chains/master'
+import { ARBITRUM, DOGE, FANTOM, HARMONY } from '@/constants/chains/master'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const Warning = () => {

@@ -70,16 +70,15 @@ export const Wallet = () => {
                       onClick={openConnectModal}
                       type="button"
                       className={`
-                        text-sm flex items-center group cursor-pointer
-                      text-white outline-none active:outline-none
+                        text-sm text-white outline-none active:outline-none
                         ring-none transition-all duration-100 transform-gpu
-                        w-full rounded-md py-2 pl-2.5 pr-2.5 group
+                        rounded-md py-2 px-2.5
                         focus:outline-none focus:ring-0 hover:bg-opacity-70
-                      bg-bgLight hover:bg-bgLightest focus:bg-bgLightest
-                      active:bg-bgLightest hover:!border-blue-500
+                        bg-bgLight hover:bg-bgLightest focus:bg-bgLightest
+                        active:bg-bgLightest hover:!border-blue-500
                         border border-none border-transparent
-                        flex-shrink  whitespace-nowrap
-                        `}
+                        whitespace-nowrap
+                      `}
                     >
                       Connect Wallet
                     </button>
@@ -91,27 +90,24 @@ export const Wallet = () => {
                       onClick={openChainModal}
                       type="button"
                       className={`
-                      text-white transition-all duration-100th
-                        w-fit cursor-pointer rounded-md py-2 pl-2.5
-                        pr-2.5 border border-bgLight
-                      active:bg-bgLightest/10 hover:bg-bgLightest/10
+                        text-white transition-all duration-100th
+                        rounded-md py-2 px-2.5 border border-bgLight
+                        active:bg-bgLightest/10 hover:bg-bgLightest/10
                         whitespace-nowrap
-                        `}
+                      `}
                     >
                       Wrong Network
                     </button>
                   )
                 }
                 return (
-                  <div style={{ display: 'flex', gap: 12 }}>
+                  <div className="flex gap-3">
                     <button
                       onClick={openChainModal}
-                      style={{ display: 'flex', alignItems: 'center', gap: 7 }}
                       type="button"
                       className={`
-                        text-white transition-all duration-100th
-                        w-fit cursor-pointer rounded-md py-2 pl-2.5
-                        pr-2.5 border border-bgLight
+                        flex items-center gap-2 text-white transition-all duration-100th
+                        rounded-md py-2 px-2.5 border border-bgLight
                         active:bg-bgLightest/10 hover:bg-bgLightest/10
                         whitespace-nowrap
                         `}
@@ -148,12 +144,11 @@ export const Wallet = () => {
                       onClick={openAccountModal}
                       type="button"
                       className={`
-                        flex items-center cursor-pointer text-white
-                        transition-all duration-100 w-fit rounded-md
-                        py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70
+                        text-white transition-all duration-100 rounded-md
+                        py-2 px-2.5 bg-bgLight hover:bg-opacity-70
                         hover:bg-bgLightest active:bg-bgLightest text-sm
                         whitespace-nowrap font-bold
-                        `}
+                      `}
                     >
                       {account ? account.displayName : <Spinner />}
                     </button>
