@@ -114,13 +114,15 @@ func (r *APIServer) Run(ctx context.Context) error {
 // PutRequest is used to handle PUT requests to the "/quotes" endpoint.
 // It contains the necessary information to modify a quote in the API.
 type PutRequest struct {
-	OriginChainID   string `json:"origin_chain_id"`
-	OriginTokenAddr string `json:"origin_token_addr"`
-	DestChainID     string `json:"dest_chain_id"`
-	DestTokenAddr   string `json:"dest_token_addr"`
-	DestAmount      string `json:"dest_amount"`
-	MaxOriginAmount string `json:"max_origin_amount"`
-	FixedFee        string `json:"fixed_fee"`
+	OriginChainID           string `json:"origin_chain_id"`
+	OriginTokenAddr         string `json:"origin_token_addr"`
+	DestChainID             string `json:"dest_chain_id"`
+	DestTokenAddr           string `json:"dest_token_addr"`
+	DestAmount              string `json:"dest_amount"`
+	MaxOriginAmount         string `json:"max_origin_amount"`
+	FixedFee                string `json:"fixed_fee"`
+	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
+	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
