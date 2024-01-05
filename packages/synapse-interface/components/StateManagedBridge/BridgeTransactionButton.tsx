@@ -92,6 +92,7 @@ export const BridgeTransactionButton = ({ executeBridge }) => {
   } else if (!hasInputAmount) {
     buttonProperties = {
       ...buttonProperties,
+      toolTipLabel: 'Choose input amount',
     }
   } else if (isConnected && !hasEnoughBalance) {
     buttonProperties = {
