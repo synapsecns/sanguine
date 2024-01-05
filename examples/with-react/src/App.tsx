@@ -4,17 +4,17 @@ import {
   USDT,
   DAI,
   ETH,
-  CustomFallbackRpcs,
+  CustomRpcs,
 } from '@abtestingalpha/widget'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
-import { BaseSyntheticEvent, SyntheticEvent, useState } from 'react'
+import { useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 import { Install, Developer, Support } from './icons'
 
 const tokens = [USDC, USDT, DAI, ETH]
 
-const fallbackRpcs: CustomFallbackRpcs = {
+const customRpcs: CustomRpcs = {
   1: 'https://eth.llamarpc.com',
   42161: 'https://arbitrum.llamarpc.com',
 }
@@ -96,7 +96,7 @@ function App() {
             >
               <Bridge
                 web3Provider={web3Provider}
-                fallbackRpcs={fallbackRpcs}
+                customRpcs={customRpcs}
                 tokens={tokens}
                 customTheme={customTheme}
                 container={container}

@@ -17,7 +17,7 @@ import { CHAINS_ARRAY } from './constants/chains'
 
 export const Bridge = ({
   web3Provider,
-  fallbackRpcs,
+  customRpcs,
   theme,
   customTheme,
   container,
@@ -26,7 +26,7 @@ export const Bridge = ({
 }: WidgetProps) => {
   return (
     <Web3Provider config={web3Provider}>
-      <SynapseProvider chains={CHAINS_ARRAY} fallbackRpcs={fallbackRpcs}>
+      <SynapseProvider chains={CHAINS_ARRAY} customRpcs={customRpcs}>
         <Provider store={store}>
           <TransactionsUpdater />
           <Widget

@@ -4,7 +4,7 @@ import {
   StaticJsonRpcProvider,
   FallbackProvider,
 } from '@ethersproject/providers'
-import { Chain, CustomFallbackRpcs } from 'types'
+import { Chain, CustomRpcs } from 'types'
 
 export const SynapseContext = createContext(null)
 
@@ -14,11 +14,11 @@ export const SynapseProvider = memo(
   ({
     children,
     chains,
-    fallbackRpcs,
+    customRpcs,
   }: {
     children: React.ReactNode
     chains: Chain[]
-    fallbackRpcs?: CustomFallbackRpcs
+    customRpcs?: CustomRpcs
   }) => {
     const synapseProviders = useMemo(() => {
       return chains.map((chain) => {
@@ -27,9 +27,9 @@ export const SynapseProvider = memo(
 
         /** Include Consumer custom rpc if provided */
         /** Consumer provided rpc will have highest priority */
-        if (fallbackRpcs && fallbackRpcs[chain.id]) {
+        if (customRpcs && customRpcs[chain.id]) {
           providers = [
-            new StaticJsonRpcProvider(fallbackRpcs[chain.id], chain.id),
+            new StaticJsonRpcProvider(customRpcs[chain.id], chain.id),
             new StaticJsonRpcProvider(chain.rpcUrls.primary, chain.id),
             new StaticJsonRpcProvider(chain.rpcUrls.fallback, chain.id),
           ]
