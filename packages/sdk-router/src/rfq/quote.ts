@@ -8,6 +8,8 @@ export type FastBridgeQuote = {
   destAmount: BigNumber
   maxOriginAmount: BigNumber
   fixedFee: BigNumber
+  originFastBridge: string
+  destFastBridge: string
   relayerAddr: string
   updatedAt: number
 }
@@ -20,6 +22,8 @@ export type FastBridgeQuoteAPI = {
   DestAmount: string
   MaxOriginAmount: string
   FixedFee: string
+  OriginFastBridgeAddress: string
+  DestFastBridgeAddress: string
   RelayerAddr: string
   UpdatedAt: string
 }
@@ -41,6 +45,8 @@ export const unmarshallFastBridgeQuote = (
     destAmount: BigNumber.from(quote.DestAmount),
     maxOriginAmount: BigNumber.from(quote.MaxOriginAmount),
     fixedFee: BigNumber.from(quote.FixedFee),
+    originFastBridge: quote.OriginFastBridgeAddress,
+    destFastBridge: quote.DestFastBridgeAddress,
     relayerAddr: quote.RelayerAddr,
     updatedAt: Date.parse(quote.UpdatedAt),
   }
@@ -57,6 +63,8 @@ export const marshallFastBridgeQuote = (
     DestAmount: quote.destAmount.toString(),
     MaxOriginAmount: quote.maxOriginAmount.toString(),
     FixedFee: quote.fixedFee.toString(),
+    OriginFastBridgeAddress: quote.originFastBridge,
+    DestFastBridgeAddress: quote.destFastBridge,
     RelayerAddr: quote.relayerAddr,
     UpdatedAt: new Date(quote.updatedAt).toISOString(),
   }

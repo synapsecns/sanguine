@@ -147,6 +147,8 @@ describe('quote', () => {
     DestAmount: '4000000000000000000000',
     MaxOriginAmount: '3000000000000000000000',
     FixedFee: '1000000000000000000',
+    OriginFastBridgeAddress: '0x1',
+    DestFastBridgeAddress: '0x2',
     RelayerAddr: '0xB300efF6B57AA09e5fCcf7221FCB9E676A74d931',
     UpdatedAt: '2023-01-02T03:04:05.678Z',
   }
@@ -165,6 +167,8 @@ describe('quote', () => {
     destAmount: BigNumber.from(10).pow(18).mul(4000),
     maxOriginAmount: BigNumber.from(10).pow(18).mul(3000),
     fixedFee: BigNumber.from(10).pow(18),
+    originFastBridge: '0x1',
+    destFastBridge: '0x2',
     relayerAddr: '0xB300efF6B57AA09e5fCcf7221FCB9E676A74d931',
     updatedAt: 1672628645678,
   }
