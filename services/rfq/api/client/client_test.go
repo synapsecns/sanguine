@@ -12,9 +12,9 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      "100.0",
-		MaxOriginAmount: "200.0",
-		FixedFee:        "10.0",
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 	}
 
 	err := c.client.PutQuote(&req)
@@ -28,9 +28,9 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      100.0,
-		MaxOriginAmount: 200.0,
-		FixedFee:        10.0,
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 		RelayerAddr:     c.testWallet.Address().String(),
 		UpdatedAt:       quotes[0].UpdatedAt,
 	}
@@ -44,9 +44,9 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      "100.0",
-		MaxOriginAmount: "200.0",
-		FixedFee:        "10.0",
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 	}
 
 	err := c.client.PutQuote(&putData)
@@ -66,9 +66,9 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      100.0,
-		MaxOriginAmount: 200.0,
-		FixedFee:        10.0,
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 		RelayerAddr:     c.testWallet.Address().String(),
 		UpdatedAt:       quotes[0].UpdatedAt,
 	}
@@ -81,9 +81,9 @@ func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     "42161",
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      "100.0",
-		MaxOriginAmount: "200.0",
-		FixedFee:        "10.0",
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 	}
 
 	err := c.client.PutQuote(&putData)
@@ -99,9 +99,9 @@ func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      100.0,
-		MaxOriginAmount: 200.0,
-		FixedFee:        10.0,
+		DestAmount:      "100",
+		MaxOriginAmount: "200",
+		FixedFee:        "10",
 		RelayerAddr:     c.testWallet.Address().String(),
 		UpdatedAt:       quotes[0].UpdatedAt,
 	}

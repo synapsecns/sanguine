@@ -153,7 +153,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.FixedFee == 10 {
+		if q.FixedFee == "10" {
 			found = true
 			break
 		}
@@ -195,7 +195,7 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	// Check if the newly added quote is present
 	found := false
 	for _, q := range quotes {
-		if q.FixedFee == 10 {
+		if q.FixedFee == "10" {
 			found = true
 			break
 		}

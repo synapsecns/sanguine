@@ -11,11 +11,11 @@ type GetQuoteResponse struct {
 	// DestToken is the token address for which the relayer willing to relay to
 	DestTokenAddr string `json:"dest_token_addr"`
 	// DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals
-	DestAmount float64 `json:"dest_amount"`
+	DestAmount string `json:"dest_amount"`
 	// MaxOriginAmount is the maximum amount of origin tokens bridgeable
-	MaxOriginAmount float64 `json:"max_origin_amount"`
+	MaxOriginAmount string `json:"max_origin_amount"`
 	// FixedFee is the fixed fee for the quote, provided in the destination token terms
-	FixedFee float64 `json:"fixed_fee"`
+	FixedFee string `json:"fixed_fee"`
 	// Address of the relayer providing the quote
 	RelayerAddr string `json:"relayer_addr"`
 	// OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain
