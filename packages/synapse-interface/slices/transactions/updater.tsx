@@ -39,6 +39,8 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
+const POLLING_INTERVAL: number = 30000 // in ms
+
 export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
@@ -59,10 +61,12 @@ export default function Updater(): null {
   }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
-    useLazyGetUserHistoricalActivityQuery({ pollingInterval: 3000000 })
+    useLazyGetUserHistoricalActivityQuery({ pollingInterval: POLLING_INTERVAL })
 
   const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({ pollingInterval: 3000000 })
+    useLazyGetUserPendingTransactionsQuery({
+      pollingInterval: POLLING_INTERVAL,
+    })
 
   const { address } = useAccount({
     onDisconnect() {
@@ -445,7 +449,11 @@ export default function Updater(): null {
         }
       )
     }
-  }, [fallbackQueryPendingTransactions, fallbackQueryHistoricalTransactions])
+  }, [
+    fallbackQueryPendingTransactions,
+    fallbackQueryHistoricalTransactions,
+    userHistoricalTransactions,
+  ])
 
   return null
 }

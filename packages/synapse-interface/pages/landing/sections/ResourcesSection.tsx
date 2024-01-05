@@ -7,28 +7,18 @@ import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {
   return (
-    <SectionContainer dataTestId="landing-resources-section">
-      <div
-        className={`
-          mt-8 mb-4 text-4xl font-medium text-left
-          text-white lg:text-center md:text-center
-        `}
-      >
+    <SectionContainer dataTestId="landing-resources-section" styles="max-w-5xl m-auto">
+      <h2 className="text-4xl font-medium text-center text-white">
         Get started now
-      </div>
-      <div
-        className={`
-          mb-8 text-left text-secondaryTextColor
-          md:text-center lg:text-center
-        `}
-      >
+      </h2>
+      <p className="mb-8 text-center text-secondaryTextColor">
         Find the resources you need to create integrations with Synapse.
-      </div>
+      </p>
 
       <Grid
         cols={{ sm: 1, md: 1, lg: 3 }}
         gap={6}
-        className="py-4 mx-auto lg:px-12 2xl:w-3/4"
+        className="p-4"
       >
         <ResourceCard
           title="References"
@@ -58,8 +48,8 @@ function ResourceCard({ title, description, buttonText, linkUrl }) {
     <Card
       className={`
         text-center rounded-md border
-        border-white border-opacity-10
-        bg-[#2F2F2F] bg-opacity-70 py-6 px-6
+        border-white/10
+        bg-[#2F2F2F] bg-opacity-70 p-4 max-w-xs m-auto
       `}
       divider={false}
     >
