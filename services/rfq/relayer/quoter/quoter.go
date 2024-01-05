@@ -184,9 +184,9 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
 				}
 				quote := model.PutQuoteRequest{
-					OriginChainID:           originStr,
+					OriginChainID:           origin,
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
-					DestChainID:             fmt.Sprint(chainID),
+					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
 					DestAmount:              balance.String(),
 					MaxOriginAmount:         balance.String(),

@@ -134,9 +134,9 @@ func (c *unauthenticatedClient) GetSpecificQuote(q *model.GetQuoteSpecificReques
 	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
 		SetQueryParams(map[string]string{
-			"originChainId":   q.OriginChainID,
+			"originChainId":   strconv.Itoa(q.OriginChainID),
 			"originTokenAddr": q.OriginTokenAddr,
-			"destChainId":     q.DestChainID,
+			"destChainId":     strconv.Itoa(q.DestChainID),
 			"destTokenAddr":   q.DestTokenAddr,
 		}).
 		SetResult(&quotes).

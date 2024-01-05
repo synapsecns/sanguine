@@ -44,19 +44,9 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
-	destChainID, err := strconv.ParseUint(putRequest.DestChainID, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestChainID"})
-		return
-	}
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
-		return
-	}
-	originChainID, err := strconv.ParseUint(putRequest.OriginChainID, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestChainID"})
 		return
 	}
 	maxOriginAmount, err := decimal.NewFromString(putRequest.MaxOriginAmount)
@@ -71,9 +61,9 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 	}
 	// nolint: forcetypeassert
 	quote := &db.Quote{
-		OriginChainID:   originChainID,
+		OriginChainID:   uint64(putRequest.OriginChainID),
 		OriginTokenAddr: putRequest.OriginTokenAddr,
-		DestChainID:     destChainID,
+		DestChainID:     uint64(putRequest.DestChainID),
 		DestTokenAddr:   putRequest.DestTokenAddr,
 		DestAmount:      destAmount,
 		MaxOriginAmount: maxOriginAmount,

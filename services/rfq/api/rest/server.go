@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ipfs/go-log"
@@ -122,14 +121,7 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		destChainID, err := strconv.ParseUint(req.DestChainID, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dest_chain_id"})
-			c.Abort()
-			return
-		}
-
-		bridge, ok := r.fastBridgeContracts[uint32(destChainID)]
+		bridge, ok := r.fastBridgeContracts[uint32(req.DestChainID)]
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "dest chain id not supported"})
 			c.Abort()

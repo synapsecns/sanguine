@@ -237,9 +237,9 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
 	putData := model.PutQuoteRequest{
-		OriginChainID:   "1",
+		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
-		DestChainID:     "42161",
+		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
 		MaxOriginAmount: "200.0",

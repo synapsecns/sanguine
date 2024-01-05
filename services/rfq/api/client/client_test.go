@@ -8,9 +8,9 @@ import (
 
 func (c *ClientSuite) TestPutAndGetQuote() {
 	req := model.PutQuoteRequest{
-		OriginChainID:   "1",
+		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
-		DestChainID:     "42161",
+		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100",
 		MaxOriginAmount: "200",
@@ -39,23 +39,23 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 }
 
 func (c *ClientSuite) TestGetSpecificQuote() {
-	putData := model.PutQuoteRequest{
-		OriginChainID:   "1",
+	req := model.PutQuoteRequest{
+		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
-		DestChainID:     "42161",
+		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100",
 		MaxOriginAmount: "200",
 		FixedFee:        "10",
 	}
 
-	err := c.client.PutQuote(&putData)
+	err := c.client.PutQuote(&req)
 	c.Require().NoError(err)
 
 	quotes, err := c.client.GetSpecificQuote(&model.GetQuoteSpecificRequest{
-		OriginChainID:   "1",
+		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
-		DestChainID:     "42161",
+		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 	})
 	c.Require().NoError(err)
@@ -76,17 +76,17 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 }
 
 func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
-	putData := model.PutQuoteRequest{
-		OriginChainID:   "1",
+	req := model.PutQuoteRequest{
+		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
-		DestChainID:     "42161",
+		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100",
 		MaxOriginAmount: "200",
 		FixedFee:        "10",
 	}
 
-	err := c.client.PutQuote(&putData)
+	err := c.client.PutQuote(&req)
 	c.Require().NoError(err)
 
 	relayerAddr := c.testWallet.Address().Hex()
