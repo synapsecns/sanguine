@@ -12,7 +12,6 @@ import TransactionsUpdater from '@/state/slices/transactions/updater'
 import { SynapseProvider } from 'providers/SynapseProvider'
 import { CHAINS_ARRAY } from './constants/chains'
 
-// TODO: After separating required fields need two types: BridgeProps (consumer) and WidgetProps (internal)
 // TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
 
 export const Bridge = ({
