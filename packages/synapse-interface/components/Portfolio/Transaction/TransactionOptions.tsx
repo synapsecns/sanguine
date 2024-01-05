@@ -2,7 +2,6 @@ import { Fragment, useCallback } from 'react'
 import Image from 'next/image'
 import { Address } from 'viem'
 import { Popover, Transition } from '@headlessui/react'
-import { PlayIcon } from '@heroicons/react/outline'
 import { Chain } from '@/utils/types'
 import { TransactionStatus } from './Transaction'
 import {

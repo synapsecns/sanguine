@@ -1,33 +1,34 @@
 import _ from 'lodash'
-import { ChainId } from '@constants/networks'
+
+import { ChainId } from '../../constants/chains/index'
 
 /**
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.
  */
 export class Token {
-  addresses?: any;
-  decimals?: any;
-  depositTokens?: any;
-  description?: any;
-  docUrl?: any;
-  icon?: any;
-  isEthSwap?: any;
-  isMeta?: any;
-  isNative?: any;
-  name?: any;
-  nativeTokens?: any;
-  poolId?: any;
-  poolName?: any;
-  poolTokens?: any;
-  poolType?: any;
-  routerIndex?: any;
-  swapAddresses?: any;
-  swapDepositAddresses?: any;
-  swapEthAddresses?: any;
-  swapWrapperAddresses?: any;
-  swapableType?: any;
-  symbol?: any;
-  wrapperAddresses?: any;
+  addresses?: any
+  decimals?: any
+  depositTokens?: any
+  description?: any
+  docUrl?: any
+  icon?: any
+  isEthSwap?: any
+  isMeta?: any
+  isNative?: any
+  name?: any
+  nativeTokens?: any
+  poolId?: any
+  poolName?: any
+  poolTokens?: any
+  poolType?: any
+  routerIndex?: any
+  swapAddresses?: any
+  swapDepositAddresses?: any
+  swapEthAddresses?: any
+  swapWrapperAddresses?: any
+  swapableType?: any
+  symbol?: any
+  wrapperAddresses?: any
   /**
    * @param {Object} obj - An object.
    * @param {Object.<number,string>} [obj.addresses] - addresses of the actual token
@@ -51,51 +52,51 @@ export class Token {
    *  metaswap even if swapDepositAddresses isnt present
    */
   constructor({
-                addresses,
-                wrapperAddresses,
-                decimals,
-                symbol,
-                name,
-                logo,
-                poolName,
-                swapAddresses,
-                swapWrapperAddresses,
-                swapDepositAddresses,
-                swapEthAddresses,
-                routerIndex,
-                poolId,
-                poolType,
-                poolTokens,
-                depositTokens,
-                nativeTokens,
-                description,
-                docUrl,
-                forceMeta,
-                isNative,
-                swapableType,
-              }: {
-    addresses?: any,
-    wrapperAddresses?: any,
-    decimals?: any,
-    symbol?: any,
-    name?: any,
-    logo?: any,
-    poolName?: any,
-    swapAddresses?: any,
-    swapWrapperAddresses?: any,
-    swapDepositAddresses?: any,
-    swapEthAddresses?: any,
-    routerIndex?: any,
-    poolId?: any,
-    poolType?: any,
-    poolTokens?: any,
-    depositTokens?: any,
-    nativeTokens?: any,
-    description?: any,
-    docUrl?: any,
-    forceMeta?: any,
-    isNative?: any,
-    swapableType?: any,
+    addresses,
+    wrapperAddresses,
+    decimals,
+    symbol,
+    name,
+    logo,
+    poolName,
+    swapAddresses,
+    swapWrapperAddresses,
+    swapDepositAddresses,
+    swapEthAddresses,
+    routerIndex,
+    poolId,
+    poolType,
+    poolTokens,
+    depositTokens,
+    nativeTokens,
+    description,
+    docUrl,
+    forceMeta,
+    isNative,
+    swapableType,
+  }: {
+    addresses?: any
+    wrapperAddresses?: any
+    decimals?: any
+    symbol?: any
+    name?: any
+    logo?: any
+    poolName?: any
+    swapAddresses?: any
+    swapWrapperAddresses?: any
+    swapDepositAddresses?: any
+    swapEthAddresses?: any
+    routerIndex?: any
+    poolId?: any
+    poolType?: any
+    poolTokens?: any
+    depositTokens?: any
+    nativeTokens?: any
+    description?: any
+    docUrl?: any
+    forceMeta?: any
+    isNative?: any
+    swapableType?: any
   }) {
     let isMeta
     if (swapDepositAddresses || forceMeta) {

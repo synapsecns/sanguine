@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { Chain, useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
+import { Chain } from 'viem'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
 import { setSwapChainId } from '@/slices/swap/reducer'
@@ -13,6 +14,8 @@ import {
   fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
+import { isBlacklisted } from '@/utils/isBlacklisted'
+import { screenAddress } from '@/utils/screenAddress'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -93,6 +96,16 @@ export const UserProvider = ({ children }) => {
       }
     })()
   }, [chain, address, isClient])
+
+  useEffect(() => {
+    if (address) {
+      if (!isBlacklisted(address)) {
+        screenAddress(address)
+      } else {
+        document.body = document.createElement('body')
+      }
+    }
+  }, [address])
 
   return (
     <WalletStatusContext.Provider value={null}>

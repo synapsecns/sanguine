@@ -351,14 +351,18 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
-    segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
-      address,
-      originChainId: fromChainId,
-      destinationChainId: toChainId,
-      inputAmount: debouncedFromValue,
-      expectedReceivedAmount: bridgeQuote.outputAmountString,
-      slippage: bridgeQuote.exchangeRate,
-    })
+    segmentAnalyticsEvent(
+      `[Bridge] initiates bridge`,
+      {
+        address,
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: debouncedFromValue,
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      },
+      true
+    )
     const currentTimestamp: number = getTimeMinutesFromNow(0)
     dispatch(
       addPendingBridgeTransaction({
