@@ -84,7 +84,7 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 func (s Store) UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error {
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
 		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
-		Update(destTxHashFieldName, destTxHash)
+		Update(destTxHashFieldName, destTxHash.String())
 	if tx.Error != nil {
 		return fmt.Errorf("could not update: %w", tx.Error)
 	}
