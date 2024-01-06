@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -153,6 +154,11 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 	})
 
 	err = g.Wait()
+	// can't use errors.is here
+	if strings.Contains(err.Error(), "no contract code at given address") {
+		return nil, fmt.Errorf("could not get decimals: %w", reldb.ErrNoContractCode)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("could not get decimals: %w", err)
 	}
