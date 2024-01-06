@@ -114,24 +114,3 @@ func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, 
 func (t *txSubmitterImpl) CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
 	return t.checkAndSetConfirmation(ctx, chainClient, txes)
 }
-
-// SortTxes exports sortTxesByChainID for testing.
-func SortTxes(txs []db.TX) map[uint64][]db.TX {
-	return sortTxesByChainID(txs)
-}
-
-// GroupTxesByNonce exports groupTxesByNonce for testing.
-func GroupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
-	return groupTxesByNonce(txs)
-}
-
-// SetForceNoFallback exports setForceNoFallback for testing.
-func SetForceNoFallback(val bool) {
-	forceNoFallbackIfZero = val
-}
-
-// export for testing
-// Warning! Changing this value will not change the underlying value!
-// this is exported for testing to allow a return to underlying value after the test
-// TODO: consider doing a SetForTest.
-var ForceNoFallbackIfZero = forceNoFallbackIfZero
