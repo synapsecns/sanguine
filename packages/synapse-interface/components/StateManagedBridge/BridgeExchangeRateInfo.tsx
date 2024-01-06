@@ -3,7 +3,6 @@ import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
@@ -11,8 +10,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
-  const [gasDropChainId, setGasDropChainId] = useState<number>(null)
-
   const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
   const toToken = useSelector((state: RootState) => state.bridge.toToken)
   const exchangeRate = useSelector(
@@ -46,19 +43,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [numExchangeRate])
 
   const isGasDropped = gasDropAmount > 0n
-
-  useEffect(() => {
-    setGasDropChainId(toChainId)
-  }, [toChainId, isGasDropped])
-
   const gasDropLabel = !loading && isGasDropped && <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-
-  const memoizedGasDropLabel = useMemo(() => {
-    if (toChainId === CHAINS.ETH.id) return null
-    if (!isGasDropped || !(toChainId == gasDropChainId)) return null
-    if (loading) return null
-    return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-  }, [toChainId, gasDropChainId, isGasDropped, loading])
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
