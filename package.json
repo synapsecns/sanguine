@@ -1,7 +1,7 @@
 {
   "name": "@abtestingalpha/widget",
   "description": "Test Widget",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "license": "ISC",
   "type": "module",
   "main": "dist/cjs/index.js",
