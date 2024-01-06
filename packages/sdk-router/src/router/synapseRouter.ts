@@ -6,6 +6,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { solidityKeccak256 } from 'ethers/lib/utils'
 
 import routerAbi from '../abi/SynapseRouter.json'
+import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
 import {
   SynapseRouter as SynapseRouterContract,
   PoolStructOutput,
@@ -64,7 +65,7 @@ export class SynapseRouter extends Router {
   public readonly address: string
 
   private readonly routerContract: SynapseRouterContract
-  private bridgeContractCache: Contract | undefined
+  private bridgeContractCache?: SynapseBridgeContract
 
   // All possible events emitted by the SynapseBridge contract in the origin transaction (in alphabetical order)
   private readonly originEvents = [
@@ -187,7 +188,7 @@ export class SynapseRouter extends Router {
 
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
 
-  private async getBridgeContract(): Promise<Contract> {
+  private async getBridgeContract(): Promise<SynapseBridgeContract> {
     // Populate the cache if necessary
     if (!this.bridgeContractCache) {
       const bridgeAddress = await this.routerContract.synapseBridge()
@@ -195,7 +196,7 @@ export class SynapseRouter extends Router {
         bridgeAddress,
         new Interface(bridgeAbi),
         this.provider
-      )
+      ) as SynapseBridgeContract
     }
     // Return the cached contract
     return this.bridgeContractCache
