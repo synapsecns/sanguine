@@ -1,7 +1,9 @@
-import { BridgeableToken } from 'types'
-import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
+import _ from 'lodash'
+
 import usePopover from '@/hooks/usePopoverRef'
+import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '../icons/DownArrow'
+import { BridgeableToken } from 'types'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -25,6 +27,30 @@ export function TokenPopoverSelect({
     closePopover()
   }
 
+  /** Merge options with balances to sort */
+  const optionsWithBalances: TokenBalance[] = mergeTokenOptionsWithBalances(
+    options,
+    balances
+  )
+
+  /** Merge remaining with balances to sort */
+  const remainingWithBalances: TokenBalance[] = mergeTokenOptionsWithBalances(
+    remaining,
+    balances
+  )
+
+  const sortedOptionsWithBalances: TokenBalance[] = _.orderBy(
+    optionsWithBalances,
+    ['parsedBalance', 'token.priorityRank'],
+    ['desc', 'asc']
+  )
+
+  const sortedRemainingWithBalances: TokenBalance[] = _.orderBy(
+    remainingWithBalances,
+    ['parsedBalance', 'token.priorityRank'],
+    ['desc', 'asc']
+  )
+
   return (
     <div
       data-test-id="token-popover-select"
@@ -46,41 +72,54 @@ export function TokenPopoverSelect({
       </div>
       {isOpen && (
         <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80">
-          {options.map((option: BridgeableToken, index) => {
-            const matchedTokenBalance: TokenBalance = balances?.find(
-              (token: TokenBalance) => token.token === option
-            )
-            const parsedBalance: string = matchedTokenBalance?.parsedBalance
-            return (
-              <TokenOption
-                option={option}
-                key={index}
-                onSelect={handleSelect}
-                selected={selected}
-                parsedBalance={parsedBalance}
-              />
-            )
-          })}
+          {sortedOptionsWithBalances?.map((option: TokenBalance, index) => (
+            <TokenOption
+              option={option?.token}
+              key={index}
+              onSelect={handleSelect}
+              selected={selected}
+              parsedBalance={option?.parsedBalance}
+            />
+          ))}
           <div className="pl-2 text-sm underline">Other tokens</div>
-          {remaining?.map((option: BridgeableToken, index) => {
-            const matchedTokenBalance: TokenBalance = balances?.find(
-              (token: TokenBalance) => token.token === option
-            )
-            const parsedBalance: string = matchedTokenBalance?.parsedBalance
-            return (
-              <TokenOption
-                option={option}
-                key={index}
-                onSelect={handleSelect}
-                selected={selected}
-                parsedBalance={parsedBalance}
-              />
-            )
-          })}
+          {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
+            <TokenOption
+              option={option?.token}
+              key={index}
+              onSelect={handleSelect}
+              selected={selected}
+              parsedBalance={option?.parsedBalance}
+            />
+          ))}
         </ul>
       )}
     </div>
   )
+}
+
+function mergeTokenOptionsWithBalances(
+  tokens: BridgeableToken[],
+  balances: TokenBalance[]
+) {
+  return tokens?.map((token) => {
+    /** If token balance does not exist, set balance to null */
+    if (_.isArray(balances) && _.isEmpty(balances)) {
+      return {
+        token: token,
+        balance: null,
+        parsedBalance: null,
+      }
+    } else {
+      const matchedTokenBalance: TokenBalance = balances?.find(
+        (currentToken: TokenBalance) => currentToken.token === token
+      )
+      return {
+        token: token,
+        balance: matchedTokenBalance?.balance,
+        parsedBalance: matchedTokenBalance?.parsedBalance,
+      }
+    }
+  })
 }
 
 const TokenOption = ({
@@ -98,14 +137,14 @@ const TokenOption = ({
     <li
       data-test-id="token-option"
       className={`cursor-pointer rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 flex gap-4 items-center justify-between ${
-        option.symbol === selected?.symbol
+        option?.symbol === selected?.symbol
           ? 'border-[--synapse-focus] hover:opacity-70'
           : 'border-transparent'
       }`}
       onClick={() => onSelect(option)}
     >
-      <abbr title={option.name} className="p-2 no-underline">
-        {option.symbol}
+      <abbr title={option?.name} className="p-2 no-underline">
+        {option?.symbol}
       </abbr>
       <data
         value={parsedBalance}
