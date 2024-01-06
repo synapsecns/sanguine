@@ -2,9 +2,14 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, providers } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
-import { ETH_NUSD, ETH_USDC, getTestProviderUrl } from '../constants/testValues'
+import {
+  ETH_NUSD,
+  ETH_USDC,
+  ETH_SYN,
+  getTestProviderUrl,
+} from '../constants/testValues'
 import { ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
-import { SynapseRouter } from './synapseRouter'
+import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { BridgeToken, RouterQuery } from '../module'
 import { DestRequest } from './types'
 
@@ -168,6 +173,23 @@ describe('SynapseRouter', () => {
         expect(destQueries[0].tokenOut).toBe(ETH_USDC)
         expect(destQueries[0].minAmountOut.gt(0)).toBe(true)
         expect(destQueries[1].minAmountOut).toEqual(BigNumber.from(0))
+      })
+    })
+
+    describe('getBridgeTokenType', () => {
+      it('Correctly handles unknown token', async () => {
+        const tokenType = await synapseRouter.getBridgeTokenType(recipient)
+        expect(tokenType).toBe(BridgeTokenType.NotSupported)
+      })
+
+      it('Correctly handles deposit token', async () => {
+        const tokenType = await synapseRouter.getBridgeTokenType(ETH_NUSD)
+        expect(tokenType).toBe(BridgeTokenType.Deposit)
+      })
+
+      it('Correctly handles redeem token', async () => {
+        const tokenType = await synapseRouter.getBridgeTokenType(ETH_SYN)
+        expect(tokenType).toBe(BridgeTokenType.Redeem)
       })
     })
   })
