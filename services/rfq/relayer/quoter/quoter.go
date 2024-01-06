@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 )
 
@@ -127,7 +128,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 
 // Prepares and submits quotes based on inventory.
 func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) error {
-	var allQuotes []rfqAPIClient.APIQuotePutRequest
+	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
 	for chainID, balances := range inv {
@@ -154,13 +155,13 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]rfqAPIClient.APIQuotePutRequest, error) {
+func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
 	}
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
-	var quotes []rfqAPIClient.APIQuotePutRequest
+	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.config.QuotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			// TODO: probably a better way to do this.
@@ -182,10 +183,10 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 				if !ok {
 					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
 				}
-				quote := rfqAPIClient.APIQuotePutRequest{
-					OriginChainID:           originStr,
+				quote := model.PutQuoteRequest{
+					OriginChainID:           origin,
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
-					DestChainID:             fmt.Sprint(chainID),
+					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
 					DestAmount:              balance.String(),
 					MaxOriginAmount:         balance.String(),
@@ -201,7 +202,7 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 }
 
 // Submits a single quote.
-func (m *Manager) submitQuote(quote rfqAPIClient.APIQuotePutRequest) error {
+func (m *Manager) submitQuote(quote model.PutQuoteRequest) error {
 	err := m.rfqClient.PutQuote(&quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)

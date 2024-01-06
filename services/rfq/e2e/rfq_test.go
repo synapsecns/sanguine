@@ -1,6 +1,10 @@
 package e2e_test
 
 import (
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
@@ -15,9 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
-	"math/big"
-	"testing"
-	"time"
 )
 
 type IntegrationSuite struct {
@@ -114,8 +115,8 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 		for _, quote := range allQuotes {
 			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
-
-				if quote.DestAmount.BigInt().Cmp(realWantAmount) > 0 {
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(realWantAmount) > 0 {
 					// we found our quote!
 					// now we can move on
 					return true
@@ -181,7 +182,8 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 				// we should now have some usdc on the origin chain since we claimed
 				// this should be offered up as inventory
-				if quote.DestAmount.BigInt().Cmp(big.NewInt(0)) > 0 {
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(big.NewInt(0)) > 0 {
 					// we found our quote!
 					// now we can move on
 					return true

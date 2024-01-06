@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ipfs/go-log"
@@ -20,6 +19,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
 
@@ -111,38 +111,17 @@ func (r *APIServer) Run(ctx context.Context) error {
 	return nil
 }
 
-// PutRequest is used to handle PUT requests to the "/quotes" endpoint.
-// It contains the necessary information to modify a quote in the API.
-type PutRequest struct {
-	OriginChainID           string `json:"origin_chain_id"`
-	OriginTokenAddr         string `json:"origin_token_addr"`
-	DestChainID             string `json:"dest_chain_id"`
-	DestTokenAddr           string `json:"dest_token_addr"`
-	DestAmount              string `json:"dest_amount"`
-	MaxOriginAmount         string `json:"max_origin_amount"`
-	FixedFee                string `json:"fixed_fee"`
-	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
-	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
-}
-
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
 func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req PutRequest
+		var req model.PutQuoteRequest
 		if err := c.BindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
 
-		destChainID, err := strconv.ParseUint(req.DestChainID, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dest_chain_id"})
-			c.Abort()
-			return
-		}
-
-		bridge, ok := r.fastBridgeContracts[uint32(destChainID)]
+		bridge, ok := r.fastBridgeContracts[uint32(req.DestChainID)]
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "dest chain id not supported"})
 			c.Abort()
