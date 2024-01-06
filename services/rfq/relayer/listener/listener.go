@@ -14,6 +14,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
@@ -103,7 +105,7 @@ func (c *chainListener) LatestBlock() uint64 {
 }
 
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll")
+	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll", trace.WithAttributes(attribute.Int(metrics.ChainID, int(c.chainID))))
 	c.pollInterval = defaultPollInterval
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
