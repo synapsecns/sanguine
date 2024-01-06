@@ -77,8 +77,8 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
 	// allowed pairs for this origin token on the destination
 	destPairs := m.config.QuotableTokens[quote.GetOriginIDPair()]
-	if slices.Contains(destPairs, quote.GetDestIDPair()) {
-		return true
+	if !(slices.Contains(destPairs, quote.GetDestIDPair())) {
+		return false
 	}
 
 	// handle decimals.
