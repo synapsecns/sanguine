@@ -2,10 +2,9 @@ package quoter_test
 
 import (
 	"math/big"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
-	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -17,11 +16,11 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	s.Require().NoError(err)
 
 	// Verify the qutoes are generated as expected.
-	expectedQuotes := []rfqAPIClient.APIQuotePutRequest{
+	expectedQuotes := []model.PutQuoteRequest{
 		{
-			OriginChainID:   strconv.Itoa(int(s.origin)),
+			OriginChainID:   int(s.origin),
 			OriginTokenAddr: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-			DestChainID:     strconv.Itoa(int(s.destination)),
+			DestChainID:     int(s.destination),
 			DestTokenAddr:   "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
 			DestAmount:      balance.String(),
 			MaxOriginAmount: balance.String(),
