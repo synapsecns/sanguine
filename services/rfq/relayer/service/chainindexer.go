@@ -46,8 +46,8 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		return fmt.Errorf("could not parse: %w", err)
 	}
 
-	err = chainListener.Listen(ctx, func(ctx context.Context, log types.Log) error {
-		_, parsedEvent, ok := parser.ParseEvent(log)
+	err = chainListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
 		// handle unknown event
 		if !ok {
 			if len(log.Topics) != 0 {
@@ -55,6 +55,18 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			}
 			return nil
 		}
+
+		ctx, span := r.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.Int(metrics.Origin, chainID),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
 
 		switch event := parsedEvent.(type) {
 		case *fastbridge.FastBridgeBridgeRequested:
