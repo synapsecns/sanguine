@@ -19,7 +19,11 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
     (state: RootState) => state.bridge.bridgeQuote.exchangeRate
   )
   const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
-  const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
+  const gasDropAmount = useSelector(
+    (state: RootState) => state.bridge.bridgeQuote.gasDropAmount
+  )
+  // TODO: remove this as no longer needed
+  const loading = false
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
@@ -42,7 +46,8 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
   const isGasDropped = useMemo(() => {
     if (gasDropAmount) {
-      return gasDropAmount.gt(0)
+      // TODO: verify this is correct
+      return gasDropAmount > 0n
     }
   }, [gasDropAmount])
 
