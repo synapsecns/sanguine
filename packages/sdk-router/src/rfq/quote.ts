@@ -26,8 +26,7 @@ export type FastBridgeQuoteAPI = {
   dest_fast_bridge_address: string
   relayer_addr: string
   updated_at: string
-};
-
+}
 
 export const unmarshallFastBridgeQuote = (
   quote: FastBridgeQuoteAPI
@@ -50,9 +49,8 @@ export const unmarshallFastBridgeQuote = (
     destFastBridge: quote.dest_fast_bridge_address,
     relayerAddr: quote.relayer_addr,
     updatedAt: Date.parse(quote.updated_at),
-  };
-};
-
+  }
+}
 
 export const marshallFastBridgeQuote = (
   quote: FastBridgeQuote
@@ -69,9 +67,8 @@ export const marshallFastBridgeQuote = (
     dest_fast_bridge_address: quote.destFastBridge,
     relayer_addr: quote.relayerAddr,
     updated_at: new Date(quote.updatedAt).toISOString(),
-  };
-};
-
+  }
+}
 
 export const applyQuote = (
   quote: FastBridgeQuote,

@@ -36,7 +36,6 @@ const createQuoteTokenFragment = (
   }
 }
 
-
 const createQuotePricingFragment = (
   price: Pricing
 ): {

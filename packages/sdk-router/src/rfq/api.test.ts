@@ -29,8 +29,7 @@ describe('getAllQuotes', () => {
       relayer_addr: '0x0000000000000000000000000000000000000006',
       updated_at: '2023-01-02T00:00:00.420Z',
     },
-  ];
-
+  ]
 
   it('returns an empty array when the response is not ok', async () => {
     global.fetch = jest.fn(() =>
