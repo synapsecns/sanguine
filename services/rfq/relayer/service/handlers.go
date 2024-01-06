@@ -63,7 +63,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
 	decimals, err := r.getDecimals(ctx, bridgeTx)
 	// can't use errors.is here
-	if strings.Contains(err.Error(), "no contract code at given address") {
+	if err != nil && strings.Contains(err.Error(), "no contract code at given address") {
 		logger.Warnf("invalid token, skipping")
 		return nil
 	}
