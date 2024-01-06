@@ -315,7 +315,7 @@ func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ tr
 	}
 	// if commitableBalance > destAmount
 	if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
