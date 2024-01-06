@@ -32,7 +32,7 @@ type Config struct {
 	// Signer is the signer config.
 	Signer config.SignerConfig `yaml:"signer"`
 	// Submitter is the submitter config.
-	SubmitterConfig submitterConfig.Config `yaml:"submitter"`
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 }
