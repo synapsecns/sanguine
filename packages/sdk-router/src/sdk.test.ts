@@ -283,7 +283,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
         )
       })
@@ -327,7 +327,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.BSC]
         )
       })
@@ -364,7 +364,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.BSC]
         )
       })
@@ -408,7 +408,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
       })
@@ -445,7 +445,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
         )
         expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
       })
@@ -488,7 +488,7 @@ describe('SynapseSDK', () => {
             MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
           )
           expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-          expect(result.gasDropAmount).toBe(
+          expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
         })
@@ -526,7 +526,7 @@ describe('SynapseSDK', () => {
             MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
           )
           expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-          expect(result.gasDropAmount).toBe(
+          expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
         })
@@ -564,7 +564,7 @@ describe('SynapseSDK', () => {
             MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
           )
           expect(result.bridgeModuleName).toEqual('SynapseBridge')
-          expect(result.gasDropAmount).toBe(
+          expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
         })
@@ -602,7 +602,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
       })
@@ -647,7 +647,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
         )
       })
@@ -684,7 +684,7 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
         )
       })
@@ -712,7 +712,7 @@ describe('SynapseSDK', () => {
         )
         expect(result).toBeDefined()
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(
+        expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
         )
       })
@@ -727,7 +727,7 @@ describe('SynapseSDK', () => {
         )
         expect(result).toBeDefined()
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toBe(Zero)
+        expect(result.gasDropAmount).toEqual(Zero)
       })
     })
   })
@@ -765,10 +765,10 @@ describe('SynapseSDK', () => {
         allQuotes[0].bridgeModuleName === 'SynapseCCTP' ||
           allQuotes[1].bridgeModuleName === 'SynapseCCTP'
       ).toBe(true)
-      expect(allQuotes[0].gasDropAmount).toBe(
+      expect(allQuotes[0].gasDropAmount).toEqual(
         EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
       )
-      expect(allQuotes[1].gasDropAmount).toBe(
+      expect(allQuotes[1].gasDropAmount).toEqual(
         EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
       )
     })
@@ -784,7 +784,7 @@ describe('SynapseSDK', () => {
       expect(allQuotes.length).toEqual(1)
       expectCorrectBridgeQuote(allQuotes[0])
       expect(allQuotes[0].bridgeModuleName).toEqual('SynapseBridge')
-      expect(allQuotes[0].gasDropAmount).toBe(
+      expect(allQuotes[0].gasDropAmount).toEqual(
         EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
       )
     })
