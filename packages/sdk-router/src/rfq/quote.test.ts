@@ -140,17 +140,17 @@ const createRoundDownTest = (
 
 describe('quote', () => {
   const quoteAPI: FastBridgeQuoteAPI = {
-    OriginChainID: 1,
-    OriginTokenAddr: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-    DestChainID: 2,
-    DestTokenAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    DestAmount: '4000000000000000000000',
-    MaxOriginAmount: '3000000000000000000000',
-    FixedFee: '1000000000000000000',
-    OriginFastBridgeAddress: '0x1',
-    DestFastBridgeAddress: '0x2',
-    RelayerAddr: '0xB300efF6B57AA09e5fCcf7221FCB9E676A74d931',
-    UpdatedAt: '2023-01-02T03:04:05.678Z',
+    origin_chain_id: 1,
+    origin_token_addr: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+    dest_chain_id: 2,
+    dest_token_addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    dest_amount: '4000000000000000000000',
+    max_origin_amount: '3000000000000000000000',
+    fixed_fee: '1000000000000000000',
+    origin_fast_bridge_address: '0x1',
+    dest_fast_bridge_address: '0x2',
+    relayer_addr: '0xB300efF6B57AA09e5fCcf7221FCB9E676A74d931',
+    updated_at: '2023-01-02T03:04:05.678Z',
   }
 
   const quote: FastBridgeQuote = {

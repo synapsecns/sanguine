@@ -19,40 +19,41 @@ const createQuoteTokenFragment = (
   originToken: ChainToken,
   destToken: ChainToken
 ): {
-  OriginChainID: number
-  OriginTokenAddr: string
-  DestChainID: number
-  DestTokenAddr: string
-  OriginFastBridgeAddress: string
-  DestFastBridgeAddress: string
+  origin_chain_id: number
+  origin_token_addr: string
+  dest_chain_id: number
+  dest_token_addr: string
+  origin_fast_bridge_address: string
+  dest_fast_bridge_address: string
 } => {
   return {
-    OriginChainID: originToken.chainId,
-    OriginTokenAddr: originToken.token,
-    DestChainID: destToken.chainId,
-    DestTokenAddr: destToken.token,
-    OriginFastBridgeAddress: FAST_BRIDGE_ADDRESS_MAP[originToken.chainId],
-    DestFastBridgeAddress: FAST_BRIDGE_ADDRESS_MAP[destToken.chainId],
+    origin_chain_id: originToken.chainId,
+    origin_token_addr: originToken.token,
+    dest_chain_id: destToken.chainId,
+    dest_token_addr: destToken.token,
+    origin_fast_bridge_address: FAST_BRIDGE_ADDRESS_MAP[originToken.chainId],
+    dest_fast_bridge_address: FAST_BRIDGE_ADDRESS_MAP[destToken.chainId],
   }
 }
+
 
 const createQuotePricingFragment = (
   price: Pricing
 ): {
-  MaxOriginAmount: string
-  FixedFee: string
-  DestAmount: string
+  max_origin_amount: string
+  fixed_fee: string
+  dest_amount: string
 } => {
   return {
-    MaxOriginAmount: parseFixed(
+    max_origin_amount: parseFixed(
       price.originAmount.toString(),
       price.originDecimals
     ).toString(),
-    FixedFee: parseFixed(
+    fixed_fee: parseFixed(
       price.fixedFee.toString(),
       price.originDecimals
     ).toString(),
-    DestAmount: parseFixed(
+    dest_amount: parseFixed(
       price.destAmount.toString(),
       price.destDecimals
     ).toString(),
@@ -132,26 +133,26 @@ const createBridgeRoutesTests = (
     {
       ...createQuoteTokenFragment(arbA, opB),
       ...createQuotePricingFragment(price1),
-      RelayerAddr: '0x0',
-      UpdatedAt: '2021-01-01T00:00:00.000Z',
+      relayer_addr: '0x0',
+      updated_at: '2021-01-01T00:00:00.000Z',
     },
     {
       ...createQuoteTokenFragment(arbB, opA),
       ...createQuotePricingFragment(price2),
-      RelayerAddr: '0x0',
-      UpdatedAt: '2021-01-01T00:00:00.000Z',
+      relayer_addr: '0x0',
+      updated_at: '2021-01-01T00:00:00.000Z',
     },
     {
       ...createQuoteTokenFragment(arbB, opB),
       ...createQuotePricingFragment(price1),
-      RelayerAddr: '0x0',
-      UpdatedAt: '2021-01-01T00:00:00.000Z',
+      relayer_addr: '0x0',
+      updated_at: '2021-01-01T00:00:00.000Z',
     },
     {
       ...createQuoteTokenFragment(arbB, opB),
       ...createQuotePricingFragment(price2),
-      RelayerAddr: '0x0',
-      UpdatedAt: '2021-01-01T00:00:00.000Z',
+      relayer_addr: '0x0',
+      updated_at: '2021-01-01T00:00:00.000Z',
     },
   ]
 
