@@ -4,6 +4,7 @@ import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 import { solidityKeccak256 } from 'ethers/lib/utils'
+import { AddressZero } from '@ethersproject/constants'
 
 import routerAbi from '../abi/SynapseRouter.json'
 import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
@@ -52,6 +53,18 @@ const wrapToPool = (pool: PoolStructOutput): Pool => {
     tokens: pool.tokens.map(reduceToPoolToken),
     lpToken: pool.lpToken,
   }
+}
+
+/**
+ * Enum representing the type of a SynapseBridge token.
+ * NotSupported: the token is not supported by the SynapseBridge contract.
+ * Redeem: the token is supported by the SynapseBridge contract by burning or minting on this chain.
+ * Deposit: the token is supported by the SynapseBridge contract by depositing or withdrawing on this chain.
+ */
+export enum BridgeTokenType {
+  NotSupported = -1,
+  Redeem,
+  Deposit,
 }
 
 /**
@@ -205,6 +218,16 @@ export class SynapseRouter extends Router {
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
+  }
+
+  public async getBridgeTokenType(token: string): Promise<BridgeTokenType> {
+    const tokenConfig = await this.routerContract.config(token)
+    // Check if token is supported
+    if (tokenConfig.bridgeToken === AddressZero) {
+      return BridgeTokenType.NotSupported
+    }
+    // Otherwise tokenConfig.tokenType is either 0 (Redeem) or 1 (Deposit)
+    return tokenConfig.tokenType
   }
 
   public async getPoolTokens(poolAddress: string): Promise<PoolToken[]> {
