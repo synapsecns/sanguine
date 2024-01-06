@@ -33,7 +33,7 @@ export class SynapseCCTPRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
     return this.getSynapseCCTPRouter(bridgeRoute.destChainId).chainGasAmount()
   }
 

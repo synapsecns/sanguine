@@ -42,7 +42,7 @@ export class SynapseRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
     const router = this.getSynapseRouter(bridgeRoute.destChainId)
     // Gas airdrop exists only for minted tokens
     const tokenType = await router.getBridgeTokenType(

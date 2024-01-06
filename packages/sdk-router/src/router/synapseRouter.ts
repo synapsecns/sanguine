@@ -220,6 +220,12 @@ export class SynapseRouter extends Router {
     return bridgeContract.chainGasAmount()
   }
 
+  /**
+   * Retrieves the type of a token in terms of the SynapseBridge contract.
+   *
+   * @param token - The address of the token to check.
+   * @returns A promise that resolves to the type of the token: NotSupported, Redeem or Deposit.
+   */
   public async getBridgeTokenType(token: string): Promise<BridgeTokenType> {
     const tokenConfig = await this.routerContract.config(token)
     // Check if token is supported
