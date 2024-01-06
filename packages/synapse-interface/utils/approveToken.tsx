@@ -23,11 +23,15 @@ export const approveToken = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Approval] initiates approval`, {
-      chainId,
-      tokenAddress,
-      amount,
-    })
+    segmentAnalyticsEvent(
+      `[Approval] initiates approval`,
+      {
+        chainId,
+        tokenAddress,
+        amount,
+      },
+      true
+    )
     const approveTx = await approveErc20Token({
       spender: address as Address,
       chainId,

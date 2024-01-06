@@ -116,6 +116,147 @@ Use the above commands to recompile the packages.
 
 This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). To avoid issues when checking out different branches, you can use `git submodule update --init --recursive` after switching to a branch or `git checkout feat/branch-name --recurse-submodules` when switching branches.
 
+## Contribution workflow
+<!-- TODO: this actually belongs in a contributing.md file, but let's be honest, how many people actually read those? -->
+<!-- Additionally, the two-branch approach is somewhat temporary, so having this section in the README is probably fine. -->
+
+We use a two-branch strategy for development:
+
+- `master`: This is the primary development branch where all development happens. All regular pull requests (new features, bug fixes, etc) should be opened against this branch.
+  - Refer to [Implementing a New Feature](#scenario-1-implementing-a-new-feature) for more details.
+- `fe-release`: This branch is used for production front-end releases and is the one that gets deployed to production. The production front-end build always uses the latest commit from this branch.
+  - Refer to [Releasing a Front-end Update](#scenario-2-releasing-a-front-end-update) for more details.
+
+> `master` should never be behind `fe-release`! The only exception is when a hotfix is needed on the production front-end.
+> Refer to [Hotfixing the Production Front-end](#scenario-3-hotfixing-the-production-front-end) for more details.
+
+We use the following merge strategies:
+
+- **Squash merge**: All pull requests are squash merged into `master`. This keeps the commit history clean and makes it easier to revert changes if necessary.
+  > On a very few occasions, we may use a regular merge when `master` needs to be updated with a few commits from `fe-release`. In this case, we will use a regular merge so that there are no merge conflicts when later merging into `fe-release`.
+- **Regular merge**: Latest changes from `master` are **regularly merged** into `fe-release`. This ensures that the production front-end always uses the latest changes from `master`, and prevents merge conflicts when merging into `fe-release`.
+  > `master` branch should never be the **source branch** when merging into `fe-release`. This is because the source branch is always deleted after merging, and we don't want to delete `master`.
+
+### Scenario 1: Implementing a New Feature
+
+In this scenario you are implementing a new feature that doesn't automatically trigger a front-end release.
+
+1. **Create a new branch**: From the `master` branch, create a new branch for your feature. The branch name should be descriptive of the feature you're implementing.
+
+```bash
+git checkout master && git pull
+# pkg stands for the package you're working on
+git checkout -b pkg/feature-name
+```
+
+2. **Implement your feature**: Make your changes in this branch.
+3. **Commit your changes**: Regularly commit your changes with clear, concise commit messages.
+4. **Push your branch**: When you're ready to open a pull request, push your branch to the remote repository and open a pull request on GitHub. Add an overview of your changes and a link to the relevant issue (if applicable).
+
+```bash
+git push -u origin pkg/feature-name
+```
+
+5. **Sync with `master`**: If you need to use the latest changes from `master`, you can merge them into your branch. This is especially useful if you're working on a long-running feature branch (or if some tests are failing on your branch, which have been fixed on `master`).
+
+```bash
+git checkout master & git pull
+git checkout pkg/feature-name
+git merge master
+```
+
+6. Alternatively, you can rebase your branch on top of `master`. However, this will rewrite your commit history, which can be problematic if other contributors have already pulled your branch or started reviewing your code. The rule of thumb here is:
+
+- If your branch hasn't been pushed yet, **always** rebase.
+- If your branch has been pushed, but it is a draft that no one has reviewed yet, you **could** rebase.
+- Otherwise, you **should** merge.
+
+```bash
+git checkout master & git pull
+git checkout pkg/feature-name
+# You might need to drop some of your commits here, if they are already in master
+# Edit the rebase-todo file to squash, drop, reorder, etc your commits
+git rebase -i master
+```
+
+7. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. If any of the checks fail, you can fix the issues in your feature branch and push again. The CI checks will run again automatically.
+8. **Review and merge**: The PR will be reviewed. If any changes are requested, make them in your feature branch and the PR will automatically update. Once the PR is approved by at least one maintainer, it can be **squash merged** into `master` and your feature branch will be deleted.
+
+### Scenario 2: Releasing a Front-end Update
+
+In this scenario you are releasing a front-end update using the latest changes from `master`.
+
+1. **Create a new branch**: From the `fe-release` branch, create a new branch for the FE release.
+
+```bash
+git checkout fe-release && git pull
+# Date format is YYYY-MM-DD (sorry my American friends)
+git checkout -b release/date
+```
+
+2. **Merge `master` into your branch**: This ensures that the production front-end always uses the latest changes from `master`, and prevents merge conflicts when merging into `fe-release`.
+
+```bash
+git checkout master && git pull
+git checkout release/date
+# No merge conflicts should occur here
+git merge master
+```
+
+3. **Push your branch**: Push your branch to the remote repository and open a pull request on GitHub. No overview is necessary, but you can add links to the PRs that are being released.
+
+```bash
+git push -u origin release/date
+```
+
+4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that master is passing all checks, your branch should pass all checks as well.
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it can be **regularly merged** into `fe-release` and your release branch will be deleted.
+
+### Scenario 3: Hotfixing the Production Front-end
+
+Sometimes, a bug is discovered in the production front-end that needs to be fixed immediately. In this scenario, you are hotfixing the production front-end without using the latest changes from `master`.
+
+1. **Create a new branch**: From the `fe-release` branch, create a new branch for the hotfix.
+
+```bash
+git checkout fe-release && git pull
+# Date format is YYYY-MM-DD (sorry my American friends)
+git checkout -b hotfix/date
+```
+
+2. **Implement your hotfix**: Make your changes in this branch.
+
+3. **Push your branch**: Push your branch to the remote repository and open a pull request on GitHub.
+
+```bash
+git push -u origin hotfix/date
+```
+
+4. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Depending on the severity of the hotfix, you might want to merge the PR as soon or before it passes all checks. However, **you should wait for the linting checks to pass**, as these are the fastest and easiest to fix.
+
+5. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least two maintainers**, it can be **squash merged** into `fe-release` and your hotfix branch will be deleted.
+
+6. Take a deep breath and relax. You've just saved the day. 🦸‍♂️
+
+7. **Catch up `master`**: now that the hotfix is released, you should catch up `master` with the latest changes from `fe-release`. This ensures that `master` branch is never behind `fe-release`.
+
+```bash
+git checkout fe-release && git pull
+git checkout master && git pull
+git checkout -b catchup/date
+git merge fe-release
+```
+
+8. **Push your branch**: Push your `catchup/date` branch to the remote repository and open a pull request on GitHub.
+
+```bash
+git push -u origin catchup/date
+```
+
+9. **CI checks**: Once you've pushed your branch, the CI checks will run automatically. Assuming that `fe-release` is passing all checks, your branch should pass all checks as well.
+
+10. **Review and merge**: The PR will be reviewed. Once the PR is approved by at **least one maintainer**, it can be **regularly merged** into `master` and your catchup branch will be deleted.
+
 # Building Agents Locally
 
 <!-- TODO: we need to move this thing into an ops docs package. Given that the docs are still a work in progress, I'm leaving this here for now. -->

@@ -24,9 +24,13 @@ export const claimStake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
-    segmentAnalyticsEvent(`[Claim Stake] Attempt`, {
-      poolId,
-    })
+    segmentAnalyticsEvent(
+      `[Claim Stake] Attempt`,
+      {
+        poolId,
+      },
+      true
+    )
     const tx = await harvestLpPool({
       address,
       chainId,

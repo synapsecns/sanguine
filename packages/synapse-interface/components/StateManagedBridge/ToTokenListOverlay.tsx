@@ -21,7 +21,6 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
-import { calculateEstimatedTransactionTime } from '@/utils/calculateEstimatedTransactionTime'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
