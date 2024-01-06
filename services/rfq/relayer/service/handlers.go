@@ -25,7 +25,7 @@ import (
 // To process it, we decode the bridge transaction and store all the data, marking it as seen.
 // This marks the event as seen.
 func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "getDecimals", trace.WithAttributes(
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleBridgeRequestedLog", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
 	))
 
