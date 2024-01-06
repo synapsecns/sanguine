@@ -62,7 +62,7 @@ type RequestForQuote struct {
 	CreatedAt time.Time
 	// UpdatedAt is the update time
 	UpdatedAt     time.Time
-	TransactionID string `gorm:"column:chain_id;primaryKey;autoIncrement:false"` // TODO: change to transaction_id
+	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// OriginChainID is the origin chain for the transactions
 	OriginChainID uint32
 	// DestChainID is the destination chain for the tx
