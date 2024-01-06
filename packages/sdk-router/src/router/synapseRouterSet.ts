@@ -1,7 +1,8 @@
 import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
-import { SynapseRouter } from './synapseRouter'
+import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
 import { BridgeRoute } from '../module'
@@ -41,7 +42,15 @@ export class SynapseRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+  async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    const router = this.getSynapseRouter(bridgeRoute.destChainId)
+    // Gas airdrop exists only for minted tokens
+    const tokenType = await router.getBridgeTokenType(
+      bridgeRoute.bridgeToken.token
+    )
+    if (tokenType !== BridgeTokenType.Redeem) {
+      return Zero
+    }
     return this.getSynapseRouter(bridgeRoute.destChainId).chainGasAmount()
   }
 
