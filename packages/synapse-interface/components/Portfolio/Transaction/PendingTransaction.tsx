@@ -183,7 +183,7 @@ export const PendingTransaction = ({
     transactionHash,
     bridgeModuleName,
     kappa,
-    checkStatus: isDelayed,
+    checkStatus: useFallback || (isDelayed && isReconnectedAndRetryFallback),
     elapsedTime: updatedElapsedTime,
   })
 
