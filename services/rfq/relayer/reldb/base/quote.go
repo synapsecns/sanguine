@@ -15,7 +15,7 @@ import (
 // StoreQuoteRequest stores a quote request.
 func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest) error {
 	rq := FromQuoteRequest(request)
-
+	fmt.Println(transactionIDFieldName)
 	dbTx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: transactionIDFieldName}},
 		DoUpdates: clause.AssignmentColumns([]string{transactionIDFieldName}),
