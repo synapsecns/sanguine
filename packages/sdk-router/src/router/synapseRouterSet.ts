@@ -42,9 +42,7 @@ export class SynapseRouterSet extends RouterSet {
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
   getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
-    // TODO: implement
-    invariant(bridgeRoute, 'bridgeRoute is required')
-    return Promise.resolve(BigNumber.from(0))
+    return this.getSynapseRouter(bridgeRoute.destChainId).chainGasAmount()
   }
 
   /**
