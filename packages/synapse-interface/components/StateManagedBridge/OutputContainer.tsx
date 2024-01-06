@@ -6,7 +6,6 @@ import { ToChainSelector } from './ToChainSelector'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
-import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const OutputContainer = ({}) => {
@@ -24,7 +23,7 @@ export const OutputContainer = ({}) => {
   // update address for destination address if we have a destination address
 
   return (
-    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
+    <div className="text-left rounded-md p-md bg-bgLight">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
         {/* {address && (

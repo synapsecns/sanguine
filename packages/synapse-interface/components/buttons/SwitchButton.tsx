@@ -1,7 +1,7 @@
 import { SwitchVerticalIcon } from '@heroicons/react/outline'
 import { useState } from 'react'
 
-export default function SwitchButton({
+export function SwitchButton({
   className,
   innerClassName,
   onClick,
@@ -38,7 +38,7 @@ export default function SwitchButton({
       >
         <SwitchVerticalIcon
           className={`
-            w-6 h-6 transition-all
+            w-5 h-5 transition-all
             text-white group-hover:text-opacity-50
           `}
         />

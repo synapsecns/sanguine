@@ -7,7 +7,13 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setFromToken,
+  setToChainId,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -71,6 +77,7 @@ import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainL
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -554,6 +561,16 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
+            <div className="-mt-1 -mb-4">
+              <SwitchButton
+                onClick={() => {
+                  dispatch(setFromChainId(toChainId))
+                  dispatch(setFromToken(toToken))
+                  dispatch(setToChainId(fromChainId))
+                  dispatch(setToToken(fromToken))
+                }}
+              />
+            </div>
             <OutputContainer />
             <Warning />
             <Transition
