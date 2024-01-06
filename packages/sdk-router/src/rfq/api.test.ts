@@ -4,32 +4,33 @@ import { FastBridgeQuoteAPI, unmarshallFastBridgeQuote } from './quote'
 describe('getAllQuotes', () => {
   const quotesAPI: FastBridgeQuoteAPI[] = [
     {
-      OriginChainID: 1,
-      OriginTokenAddr: '0x0000000000000000000000000000000000000001',
-      DestChainID: 2,
-      DestTokenAddr: '0x0000000000000000000000000000000000000002',
-      DestAmount: '3',
-      MaxOriginAmount: '4',
-      FixedFee: '5',
-      OriginFastBridgeAddress: '10',
-      DestFastBridgeAddress: '11',
-      RelayerAddr: '0x0000000000000000000000000000000000000003',
-      UpdatedAt: '2023-01-01T00:00:00.420Z',
+      origin_chain_id: 1,
+      origin_token_addr: '0x0000000000000000000000000000000000000001',
+      dest_chain_id: 2,
+      dest_token_addr: '0x0000000000000000000000000000000000000002',
+      dest_amount: '3',
+      max_origin_amount: '4',
+      fixed_fee: '5',
+      origin_fast_bridge_address: '10',
+      dest_fast_bridge_address: '11',
+      relayer_addr: '0x0000000000000000000000000000000000000003',
+      updated_at: '2023-01-01T00:00:00.420Z',
     },
     {
-      OriginChainID: 3,
-      OriginTokenAddr: '0x0000000000000000000000000000000000000004',
-      DestChainID: 4,
-      DestTokenAddr: '0x0000000000000000000000000000000000000005',
-      DestAmount: '6',
-      MaxOriginAmount: '7',
-      FixedFee: '8',
-      OriginFastBridgeAddress: '20',
-      DestFastBridgeAddress: '21',
-      RelayerAddr: '0x0000000000000000000000000000000000000006',
-      UpdatedAt: '2023-01-02T00:00:00.420Z',
+      origin_chain_id: 3,
+      origin_token_addr: '0x0000000000000000000000000000000000000004',
+      dest_chain_id: 4,
+      dest_token_addr: '0x0000000000000000000000000000000000000005',
+      dest_amount: '6',
+      max_origin_amount: '7',
+      fixed_fee: '8',
+      origin_fast_bridge_address: '20',
+      dest_fast_bridge_address: '21',
+      relayer_addr: '0x0000000000000000000000000000000000000006',
+      updated_at: '2023-01-02T00:00:00.420Z',
     },
-  ]
+  ];
+
 
   it('returns an empty array when the response is not ok', async () => {
     global.fetch = jest.fn(() =>
