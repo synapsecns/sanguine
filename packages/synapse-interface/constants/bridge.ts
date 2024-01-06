@@ -2,9 +2,11 @@ import { USDC } from '@constants/tokens/bridgeable'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 
+import { BridgeQuote } from '@/utils/types'
+
 export const QUOTE_POLLING_INTERVAL = 10000
 
-export const EMPTY_BRIDGE_QUOTE = {
+export const EMPTY_BRIDGE_QUOTE: BridgeQuote = {
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
@@ -15,9 +17,10 @@ export const EMPTY_BRIDGE_QUOTE = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 
-export const EMPTY_BRIDGE_QUOTE_ZERO = {
+export const EMPTY_BRIDGE_QUOTE_ZERO: BridgeQuote = {
   outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',
@@ -28,6 +31,7 @@ export const EMPTY_BRIDGE_QUOTE_ZERO = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 /**
  * ETH Only Bridge Config used to calculate swap fees

@@ -45,6 +45,7 @@ export async function fetchBridgeQuote(
         destQuery,
         estimatedTime,
         bridgeModuleName,
+        gasDropAmount,
       } = await synapseSDK.bridgeQuote(
         originChainId,
         destinationChainId,
@@ -104,6 +105,7 @@ export async function fetchBridgeQuote(
         destinationChainId: destinationChainId,
         estimatedTime: estimatedTime,
         bridgeModuleName: bridgeModuleName,
+        gasDropAmount,
       }
     } catch (error) {
       console.error('Error fetching bridge quote:', error)
