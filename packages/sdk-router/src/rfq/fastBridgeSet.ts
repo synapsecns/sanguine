@@ -20,7 +20,7 @@ import { FastBridge } from './fastBridge'
 import { marshallTicker } from './ticker'
 import { FastBridgeQuote, applyQuote } from './quote'
 import { getAllQuotes } from './api'
-import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
+import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 
 export class FastBridgeSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -137,7 +137,7 @@ export class FastBridgeSet extends SynapseModuleSet {
   } {
     return {
       originPeriod: TEN_MINUTES,
-      destPeriod: ONE_WEEK,
+      destPeriod: ONE_HOUR,
     }
   }
 
