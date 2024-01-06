@@ -87,16 +87,18 @@ export const PortfolioTokenAsset = ({
 
   const isDisabled: boolean = false
 
-  /** Fetch allowances for current router if not already stored */
-  if (isUndefined(bridgeAllowance)) {
-    dispatch(
-      fetchAndStoreSingleTokenAllowance({
-        routerAddress: tokenRouterAddress as Address,
-        tokenAddress: tokenAddress as Address,
-        address: address as Address,
-        chainId: portfolioChainId as number,
-      })
-    )
+  // /** Fetch allowances for selected token via current router if not already stored */
+  if (isTokenSelected && tokenRouterAddress && isUndefined(bridgeAllowance)) {
+    ;(async () => {
+      await dispatch(
+        fetchAndStoreSingleTokenAllowance({
+          routerAddress: tokenRouterAddress as Address,
+          tokenAddress: tokenAddress as Address,
+          address: address as Address,
+          chainId: portfolioChainId as number,
+        })
+      )
+    })()
   }
 
   const handleTotalBalanceInputCallback = useCallback(async () => {
