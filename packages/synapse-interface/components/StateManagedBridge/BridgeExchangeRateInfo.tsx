@@ -22,8 +22,9 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const gasDropAmount = useSelector(
     (state: RootState) => state.bridge.bridgeQuote.gasDropAmount
   )
-  // TODO: remove this as no longer needed
-  const loading = false
+  const loading = useSelector(
+    (state: RootState) => state.bridge.isLoading
+  )
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
@@ -44,16 +45,13 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
     }
   }, [numExchangeRate])
 
-  const isGasDropped = useMemo(() => {
-    if (gasDropAmount) {
-      // TODO: verify this is correct
-      return gasDropAmount > 0n
-    }
-  }, [gasDropAmount])
+  const isGasDropped = gasDropAmount > 0n
 
   useEffect(() => {
     setGasDropChainId(toChainId)
   }, [toChainId, isGasDropped])
+
+  const gasDropLabel = !loading && isGasDropped && <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
 
   const memoizedGasDropLabel = useMemo(() => {
     if (toChainId === CHAINS.ETH.id) return null
@@ -76,7 +74,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
               : 'flex justify-end'
           }
         >
-          {memoizedGasDropLabel}
+          {gasDropLabel}
         </div>
       )}
       <div className="flex justify-between">
