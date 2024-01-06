@@ -151,10 +151,12 @@ export const PendingTransaction = ({
 
       if (moduleName === 'SynapseBridge') return BridgeType.Bridge
       if (moduleName === 'SynapseCCTP') return BridgeType.Cctp
+      if (moduleName === 'SynapseRFQ') return BridgeType.Rfq
     }
     if (synapseSDK && bridgeModuleName) {
       if (bridgeModuleName === 'SynapseBridge') return BridgeType.Bridge
       if (bridgeModuleName === 'SynapseCCTP') return BridgeType.Cctp
+      if (bridgeModuleName === 'SynapseRFQ') return BridgeType.Rfq
     }
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
