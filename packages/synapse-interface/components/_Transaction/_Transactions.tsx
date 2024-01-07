@@ -1,21 +1,20 @@
 import { useState, useEffect } from 'react'
-import { useBridgeTransactionsState } from '@/slices/bridgeTransactions/hooks'
-import { BridgeTransactionDetails } from '@/slices/bridgeTransactions/reducer'
+import { use_TransactionsState } from '@/slices/_transactions/hooks'
+import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { _Transaction as Transaction } from './_Transaction'
+import { _Transaction } from './_Transaction'
 import { getTimeMinutesFromNow } from '@/utils/time'
 
-/** TODO: Pull synapseSDK from context vs passing in */
-export const Transactions = ({
+/** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
+export const _Transactions = ({
   connectedAddress,
 }: {
   connectedAddress: string
 }) => {
   const { synapseSDK } = useSynapseContext()
-  const transactions = useBridgeTransactionsState()
+  const transactions = use_TransactionsState()
 
-  const transactionsArray: BridgeTransactionDetails[] =
-    Object.values(transactions)
+  const transactionsArray: _TransactionDetails[] = Object.values(transactions)
 
   const hasTransactions: boolean = transactionsArray.length > 0
 
@@ -35,8 +34,8 @@ export const Transactions = ({
   }, [])
 
   if (hasTransactions) {
-    return transactionsArray.map((transaction: BridgeTransactionDetails) => (
-      <Transaction
+    return transactionsArray.map((transaction: _TransactionDetails) => (
+      <_Transaction
         synapseSDK={synapseSDK}
         connectedAddress={connectedAddress}
         originChainId={transaction.originChainId}

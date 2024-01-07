@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-/** TODO: Possibly rename entire slice once done refactoring prior Activity flow */
-export interface BridgeTransactionDetails {
+/** TODO: Rename entire slice once done refactoring prior Activity flow */
+export interface _TransactionDetails {
   originChainId: number
   destinationChainId: number
   originTxHash: string
@@ -12,18 +12,18 @@ export interface BridgeTransactionDetails {
   isComplete: boolean
 }
 
-export interface BridgeTransactionsState {
-  [transactionHash: string]: BridgeTransactionDetails
+export interface _TransactionsState {
+  [transactionHash: string]: _TransactionDetails
 }
 
-export const initialState: BridgeTransactionsState = {}
+export const initialState: _TransactionsState = {}
 
 export const transactionsSlice = createSlice({
   name: 'transactions',
   initialState,
   reducers: {
     addTransaction: (
-      transactions: BridgeTransactionsState,
+      transactions: _TransactionsState,
       {
         payload: {
           originTxHash,
@@ -49,7 +49,7 @@ export const transactionsSlice = createSlice({
       }
     },
     removeTransaction: (
-      transactions: BridgeTransactionsState,
+      transactions: _TransactionsState,
       { payload: { originTxHash } }
     ) => {
       if (transactions[originTxHash]) {
@@ -57,7 +57,7 @@ export const transactionsSlice = createSlice({
       }
     },
     updateTransactionKappa: (
-      transactions: BridgeTransactionsState,
+      transactions: _TransactionsState,
       { payload: { originTxHash, kappa } }
     ) => {
       const tx = transactions[originTxHash]
@@ -66,7 +66,7 @@ export const transactionsSlice = createSlice({
       tx.kappa = kappa
     },
     completeTransaction: (
-      transactions: BridgeTransactionsState,
+      transactions: _TransactionsState,
       { payload: { originTxHash } }
     ) => {
       const tx = transactions[originTxHash]
@@ -74,7 +74,7 @@ export const transactionsSlice = createSlice({
 
       tx.isComplete = true
     },
-    clearTransactions: (transactions: BridgeTransactionsState) => {
+    clearTransactions: (transactions: _TransactionsState) => {
       transactions = {} // eslint-disable-line
     },
   },

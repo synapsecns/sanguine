@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { useBridgeTransactionsState } from '@/slices/bridgeTransactions/hooks'
+import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
 import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
@@ -10,7 +10,7 @@ import {
   updateTransactionKappa,
   completeTransaction,
   removeTransaction,
-} from '@/slices/bridgeTransactions/reducer'
+} from '@/slices/_transactions/reducer'
 
 const TransactionStatus = ({ string }) => {
   return <>{string}</>
@@ -61,7 +61,7 @@ export const _Transaction = ({
   isComplete: boolean
 }) => {
   const dispatch = useAppDispatch()
-  const transactions = useBridgeTransactionsState()
+  const transactions = use_TransactionsState()
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChainId,
