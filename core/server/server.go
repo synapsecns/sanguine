@@ -14,7 +14,7 @@ type Server struct {
 	listener net.Listener
 }
 
-// ListenAndServe provides a way to listen and serve a server with context. The server will terminate if the context is cancelled.
+// ListenAndServe provides a way to listen and serve a server with context. The server will terminate if the context is canceled.
 func (s Server) ListenAndServe(ctx context.Context, port string, handler *gin.Engine) error {
 	var err error
 	var lc net.ListenConfig
