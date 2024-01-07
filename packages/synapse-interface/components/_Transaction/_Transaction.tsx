@@ -117,11 +117,11 @@ export const _Transaction = ({
 
   return (
     <div
-      data-test-id="transaction"
+      data-test-id="_transaction"
       className={`
         flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
-        bg-[--synapse-surface]
-        border border-solid border-[--synapse-border] rounded-md
+        bg-tint fill-surface text-primary
+        border border-solid border-surface rounded-md
       `}
     >
       {isComplete ? (

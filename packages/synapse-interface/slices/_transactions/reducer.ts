@@ -1,9 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+import { Chain, Token } from '@/utils/types'
+
 /** TODO: Rename entire slice once done refactoring prior Activity flow */
 export interface _TransactionDetails {
-  originChainId: number
-  destinationChainId: number
+  originChain: Chain
+  originToken: Token
+  destinationChain: Chain
+  destinationToken: Token
+  originValue: string
   originTxHash: string
   bridgeModuleName: string
   estimatedTime: number
@@ -27,9 +32,12 @@ export const transactionsSlice = createSlice({
       {
         payload: {
           originTxHash,
+          originValue,
           bridgeModuleName,
-          originChainId,
-          destinationChainId,
+          originChain,
+          originToken,
+          destinationChain,
+          destinationToken,
           estimatedTime,
           timestamp,
         },
@@ -38,10 +46,13 @@ export const transactionsSlice = createSlice({
       if (!originTxHash) return
 
       transactions[originTxHash] = {
-        originChainId,
-        destinationChainId,
         originTxHash,
+        originValue,
         bridgeModuleName,
+        originChain,
+        originToken,
+        destinationChain,
+        destinationToken,
         estimatedTime,
         timestamp,
         kappa: null,
