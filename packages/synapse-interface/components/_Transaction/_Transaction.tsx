@@ -50,6 +50,7 @@ interface _TransactionProps {
   estimatedTime: number // in seconds
   timestamp: number
   currentTime: number
+  kappa?: string
   // isComplete: boolean
 }
 
@@ -67,6 +68,7 @@ export const _Transaction = ({
   estimatedTime,
   timestamp,
   currentTime,
+  kappa,
 }: // isComplete,
 _TransactionProps) => {
   const dispatch = useAppDispatch()
@@ -106,7 +108,7 @@ _TransactionProps) => {
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
-    kappa: null,
+    kappa: kappa,
     checkStatus: isEstimatedTimeReached,
     currentTime: currentTime,
   })

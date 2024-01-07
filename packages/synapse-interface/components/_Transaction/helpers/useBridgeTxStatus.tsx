@@ -23,7 +23,7 @@ export const useBridgeTxStatus = ({
 }: UseBridgeTxStatusProps) => {
   const { synapseSDK } = useSynapseContext()
   const [isComplete, setIsComplete] = useState<boolean>(false)
-  const [fetchedKappa, setFetchedKappa] = useState<string>(null)
+  const [fetchedKappa, setFetchedKappa] = useState<string>(kappa ?? null)
 
   const getKappa = async (): Promise<string> => {
     if (!synapseSDK) return null
@@ -64,7 +64,7 @@ export const useBridgeTxStatus = ({
 
   useEffect(() => {
     // if (!checkStatus) return
-    // if (isComplete) return
+    if (isComplete) return
     ;(async () => {
       if (fetchedKappa === null) {
         let _kappa = await getKappa()
