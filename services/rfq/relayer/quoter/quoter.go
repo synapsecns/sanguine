@@ -36,6 +36,7 @@ type Quoter interface {
 }
 
 // Manager submits quotes to the RFQ API.
+// TODO: should be unexported.
 type Manager struct {
 	// config is the relayer's config.
 	config relconfig.Config

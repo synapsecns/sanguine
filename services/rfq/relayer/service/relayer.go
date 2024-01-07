@@ -33,7 +33,7 @@ type Relayer struct {
 	client         omnirpcClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	inventory      inventory.Manager
-	quoter         *quoter.Manager
+	quoter         quoter.Quoter
 	submitter      submitter.TransactionSubmitter
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
