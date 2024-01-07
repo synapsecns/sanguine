@@ -25,8 +25,9 @@ export const _Transactions = ({
   /** Update time to trigger transactions to recheck tx status */
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(getTimeMinutesFromNow(0))
-    }, 30000) // 30000 milliseconds = 30 seconds
+      let newCurrentTime = getTimeMinutesFromNow(0)
+      setCurrentTime(newCurrentTime)
+    }, 5000) // 5000 milliseconds = 5 seconds
 
     return () => {
       clearInterval(interval) // Clear the interval when the component unmounts

@@ -88,8 +88,18 @@ export const _Transaction = ({
   const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
 
   const isEstimatedTimeReached: boolean = useMemo(() => {
-    if (!currentTime || !estimatedTime || !timestamp) return false
-    return currentTime - timestamp > estimatedTime
+    // Define the interval in minutes before the estimated completion when we should start checking
+    const intervalBeforeCompletion = 1 // X minutes before completion
+    // Calculate the time in seconds when we should start checking
+    const startCheckingTime =
+      currentTime + estimatedTime - intervalBeforeCompletion * 60
+
+    // if current time is above startCheckingTime, return true to begin calling the SDK
+    return currentTime >= startCheckingTime
+
+    // TODO: OLD CODE BELOW:
+    // if (!currentTime || !estimatedTime || !timestamp) return false
+    // return currentTime - timestamp > estimatedTime
   }, [estimatedTime, currentTime, timestamp])
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
