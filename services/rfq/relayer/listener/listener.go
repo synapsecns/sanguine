@@ -86,8 +86,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		//nolint: durationcheck
-		case <-time.After(time.Second * c.pollInterval):
+		case <-time.After(c.pollInterval):
 			err = c.doPoll(ctx, handler)
 			if err != nil {
 				logger.Warn(err)
