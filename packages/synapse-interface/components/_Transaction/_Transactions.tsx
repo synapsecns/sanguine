@@ -38,8 +38,11 @@ export const _Transactions = ({
       <_Transaction
         synapseSDK={synapseSDK}
         connectedAddress={connectedAddress}
-        originChainId={tx.originChain.id}
-        destinationChainId={tx.destinationChain.id}
+        originValue={Number(tx.originValue)}
+        originChain={tx.originChain}
+        originToken={tx.originToken}
+        destinationChain={tx.destinationChain}
+        destinationToken={tx.destinationToken}
         originTxHash={tx.originTxHash}
         bridgeModuleName={tx.bridgeModuleName}
         estimatedTime={tx.estimatedTime}

@@ -11,6 +11,9 @@ import {
   completeTransaction,
   removeTransaction,
 } from '@/slices/_transactions/reducer'
+import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
+import { Chain, Token } from '@/utils/types'
+import TransactionArrow from '../icons/TransactionArrow'
 
 const TransactionStatus = ({ string }) => {
   return <>{string}</>
@@ -34,24 +37,14 @@ const TimeRemaining = ({
   return <div>{remainingTime} min</div>
 }
 
-/** TODO: Update naming after refactoring existing Activity / Transaction flow */
-export const _Transaction = ({
-  synapseSDK,
-  connectedAddress,
-  originChainId,
-  destinationChainId,
-  originTxHash,
-  bridgeModuleName,
-  estimatedTime,
-  kappa,
-  timestamp,
-  currentTime,
-  isComplete,
-}: {
+interface _TransactionProps {
   synapseSDK: any
   connectedAddress: string
-  originChainId: number
-  destinationChainId: number
+  originValue: number
+  originChain: Chain
+  originToken: Token
+  destinationChain: Chain
+  destinationToken: Token
   originTxHash: string
   bridgeModuleName: string
   estimatedTime: number // in seconds
@@ -59,16 +52,34 @@ export const _Transaction = ({
   timestamp: number
   currentTime: number
   isComplete: boolean
-}) => {
+}
+
+/** TODO: Update naming after refactoring existing Activity / Transaction flow */
+export const _Transaction = ({
+  synapseSDK,
+  connectedAddress,
+  originValue,
+  originChain,
+  originToken,
+  destinationChain,
+  destinationToken,
+  originTxHash,
+  bridgeModuleName,
+  estimatedTime,
+  kappa,
+  timestamp,
+  currentTime,
+  isComplete,
+}: _TransactionProps) => {
   const dispatch = useAppDispatch()
   const transactions = use_TransactionsState()
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
-    originChainId,
+    originChain.id,
     originTxHash
   )
   const [destExplorerAddressLink, destExplorerName] = getExplorerAddressLink(
-    destinationChainId,
+    destinationChain.id,
     connectedAddress
   )
 
@@ -83,8 +94,8 @@ export const _Transaction = ({
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
-    originChainId,
-    destinationChainId,
+    originChainId: originChain.id,
+    destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
     kappa,
@@ -119,42 +130,68 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
+        flex flex-col gap-1 justify-end items-center
         bg-tint fill-surface text-primary
         border border-solid border-surface rounded-md
       `}
     >
-      {isComplete ? (
-        <TransactionStatus string="Complete" />
-      ) : (
-        <TransactionStatus string="Pending" />
-      )}
-      <div className="flex items-center justify-end gap-2 grow">
-        <TimeRemaining
-          isComplete={isComplete}
-          remainingTime={remainingTimeInMinutes}
-          isDelayed={isEstimatedTimeReached}
-        />
-
-        <DropdownMenu>
-          {!isNull(originTxExplorerLink) && (
-            <MenuItem text={originExplorerName} link={originTxExplorerLink} />
-          )}
-          {!isNull(destExplorerAddressLink) && (
-            <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
-          )}
-          <MenuItem
-            text="Contact Support"
-            link="https://discord.gg/synapseprotocol"
+      <div className="flex items-center w-full">
+        <div className="flex rounded bg-surface fill-surface">
+          <TransactionPayloadDetail
+            chain={originChain}
+            token={originToken}
+            tokenAmount={originValue}
+            isOrigin={true}
           />
-          {isComplete && (
-            <MenuItem
-              text="Clear Transaction"
-              link={null}
-              onClick={handleClearTransaction}
-            />
+          <TransactionArrow className="bg-tint fill-surface" />
+        </div>
+        <TransactionPayloadDetail
+          chain={destinationChain}
+          token={destinationToken}
+          tokenAmount={null}
+          isOrigin={false}
+        />
+        {/* TODO: Update visual format */}
+        <div className="flex justify-between gap-2 pr-2 ml-auto">
+          {isComplete ? (
+            <TransactionStatus string="Complete" />
+          ) : (
+            <TransactionStatus string="Pending" />
           )}
-        </DropdownMenu>
+          <div className="flex items-center justify-end gap-2 grow">
+            <TimeRemaining
+              isComplete={isComplete}
+              remainingTime={remainingTimeInMinutes}
+              isDelayed={isEstimatedTimeReached}
+            />
+
+            <DropdownMenu>
+              {!isNull(originTxExplorerLink) && (
+                <MenuItem
+                  text={originExplorerName}
+                  link={originTxExplorerLink}
+                />
+              )}
+              {!isNull(destExplorerAddressLink) && (
+                <MenuItem
+                  text={destExplorerName}
+                  link={destExplorerAddressLink}
+                />
+              )}
+              <MenuItem
+                text="Contact Support"
+                link="https://discord.gg/synapseprotocol"
+              />
+              {isComplete && (
+                <MenuItem
+                  text="Clear Transaction"
+                  link={null}
+                  onClick={handleClearTransaction}
+                />
+              )}
+            </DropdownMenu>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -173,7 +210,7 @@ export const DropdownMenu = ({ children }) => {
         onClick={handleClick}
         className={`
           rounded w-5 h-[21px] flex place-items-center justify-center
-          bg-[--synapse-select-bg]
+          bg-surface
           border border-solid border-[--synapse-border]
           hover:border-[--synapse-focus]
           cursor-pointer
@@ -185,7 +222,7 @@ export const DropdownMenu = ({ children }) => {
       {open && (
         <ul
           className={`
-            absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover -right-1 list-none text-left text-sm
+            absolute z-50 mt-1 p-0 bg-surface border border-solid border-tint rounded shadow popover -right-1 list-none text-left text-sm
           `}
         >
           {children}
