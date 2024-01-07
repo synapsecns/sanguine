@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+/** TODO: Possibly rename entire slice once done refactoring prior Activity flow */
 export interface BridgeTransactionDetails {
   originChainId: number
   destinationChainId: number
