@@ -14,9 +14,13 @@ export default function Updater() {
   /** Add transaction if not in _transactions store */
   useEffect(() => {
     if (checkTransactionsExist(pendingBridgeTransactions)) {
-      const txnExists =
-        transactions && transactions.find((tx) => !!tx.transactionHash)
       pendingBridgeTransactions.forEach((tx: PendingBridgeTransaction) => {
+        // Check Transaction is already stored
+        const txnExists =
+          transactions &&
+          transactions.some(
+            (storedTx) => tx.transactionHash == storedTx.originTxHash
+          )
         if (!txnExists) {
           dispatch(
             addTransaction({
@@ -34,7 +38,7 @@ export default function Updater() {
         }
       })
     }
-  }, [pendingBridgeTransactions])
+  }, [pendingBridgeTransactions, transactions])
 
   return null
 }
