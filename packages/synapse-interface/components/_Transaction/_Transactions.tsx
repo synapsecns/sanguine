@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
@@ -34,9 +35,10 @@ export const _Transactions = ({
   }, [])
 
   if (hasTransactions) {
+    const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
     return (
       <div className="flex flex-col mt-3">
-        {transactions.slice(0, 5).map((tx: _TransactionDetails) => (
+        {sortedTransactions.map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
             synapseSDK={synapseSDK}
