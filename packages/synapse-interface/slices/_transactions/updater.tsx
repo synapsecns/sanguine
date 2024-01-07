@@ -5,6 +5,7 @@ import { addTransaction } from './reducer'
 import { useTransactionsState } from '../transactions/hooks'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 import { PendingBridgeTransaction } from '../transactions/actions'
+import _ from 'lodash'
 
 export default function Updater() {
   const dispatch = useAppDispatch()
@@ -21,7 +22,12 @@ export default function Updater() {
           transactions.some(
             (storedTx) => tx.transactionHash == storedTx.originTxHash
           )
-        if (!txnExists) {
+
+        // Check Transaction has been confirmed
+        const txnConfirmed =
+          !_.isNull(tx.transactionHash) && !_.isUndefined(tx.transactionHash)
+
+        if (txnConfirmed && !txnExists) {
           dispatch(
             addTransaction({
               originTxHash: tx.transactionHash,
