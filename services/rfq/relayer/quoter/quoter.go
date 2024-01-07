@@ -49,6 +49,9 @@ type Manager struct {
 	feePricer pricer.FeePricer
 	// metricsHandler handles traces, etc
 	metricsHandler metrics.Handler
+	// quotableTokens is a map of token -> list of quotable tokens.
+	// should be removed in config overhaul
+	quotableTokens map[string][]string
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -58,10 +61,22 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
 
+	qt := make(map[string][]string)
+
+	// fix any casing issues.
+	for token, destTokens := range config.QuotableTokens {
+		processedDestTokens := make([]string, len(destTokens))
+		for i := range destTokens {
+			processedDestTokens[i] = strings.ToLower(destTokens[i])
+		}
+		qt[strings.ToLower(token)] = processedDestTokens
+	}
+
 	return &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
+		quotableTokens:   qt,
 		relayerSigner:    relayerSigner,
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
@@ -71,8 +86,8 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
 	// allowed pairs for this origin token on the destination
-	destPairs := m.config.QuotableTokens[quote.GetOriginIDPair()]
-	if !(slices.Contains(destPairs, quote.GetDestIDPair())) {
+	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
+	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
 		return false
 	}
 
@@ -157,7 +172,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	}
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 	var quotes []model.PutQuoteRequest
-	for keyTokenID, itemTokenIDs := range m.config.QuotableTokens {
+	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			// TODO: probably a better way to do this.
 			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
