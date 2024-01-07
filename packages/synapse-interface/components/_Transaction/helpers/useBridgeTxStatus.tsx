@@ -28,11 +28,17 @@ export const useBridgeTxStatus = ({
   const getKappa = async (): Promise<string> => {
     if (!synapseSDK) return null
     if (!bridgeModuleName || !originChainId || !originTxHash) return null
-    return await synapseSDK.getSynapseTxId(
-      originChainId,
-      bridgeModuleName,
-      originTxHash
-    )
+    try {
+      const kappa = await synapseSDK.getSynapseTxId(
+        originChainId,
+        bridgeModuleName,
+        originTxHash
+      )
+      return kappa
+    } catch (error) {
+      console.error('Error in getKappa:', error)
+      return null
+    }
   }
 
   const getBridgeTxStatus = async (
@@ -42,11 +48,17 @@ export const useBridgeTxStatus = ({
   ) => {
     if (!synapseSDK) return null
     if (!destinationChainId || !bridgeModuleName || !kappa) return null
-    return await synapseSDK.getBridgeTxStatus(
-      destinationChainId,
-      bridgeModuleName,
-      kappa
-    )
+    try {
+      const status = await synapseSDK.getBridgeTxStatus(
+        destinationChainId,
+        bridgeModuleName,
+        kappa
+      )
+      return status
+    } catch (error) {
+      console.error('Error in getBridgeTxStatus:', error)
+      return null
+    }
   }
 
   useEffect(() => {
