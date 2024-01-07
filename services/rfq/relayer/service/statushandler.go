@@ -36,7 +36,7 @@ type QuoteRequestHandler struct {
 	// Inventory is the inventory.
 	Inventory inventory.Manager
 	// Quoter is the quoter.
-	Quoter *quoter.Manager
+	Quoter quoter.Quoter
 	// handlers is the map of handlers.
 	handlers map[reldb.QuoteRequestStatus]Handler
 	// claimCache is the cache of claims used for figuring out when we should retry the claim method.
