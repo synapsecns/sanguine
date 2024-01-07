@@ -232,7 +232,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {viewingAddress && !isLoading && hasPendingTransactions && (
+      {/* {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactionsWithFallback &&
             pendingAwaitingCompletionTransactionsWithFallback.map(
@@ -276,7 +276,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             )}
           <PendingTransactionAwaitingIndexing />
         </ActivitySection>
-      )}
+      )} */}
 
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
