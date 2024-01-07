@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 import { Chain, Token } from '@/utils/types'
+import StateManagedBridge from '@/pages/state-managed-bridge'
 
 /** TODO: Rename entire slice once done refactoring prior Activity flow */
 export interface _TransactionDetails {
@@ -18,46 +19,19 @@ export interface _TransactionDetails {
 }
 
 export interface _TransactionsState {
-  [transactionHash: string]: _TransactionDetails
+  transactions: any[]
 }
 
-export const initialState: _TransactionsState = {}
+export const initialState: _TransactionsState = {
+  transactions: [],
+}
 
 export const transactionsSlice = createSlice({
-  name: 'transactions',
+  name: '_transactions',
   initialState,
   reducers: {
-    addTransaction: (
-      transactions: _TransactionsState,
-      {
-        payload: {
-          originTxHash,
-          originValue,
-          bridgeModuleName,
-          originChain,
-          originToken,
-          destinationChain,
-          destinationToken,
-          estimatedTime,
-          timestamp,
-        },
-      }
-    ) => {
-      if (!originTxHash) return
-
-      transactions[originTxHash] = {
-        originTxHash,
-        originValue,
-        bridgeModuleName,
-        originChain,
-        originToken,
-        destinationChain,
-        destinationToken,
-        estimatedTime,
-        timestamp,
-        kappa: null,
-        isComplete: false,
-      }
+    addTransaction: (state, action: PayloadAction<any>) => {
+      state.transactions = [...action.payload]
     },
     removeTransaction: (
       transactions: _TransactionsState,
@@ -85,8 +59,8 @@ export const transactionsSlice = createSlice({
 
       tx.isComplete = true
     },
-    clearTransactions: (transactions: _TransactionsState) => {
-      transactions = {} // eslint-disable-line
+    clearTransactions: (state) => {
+      state.transactions = []
     },
   },
 })

@@ -14,9 +14,9 @@ export const _Transactions = ({
   const { synapseSDK } = useSynapseContext()
   const transactions = use_TransactionsState()
 
-  const transactionsArray: _TransactionDetails[] = Object.values(transactions)
+  const transactionsArray: _TransactionDetails[] = transactions
 
-  const hasTransactions: boolean = transactionsArray.length > 0
+  const hasTransactions: boolean = transactions && transactionsArray.length > 0
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesFromNow(0)
@@ -36,7 +36,7 @@ export const _Transactions = ({
 
   if (hasTransactions) {
     return (
-      <div className="flex flex-col-reverse mt-3">
+      <div className="flex flex-col mt-3">
         {transactionsArray.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             synapseSDK={synapseSDK}
