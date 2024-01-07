@@ -18,12 +18,12 @@ export default function Updater() {
       pendingBridgeTransactions.forEach(
         (transaction: PendingBridgeTransaction) => {
           const {
+            id,
             transactionHash,
             originChain,
             destinationChain,
             bridgeModuleName,
             estimatedTime,
-            timestamp,
           } = transaction
           if (!transactions[transactionHash]) {
             dispatch(
@@ -33,7 +33,7 @@ export default function Updater() {
                 destinationChainId: destinationChain.id,
                 bridgeModuleName: bridgeModuleName,
                 estimatedTime: estimatedTime,
-                timestamp: timestamp,
+                timestamp: id,
               })
             )
           }
