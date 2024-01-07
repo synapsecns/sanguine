@@ -4,7 +4,10 @@ import { use_TransactionsState } from './hooks'
 import { addTransaction } from './reducer'
 import { useTransactionsState } from '../transactions/hooks'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { PendingBridgeTransaction } from '../transactions/actions'
+import {
+  PendingBridgeTransaction,
+  removePendingBridgeTransaction,
+} from '../transactions/actions'
 import _ from 'lodash'
 
 export default function Updater() {
@@ -16,16 +19,21 @@ export default function Updater() {
   useEffect(() => {
     if (checkTransactionsExist(pendingBridgeTransactions)) {
       pendingBridgeTransactions.forEach((tx: PendingBridgeTransaction) => {
-        // Check Transaction is already stored
+        /** Check Transaction has been confirmed */
+        const txnConfirmed =
+          !_.isNull(tx.transactionHash) && !_.isUndefined(tx.transactionHash)
+
+        /** Check Transaction is already stored */
         const txnExists =
           transactions &&
           transactions.some(
             (storedTx) => tx.transactionHash == storedTx.originTxHash
           )
 
-        // Check Transaction has been confirmed
-        const txnConfirmed =
-          !_.isNull(tx.transactionHash) && !_.isUndefined(tx.transactionHash)
+        /** Remove pendingBridgeTransaction once stored in transactions */
+        if (txnExists) {
+          dispatch(removePendingBridgeTransaction(tx.id))
+        }
 
         if (txnConfirmed && !txnExists) {
           dispatch(
