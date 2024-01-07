@@ -4,6 +4,7 @@ import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { _Transaction } from './_Transaction'
 import { getTimeMinutesFromNow } from '@/utils/time'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -14,9 +15,7 @@ export const _Transactions = ({
   const { synapseSDK } = useSynapseContext()
   const { transactions } = use_TransactionsState()
 
-  const transactionsArray: _TransactionDetails[] = transactions
-
-  const hasTransactions: boolean = transactions && transactionsArray.length > 0
+  const hasTransactions: boolean = checkTransactionsExist(transactions)
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesFromNow(0)
@@ -37,7 +36,7 @@ export const _Transactions = ({
   if (hasTransactions) {
     return (
       <div className="flex flex-col mt-3">
-        {transactionsArray.slice(0, 5).map((tx: _TransactionDetails) => (
+        {transactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
             synapseSDK={synapseSDK}
