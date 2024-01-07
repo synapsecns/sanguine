@@ -129,13 +129,13 @@ _TransactionProps) => {
 
     if (isTxComplete && originTxHash && txKappa) {
       const txn = transactions.find((tx) => tx.originTxHash === originTxHash)
-      if (txn.isComplete === false) {
+      if (!txn.isComplete) {
         dispatch(
           completeTransaction({ originTxHash, kappa: txKappa as string })
         )
       }
     }
-  }, [isTxComplete, dispatch, transactions])
+  }, [isTxComplete, dispatch, transactions, _kappa])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
