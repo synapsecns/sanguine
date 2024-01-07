@@ -91,6 +91,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 			if err != nil {
 				logger.Warn(err)
 			}
+
 		}
 	}
 }
@@ -111,8 +112,11 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 		if err != nil {
-			c.pollInterval = c.backoff.Duration()
+			c.backoff.Attempt()
+		} else {
+			c.backoff.Reset()
 		}
+		c.pollInterval = c.backoff.Duration()
 	}()
 
 	c.latestBlock, err = c.client.BlockNumber(ctx)
