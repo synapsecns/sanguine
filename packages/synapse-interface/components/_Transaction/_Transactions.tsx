@@ -34,23 +34,27 @@ export const _Transactions = ({
   }, [])
 
   if (hasTransactions) {
-    return transactionsArray.map((tx: _TransactionDetails) => (
-      <_Transaction
-        synapseSDK={synapseSDK}
-        connectedAddress={connectedAddress}
-        originValue={Number(tx.originValue)}
-        originChain={tx.originChain}
-        originToken={tx.originToken}
-        destinationChain={tx.destinationChain}
-        destinationToken={tx.destinationToken}
-        originTxHash={tx.originTxHash}
-        bridgeModuleName={tx.bridgeModuleName}
-        estimatedTime={tx.estimatedTime}
-        kappa={tx?.kappa}
-        timestamp={tx.timestamp}
-        currentTime={currentTime}
-        isComplete={tx.isComplete}
-      />
-    ))
+    return (
+      <div className="mt-3">
+        {transactionsArray.map((tx: _TransactionDetails) => (
+          <_Transaction
+            synapseSDK={synapseSDK}
+            connectedAddress={connectedAddress}
+            originValue={Number(tx.originValue)}
+            originChain={tx.originChain}
+            originToken={tx.originToken}
+            destinationChain={tx.destinationChain}
+            destinationToken={tx.destinationToken}
+            originTxHash={tx.originTxHash}
+            bridgeModuleName={tx.bridgeModuleName}
+            estimatedTime={tx.estimatedTime}
+            kappa={tx?.kappa}
+            timestamp={tx.timestamp}
+            currentTime={currentTime}
+            isComplete={tx.isComplete}
+          />
+        ))}
+      </div>
+    )
   }
 }

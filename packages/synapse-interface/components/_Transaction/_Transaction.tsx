@@ -130,7 +130,7 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        flex flex-col gap-1 justify-end items-center
+        flex flex-col gap-1 justify-end items-center my-2
         bg-tint fill-surface text-primary
         border border-solid border-surface rounded-md
       `}
