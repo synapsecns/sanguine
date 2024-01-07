@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
-	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 )
@@ -27,17 +26,13 @@ var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
 type Quoter interface {
-	// SubmitQuote submits a quote to the RFQ API.
-	SubmitQuote() error
 	// SubmitAllQuotes submits all quotes to the RFQ API.
-	SubmitAllQuotes() error
-	// GetSelfQuotes gets relayer's live quote from the RFQ API.
-	GetSelfQuotes() ([]*db.Quote, error)
+	SubmitAllQuotes(ctx context.Context) (err error)
 	// ShouldProcess determines if a quote should be processed.
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
-	ShouldProcess(quote reldb.QuoteRequest) bool
+	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool
 }
 
 // Manager submits quotes to the RFQ API.
@@ -57,7 +52,7 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer) (*Manager, error) {
+func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer) (Quoter, error) {
 	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, config.GetRfqAPIURL(), relayerSigner)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
@@ -133,7 +128,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	// First, generate all quotes
 	for chainID, balances := range inv {
 		for address, balance := range balances {
-			quotes, err := m.GenerateQuotes(ctx, chainID, address, balance)
+			quotes, err := m.generateQuotes(ctx, chainID, address, balance)
 			if err != nil {
 				return err
 			}
@@ -151,11 +146,11 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	return nil
 }
 
-// GenerateQuotes TODO: THIS LOOP IS BROKEN
+// generateQuotes TODO: THIS LOOP IS BROKEN
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)

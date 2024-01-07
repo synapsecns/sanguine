@@ -94,8 +94,12 @@ func (s *QuoterSuite) SetupTest() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	var err error
-	s.manager, err = quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), nil, nil, feePricer)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), nil, nil, feePricer)
 	s.NoError(err)
+
+	var ok bool
+	s.manager, ok = mgr.(*quoter.Manager)
+	s.True(ok)
 }
 
 func (s *QuoterSuite) SetupSuite() {
