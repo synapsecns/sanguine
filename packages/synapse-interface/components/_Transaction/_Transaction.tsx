@@ -48,10 +48,9 @@ interface _TransactionProps {
   originTxHash: string
   bridgeModuleName: string
   estimatedTime: number // in seconds
-  kappa?: string
   timestamp: number
   currentTime: number
-  isComplete: boolean
+  // isComplete: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -66,11 +65,10 @@ export const _Transaction = ({
   originTxHash,
   bridgeModuleName,
   estimatedTime,
-  kappa,
   timestamp,
   currentTime,
-  isComplete,
-}: _TransactionProps) => {
+}: // isComplete,
+_TransactionProps) => {
   const dispatch = useAppDispatch()
   const transactions = use_TransactionsState()
 
@@ -108,10 +106,13 @@ export const _Transaction = ({
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
-    kappa,
+    kappa: null,
     checkStatus: isEstimatedTimeReached,
     currentTime: currentTime,
   })
+
+  console.log(`isTxComplete, `, isTxComplete)
+  console.log(`_kappa`, _kappa)
 
   /** Update tx kappa when available */
   useEffect(() => {
@@ -122,15 +123,15 @@ export const _Transaction = ({
 
   /** Update tx for completion */
   /** Check that we have not already marked tx as complete */
-  useEffect(() => {
-    const txKappa = kappa ?? _kappa
+  // useEffect(() => {
+  //   const txKappa = _kappa
 
-    if (isTxComplete && originTxHash && txKappa) {
-      if (transactions[originTxHash].isComplete === false) {
-        dispatch(completeTransaction({ originTxHash, kappa: txKappa }))
-      }
-    }
-  }, [isTxComplete, dispatch, transactions])
+  //   if (isTxComplete && originTxHash && txKappa) {
+  //     if (transactions[originTxHash].isComplete === false) {
+  //       dispatch(completeTransaction({ originTxHash, kappa: txKappa }))
+  //     }
+  //   }
+  // }, [isTxComplete, dispatch, transactions])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
@@ -161,16 +162,27 @@ export const _Transaction = ({
           tokenAmount={null}
           isOrigin={false}
         />
+        <div>
+          <div className="text-xs">
+            {new Date(timestamp * 1000).toLocaleString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true,
+            })}
+          </div>
+          <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div>
+        </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isComplete ? (
+          {isTxComplete ? (
             <TransactionStatus string="Complete" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
-              isComplete={isComplete}
+              isComplete={isTxComplete as boolean}
               remainingTime={remainingTimeInMinutes}
               isDelayed={isEstimatedTimeReached}
             />
@@ -192,7 +204,7 @@ export const _Transaction = ({
                 text="Contact Support"
                 link="https://discord.gg/synapseprotocol"
               />
-              {isComplete && (
+              {isTxComplete && (
                 <MenuItem
                   text="Clear Transaction"
                   link={null}

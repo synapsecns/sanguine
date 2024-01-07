@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import _ from 'lodash'
+import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -34,10 +35,14 @@ export const _Transactions = ({
     }
   }, [])
 
+  const sortedTransactions = useMemo(() => {
+    return _.orderBy(transactionsArray, ['timestamp'], ['desc'])
+  }, [transactionsArray]).slice(0, 5)
+
   if (hasTransactions) {
     return (
       <div className="mt-3">
-        {transactionsArray.map((tx: _TransactionDetails) => (
+        {sortedTransactions.map((tx: _TransactionDetails) => (
           <_Transaction
             synapseSDK={synapseSDK}
             connectedAddress={connectedAddress}
@@ -49,10 +54,10 @@ export const _Transactions = ({
             originTxHash={tx.originTxHash}
             bridgeModuleName={tx.bridgeModuleName}
             estimatedTime={tx.estimatedTime}
-            kappa={tx?.kappa}
+            // kappa={tx?.kappa}
             timestamp={tx.timestamp}
             currentTime={currentTime}
-            isComplete={tx.isComplete}
+            // isComplete={tx.isComplete}
           />
         ))}
       </div>

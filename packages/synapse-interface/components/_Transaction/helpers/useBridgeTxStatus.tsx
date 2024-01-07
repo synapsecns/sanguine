@@ -34,6 +34,7 @@ export const useBridgeTxStatus = ({
         bridgeModuleName,
         originTxHash
       )
+      console.log(`getKappa:`)
       return kappa
     } catch (error) {
       console.error('Error in getKappa:', error)
@@ -54,6 +55,9 @@ export const useBridgeTxStatus = ({
         bridgeModuleName,
         kappa
       )
+
+      console.log(`statsuklafjdslkj`, status)
+
       return status
     } catch (error) {
       console.error('Error in getBridgeTxStatus:', error)
@@ -62,31 +66,38 @@ export const useBridgeTxStatus = ({
   }
 
   useEffect(() => {
-    if (!checkStatus) return
-    if (isComplete) return
+    // if (!checkStatus) return
+    // if (isComplete) return
     ;(async () => {
-      let _kappa
-
-      if (!kappa) {
-        console.log('fetching kappa')
-        _kappa = await getKappa()
+      if (fetchedKappa === null) {
+        let _kappa = await getKappa()
         setFetchedKappa(_kappa)
-      } else {
-        _kappa = kappa
       }
 
-      console.log('fetching tx status')
-      const txStatus = await getBridgeTxStatus(
-        destinationChainId,
-        bridgeModuleName,
-        _kappa
-      )
+      if (fetchedKappa) {
+        const txStatus = await getBridgeTxStatus(
+          destinationChainId,
+          bridgeModuleName,
+          fetchedKappa
+        )
 
-      if (txStatus !== null) {
-        setIsComplete(txStatus)
+        console.log(`destinationChainID`, destinationChainId)
+        console.log(`bridgeModuleName`, bridgeModuleName)
+        console.log(`fetchedKappa`, fetchedKappa)
+
+        console.log('--======---')
+        console.log(`txStatus`, txStatus)
+        console.log(`fetchedKappa`, fetchedKappa)
+        console.log('--======---')
+
+        if (txStatus !== null && txStatus === true && fetchedKappa !== null) {
+          setIsComplete(true)
+        } else {
+          setIsComplete(false)
+        }
       }
     })()
-  }, [currentTime, checkStatus])
+  }, [currentTime, checkStatus, fetchedKappa])
 
   return [isComplete, fetchedKappa]
 }
