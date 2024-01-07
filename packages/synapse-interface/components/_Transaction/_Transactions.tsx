@@ -35,14 +35,14 @@ export const _Transactions = ({
     }
   }, [])
 
-  const sortedTransactions = useMemo(() => {
-    return _.orderBy(transactionsArray, ['timestamp'], ['desc'])
-  }, [transactionsArray]).slice(0, 5)
+  // const sortedTransactions = useMemo(() => {
+  //   return _.orderBy(transactionsArray, ['timestamp'], ['desc'])
+  // }, [transactionsArray]).slice(0, 5)
 
   if (hasTransactions) {
     return (
-      <div className="mt-3">
-        {sortedTransactions.map((tx: _TransactionDetails) => (
+      <div className="flex flex-col-reverse mt-3">
+        {transactionsArray.map((tx: _TransactionDetails) => (
           <_Transaction
             synapseSDK={synapseSDK}
             connectedAddress={connectedAddress}
