@@ -3,6 +3,7 @@ import { PersistConfig, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
 import application from '@/slices/application/reducer'
+import bridgeTransactions from '@/slices/bridgeTransactions/reducer'
 import bridge from '@/slices/bridge/reducer'
 import portfolio from '@/slices/portfolio/reducer'
 import swap from '@/slices/swap/reducer'
@@ -33,6 +34,7 @@ export const persistConfig: PersistConfig<AppState> = {
 
 export const appReducer = combineReducers({
   bridge,
+  bridgeTransactions,
   portfolio,
   swap,
   bridgeDisplay,
