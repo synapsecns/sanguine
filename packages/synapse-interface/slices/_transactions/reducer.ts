@@ -31,33 +31,43 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {
     addTransaction: (state, action: PayloadAction<any>) => {
-      state.transactions = [...action.payload]
+      state.transactions.push(action.payload)
     },
     removeTransaction: (
-      transactions: _TransactionsState,
-      { payload: { originTxHash } }
+      state,
+      action: PayloadAction<{ originTxHash: string }>
     ) => {
-      if (transactions[originTxHash]) {
-        delete transactions[originTxHash]
-      }
+      const { originTxHash } = action.payload
+      state.transactions = state.transactions.filter(
+        (tx) => tx.originTxHash !== originTxHash
+      )
     },
     updateTransactionKappa: (
-      transactions: _TransactionsState,
-      { payload: { originTxHash, kappa } }
+      state,
+      action: PayloadAction<{ originTxHash: string; kappa: string }>
     ) => {
-      const tx = transactions[originTxHash]
-      if (!tx) return
+      const { originTxHash, kappa } = action.payload
 
-      tx.kappa = kappa
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+
+      if (txIndex !== -1) {
+        state.transactions[txIndex].kappa = kappa
+      }
     },
     completeTransaction: (
-      transactions: _TransactionsState,
-      { payload: { originTxHash } }
+      state,
+      action: PayloadAction<{ originTxHash: string; kappa: string }>
     ) => {
-      const tx = transactions[originTxHash]
-      if (!tx) return
+      const { originTxHash } = action.payload
 
-      tx.isComplete = true
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+      if (txIndex !== -1) {
+        state.transactions[txIndex].isComplete = true
+      }
     },
     clearTransactions: (state) => {
       state.transactions = []

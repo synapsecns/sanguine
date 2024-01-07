@@ -34,7 +34,6 @@ export const useBridgeTxStatus = ({
         bridgeModuleName,
         originTxHash
       )
-      console.log(`getKappa:`)
       return kappa
     } catch (error) {
       console.error('Error in getKappa:', error)
@@ -55,8 +54,6 @@ export const useBridgeTxStatus = ({
         bridgeModuleName,
         kappa
       )
-
-      console.log(`statsuklafjdslkj`, status)
 
       return status
     } catch (error) {
@@ -80,15 +77,6 @@ export const useBridgeTxStatus = ({
           bridgeModuleName,
           fetchedKappa
         )
-
-        console.log(`destinationChainID`, destinationChainId)
-        console.log(`bridgeModuleName`, bridgeModuleName)
-        console.log(`fetchedKappa`, fetchedKappa)
-
-        console.log('--======---')
-        console.log(`txStatus`, txStatus)
-        console.log(`fetchedKappa`, fetchedKappa)
-        console.log('--======---')
 
         if (txStatus !== null && txStatus === true && fetchedKappa !== null) {
           setIsComplete(true)

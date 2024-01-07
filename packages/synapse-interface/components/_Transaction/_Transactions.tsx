@@ -12,7 +12,7 @@ export const _Transactions = ({
   connectedAddress: string
 }) => {
   const { synapseSDK } = useSynapseContext()
-  const transactions = use_TransactionsState()
+  const { transactions } = use_TransactionsState()
 
   const transactionsArray: _TransactionDetails[] = transactions
 
@@ -39,6 +39,7 @@ export const _Transactions = ({
       <div className="flex flex-col mt-3">
         {transactionsArray.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
+            key={tx.timestamp}
             synapseSDK={synapseSDK}
             connectedAddress={connectedAddress}
             originValue={Number(tx.originValue)}

@@ -9,7 +9,7 @@ import { PendingBridgeTransaction } from '../transactions/actions'
 export default function Updater() {
   const dispatch = useAppDispatch()
   const { pendingBridgeTransactions } = useTransactionsState()
-  const transactions = use_TransactionsState()
+  const { transactions } = use_TransactionsState()
 
   /** Add transaction if not in _transactions store */
   useEffect(() => {

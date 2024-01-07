@@ -70,7 +70,7 @@ export const _Transaction = ({
 }: // isComplete,
 _TransactionProps) => {
   const dispatch = useAppDispatch()
-  const transactions = use_TransactionsState()
+  const { transactions } = use_TransactionsState()
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChain.id,
@@ -111,27 +111,29 @@ _TransactionProps) => {
     currentTime: currentTime,
   })
 
-  console.log(`isTxComplete, `, isTxComplete)
-  console.log(`_kappa`, _kappa)
-
   /** Update tx kappa when available */
   useEffect(() => {
     if (_kappa && originTxHash) {
-      dispatch(updateTransactionKappa({ originTxHash, kappa: _kappa }))
+      dispatch(
+        updateTransactionKappa({ originTxHash, kappa: _kappa as string })
+      )
     }
   }, [_kappa, dispatch])
 
   /** Update tx for completion */
   /** Check that we have not already marked tx as complete */
-  // useEffect(() => {
-  //   const txKappa = _kappa
+  useEffect(() => {
+    const txKappa = _kappa
 
-  //   if (isTxComplete && originTxHash && txKappa) {
-  //     if (transactions[originTxHash].isComplete === false) {
-  //       dispatch(completeTransaction({ originTxHash, kappa: txKappa }))
-  //     }
-  //   }
-  // }, [isTxComplete, dispatch, transactions])
+    if (isTxComplete && originTxHash && txKappa) {
+      const txn = transactions.find((tx) => tx.originTxHash === originTxHash)
+      if (txn.isComplete === false) {
+        dispatch(
+          completeTransaction({ originTxHash, kappa: txKappa as string })
+        )
+      }
+    }
+  }, [isTxComplete, dispatch, transactions])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
@@ -162,7 +164,7 @@ _TransactionProps) => {
           tokenAmount={null}
           isOrigin={false}
         />
-        {/* <div>
+        <div>
           <div className="text-xs">
             {new Date(timestamp * 1000).toLocaleString('en-US', {
               hour: '2-digit',
@@ -172,7 +174,7 @@ _TransactionProps) => {
             })}
           </div>
           <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div>
-        </div> */}
+        </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxComplete ? (
