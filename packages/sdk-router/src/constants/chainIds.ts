@@ -41,3 +41,13 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BASE,
   SupportedChainId.POLYGON, // Circle domain 7
 ]
+
+/**
+ * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
+ *
+ * Note: This is a subset of SUPPORTED_CHAIN_IDS.
+ */
+export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.ARBITRUM,
+]

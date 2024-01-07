@@ -47,6 +47,8 @@
     "@types/jest": "^24.0.25",
     "dotenv": "^16.3.1",
     "husky": "^8.0.1",
+    "jest-mock-extended": "^3.0.5",
+    "node-fetch": "^2.0.0",
     "size-limit": "^8.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.4.0",
