@@ -21,6 +21,7 @@ import { RootActions } from '@/slices/application/actions'
 const persistedReducers = {
   application,
   transactions,
+  _transactions,
 }
 
 export const storageKey: string = 'synapse-interface'
@@ -34,7 +35,6 @@ export const persistConfig: PersistConfig<AppState> = {
 
 export const appReducer = combineReducers({
   bridge,
-  _transactions,
   portfolio,
   swap,
   bridgeDisplay,
