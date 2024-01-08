@@ -6,14 +6,12 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/retry"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -35,31 +33,11 @@ func (c *RelayerServerSuite) TestNewAPIServer() {
 	c.GetTestContext().Done()
 }
 
-func getTestQuoteRequest(status reldb.QuoteRequestStatus) reldb.QuoteRequest {
-	txIDRaw := hexutil.Encode(crypto.Keccak256([]byte("test")))
-	var txID [32]byte
-	copy(txID[:], txIDRaw)
-	return reldb.QuoteRequest{
-		OriginTokenDecimals: 6,
-		DestTokenDecimals:   6,
-		TransactionID:       txID,
-		Status:              status,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
-			OriginAmount: big.NewInt(100),
-			DestAmount:   big.NewInt(100),
-			Deadline:     big.NewInt(time.Now().Unix()),
-			Nonce:        big.NewInt(1),
-		},
-		OriginTxHash: common.HexToHash("0x0000000"),
-		DestTxHash:   common.HexToHash("0x0000001"),
-	}
-}
-
 func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	c.startAPIServer()
 
 	// Insert quote request to db
-	quoteRequest := getTestQuoteRequest(reldb.Seen)
+	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
 	err := c.database.StoreQuoteRequest(c.GetTestContext(), quoteRequest)
 	c.Require().NoError(err)
 
@@ -93,7 +71,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.startAPIServer()
 
 	// Insert quote request to db
-	quoteRequest := getTestQuoteRequest(reldb.Seen)
+	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
 	err := c.database.StoreQuoteRequest(c.GetTestContext(), quoteRequest)
 	c.Require().NoError(err)
 
@@ -128,13 +106,13 @@ func (c *RelayerServerSuite) TestGetTxRetry() {
 	c.startAPIServer()
 
 	// Insert quote request to db
-	quoteRequest := getTestQuoteRequest(reldb.Seen)
+	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
 	err := c.database.StoreQuoteRequest(c.GetTestContext(), quoteRequest)
 	c.Require().NoError(err)
 
 	// Send a retry request
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodPut, fmt.Sprintf("http://localhost:%d/retry?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/retry?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -175,22 +153,24 @@ func (c *RelayerServerSuite) startAPIServer() {
 	}, retry.WithMaxTotalTime(10*time.Second))
 }
 
-// prepareAuthHeader generates an authorization header using EIP191 signature with the given private key.
-func (c *RelayerServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
-	// Get the current Unix timestamp as a string.
-	now := strconv.Itoa(int(time.Now().Unix()))
-
-	// Prepare the data to be signed.
-	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now
-	digest := crypto.Keccak256([]byte(data))
-
-	// Sign the data with the provided private key.
-	sig, err := crypto.Sign(digest, wallet.PrivateKey())
-	if err != nil {
-		return "", fmt.Errorf("failed to sign data: %w", err)
+func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus) reldb.QuoteRequest {
+	txIDRaw := hexutil.Encode(crypto.Keccak256([]byte("test")))
+	var txID [32]byte
+	copy(txID[:], txIDRaw)
+	return reldb.QuoteRequest{
+		OriginTokenDecimals: 6,
+		DestTokenDecimals:   6,
+		TransactionID:       txID,
+		Status:              status,
+		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+			OriginChainId: c.originChainID,
+			DestChainId:   c.destChainID,
+			OriginAmount:  big.NewInt(100),
+			DestAmount:    big.NewInt(100),
+			Deadline:      big.NewInt(time.Now().Unix()),
+			Nonce:         big.NewInt(1),
+		},
+		OriginTxHash: common.HexToHash("0x0000000"),
+		DestTxHash:   common.HexToHash("0x0000001"),
 	}
-	signature := hexutil.Encode(sig)
-
-	// Return the combined header value.
-	return now + ":" + signature, nil
 }

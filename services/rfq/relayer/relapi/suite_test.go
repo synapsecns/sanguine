@@ -34,6 +34,8 @@ type RelayerServerSuite struct {
 	omniRPCClient        omniClient.RPCClient
 	omniRPCTestBackends  []backends.SimulatedTestBackend
 	testBackends         map[uint64]backends.SimulatedTestBackend
+	originChainID        uint32
+	destChainID          uint32
 	fastBridgeAddressMap *xsync.MapOf[uint64, common.Address]
 	database             reldb.Service
 	cfg                  config.Config
@@ -66,6 +68,9 @@ func (c *RelayerServerSuite) SetupTest() {
 	c.port = uint16(port)
 	c.Require().NoError(err)
 
+	c.originChainID = 1
+	c.destChainID = 42161
+
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
 			Type: "sqlite",
@@ -73,8 +78,8 @@ func (c *RelayerServerSuite) SetupTest() {
 		},
 		OmniRPCURL: testOmnirpc,
 		Bridges: map[uint32]string{
-			1:     ethFastBridgeAddress.Hex(),
-			42161: arbFastBridgeAddress.Hex(),
+			c.originChainID: ethFastBridgeAddress.Hex(),
+			c.destChainID:   arbFastBridgeAddress.Hex(),
 		},
 		Port: fmt.Sprintf("%d", port),
 	}
@@ -95,20 +100,16 @@ func (c *RelayerServerSuite) SetupSuite() {
 
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
-		chainID := chainID // capture func literal
-		g.Go(func() error {
-			// Setup Anvil backend for the suite to have RPC support
-			// anvilOpts := anvil.NewAnvilOptionBuilder()
-			// anvilOpts.SetChainID(chainID)
-			// anvilOpts.SetBlockTime(1 * time.Second)
-			// backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
-			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
+		// Setup Anvil backend for the suite to have RPC support
+		// anvilOpts := anvil.NewAnvilOptionBuilder()
+		// anvilOpts.SetChainID(chainID)
+		// anvilOpts.SetBlockTime(1 * time.Second)
+		// backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+		backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
-			// add the backend to the list of backends
-			c.testBackends[chainID] = backend
-			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
-			return nil
-		})
+		// add the backend to the list of backends
+		c.testBackends[chainID] = backend
+		c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
 	}
 
 	// wait for all backends to be ready
