@@ -166,7 +166,7 @@ export const _Transaction = ({
           tokenAmount={null}
           isOrigin={false}
         />
-        <div>
+        {/* <div>
           <div className="text-xs">
             {new Date(timestamp * 1000).toLocaleString('en-US', {
               hour: '2-digit',
@@ -176,7 +176,7 @@ export const _Transaction = ({
             })}
           </div>
           <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div>
-        </div>
+        </div> */}
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxCompleted ? (
