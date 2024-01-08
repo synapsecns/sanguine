@@ -5,7 +5,7 @@
 // provided here: https://hub.docker.com/layers/ethereum/solc/0.4.11/images/?context=explore
 //
 // However the image used is so old, it lacks the hashes options on --combined-json added here: https://github.com/ethereum/solidity/pull/2382
-// for this reason, the solc command must be manually modified and pass hashes in seperately, like so:
+// for this reason, the solc command must be manually modified and pass hashes in separately, like so:
 //
 //	docker run -v $(pwd):/solidity ethereum/solc:0.4.11  --combined-json bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata --hashes --optimize --allow-paths ., ./,  -- ./TetherToken.sol
 //
@@ -27,6 +27,6 @@
 //	     }
 //	}
 //
-// finally, in generate.go due to a difference in the way function signature generation is done between teh versions, a --alias=_totalSupply=underTotalSupply
+// finally, in generate.go due to a difference in the way function signature generation is done between the versions, a --alias=_totalSupply=underTotalSupply
 // we then substitute this manually produced file into solc and interpret the solc as we would manually
 package usdt

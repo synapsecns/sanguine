@@ -113,8 +113,12 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 // TODO: this is where you need ot check the deadline.
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+		// 10 minute barrier to prove the transaction
+		// TODO: make barrier configurable
+		almostNow := time.Now().Add(-10 * time.Minute)
+
 		// if deadline < now, we don't even have to bother calling the underlying function
-		if req.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 {
+		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
 			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
