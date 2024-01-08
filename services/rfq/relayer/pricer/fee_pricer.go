@@ -118,8 +118,10 @@ func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gas
 	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
 	// Note that this rounds towards zero- we may need to apply rounding here if
 	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimals, _ := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-	return feeUSDCDecimals, nil
+	feeUSDCDecimals := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+	// Apply the fixed fee multiplier.
+	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(f.config.GetFixedFeeMultiplier())).Int(nil)
+	return feeUSDCDecimalsScaled, nil
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
