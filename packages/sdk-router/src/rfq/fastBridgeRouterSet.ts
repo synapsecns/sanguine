@@ -20,6 +20,7 @@ import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 import { FastBridgeQuote, applyQuote } from './quote'
 import { marshallTicker } from './ticker'
+import { getAllQuotes } from './api'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -141,6 +142,25 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
+   * Returns the existing FastBridgeRouter instance for the given chain.
+   *
+   * @throws Will throw an error if FastBridgeRouter is not deployed on the given chain.
+   */
+  public getFastBridgeRouter(chainId: number): FastBridgeRouter {
+    return this.getExistingModule(chainId) as FastBridgeRouter
+  }
+
+  /**
+   * Returns the address of the FastBridge contract for the given chain.
+   */
+  public async getFastBridgeAddress(chainId: number): Promise<string> {
+    const fastBridgeContract = await this.getFastBridgeRouter(
+      chainId
+    ).getFastBridgeContract()
+    return fastBridgeContract.address
+  }
+
+  /**
    * Filters the list of quotes to only include those that can be used for given amount of input token.
    * For every filtered quote, the origin query is returned with the information for tokenIn -> RFQ token swaps.
    */
@@ -168,8 +188,20 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
-    // TODO: implement
-    console.log(originChainId, destChainId, tokenOut)
-    return []
+    const allQuotes = await getAllQuotes()
+    const originFB = await this.getFastBridgeAddress(originChainId)
+    const destFB = await this.getFastBridgeAddress(destChainId)
+    return allQuotes
+      .filter(
+        (quote) =>
+          quote.ticker.originToken.chainId === originChainId &&
+          quote.ticker.destToken.chainId === destChainId &&
+          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
+      )
+      .filter(
+        (quote) =>
+          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
+          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
+      )
   }
 }
