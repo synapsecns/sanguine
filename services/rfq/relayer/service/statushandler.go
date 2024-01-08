@@ -153,6 +153,27 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*Chain, e
 	}, nil
 }
 
+// NewChain creates a new chain helper.
+func NewChain(ctx context.Context, chainClient client.EVM, addr common.Address, chainListener listener.ContractListener, ts submitter.TransactionSubmitter) (*Chain, error) {
+	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create bridge contract: %w", err)
+	}
+	chainID, err := chainClient.ChainID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get chain id: %w", err)
+	}
+	return &Chain{
+		ChainID: uint32(chainID.Int64()),
+		Bridge:  bridge,
+		Client:  chainClient,
+		// TODO: configure
+		Confirmations: 1,
+		listener:      chainListener,
+		submitter:     ts,
+	}, nil
+}
+
 // shouldCheckClaim checks if we should check the claim method.
 // if so it checks the claim method and updates the cache.
 func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool {

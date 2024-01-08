@@ -8,6 +8,7 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,19 +20,19 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
 
 // APIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type APIServer struct {
-	cfg                 config.Config
-	db                  reldb.Service
-	engine              *gin.Engine
-	omnirpcClient       omniClient.RPCClient
-	handler             metrics.Handler
-	fastBridgeContracts map[uint32]*fastbridge.FastBridge
+	cfg     config.Config
+	db      reldb.Service
+	engine  *gin.Engine
+	handler metrics.Handler
+	chains  map[uint32]*service.Chain
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -42,6 +43,7 @@ func NewAPI(
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
 	store reldb.Service,
+	submitter submitter.TransactionSubmitter,
 ) (*APIServer, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
@@ -56,24 +58,27 @@ func NewAPI(
 		return nil, fmt.Errorf("store is nil")
 	}
 
-	bridges := make(map[uint32]*fastbridge.FastBridge)
+	chains := make(map[uint32]*service.Chain)
 	for chainID, bridge := range cfg.Bridges {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		bridges[chainID], err = fastbridge.NewFastBridge(common.HexToAddress(bridge), chainClient)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(bridge), handler)
 		if err != nil {
-			return nil, fmt.Errorf("could not create bridge contract: %w", err)
+			return nil, fmt.Errorf("could not get chain listener: %w", err)
+		}
+		chains[chainID], err = service.NewChain(ctx, chainClient, common.HexToAddress(bridge), chainListener, submitter)
+		if err != nil {
+			return nil, fmt.Errorf("could not create chain: %w", err)
 		}
 	}
 
 	return &APIServer{
-		cfg:                 cfg,
-		db:                  store,
-		omnirpcClient:       omniRPCClient,
-		handler:             handler,
-		fastBridgeContracts: bridges,
+		cfg:     cfg,
+		db:      store,
+		handler: handler,
+		chains:  chains,
 	}, nil
 }
 
@@ -120,7 +125,7 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		bridge, ok := r.fastBridgeContracts[uint32(req.DestChainID)]
+		chain, ok := r.chains[uint32(req.DestChainID)]
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "dest chain id not supported"})
 			c.Abort()
@@ -139,7 +144,7 @@ func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		has, err := bridge.HasRole(ops, relayerRole, addressRecovered)
+		has, err := chain.Bridge.HasRole(ops, relayerRole, addressRecovered)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "unable to check relayer role on-chain"})
 			c.Abort()

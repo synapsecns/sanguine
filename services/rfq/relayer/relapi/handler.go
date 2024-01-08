@@ -1,23 +1,31 @@
 package relapi
 
 import (
+	"fmt"
+	"math/big"
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
 
 // Handler is the REST API handler.
 type Handler struct {
-	db reldb.Service
+	db     reldb.Service
+	chains map[uint32]*service.Chain
 }
 
 // NewHandler creates a new REST API handler.
-func NewHandler(db reldb.Service) *Handler {
+func NewHandler(db reldb.Service, chains map[uint32]*service.Chain) *Handler {
 	return &Handler{
-		db: db, // Store the database connection in the handler
+		db:     db, // Store the database connection in the handler
+		chains: chains,
 	}
 }
 
@@ -76,5 +84,51 @@ func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 
 // PutTxRetry retries a transaction based on tx hash.
 func (h *Handler) PutTxRetry(c *gin.Context) {
-	c.JSON(http.StatusOK, nil)
+	txHashStr := c.Query("hash")
+	if txHashStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify hash"})
+		return
+	}
+
+	txHash := common.HexToHash(txHashStr)
+	quoteRequest, err := h.db.GetQuoteRequestByTxHash(c, txHash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	chainID := quoteRequest.Transaction.DestChainId
+	chain, ok := h.chains[uint32(chainID)]
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No contract found for chain: %d", chainID)})
+		return
+	}
+
+	// TODO: this can be deduped with handlers.go code
+	gasAmount := big.NewInt(0)
+	if quoteRequest.Transaction.SendChainGas {
+		gasAmount, err = chain.Bridge.ChainGasAmount(&bind.CallOpts{Context: c})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get chain gas amount: %s", err.Error())})
+			return
+		}
+	}
+	nonce, err := chain.SubmitTransaction(c, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		transactor.Value = core.CopyBigInt(gasAmount)
+
+		tx, err = chain.Bridge.Relay(transactor, quoteRequest.RawRequest)
+		if err != nil {
+			return nil, fmt.Errorf("could not relay: %w", err)
+		}
+
+		return tx, nil
+	})
+
+	resp := PutTxRetryResponse{
+		TxID:      hexutil.Encode(quoteRequest.TransactionID[:]),
+		ChainID:   chainID,
+		Nonce:     nonce,
+		GasAmount: gasAmount.String(),
+	}
+	c.JSON(http.StatusOK, resp)
 }
