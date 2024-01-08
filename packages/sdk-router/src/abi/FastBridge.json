@@ -534,6 +534,7 @@
       {
         "components": [
           { "internalType": "uint32", "name": "dstChainId", "type": "uint32" },
+          { "internalType": "address", "name": "sender", "type": "address" },
           { "internalType": "address", "name": "to", "type": "address" },
           {
             "internalType": "address",
