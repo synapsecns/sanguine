@@ -439,7 +439,7 @@ const StateManagedBridge = () => {
             isSubmitted: false,
           })
         )
-        /** Update Origin token balances after valid txHash  */
+        /** Update Origin Chain token balances after valid txHash  */
         dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
             address,
