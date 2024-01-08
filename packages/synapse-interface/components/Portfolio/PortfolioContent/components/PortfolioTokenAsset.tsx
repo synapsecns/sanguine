@@ -213,8 +213,8 @@ export const PortfolioTokenAsset = ({
         onClick={handleTotalBalanceInputCallback}
         className={`
           flex items-center gap-2
-          pl-2 pr-3 py-2 cursor-pointer rounded
-          hover:bg-tint active:opacity-70
+          pl-2 pr-4 py-2 cursor-pointer rounded
+          hover:bg-surface active:opacity-70
         `}
         title={`${parsedBalanceLong} ${symbol}`}
       >
@@ -282,8 +282,8 @@ const PortfolioAssetActionButton = ({
         data-test-id="portfolio-asset-action-button"
         className={`
           py-1 px-6 rounded-sm
-          border border-fuchsia-500
-          ${!isDisabled && 'cursor-pointer hover:bg-zinc-800 active:opacity-70'}
+          border border-synapsePurple
+          ${!isDisabled && 'cursor-pointer hover:bg-surface active:opacity-70'}
         `}
         onClick={selectCallback}
         disabled={isDisabled}
