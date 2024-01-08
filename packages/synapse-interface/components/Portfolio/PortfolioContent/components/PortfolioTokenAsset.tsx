@@ -62,6 +62,17 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
+  const parsedBalanceLong: string = useMemo(() => {
+    const formattedBalance = formatBigIntToString(
+      balance,
+      decimals[portfolioChainId],
+      8
+    )
+    return balance > 0n && hasOnlyZeroes(formattedBalance)
+      ? '< 0.001'
+      : formattedBalance
+  }, [balance, portfolioChainId])
+
   const isCCTP: boolean = bridgeQuote?.bridgeModuleName === 'SynapseCCTP'
 
   const tokenRouterAddress: string = bridgeQuote?.routerAddress
@@ -192,59 +203,38 @@ export const PortfolioTokenAsset = ({
     <div
       data-test-id="portfolio-token-asset"
       className={`
-        flex flex-row items-center p-2 text-white
+        p-2 flex items-center border-y text-white justify-between last:rounded-b-md
         ${
           isTokenSelected
-            ? 'bg-tint border-y border-surface'
-            : 'border-y border-transparent'
+            ? 'bg-tint border-surface'
+            : 'border-transparent'
         }
       `}
     >
-      <div className="flex flex-row justify-between w-2/3">
-        <div
-          onClick={handleSelectFromTokenCallback}
-          className={`
-            flex flex-row px-2 py-2 mb-auto
-            cursor-pointer hover:bg-tint active:opacity-[67%]
-          `}
-        >
-          <Image
-            loading="lazy"
-            alt={`${symbol} img`}
-            className="w-6 h-6 mr-2 rounded-md"
-            src={icon}
-          />
-          <div>{symbol}</div>
-        </div>
-        <div className="flex flex-col">
-          <div
-            onClick={handleTotalBalanceInputCallback}
-            className={`
-              p-2 ml-auto cursor-pointer
-              hover:bg-tint active:opacity-[67%]
-            `}
-          >
-            {parsedBalance}
-          </div>
-          {hasAllowanceButLessThanBalance && (
-            <HoverClickableText
-              defaultText={`${parsedAllowance} ${
-                isCCTP ? 'approved (CCTP)' : 'approved'
-              }`}
-              hoverText="Increase Limit"
-              callback={handleApproveCallback}
-            />
-          )}
-        </div>
-      </div>
-      <div className="flex flex-row items-center w-1/3 py-2 mb-auto text-left">
-        <PortfolioAssetActionButton
-          selectCallback={handleSelectFromTokenCallback}
-          approveCallback={handleApproveCallback}
-          isApproved={isApproved}
-          isDisabled={isDisabled}
+      <div
+        onClick={handleTotalBalanceInputCallback}
+        className={`
+          flex items-center gap-2
+          pl-2 pr-3 py-2 cursor-pointer rounded
+          hover:bg-tint active:opacity-70
+        `}
+        title={`${parsedBalanceLong} ${symbol}`}
+      >
+        <Image
+          loading="lazy"
+          alt={`${symbol} img`}
+          className="w-6 h-6 rounded-md"
+          src={icon}
         />
+        {parsedBalance} {symbol}
       </div>
+      <PortfolioAssetActionButton
+        selectCallback={handleSelectFromTokenCallback}
+        approveCallback={handleApproveCallback}
+        isApproved={isApproved}
+        isDisabled={isDisabled || isTokenSelected}
+        isSelected={isTokenSelected}
+      />
     </div>
   )
 }
@@ -271,10 +261,10 @@ export const HoverClickableText = ({
         hover:text-[#75E6F0]
         hover:underline
         hover:cursor-pointer
-        active:opacity-[67%]
+        active:opacity-70
       `}
     >
-      <div className="text-[14px]">{isHovered ? hoverText : defaultText}</div>
+      <div className="text-sm">{isHovered ? hoverText : defaultText}</div>
     </div>
   )
 }
@@ -284,6 +274,7 @@ type PortfolioAssetActionButtonProps = {
   approveCallback: () => Promise<void>
   isApproved: boolean
   isDisabled: boolean
+  isSelected: boolean
 }
 
 const PortfolioAssetActionButton = ({
@@ -291,40 +282,22 @@ const PortfolioAssetActionButton = ({
   approveCallback,
   isApproved,
   isDisabled,
+  isSelected,
 }: PortfolioAssetActionButtonProps) => {
-  const buttonClassName = `
-    flex ml-auto justify-center
-    py-1 px-6 ml-2 rounded-sm
-    transform-gpu transition-all duration-75
-    ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
-  `
   return (
     <React.Fragment>
-      {true || isApproved ? (
-        <button
-          data-test-id="portfolio-asset-action-button"
-          className={`
-            ${buttonClassName}
-            border border-synapsePurple mr-1
-            hover:bg-tint active:opacity-[67%]
-          `}
-          onClick={selectCallback}
-        >
-          Select
-        </button>
-      ) : (
-        <button
-          data-test-id="portfolio-asset-action-button"
-          className={`
-            ${buttonClassName}
-            border border-separator
-            hover:bg-tint active:opacity-[67%]
-          `}
-          onClick={approveCallback}
-        >
-          Approve
-        </button>
-      )}
+      <button
+        data-test-id="portfolio-asset-action-button"
+        className={`
+          py-1 px-6 rounded-sm
+          border border-fuchsia-500
+          ${!isDisabled && 'cursor-pointer hover:bg-zinc-800 active:opacity-70'}
+        `}
+        onClick={selectCallback}
+        disabled={isDisabled}
+      >
+        Select{isSelected && 'ed'}
+      </button>
     </React.Fragment>
   )
 }
