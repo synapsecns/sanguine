@@ -22,7 +22,7 @@ export const useBridgeTxStatus = ({
   currentTime,
 }: UseBridgeTxStatusProps): [boolean, string] => {
   const { synapseSDK } = useSynapseContext()
-  const [isComplete, setIsComplete] = useState<boolean>(kappa ? true : false)
+  const [isComplete, setIsComplete] = useState<boolean>(false)
   const [fetchedKappa, setFetchedKappa] = useState<string>(kappa ?? null)
 
   const getKappa = async (): Promise<string> => {
