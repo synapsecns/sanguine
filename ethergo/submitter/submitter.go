@@ -169,7 +169,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// onChainNonce is the latest nonce from eth_transactionCount. db nonce is latest nonce from db + 1
 	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 

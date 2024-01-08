@@ -1,6 +1,6 @@
 FROM gcr.io/distroless/static:latest
 
-LABEL org.label-schema.description="Agents Docker file"
+LABEL org.label-schema.description="Agents Docker Image"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/agents"
 LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"

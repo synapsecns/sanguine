@@ -51,6 +51,7 @@ type EVMClient interface {
 	// BlockNumber gets the latest block number
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchContext uses w3 as a helper method for batch calls
+	// Deprecated: use BatchCallContext and stop using chain/client
 	BatchContext(ctx context.Context, calls ...w3types.Caller) error
 }
 

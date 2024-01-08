@@ -24,6 +24,7 @@ type Enum interface {
 }
 
 // EnumDataType is exported here to be passed as GormDataType.
+// TODO: support string types.
 const EnumDataType = "integer"
 
 // EnumValue converts the enum to a value.

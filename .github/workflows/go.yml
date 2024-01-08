@@ -78,7 +78,7 @@ jobs:
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 && github.event_name != 'push' }}
     needs: changes
     strategy:
       fail-fast: false
@@ -398,7 +398,7 @@ jobs:
       fail-fast: false
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
-        package: ['agents']
+        package: ['agents', 'services/rfq']
     steps:
       - uses: actions/checkout@v4
         with:
@@ -536,18 +536,18 @@ jobs:
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        if: ${{ contains(matrix.package, 'agents') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
         with:
           version: nightly
 
       - name: Install Node Dependencies
         run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
-        if: ${{ contains(matrix.package, 'agents') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Setup Go
       - uses: actions/setup-go@v4
