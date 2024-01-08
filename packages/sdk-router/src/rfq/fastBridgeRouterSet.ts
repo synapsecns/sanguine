@@ -75,6 +75,10 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<BridgeRoute[]> {
+    // Check that Routers exist on both chains
+    if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
+      return []
+    }
     // Get all quotes that result in the final token
     const allQuotes: FastBridgeQuote[] = await this.getQuotes(
       originChainId,
