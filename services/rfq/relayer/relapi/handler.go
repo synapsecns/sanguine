@@ -29,6 +29,37 @@ func NewHandler(db reldb.Service, chains map[uint32]*service.Chain) *Handler {
 	}
 }
 
+// GetHealth returns a successful response to signify the API is up and running.
+func (h *Handler) GetHealth(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+const unspecifiedTxHash = "Must specify 'hash' (corresponding to origin tx)"
+
+// GetQuoteRequestStatusByTxHash gets the status of a quote request, given an origin tx hash.
+func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
+	txHashStr := c.Query("hash")
+	if txHashStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
+		return
+	}
+
+	txHash := common.HexToHash(txHashStr)
+	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := GetQuoteRequestStatusResponse{
+		Status:       quoteRequest.Status.String(),
+		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash: quoteRequest.OriginTxHash.String(),
+		DestTxHash:   quoteRequest.DestTxHash.String(),
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 // GetQuoteRequestStatusByTxID gets the status of a quote request, given a tx id.
 func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	txIDStr := c.Query("id")
@@ -46,37 +77,6 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	copy(txID[:], txIDBytes)
 
 	quoteRequest, err := h.db.GetQuoteRequestByID(c, txID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp := GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
-	}
-	c.JSON(http.StatusOK, resp)
-}
-
-const unspecifiedTxHash = "Must specify 'hash' (corresponding to origin tx)"
-
-// GetHealth returns a successful response to signify the API is up and running.
-func (h *Handler) GetHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
-// GetQuoteRequestStatusByTxHash gets the status of a quote request, given an origin tx hash.
-func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
-	txHashStr := c.Query("hash")
-	if txHashStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
-		return
-	}
-
-	txHash := common.HexToHash(txHashStr)
-	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
