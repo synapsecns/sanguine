@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/retry"
+	submitterdb "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -134,6 +135,11 @@ func (c *RelayerServerSuite) TestGetTxRetry() {
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
+
+	// Verify that a transaction was submitted
+	status, err := c.database.SubmitterDB().GetNonceStatus(c.GetTestContext(), c.wallet.Address(), big.NewInt(int64(quoteRequest.Transaction.DestChainId)), result.Nonce)
+	c.Require().NoError(err)
+	c.Equal(status, submitterdb.Stored)
 }
 
 // startAPIServer starts the API server and waits for it to initialize.

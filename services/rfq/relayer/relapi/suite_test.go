@@ -46,6 +46,7 @@ type RelayerServerSuite struct {
 	handler              metrics.Handler
 	RelayerAPIServer     *relapi.RelayerAPIServer
 	port                 uint16
+	wallet               wallet.Wallet
 }
 
 // NewRelayerServerSuite creates a end-to-end test suite.
@@ -88,9 +89,9 @@ func (c *RelayerServerSuite) SetupTest() {
 	}
 	c.cfg = testConfig
 
-	wall, err := wallet.FromRandom()
+	c.wallet, err = wallet.FromRandom()
 	c.Require().NoError(err)
-	signer := localsigner.NewSigner(wall.PrivateKey())
+	signer := localsigner.NewSigner(c.wallet.PrivateKey())
 	submitterCfg := &submitterConfig.Config{}
 	ts := submitter.NewTransactionSubmitter(c.handler, signer, omniRPCClient, c.database.SubmitterDB(), submitterCfg)
 
