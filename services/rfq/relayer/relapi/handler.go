@@ -3,6 +3,7 @@ package relapi
 import (
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -44,7 +45,30 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 
 	resp := GetQuoteRequestStatusResponse{
 		Status: quoteRequest.Status.String(),
-		TxID:   hexutil.Encode(txID[:]),
+		TxID:   hexutil.Encode(quoteRequest.TransactionID[:]),
+		TxHash: quoteRequest.DestTxHash.String(),
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// GetQuoteRequestStatusByTxHash gets the status of a quote request, given a tx hash.
+func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
+	txHashStr := c.Query("hash")
+	if txHashStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify hash"})
+		return
+	}
+
+	txHash := common.HexToHash(txHashStr)
+	quoteRequest, err := h.db.GetQuoteRequestByTxHash(c, txHash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := GetQuoteRequestStatusResponse{
+		Status: quoteRequest.Status.String(),
+		TxID:   hexutil.Encode(quoteRequest.TransactionID[:]),
 		TxHash: quoteRequest.DestTxHash.String(),
 	}
 	c.JSON(http.StatusOK, resp)
