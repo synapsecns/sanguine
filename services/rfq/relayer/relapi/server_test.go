@@ -124,7 +124,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.GetTestContext().Done()
 }
 
-func (c *RelayerServerSuite) TestPutTxRetry() {
+func (c *RelayerServerSuite) TestGetTxRetry() {
 	c.startAPIServer()
 
 	// Insert quote request to db
@@ -145,10 +145,10 @@ func (c *RelayerServerSuite) TestPutTxRetry() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.PutTxRetryResponse
+	var result relapi.GetTxRetryResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.PutTxRetryResponse{
+	expectedResult := relapi.GetTxRetryResponse{
 		TxID:      hexutil.Encode(quoteRequest.TransactionID[:]),
 		ChainID:   quoteRequest.Transaction.DestChainId,
 		Nonce:     uint64(quoteRequest.Transaction.Nonce.Int64()),

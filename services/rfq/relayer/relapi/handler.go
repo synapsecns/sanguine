@@ -91,8 +91,8 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// PutTxRetry retries a transaction based on tx hash.
-func (h *Handler) PutTxRetry(c *gin.Context) {
+// GetTxRetry retries a transaction based on tx hash.
+func (h *Handler) GetTxRetry(c *gin.Context) {
 	txHashStr := c.Query("hash")
 	if txHashStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
@@ -133,7 +133,7 @@ func (h *Handler) PutTxRetry(c *gin.Context) {
 		return tx, nil
 	})
 
-	resp := PutTxRetryResponse{
+	resp := GetTxRetryResponse{
 		TxID:      hexutil.Encode(quoteRequest.TransactionID[:]),
 		ChainID:   chainID,
 		Nonce:     nonce,
