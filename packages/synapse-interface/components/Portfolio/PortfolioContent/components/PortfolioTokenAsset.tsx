@@ -34,7 +34,6 @@ type PortfolioTokenAssetProps = {
   allowances?: Allowances
   portfolioChainId: number
   connectedChainId: number
-  isApproved: boolean
 }
 
 export const PortfolioTokenAsset = ({
@@ -43,7 +42,6 @@ export const PortfolioTokenAsset = ({
   allowances,
   portfolioChainId,
   connectedChainId,
-  isApproved,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken, toChainId, toToken, bridgeQuote } =
@@ -230,8 +228,6 @@ export const PortfolioTokenAsset = ({
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleSelectFromTokenCallback}
-        approveCallback={handleApproveCallback}
-        isApproved={isApproved}
         isDisabled={isDisabled || isTokenSelected}
         isSelected={isTokenSelected}
       />
@@ -271,16 +267,12 @@ export const HoverClickableText = ({
 
 type PortfolioAssetActionButtonProps = {
   selectCallback: () => void
-  approveCallback: () => Promise<void>
-  isApproved: boolean
   isDisabled: boolean
   isSelected: boolean
 }
 
 const PortfolioAssetActionButton = ({
   selectCallback,
-  approveCallback,
-  isApproved,
   isDisabled,
   isSelected,
 }: PortfolioAssetActionButtonProps) => {
