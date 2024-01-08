@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
@@ -10,8 +11,10 @@ import {
   FastBridge as FastBridgeContract,
   IFastBridge,
 } from '../typechain/FastBridge'
-import { SynapseModule, Query } from '../module'
+import { SynapseModule, Query, narrowToCCTPRouterQuery } from '../module'
 import { BigintIsh } from '../constants'
+import { getMatchingTxLog } from '../utils/logs'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -57,27 +60,45 @@ export class FastBridgeRouter implements SynapseModule {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    // TODO: implement
-    console.log(to, destChainId, token, amount, originQuery, destQuery)
-    return null as any
+    const populatedTransaction =
+      await this.routerContract.populateTransaction.bridge(
+        to,
+        destChainId,
+        token,
+        amount,
+        narrowToCCTPRouterQuery(originQuery),
+        narrowToCCTPRouterQuery(destQuery)
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
+      token,
+      BigNumber.from(amount)
+    )
   }
 
   /**
    * @inheritdoc SynapseModule.getSynapseTxId
    */
   public async getSynapseTxId(txHash: string): Promise<string> {
-    // TODO: implement
-    console.log(txHash)
-    return null as any
+    const fastBridgeContract = await this.getFastBridgeContract()
+    const fastBridgeLog = await getMatchingTxLog(
+      this.provider,
+      txHash,
+      fastBridgeContract,
+      this.originEvents
+    )
+    // transactionId always exists in the log as we are using the correct ABI
+    const parsedLog = fastBridgeContract.interface.parseLog(fastBridgeLog)
+    return parsedLog.args.transactionId
   }
 
   /**
    * @inheritdoc SynapseModule.getBridgeTxStatus
    */
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
-    // TODO: implement
-    console.log(synapseTxId)
-    return null as any
+    const fastBridgeContract = await this.getFastBridgeContract()
+    return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
   public async getFastBridgeContract(): Promise<FastBridgeContract> {
