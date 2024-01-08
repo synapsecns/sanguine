@@ -208,7 +208,7 @@ export const _Transaction = ({
                 text="Contact Support"
                 link="https://discord.gg/synapseprotocol"
               />
-              {isTxComplete && (
+              {isTxCompleted && (
                 <MenuItem
                   text="Clear Transaction"
                   link={null}
