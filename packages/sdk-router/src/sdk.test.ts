@@ -1560,7 +1560,7 @@ describe('SynapseSDK', () => {
 
       it('Returns correct set for SynapseRFQ', () => {
         const routerSet = operations.getModuleSet.call(synapse, 'SynapseRFQ')
-        expect(routerSet).toEqual(synapse.fastBridgeSet)
+        expect(routerSet).toEqual(synapse.fastBridgeRouterSet)
       })
 
       it('Throws when bridge module name is invalid', () => {
