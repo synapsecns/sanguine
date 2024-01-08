@@ -63,7 +63,7 @@ export const useBridgeTxStatus = ({
   }
 
   useEffect(() => {
-    // if (!checkStatus) return
+    if (!checkStatus) return
     if (isComplete) return
     ;(async () => {
       if (fetchedKappa === null) {
