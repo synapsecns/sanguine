@@ -168,7 +168,7 @@ func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus
 			OriginAmount:  big.NewInt(100),
 			DestAmount:    big.NewInt(100),
 			Deadline:      big.NewInt(time.Now().Unix()),
-			Nonce:         big.NewInt(1),
+			Nonce:         big.NewInt(0),
 		},
 		OriginTxHash: common.HexToHash("0x0000000"),
 		DestTxHash:   common.HexToHash("0x0000001"),

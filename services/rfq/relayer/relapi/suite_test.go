@@ -17,7 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
@@ -85,7 +88,13 @@ func (c *RelayerServerSuite) SetupTest() {
 	}
 	c.cfg = testConfig
 
-	server, err := relapi.NewRelayerAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database, nil)
+	wall, err := wallet.FromRandom()
+	c.Require().NoError(err)
+	signer := localsigner.NewSigner(wall.PrivateKey())
+	submitterCfg := &submitterConfig.Config{}
+	ts := submitter.NewTransactionSubmitter(c.handler, signer, omniRPCClient, c.database.SubmitterDB(), submitterCfg)
+
+	server, err := relapi.NewRelayerAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database, ts)
 	c.Require().NoError(err)
 	c.RelayerAPIServer = server
 }
