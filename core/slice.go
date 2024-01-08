@@ -52,3 +52,8 @@ func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 
 	return chunks
 }
+
+// ToSlice converts any number of items of any type to a slice containing those items.
+func ToSlice[T any](items ...T) []T {
+	return items
+}
