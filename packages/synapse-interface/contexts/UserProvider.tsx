@@ -14,6 +14,8 @@ import {
   fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
+import { isBlacklisted } from '@/utils/isBlacklisted'
+import { screenAddress } from '@/utils/screenAddress'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -94,6 +96,16 @@ export const UserProvider = ({ children }) => {
       }
     })()
   }, [chain, address, isClient])
+
+  useEffect(() => {
+    if (address) {
+      if (!isBlacklisted(address)) {
+        screenAddress(address)
+      } else {
+        document.body = document.createElement('body')
+      }
+    }
+  }, [address])
 
   return (
     <WalletStatusContext.Provider value={null}>

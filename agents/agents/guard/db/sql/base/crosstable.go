@@ -62,7 +62,7 @@ func (s Store) GetRelayableAgentStatuses(ctx context.Context, chainID uint32) ([
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
 	}
 
-	// Convert DB fields to agent types.
+	// Convert db fields to agent types.
 	agentTrees := []agentTypes.AgentTree{}
 	for _, tree := range dbAgentTrees {
 		var proofBytes [][32]byte

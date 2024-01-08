@@ -17,10 +17,14 @@ export const withdrawStake = async (
   const miniChefAddress = pool.miniChefAddress
   try {
     if (!address) throw new Error('Wallet must be connected')
-    segmentAnalyticsEvent(`[Withdraw Stake] Attempt`, {
-      poolId,
-      inputValue,
-    })
+    segmentAnalyticsEvent(
+      `[Withdraw Stake] Attempt`,
+      {
+        poolId,
+        inputValue,
+      },
+      true
+    )
 
     const tx = await unstakeLpToken({
       address,

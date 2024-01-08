@@ -239,12 +239,13 @@ const StateManagedBridge = () => {
         )
       }
 
-      const originMinWithSlippage = subtractSlippage(
+      // TODO: do this properly (RFQ needs no slippage, others do)
+      const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
         originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
-      const destMinWithSlippage = subtractSlippage(
+      const destMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (destQuery?.minAmountOut ?? 0n) : subtractSlippage(
         destQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
@@ -351,14 +352,18 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
-    segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
-      address,
-      originChainId: fromChainId,
-      destinationChainId: toChainId,
-      inputAmount: debouncedFromValue,
-      expectedReceivedAmount: bridgeQuote.outputAmountString,
-      slippage: bridgeQuote.exchangeRate,
-    })
+    segmentAnalyticsEvent(
+      `[Bridge] initiates bridge`,
+      {
+        address,
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: debouncedFromValue,
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      },
+      true
+    )
     const currentTimestamp: number = getTimeMinutesFromNow(0)
     dispatch(
       addPendingBridgeTransaction({

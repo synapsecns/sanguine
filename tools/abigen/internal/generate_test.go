@@ -1,7 +1,10 @@
 package internal_test
 
 import (
+	"encoding/json"
 	"errors"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/ethergo/debug"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,14 +27,35 @@ func TestCreateRunFile(t *testing.T) {
 	}
 }
 
-func (a *AbiSuite) TestCompileSolidity() {
-	vals, err := internal.CompileSolidity("0.8.4", a.exampleFilePath, 1)
+func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
+	vals, err := internal.CompileSolidity("0.8.4", a.exampleFilePath, 1, nil)
 	Nil(a.T(), err)
 
 	Len(a.T(), vals, 1)
 	for _, value := range vals {
 		Equal(a.T(), value.Info.CompilerVersion, "0.8.4")
 		Equal(a.T(), value.Info.LanguageVersion, "0.8.4")
+	}
+}
+
+func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
+	// default would be shnghai
+	const testEvmVersion = "istanbul"
+	vals, err := internal.CompileSolidity("0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
+	Nil(a.T(), err)
+
+	Len(a.T(), vals, 1)
+	for _, value := range vals {
+		Equal(a.T(), value.Info.CompilerVersion, "0.8.20")
+		Equal(a.T(), value.Info.LanguageVersion, "0.8.20")
+
+		var metadata debug.ContractMetadata
+		err = json.Unmarshal([]byte(value.Info.Metadata), &metadata)
+		a.Require().NoError(err)
+
+		if metadata.Settings.EvmVersion != testEvmVersion {
+			a.T().Errorf("expected %s to be %s", metadata.Language, testEvmVersion)
+		}
 	}
 }
 

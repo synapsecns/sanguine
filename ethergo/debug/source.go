@@ -52,6 +52,7 @@ func (c *ContractSource) AddContract(ctx context.Context, chn chain.Chain, contr
 		return nil, fmt.Errorf("could not get deployed code for contract: %s: %w", contract.Address(), err)
 	}
 
+	// If you're having issue son this line, please check your solidity path in the contract.abijson.json is cororect
 	contractInfo := contractType.ContractInfo()
 
 	//nolint:forcetypeassert

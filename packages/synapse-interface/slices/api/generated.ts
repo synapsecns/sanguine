@@ -62,6 +62,13 @@ export type AddressRanking = {
   count?: Maybe<Scalars['Int']['output']>
 }
 
+export type BlockHeight = {
+  __typename?: 'BlockHeight'
+  blockNumber?: Maybe<Scalars['Int']['output']>
+  chainID?: Maybe<Scalars['Int']['output']>
+  type?: Maybe<ContractType>
+}
+
 /**
  * BridgeTransaction represents an entire bridge transaction, including both
  * to and from transactions. If a `from` transaction does not have a corresponding
@@ -79,11 +86,13 @@ export type BridgeTransaction = {
 export enum BridgeTxType {
   Destination = 'DESTINATION',
   Origin = 'ORIGIN',
+  Rfq = 'RFQ',
 }
 
 export enum BridgeType {
   Bridge = 'BRIDGE',
   Cctp = 'CCTP',
+  Rfq = 'RFQ',
 }
 
 /** BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher. */
@@ -94,6 +103,17 @@ export type BridgeWatcherTx = {
   kappaStatus?: Maybe<KappaStatus>
   pending?: Maybe<Scalars['Boolean']['output']>
   type?: Maybe<BridgeTxType>
+}
+
+export type ContractQuery = {
+  chainID?: InputMaybe<Scalars['Int']['input']>
+  type?: InputMaybe<ContractType>
+}
+
+export enum ContractType {
+  Bridge = 'BRIDGE',
+  Cctp = 'CCTP',
+  Rfq = 'RFQ',
 }
 
 export enum DailyStatisticType {
@@ -274,6 +294,8 @@ export type Query = {
   countByTokenAddress?: Maybe<Array<Maybe<TokenCountResult>>>
   /** Daily statistic data */
   dailyStatisticsByChain?: Maybe<Array<Maybe<DateResultByChain>>>
+  /** GetBlockHeight gets block heights from the current bridge. Returns results in an array of increased block heights. */
+  getBlockHeight?: Maybe<Array<Maybe<BlockHeight>>>
   /** GetDestinationBridgeTx is the bridge watcher endpoint for getting an destination bridge tx (BETA). */
   getDestinationBridgeTx?: Maybe<BridgeWatcherTx>
   /** GetOriginBridgeTx is the bridge watcher endpoint for getting an origin bridge tx (BETA). */
@@ -347,6 +369,10 @@ export type QueryDailyStatisticsByChainArgs = {
   type?: InputMaybe<DailyStatisticType>
   useCache?: InputMaybe<Scalars['Boolean']['input']>
   useMv?: InputMaybe<Scalars['Boolean']['input']>
+}
+
+export type QueryGetBlockHeightArgs = {
+  contracts?: InputMaybe<Array<InputMaybe<ContractQuery>>>
 }
 
 export type QueryGetDestinationBridgeTxArgs = {
@@ -435,6 +461,20 @@ export type VolumeByChainId = {
   __typename?: 'VolumeByChainID'
   chainID?: Maybe<Scalars['Int']['output']>
   total?: Maybe<Scalars['Float']['output']>
+}
+
+export type GetBlockHeightQueryVariables = Exact<{
+  contracts: Array<InputMaybe<ContractQuery>> | InputMaybe<ContractQuery>
+}>
+
+export type GetBlockHeightQuery = {
+  __typename?: 'Query'
+  getBlockHeight?: Array<{
+    __typename?: 'BlockHeight'
+    chainID?: number | null
+    type?: ContractType | null
+    blockNumber?: number | null
+  } | null> | null
 }
 
 export type GetDestinationBridgeTxFallbackQueryVariables = Exact<{
@@ -597,6 +637,15 @@ export type GetUserPendingTransactionsQuery = {
   } | null> | null
 }
 
+export const GetBlockHeightDocument = `
+    query GetBlockHeight($contracts: [ContractQuery]!) {
+  getBlockHeight(contracts: $contracts) {
+    chainID
+    type
+    blockNumber
+  }
+}
+    `
 export const GetDestinationBridgeTxFallbackDocument = `
     query GetDestinationBridgeTxFallback($chainId: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!) {
   getDestinationBridgeTx(
@@ -744,6 +793,12 @@ export const GetUserPendingTransactionsDocument = `
 
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
+    GetBlockHeight: build.query<
+      GetBlockHeightQuery,
+      GetBlockHeightQueryVariables
+    >({
+      query: (variables) => ({ document: GetBlockHeightDocument, variables }),
+    }),
     GetDestinationBridgeTxFallback: build.query<
       GetDestinationBridgeTxFallbackQuery,
       GetDestinationBridgeTxFallbackQueryVariables
@@ -785,6 +840,8 @@ const injectedRtkApi = api.injectEndpoints({
 
 export { injectedRtkApi as api }
 export const {
+  useGetBlockHeightQuery,
+  useLazyGetBlockHeightQuery,
   useGetDestinationBridgeTxFallbackQuery,
   useLazyGetDestinationBridgeTxFallbackQuery,
   useGetOriginBridgeTxFallbackQuery,

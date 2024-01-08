@@ -8,6 +8,18 @@ import Link from 'next/link'
 import { POOL_PATH } from '@/constants/urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 
+export async function getStaticPaths() {
+  const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((routerIndex) => ({
+    params: { routerIndex },
+  }))
+
+  return { paths, fallback: false }
+}
+
+export const getStaticProps = async (context) => {
+  return { props: {} }
+}
+
 const SingleStakePage = () => {
   const router = useRouter()
   const { routerIndex } = router.query
