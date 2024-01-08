@@ -25,9 +25,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
 
-// APIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// RelayerAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
-type APIServer struct {
+type RelayerAPIServer struct {
 	cfg     config.Config
 	db      reldb.Service
 	engine  *gin.Engine
@@ -35,16 +35,16 @@ type APIServer struct {
 	chains  map[uint32]*service.Chain
 }
 
-// NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// NewRelayerAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
-func NewAPI(
+func NewRelayerAPI(
 	ctx context.Context,
 	cfg config.Config,
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
 	store reldb.Service,
 	submitter submitter.TransactionSubmitter,
-) (*APIServer, error) {
+) (*RelayerAPIServer, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
 	}
@@ -74,7 +74,7 @@ func NewAPI(
 		}
 	}
 
-	return &APIServer{
+	return &RelayerAPIServer{
 		cfg:     cfg,
 		db:      store,
 		handler: handler,
@@ -83,17 +83,18 @@ func NewAPI(
 }
 
 const (
-	getQuoteStatusByTxIDRoute = "/status/by_tx_id"
-	putRetryRoute             = "/retry"
+	getQuoteStatusByTxHashRoute = "/status"
+	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
+	putRetryRoute               = "/retry"
 )
 
 var logger = log.Logger("relayer-api")
 
 // Run runs the rest api server.
-func (r *APIServer) Run(ctx context.Context) error {
+func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
-	h := NewHandler(r.db)
+	h := NewHandler(r.db, r.chains)
 
 	// Apply AuthMiddleware only to the PUT route
 	quotesPut := engine.Group(putRetryRoute)
@@ -101,6 +102,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut.PUT("", h.PutTxRetry)
 
 	// GET routes without the AuthMiddleware
+	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 
 	r.engine = engine
@@ -116,7 +118,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
-func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
+func (r *RelayerAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.PutQuoteRequest
 		if err := c.BindJSON(&req); err != nil {
