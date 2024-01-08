@@ -78,8 +78,8 @@ func NewAPI(
 }
 
 const (
-	getQuoteStatusRoute = "/status"
-	putRetryRoute       = "/retry"
+	getQuoteStatusByTxIDRoute = "/status/by_tx_id"
+	putRetryRoute             = "/retry"
 )
 
 var logger = log.Logger("relayer-api")
@@ -96,7 +96,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 	quotesPut.PUT("", h.PutTxRetry)
 
 	// GET routes without the AuthMiddleware
-	engine.GET(getQuoteStatusRoute, h.GetQuoteRequestStatus)
+	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 
 	r.engine = engine
 
