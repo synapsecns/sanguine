@@ -58,9 +58,11 @@ func TestChunkSlice(t *testing.T) {
 		// Add more test cases here
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			if got := core.ChunkSlice(tt.slice, tt.chunkSize); !reflect.DeepEqual(got, tt.want) {
+				//nolint: gocritic
 				if len(got) == len(tt.want) && len(got) == 0 {
 					return
 				}
