@@ -2,6 +2,10 @@ import { Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const getExplorerAddressLink = (chainId: number, address: string) => {
+  if (!chainId || !address) {
+    return [null, null]
+  }
+
   const chain: Chain = CHAINS_BY_ID[chainId]
 
   if (chain && address) {
@@ -10,8 +14,4 @@ export const getExplorerAddressLink = (chainId: number, address: string) => {
 
     return [addressExplorerUrl, explorerName]
   }
-
-  console.error('getExplorerAddressLink: Chain or Address missing')
-
-  return [null, null]
 }

@@ -4,7 +4,7 @@ import { ALL_TOKENS } from '@/constants/tokens/master'
 
 export const findTokenByAddressAndChain = (
   address: Address | string,
-  chainId: string
+  chainId: number | string
 ) => {
   for (const [, token] of Object.entries(ALL_TOKENS)) {
     const chainAddresses = token.addresses
