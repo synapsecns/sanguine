@@ -22,6 +22,7 @@ func init() {
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	statusFieldName = namer.GetConsistentName("Status")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
+	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
 }
 
@@ -34,6 +35,8 @@ var (
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
+	// originTxHashFieldName is the origin tx hash field name.
+	originTxHashFieldName string
 	// destTxHashFieldName is the dest tx hash field name.
 	destTxHashFieldName string
 )

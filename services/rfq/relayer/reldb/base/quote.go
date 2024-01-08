@@ -44,10 +44,10 @@ func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.Quo
 	return qr, nil
 }
 
-// GetQuoteRequestByTxHash gets a quote request by id. Should return ErrNoQuoteForID if not found.
-func (s Store) GetQuoteRequestByTxHash(ctx context.Context, txHash common.Hash) (*reldb.QuoteRequest, error) {
+// GetQuoteRequestByOriginTxHash gets a quote request by tx hash. Should return ErrNoQuoteForID if not found.
+func (s Store) GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.Hash) (*reldb.QuoteRequest, error) {
 	var modelResult RequestForQuote
-	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", destTxHashFieldName), txHash.String()).First(&modelResult)
+	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", originTxHashFieldName), txHash.String()).First(&modelResult)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, reldb.ErrNoQuoteForTxHash
 	}

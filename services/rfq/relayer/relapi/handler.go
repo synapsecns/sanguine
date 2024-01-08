@@ -33,7 +33,7 @@ func NewHandler(db reldb.Service, chains map[uint32]*service.Chain) *Handler {
 func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	txIDStr := c.Query("txID")
 	if txIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify txID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'txID'"})
 		return
 	}
 
@@ -52,32 +52,36 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestStatusResponse{
-		Status: quoteRequest.Status.String(),
-		TxID:   hexutil.Encode(quoteRequest.TransactionID[:]),
-		TxHash: quoteRequest.DestTxHash.String(),
+		Status:       quoteRequest.Status.String(),
+		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash: quoteRequest.OriginTxHash.String(),
+		DestTxHash:   quoteRequest.DestTxHash.String(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
 
-// GetQuoteRequestStatusByTxHash gets the status of a quote request, given a tx hash.
+const unspecifiedTxHash = "Must specify 'hash' (corresponding to origin tx)"
+
+// GetQuoteRequestStatusByTxHash gets the status of a quote request, given an origin tx hash.
 func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 	txHashStr := c.Query("hash")
 	if txHashStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify hash"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
 		return
 	}
 
 	txHash := common.HexToHash(txHashStr)
-	quoteRequest, err := h.db.GetQuoteRequestByTxHash(c, txHash)
+	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	resp := GetQuoteRequestStatusResponse{
-		Status: quoteRequest.Status.String(),
-		TxID:   hexutil.Encode(quoteRequest.TransactionID[:]),
-		TxHash: quoteRequest.DestTxHash.String(),
+		Status:       quoteRequest.Status.String(),
+		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash: quoteRequest.OriginTxHash.String(),
+		DestTxHash:   quoteRequest.DestTxHash.String(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -86,12 +90,12 @@ func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 func (h *Handler) PutTxRetry(c *gin.Context) {
 	txHashStr := c.Query("hash")
 	if txHashStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify hash"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
 		return
 	}
 
 	txHash := common.HexToHash(txHashStr)
-	quoteRequest, err := h.db.GetQuoteRequestByTxHash(c, txHash)
+	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
