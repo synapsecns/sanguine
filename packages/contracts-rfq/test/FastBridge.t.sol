@@ -360,7 +360,7 @@ contract FastBridgeTest is Test {
         fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
-    event BridgeRequested(bytes32 transactionId, address sender, bytes request);
+    event BridgeRequested(bytes32 indexed transactionId, address indexed sender, bytes request);
 
     // This test checks the successful execution of a bridge transaction
     function test_successfulBridge() public {
@@ -836,7 +836,7 @@ contract FastBridgeTest is Test {
     }
 
     event BridgeRelayed(
-        bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount, uint256 chainGasAmount
+        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount, uint256 chainGasAmount
     );
 
     // This test checks the successful relaying of a destination bridge
@@ -1088,7 +1088,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeProofProvided(bytes32 transactionId, address oldRelayer, bytes32 transactionHash);
+    event BridgeProofProvided(bytes32 indexed transactionId, address indexed relayer, bytes32 transactionHash);
 
     // This test checks the successful provision of relay proof
     function test_successfulRelayProof() public {
@@ -1219,7 +1219,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeDepositClaimed(bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount);
+    event BridgeDepositClaimed(bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount);
 
     function test_successfulClaimOriginTokens() public {
         setUpRoles();
@@ -1454,7 +1454,7 @@ contract FastBridgeTest is Test {
         fastBridge.claim(request, relayer);
     }
 
-    event BridgeProofDisputed(bytes32 transactionId, address oldRelayer);
+    event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
 
     function test_successfulDisputeProof() public {
         setUpRoles();
@@ -1551,7 +1551,7 @@ contract FastBridgeTest is Test {
         fastBridge.dispute(transactionId);
     }
 
-    event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount);
+    event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
     function test_successfulRefund() public {
         setUpRoles();
