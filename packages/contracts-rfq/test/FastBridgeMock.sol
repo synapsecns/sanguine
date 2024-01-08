@@ -88,11 +88,16 @@ contract FastBridgeMock is IFastBridge, Admin {
         bytes32 transactionId,
         address relayer,
         address to,
-        address token,
-        uint256 amount,
+        uint32 originChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
         uint256 chainGasAmount
     ) external {
-        emit BridgeRelayed(transactionId, relayer, to, token, amount, chainGasAmount);
+        emit BridgeRelayed(
+            transactionId, relayer, to, originChainId, originToken, destToken, originAmount, destAmount, chainGasAmount
+        );
     }
 
     function bridge(BridgeParams memory params) external payable {

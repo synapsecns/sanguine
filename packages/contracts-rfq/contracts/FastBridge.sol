@@ -149,7 +149,17 @@ contract FastBridge is IFastBridge, Admin {
             _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
         }
 
-        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
+        emit BridgeRelayed(
+            transactionId,
+            msg.sender,
+            to,
+            transaction.originChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
+            rebate
+        );
     }
 
     /// @inheritdoc IFastBridge

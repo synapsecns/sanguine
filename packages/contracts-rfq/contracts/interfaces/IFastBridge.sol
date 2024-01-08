@@ -39,8 +39,11 @@ interface IFastBridge {
         bytes32 indexed transactionId,
         address indexed relayer,
         address indexed to,
-        address token,
-        uint256 amount,
+        uint32 originChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
         uint256 chainGasAmount
     );
     event BridgeProofProvided(bytes32 indexed transactionId, address indexed relayer, bytes32 transactionHash);
