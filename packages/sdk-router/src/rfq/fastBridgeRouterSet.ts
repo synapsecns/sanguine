@@ -1,7 +1,12 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
-import { BigintIsh, FAST_BRIDGE_ROUTER_ADDRESS_MAP } from '../constants'
+import {
+  BigintIsh,
+  FAST_BRIDGE_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_RFQ,
+} from '../constants'
 import {
   BridgeRoute,
   FeeConfig,
@@ -10,6 +15,7 @@ import {
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
+import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -42,18 +48,16 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
    * @inheritdoc SynapseModuleSet.getModule
    */
   public getModule(chainId: number): SynapseModule | undefined {
-    // TODO: implement
-    console.log(chainId)
-    return null as any
+    return this.routers[chainId]
   }
 
   /**
    * @inheritdoc SynapseModuleSet.getOriginAmountOut
    */
   public getEstimatedTime(chainId: number): number {
-    // TODO: implement
-    console.log(chainId)
-    return 0
+    const medianTime = MEDIAN_TIME_RFQ[chainId as keyof typeof MEDIAN_TIME_RFQ]
+    invariant(medianTime, `No estimated time for chain ${chainId}`)
+    return medianTime
   }
 
   /**
@@ -96,10 +100,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   } {
-    // TODO: implement
     return {
-      originPeriod: 0,
-      destPeriod: 0,
+      originPeriod: TEN_MINUTES,
+      destPeriod: ONE_HOUR,
     }
   }
 }
