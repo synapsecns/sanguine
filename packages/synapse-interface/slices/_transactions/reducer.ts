@@ -1,7 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 import { Chain, Token } from '@/utils/types'
-import StateManagedBridge from '@/pages/state-managed-bridge'
 
 /** TODO: Rename entire slice once done refactoring prior Activity flow */
 export interface _TransactionDetails {
