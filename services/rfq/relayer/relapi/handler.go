@@ -31,7 +31,7 @@ func NewHandler(db reldb.Service, chains map[uint32]*service.Chain) *Handler {
 
 // GetQuoteRequestStatusByTxID gets the status of a quote request, given a tx id.
 func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
-	txIDStr := c.Query("txID")
+	txIDStr := c.Query("id")
 	if txIDStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'txID'"})
 		return

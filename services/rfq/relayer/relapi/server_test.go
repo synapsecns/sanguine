@@ -89,6 +89,41 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	c.GetTestContext().Done()
 }
 
+func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
+	c.startAPIServer()
+
+	// Insert quote request to db
+	quoteRequest := getTestQuoteRequest(reldb.Seen)
+	err := c.database.StoreQuoteRequest(c.GetTestContext(), quoteRequest)
+	c.Require().NoError(err)
+
+	// Fetch the quote request by tx hash
+	client := &http.Client{}
+	txIDStr := hexutil.Encode(quoteRequest.TransactionID[:])
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status/by_tx_id?id=%s", c.port, txIDStr), nil)
+	c.Require().NoError(err)
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Compare to expected result
+	var result relapi.GetQuoteRequestStatusResponse
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult := relapi.GetQuoteRequestStatusResponse{
+		Status:       quoteRequest.Status.String(),
+		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash: quoteRequest.OriginTxHash.String(),
+		DestTxHash:   quoteRequest.DestTxHash.String(),
+	}
+	c.Equal(expectedResult, result)
+	c.GetTestContext().Done()
+}
+
 // startAPIServer starts the API server and waits for it to initialize.
 func (c *RelayerServerSuite) startAPIServer() {
 	go func() {
