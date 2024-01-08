@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface UseBridgeTxStatusProps {
-  synapseSDK: any
   originChainId: number
   destinationChainId: number
   originTxHash: string

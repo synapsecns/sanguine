@@ -103,7 +103,6 @@ export const _Transaction = ({
   }, [estimatedTime, currentTime, timestamp])
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
-    synapseSDK,
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     originTxHash,
