@@ -53,6 +53,7 @@ import ApplicationUpdater from '@/slices/application/updater'
 import BridgeUpdater from '@/slices/bridge/updater'
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
+import _TransactionsUpdater from '@/slices/_transactions/updater'
 
 const rawChains = [
   mainnet,
@@ -137,6 +138,7 @@ function Updaters() {
       <ApplicationUpdater />
       <PortfolioUpdater />
       <TransactionsUpdater />
+      <_TransactionsUpdater />
       <BridgeUpdater />
     </>
   )
