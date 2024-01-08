@@ -175,19 +175,38 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
+
+	// TODO: store the dest txhash connected to the nonce
+	nonce, _, err := SubmitRelay(ctx, &q.Dest, request)
+	if err != nil {
+		return err
+	}
+	_ = nonce
+
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+// SubmitRelay submits a relay transaction to the destination chain after evaluating gas amount.
+func SubmitRelay(ctx context.Context, chain *Chain, request reldb.QuoteRequest) (uint64, *big.Int, error) {
 	gasAmount := big.NewInt(0)
+	var err error
 
 	if request.Transaction.SendChainGas {
-		gasAmount, err = q.Dest.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
+		gasAmount, err = chain.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
-			return fmt.Errorf("could not get chain gas amount: %w", err)
+			return 0, nil, fmt.Errorf("could not get chain gas amount: %w", err)
 		}
 	}
 
-	nonce, err := q.Dest.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	nonce, err := chain.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
-		tx, err = q.Dest.Bridge.Relay(transactor, request.RawRequest)
+		tx, err = chain.Bridge.Relay(transactor, request.RawRequest)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
@@ -195,18 +214,10 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace
 		return tx, nil
 	})
 	if err != nil {
-		return fmt.Errorf("could not submit transaction: %w", err)
+		return 0, nil, fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
-
-	// TODO: store the dest txhash connected to the nonce
-	_ = nonce
-
-	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
-	}
-	return nil
+	return nonce, gasAmount, nil
 }
 
 // handleRelayStarted handles the relay started status and marks the relay as completed.

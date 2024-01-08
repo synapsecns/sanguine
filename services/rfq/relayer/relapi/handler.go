@@ -2,15 +2,11 @@ package relapi
 
 import (
 	"fmt"
-	"math/big"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
@@ -113,25 +109,12 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 		return
 	}
 
-	// TODO: this can be deduped with handlers.go code
-	gasAmount := big.NewInt(0)
-	if quoteRequest.Transaction.SendChainGas {
-		gasAmount, err = chain.Bridge.ChainGasAmount(&bind.CallOpts{Context: c})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get chain gas amount: %s", err.Error())})
-			return
-		}
+	// `quoteRequest == nil` case should be handled by the db query above
+	nonce, gasAmount, err := service.SubmitRelay(c, chain, *quoteRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit relay: %s", err.Error())})
+		return
 	}
-	nonce, err := chain.SubmitTransaction(c, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.Value = core.CopyBigInt(gasAmount)
-
-		tx, err = chain.Bridge.Relay(transactor, quoteRequest.RawRequest)
-		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
-		}
-
-		return tx, nil
-	})
 
 	resp := GetTxRetryResponse{
 		TxID:      hexutil.Encode(quoteRequest.TransactionID[:]),
