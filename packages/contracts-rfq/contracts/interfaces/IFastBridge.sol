@@ -24,13 +24,30 @@ interface IFastBridge {
 
     // ============ Events ============
 
-    event BridgeRequested(bytes32 indexed transactionId, address indexed sender, bytes request);
+    event BridgeRequested(
+        bytes32 indexed transactionId,
+        address indexed sender,
+        bytes request,
+        uint32 destChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
+        bool sendChainGas
+    );
     event BridgeRelayed(
-        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount, uint256 chainGasAmount
+        bytes32 indexed transactionId,
+        address indexed relayer,
+        address indexed to,
+        address token,
+        uint256 amount,
+        uint256 chainGasAmount
     );
     event BridgeProofProvided(bytes32 indexed transactionId, address indexed relayer, bytes32 transactionHash);
     event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
-    event BridgeDepositClaimed(bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount);
+    event BridgeDepositClaimed(
+        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount
+    );
     event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
     // ============ Methods ============

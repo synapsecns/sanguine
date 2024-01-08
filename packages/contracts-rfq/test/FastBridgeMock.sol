@@ -43,7 +43,7 @@ contract FastBridgeMock is IFastBridge, Admin {
             BridgeTransaction({
                 originChainId: uint32(block.chainid),
                 destChainId: params.dstChainId,
-                originSender: msg.sender,
+                originSender: params.sender,
                 destRecipient: params.to,
                 originToken: params.originToken,
                 destToken: params.destToken,
@@ -56,11 +56,32 @@ contract FastBridgeMock is IFastBridge, Admin {
             })
         );
 
-        emit BridgeRequested(transactionId, msg.sender, request);
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            params.originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
     }
 
     function mockBridgeRequestRaw(bytes32 transactionId, address sender, bytes memory request) external {
-        emit BridgeRequested(transactionId, sender, request);
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        emit BridgeRequested(
+            transactionId,
+            transaction.originSender,
+            request,
+            transaction.destChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
+            transaction.sendChainGas
+        );
     }
 
     function mockBridgeRelayer(

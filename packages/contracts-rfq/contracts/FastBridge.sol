@@ -107,7 +107,17 @@ contract FastBridge is IFastBridge, Admin {
         bytes32 transactionId = keccak256(request);
         bridgeStatuses[transactionId] = BridgeStatus.REQUESTED;
 
-        emit BridgeRequested(transactionId, params.sender, request);
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
     }
 
     /// @inheritdoc IFastBridge

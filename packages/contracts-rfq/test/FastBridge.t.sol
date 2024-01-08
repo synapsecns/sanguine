@@ -360,7 +360,17 @@ contract FastBridgeTest is Test {
         fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
-    event BridgeRequested(bytes32 indexed transactionId, address indexed sender, bytes request);
+    event BridgeRequested(
+        bytes32 indexed transactionId,
+        address indexed sender,
+        bytes request,
+        uint32 destChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
+        bool sendChainGas
+    );
 
     // This test checks the successful execution of a bridge transaction
     function test_successfulBridge() public {
@@ -374,7 +384,17 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(transactionId, user, request);
+        emit BridgeRequested(
+            transactionId,
+            user,
+            request,
+            1,
+            address(arbUSDC),
+            address(ethUSDC),
+            11 * 10 ** 6, // originAmount
+            10.97e6, // destAmount
+            false // sendChainGas
+        );
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -464,7 +484,17 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndId(block.chainid, currentNonce, protocolFeeRate);
 
         vm.expectEmit();
-        emit BridgeRequested(transactionId, user, request);
+        emit BridgeRequested(
+            transactionId,
+            user,
+            request,
+            1,
+            address(arbUSDC),
+            address(ethUSDC),
+            10.989e6, // originAmount
+            10.97e6, // destAmount
+            false // sendChainGas
+        );
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -516,7 +546,17 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndIdWithETH(block.chainid, currentNonce, protocolFeeRate);
 
         vm.expectEmit();
-        emit BridgeRequested(transactionId, user, request);
+        emit BridgeRequested(
+            transactionId,
+            user,
+            request,
+            1,
+            UniversalTokenLib.ETH_ADDRESS,
+            UniversalTokenLib.ETH_ADDRESS,
+            10.989e18, // originAmount
+            10.97e18, // destAmount
+            false // sendChainGas
+        );
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -567,7 +607,17 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndIdWithChainGas(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(transactionId, user, request);
+        emit BridgeRequested(
+            transactionId,
+            user,
+            request,
+            1,
+            address(arbUSDC),
+            address(ethUSDC),
+            11 * 10 ** 6, // originAmount
+            10.97e6, // destAmount
+            true // sendChainGas
+        );
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -657,7 +707,17 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(transactionId, user, request);
+        emit BridgeRequested(
+            transactionId,
+            user,
+            request,
+            1,
+            address(arbUSDC),
+            address(ethUSDC),
+            11 * 10 ** 6, // originAmount
+            10.97e6, // destAmount
+            false // sendChainGas
+        );
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -836,7 +896,12 @@ contract FastBridgeTest is Test {
     }
 
     event BridgeRelayed(
-        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount, uint256 chainGasAmount
+        bytes32 indexed transactionId,
+        address indexed relayer,
+        address indexed to,
+        address token,
+        uint256 amount,
+        uint256 chainGasAmount
     );
 
     // This test checks the successful relaying of a destination bridge
@@ -1219,7 +1284,9 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeDepositClaimed(bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount);
+    event BridgeDepositClaimed(
+        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount
+    );
 
     function test_successfulClaimOriginTokens() public {
         setUpRoles();
