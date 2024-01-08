@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface UseBridgeTxStatusProps {
-  synapseSDK: any
   originChainId: number
   destinationChainId: number
   originTxHash: string
@@ -20,10 +19,10 @@ export const useBridgeTxStatus = ({
   kappa,
   checkStatus = false,
   currentTime,
-}: UseBridgeTxStatusProps) => {
+}: UseBridgeTxStatusProps): [boolean, string] => {
   const { synapseSDK } = useSynapseContext()
   const [isComplete, setIsComplete] = useState<boolean>(false)
-  const [fetchedKappa, setFetchedKappa] = useState<string>(null)
+  const [fetchedKappa, setFetchedKappa] = useState<string>(kappa ?? null)
 
   const getKappa = async (): Promise<string> => {
     if (!synapseSDK) return null
@@ -54,6 +53,7 @@ export const useBridgeTxStatus = ({
         bridgeModuleName,
         kappa
       )
+
       return status
     } catch (error) {
       console.error('Error in getBridgeTxStatus:', error)
@@ -65,28 +65,26 @@ export const useBridgeTxStatus = ({
     if (!checkStatus) return
     if (isComplete) return
     ;(async () => {
-      let _kappa
-
-      if (!kappa) {
-        console.log('fetching kappa')
-        _kappa = await getKappa()
+      if (fetchedKappa === null) {
+        let _kappa = await getKappa()
         setFetchedKappa(_kappa)
-      } else {
-        _kappa = kappa
       }
 
-      console.log('fetching tx status')
-      const txStatus = await getBridgeTxStatus(
-        destinationChainId,
-        bridgeModuleName,
-        _kappa
-      )
+      if (fetchedKappa) {
+        const txStatus = await getBridgeTxStatus(
+          destinationChainId,
+          bridgeModuleName,
+          fetchedKappa
+        )
 
-      if (txStatus !== null) {
-        setIsComplete(txStatus)
+        if (txStatus !== null && txStatus === true && fetchedKappa !== null) {
+          setIsComplete(true)
+        } else {
+          setIsComplete(false)
+        }
       }
     })()
-  }, [currentTime, checkStatus])
+  }, [currentTime, checkStatus, fetchedKappa])
 
   return [isComplete, fetchedKappa]
 }

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import _ from 'lodash'
+import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { _Transaction } from './_Transaction'
 import { getTimeMinutesFromNow } from '@/utils/time'
+import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -11,12 +12,9 @@ export const _Transactions = ({
 }: {
   connectedAddress: string
 }) => {
-  const { synapseSDK } = useSynapseContext()
-  const transactions = use_TransactionsState()
+  const { transactions } = use_TransactionsState()
 
-  const transactionsArray: _TransactionDetails[] = Object.values(transactions)
-
-  const hasTransactions: boolean = transactionsArray.length > 0
+  const hasTransactions: boolean = checkTransactionsExist(transactions)
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesFromNow(0)
@@ -35,11 +33,12 @@ export const _Transactions = ({
   }, [])
 
   if (hasTransactions) {
+    const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
     return (
-      <div className="mt-3">
-        {transactionsArray.map((tx: _TransactionDetails) => (
+      <div className="flex flex-col mt-3">
+        {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
-            synapseSDK={synapseSDK}
+            key={tx.timestamp}
             connectedAddress={connectedAddress}
             originValue={Number(tx.originValue)}
             originChain={tx.originChain}
@@ -52,7 +51,7 @@ export const _Transactions = ({
             kappa={tx?.kappa}
             timestamp={tx.timestamp}
             currentTime={currentTime}
-            isComplete={tx.isComplete}
+            isStoredComplete={tx.isComplete}
           />
         ))}
       </div>
