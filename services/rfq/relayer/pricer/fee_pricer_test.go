@@ -139,3 +139,67 @@ func (s *PricerSuite) TestGetGasPrice() {
 		return expectedGasPrice.String() == gasPrice.String()
 	})
 }
+
+func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
+	// Override the fixed fee multiplier to greater than 1.
+	s.config.FeePricer.FixedFeeMultiplier = 2
+
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	clientOrigin := new(clientMocks.EVM)
+	clientDestination := new(clientMocks.EVM)
+	headerOrigin := &types.Header{BaseFee: big.NewInt(100_000_000_000)}      // 100 gwei
+	headerDestination := &types.Header{BaseFee: big.NewInt(500_000_000_000)} // 500 gwei
+	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerDestination, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the total fee.
+	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC")
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 200_500_000.
+	expectedFee := big.NewInt(200_500_000) // 200.50 usd
+	s.Equal(expectedFee, fee)
+
+	// Override the fixed fee multiplier to less than 1; should default to 1.
+	s.config.FeePricer.FixedFeeMultiplier = -1
+
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerDestination, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
+	feePricer = pricer.NewFeePricer(s.config, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the total fee.
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC")
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
+	expectedFee = big.NewInt(100_250_000) // 100.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Reset the fixed fee multiplier to zero; should default to 1
+	s.config.FeePricer.FixedFeeMultiplier = 0
+
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerDestination, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
+	feePricer = pricer.NewFeePricer(s.config, clientFetcher)
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the total fee.
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC")
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
+	expectedFee = big.NewInt(100_250_000) // 100.25 usd
+	s.Equal(expectedFee, fee)
+}
