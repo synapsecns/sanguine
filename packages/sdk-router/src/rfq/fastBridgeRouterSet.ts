@@ -97,6 +97,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         quote,
         originQuery,
         // Apply quote to the proceeds of the origin swap
+        // TODO: handle optional gas airdrop pricing
         destAmountOut: applyQuote(quote, originQuery.minAmountOut),
       }))
       .filter(({ destAmountOut }) => destAmountOut.gt(0))
@@ -109,6 +110,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         },
         originQuery,
         // On-chain swaps are not supported for RFQ tokens
+        // TODO: signal optional gas airdrop
         destQuery: createNoSwapQuery(tokenOut, destAmountOut),
         bridgeModuleName: this.bridgeModuleName,
       }))
