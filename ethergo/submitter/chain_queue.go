@@ -3,6 +3,11 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sort"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3/module/eth"
@@ -14,10 +19,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"sort"
-	"sync"
-	"time"
 )
 
 // chainQueue is a single use queue for a single chain.
@@ -85,7 +86,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 		cq.bumpTX(gCtx, tx)
 	}
-    cq.updateOldTxStatuses(gCtx)
+	cq.updateOldTxStatuses(gCtx)
 
 	err = cq.g.Wait()
 	if err != nil {
@@ -209,9 +210,10 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx)...))
+		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx, ogTx.UUID)...))
 
 		c.addToReprocessQueue(db.TX{
+			UUID:        ogTx.UUID,
 			Transaction: tx,
 			Status:      db.Stored,
 		})

@@ -115,24 +115,18 @@ const supportList: FooterDataProps[] = [
 export function PageFooter() {
   return (
     <footer>
-      <div className="max-w-md px-6 pt-4 pb-6 mx-auto md:max-w-5xl md:px-8">
-        <Grid
-          cols={{ xs: 2, sm: 2, md: 4, lg: 6 }}
-          gap={4}
-          className="px-8 py-6 md:py-12"
-        >
-          <div className="items-center hidden col-span-3 lg:flex">
-            <SynapseTitleLogo showText={true} />
+      <div className="p-8 flex flex-wrap gap-8 justify-between max-w-4xl m-auto">
+          <SynapseTitleLogo showText={true} />
+          <div className="flex flex-wrap gap-8">
+            <FooterBlock elements={functionsList} />
+            <FooterBlock elements={developersList} />
+            <FooterBlock elements={supportList} />
           </div>
-          <FooterBlock elements={functionsList} />
-          <FooterBlock elements={developersList} />
-          <FooterBlock elements={supportList} />
-        </Grid>
       </div>
-      <div className="text-white pb-[70px] flex direction-row justify-center align-middle">
-        <div className="mr-2 text-opacity-50 text-secondaryTextColor">
+      <div className="text-secondaryTextColor pb-12 flex gap-2 justify-center">
+        <div className="text-opacity-50 text-secondaryTextColor">
           <a
-            className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
+            className="duration-75 hover:text-white transform-gpu hover:transition-all"
             href={TERMS_OF_SERVICE_PATH}
             target="_blank"
             rel="noreferrer"
@@ -141,9 +135,9 @@ export function PageFooter() {
           </a>
         </div>
         <p>｜</p>
-        <div className="ml-2 text-opacity-50 text-secondaryTextColor">
+        <div className="text-opacity-50 text-secondaryTextColor">
           <a
-            className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
+            className="duration-75 hover:text-white transform-gpu hover:transition-all"
             href={PRIVACY_POLICY_PATH}
             target="_blank"
             rel="noreferrer"

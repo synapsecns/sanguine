@@ -51,7 +51,8 @@ func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.S
 	useMetrics := !isCI
 	metricsHandler := metrics.Null
 
-	if useMetrics {
+	// TODO: make this optional everywhere before merging
+	if useMetrics && false {
 		localmetrics.SetupTestJaeger(ctx, tb)
 		metricsHandler = metrics.Jaeger
 	}

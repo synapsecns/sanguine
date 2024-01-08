@@ -1,0 +1,8 @@
+database:
+  type: 'sqlite'
+  dsn: '/tmp/server.db'
+omnirpc_url: 'https://rpc.interop-staging.com'
+bridges:
+  421614: '0x58dBd847C0CBFc9a4B9942847124BFC3589c70aA'
+  11155111: '0x6EBdE77d635496Dea99364E0DA18ad8A1AFA9F27'
+port: '8080'

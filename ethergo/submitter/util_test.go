@@ -3,11 +3,18 @@ package submitter_test
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"math/rand"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -17,11 +24,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
-	"math/big"
-	"math/rand"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestCopyTransactOpts(t *testing.T) {
@@ -137,7 +139,7 @@ func (s *SubmitterSuite) TestTxToAttributesNullFields() {
 }
 
 func (s *SubmitterSuite) checkEmptyTx(rawTx *types.Transaction) {
-	tx := makeAttrMap(rawTx)
+	tx := makeAttrMap(rawTx, uuid.New().String())
 
 	s.Require().Equal(tx[submitter.HashAttr].AsString(), rawTx.Hash().Hex())
 	s.Require().Equal(tx[submitter.NonceAttr].AsInt64(), int64(0))
@@ -157,7 +159,7 @@ func (s *SubmitterSuite) checkEmptyTx(rawTx *types.Transaction) {
 
 func (s *SubmitterSuite) TestTxToAttributesLegacyTX() {
 	mockTX := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.LegacyTxType)[0]
-	mapAttr := makeAttrMap(mockTX)
+	mapAttr := makeAttrMap(mockTX, uuid.New().String())
 
 	s.Require().Equal(mapAttr[submitter.HashAttr].AsString(), mockTX.Hash().String())
 	s.Require().Equal(mapAttr[submitter.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
@@ -176,7 +178,7 @@ func (s *SubmitterSuite) TestTxToAttributesLegacyTX() {
 
 func (s *SubmitterSuite) TestTxToAttributesDynamicTX() {
 	mockTX := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.DynamicFeeTxType)[0]
-	mapAttr := makeAttrMap(mockTX)
+	mapAttr := makeAttrMap(mockTX, uuid.New().String())
 
 	s.Require().Equal(mapAttr[submitter.HashAttr].AsString(), mockTX.Hash().String())
 	s.Require().Equal(mapAttr[submitter.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
@@ -275,9 +277,9 @@ func (s *SubmitterSuite) TestGroupTxesByNonce() {
 	}
 }
 
-func makeAttrMap(tx *types.Transaction) map[string]attribute.Value {
+func makeAttrMap(tx *types.Transaction, UUID string) map[string]attribute.Value {
 	mapAttr := make(map[string]attribute.Value)
-	attr := submitter.TxToAttributes(tx)
+	attr := submitter.TxToAttributes(tx, UUID)
 	for _, a := range attr {
 		mapAttr[string(a.Key)] = a.Value
 	}

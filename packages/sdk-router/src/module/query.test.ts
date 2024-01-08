@@ -10,6 +10,7 @@ import {
   modifyDeadline,
   applySlippage,
   applySlippageInBips,
+  createNoSwapQuery,
 } from './query'
 
 describe('#query', () => {
@@ -378,6 +379,17 @@ describe('#query', () => {
       expect(() => applySlippageInBips(routerQuery, 10001)).toThrow(
         'Slippage cannot be greater than 1'
       )
+    })
+  })
+
+  it('createNoSwapQuery', () => {
+    const query = createNoSwapQuery('1', BigNumber.from(2))
+    expect(query).toEqual({
+      routerAdapter: '0x0000000000000000000000000000000000000000',
+      tokenOut: '1',
+      minAmountOut: BigNumber.from(2),
+      deadline: BigNumber.from(0),
+      rawParams: '0x',
     })
   })
 })
