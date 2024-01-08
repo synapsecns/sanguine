@@ -36,7 +36,7 @@ export const _Transactions = ({
     const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
     return (
       <div className="flex flex-col mt-3">
-        {sortedTransactions.map((tx: _TransactionDetails) => (
+        {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
             connectedAddress={connectedAddress}
