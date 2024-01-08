@@ -62,6 +62,11 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 
 const unspecifiedTxHash = "Must specify 'hash' (corresponding to origin tx)"
 
+// GetHealth returns a successful response to signify the API is up and running.
+func (h *Handler) GetHealth(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 // GetQuoteRequestStatusByTxHash gets the status of a quote request, given an origin tx hash.
 func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 	txHashStr := c.Query("hash")

@@ -83,6 +83,7 @@ func NewRelayerAPI(
 }
 
 const (
+	getHealthRoute              = "/health"
 	getQuoteStatusByTxHashRoute = "/status"
 	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
 	putRetryRoute               = "/retry"
@@ -102,6 +103,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	quotesPut.PUT("", h.PutTxRetry)
 
 	// GET routes without the AuthMiddleware
+	engine.GET(getHealthRoute, h.GetHealth)
 	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 
