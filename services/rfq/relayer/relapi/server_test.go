@@ -23,10 +23,15 @@ func (c *RelayerServerSuite) TestNewAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startAPIServer()
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status", c.port), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/health", c.port), nil)
 	c.Require().NoError(err)
-	_, err = client.Do(req)
+	resp, err := client.Do(req)
 	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
+	c.Equal(http.StatusOK, resp.StatusCode)
 	c.GetTestContext().Done()
 }
 
