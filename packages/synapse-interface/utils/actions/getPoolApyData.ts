@@ -78,15 +78,15 @@ export const getPoolApyData = async (
     ],
   })
 
-  // console.log(`data`, data)
-
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
   const poolInfoResult: PoolInfoResult = data[2].result
   const lpTokenBalanceResult: bigint = data[3].result ?? 0n
   const lpTokenSupplyResult: bigint = data[4].result ?? 0n
 
-  const synPriceData = prices?.synPrices ?? (await getSynPrices())
+  const synPriceData = prices?.synPrices?.synPrice
+    ? prices.synPrices
+    : await getSynPrices()
   const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
 
   const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n

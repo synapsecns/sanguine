@@ -3,6 +3,7 @@ import { Address, getAddress } from 'viem'
 import { EXCLUDED_ADDRESSES } from '@/constants/blacklist'
 
 export const isBlacklisted = (address: Address | string) => {
+  if (!address) return
   try {
     const checksummedAddress = getAddress(address)
 
