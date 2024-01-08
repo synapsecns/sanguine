@@ -85,6 +85,8 @@ type RequestForQuote struct {
 	// OriginAmount is the origin amount stored for sorting.
 	// This is not the source of truth, but is approximate
 	OriginAmount decimal.Decimal `gorm:"index"`
+	// OriginTxHash is the origin tx hash
+	OriginTxHash string
 	// DestAmountOriginal is the original amount used for precision
 	DestAmountOriginal string
 	// DestAmountOriginal is the original destination amount
@@ -118,6 +120,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		DestRecipient:        request.Transaction.DestRecipient.String(),
 		OriginToken:          request.Transaction.OriginToken.String(),
 		OriginTokenDecimals:  request.OriginTokenDecimals,
+		OriginTxHash:         request.OriginTxHash.String(),
 		RawRequest:           hexutil.Encode(request.RawRequest),
 		SendChainGas:         request.Transaction.SendChainGas,
 		DestTokenDecimals:    request.DestTokenDecimals,
@@ -172,8 +175,9 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			Deadline:   big.NewInt(r.Deadline.Unix()),
 			Nonce:      big.NewInt(int64(r.OriginNonce)),
 		},
-		Status:     r.Status,
-		DestTxHash: common.HexToHash(r.DestTxHash),
+		Status:       r.Status,
+		OriginTxHash: common.HexToHash(r.OriginTxHash),
+		DestTxHash:   common.HexToHash(r.DestTxHash),
 	}, nil
 }
 
