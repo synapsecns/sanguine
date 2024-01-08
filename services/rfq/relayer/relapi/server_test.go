@@ -124,6 +124,40 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.GetTestContext().Done()
 }
 
+func (c *RelayerServerSuite) TestPutTxRetry() {
+	c.startAPIServer()
+
+	// Insert quote request to db
+	quoteRequest := getTestQuoteRequest(reldb.Seen)
+	err := c.database.StoreQuoteRequest(c.GetTestContext(), quoteRequest)
+	c.Require().NoError(err)
+
+	// Send a retry request
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodPut, fmt.Sprintf("http://localhost:%d/retry?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
+	c.Require().NoError(err)
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Compare to expected result
+	var result relapi.PutTxRetryResponse
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult := relapi.PutTxRetryResponse{
+		TxID:      hexutil.Encode(quoteRequest.TransactionID[:]),
+		ChainID:   quoteRequest.Transaction.DestChainId,
+		Nonce:     uint64(quoteRequest.Transaction.Nonce.Int64()),
+		GasAmount: "0",
+	}
+	c.Equal(expectedResult, result)
+	c.GetTestContext().Done()
+}
+
 // startAPIServer starts the API server and waits for it to initialize.
 func (c *RelayerServerSuite) startAPIServer() {
 	go func() {
