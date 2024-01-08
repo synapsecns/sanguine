@@ -300,7 +300,7 @@ const PortfolioAssetActionButton = ({
   `
   return (
     <React.Fragment>
-      {isApproved ? (
+      {true || isApproved ? (
         <button
           data-test-id="portfolio-asset-action-button"
           className={`
