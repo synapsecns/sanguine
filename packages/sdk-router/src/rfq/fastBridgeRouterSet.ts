@@ -170,9 +170,22 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     amountIn: BigintIsh,
     allQuotes: FastBridgeQuote[]
   ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
-    // TODO: implement
-    console.log(originChainId, tokenIn, amountIn, allQuotes)
-    return []
+    // Get queries for swaps on the origin chain into the "RFQ-supported token"
+    const originQueries = await this.getFastBridgeRouter(
+      originChainId
+    ).getOriginAmountOut(
+      tokenIn,
+      allQuotes.map((quote) => quote.ticker.originToken.token),
+      amountIn
+    )
+    // Note: allQuotes.length === originQueries.length
+    // Zip the quotes and queries together, filter out "no path found" queries
+    return allQuotes
+      .map((quote, index) => ({
+        quote,
+        originQuery: originQueries[index],
+      }))
+      .filter(({ originQuery }) => originQuery.minAmountOut.gt(0))
   }
 
   /**
@@ -203,5 +216,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
           quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
       )
+      .filter((quote) => {
+        const age = Date.now() - quote.updatedAt
+        return 0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
+      })
   }
 }

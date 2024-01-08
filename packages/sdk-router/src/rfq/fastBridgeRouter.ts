@@ -11,7 +11,12 @@ import {
   FastBridge as FastBridgeContract,
   IFastBridge,
 } from '../typechain/FastBridge'
-import { SynapseModule, Query, narrowToCCTPRouterQuery } from '../module'
+import {
+  SynapseModule,
+  Query,
+  narrowToCCTPRouterQuery,
+  reduceToQuery,
+} from '../module'
 import { BigintIsh } from '../constants'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
@@ -112,5 +117,20 @@ export class FastBridgeRouter implements SynapseModule {
       ) as FastBridgeContract
     }
     return this.fastBridgeContractCache
+  }
+
+  // ══════════════════════════════════════════ FAST BRIDGE ROUTER ONLY ══════════════════════════════════════════════
+
+  public async getOriginAmountOut(
+    tokenIn: string,
+    rfqTokens: string[],
+    amountIn: BigintIsh
+  ): Promise<Query[]> {
+    const queries = await this.routerContract.getOriginAmountOut(
+      tokenIn,
+      rfqTokens,
+      amountIn
+    )
+    return queries.map(reduceToQuery)
   }
 }
