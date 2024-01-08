@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const BANNER_VERSION = '3'
+const BANNER_VERSION = '4'
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -47,14 +47,14 @@ export const Banner = () => {
         <div className="m-1 font-thin">
           <div className="container mx-auto">
             <p className="text-md">
-              {/* TODO: replace w/ tweetlink directly */}
+              Get fee rebates on all transactions to Arbitrum now through Feb
+              29th.
               <a
-                href={
-                  'https://twitter.com/SynapseProtocol/status/1726659540551352387'
-                }
+                className="underline text-[#99e6ff] ml-2"
+                href={'https://twitter.com/SynapseProtocol/'}
                 target={'_blank'}
               >
-                Synapse now supports Solana at solana.synapseprotocol.com
+                Full details
               </a>
             </p>
           </div>
