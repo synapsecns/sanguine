@@ -18,7 +18,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
-	github.com/go-resty/resty/v2 v2.10.0
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1
