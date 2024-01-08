@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { _Transaction } from './_Transaction'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
@@ -13,7 +12,6 @@ export const _Transactions = ({
 }: {
   connectedAddress: string
 }) => {
-  const { synapseSDK } = useSynapseContext()
   const { transactions } = use_TransactionsState()
 
   const hasTransactions: boolean = checkTransactionsExist(transactions)
@@ -41,7 +39,6 @@ export const _Transactions = ({
         {sortedTransactions.map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
-            synapseSDK={synapseSDK}
             connectedAddress={connectedAddress}
             originValue={Number(tx.originValue)}
             originChain={tx.originChain}

@@ -38,7 +38,6 @@ const TimeRemaining = ({
 }
 
 interface _TransactionProps {
-  synapseSDK: any
   connectedAddress: string
   originValue: number
   originChain: Chain
@@ -56,7 +55,6 @@ interface _TransactionProps {
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
 export const _Transaction = ({
-  synapseSDK,
   connectedAddress,
   originValue,
   originChain,
