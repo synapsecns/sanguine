@@ -32,4 +32,6 @@ type IConfig interface {
 	GetTokens(chainID uint32) (map[string]TokenConfig, error)
 	// GetTokenName returns the token name for the given chain and address.
 	GetTokenName(chain uint32, addr string) (string, error)
+	// GetFixedFeeMultiplier returns the fixed fee multiplier.
+	GetFixedFeeMultiplier() float64
 }

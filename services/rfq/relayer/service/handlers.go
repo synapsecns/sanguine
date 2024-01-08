@@ -81,6 +81,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		Sender:              req.Sender,
 		Transaction:         bridgeTx,
 		Status:              reldb.Seen,
+		OriginTxHash:        req.Raw.TxHash,
 	})
 	if err != nil {
 		return fmt.Errorf("could not get db: %w", err)
