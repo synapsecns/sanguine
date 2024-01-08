@@ -160,22 +160,22 @@ export const _Transaction = ({
           />
           <TransactionArrow className="bg-tint fill-surface" />
         </div>
-        <TransactionPayloadDetail
-          chain={destinationChain}
-          token={destinationToken}
-          tokenAmount={null}
-          isOrigin={false}
-        />
-        <div>
-          <div className="text-xs">
+        <div className="flex items-center">
+          <TransactionPayloadDetail
+            chain={destinationChain}
+            token={destinationToken}
+            tokenAmount={null}
+            isOrigin={false}
+          />
+          <div className="mt-1 text-xs">
             {new Date(timestamp * 1000).toLocaleString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
               second: '2-digit',
               hour12: true,
             })}
+            {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
           </div>
-          {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
         </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
