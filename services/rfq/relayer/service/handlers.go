@@ -101,6 +101,8 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, requ
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
+		// shouldn't process from here on out
+		return nil
 	}
 	// get destination commitable balancs
 	commitableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
