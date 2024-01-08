@@ -38,3 +38,13 @@ export const MEDIAN_TIME_CCTP = {
   [SupportedChainId.AVALANCHE]: 30,
   [SupportedChainId.POLYGON]: 480,
 }
+
+/**
+ * Median time (in seconds) for a SynapseRFQ transaction to be completed,
+ * when the transaction is sent from a given chain.
+ * TODO: Update this value once we have a better estimate.
+ */
+export const MEDIAN_TIME_RFQ = {
+  [SupportedChainId.OPTIMISM]: 30,
+  [SupportedChainId.ARBITRUM]: 30,
+}

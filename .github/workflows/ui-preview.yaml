@@ -34,7 +34,6 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
-
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
   # for details on how to use, please see ui-preview.md

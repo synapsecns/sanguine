@@ -56,10 +56,14 @@ export const withdraw = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Pool Withdrawal] Attempt`, {
-      poolName: pool?.name,
-      inputAmount,
-    })
+    segmentAnalyticsEvent(
+      `[Pool Withdrawal] Attempt`,
+      {
+        poolName: pool?.name,
+        inputAmount,
+      },
+      true
+    )
     if (withdrawType === ALL) {
       spendTransaction = await swapPoolRemoveLiquidity({
         chainId,

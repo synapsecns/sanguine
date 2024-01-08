@@ -272,15 +272,19 @@ const StateManagedSwap = () => {
       `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
       { id: 'swap-in-progress-popup', duration: Infinity }
     )
-    segmentAnalyticsEvent(`[Swap] initiates swap`, {
-      address,
-      chainId: swapChainId,
-      swapFromToken: swapFromToken.symbol,
-      swapToToken: swapToToken.symbol,
-      inputAmount: swapFromValue,
-      expectedReceivedAmount: swapQuote.outputAmountString,
-      exchangeRate: swapQuote.exchangeRate,
-    })
+    segmentAnalyticsEvent(
+      `[Swap] initiates swap`,
+      {
+        address,
+        chainId: swapChainId,
+        swapFromToken: swapFromToken.symbol,
+        swapToToken: swapToToken.symbol,
+        inputAmount: swapFromValue,
+        expectedReceivedAmount: swapQuote.outputAmountString,
+        exchangeRate: swapQuote.exchangeRate,
+      },
+      true
+    )
     try {
       const wallet = await getWalletClient({
         chainId: swapChainId,

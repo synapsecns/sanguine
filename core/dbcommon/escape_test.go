@@ -1,6 +1,7 @@
-package dbcommon
+package dbcommon_test
 
 import (
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"testing"
 )
 
@@ -27,7 +28,7 @@ func TestMysqlRealEscapeString(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := MysqlRealEscapeString(tt.input)
+		result := dbcommon.MysqlRealEscapeString(tt.input)
 		if result != tt.expect {
 			t.Errorf("For input '%s', expected '%s' but got '%s'", tt.input, tt.expect, result)
 		}
