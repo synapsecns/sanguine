@@ -8,7 +8,7 @@ require (
 	github.com/dubonzi/otelresty v1.2.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-resty/resty/v2 v2.10.0
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jellydator/ttlcache/v3 v3.1.1
 	github.com/jftuga/ellipsis v1.0.0
