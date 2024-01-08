@@ -1,3 +1,3 @@
-export * from './fastBridge'
-export * from './fastBridgeSet'
+export * from './fastBridgeRouter'
+export * from './fastBridgeRouterSet'
 export * from './ticker'
