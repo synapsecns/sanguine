@@ -54,7 +54,7 @@ export const _Transactions = ({
             kappa={tx?.kappa}
             timestamp={tx.timestamp}
             currentTime={currentTime}
-            // isComplete={tx.isComplete}
+            isStoredComplete={tx.isComplete}
           />
         ))}
       </div>

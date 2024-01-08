@@ -51,7 +51,7 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  // isComplete: boolean
+  isStoredComplete: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -69,8 +69,8 @@ export const _Transaction = ({
   timestamp,
   currentTime,
   kappa,
-}: // isComplete,
-_TransactionProps) => {
+  isStoredComplete,
+}: _TransactionProps) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
 
@@ -109,9 +109,12 @@ _TransactionProps) => {
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: isEstimatedTimeReached,
+    checkStatus: !isStoredComplete || isEstimatedTimeReached,
     currentTime: currentTime,
   })
+
+  /** Check if store already marked tx as complete, otherwise check hook status */
+  const isTxCompleted = isStoredComplete ?? isTxComplete
 
   /** Update tx kappa when available */
   useEffect(() => {
@@ -179,14 +182,14 @@ _TransactionProps) => {
         </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isTxComplete ? (
+          {isTxCompleted ? (
             <TransactionStatus string="Complete" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
-              isComplete={isTxComplete as boolean}
+              isComplete={isTxCompleted as boolean}
               remainingTime={remainingTimeInMinutes}
               isDelayed={isEstimatedTimeReached}
             />
