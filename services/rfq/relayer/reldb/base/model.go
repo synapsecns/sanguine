@@ -61,7 +61,8 @@ type RequestForQuote struct {
 	// CreatedAt is the creation time
 	CreatedAt time.Time
 	// UpdatedAt is the update time
-	UpdatedAt     time.Time
+	UpdatedAt time.Time
+	// TransactionID is the transaction id of the event
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// OriginChainID is the origin chain for the transactions
 	OriginChainID uint32
@@ -88,8 +89,10 @@ type RequestForQuote struct {
 	DestAmountOriginal string
 	// DestAmountOriginal is the original destination amount
 	DestAmount decimal.Decimal `gorm:"index"`
+	// DestTxHash is the destination tx hash
 	DestTxHash string
-	Deadline   time.Time `gorm:"index"`
+	// Deadline is the deadline for the transaction
+	Deadline time.Time `gorm:"index"`
 	// OriginNonce is the nonce on the origin chain in the app.
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
