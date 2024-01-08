@@ -3,12 +3,21 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 
+import fastBridgeAbi from '../abi/FastBridge.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
 import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
+import {
+  FastBridge as FastBridgeContract,
+  IFastBridge,
+} from '../typechain/FastBridge'
 import { SynapseModule, Query } from '../module'
 import { BigintIsh } from '../constants'
 
+// Define type alias
+export type BridgeParams = IFastBridge.BridgeParamsStruct
+
 export class FastBridgeRouter implements SynapseModule {
+  static fastBridgeInterface = new Interface(fastBridgeAbi)
   static fastBridgeRouterInterface = new Interface(fastBridgeRouterAbi)
 
   public readonly address: string
@@ -16,6 +25,8 @@ export class FastBridgeRouter implements SynapseModule {
   public readonly provider: Provider
 
   private readonly routerContract: FastBridgeRouterContract
+  private fastBridgeContractCache: FastBridgeContract | undefined
+
   // All possible events emitted by the FastBridge contract in the origin transaction (in alphabetical order)
   private readonly originEvents = ['BridgeRequested']
 
@@ -24,6 +35,7 @@ export class FastBridgeRouter implements SynapseModule {
     invariant(provider, 'PROVIDER_UNDEFINED')
     invariant(address, 'ADDRESS_UNDEFINED')
     invariant(FastBridgeRouter.fastBridgeRouterInterface, 'INTERFACE_UNDEFINED')
+    invariant(FastBridgeRouter.fastBridgeInterface, 'INTERFACE_UNDEFINED')
     this.chainId = chainId
     this.provider = provider
     this.address = address
@@ -66,5 +78,18 @@ export class FastBridgeRouter implements SynapseModule {
     // TODO: implement
     console.log(synapseTxId)
     return null as any
+  }
+
+  public async getFastBridgeContract(): Promise<FastBridgeContract> {
+    // Populate the cache if necessary
+    if (!this.fastBridgeContractCache) {
+      const address = await this.routerContract.fastBridge()
+      this.fastBridgeContractCache = new Contract(
+        address,
+        FastBridgeRouter.fastBridgeInterface,
+        this.provider
+      ) as FastBridgeContract
+    }
+    return this.fastBridgeContractCache
   }
 }
