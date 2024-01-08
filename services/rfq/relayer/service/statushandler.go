@@ -114,7 +114,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 		// 5 minute barrier to prove the transaction
-		almostNow := time.Now().Add(-5 * time.Minute)
+		almostNow := time.Now().Add(-10 * time.Minute)
 
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
