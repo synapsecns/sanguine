@@ -57,6 +57,9 @@ flags:
   cctp-relayer:
     paths:
       - services/cctp-relayer/
+  rfq:
+    paths:
+      - services/rfq/
   explorer:
     paths:
       - services/explorer/

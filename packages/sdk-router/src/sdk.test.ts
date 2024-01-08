@@ -34,6 +34,13 @@ import {
 import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './module'
 import * as operations from './operations'
 
+// Override fetch to exclude RFQ from tests
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+  })
+) as any
+
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
   expect(feeConfig.bridgeFee).toBeGreaterThan(0)
@@ -133,6 +140,10 @@ describe('SynapseSDK', () => {
 
   const arbProvider: Provider = new providers.JsonRpcProvider(
     getTestProviderUrl(SupportedChainId.ARBITRUM)
+  )
+
+  const opProvider: Provider = new providers.JsonRpcProvider(
+    getTestProviderUrl(SupportedChainId.OPTIMISM)
   )
 
   const avaxProvider: Provider = new providers.JsonRpcProvider(
@@ -808,8 +819,12 @@ describe('SynapseSDK', () => {
 
   describe('Bridge Tx Status', () => {
     const synapse = new SynapseSDK(
-      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
-      [arbProvider, ethProvider]
+      [
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
+        SupportedChainId.OPTIMISM,
+      ],
+      [arbProvider, ethProvider, opProvider]
     )
 
     // https://etherscan.io/tx/0xe3f0f0c1d139c48730492c900f9978449d70c0939c654d5abbfd6b191f9c7b3d
@@ -846,6 +861,24 @@ describe('SynapseSDK', () => {
         '0x2a6d04ba5a48331454f00d136b3666869d03f004395fea25d97d42715c119096',
       synapseTxId:
         '0xed98b02f712c940d3b37a1aa9005a5986ecefa5cdbb4505118a22ae65d4903af',
+    }
+
+    // https://optimistic.etherscan.io/tx/0x1fa4c4b7a10d55e9ba833a15a1e6e57cb35cc0067190576193f7a77d4e71fbee
+    // https://arbiscan.io/tx/0x53a8e543bc0e3f0c1cae509e50d9435c3b62073eecf1aee7ece63c3be285db30
+    const rfqOpToArbTx = {
+      txHash:
+        '0x1fa4c4b7a10d55e9ba833a15a1e6e57cb35cc0067190576193f7a77d4e71fbee',
+      synapseTxId:
+        '0xd0740c9ce06c2044fab4fd8519f7f20c9768431059daad3f965f6fec8d54a6c3',
+    }
+
+    // https://arbiscan.io/tx/0xf0ebc85b3d83123c0d70aec1f1b5b525fa54140f5d2277154364ddede56bd69f
+    // https://optimistic.etherscan.io/tx/0xb96f8f3dbb886bc9eb7e3e43ba4aef863814299b71e133f8f447dba5d020a8b6
+    const rfqArbToOpTx = {
+      txHash:
+        '0xf0ebc85b3d83123c0d70aec1f1b5b525fa54140f5d2277154364ddede56bd69f',
+      synapseTxId:
+        '0xf6524399bb7332a55377ffcf816f396759d5c753b2fa9137d5eca2db59741b2f',
     }
 
     describe('getSynapseTxId', () => {
@@ -972,6 +1005,69 @@ describe('SynapseSDK', () => {
         })
       })
 
+      describe('SynapseRFQ', () => {
+        const arbSynRFQ = '0xA9EBFCb6DCD416FE975D5aB862717B329407f4F7'
+        const events = 'BridgeRequested'
+
+        it('OP -> ARB', async () => {
+          const synapseTxId = await synapse.getSynapseTxId(
+            SupportedChainId.OPTIMISM,
+            'SynapseRFQ',
+            rfqOpToArbTx.txHash
+          )
+          expect(synapseTxId).toEqual(rfqOpToArbTx.synapseTxId)
+        })
+
+        it('ARB -> OP', async () => {
+          const synapseTxId = await synapse.getSynapseTxId(
+            SupportedChainId.ARBITRUM,
+            'SynapseRFQ',
+            rfqArbToOpTx.txHash
+          )
+          expect(synapseTxId).toEqual(rfqArbToOpTx.synapseTxId)
+        })
+
+        it('Throws when given a txHash that does not exist', async () => {
+          // Use txHash for another chain
+          await expect(
+            synapse.getSynapseTxId(
+              SupportedChainId.OPTIMISM,
+              'SynapseRFQ',
+              rfqArbToOpTx.txHash
+            )
+          ).rejects.toThrow('Failed to get transaction receipt')
+        })
+
+        it('Throws when origin tx does not refer to SynapseRFQ', async () => {
+          const errorMsg =
+            `Contract ${arbSynRFQ} in transaction ${bridgeArbToEthTx.txHash}` +
+            ` did not emit any of the expected events: ${events}`
+          await expect(
+            synapse.getSynapseTxId(
+              SupportedChainId.ARBITRUM,
+              'SynapseRFQ',
+              bridgeArbToEthTx.txHash
+            )
+          ).rejects.toThrow(errorMsg)
+        })
+
+        it('Throws when given a destination tx', async () => {
+          // Destination tx hash for OP -> ARB
+          const txHash =
+            '0x53a8e543bc0e3f0c1cae509e50d9435c3b62073eecf1aee7ece63c3be285db30'
+          const errorMsg =
+            `Contract ${arbSynRFQ} in transaction ${txHash}` +
+            ` did not emit any of the expected events: ${events}`
+          await expect(
+            synapse.getSynapseTxId(
+              SupportedChainId.ARBITRUM,
+              'SynapseRFQ',
+              txHash
+            )
+          ).rejects.toThrow(errorMsg)
+        })
+      })
+
       it('Throws when bridge module name is invalid', async () => {
         await expect(
           synapse.getSynapseTxId(
@@ -1059,6 +1155,46 @@ describe('SynapseSDK', () => {
             SupportedChainId.ETH,
             'SynapseCCTP',
             cctpEthToArbTx.synapseTxId
+          )
+          expect(txStatus).toBe(false)
+        })
+      })
+
+      describe('SynapseRFQ', () => {
+        it('OP -> ARB', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.ARBITRUM,
+            'SynapseRFQ',
+            rfqOpToArbTx.synapseTxId
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('ARB -> OP', async () => {
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.OPTIMISM,
+            'SynapseRFQ',
+            rfqArbToOpTx.synapseTxId
+          )
+          expect(txStatus).toBe(true)
+        })
+
+        it('Returns false when unknown synapseTxId', async () => {
+          // Using txHash instead of synapseTxId
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.OPTIMISM,
+            'SynapseRFQ',
+            rfqArbToOpTx.txHash
+          )
+          expect(txStatus).toBe(false)
+        })
+
+        it('Returns false when origin chain is used instead of destination', async () => {
+          // First argument should be destination chainId
+          const txStatus = await synapse.getBridgeTxStatus(
+            SupportedChainId.OPTIMISM,
+            'SynapseRFQ',
+            rfqOpToArbTx.synapseTxId
           )
           expect(txStatus).toBe(false)
         })
@@ -1420,6 +1556,11 @@ describe('SynapseSDK', () => {
       it('Returns correct set for SynapseCCTP', () => {
         const routerSet = operations.getModuleSet.call(synapse, 'SynapseCCTP')
         expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
+      })
+
+      it('Returns correct set for SynapseRFQ', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseRFQ')
+        expect(routerSet).toEqual(synapse.fastBridgeSet)
       })
 
       it('Throws when bridge module name is invalid', () => {

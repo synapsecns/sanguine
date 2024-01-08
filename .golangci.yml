@@ -125,3 +125,4 @@ issues:
         - cyclop
 
   exclude-use-default: false
+  new-from-rev: 86ee232f42c016c5859a3d948a88dde59af1bbc0

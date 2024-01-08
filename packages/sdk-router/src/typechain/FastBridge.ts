@@ -30,6 +30,7 @@ import type {
 export declare namespace IFastBridge {
   export type BridgeParamsStruct = {
     dstChainId: BigNumberish
+    sender: string
     to: string
     originToken: string
     destToken: string
@@ -44,12 +45,14 @@ export declare namespace IFastBridge {
     string,
     string,
     string,
+    string,
     BigNumber,
     BigNumber,
     boolean,
     BigNumber
   ] & {
     dstChainId: number
+    sender: string
     to: string
     originToken: string
     destToken: string
@@ -116,7 +119,7 @@ export interface FastBridgeInterface extends utils.Interface {
     'addGovernor(address)': FunctionFragment
     'addGuard(address)': FunctionFragment
     'addRelayer(address)': FunctionFragment
-    'bridge((uint32,address,address,address,uint256,uint256,bool,uint256))': FunctionFragment
+    'bridge((uint32,address,address,address,address,uint256,uint256,bool,uint256))': FunctionFragment
     'bridgeProofs(bytes32)': FunctionFragment
     'bridgeRelays(bytes32)': FunctionFragment
     'bridgeStatuses(bytes32)': FunctionFragment

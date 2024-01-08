@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
 	"testing"
@@ -53,4 +54,8 @@ type SimulatedTestBackend interface {
 	Signer() types.Signer
 	// ImpersonateAccount impersonates an account. This is only supported on the anvil backend backends.
 	ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error
+	// EVM is the evm client
+	client.EVM
+	// Store stores an account
+	Store(key *keystore.Key)
 }
