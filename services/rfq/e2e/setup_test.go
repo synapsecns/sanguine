@@ -189,6 +189,8 @@ func (i *IntegrationSuite) setupRelayer() {
 	wg.Wait()
 
 	// construct the config
+	relayerApiPort, err := freeport.GetFreePort()
+	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
 	cfg := relconfig.Config{
 		// generated ex-post facto
@@ -228,6 +230,15 @@ func (i *IntegrationSuite) setupRelayer() {
 		Signer: signerConfig.SignerConfig{
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
+		},
+		RelayerAPIURL: fmt.Sprintf("http://localhost:%d", relayerApiPort),
+		APIConfig: relconfig.APIConfig{
+			Database: relconfig.DatabaseConfig{
+				Type: dbcommon.Sqlite.String(),
+				DSN:  dsn,
+			},
+			OmniRPCURL: i.omniServer,
+			Port:       strconv.Itoa(relayerApiPort),
 		},
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
@@ -277,7 +288,6 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
-	var err error
 	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
 	go func() {

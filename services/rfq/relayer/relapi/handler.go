@@ -7,18 +7,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
 
 // Handler is the REST API handler.
 type Handler struct {
 	db     reldb.Service
-	chains map[uint32]*service.Chain
+	chains map[uint32]*chain.Chain
 }
 
 // NewHandler creates a new REST API handler.
-func NewHandler(db reldb.Service, chains map[uint32]*service.Chain) *Handler {
+func NewHandler(db reldb.Service, chains map[uint32]*chain.Chain) *Handler {
 	return &Handler{
 		db:     db, // Store the database connection in the handler
 		chains: chains,
@@ -110,7 +110,7 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 	}
 
 	// `quoteRequest == nil` case should be handled by the db query above
-	nonce, gasAmount, err := service.SubmitRelay(c, chain, *quoteRequest)
+	nonce, gasAmount, err := chain.SubmitRelay(c, *quoteRequest)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit relay: %s", err.Error())})
 		return

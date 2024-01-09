@@ -14,10 +14,10 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
 
 // RelayerAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -27,7 +27,7 @@ type RelayerAPIServer struct {
 	db      reldb.Service
 	engine  *gin.Engine
 	handler metrics.Handler
-	chains  map[uint32]*service.Chain
+	chains  map[uint32]*chain.Chain
 }
 
 // NewRelayerAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -53,7 +53,7 @@ func NewRelayerAPI(
 		return nil, fmt.Errorf("store is nil")
 	}
 
-	chains := make(map[uint32]*service.Chain)
+	chains := make(map[uint32]*chain.Chain)
 	for chainID, chainCfg := range cfg.Chains {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
@@ -63,7 +63,7 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[uint32(chainID)], err = service.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.Bridge), chainListener, submitter)
+		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.Bridge), chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}

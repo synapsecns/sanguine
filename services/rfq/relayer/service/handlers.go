@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 	"strings"
-
-	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -181,7 +178,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace
 	}
 
 	// TODO: store the dest txhash connected to the nonce
-	nonce, _, err := SubmitRelay(ctx, &q.Dest, request)
+	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
 		return err
 	}
@@ -191,35 +188,6 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace
 		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
-}
-
-// SubmitRelay submits a relay transaction to the destination chain after evaluating gas amount.
-func SubmitRelay(ctx context.Context, chain *Chain, request reldb.QuoteRequest) (uint64, *big.Int, error) {
-	gasAmount := big.NewInt(0)
-	var err error
-
-	if request.Transaction.SendChainGas {
-		gasAmount, err = chain.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return 0, nil, fmt.Errorf("could not get chain gas amount: %w", err)
-		}
-	}
-
-	nonce, err := chain.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.Value = core.CopyBigInt(gasAmount)
-
-		tx, err = chain.Bridge.Relay(transactor, request.RawRequest)
-		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
-		}
-
-		return tx, nil
-	})
-	if err != nil {
-		return 0, nil, fmt.Errorf("could not submit transaction: %w", err)
-	}
-
-	return nonce, gasAmount, nil
 }
 
 // handleRelayStarted handles the relay started status and marks the relay as completed.

@@ -24,9 +24,9 @@ import (
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"golang.org/x/sync/errgroup"
@@ -42,7 +42,7 @@ type RelayerServerSuite struct {
 	destChainID          uint32
 	fastBridgeAddressMap *xsync.MapOf[uint64, common.Address]
 	database             reldb.Service
-	cfg                  config.Config
+	cfg                  relconfig.Config
 	testWallet           wallet.Wallet
 	handler              metrics.Handler
 	RelayerAPIServer     *relapi.RelayerAPIServer
@@ -76,17 +76,23 @@ func (c *RelayerServerSuite) SetupTest() {
 	c.originChainID = 1
 	c.destChainID = 42161
 
-	testConfig := config.Config{
-		Database: config.DatabaseConfig{
-			Type: "sqlite",
-			DSN:  filet.TmpFile(c.T(), "", "").Name(),
+	testConfig := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			int(c.originChainID): {
+				Bridge: ethFastBridgeAddress.Hex(),
+			},
+			int(c.destChainID): {
+				Bridge: arbFastBridgeAddress.Hex(),
+			},
 		},
-		OmniRPCURL: testOmnirpc,
-		Bridges: map[uint32]string{
-			c.originChainID: ethFastBridgeAddress.Hex(),
-			c.destChainID:   arbFastBridgeAddress.Hex(),
+		APIConfig: relconfig.APIConfig{
+			Database: relconfig.DatabaseConfig{
+				Type: "sqlite",
+				DSN:  filet.TmpFile(c.T(), "", "").Name(),
+			},
+			OmniRPCURL: testOmnirpc,
+			Port:       strconv.Itoa(port),
 		},
-		Port: strconv.Itoa(port),
 	}
 	c.cfg = testConfig
 
