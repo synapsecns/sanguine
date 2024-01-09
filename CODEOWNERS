@@ -15,6 +15,7 @@ ethergo/ @trajan0x
 make/ @trajan0x
 
 packages/contracts-core/ @ChiTimesChi @trajan0x
+packages/contracts-rfq @ChiTimesChi @mikeyrf
 packages/docs/  @trajan0x
 packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x
 packages/explorer-ui/ @trajan0x  @bigboydiamonds @abtestingalpha
@@ -26,7 +27,7 @@ contrib/ @trajan0x
 services/explorer @trajan0x
 services/omnirpc @trajan0x
 services/scribe @trajan0x
-packages/contracts-rfq @ChiTimesChi @mikeyrf
+services/rfq @dwasse @trajan0x @aureliusbtc
 
 tools/ @trajan0x
 
