@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
@@ -132,6 +133,13 @@ export const _Transaction = ({
       if (!txn.isComplete) {
         dispatch(
           completeTransaction({ originTxHash, kappa: txKappa as string })
+        )
+        /** Update Destination Chain token balances after tx is marked complete  */
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address: connectedAddress,
+            chainId: destinationChain.id,
+          })
         )
       }
     }
