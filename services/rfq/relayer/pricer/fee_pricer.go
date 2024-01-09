@@ -115,7 +115,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getFee", trace.WithAttributes(
 		attribute.Int("gas_chain", int(gasChain)),
 		attribute.Int("denom_chain", int(denomChain)),
-		attribute.Int("gas_estimate", int(gasEstimate)),
+		attribute.Int("gas_estimate", gasEstimate),
 		attribute.String("denom_token", denomToken),
 	))
 
