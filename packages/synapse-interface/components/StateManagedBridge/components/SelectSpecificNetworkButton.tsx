@@ -87,13 +87,13 @@ function ButtonContent({
   isOrigin: boolean
 }) {
   const chain = CHAINS_BY_ID[chainId]
-  const { balancesAndAllowances } = usePortfolioState()
+  const { balances } = usePortfolioState()
 
   const balanceTokens =
-    balancesAndAllowances &&
-    balancesAndAllowances[chainId] &&
+    balances &&
+    balances[chainId] &&
     sortTokensByBalanceDescending(
-      balancesAndAllowances[chainId].filter((bt) => bt.balance > 0n)
+      balances[chainId].filter((bt) => bt.balance > 0n)
     )
 
   return chain ? (

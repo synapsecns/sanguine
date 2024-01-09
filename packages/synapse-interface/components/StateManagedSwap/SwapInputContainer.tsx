@@ -24,7 +24,7 @@ export const SwapInputContainer = () => {
 
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { balancesAndAllowances } = usePortfolioState()
+  const { balances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
@@ -35,7 +35,7 @@ export const SwapInputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const tokenData = balancesAndAllowances[swapChainId]?.find(
+  const tokenData = balances[swapChainId]?.find(
     (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
   )
 
