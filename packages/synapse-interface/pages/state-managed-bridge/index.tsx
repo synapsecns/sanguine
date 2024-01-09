@@ -87,13 +87,8 @@ const StateManagedBridge = () => {
     fromToken,
     toToken,
     bridgeQuote,
-    fromValue,
     debouncedFromValue,
     destinationAddress,
-    fromChainIds,
-    toChainIds,
-    fromTokens,
-    toTokens,
   }: BridgeState = useBridgeState()
   const {
     showSettingsSlideOver,
