@@ -3,6 +3,7 @@ package relapi_test
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/Flaque/filet"
@@ -85,7 +86,7 @@ func (c *RelayerServerSuite) SetupTest() {
 			c.originChainID: ethFastBridgeAddress.Hex(),
 			c.destChainID:   arbFastBridgeAddress.Hex(),
 		},
-		Port: fmt.Sprintf("%d", port),
+		Port: strconv.Itoa(port),
 	}
 	c.cfg = testConfig
 
