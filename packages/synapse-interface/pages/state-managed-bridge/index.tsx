@@ -82,22 +82,14 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
-    useFetchPortfolioBalances()
-
   const {
     fromChainId,
     toChainId,
     fromToken,
     toToken,
     bridgeQuote,
-    fromValue,
     debouncedFromValue,
     destinationAddress,
-    fromChainIds,
-    toChainIds,
-    fromTokens,
-    toTokens,
   }: BridgeState = useBridgeState()
   const {
     showSettingsSlideOver,
@@ -136,15 +128,7 @@ const StateManagedBridge = () => {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    debouncedFromValue,
-    address,
-    portfolioBalances,
-  ])
+  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
