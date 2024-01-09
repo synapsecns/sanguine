@@ -1,6 +1,7 @@
 package base
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"math"
@@ -61,7 +62,8 @@ type RequestForQuote struct {
 	// CreatedAt is the creation time
 	CreatedAt time.Time
 	// UpdatedAt is the update time
-	UpdatedAt     time.Time
+	UpdatedAt time.Time
+	// TransactionID is the transaction id of the event
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// OriginChainID is the origin chain for the transactions
 	OriginChainID uint32
@@ -84,12 +86,16 @@ type RequestForQuote struct {
 	// OriginAmount is the origin amount stored for sorting.
 	// This is not the source of truth, but is approximate
 	OriginAmount decimal.Decimal `gorm:"index"`
+	// OriginTxHash is the origin tx hash
+	OriginTxHash sql.NullString
 	// DestAmountOriginal is the original amount used for precision
 	DestAmountOriginal string
 	// DestAmountOriginal is the original destination amount
 	DestAmount decimal.Decimal `gorm:"index"`
-	DestTxHash string
-	Deadline   time.Time `gorm:"index"`
+	// DestTxHash is the destination tx hash
+	DestTxHash sql.NullString
+	// Deadline is the deadline for the relay
+	Deadline time.Time `gorm:"index"`
 	// OriginNonce is the nonce on the origin chain in the app.
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
@@ -101,6 +107,16 @@ type RequestForQuote struct {
 	RawRequest string
 	// SendChainGas is true if the chain should send gas
 	SendChainGas bool
+}
+
+func stringToNullString(s string) sql.NullString {
+	if s == "" {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -115,11 +131,12 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		DestRecipient:        request.Transaction.DestRecipient.String(),
 		OriginToken:          request.Transaction.OriginToken.String(),
 		OriginTokenDecimals:  request.OriginTokenDecimals,
+		OriginTxHash:         stringToNullString(request.OriginTxHash.String()),
 		RawRequest:           hexutil.Encode(request.RawRequest),
 		SendChainGas:         request.Transaction.SendChainGas,
 		DestTokenDecimals:    request.DestTokenDecimals,
 		DestToken:            request.Transaction.DestToken.String(),
-		DestTxHash:           request.DestTxHash.String(),
+		DestTxHash:           stringToNullString(request.DestTxHash.String()),
 		OriginAmountOriginal: request.Transaction.OriginAmount.String(),
 		OriginAmount:         decimal.NewFromBigInt(request.Transaction.OriginAmount, int32(request.OriginTokenDecimals)),
 		DestAmountOriginal:   request.Transaction.DestAmount.String(),
@@ -169,8 +186,9 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			Deadline:   big.NewInt(r.Deadline.Unix()),
 			Nonce:      big.NewInt(int64(r.OriginNonce)),
 		},
-		Status:     r.Status,
-		DestTxHash: common.HexToHash(r.DestTxHash),
+		Status:       r.Status,
+		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
+		DestTxHash:   common.HexToHash(r.DestTxHash.String),
 	}, nil
 }
 
