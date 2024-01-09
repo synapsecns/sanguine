@@ -4,9 +4,6 @@ import { Chain, Token } from '../types'
 import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
-export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
-export const CCTP_ROUTER_ADDRESS = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
-
 export interface TokenAndBalance {
   token: Token
   tokenAddress: string
@@ -15,25 +12,8 @@ export interface TokenAndBalance {
   queriedChain: Chain
 }
 
-export interface TokenAndAllowance {
-  token: Token
-  spender: string
-  allowance: bigint
-}
-export interface TokenWithBalanceAndAllowance
-  extends TokenAndBalance,
-    TokenAndAllowance {}
-
-export interface Allowances {
-  [spender: string]: bigint
-}
-
-export interface TokenWithBalanceAndAllowances extends TokenAndBalance {
-  allowances: Allowances
-}
-
-export interface NetworkTokenBalancesAndAllowances {
-  [index: number]: TokenWithBalanceAndAllowances[]
+export interface NetworkTokenBalances {
+  [index: number]: TokenAndBalance[]
 }
 
 export const getTokenBalances = async (
@@ -42,72 +22,6 @@ export const getTokenBalances = async (
   chainId: number
 ): Promise<TokenAndBalance[]> => {
   return await sortByTokenBalance(tokens, chainId, owner)
-}
-
-function mergeBalancesAndAllowances(
-  balances: TokenAndBalance[],
-  allowances: TokenAndAllowance[]
-): TokenWithBalanceAndAllowances[] {
-  return balances.map((balance: TokenAndBalance) => {
-    const tokenAllowances = {}
-    const matchedAllowancesByToken: TokenAndAllowance[] = allowances.filter(
-      (allowance: TokenAndAllowance) => allowance.token === balance.token
-    )
-
-    matchedAllowancesByToken.forEach((spenderAllowance: TokenAndAllowance) => {
-      const { spender, allowance } = spenderAllowance
-      tokenAllowances[spender] = allowance
-    })
-
-    return {
-      queriedChain: balance.queriedChain,
-      token: balance.token,
-      tokenAddress: balance.tokenAddress,
-      balance: balance.balance,
-      parsedBalance: balance.parsedBalance,
-      allowances: tokenAllowances,
-    }
-  })
-}
-
-const getTokensAllowances = async (
-  owner: string,
-  spender: string,
-  tokens: Token[],
-  chainId: number
-): Promise<any> => {
-  const inputs = tokens.map((token: Token) => {
-    const tokenAddress = token.addresses[chainId] as Address
-    return {
-      address: tokenAddress,
-      abi: erc20ABI,
-      functionName: 'allowance',
-      chainId,
-      args: [owner, spender],
-    }
-  })
-  const allowancesResponse: {
-    error?: any
-    result?: any
-    status: 'success' | 'failure'
-  }[] = await multicall({
-    contracts: inputs,
-    chainId,
-  })
-
-  return tokens.map((token: Token, index: number) => {
-    let allowance
-    if (allowancesResponse[index].status === 'success') {
-      allowance = allowancesResponse[index].result
-    } else {
-      allowance = null
-    }
-    return {
-      token,
-      spender,
-      allowance,
-    }
-  })
 }
 
 /**
@@ -121,8 +35,8 @@ export const fetchPortfolioBalances = async (
   address: string,
   chainId?: number | undefined | null
 ): Promise<{
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  poolTokenBalances: NetworkTokenBalancesAndAllowances
+  balancesAndAllowances: NetworkTokenBalances
+  poolTokenBalances: NetworkTokenBalances
   status: FetchState
   error?: any | undefined
 }> => {
@@ -190,37 +104,133 @@ export const fetchPortfolioBalances = async (
   }
 }
 
-export function separateTokensByAllowance(
-  tokens: TokenWithBalanceAndAllowances[]
-): [TokenWithBalanceAndAllowances[], TokenWithBalanceAndAllowances[]] {
-  const tokensWithAllowance: TokenWithBalanceAndAllowances[] = []
-  const tokensWithoutAllowance: TokenWithBalanceAndAllowances[] = []
-
-  tokens &&
-    tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-      // currently separating by bridge allowance
-      // update this when incorporating other allowances to order by
-      const bridgeAllowance: bigint | null = token.allowances[ROUTER_ADDRESS]
-      if (bridgeAllowance === null) {
-        tokensWithAllowance.push(token)
-      } else if (bridgeAllowance > 0n) {
-        tokensWithAllowance.push(token)
-      } else {
-        tokensWithoutAllowance.push(token)
-      }
-    })
-
-  return [tokensWithAllowance, tokensWithoutAllowance]
-}
-
 export function sortTokensByBalanceDescending(
-  tokens: TokenWithBalanceAndAllowances[]
-): TokenWithBalanceAndAllowances[] {
+  tokens: TokenAndBalance[]
+): TokenAndBalance[] {
   return (
     tokens &&
-    tokens.sort(
-      (a: TokenWithBalanceAndAllowances, b: TokenWithBalanceAndAllowances) =>
-        Number(b.parsedBalance) > Number(a.parsedBalance) ? 1 : -1
+    tokens.sort((a: TokenAndBalance, b: TokenAndBalance) =>
+      Number(b.parsedBalance) > Number(a.parsedBalance) ? 1 : -1
     )
   )
 }
+
+/** Archived Code / Functions */
+
+// export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
+// export const CCTP_ROUTER_ADDRESS = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
+// export interface NetworkTokenBalancesAndAllowances {
+//   [index: number]: TokenWithBalanceAndAllowances[]
+// }
+
+// export interface TokenAndAllowance {
+//   token: Token
+//   spender: string
+//   allowance: bigint
+// }
+// export interface TokenWithBalanceAndAllowance
+//   extends TokenAndBalance,
+//     TokenAndAllowance {}
+
+// export interface Allowances {
+//   [spender: string]: bigint
+// }
+
+// export interface TokenWithBalanceAndAllowances extends TokenAndBalance {
+//   allowances: Allowances
+// }
+
+// /** Currently not used, remove in future if not needed */
+
+// const getTokensAllowances = async (
+//   owner: string,
+//   spender: string,
+//   tokens: Token[],
+//   chainId: number
+// ): Promise<any> => {
+//   const inputs = tokens.map((token: Token) => {
+//     const tokenAddress = token.addresses[chainId] as Address
+//     return {
+//       address: tokenAddress,
+//       abi: erc20ABI,
+//       functionName: 'allowance',
+//       chainId,
+//       args: [owner, spender],
+//     }
+//   })
+//   const allowancesResponse: {
+//     error?: any
+//     result?: any
+//     status: 'success' | 'failure'
+//   }[] = await multicall({
+//     contracts: inputs,
+//     chainId,
+//   })
+
+//   return tokens.map((token: Token, index: number) => {
+//     let allowance
+//     if (allowancesResponse[index].status === 'success') {
+//       allowance = allowancesResponse[index].result
+//     } else {
+//       allowance = null
+//     }
+//     return {
+//       token,
+//       spender,
+//       allowance,
+//     }
+//   })
+// }
+
+/** Currently not used, remove in future if not needed */
+
+// function mergeBalancesAndAllowances(
+//   balances: TokenAndBalance[],
+//   allowances: TokenAndAllowance[]
+// ): TokenWithBalanceAndAllowances[] {
+//   return balances.map((balance: TokenAndBalance) => {
+//     const tokenAllowances = {}
+//     const matchedAllowancesByToken: TokenAndAllowance[] = allowances.filter(
+//       (allowance: TokenAndAllowance) => allowance.token === balance.token
+//     )
+
+//     matchedAllowancesByToken.forEach((spenderAllowance: TokenAndAllowance) => {
+//       const { spender, allowance } = spenderAllowance
+//       tokenAllowances[spender] = allowance
+//     })
+
+//     return {
+//       queriedChain: balance.queriedChain,
+//       token: balance.token,
+//       tokenAddress: balance.tokenAddress,
+//       balance: balance.balance,
+//       parsedBalance: balance.parsedBalance,
+//       allowances: tokenAllowances,
+//     }
+//   })
+// }
+
+/** Currently not used, remove in future if not needed */
+
+// export function separateTokensByAllowance(
+//   tokens: TokenWithBalanceAndAllowances[]
+// ): [TokenWithBalanceAndAllowances[], TokenWithBalanceAndAllowances[]] {
+//   const tokensWithAllowance: TokenWithBalanceAndAllowances[] = []
+//   const tokensWithoutAllowance: TokenWithBalanceAndAllowances[] = []
+
+//   tokens &&
+//     tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+//       // currently separating by bridge allowance
+//       // update this when incorporating other allowances to order by
+//       const bridgeAllowance: bigint | null = token.allowances[ROUTER_ADDRESS]
+//       if (bridgeAllowance === null) {
+//         tokensWithAllowance.push(token)
+//       } else if (bridgeAllowance > 0n) {
+//         tokensWithAllowance.push(token)
+//       } else {
+//         tokensWithoutAllowance.push(token)
+//       }
+//     })
+
+//   return [tokensWithAllowance, tokensWithoutAllowance]
+// }

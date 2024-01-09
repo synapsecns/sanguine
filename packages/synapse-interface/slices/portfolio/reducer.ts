@@ -5,7 +5,7 @@ import {
   PortfolioTabs,
   FetchState,
   setActiveTab,
-  updateSingleTokenAllowance,
+  // updateSingleTokenAllowance,
   resetPortfolioState,
   typeSearchInput,
   resetSearchState,
@@ -13,24 +13,24 @@ import {
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenAllowance,
+  // fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
   fetchAndStoreSearchInputPortfolioBalances,
 } from './hooks'
 import {
-  NetworkTokenBalancesAndAllowances,
-  TokenWithBalanceAndAllowances,
+  NetworkTokenBalances,
+  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 
 export interface PortfolioState {
   activeTab: PortfolioTabs
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  poolTokenBalances: NetworkTokenBalancesAndAllowances
+  balancesAndAllowances: NetworkTokenBalances
+  poolTokenBalances: NetworkTokenBalances
   status: FetchState
   error?: string
   searchInput: string
   searchedBalancesAndAllowances: {
-    [index: Address]: NetworkTokenBalancesAndAllowances
+    [index: Address]: NetworkTokenBalances
   }
   searchStatus: FetchState
 }
@@ -58,43 +58,33 @@ export const portfolioSlice = createSlice({
       .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
         state.searchInput = searchInput
       })
-      .addCase(updateSingleTokenAllowance, (state, action) => {
-        const { chainId, allowance, spender, token } = action.payload
+      // .addCase(updateSingleTokenAllowance, (state, action) => {
+      //   const { chainId, allowance, spender, token } = action.payload
 
-        state.balancesAndAllowances[chainId].forEach(
-          (t: TokenWithBalanceAndAllowances) => {
-            if (t.tokenAddress === token.addresses[chainId]) {
-              t.allowances[spender] = allowance
-            }
-          }
-        )
-      })
-      .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
-        const { routerAddress, chainId, tokenAddress, allowance } =
-          action.payload
+      //   state.balancesAndAllowances[chainId].forEach((t: TokenAndBalance) => {
+      //     if (t.tokenAddress === token.addresses[chainId]) {
+      //       t.allowances[spender] = allowance
+      //     }
+      //   })
+      // })
+      // .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
+      //   const { routerAddress, chainId, tokenAddress, allowance } =
+      //     action.payload
 
-        state.balancesAndAllowances[chainId].forEach(
-          (token: TokenWithBalanceAndAllowances) => {
-            if (token.tokenAddress === tokenAddress) {
-              token.allowances[routerAddress] = allowance
-            }
-          }
-        )
-      })
+      //   state.balancesAndAllowances[chainId].forEach(
+      //     (token: TokenAndBalance) => {
+      //       if (token.tokenAddress === tokenAddress) {
+      //         token.allowances[routerAddress] = allowance
+      //       }
+      //     }
+      //   )
+      // })
       .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
-        const {
-          routerAddress,
-          chainId,
-          tokenAddress,
-          allowance,
-          balance,
-          parsedBalance,
-        } = action.payload
+        const { chainId, tokenAddress, balance, parsedBalance } = action.payload
 
         state.balancesAndAllowances[chainId].forEach(
-          (token: TokenWithBalanceAndAllowances) => {
+          (token: TokenAndBalance) => {
             if (token.tokenAddress === tokenAddress) {
-              token.allowances[routerAddress] = allowance
               token.balance = balance
               token.parsedBalance = parsedBalance
             }

@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
-  TokenWithBalanceAndAllowances,
-  separateTokensByAllowance,
+  TokenAndBalance,
+  // separateTokensByAllowance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
@@ -24,7 +24,7 @@ type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
-  portfolioTokens: TokenWithBalanceAndAllowances[]
+  portfolioTokens: TokenAndBalance[]
   initializeExpanded: boolean
   fetchState: FetchState
 }
@@ -50,7 +50,7 @@ export const SingleNetworkPortfolio = ({
   //   sortTokensByBalanceDescending(tokensWithAllowance)
   // const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
   //   sortTokensByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
+  const sortedTokensForVisualizer: TokenAndBalance[] =
     sortTokensByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
@@ -123,12 +123,11 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensForVisualizer &&
           sortedTokensForVisualizer.length > 0 &&
           sortedTokensForVisualizer.map(
-            ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
+            ({ token, balance }: TokenAndBalance) => (
               <PortfolioTokenAsset
                 key={token.symbol}
                 token={token}
                 balance={balance}
-                allowances={allowances}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
                 isApproved={true}
@@ -191,7 +190,7 @@ const PortfolioNetwork = ({
 export const PortfolioTokenVisualizer = ({
   portfolioTokens,
 }: {
-  portfolioTokens: TokenWithBalanceAndAllowances[]
+  portfolioTokens: TokenAndBalance[]
 }) => {
   const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
@@ -281,19 +280,17 @@ export const PortfolioTokenVisualizer = ({
       )}
       <div className="relative inline-block">
         <HoverContent isHovered={isT3Hovered}>
-          {portfolioTokens?.map(
-            (token: TokenWithBalanceAndAllowances, key: number) => {
-              if (key > 1) {
-                const tokenSymbol = token.token.symbol
-                const balance = token.parsedBalance
-                return (
-                  <div className="whitespace-nowrap" key={key}>
-                    {balance} {tokenSymbol}
-                  </div>
-                )
-              }
+          {portfolioTokens?.map((token: TokenAndBalance, key: number) => {
+            if (key > 1) {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap" key={key}>
+                  {balance} {tokenSymbol}
+                </div>
+              )
             }
-          )}
+          })}
         </HoverContent>
       </div>
     </div>

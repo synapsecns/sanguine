@@ -8,7 +8,7 @@ import { FetchState, typeSearchInput, resetSearchState } from './actions'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchPortfolioBalances,
-  NetworkTokenBalancesAndAllowances,
+  NetworkTokenBalances,
   getTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
@@ -20,7 +20,7 @@ export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
 }
 
-export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
+export const usePortfolioBalances = (): NetworkTokenBalances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
 }
 
@@ -78,7 +78,7 @@ export const fetchAndStoreSingleNetworkPortfolioBalances = createAsyncThunk(
 )
 
 export const useFetchPortfolioBalances = (): {
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  balancesAndAllowances: NetworkTokenBalances
   fetchPortfolioBalances: () => void
   status: FetchState
   error: string
