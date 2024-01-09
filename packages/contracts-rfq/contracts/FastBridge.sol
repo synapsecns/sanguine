@@ -236,17 +236,17 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes memory request, address to) external {
+    function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
-        if (transaction.originSender != msg.sender) revert SenderIncorrect();
         if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
 
         // set status to refunded if still in requested state
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.REFUNDED;
 
-        // transfer origin collateral back to original sender's specified recipient
+        // transfer origin collateral back to original sender
+        address to = transaction.originSender;
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount + transaction.originFeeAmount;
         token.universalTransfer(to, amount);

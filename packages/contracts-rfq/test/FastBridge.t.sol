@@ -1664,7 +1664,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1694,7 +1694,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
 
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // check balance changes
         uint256 postRefundBalanceUser = user.balance;
@@ -1725,7 +1725,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1756,7 +1756,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
 
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // check balance changes
         uint256 postRefundBalanceUser = user.balance;
@@ -1786,7 +1786,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1802,6 +1802,34 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
+    function test_successfulRefundNotSender() public {
+        setUpRoles();
+        test_successfulBridge();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+
+        vm.warp(block.timestamp + 61 minutes);
+
+        vm.expectEmit();
+        emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
+
+        uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
+        uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
+
+        fastBridge.refund(request);
+
+        // check balance changes
+        uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
+        uint256 postRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
+
+        assertEq(postRefundBalanceUser - preRefundBalanceUser, 11 * 10 ** 6);
+        assertEq(preRefundBalanceBridge - postRefundBalanceBridge, 11 * 10 ** 6);
+
+        // check bridge status updated
+        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REFUNDED));
+    }
+
     function test_failedRefundNotEnoughTime() public {
         setUpRoles();
         test_successfulBridge();
@@ -1814,23 +1842,7 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 59 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
-        fastBridge.refund(request, user);
-
-        // We stop a prank to contain within test
-        vm.stopPrank();
-    }
-
-    function test_failedRefundNotUser() public {
-        setUpRoles();
-        test_successfulBridge();
-
-        // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
-
-        vm.warp(block.timestamp + 61 minutes);
-
-        vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1847,7 +1859,7 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 61 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
-        fastBridge.refund(request, user);
+        fastBridge.refund(request);
 
         // We stop a prank to contain within test
         vm.stopPrank();
