@@ -60,6 +60,7 @@ flags:
   rfq:
     paths:
       - services/rfq/
+    carryforward: true
   explorer:
     paths:
       - services/explorer/

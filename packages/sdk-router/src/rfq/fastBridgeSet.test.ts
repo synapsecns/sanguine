@@ -1,7 +1,6 @@
-import { providers } from 'ethers'
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
 
-import { getTestProviderUrl } from '../constants/testValues'
+import { getTestProvider } from '../constants/testProviders'
 import { SupportedChainId, FAST_BRIDGE_ADDRESS_MAP } from '../constants'
 import { FastBridgeSet } from './fastBridgeSet'
 import { FastBridgeQuoteAPI } from './quote'
@@ -350,7 +349,7 @@ describe('FastBridgeSet', () => {
   const fastBridgeSet = new FastBridgeSet(
     chainIds.map((chainId) => ({
       chainId,
-      provider: new providers.JsonRpcProvider(getTestProviderUrl(chainId)),
+      provider: getTestProvider(chainId),
     }))
   )
 
