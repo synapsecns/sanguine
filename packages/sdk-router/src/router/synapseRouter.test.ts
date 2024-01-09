@@ -1,8 +1,9 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, providers } from 'ethers'
+import { BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
-import { ETH_NUSD, ETH_USDC, getTestProviderUrl } from '../constants/testValues'
+import { ETH_NUSD, ETH_USDC } from '../constants/testValues'
+import { getTestProvider } from '../constants/testProviders'
 import { ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { SynapseRouter } from './synapseRouter'
 import { BridgeToken, RouterQuery } from '../module'
@@ -10,9 +11,7 @@ import { DestRequest } from './types'
 
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-  const ethProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ETH)
-  )
+  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
   const recipient = '0x0000000000000000000000000000000000001337'
   const ethNusd = '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F'
