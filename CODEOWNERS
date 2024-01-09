@@ -15,10 +15,7 @@ ethergo/ @trajan0x
 make/ @trajan0x
 
 packages/contracts-core/ @ChiTimesChi @trajan0x
-<<<<<<< HEAD
-=======
 packages/contracts-rfq @ChiTimesChi @mikeyrf
->>>>>>> 5f8d480f4e3f1f2a318243a9924f50ec90ec4945
 packages/docs/  @trajan0x
 packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x
 packages/explorer-ui/ @trajan0x  @bigboydiamonds @abtestingalpha
@@ -30,11 +27,7 @@ contrib/ @trajan0x
 services/explorer @trajan0x
 services/omnirpc @trajan0x
 services/scribe @trajan0x
-<<<<<<< HEAD
-packages/contracts-rfq @ChiTimesChi @mikeyrf
-=======
 services/rfq @dwasse @trajan0x @aureliusbtc
->>>>>>> 5f8d480f4e3f1f2a318243a9924f50ec90ec4945
 
 tools/ @trajan0x
 
