@@ -148,28 +148,28 @@ export const fetchPortfolioBalances = async (
         currentChainTokens = BRIDGABLE_TOKENS[chainId]
       }
 
-      const [tokenBalances, tokenAllowances] = await Promise.all([
+      const [tokenBalances] = await Promise.all([
         getTokenBalances(address, currentChainTokens, currentChainId),
-        getTokensAllowances(
-          address,
-          ROUTER_ADDRESS,
-          currentChainTokens,
-          currentChainId
-        ),
+        // getTokensAllowances(
+        //   address,
+        //   ROUTER_ADDRESS,
+        //   currentChainTokens,
+        //   currentChainId
+        // ),
       ])
-      const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
-        tokenBalances,
-        tokenAllowances
-      )
-      return { currentChainId, mergedBalancesAndAllowances }
+      // const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+      //   tokenBalances,
+      //   tokenAllowances
+      // )
+      return { currentChainId, tokenBalances }
     })
 
     const balances = await Promise.all(balancePromises)
-    balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
-      balanceRecord[currentChainId] = mergedBalancesAndAllowances.filter(
+    balances.forEach(({ currentChainId, tokenBalances }) => {
+      balanceRecord[currentChainId] = tokenBalances.filter(
         (entry) => !entry.token.poolName
       )
-      poolTokenBalances[currentChainId] = mergedBalancesAndAllowances.filter(
+      poolTokenBalances[currentChainId] = tokenBalances.filter(
         (entry) => typeof entry.token.poolName === 'string'
       )
     })
