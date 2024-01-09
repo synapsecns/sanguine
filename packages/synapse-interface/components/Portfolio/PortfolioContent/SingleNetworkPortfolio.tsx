@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   TokenAndBalance,
-  // separateTokensByAllowance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
@@ -43,14 +42,7 @@ export const SingleNetworkPortfolio = ({
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
   const isUnsupportedChain: boolean = currentChain ? false : true
 
-  // const [tokensWithAllowance, tokensWithoutAllowance] =
-  //   separateTokensByAllowance(portfolioTokens)
-
-  // const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
-  //   sortTokensByBalanceDescending(tokensWithAllowance)
-  // const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
-  //   sortTokensByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenAndBalance[] =
+  const sortedTokens: TokenAndBalance[] =
     sortTokensByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
@@ -90,9 +82,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer
-            portfolioTokens={sortedTokensForVisualizer}
-          />
+          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
         }
       >
         {isUnsupportedChain && (
@@ -120,34 +110,17 @@ export const SingleNetworkPortfolio = ({
             connectedChain={currentChain}
           />
         )}
-        {sortedTokensForVisualizer &&
-          sortedTokensForVisualizer.length > 0 &&
-          sortedTokensForVisualizer.map(
-            ({ token, balance }: TokenAndBalance) => (
-              <PortfolioTokenAsset
-                key={token.symbol}
-                token={token}
-                balance={balance}
-                portfolioChainId={portfolioChainId}
-                connectedChainId={connectedChainId}
-                isApproved={true}
-              />
-            )
-          )}
-        {/* {sortedTokensWithoutAllowance &&
-          sortedTokensWithoutAllowance.length > 0 &&
-          sortedTokensWithoutAllowance.map(
-            ({ token, balance }: TokenWithBalanceAndAllowances) => (
-              <PortfolioTokenAsset
-                key={token.symbol}
-                token={token}
-                balance={balance}
-                portfolioChainId={portfolioChainId}
-                connectedChainId={connectedChainId}
-                isApproved={false}
-              />
-            )
-          )} */}
+        {sortedTokens &&
+          sortedTokens.length > 0 &&
+          sortedTokens.map(({ token, balance }: TokenAndBalance) => (
+            <PortfolioTokenAsset
+              key={token.symbol}
+              token={token}
+              balance={balance}
+              portfolioChainId={portfolioChainId}
+              connectedChainId={connectedChainId}
+            />
+          ))}
       </PortfolioAccordion>
     </div>
   )
@@ -206,8 +179,6 @@ export const PortfolioTokenVisualizer = ({
       : 0
   const hasOnlyOneToken: boolean =
     portfolioTokens && portfolioTokens.length === 1
-  const hasOnlyTwoTokens: boolean =
-    portfolioTokens && portfolioTokens.length === 2
 
   if (hasNoTokens) {
     return (

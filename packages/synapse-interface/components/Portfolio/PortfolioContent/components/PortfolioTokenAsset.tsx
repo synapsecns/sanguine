@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { useAccount } from 'wagmi'
 import {
   setFromChainId,
   setFromToken,
@@ -8,21 +7,10 @@ import {
 } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@/constants/chains'
 import { inputRef } from '../../../StateManagedBridge/InputContainer'
-import { approveToken } from '@/utils/approveToken'
-import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
-import { toast } from 'react-hot-toast'
-import {
-  ROUTER_ADDRESS,
-  CCTP_ROUTER_ADDRESS,
-  Allowances,
-} from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
-import { isUndefined } from 'lodash'
 
 const handleFocusOnInput = () => {
   inputRef.current.focus()
@@ -31,7 +19,6 @@ const handleFocusOnInput = () => {
 type PortfolioTokenAssetProps = {
   token: Token
   balance: bigint
-  allowances?: Allowances
   portfolioChainId: number
   connectedChainId: number
 }
@@ -39,15 +26,12 @@ type PortfolioTokenAssetProps = {
 export const PortfolioTokenAsset = ({
   token,
   balance,
-  allowances,
   portfolioChainId,
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken, toChainId, toToken, bridgeQuote } =
-    useBridgeState()
-  const { address } = useAccount()
-  const { icon, symbol, decimals, addresses } = token as Token
+  const { fromChainId, fromToken } = useBridgeState()
+  const { icon, symbol, decimals } = token as Token
 
   const parsedBalance: string = useMemo(() => {
     const formattedBalance = formatBigIntToString(
@@ -71,44 +55,11 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
-  const isCCTP: boolean = bridgeQuote?.bridgeModuleName === 'SynapseCCTP'
-
-  const tokenRouterAddress: string = bridgeQuote?.routerAddress
-
-  const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
-
-  const parsedAllowance: string =
-    bridgeAllowance &&
-    formatBigIntToString(bridgeAllowance, decimals[portfolioChainId], 3)
-
-  const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
-
-  const tokenAddress: string = addresses[portfolioChainId]
-
-  const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
-
   const isTokenSelected: boolean = useMemo(() => {
     return fromToken === token && fromChainId === portfolioChainId
   }, [fromChainId, fromToken, token, portfolioChainId])
 
-  const hasAllowanceButLessThanBalance: boolean =
-    bridgeAllowance && balance > bridgeAllowance
-
   const isDisabled: boolean = false
-
-  // /** Fetch allowances for selected token via current router if not already stored */
-  if (isTokenSelected && tokenRouterAddress && isUndefined(bridgeAllowance)) {
-    ;(async () => {
-      await dispatch(
-        fetchAndStoreSingleTokenAllowance({
-          routerAddress: tokenRouterAddress as Address,
-          tokenAddress: tokenAddress as Address,
-          address: address as Address,
-          chainId: portfolioChainId as number,
-        })
-      )
-    })()
-  }
 
   const handleTotalBalanceInputCallback = useCallback(async () => {
     await dispatch(setFromChainId(portfolioChainId as number))
@@ -130,83 +81,12 @@ export const PortfolioTokenAsset = ({
     handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
 
-  const handleApproveCallback = useCallback(async () => {
-    if (isCurrentlyConnected) {
-      dispatch(setFromChainId(portfolioChainId as number))
-      dispatch(setFromToken(token as Token))
-      try {
-        await approveToken(
-          tokenRouterAddress,
-          connectedChainId,
-          tokenAddress
-        ).then((success) => {
-          dispatch(
-            fetchAndStoreSingleTokenAllowance({
-              routerAddress: tokenRouterAddress as Address,
-              tokenAddress: tokenAddress as Address,
-              address: address as Address,
-              chainId: portfolioChainId as number,
-            })
-          )
-        })
-      } catch (error) {
-        toast.error(
-          `Failed to approve ${token.symbol} token on ${currentChainName} network`,
-          {
-            id: 'approve-in-progress-popup',
-            duration: 5000,
-          }
-        )
-      }
-    } else {
-      try {
-        await switchNetwork({ chainId: portfolioChainId })
-        await approveToken(
-          tokenRouterAddress,
-          portfolioChainId,
-          tokenAddress
-        ).then((success) => {
-          success &&
-            dispatch(
-              fetchAndStoreSingleTokenAllowance({
-                routerAddress: tokenRouterAddress as Address,
-                tokenAddress: tokenAddress as Address,
-                address: address as Address,
-                chainId: portfolioChainId as number,
-              })
-            )
-        })
-      } catch (error) {
-        toast.error(
-          `Failed to approve ${token.symbol} token on ${currentChainName} network`,
-          {
-            id: 'approve-in-progress-popup',
-            duration: 5000,
-          }
-        )
-      }
-    }
-  }, [
-    token,
-    address,
-    tokenAddress,
-    connectedChainId,
-    portfolioChainId,
-    isCurrentlyConnected,
-    isDisabled,
-    tokenRouterAddress,
-  ])
-
   return (
     <div
       data-test-id="portfolio-token-asset"
       className={`
         p-2 flex items-center border-y text-white justify-between last:rounded-b-md
-        ${
-          isTokenSelected
-            ? 'bg-tint border-surface'
-            : 'border-transparent'
-        }
+        ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
       `}
     >
       <div
