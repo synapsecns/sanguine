@@ -119,13 +119,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getFeeData
    */
-  public async getFeeData(): Promise<{
+  public async getFeeData(bridgeRoute: BridgeRoute): Promise<{
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // TODO: figure out if we need to report anything here
+    // Origin Out vs Dest Out is the effective fee
     return {
-      feeAmount: BigNumber.from(0),
+      feeAmount: bridgeRoute.originQuery.minAmountOut.sub(
+        bridgeRoute.destQuery.minAmountOut
+      ),
       feeConfig: {
         bridgeFee: 0,
         minFee: BigNumber.from(0),
