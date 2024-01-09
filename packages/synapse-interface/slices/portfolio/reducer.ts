@@ -101,8 +101,8 @@ export const portfolioSlice = createSlice({
         (state, action) => {
           const { balances } = action.payload
 
-          Object.entries(balances).forEach(([chainId, mergedBalances]) => {
-            state.balances[chainId] = [...mergedBalances]
+          Object.entries(balances).forEach(([chainId, tokenBalances]) => {
+            state.balances[chainId] = [...tokenBalances]
           })
         }
       )
