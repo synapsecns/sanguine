@@ -56,11 +56,7 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenAllowance,
-  useFetchPortfolioBalances,
-} from '@/slices/portfolio/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
@@ -312,23 +308,9 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: bridgeQuote?.routerAddress as Address,
-            tokenAddress: fromToken?.addresses[fromChainId] as Address,
-            address: address,
-            chainId: fromChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+      )
+      await tx
+      setIsApproved(true)
     } catch (error) {
       return txErrorHandler(error)
     }

@@ -24,7 +24,7 @@ export const InputContainer = () => {
 
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { balancesAndAllowances } = usePortfolioState()
+  const { balances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
@@ -35,11 +35,11 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
+  const parsedBalance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.parsedBalance
 
-  const balance = balancesAndAllowances[fromChainId]?.find(
+  const balance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 

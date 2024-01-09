@@ -31,16 +31,7 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
-} from '@/slices/portfolio/hooks'
-import {
-  usePortfolioBalances,
-  useFetchPortfolioBalances,
-} from '@/slices/portfolio/hooks'
-import { FetchState } from '@/slices/portfolio/actions'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -65,7 +56,7 @@ const StateManagedSwap = () => {
 
   useSyncQueryParamsWithSwapState()
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+  const { balances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
@@ -243,23 +234,9 @@ const StateManagedSwap = () => {
         swapQuote?.routerAddress,
         swapChainId,
         swapFromToken?.addresses[swapChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: swapQuote?.routerAddress as Address,
-            tokenAddress: swapFromToken?.addresses[swapChainId] as Address,
-            address: address,
-            chainId: swapChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+      )
+      await tx
+      setIsApproved(true)
     } catch (error) {
       return txErrorHandler(error)
     }
