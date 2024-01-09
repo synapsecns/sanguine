@@ -1,0 +1,6 @@
+{
+  "Address 1": {
+    "destinationReplacement": "USDC.e", 
+    "destinationSubtraction": "synFrax"
+  }
+}

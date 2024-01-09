@@ -1,6 +1,7 @@
 import _ from 'lodash'
+import { CHAINS } from '@synapse-constants'
 
-import { ChainId } from '../../constants/chains/index'
+const ChainId = CHAINS.ChainId
 
 /**
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.

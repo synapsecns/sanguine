@@ -36,8 +36,9 @@ import {
   PLS,
   AGEUR,
   NOTE,
-} from '../../constants/tokens/bridgeable'
-import { MIM, AVWETH } from '../../constants/tokens/auxilliary'
+  // MIM,
+  // AVWETH,
+} from '@synapse-constants'
 
 const COLOR_COIN_MAP = {
   gray: [FRAX, GOHM, SDT, VSTA],
@@ -48,8 +49,10 @@ const COLOR_COIN_MAP = {
   blue: [USDC, LINK],
   orange: [DAI, SOLAR],
   purple: [NUSD, NETH, SYN, WMOVR, MOVR],
-  indigo: [MIM],
-  cyan: [HIGH, JUMP, AVWETH, H2O, L2DAO],
+  // need to figure out imports for the following
+  // indigo: [MIM],
+  // cyan: [HIGH, JUMP, AVWETH, H2O, L2DAO],
+  cyan: [HIGH, JUMP, H2O, L2DAO],
   red: [AVAX, WAVAX, SFI],
 }
 

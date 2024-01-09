@@ -1,4 +1,6 @@
-import { CHAINS_BY_ID } from '../../constants/chains'
+import { CHAINS } from '@synapse-constants'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export const BASE_PATH = '/'
 export const ANALYTICS_PATH = 'https://analytics.synapseprotocol.com/'

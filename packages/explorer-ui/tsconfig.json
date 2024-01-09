@@ -22,6 +22,9 @@
       "@assets/": [
         "./assets"
       ],
+      "@synapse-constants": [
+        "../synapse-constants/dist"
+      ],
       "@assets/icons/": [
         "./assets/icons"
       ],

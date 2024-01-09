@@ -43,7 +43,7 @@ export const ETH: Chain = {
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
-  codeName: 'Optimism',
+  codeName: 'ethereum',
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {

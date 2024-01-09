@@ -5,7 +5,7 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import { BRIDGE_CONTRACTS, CCTP_CONTRACTS } from '@constants/chains/index'
+import { CHAINS } from '@synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -14,7 +14,10 @@ import { formatDateTime } from '@utils/formatDate'
 import CopyTitle from '@components/misc/CopyTitle'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { CHAINS_BY_ID } from '../../constants/chains'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
+const CCTP_CONTRACTS = CHAINS.CCTP_CONTRACTS
+const BRIDGE_CONTRACTS = CHAINS.BRIDGE_CONTRACTS
 
 const link = new HttpLink({
   uri: API_URL,

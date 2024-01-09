@@ -1,6 +1,8 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { CHAINS_BY_ID } from '../../constants/chains'
+import { CHAINS } from '@synapse-constants'
 import Image from 'next/image'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export function ChainImage({ chainId, imgSize = 'w-4 h-4', className }) {
   if (chainId) {

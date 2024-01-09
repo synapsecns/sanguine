@@ -1,13 +1,14 @@
 import _ from 'lodash'
-import { TOKEN_HASH_MAP } from '../../constants/tokens/index'
+import { TOKEN_HASH_MAP, CHAINS } from '@synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'
 import Tooltip from '@components/tailwind/Tooltip'
-import { CHAINS_BY_ID } from '../../constants/chains'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export function MostActive({ data }) {
   return (

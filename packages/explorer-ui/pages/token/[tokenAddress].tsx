@@ -1,6 +1,6 @@
 import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
-import { TOKEN_HASH_MAP } from '@constants/tokens/index'
+import { TOKEN_HASH_MAP } from '@synapse-constants'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'

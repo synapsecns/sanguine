@@ -1,12 +1,13 @@
 import _ from 'lodash'
-import { TOKEN_HASH_MAP } from '../../constants/tokens/index'
+import { TOKEN_HASH_MAP, CHAINS } from '@synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import { getChainUrl } from '@urls'
-import { CHAINS_BY_ID } from '../../constants/chains'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export function TokenOnChain({ tokenAddress, chainId }) {
   const chainName = CHAINS_BY_ID[chainId].name

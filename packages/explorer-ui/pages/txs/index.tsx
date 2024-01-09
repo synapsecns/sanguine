@@ -3,7 +3,6 @@ import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/chains/index'
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import _ from 'lodash'
@@ -11,6 +10,9 @@ import { Pagination } from '@components/Pagination'
 import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { checksumAddress, checkAddressChecksum } from '@utils/checksum'
+import { CHAINS } from '@synapse-constants'
+
+const CHAIN_ID_NAMES_REVERSE = CHAINS. CHAIN_ID_NAMES_REVERSE
 
 export default function Txs() {
   const search = useSearchParams()

@@ -8,13 +8,15 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/chains/index'
+import { CHAINS } from '@synapse-constants'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
 } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
+
+const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 
 const titles = {
   VOLUME: 'Volume',
