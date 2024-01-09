@@ -137,7 +137,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		SendChainGas: true,
 		DestToken:    destUSDC.Address(),
 		OriginAmount: realWantAmount,
-		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1)),
+		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1000)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 	i.NoError(err)
