@@ -9,23 +9,24 @@
 .vscode/ @trajan0x @ChiTimesChi
 agents/ @trajan0x @ChiTimesChi
 core/ @trajan0x
-charts/ @trajan0x @bsgrigorov
-docker/ @trajan0x @bsgrigorov
+charts/ @trajan0x
+docker/ @trajan0x
 ethergo/ @trajan0x
 make/ @trajan0x
 
 packages/contracts-core/ @ChiTimesChi @trajan0x
-packages/docs/  @trajan0x @nautsimon
-packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x @nautsimon
-packages/explorer-ui/ @trajan0x @nautsimon @bigboydiamonds @abtestingalpha
-packages/rest-api/ @trajan0x @Defi-Moses @nautsimon
-packages/synapse-interface/ @bigboydiamonds @abtestingalpha @nautsimon @aureliusbtc
+packages/docs/  @trajan0x
+packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x
+packages/explorer-ui/ @trajan0x  @bigboydiamonds @abtestingalpha
+packages/rest-api/ @trajan0x @Defi-Moses
+packages/synapse-interface/ @bigboydiamonds @abtestingalpha  @aureliusbtc
 
 contrib/ @trajan0x
 
-services/explorer @trajan0x @nautsimon
-services/omnirpc @trajan0x @nautsimon
-services/scribe @trajan0x @nautsimon
+services/explorer @trajan0x
+services/omnirpc @trajan0x
+services/scribe @trajan0x
+packages/contracts-rfq @ChiTimesChi @mikeyrf
 
 tools/ @trajan0x
 
