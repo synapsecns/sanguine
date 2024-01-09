@@ -81,9 +81,6 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
-    useFetchPortfolioBalances()
-
   const {
     fromChainId,
     toChainId,
