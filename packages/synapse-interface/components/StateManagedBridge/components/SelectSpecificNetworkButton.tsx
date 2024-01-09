@@ -12,7 +12,7 @@ import {
 } from '@/styles/chains'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
-  TokenWithBalanceAndAllowances,
+  TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 
@@ -118,7 +118,7 @@ function ButtonContent({
 const ChainTokens = ({
   balanceTokens = [],
 }: {
-  balanceTokens: TokenWithBalanceAndAllowances[]
+  balanceTokens: TokenAndBalance[]
 }) => {
   const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
@@ -204,19 +204,17 @@ const ChainTokens = ({
       )}
       <div className="relative inline-block">
         <HoverContent isHovered={isT3Hovered}>
-          {balanceTokens?.map(
-            (token: TokenWithBalanceAndAllowances, key: number) => {
-              if (key > 1) {
-                const tokenSymbol = token.token.symbol
-                const balance = token.parsedBalance
-                return (
-                  <div className="whitespace-nowrap" key={key}>
-                    {balance} {tokenSymbol}
-                  </div>
-                )
-              }
+          {balanceTokens?.map((token: TokenAndBalance, key: number) => {
+            if (key > 1) {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap" key={key}>
+                  {balance} {tokenSymbol}
+                </div>
+              )
             }
-          )}
+          })}
         </HoverContent>
       </div>
     </div>

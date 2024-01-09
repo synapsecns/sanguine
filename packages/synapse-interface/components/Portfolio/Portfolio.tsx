@@ -5,9 +5,8 @@ import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
-  NetworkTokenBalancesAndAllowances,
-  TokenWithBalanceAndAllowance,
-  TokenWithBalanceAndAllowances,
+  NetworkTokenBalances,
+  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { PortfolioContent } from './PortfolioContent/PortfolioContent'
 import {
@@ -50,7 +49,7 @@ export const Portfolio = () => {
   const { balancesAndAllowances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
-  const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
+  const filteredPortfolioDataForBalances: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
   const searchInputActive: boolean = useMemo(() => {
@@ -83,48 +82,46 @@ export const Portfolio = () => {
     }
   }, [searchedBalancesAndAllowances, masqueradeActive, searchInput])
 
-  const flattenedPortfolioData: TokenWithBalanceAndAllowances[] =
-    useMemo(() => {
-      const flattened: TokenWithBalanceAndAllowances[] = []
-      const portfolio: NetworkTokenBalancesAndAllowances = masqueradeActive
-        ? filteredSearchedPortfolioDataForBalances.balances
-        : filteredPortfolioDataForBalances
-      Object.entries(portfolio).forEach(([chainId, tokens]) => {
-        tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-          flattened.push({ ...token })
-        })
+  const flattenedPortfolioData: TokenAndBalance[] = useMemo(() => {
+    const flattened: TokenAndBalance[] = []
+    const portfolio: NetworkTokenBalances = masqueradeActive
+      ? filteredSearchedPortfolioDataForBalances.balances
+      : filteredPortfolioDataForBalances
+    Object.entries(portfolio).forEach(([chainId, tokens]) => {
+      tokens.forEach((token: TokenAndBalance) => {
+        flattened.push({ ...token })
       })
-      return flattened
-    }, [
-      masqueradeActive,
-      filteredPortfolioDataForBalances,
-      filteredSearchedPortfolioDataForBalances,
-    ])
+    })
+    return flattened
+  }, [
+    masqueradeActive,
+    filteredPortfolioDataForBalances,
+    filteredSearchedPortfolioDataForBalances,
+  ])
 
-  const filteredBySearchInput: NetworkTokenBalancesAndAllowances =
-    useMemo(() => {
-      const searchFiltered: NetworkTokenBalancesAndAllowances = {}
-      const fuseOptions = {
-        includeScore: true,
-        threshold: 0.33,
-        distance: 20,
-        keys: ['queriedChain.name', 'token.name', 'token.symbol'],
-      }
-      const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
+  const filteredBySearchInput: NetworkTokenBalances = useMemo(() => {
+    const searchFiltered: NetworkTokenBalances = {}
+    const fuseOptions = {
+      includeScore: true,
+      threshold: 0.33,
+      distance: 20,
+      keys: ['queriedChain.name', 'token.name', 'token.symbol'],
+    }
+    const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
 
-      if (searchInput.length > 0) {
-        const results = fuse
-          .search(searchInput)
-          .map((i: Fuse.FuseResult<TokenWithBalanceAndAllowances>) => i.item)
-          .forEach((item: TokenWithBalanceAndAllowances) => {
-            const chainId: number = item.queriedChain.id
-            searchFiltered[chainId] = searchFiltered[chainId]
-              ? [...searchFiltered[chainId], item]
-              : [item]
-          })
-      }
-      return searchFiltered
-    }, [searchInput, flattenedPortfolioData])
+    if (searchInput.length > 0) {
+      const results = fuse
+        .search(searchInput)
+        .map((i: Fuse.FuseResult<TokenAndBalance>) => i.item)
+        .forEach((item: TokenAndBalance) => {
+          const chainId: number = item.queriedChain.id
+          searchFiltered[chainId] = searchFiltered[chainId]
+            ? [...searchFiltered[chainId], item]
+            : [item]
+        })
+    }
+    return searchFiltered
+  }, [searchInput, flattenedPortfolioData])
 
   useEffect(() => {
     dispatch(resetPortfolioState())
@@ -213,15 +210,12 @@ export const Portfolio = () => {
 }
 
 export function filterPortfolioBalancesWithBalances(
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-): NetworkTokenBalancesAndAllowances {
+  balancesAndAllowances: NetworkTokenBalances
+): NetworkTokenBalances {
   return Object.entries(balancesAndAllowances).reduce(
-    (
-      filteredBalances: NetworkTokenBalancesAndAllowances,
-      [key, tokenWithBalances]
-    ) => {
+    (filteredBalances: NetworkTokenBalances, [key, tokenWithBalances]) => {
       const filtered = tokenWithBalances.filter(
-        (token: TokenWithBalanceAndAllowance) => token.balance > 0n
+        (token: TokenAndBalance) => token.balance > 0n
       )
       if (filtered.length > 0) {
         filteredBalances[key] = filtered
