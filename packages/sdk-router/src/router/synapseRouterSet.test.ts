@@ -1,7 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { providers } from 'ethers'
 
-import { getTestProviderUrl } from '../constants/testValues'
+import { getTestProvider } from '../constants/testProviders'
 import {
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
@@ -14,13 +13,9 @@ import { SynapseRouterSet } from './synapseRouterSet'
 import { SynapseRouter } from './synapseRouter'
 
 describe('SynapseRouterSet', () => {
-  const ethProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ETH)
-  )
+  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
-  const arbProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ARBITRUM)
-  )
+  const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
 
   const testProviders: ChainProvider[] = [
     {
