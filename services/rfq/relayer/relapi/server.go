@@ -14,8 +14,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 )
@@ -23,7 +23,7 @@ import (
 // RelayerAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type RelayerAPIServer struct {
-	cfg     config.Config
+	cfg     relconfig.Config
 	db      reldb.Service
 	engine  *gin.Engine
 	handler metrics.Handler
@@ -34,7 +34,7 @@ type RelayerAPIServer struct {
 // It is used to initialize and run the API server.
 func NewRelayerAPI(
 	ctx context.Context,
-	cfg config.Config,
+	cfg relconfig.Config,
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
 	store reldb.Service,
@@ -54,16 +54,16 @@ func NewRelayerAPI(
 	}
 
 	chains := make(map[uint32]*service.Chain)
-	for chainID, bridge := range cfg.Bridges {
+	for chainID, chainCfg := range cfg.Chains {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(bridge), handler)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(chainCfg.Bridge), handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[chainID], err = service.NewChain(ctx, chainClient, common.HexToAddress(bridge), chainListener, submitter)
+		chains[uint32(chainID)], err = service.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.Bridge), chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}
@@ -101,8 +101,8 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	r.engine = engine
 
 	connection := baseServer.Server{}
-	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.Port)
-	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
+	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.APIConfig.Port)
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.APIConfig.Port), r.engine)
 	if err != nil {
 		return fmt.Errorf("could not start relayer api server: %w", err)
 	}

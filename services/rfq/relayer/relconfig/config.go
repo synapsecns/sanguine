@@ -35,6 +35,8 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
+	// APIConfig is the relayer API config.
+	APIConfig APIConfig `yaml:"api_config"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -63,6 +65,13 @@ type TokenConfig struct {
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
+}
+
+// APIConfig is the configuration for the relayer API server.
+type APIConfig struct {
+	Database   DatabaseConfig `yaml:"database"`
+	OmniRPCURL string         `yaml:"omnirpc_url"`
+	Port       string         `yaml:"port"`
 }
 
 // FeePricerConfig represents the configuration for the fee pricer.
