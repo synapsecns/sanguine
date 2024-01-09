@@ -43,13 +43,13 @@ export const SingleNetworkPortfolio = ({
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
   const isUnsupportedChain: boolean = currentChain ? false : true
 
-  const [tokensWithAllowance, tokensWithoutAllowance] =
-    separateTokensByAllowance(portfolioTokens)
+  // const [tokensWithAllowance, tokensWithoutAllowance] =
+  //   separateTokensByAllowance(portfolioTokens)
 
-  const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithoutAllowance)
+  // const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
+  //   sortTokensByBalanceDescending(tokensWithAllowance)
+  // const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
+  //   sortTokensByBalanceDescending(tokensWithoutAllowance)
   const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
     sortTokensByBalanceDescending(portfolioTokens)
 
@@ -120,9 +120,9 @@ export const SingleNetworkPortfolio = ({
             connectedChain={currentChain}
           />
         )}
-        {sortedTokensWithAllowance &&
-          sortedTokensWithAllowance.length > 0 &&
-          sortedTokensWithAllowance.map(
+        {sortedTokensForVisualizer &&
+          sortedTokensForVisualizer.length > 0 &&
+          sortedTokensForVisualizer.map(
             ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
                 key={token.symbol}
@@ -135,7 +135,7 @@ export const SingleNetworkPortfolio = ({
               />
             )
           )}
-        {sortedTokensWithoutAllowance &&
+        {/* {sortedTokensWithoutAllowance &&
           sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
             ({ token, balance }: TokenWithBalanceAndAllowances) => (
@@ -148,7 +148,7 @@ export const SingleNetworkPortfolio = ({
                 isApproved={false}
               />
             )
-          )}
+          )} */}
       </PortfolioAccordion>
     </div>
   )
