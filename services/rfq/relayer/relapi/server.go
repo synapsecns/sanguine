@@ -1,3 +1,4 @@
+// Package relapi provides RESTful API services for the RFQ relayer
 package relapi
 
 import (

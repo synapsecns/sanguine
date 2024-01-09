@@ -150,13 +150,18 @@ func (c *RelayerServerSuite) startAPIServer() {
 	}()
 
 	// Wait for the server to start
-	retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
+	err := retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		client := &http.Client{}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://localhost:%d/health", c.port), nil)
 		c.Require().NoError(err)
-		_, err = client.Do(req)
+		resp, err := client.Do(req)
+		defer func() {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}()
 		return err
 	}, retry.WithMaxTotalTime(10*time.Second))
+	c.Require().NoError(err)
 }
 
 func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus) reldb.QuoteRequest {
