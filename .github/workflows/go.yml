@@ -244,14 +244,17 @@ jobs:
         with:
           dest: '/tmp/logs'
       - name: Tar logs
-        if: failure()
+#        if: failure()
         run: tar cvzf ./logs.tgz /tmp/logs
       - name: Upload logs to GitHub
-        if: failure()
+#        if: failure()
         uses: actions/upload-artifact@master
         with:
           name: ${{matrix.package}}-logs.tgz
           path: ./logs.tgz
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
