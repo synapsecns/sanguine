@@ -4,6 +4,10 @@ Contributions should roughly follow the [uber style guide](https://github.com/ub
 
 <!-- todo: more-->
 
+## Linting
+
+Linting for go is used using [golangci-lint](https://golangci-lint.run/) at the latest released version. Please upgrade or install using your package manager. and run `make lint` from your desired module.
+
 # Adding a new Go Module
 
 If you need to make a new go module, here are the steps to follow:
