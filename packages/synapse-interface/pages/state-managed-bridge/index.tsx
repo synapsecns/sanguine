@@ -63,7 +63,6 @@ import {
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
@@ -209,17 +208,6 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
-      if (fromToken?.addresses[fromChainId] !== zeroAddress && address) {
-        dispatch(
-          updateSingleTokenAllowance({
-            chainId: fromChainId,
-            allowance: allowance,
-            spender: routerAddress,
-            token: fromToken,
-          })
-        )
-      }
-
       // TODO: do this properly (RFQ needs no slippage, others do)
       const originMinWithSlippage =
         bridgeModuleName === 'SynapseRFQ'
@@ -268,7 +256,9 @@ const StateManagedBridge = () => {
           })
         )
 
-        toast.dismiss(quoteToast)
+        if (quoteToast) {
+          toast.dismiss(quoteToast)
+        }
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
@@ -310,7 +300,8 @@ const StateManagedBridge = () => {
         fromToken?.addresses[fromChainId]
       )
       await tx
-      setIsApproved(true)
+      /** Re-fetch bridge quote to re-check approval state */
+      getAndSetBridgeQuote()
     } catch (error) {
       return txErrorHandler(error)
     }
