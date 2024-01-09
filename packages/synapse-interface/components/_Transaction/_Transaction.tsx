@@ -111,7 +111,7 @@ export const _Transaction = ({
   })
 
   /** Check if store already marked tx as complete, otherwise check hook status */
-  const isTxCompleted = isStoredComplete ?? isTxComplete
+  const isTxFinalized = isStoredComplete ?? isTxComplete
 
   /** Update tx kappa when available */
   useEffect(() => {
@@ -179,14 +179,14 @@ export const _Transaction = ({
         </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isTxCompleted ? (
+          {isTxFinalized ? (
             <TransactionStatus string="Complete" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
-              isComplete={isTxCompleted as boolean}
+              isComplete={isTxFinalized as boolean}
               remainingTime={remainingTimeInMinutes}
               isDelayed={isEstimatedTimeReached}
             />
@@ -208,7 +208,7 @@ export const _Transaction = ({
                 text="Contact Support"
                 link="https://discord.gg/synapseprotocol"
               />
-              {isTxCompleted && (
+              {isTxFinalized && (
                 <MenuItem
                   text="Clear Transaction"
                   link={null}
