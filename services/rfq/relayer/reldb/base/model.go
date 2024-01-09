@@ -93,7 +93,7 @@ type RequestForQuote struct {
 	DestAmount decimal.Decimal `gorm:"index"`
 	// DestTxHash is the destination tx hash
 	DestTxHash string
-	// Deadline is the deadline for the transaction
+	// Deadline is the deadline for the relay
 	Deadline time.Time `gorm:"index"`
 	// OriginNonce is the nonce on the origin chain in the app.
 	// this is not effected by the message.sender nonce.
