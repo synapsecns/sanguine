@@ -57,6 +57,7 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
 import {
+  fetchAndStoreSingleNetworkPortfolioBalances,
   fetchAndStoreSingleTokenAllowance,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
@@ -81,22 +82,14 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
-    useFetchPortfolioBalances()
-
   const {
     fromChainId,
     toChainId,
     fromToken,
     toToken,
     bridgeQuote,
-    fromValue,
     debouncedFromValue,
     destinationAddress,
-    fromChainIds,
-    toChainIds,
-    fromTokens,
-    toTokens,
   }: BridgeState = useBridgeState()
   const {
     showSettingsSlideOver,
@@ -135,15 +128,7 @@ const StateManagedBridge = () => {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    debouncedFromValue,
-    address,
-    portfolioBalances,
-  ])
+  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
@@ -240,16 +225,14 @@ const StateManagedBridge = () => {
       }
 
       // TODO: do this properly (RFQ needs no slippage, others do)
-      const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        originQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-      const destMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (destQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        destQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
+      const originMinWithSlippage =
+        bridgeModuleName === 'SynapseRFQ'
+          ? originQuery?.minAmountOut ?? 0n
+          : subtractSlippage(originQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
+      const destMinWithSlippage =
+        bridgeModuleName === 'SynapseRFQ'
+          ? destQuery?.minAmountOut ?? 0n
+          : subtractSlippage(destQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
@@ -438,6 +421,13 @@ const StateManagedBridge = () => {
             timestamp: undefined,
             transactionHash: tx,
             isSubmitted: false,
+          })
+        )
+        /** Update Origin Chain token balances after valid txHash  */
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address,
+            chainId: fromChainId,
           })
         )
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))

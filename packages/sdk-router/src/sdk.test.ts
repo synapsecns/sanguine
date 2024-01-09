@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, PopulatedTransaction, providers } from 'ethers'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 
 import { SynapseSDK } from './sdk'
@@ -22,8 +22,8 @@ import {
   ETH_USDC,
   ETH_USDT,
   NATIVE_ADDRESS,
-  getTestProviderUrl,
 } from './constants/testValues'
+import { getTestProvider } from './constants/testProviders'
 import {
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
@@ -134,30 +134,18 @@ const createSwapQuoteTests = (
 }
 
 describe('SynapseSDK', () => {
-  const ethProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ETH)
-  )
+  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
-  const arbProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ARBITRUM)
-  )
+  const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
 
-  const opProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.OPTIMISM)
-  )
+  const opProvider: Provider = getTestProvider(SupportedChainId.OPTIMISM)
 
-  const avaxProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.AVALANCHE)
-  )
+  const avaxProvider: Provider = getTestProvider(SupportedChainId.AVALANCHE)
 
-  const bscProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.BSC)
-  )
+  const bscProvider: Provider = getTestProvider(SupportedChainId.BSC)
 
   // Chain where CCTP is unlikely to be deployed
-  const moonbeamProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.MOONBEAM)
-  )
+  const moonbeamProvider: Provider = getTestProvider(SupportedChainId.MOONBEAM)
 
   describe('#constructor', () => {
     const synapse = new SynapseSDK(

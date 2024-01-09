@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
@@ -111,7 +112,7 @@ export const _Transaction = ({
   })
 
   /** Check if store already marked tx as complete, otherwise check hook status */
-  const isTxCompleted = isStoredComplete ?? isTxComplete
+  const isTxFinalized = isStoredComplete ?? isTxComplete
 
   /** Update tx kappa when available */
   useEffect(() => {
@@ -132,6 +133,13 @@ export const _Transaction = ({
       if (!txn.isComplete) {
         dispatch(
           completeTransaction({ originTxHash, kappa: txKappa as string })
+        )
+        /** Update Destination Chain token balances after tx is marked complete  */
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address: connectedAddress,
+            chainId: destinationChain.id,
+          })
         )
       }
     }
@@ -179,14 +187,14 @@ export const _Transaction = ({
         </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isTxCompleted ? (
+          {isTxFinalized ? (
             <TransactionStatus string="Complete" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
-              isComplete={isTxCompleted as boolean}
+              isComplete={isTxFinalized as boolean}
               remainingTime={remainingTimeInMinutes}
               isDelayed={isEstimatedTimeReached}
             />
@@ -208,7 +216,7 @@ export const _Transaction = ({
                 text="Contact Support"
                 link="https://discord.gg/synapseprotocol"
               />
-              {isTxComplete && (
+              {isTxFinalized && (
                 <MenuItem
                   text="Clear Transaction"
                   link={null}
