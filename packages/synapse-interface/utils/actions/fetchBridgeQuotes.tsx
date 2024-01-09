@@ -61,16 +61,22 @@ export async function fetchBridgeQuote(
           : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
       // TODO: do this properly (RFQ needs no slippage, others do)
-      const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        originQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-      const destMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (destQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        destQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
+      let originMinWithSlippage, destMinWithSlippage
+      if (bridgeModuleName === 'SynapseRFQ') {
+        originMinWithSlippage = originQuery?.minAmountOut ?? 0n
+        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
+      } else {
+        originMinWithSlippage = subtractSlippage(
+          originQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+        destMinWithSlippage = subtractSlippage(
+          destQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+      }
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
