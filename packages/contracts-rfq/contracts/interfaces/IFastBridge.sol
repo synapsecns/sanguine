@@ -91,8 +91,7 @@ interface IFastBridge {
 
     /// @notice Refunds an outstanding bridge transaction in case optimistic bridging failed
     /// @param request The encoded bridge transaction to refund
-    /// @param to The recipient address of the funds
-    function refund(bytes memory request, address to) external;
+    function refund(bytes memory request) external;
 
     // ============ Views ============
 

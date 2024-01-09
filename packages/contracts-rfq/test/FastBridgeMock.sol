@@ -124,7 +124,7 @@ contract FastBridgeMock is IFastBridge, Admin {
         revert("not implemented");
     }
 
-    function refund(bytes memory request, address to) external {
+    function refund(bytes memory request) external {
         revert("not implemented");
     }
 }
