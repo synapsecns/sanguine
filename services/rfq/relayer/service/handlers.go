@@ -175,8 +175,10 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
+	if err != nil {
+		return fmt.Errorf("could not update quote request status: %w", err)
+	}
 
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := SubmitRelay(ctx, &q.Dest, request)

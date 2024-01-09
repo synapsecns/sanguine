@@ -159,7 +159,7 @@ func (c *RelayerServerSuite) startAPIServer() {
 			err = resp.Body.Close()
 			c.Require().NoError(err)
 		}()
-		return err
+		return fmt.Errorf("server not ready: %w", err)
 	}, retry.WithMaxTotalTime(10*time.Second))
 	c.Require().NoError(err)
 }

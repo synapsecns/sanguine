@@ -103,7 +103,7 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 	}
 
 	chainID := quoteRequest.Transaction.DestChainId
-	chain, ok := h.chains[uint32(chainID)]
+	chain, ok := h.chains[chainID]
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No contract found for chain: %d", chainID)})
 		return
