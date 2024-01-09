@@ -2,13 +2,14 @@ package listener_test
 
 import (
 	"context"
+	"math/big"
+	"sync"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
-	"math/big"
-	"sync"
 )
 
 func (l *ListenerTestSuite) TestListenForEvents() {
@@ -27,11 +28,13 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 			txID := [32]byte(crypto.Keccak256(testAddress.Bytes()))
 			bridgeRequestTX, err := handle.MockBridgeRequestRaw(auth.TransactOpts, txID, testAddress, []byte(gofakeit.Sentence(10)))
 			l.NoError(err)
+			l.NotNil(bridgeRequestTX)
 
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeRequestTX)
 
 			bridgeResponseTX, err := handle.MockBridgeRelayer(auth.TransactOpts, txID, testAddress, testAddress, testAddress, new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 			l.NoError(err)
+			l.NotNil(bridgeResponseTX)
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeResponseTX)
 		}(i)
 	}
