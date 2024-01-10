@@ -1,5 +1,19 @@
+import fetchMock from 'jest-fetch-mock'
+
 import { getAllQuotes } from './api'
 import { FastBridgeQuoteAPI, unmarshallFastBridgeQuote } from './quote'
+
+const OK_RESPONSE_TIME = 1900
+const SLOW_RESPONSE_TIME = 2100
+
+const delayedAPIPromise = (
+  quotes: FastBridgeQuoteAPI[],
+  delay: number
+): Promise<{ body: string }> => {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({ body: JSON.stringify(quotes) }), delay)
+  )
+}
 
 describe('getAllQuotes', () => {
   const quotesAPI: FastBridgeQuoteAPI[] = [
@@ -31,39 +45,55 @@ describe('getAllQuotes', () => {
     },
   ]
 
-  it('returns an empty array when the response is not ok', async () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        status: 500,
-        ok: false,
-      })
-    ) as any
-
-    const result = await getAllQuotes()
-    expect(result).toEqual([])
+  beforeEach(() => {
+    fetchMock.enableMocks()
   })
 
-  it('returns a list of quotes when the response is ok', async () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        status: 200,
-        ok: true,
-        json: () => Promise.resolve(quotesAPI),
-      })
-    ) as any
-
-    const result = await getAllQuotes()
-    // You might need to adjust this depending on how your unmarshallFastBridgeQuote function works
-    expect(result).toEqual([
-      unmarshallFastBridgeQuote(quotesAPI[0]),
-      unmarshallFastBridgeQuote(quotesAPI[1]),
-    ])
+  afterEach(() => {
+    fetchMock.resetMocks()
   })
 
-  it('Integration test', async () => {
-    global.fetch = require('node-fetch')
-    const result = await getAllQuotes()
-    console.log('Quotes: ' + JSON.stringify(result, null, 2))
-    expect(result.length).toBeGreaterThan(0)
+  describe('Returns a list of quotes', () => {
+    it('when the response is ok', async () => {
+      fetchMock.mockResponseOnce(JSON.stringify(quotesAPI))
+      const result = await getAllQuotes()
+      expect(result).toEqual([
+        unmarshallFastBridgeQuote(quotesAPI[0]),
+        unmarshallFastBridgeQuote(quotesAPI[1]),
+      ])
+    })
+
+    it('when the response takes a long, but reasonable time to return', async () => {
+      fetchMock.mockResponseOnce(() =>
+        delayedAPIPromise(quotesAPI, OK_RESPONSE_TIME)
+      )
+      const result = await getAllQuotes()
+      expect(result).toEqual([
+        unmarshallFastBridgeQuote(quotesAPI[0]),
+        unmarshallFastBridgeQuote(quotesAPI[1]),
+      ])
+    })
+  })
+
+  describe('Returns an empty array', () => {
+    it('when the response is not ok', async () => {
+      fetchMock.mockResponseOnce(JSON.stringify(quotesAPI), { status: 500 })
+      const result = await getAllQuotes()
+      expect(result).toEqual([])
+    })
+
+    it('when fetch throws an error', async () => {
+      fetchMock.mockRejectOnce(new Error('Error fetching quotes'))
+      const result = await getAllQuotes()
+      expect(result).toEqual([])
+    })
+
+    it('when the response takes too long to return', async () => {
+      fetchMock.mockResponseOnce(() =>
+        delayedAPIPromise(quotesAPI, SLOW_RESPONSE_TIME)
+      )
+      const result = await getAllQuotes()
+      expect(result).toEqual([])
+    })
   })
 })
