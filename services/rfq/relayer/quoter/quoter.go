@@ -95,6 +95,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 
 	defer func() {
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
+		metrics.EndSpan(span)
 	}()
 
 	// allowed pairs for this origin token on the destination
