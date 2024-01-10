@@ -85,7 +85,7 @@ func (c *RelayerServerSuite) SetupTest() {
 				Bridge: arbFastBridgeAddress.Hex(),
 			},
 		},
-		APIConfig: relconfig.APIConfig{
+		RelayerAPIConfig: relconfig.RelayerAPIConfig{
 			Database: relconfig.DatabaseConfig{
 				Type: "sqlite",
 				DSN:  filet.TmpFile(c.T(), "", "").Name(),
