@@ -994,7 +994,7 @@ describe('SynapseSDK', () => {
       })
 
       describe('SynapseRFQ', () => {
-        const arbSynRFQ = '0x1a54fa31cbcad8c1cbc3a47dcd00864eac9ac2b0'
+        const arbSynRFQ = '0x1A54Fa31CBCaD8C1cbC3a47dCD00864Eac9Ac2b0'
         const events = 'BridgeRequested'
 
         it('OP -> ARB', async () => {
