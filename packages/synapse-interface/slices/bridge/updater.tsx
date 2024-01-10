@@ -109,11 +109,11 @@ export default function Updater(): null {
   // }, [debouncedToTokensFromValue, toTokens])
 
   // Clear bridge quote if input is empty
-  useEffect(() => {
-    if (debouncedFromValue === initialState.debouncedFromValue) {
-      dispatch(resetBridgeQuote())
-    }
-  }, [debouncedFromValue, bridgeQuote])
+  // useEffect(() => {
+  //   if (debouncedFromValue === initialState.debouncedFromValue) {
+  //     dispatch(resetBridgeQuote())
+  //   }
+  // }, [debouncedFromValue, bridgeQuote])
 
   return null
 }
