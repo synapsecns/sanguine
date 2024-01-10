@@ -36,7 +36,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
 
-func (i *IntegrationSuite) setupAPI() {
+func (i *IntegrationSuite) setupQuoterAPI() {
 	dbPath := filet.TmpDir(i.T(), "")
 	apiPort, err := freeport.GetFreePort()
 	i.NoError(err)

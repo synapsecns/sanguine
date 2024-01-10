@@ -18,9 +18,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
-func (c *RelayerServerSuite) TestNewAPIServer() {
+func (c *RelayerServerSuite) TestNewQuoterAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/health", c.port), nil)
 	c.Require().NoError(err)
@@ -35,7 +35,7 @@ func (c *RelayerServerSuite) TestNewAPIServer() {
 }
 
 func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Insert quote request to db
 	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
@@ -69,7 +69,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 }
 
 func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Insert quote request to db
 	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
@@ -104,7 +104,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 }
 
 func (c *RelayerServerSuite) TestGetTxRetry() {
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Insert quote request to db
 	quoteRequest := c.getTestQuoteRequest(reldb.Seen)
@@ -142,8 +142,8 @@ func (c *RelayerServerSuite) TestGetTxRetry() {
 	c.Equal(status, submitterdb.Stored)
 }
 
-// startAPIServer starts the API server and waits for it to initialize.
-func (c *RelayerServerSuite) startAPIServer() {
+// startQuoterAPIServer starts the API server and waits for it to initialize.
+func (c *RelayerServerSuite) startQuoterAPIServer() {
 	go func() {
 		err := c.RelayerAPIServer.Run(c.GetTestContext())
 		c.Require().NoError(err)

@@ -69,7 +69,7 @@ func (i *IntegrationSuite) SetupTest() {
 	i.setupBackends()
 
 	// setup the api server
-	i.setupAPI()
+	i.setupQuoterAPI()
 	i.setupRelayer()
 
 }
