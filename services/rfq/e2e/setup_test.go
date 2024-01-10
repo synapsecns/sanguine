@@ -231,15 +231,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
-		RelayerAPIURL: fmt.Sprintf("http://localhost:%d", relayerApiPort),
-		RelayerAPIConfig: relconfig.RelayerAPIConfig{
-			Database: relconfig.DatabaseConfig{
-				Type: dbcommon.Sqlite.String(),
-				DSN:  dsn,
-			},
-			OmniRPCURL: i.omniServer,
-			Port:       strconv.Itoa(relayerApiPort),
-		},
+		RelayerAPIPort: strconv.Itoa(relayerApiPort),
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,

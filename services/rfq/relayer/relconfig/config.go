@@ -25,8 +25,8 @@ type Config struct {
 	OmniRPCURL string `yaml:"omnirpc_url"`
 	// RfqAPIURL is the URL of the RFQ API.
 	RfqAPIURL string `yaml:"rfq_url"`
-	// RelayerAPIURL is the URL of the relayer API.
-	RelayerAPIURL string `yaml:"relayer_url"`
+	// RelayerAPIPort is the port of the relayer API.
+	RelayerAPIPort string `yaml:"relayer_api_port"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 	// QuotableTokens is a map of token -> list of quotable tokens.
@@ -37,8 +37,6 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
-	// RelayerAPIConfig is the relayer API config.
-	RelayerAPIConfig RelayerAPIConfig `yaml:"api_config"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -67,13 +65,6 @@ type TokenConfig struct {
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
-}
-
-// RelayerAPIConfig is the configuration for the relayer API server.
-type RelayerAPIConfig struct {
-	Database   DatabaseConfig `yaml:"database"`
-	OmniRPCURL string         `yaml:"omnirpc_url"`
-	Port       string         `yaml:"port"`
 }
 
 // FeePricerConfig represents the configuration for the fee pricer.

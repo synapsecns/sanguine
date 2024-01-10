@@ -85,13 +85,10 @@ func (c *RelayerServerSuite) SetupTest() {
 				Bridge: arbFastBridgeAddress.Hex(),
 			},
 		},
-		RelayerAPIConfig: relconfig.RelayerAPIConfig{
-			Database: relconfig.DatabaseConfig{
-				Type: "sqlite",
-				DSN:  filet.TmpFile(c.T(), "", "").Name(),
-			},
-			OmniRPCURL: testOmnirpc,
-			Port:       strconv.Itoa(port),
+		RelayerAPIPort: strconv.Itoa(port),
+		Database: relconfig.DatabaseConfig{
+			Type: "sqlite",
+			DSN:  filet.TmpFile(c.T(), "", "").Name(),
 		},
 	}
 	c.cfg = testConfig

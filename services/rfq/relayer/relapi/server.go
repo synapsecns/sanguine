@@ -101,8 +101,8 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	r.engine = engine
 
 	connection := baseServer.Server{}
-	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.RelayerAPIConfig.Port)
-	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.RelayerAPIConfig.Port), r.engine)
+	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.RelayerAPIPort)
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.RelayerAPIPort), r.engine)
 	if err != nil {
 		return fmt.Errorf("could not start relayer api server: %w", err)
 	}
