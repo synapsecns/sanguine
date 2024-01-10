@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.3.10",
+  "version": "0.3.15",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -48,6 +48,7 @@
     "@types/jest": "^24.0.25",
     "dotenv": "^16.3.1",
     "husky": "^8.0.1",
+    "jest-fetch-mock": "^3.0.3",
     "jest-mock-extended": "^3.0.5",
     "node-fetch": "^2.0.0",
     "size-limit": "^8.1.0",

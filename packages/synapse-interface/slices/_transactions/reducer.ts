@@ -30,6 +30,9 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {
     addTransaction: (state, action: PayloadAction<any>) => {
+      if (!Array.isArray(state.transactions)) {
+        state.transactions = [] // Initialize to an empty array if not already an array
+      }
       state.transactions.push(action.payload)
     },
     removeTransaction: (
