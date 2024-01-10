@@ -61,8 +61,8 @@ export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  */
 const FAST_BRIDGE_ADDRESS = ''
 const FAST_BRIDGE_EXCEPTION_MAP: AddressMap = {
-  [SupportedChainId.OPTIMISM]: '0x89fb287cc34c2878549a741f2c82d9c2e4657693',
-  [SupportedChainId.ARBITRUM]: '0x1a54fa31cbcad8c1cbc3a47dcd00864eac9ac2b0',
+  [SupportedChainId.OPTIMISM]: '0x89fB287cC34C2878549a741f2C82D9c2e4657693',
+  [SupportedChainId.ARBITRUM]: '0x1A54Fa31CBCaD8C1cbC3a47dCD00864Eac9Ac2b0',
   [SupportedChainId.ETH]: '0xc3c996af7f7a9245685722e73b6f18f3bb22db3d',
 }
 

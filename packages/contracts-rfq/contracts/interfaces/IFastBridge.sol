@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 interface IFastBridge {
     struct BridgeTransaction {
@@ -24,14 +24,34 @@ interface IFastBridge {
 
     // ============ Events ============
 
-    event BridgeRequested(bytes32 transactionId, address sender, bytes request);
-    event BridgeRelayed(
-        bytes32 transactionId, address relayer, address to, address token, uint256 amount, uint256 chainGasAmount
+    event BridgeRequested(
+        bytes32 indexed transactionId,
+        address indexed sender,
+        bytes request,
+        uint32 destChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
+        bool sendChainGas
     );
-    event BridgeProofProvided(bytes32 transactionId, address relayer, bytes32 transactionHash);
-    event BridgeProofDisputed(bytes32 transactionId, address relayer);
-    event BridgeDepositClaimed(bytes32 transactionId, address relayer, address to, address token, uint256 amount);
-    event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount);
+    event BridgeRelayed(
+        bytes32 indexed transactionId,
+        address indexed relayer,
+        address indexed to,
+        uint32 originChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
+        uint256 chainGasAmount
+    );
+    event BridgeProofProvided(bytes32 indexed transactionId, address indexed relayer, bytes32 transactionHash);
+    event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
+    event BridgeDepositClaimed(
+        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount
+    );
+    event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
     // ============ Methods ============
 
@@ -71,8 +91,7 @@ interface IFastBridge {
 
     /// @notice Refunds an outstanding bridge transaction in case optimistic bridging failed
     /// @param request The encoded bridge transaction to refund
-    /// @param to The recipient address of the funds
-    function refund(bytes memory request, address to) external;
+    function refund(bytes memory request) external;
 
     // ============ Views ============
 
