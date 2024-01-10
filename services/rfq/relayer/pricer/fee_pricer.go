@@ -7,8 +7,11 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,10 +38,12 @@ type feePricer struct {
 	tokenPriceCache *ttlcache.Cache[string, *big.Int]
 	// clientFetcher is used to fetch clients.
 	clientFetcher submitter.ClientFetcher
+	// handler is the metrics handler.
+	handler metrics.Handler
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, handler metrics.Handler) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
@@ -48,6 +53,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		gasPriceCache:   gasPriceCache,
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds))),
 		clientFetcher:   clientFetcher,
+		handler:         handler,
 	}
 }
 
@@ -75,20 +81,48 @@ func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination u
 	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken)
 }
 
-func (f *feePricer) GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
+		attribute.Int(metrics.Origin, int(origin)),
+		attribute.Int(metrics.Destination, int(destination)),
+		attribute.String("denom_token", denomToken),
+	))
+
 	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken)
 	if err != nil {
+		span.AddEvent("could not get origin fee", trace.WithAttributes(
+			attribute.String("error", err.Error()),
+		))
 		return nil, err
 	}
 	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken)
 	if err != nil {
+		span.AddEvent("could not get destination fee", trace.WithAttributes(
+			attribute.String("error", err.Error()),
+		))
 		return nil, err
 	}
 	totalFee := new(big.Int).Add(originFee, destFee)
+	span.SetAttributes(
+		attribute.String("origin_fee", originFee.String()),
+		attribute.String("dest_fee", destFee.String()),
+		attribute.String("total_fee", totalFee.String()),
+	)
 	return totalFee, nil
 }
 
-func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string) (*big.Int, error) {
+func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string) (_ *big.Int, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "getFee", trace.WithAttributes(
+		attribute.Int("gas_chain", int(gasChain)),
+		attribute.Int("denom_chain", int(denomChain)),
+		attribute.Int("gas_estimate", gasEstimate),
+		attribute.String("denom_token", denomToken),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	gasPrice, err := f.GetGasPrice(ctx, gasChain)
 	if err != nil {
 		return nil, err
@@ -121,6 +155,18 @@ func (f *feePricer) getFee(ctx context.Context, gasChain, denomChain uint32, gas
 	feeUSDCDecimals := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
 	// Apply the fixed fee multiplier.
 	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(f.config.GetFixedFeeMultiplier())).Int(nil)
+	span.SetAttributes(
+		attribute.String("gas_price", gasPrice.String()),
+		attribute.Float64("native_token_price", nativeTokenPrice),
+		attribute.Float64("denom_token_price", denomTokenPrice),
+		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
+		attribute.String("fee_wei", feeWei.String()),
+		attribute.String("fee_eth", feeEth.String()),
+		attribute.String("fee_usd", feeUSD.String()),
+		attribute.String("fee_usdc", feeUSDC.String()),
+		attribute.String("fee_usdc_decimals", feeUSDCDecimals.String()),
+		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
+	)
 	return feeUSDCDecimalsScaled, nil
 }
 
