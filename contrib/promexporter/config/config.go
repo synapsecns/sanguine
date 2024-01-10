@@ -106,7 +106,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 		{
 			Address:  "0xb300eff6b57aa09e5fccf7221fcb9e676a74d931",
 			Name:     "rfq",
-			ChainIDs: types.ToInts(types.OPTIMISM, types.ARBITRUM),
+			ChainIDs: types.ToInts(types.OPTIMISM, types.ARBITRUM, types.ETH),
 		},
 	}
 
