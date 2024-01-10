@@ -85,7 +85,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	fp := pricer.NewFeePricer(cfg, omniClient)
+	fp := pricer.NewFeePricer(cfg, omniClient, metricHandler)
 
 	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
 	if err != nil {
