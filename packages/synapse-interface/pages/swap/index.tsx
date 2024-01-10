@@ -205,7 +205,9 @@ const StateManagedSwap = () => {
         )
 
         dispatch(setIsLoading(false))
-        toast.dismiss(quoteToast)
+        if (quoteToast) {
+          toast.dismiss(quoteToast)
+        }
         const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
@@ -243,23 +245,10 @@ const StateManagedSwap = () => {
         swapQuote?.routerAddress,
         swapChainId,
         swapFromToken?.addresses[swapChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: swapQuote?.routerAddress as Address,
-            tokenAddress: swapFromToken?.addresses[swapChainId] as Address,
-            address: address,
-            chainId: swapChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+      )
+      await tx
+      /** Re-fetch swap quote to re-check approval state */
+      getAndSetSwapQuote()
     } catch (error) {
       return txErrorHandler(error)
     }

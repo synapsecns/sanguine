@@ -213,17 +213,6 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
-      if (fromToken?.addresses[fromChainId] !== zeroAddress && address) {
-        dispatch(
-          updateSingleTokenAllowance({
-            chainId: fromChainId,
-            allowance: allowance,
-            spender: routerAddress,
-            token: fromToken,
-          })
-        )
-      }
-
       // TODO: do this properly (RFQ needs no slippage, others do)
       const originMinWithSlippage =
         bridgeModuleName === 'SynapseRFQ'
@@ -272,7 +261,9 @@ const StateManagedBridge = () => {
           })
         )
 
-        toast.dismiss(quoteToast)
+        if (quoteToast) {
+          toast.dismiss(quoteToast)
+        }
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
@@ -312,23 +303,10 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: bridgeQuote?.routerAddress as Address,
-            tokenAddress: fromToken?.addresses[fromChainId] as Address,
-            address: address,
-            chainId: fromChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+      )
+      await tx
+      /** Re-fetch bridge quote to re-check approval state */
+      getAndSetBridgeQuote()
     } catch (error) {
       return txErrorHandler(error)
     }
