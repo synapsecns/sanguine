@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
@@ -22,6 +21,15 @@ import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
+import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
+import { resetFetchedBridgeQuotes } from '@/slices/bridge/actions'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { useAppDispatch } from '@/store/hooks'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { isEmptyString } from '@/utils/isEmptyString'
+
 interface TokenWithRates extends Token {
   exchangeRate: bigint
   estimatedTime: number
@@ -36,11 +44,13 @@ export const ToTokenListOverlay = () => {
     toToken,
     toTokensBridgeQuotes,
     toTokensBridgeQuotesStatus,
+    debouncedToTokensFromValue,
+    bridgeQuote,
   }: BridgeState = useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const overlayRef = useRef(null)
 
   let possibleTokens: Token[] = sortByPriorityRank(toTokens)
@@ -172,7 +182,7 @@ export const ToTokenListOverlay = () => {
       fromChainId && toChainId && fromToken && toToken
     )
     const isFetchLoading: boolean =
-      toTokensBridgeQuotesStatus === FetchState.IDLE ||
+      // toTokensBridgeQuotesStatus === FetchState.IDLE ||
       toTokensBridgeQuotesStatus === FetchState.LOADING
 
     return hasRequiredUserInput && isFetchLoading
@@ -227,7 +237,52 @@ export const ToTokenListOverlay = () => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
 
-  console.log('orderedPossibleTokens:', orderedPossibleTokens)
+  /** Fetch Alternative Bridge Quotes when component renders */
+
+  const { synapseSDK } = useSynapseContext()
+
+  useEffect(() => {
+    console.log('debouncedToTokensFromValue:', debouncedToTokensFromValue)
+
+    const isInputInvalid =
+      hasOnlyZeroes(debouncedToTokensFromValue) ||
+      isEmptyString(debouncedToTokensFromValue)
+
+    if (
+      !isInputInvalid &&
+      fromChainId &&
+      toChainId &&
+      fromToken &&
+      toToken &&
+      synapseSDK
+    ) {
+      const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
+        (token: Token) => {
+          return {
+            originChainId: fromChainId,
+            originToken: fromToken as Token,
+            destinationChainId: toChainId,
+            destinationTokenAddress: token?.addresses[toChainId] as Address,
+            destinationToken: token as Token,
+            amount: stringToBigInt(
+              debouncedToTokensFromValue,
+              fromToken?.decimals[fromChainId]
+            ),
+          }
+        }
+      )
+      dispatch(
+        fetchAndStoreBridgeQuotes({
+          requests: bridgeQuoteRequests,
+          synapseSDK,
+        })
+      )
+    }
+
+    if (isInputInvalid) {
+      dispatch(resetFetchedBridgeQuotes())
+    }
+  }, [debouncedToTokensFromValue])
 
   return (
     <div

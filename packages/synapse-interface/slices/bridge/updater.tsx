@@ -70,43 +70,43 @@ export default function Updater(): null {
   }, [debouncedFromValue])
 
   // Conditions for fetching alternative bridge quotes
-  useEffect(() => {
-    const userInputExists: boolean =
-      debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
-    const userInputIsZero: boolean = hasOnlyZeroes(debouncedFromValue)
+  // useEffect(() => {
+  //   const userInputExists: boolean =
+  //     debouncedToTokensFromValue !== initialState.debouncedToTokensFromValue
+  //   const userInputIsZero: boolean = hasOnlyZeroes(debouncedFromValue)
 
-    if (!userInputIsZero) {
-      if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
-        const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
-          (token: Token) => {
-            return {
-              originChainId: fromChainId,
-              originToken: fromToken as Token,
-              destinationChainId: toChainId,
-              destinationTokenAddress: token?.addresses[toChainId] as Address,
-              destinationToken: token as Token,
-              amount: stringToBigInt(
-                userInputExists
-                  ? debouncedToTokensFromValue
-                  : getDefaultBridgeAmount(fromToken),
-                fromToken?.decimals[fromChainId]
-              ),
-            }
-          }
-        )
-        dispatch(
-          fetchAndStoreBridgeQuotes({
-            requests: bridgeQuoteRequests,
-            synapseSDK,
-          })
-        )
-      }
-    }
+  //   if (!userInputIsZero) {
+  //     if (fromChainId && toChainId && fromToken && toToken && synapseSDK) {
+  //       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
+  //         (token: Token) => {
+  //           return {
+  //             originChainId: fromChainId,
+  //             originToken: fromToken as Token,
+  //             destinationChainId: toChainId,
+  //             destinationTokenAddress: token?.addresses[toChainId] as Address,
+  //             destinationToken: token as Token,
+  //             amount: stringToBigInt(
+  //               userInputExists
+  //                 ? debouncedToTokensFromValue
+  //                 : getDefaultBridgeAmount(fromToken),
+  //               fromToken?.decimals[fromChainId]
+  //             ),
+  //           }
+  //         }
+  //       )
+  //       dispatch(
+  //         fetchAndStoreBridgeQuotes({
+  //           requests: bridgeQuoteRequests,
+  //           synapseSDK,
+  //         })
+  //       )
+  //     }
+  //   }
 
-    if (!fromToken || !userInputExists) {
-      dispatch(resetFetchedBridgeQuotes())
-    }
-  }, [debouncedToTokensFromValue, toTokens])
+  //   if (!fromToken || !userInputExists) {
+  //     dispatch(resetFetchedBridgeQuotes())
+  //   }
+  // }, [debouncedToTokensFromValue, toTokens])
 
   // Clear bridge quote if input is empty
   useEffect(() => {
