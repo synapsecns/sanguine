@@ -86,6 +86,7 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
 		attribute.String("denom_token", denomToken),
+		attribute.Bool("use_multiplier", useMultiplier),
 	))
 
 	defer func() {
