@@ -134,18 +134,19 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID)
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false)
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
 
+	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
+
 	span.AddEvent("fee", trace.WithAttributes(attribute.String("fee", fee.String())))
-	span.AddEvent("cost", trace.WithAttributes(attribute.String("cost", quote.Transaction.OriginAmount.String())))
+	span.AddEvent("cost", trace.WithAttributes(attribute.String("cost", cost.String())))
 	span.AddEvent("dest_amount", trace.WithAttributes(attribute.String("dest_amount", quote.Transaction.DestAmount.String())))
 	span.AddEvent("origin_amount", trace.WithAttributes(attribute.String("origin_amount", quote.Transaction.OriginAmount.String())))
 
 	// NOTE: this logic assumes that the origin and destination tokens have the same price.
-	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
 	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
 }
 
@@ -212,7 +213,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}
-				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken)
+				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
 				if err != nil {
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
