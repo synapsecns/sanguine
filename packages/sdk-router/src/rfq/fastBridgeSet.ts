@@ -196,11 +196,12 @@ export class FastBridgeSet extends SynapseModuleSet {
           quote.ticker.destToken.token &&
           quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
       )
-      .filter((quote) => {
-        quote.originFastBridge.toLowerCase() ===
-          FAST_BRIDGE_ADDRESS_MAP[originChainId].toLowerCase() &&
+      .filter(
+        (quote) =>
+          quote.originFastBridge.toLowerCase() ===
+            FAST_BRIDGE_ADDRESS_MAP[originChainId].toLowerCase() &&
           quote.destFastBridge.toLowerCase() ===
             FAST_BRIDGE_ADDRESS_MAP[destChainId].toLowerCase()
-      })
+      )
   }
 }
