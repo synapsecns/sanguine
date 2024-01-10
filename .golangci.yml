@@ -92,6 +92,7 @@ linters:
     - nonamedreturns
     - contextcheck
     - nosnakecase
+    - depguard
   fast: false
 
 issues:

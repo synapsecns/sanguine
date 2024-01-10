@@ -136,7 +136,7 @@ export interface FastBridgeInterface extends utils.Interface {
     'protocolFeeRate()': FunctionFragment
     'protocolFees(address)': FunctionFragment
     'prove(bytes,bytes32)': FunctionFragment
-    'refund(bytes,address)': FunctionFragment
+    'refund(bytes)': FunctionFragment
     'relay(bytes)': FunctionFragment
     'removeGovernor(address)': FunctionFragment
     'removeGuard(address)': FunctionFragment
@@ -280,10 +280,7 @@ export interface FastBridgeInterface extends utils.Interface {
     functionFragment: 'prove',
     values: [BytesLike, BytesLike]
   ): string
-  encodeFunctionData(
-    functionFragment: 'refund',
-    values: [BytesLike, string]
-  ): string
+  encodeFunctionData(functionFragment: 'refund', values: [BytesLike]): string
   encodeFunctionData(functionFragment: 'relay', values: [BytesLike]): string
   encodeFunctionData(
     functionFragment: 'removeGovernor',
@@ -427,8 +424,8 @@ export interface FastBridgeInterface extends utils.Interface {
     'BridgeDepositRefunded(bytes32,address,address,uint256)': EventFragment
     'BridgeProofDisputed(bytes32,address)': EventFragment
     'BridgeProofProvided(bytes32,address,bytes32)': EventFragment
-    'BridgeRelayed(bytes32,address,address,address,uint256,uint256)': EventFragment
-    'BridgeRequested(bytes32,address,bytes)': EventFragment
+    'BridgeRelayed(bytes32,address,address,uint32,address,address,uint256,uint256,uint256)': EventFragment
+    'BridgeRequested(bytes32,address,bytes,uint32,address,address,uint256,uint256,bool)': EventFragment
     'ChainGasAmountUpdated(uint256,uint256)': EventFragment
     'FeeRateUpdated(uint256,uint256)': EventFragment
     'FeesSwept(address,address,uint256)': EventFragment
@@ -521,12 +518,25 @@ export interface BridgeRelayedEventObject {
   transactionId: string
   relayer: string
   to: string
-  token: string
-  amount: BigNumber
+  originChainId: number
+  originToken: string
+  destToken: string
+  originAmount: BigNumber
+  destAmount: BigNumber
   chainGasAmount: BigNumber
 }
 export type BridgeRelayedEvent = TypedEvent<
-  [string, string, string, string, BigNumber, BigNumber],
+  [
+    string,
+    string,
+    string,
+    number,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   BridgeRelayedEventObject
 >
 
@@ -536,9 +546,25 @@ export interface BridgeRequestedEventObject {
   transactionId: string
   sender: string
   request: string
+  destChainId: number
+  originToken: string
+  destToken: string
+  originAmount: BigNumber
+  destAmount: BigNumber
+  sendChainGas: boolean
 }
 export type BridgeRequestedEvent = TypedEvent<
-  [string, string, string],
+  [
+    string,
+    string,
+    string,
+    number,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    boolean
+  ],
   BridgeRequestedEventObject
 >
 
@@ -793,7 +819,6 @@ export interface FastBridge extends BaseContract {
 
     refund(
       request: BytesLike,
-      to: string,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
@@ -950,7 +975,6 @@ export interface FastBridge extends BaseContract {
 
   refund(
     request: BytesLike,
-    to: string,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
@@ -1093,11 +1117,7 @@ export interface FastBridge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>
 
-    refund(
-      request: BytesLike,
-      to: string,
-      overrides?: CallOverrides
-    ): Promise<void>
+    refund(request: BytesLike, overrides?: CallOverrides): Promise<void>
 
     relay(request: BytesLike, overrides?: CallOverrides): Promise<void>
 
@@ -1143,79 +1163,97 @@ export interface FastBridge extends BaseContract {
 
   filters: {
     'BridgeDepositClaimed(bytes32,address,address,address,uint256)'(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
       token?: null,
       amount?: null
     ): BridgeDepositClaimedEventFilter
     BridgeDepositClaimed(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
       token?: null,
       amount?: null
     ): BridgeDepositClaimedEventFilter
 
     'BridgeDepositRefunded(bytes32,address,address,uint256)'(
-      transactionId?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      to?: string | null,
       token?: null,
       amount?: null
     ): BridgeDepositRefundedEventFilter
     BridgeDepositRefunded(
-      transactionId?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      to?: string | null,
       token?: null,
       amount?: null
     ): BridgeDepositRefundedEventFilter
 
     'BridgeProofDisputed(bytes32,address)'(
-      transactionId?: null,
-      relayer?: null
+      transactionId?: BytesLike | null,
+      relayer?: string | null
     ): BridgeProofDisputedEventFilter
     BridgeProofDisputed(
-      transactionId?: null,
-      relayer?: null
+      transactionId?: BytesLike | null,
+      relayer?: string | null
     ): BridgeProofDisputedEventFilter
 
     'BridgeProofProvided(bytes32,address,bytes32)'(
-      transactionId?: null,
-      relayer?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
       transactionHash?: null
     ): BridgeProofProvidedEventFilter
     BridgeProofProvided(
-      transactionId?: null,
-      relayer?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
       transactionHash?: null
     ): BridgeProofProvidedEventFilter
 
-    'BridgeRelayed(bytes32,address,address,address,uint256,uint256)'(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
-      token?: null,
-      amount?: null,
+    'BridgeRelayed(bytes32,address,address,uint32,address,address,uint256,uint256,uint256)'(
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
+      originChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
       chainGasAmount?: null
     ): BridgeRelayedEventFilter
     BridgeRelayed(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
-      token?: null,
-      amount?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
+      originChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
       chainGasAmount?: null
     ): BridgeRelayedEventFilter
 
-    'BridgeRequested(bytes32,address,bytes)'(
-      transactionId?: null,
-      sender?: null,
-      request?: null
+    'BridgeRequested(bytes32,address,bytes,uint32,address,address,uint256,uint256,bool)'(
+      transactionId?: BytesLike | null,
+      sender?: string | null,
+      request?: null,
+      destChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
+      sendChainGas?: null
     ): BridgeRequestedEventFilter
     BridgeRequested(
-      transactionId?: null,
-      sender?: null,
-      request?: null
+      transactionId?: BytesLike | null,
+      sender?: string | null,
+      request?: null,
+      destChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
+      sendChainGas?: null
     ): BridgeRequestedEventFilter
 
     'ChainGasAmountUpdated(uint256,uint256)'(
@@ -1399,7 +1437,6 @@ export interface FastBridge extends BaseContract {
 
     refund(
       request: BytesLike,
-      to: string,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
@@ -1571,7 +1608,6 @@ export interface FastBridge extends BaseContract {
 
     refund(
       request: BytesLike,
-      to: string,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 

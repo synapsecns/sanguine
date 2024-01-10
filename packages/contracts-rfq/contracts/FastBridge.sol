@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -107,7 +107,17 @@ contract FastBridge is IFastBridge, Admin {
         bytes32 transactionId = keccak256(request);
         bridgeStatuses[transactionId] = BridgeStatus.REQUESTED;
 
-        emit BridgeRequested(transactionId, params.sender, request);
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
     }
 
     /// @inheritdoc IFastBridge
@@ -139,7 +149,17 @@ contract FastBridge is IFastBridge, Admin {
             _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
         }
 
-        emit BridgeRelayed(transactionId, msg.sender, to, token, amount, rebate);
+        emit BridgeRelayed(
+            transactionId,
+            msg.sender,
+            to,
+            transaction.originChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
+            rebate
+        );
     }
 
     /// @inheritdoc IFastBridge
@@ -216,17 +236,17 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes memory request, address to) external {
+    function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
-        if (transaction.originSender != msg.sender) revert SenderIncorrect();
         if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
 
         // set status to refunded if still in requested state
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.REFUNDED;
 
-        // transfer origin collateral back to original sender's specified recipient
+        // transfer origin collateral back to original sender
+        address to = transaction.originSender;
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount + transaction.originFeeAmount;
         token.universalTransfer(to, amount);

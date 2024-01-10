@@ -61,8 +61,9 @@ type QuoteRequest struct {
 	Sender              common.Address
 	Transaction         fastbridge.IFastBridgeBridgeTransaction
 	// Status is the quote request status
-	Status     QuoteRequestStatus
-	DestTxHash common.Hash
+	Status       QuoteRequestStatus
+	OriginTxHash common.Hash
+	DestTxHash   common.Hash
 }
 
 // GetOriginIDPair gets the origin chain id and token address pair.
