@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
