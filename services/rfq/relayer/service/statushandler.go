@@ -112,6 +112,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
+	//nolint: wrapcheck
 	return chain.NewChain(ctx, chainClient, common.HexToAddress(r.cfg.GetChains()[id].Bridge), r.chainListeners[id], r.submitter)
 }
 
