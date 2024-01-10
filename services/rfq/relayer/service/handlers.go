@@ -180,7 +180,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not submit relay: %w", err)
 	}
 	_ = nonce
 
