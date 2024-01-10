@@ -453,7 +453,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 }
 
 // getGasEstimate gets the gas estimate for the given transaction.
-// TODO: handle l2s w/ custom gas pricing through contracts
+// TODO: handle l2s w/ custom gas pricing through contracts.
 func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasEstimate uint64, err error) {
 	if !t.config.GetDynamicGasEstimate(chainID) {
 		return t.config.GetGasEstimate(chainID), nil
