@@ -4,9 +4,6 @@ import (
 	"context"
 	"math/big"
 	"sync"
-
-	"math/big"
-	"sync"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
