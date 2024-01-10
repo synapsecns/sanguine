@@ -66,7 +66,7 @@ export async function fetchBridgeQuote(
         // Relayer should take the request with slippage of 5% feeAmount
         const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
         if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
-          originMinWithSlippage = originQuery.minAmountOut - maxOriginSlippage
+          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
         } else {
           originMinWithSlippage = 0n
         }
