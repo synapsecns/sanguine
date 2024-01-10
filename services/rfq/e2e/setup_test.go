@@ -232,7 +232,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
 		RelayerAPIURL: fmt.Sprintf("http://localhost:%d", relayerApiPort),
-		APIConfig: relconfig.APIConfig{
+		RelayerAPIConfig: relconfig.RelayerAPIConfig{
 			Database: relconfig.DatabaseConfig{
 				Type: dbcommon.Sqlite.String(),
 				DSN:  dsn,
