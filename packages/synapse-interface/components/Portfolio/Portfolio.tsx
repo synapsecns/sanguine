@@ -35,7 +35,7 @@ export const Portfolio = () => {
     activeTab,
     searchInput,
     searchStatus,
-    searchedBalancesAndAllowances,
+    searchedBalances,
   }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
@@ -61,17 +61,17 @@ export const Portfolio = () => {
   }, [searchInput])
 
   const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances).length > 0
-  }, [searchedBalancesAndAllowances])
+    return Object.keys(searchedBalances).length > 0
+  }, [searchedBalances])
 
   const filteredSearchedPortfolioDataForBalances = useMemo(() => {
     if (masqueradeActive) {
       const queriedAddress: Address = Object.keys(
-        searchedBalancesAndAllowances
+        searchedBalances
       )[0] as Address
       return {
         balances: filterPortfolioBalancesWithBalances(
-          searchedBalancesAndAllowances[queriedAddress]
+          searchedBalances[queriedAddress]
         ),
         address: queriedAddress,
       }
@@ -80,7 +80,7 @@ export const Portfolio = () => {
       balances: {},
       address: '',
     }
-  }, [searchedBalancesAndAllowances, masqueradeActive, searchInput])
+  }, [searchedBalances, masqueradeActive, searchInput])
 
   const flattenedPortfolioData: TokenAndBalance[] = useMemo(() => {
     const flattened: TokenAndBalance[] = []

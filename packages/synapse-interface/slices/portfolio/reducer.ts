@@ -29,7 +29,7 @@ export interface PortfolioState {
   status: FetchState
   error?: string
   searchInput: string
-  searchedBalancesAndAllowances: {
+  searchedBalances: {
     [index: Address]: NetworkTokenBalances
   }
   searchStatus: FetchState
@@ -42,7 +42,7 @@ export const initialState: PortfolioState = {
   status: FetchState.IDLE,
   error: null,
   searchInput: '',
-  searchedBalancesAndAllowances: {},
+  searchedBalances: {},
   searchStatus: FetchState.IDLE,
 }
 
@@ -88,7 +88,7 @@ export const portfolioSlice = createSlice({
         (state, action) => {
           const { balances, address } = action.payload
           state.searchStatus = FetchState.VALID
-          state.searchedBalancesAndAllowances[address] = balances
+          state.searchedBalances[address] = balances
         }
       )
       .addCase(
@@ -111,8 +111,7 @@ export const portfolioSlice = createSlice({
         }
       )
       .addCase(resetSearchState, (state) => {
-        state.searchedBalancesAndAllowances =
-          initialState.searchedBalancesAndAllowances
+        state.searchedBalances = initialState.searchedBalances
         state.searchStatus = initialState.searchStatus
       })
       .addCase(resetPortfolioState, (state) => {
@@ -121,8 +120,7 @@ export const portfolioSlice = createSlice({
         state.status = initialState.status
         state.error = initialState.error
         state.searchInput = initialState.searchInput
-        state.searchedBalancesAndAllowances =
-          initialState.searchedBalancesAndAllowances
+        state.searchedBalances = initialState.searchedBalances
         state.searchStatus = initialState.searchStatus
         state.poolTokenBalances = initialState.poolTokenBalances
       })
