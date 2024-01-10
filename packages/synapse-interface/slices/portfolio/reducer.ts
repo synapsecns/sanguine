@@ -24,7 +24,7 @@ import {
 
 export interface PortfolioState {
   activeTab: PortfolioTabs
-  balancesAndAllowances: NetworkTokenBalances
+  balances: NetworkTokenBalances
   poolTokenBalances: NetworkTokenBalances
   status: FetchState
   error?: string
@@ -37,7 +37,7 @@ export interface PortfolioState {
 
 export const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
-  balancesAndAllowances: {},
+  balances: {},
   poolTokenBalances: {},
   status: FetchState.IDLE,
   error: null,
@@ -58,45 +58,22 @@ export const portfolioSlice = createSlice({
       .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
         state.searchInput = searchInput
       })
-      // .addCase(updateSingleTokenAllowance, (state, action) => {
-      //   const { chainId, allowance, spender, token } = action.payload
-
-      //   state.balancesAndAllowances[chainId].forEach((t: TokenAndBalance) => {
-      //     if (t.tokenAddress === token.addresses[chainId]) {
-      //       t.allowances[spender] = allowance
-      //     }
-      //   })
-      // })
-      // .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
-      //   const { routerAddress, chainId, tokenAddress, allowance } =
-      //     action.payload
-
-      //   state.balancesAndAllowances[chainId].forEach(
-      //     (token: TokenAndBalance) => {
-      //       if (token.tokenAddress === tokenAddress) {
-      //         token.allowances[routerAddress] = allowance
-      //       }
-      //     }
-      //   )
-      // })
       .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
         const { chainId, tokenAddress, balance, parsedBalance } = action.payload
 
-        state.balancesAndAllowances[chainId].forEach(
-          (token: TokenAndBalance) => {
-            if (token.tokenAddress === tokenAddress) {
-              token.balance = balance
-              token.parsedBalance = parsedBalance
-            }
+        state.balances[chainId].forEach((token: TokenAndBalance) => {
+          if (token.tokenAddress === tokenAddress) {
+            token.balance = balance
+            token.parsedBalance = parsedBalance
           }
-        )
+        })
       })
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
         state.status = FetchState.LOADING
       })
       .addCase(fetchAndStorePortfolioBalances.fulfilled, (state, action) => {
         state.status = FetchState.VALID
-        state.balancesAndAllowances = action.payload.balancesAndAllowances
+        state.balances = action.payload.balances
         state.poolTokenBalances = action.payload.poolTokenBalances
       })
       .addCase(fetchAndStorePortfolioBalances.rejected, (state, action) => {
@@ -109,9 +86,9 @@ export const portfolioSlice = createSlice({
       .addCase(
         fetchAndStoreSearchInputPortfolioBalances.fulfilled,
         (state, action) => {
-          const { balancesAndAllowances, address } = action.payload
+          const { balances, address } = action.payload
           state.searchStatus = FetchState.VALID
-          state.searchedBalancesAndAllowances[address] = balancesAndAllowances
+          state.searchedBalancesAndAllowances[address] = balances
         }
       )
       .addCase(
@@ -124,13 +101,11 @@ export const portfolioSlice = createSlice({
       .addCase(
         fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
         (state, action) => {
-          const { balancesAndAllowances } = action.payload
+          const { balances } = action.payload
 
-          Object.entries(balancesAndAllowances).forEach(
+          Object.entries(balances).forEach(
             ([chainId, mergedBalancesAndAllowances]) => {
-              state.balancesAndAllowances[chainId] = [
-                ...mergedBalancesAndAllowances,
-              ]
+              state.balances[chainId] = [...mergedBalancesAndAllowances]
             }
           )
         }
@@ -142,7 +117,7 @@ export const portfolioSlice = createSlice({
       })
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
-        state.balancesAndAllowances = initialState.balancesAndAllowances
+        state.balances = initialState.balances
         state.status = initialState.status
         state.error = initialState.error
         state.searchInput = initialState.searchInput

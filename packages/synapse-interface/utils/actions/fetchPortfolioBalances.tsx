@@ -34,7 +34,7 @@ export const fetchPortfolioBalances = async (
   address: string,
   chainId?: number | undefined | null
 ): Promise<{
-  balancesAndAllowances: NetworkTokenBalances
+  balances: NetworkTokenBalances
   poolTokenBalances: NetworkTokenBalances
   status: FetchState
   error?: any | undefined
@@ -78,14 +78,14 @@ export const fetchPortfolioBalances = async (
     })
 
     return {
-      balancesAndAllowances: balanceRecord,
+      balances: balanceRecord,
       status: FetchState.VALID,
       poolTokenBalances,
     }
   } catch (error) {
     console.error('error from fetch:', error)
     return {
-      balancesAndAllowances: {},
+      balances: {},
       status: FetchState.INVALID,
       error,
       poolTokenBalances: {},

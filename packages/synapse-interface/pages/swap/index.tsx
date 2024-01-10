@@ -65,7 +65,7 @@ const StateManagedSwap = () => {
 
   useSyncQueryParamsWithSwapState()
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+  const { balances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
