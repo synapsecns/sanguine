@@ -187,14 +187,17 @@ export class FastBridgeSet extends SynapseModuleSet {
         (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
+          quote.ticker.destToken.token &&
           quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
       )
       .filter(
-        (quote) =>
-          quote.originFastBridge.toLowerCase() ===
-            FAST_BRIDGE_ADDRESS_MAP[originChainId].toLowerCase() &&
-          quote.destFastBridge.toLowerCase() ===
-            FAST_BRIDGE_ADDRESS_MAP[destChainId].toLowerCase()
+        (quote) => {
+          const originFastBridgeAddress = FAST_BRIDGE_ADDRESS_MAP[originChainId];
+          const destFastBridgeAddress = FAST_BRIDGE_ADDRESS_MAP[destChainId];
+          return originFastBridgeAddress && destFastBridgeAddress &&
+            quote.originFastBridge.toLowerCase() === originFastBridgeAddress.toLowerCase() &&
+            quote.destFastBridge.toLowerCase() === destFastBridgeAddress.toLowerCase();
+        }
       )
   }
 }
