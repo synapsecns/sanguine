@@ -360,17 +360,7 @@ contract FastBridgeTest is Test {
         fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
-    event BridgeRequested(
-        bytes32 indexed transactionId,
-        address indexed sender,
-        bytes request,
-        uint32 destChainId,
-        address originToken,
-        address destToken,
-        uint256 originAmount,
-        uint256 destAmount,
-        bool sendChainGas
-    );
+    event BridgeRequested(bytes32 transactionId, address sender, bytes request);
 
     // This test checks the successful execution of a bridge transaction
     function test_successfulBridge() public {
@@ -384,17 +374,7 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(
-            transactionId,
-            user,
-            request,
-            1,
-            address(arbUSDC),
-            address(ethUSDC),
-            11 * 10 ** 6, // originAmount
-            10.97e6, // destAmount
-            false // sendChainGas
-        );
+        emit BridgeRequested(transactionId, user, request);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -484,17 +464,7 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndId(block.chainid, currentNonce, protocolFeeRate);
 
         vm.expectEmit();
-        emit BridgeRequested(
-            transactionId,
-            user,
-            request,
-            1,
-            address(arbUSDC),
-            address(ethUSDC),
-            10.989e6, // originAmount
-            10.97e6, // destAmount
-            false // sendChainGas
-        );
+        emit BridgeRequested(transactionId, user, request);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -546,17 +516,7 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndIdWithETH(block.chainid, currentNonce, protocolFeeRate);
 
         vm.expectEmit();
-        emit BridgeRequested(
-            transactionId,
-            user,
-            request,
-            1,
-            UniversalTokenLib.ETH_ADDRESS,
-            UniversalTokenLib.ETH_ADDRESS,
-            10.989e18, // originAmount
-            10.97e18, // destAmount
-            false // sendChainGas
-        );
+        emit BridgeRequested(transactionId, user, request);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -607,17 +567,7 @@ contract FastBridgeTest is Test {
             _getBridgeRequestAndIdWithChainGas(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(
-            transactionId,
-            user,
-            request,
-            1,
-            address(arbUSDC),
-            address(ethUSDC),
-            11 * 10 ** 6, // originAmount
-            10.97e6, // destAmount
-            true // sendChainGas
-        );
+        emit BridgeRequested(transactionId, user, request);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -707,17 +657,7 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, currentNonce, 0);
 
         vm.expectEmit();
-        emit BridgeRequested(
-            transactionId,
-            user,
-            request,
-            1,
-            address(arbUSDC),
-            address(ethUSDC),
-            11 * 10 ** 6, // originAmount
-            10.97e6, // destAmount
-            false // sendChainGas
-        );
+        emit BridgeRequested(transactionId, user, request);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -896,15 +836,7 @@ contract FastBridgeTest is Test {
     }
 
     event BridgeRelayed(
-        bytes32 indexed transactionId,
-        address indexed relayer,
-        address indexed to,
-        uint32 originChainId,
-        address originToken,
-        address destToken,
-        uint256 originAmount,
-        uint256 destAmount,
-        uint256 chainGasAmount
+        bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount, uint256 chainGasAmount
     );
 
     // This test checks the successful relaying of a destination bridge
@@ -934,9 +866,7 @@ contract FastBridgeTest is Test {
         assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
-        );
+        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6, 0);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay(request);
@@ -979,17 +909,7 @@ contract FastBridgeTest is Test {
 
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(
-            transactionId,
-            relayer,
-            user,
-            42161,
-            UniversalTokenLib.ETH_ADDRESS,
-            UniversalTokenLib.ETH_ADDRESS,
-            11 * 10 ** 18,
-            10.97e18,
-            0
-        );
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18, 0);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
@@ -1035,17 +955,7 @@ contract FastBridgeTest is Test {
 
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(
-            transactionId,
-            relayer,
-            user,
-            42161,
-            UniversalTokenLib.ETH_ADDRESS,
-            UniversalTokenLib.ETH_ADDRESS,
-            11 * 10 ** 18,
-            10.97e18,
-            0.005e18
-        );
+        emit BridgeRelayed(transactionId, relayer, user, UniversalTokenLib.ETH_ADDRESS, 10.97e18, 0.005e18);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
@@ -1092,9 +1002,7 @@ contract FastBridgeTest is Test {
         assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
-        emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
-        );
+        emit BridgeRelayed(transactionId, relayer, user, address(ethUSDC), 10.97e6, 0.005e18);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay{value: chainGasAmount}(request);
@@ -1180,7 +1088,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeProofProvided(bytes32 indexed transactionId, address indexed relayer, bytes32 transactionHash);
+    event BridgeProofProvided(bytes32 transactionId, address oldRelayer, bytes32 transactionHash);
 
     // This test checks the successful provision of relay proof
     function test_successfulRelayProof() public {
@@ -1311,9 +1219,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    event BridgeDepositClaimed(
-        bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount
-    );
+    event BridgeDepositClaimed(bytes32 transactionId, address oldRelayer, address to, address token, uint256 amount);
 
     function test_successfulClaimOriginTokens() public {
         setUpRoles();
@@ -1548,7 +1454,7 @@ contract FastBridgeTest is Test {
         fastBridge.claim(request, relayer);
     }
 
-    event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
+    event BridgeProofDisputed(bytes32 transactionId, address oldRelayer);
 
     function test_successfulDisputeProof() public {
         setUpRoles();
@@ -1645,7 +1551,7 @@ contract FastBridgeTest is Test {
         fastBridge.dispute(transactionId);
     }
 
-    event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
+    event BridgeDepositRefunded(bytes32 transactionId, address to, address token, uint256 amount);
 
     function test_successfulRefund() public {
         setUpRoles();
@@ -1664,7 +1570,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1694,7 +1600,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
 
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // check balance changes
         uint256 postRefundBalanceUser = user.balance;
@@ -1725,7 +1631,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1756,7 +1662,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
 
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // check balance changes
         uint256 postRefundBalanceUser = user.balance;
@@ -1786,7 +1692,7 @@ contract FastBridgeTest is Test {
         uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
         uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
 
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // check balance changes
         uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
@@ -1802,34 +1708,6 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_successfulRefundNotSender() public {
-        setUpRoles();
-        test_successfulBridge();
-
-        // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
-
-        vm.warp(block.timestamp + 61 minutes);
-
-        vm.expectEmit();
-        emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
-
-        uint256 preRefundBalanceUser = arbUSDC.balanceOf(user);
-        uint256 preRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
-
-        fastBridge.refund(request);
-
-        // check balance changes
-        uint256 postRefundBalanceUser = arbUSDC.balanceOf(user);
-        uint256 postRefundBalanceBridge = arbUSDC.balanceOf(address(fastBridge));
-
-        assertEq(postRefundBalanceUser - preRefundBalanceUser, 11 * 10 ** 6);
-        assertEq(preRefundBalanceBridge - postRefundBalanceBridge, 11 * 10 ** 6);
-
-        // check bridge status updated
-        assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REFUNDED));
-    }
-
     function test_failedRefundNotEnoughTime() public {
         setUpRoles();
         test_successfulBridge();
@@ -1842,7 +1720,23 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 59 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_failedRefundNotUser() public {
+        setUpRoles();
+        test_successfulBridge();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+
+        vm.warp(block.timestamp + 61 minutes);
+
+        vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
+        fastBridge.refund(request, user);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1859,7 +1753,7 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 61 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
-        fastBridge.refund(request);
+        fastBridge.refund(request, user);
 
         // We stop a prank to contain within test
         vm.stopPrank();

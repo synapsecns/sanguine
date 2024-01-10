@@ -43,7 +43,7 @@ contract FastBridgeMock is IFastBridge, Admin {
             BridgeTransaction({
                 originChainId: uint32(block.chainid),
                 destChainId: params.dstChainId,
-                originSender: params.sender,
+                originSender: msg.sender,
                 destRecipient: params.to,
                 originToken: params.originToken,
                 destToken: params.destToken,
@@ -56,48 +56,22 @@ contract FastBridgeMock is IFastBridge, Admin {
             })
         );
 
-        emit BridgeRequested(
-            transactionId,
-            params.sender,
-            request,
-            params.dstChainId,
-            params.originToken,
-            params.destToken,
-            params.originAmount,
-            params.destAmount,
-            params.sendChainGas
-        );
+        emit BridgeRequested(transactionId, msg.sender, request);
     }
 
     function mockBridgeRequestRaw(bytes32 transactionId, address sender, bytes memory request) external {
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-        emit BridgeRequested(
-            transactionId,
-            transaction.originSender,
-            request,
-            transaction.destChainId,
-            transaction.originToken,
-            transaction.destToken,
-            transaction.originAmount,
-            transaction.destAmount,
-            transaction.sendChainGas
-        );
+        emit BridgeRequested(transactionId, sender, request);
     }
 
     function mockBridgeRelayer(
         bytes32 transactionId,
         address relayer,
         address to,
-        uint32 originChainId,
-        address originToken,
-        address destToken,
-        uint256 originAmount,
-        uint256 destAmount,
+        address token,
+        uint256 amount,
         uint256 chainGasAmount
     ) external {
-        emit BridgeRelayed(
-            transactionId, relayer, to, originChainId, originToken, destToken, originAmount, destAmount, chainGasAmount
-        );
+        emit BridgeRelayed(transactionId, relayer, to, token, amount, chainGasAmount);
     }
 
     function bridge(BridgeParams memory params) external payable {
@@ -124,7 +98,7 @@ contract FastBridgeMock is IFastBridge, Admin {
         revert("not implemented");
     }
 
-    function refund(bytes memory request) external {
+    function refund(bytes memory request, address to) external {
         revert("not implemented");
     }
 }
