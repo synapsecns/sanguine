@@ -55,7 +55,7 @@ func NewRelayerAPI(
 
 	chains := make(map[uint32]*chain.Chain)
 	for chainID, chainCfg := range cfg.Chains {
-		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
+		chainClient, err := omniRPCClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
