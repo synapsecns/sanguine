@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, PopulatedTransaction, providers } from 'ethers'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 
 import { SynapseSDK } from './sdk'
@@ -22,8 +22,8 @@ import {
   ETH_USDC,
   ETH_USDT,
   NATIVE_ADDRESS,
-  getTestProviderUrl,
 } from './constants/testValues'
+import { getTestProvider } from './constants/testProviders'
 import {
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
@@ -134,30 +134,18 @@ const createSwapQuoteTests = (
 }
 
 describe('SynapseSDK', () => {
-  const ethProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ETH)
-  )
+  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
-  const arbProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ARBITRUM)
-  )
+  const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
 
-  const opProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.OPTIMISM)
-  )
+  const opProvider: Provider = getTestProvider(SupportedChainId.OPTIMISM)
 
-  const avaxProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.AVALANCHE)
-  )
+  const avaxProvider: Provider = getTestProvider(SupportedChainId.AVALANCHE)
 
-  const bscProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.BSC)
-  )
+  const bscProvider: Provider = getTestProvider(SupportedChainId.BSC)
 
   // Chain where CCTP is unlikely to be deployed
-  const moonbeamProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.MOONBEAM)
-  )
+  const moonbeamProvider: Provider = getTestProvider(SupportedChainId.MOONBEAM)
 
   describe('#constructor', () => {
     const synapse = new SynapseSDK(
@@ -863,22 +851,22 @@ describe('SynapseSDK', () => {
         '0xed98b02f712c940d3b37a1aa9005a5986ecefa5cdbb4505118a22ae65d4903af',
     }
 
-    // https://optimistic.etherscan.io/tx/0x1fa4c4b7a10d55e9ba833a15a1e6e57cb35cc0067190576193f7a77d4e71fbee
-    // https://arbiscan.io/tx/0x53a8e543bc0e3f0c1cae509e50d9435c3b62073eecf1aee7ece63c3be285db30
+    // https://optimistic.etherscan.io/tx/0x75e5fcb661543ee26a0cd25a7c4a0585aa6ba5be41beebd5d96d60a04863ea6c
+    // https://arbiscan.io/tx/0x3b5bcd05f59e6c58d4f54184f87895627b40311cb0096f47f2b69b38b4986fec
     const rfqOpToArbTx = {
       txHash:
-        '0x1fa4c4b7a10d55e9ba833a15a1e6e57cb35cc0067190576193f7a77d4e71fbee',
+        '0x75e5fcb661543ee26a0cd25a7c4a0585aa6ba5be41beebd5d96d60a04863ea6c',
       synapseTxId:
-        '0xd0740c9ce06c2044fab4fd8519f7f20c9768431059daad3f965f6fec8d54a6c3',
+        '0xdd0bb9c04e525a59c8fadf7715050b86731de07bab1bcad195124bf6df02ff67',
     }
 
-    // https://arbiscan.io/tx/0xf0ebc85b3d83123c0d70aec1f1b5b525fa54140f5d2277154364ddede56bd69f
-    // https://optimistic.etherscan.io/tx/0xb96f8f3dbb886bc9eb7e3e43ba4aef863814299b71e133f8f447dba5d020a8b6
+    // https://arbiscan.io/tx/0x5d9cf91936f68640739e69b8c4355698f9b470336ebdd256a99ad3e2793e7151
+    // https://optimistic.etherscan.io/tx/0xe232cb5a7c04eb42018cb1469865bc789af829ab9fa81416b3c096aac1d1a3ac
     const rfqArbToOpTx = {
       txHash:
-        '0xf0ebc85b3d83123c0d70aec1f1b5b525fa54140f5d2277154364ddede56bd69f',
+        '0x5d9cf91936f68640739e69b8c4355698f9b470336ebdd256a99ad3e2793e7151',
       synapseTxId:
-        '0xf6524399bb7332a55377ffcf816f396759d5c753b2fa9137d5eca2db59741b2f',
+        '0xb105549dbc8bd71208a6049a2c29dca5214875a166bc43970138a6cc2c3d40f5',
     }
 
     describe('getSynapseTxId', () => {
@@ -1006,7 +994,7 @@ describe('SynapseSDK', () => {
       })
 
       describe('SynapseRFQ', () => {
-        const arbSynRFQ = '0xA9EBFCb6DCD416FE975D5aB862717B329407f4F7'
+        const arbSynRFQ = '0x1a54fa31cbcad8c1cbc3a47dcd00864eac9ac2b0'
         const events = 'BridgeRequested'
 
         it('OP -> ARB', async () => {
