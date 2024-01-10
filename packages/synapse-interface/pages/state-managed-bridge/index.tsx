@@ -189,15 +189,17 @@ const StateManagedBridge = () => {
 
       const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
 
-      const originTokenDecimals = fromToken?.decimals[fromChainId]
+      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
+      // debouncedFromValue is in originToken decimals
+      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
+      // Adjust feeAmount to be in originToken decimals
       const adjustedFeeAmount =
-        BigInt(feeAmount) <
-        stringToBigInt(
-          `${debouncedFromValue}`,
-          fromToken?.decimals[fromChainId]
-        )
-          ? BigInt(feeAmount)
-          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+        (BigInt(feeAmount) *
+          stringToBigInt(
+            `${debouncedFromValue}`,
+            fromToken?.decimals[fromChainId]
+          )) /
+        BigInt(originQuery.minAmountOut)
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 

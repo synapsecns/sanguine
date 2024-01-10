@@ -54,11 +54,12 @@ export async function fetchBridgeQuote(
       )
 
       const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
-      const originTokenDecimals: number = originToken.decimals[originChainId]
-      const adjustedFeeAmount: bigint =
-        BigInt(feeAmount) < amount
-          ? BigInt(feeAmount)
-          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
+      // amount is in originToken decimals
+      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
+      // Adjust feeAmount to be in originToken decimals
+      const adjustedFeeAmount =
+        (BigInt(feeAmount) * BigInt(amount)) / BigInt(originQuery.minAmountOut)
 
       // TODO: do this properly (RFQ needs no slippage, others do)
       const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
