@@ -92,6 +92,7 @@ linters:
     - nonamedreturns
     - contextcheck
     - nosnakecase
+    - depguard
   fast: false
 
 issues:
@@ -125,4 +126,4 @@ issues:
         - cyclop
 
   exclude-use-default: false
-  new-from-rev: 86ee232f42c016c5859a3d948a88dde59af1bbc0
+  new-from-rev: 5f8d480f4e3f1f2a318243a9924f50ec90ec4945

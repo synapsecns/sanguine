@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.3.9",
+  "version": "0.3.14",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -43,6 +43,7 @@
   },
   "module": "dist/sdk-v2.esm.js",
   "devDependencies": {
+    "@ethersproject/providers": "^5.7.0",
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
     "dotenv": "^16.3.1",

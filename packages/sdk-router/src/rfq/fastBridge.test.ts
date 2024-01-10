@@ -110,7 +110,7 @@ describe('FastBridge', () => {
 
   describe('getSynapseTxId', () => {
     const bridgeRequestedTopic =
-      '0x2a8233b619c9d479346e133f609855c0a94d89fbcfa62f846a9f0cfdd1198ccf'
+      '0x120ea0364f36cdac7983bcfdd55270ca09d7f9b314a2ebc425a3b01ab1d6403a'
     const mockedOriginLog = {
       address: fastBridge.address,
       // keccak256('BridgeRequested(bytes32,address,bytes)')

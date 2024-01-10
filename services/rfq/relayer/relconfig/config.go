@@ -71,6 +71,8 @@ type FeePricerConfig struct {
 	OriginGasEstimate int `yaml:"origin_gas_estimate"`
 	// DestinationGasEstimate is the gas required to execute relay transaction on destination chain.
 	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
+	// FixedFeeMultiplier is the multiplier for the fixed fee.
+	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
@@ -191,6 +193,16 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no tokenName found for chain %d and address %s", chain, addr)
+}
+
+const defaultFixedFeeMultiplier = 1
+
+// GetFixedFeeMultiplier returns the fixed fee multiplier.
+func (c Config) GetFixedFeeMultiplier() float64 {
+	if c.FeePricer.FixedFeeMultiplier <= 0 {
+		return defaultFixedFeeMultiplier
+	}
+	return c.FeePricer.FixedFeeMultiplier
 }
 
 var _ IConfig = &Config{}
