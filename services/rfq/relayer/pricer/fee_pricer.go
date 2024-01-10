@@ -81,12 +81,16 @@ func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination u
 	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken)
 }
 
-func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
 		attribute.String("denom_token", denomToken),
 	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken)
 	if err != nil {
