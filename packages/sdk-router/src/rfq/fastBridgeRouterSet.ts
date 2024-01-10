@@ -209,12 +209,6 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
-    if (
-      !FAST_BRIDGE_ADDRESS_MAP[originChainId] ||
-      !FAST_BRIDGE_ADDRESS_MAP[destChainId]
-    ) {
-      return []
-    }
     const allQuotes = await getAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
