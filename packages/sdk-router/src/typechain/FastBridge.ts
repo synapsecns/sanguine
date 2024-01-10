@@ -13,32 +13,32 @@ import type {
   PopulatedTransaction,
   Signer,
   utils,
-} from 'ethers'
+} from "ethers";
 import type {
   FunctionFragment,
   Result,
   EventFragment,
-} from '@ethersproject/abi'
-import type { Listener, Provider } from '@ethersproject/providers'
+} from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
   TypedEvent,
   TypedListener,
   OnEvent,
-} from './common'
+} from "./common";
 
 export declare namespace IFastBridge {
   export type BridgeParamsStruct = {
-    dstChainId: BigNumberish
-    sender: string
-    to: string
-    originToken: string
-    destToken: string
-    originAmount: BigNumberish
-    destAmount: BigNumberish
-    sendChainGas: boolean
-    deadline: BigNumberish
-  }
+    dstChainId: BigNumberish;
+    sender: string;
+    to: string;
+    originToken: string;
+    destToken: string;
+    originAmount: BigNumberish;
+    destAmount: BigNumberish;
+    sendChainGas: boolean;
+    deadline: BigNumberish;
+  };
 
   export type BridgeParamsStructOutput = [
     number,
@@ -51,31 +51,31 @@ export declare namespace IFastBridge {
     boolean,
     BigNumber
   ] & {
-    dstChainId: number
-    sender: string
-    to: string
-    originToken: string
-    destToken: string
-    originAmount: BigNumber
-    destAmount: BigNumber
-    sendChainGas: boolean
-    deadline: BigNumber
-  }
+    dstChainId: number;
+    sender: string;
+    to: string;
+    originToken: string;
+    destToken: string;
+    originAmount: BigNumber;
+    destAmount: BigNumber;
+    sendChainGas: boolean;
+    deadline: BigNumber;
+  };
 
   export type BridgeTransactionStruct = {
-    originChainId: BigNumberish
-    destChainId: BigNumberish
-    originSender: string
-    destRecipient: string
-    originToken: string
-    destToken: string
-    originAmount: BigNumberish
-    destAmount: BigNumberish
-    originFeeAmount: BigNumberish
-    sendChainGas: boolean
-    deadline: BigNumberish
-    nonce: BigNumberish
-  }
+    originChainId: BigNumberish;
+    destChainId: BigNumberish;
+    originSender: string;
+    destRecipient: string;
+    originToken: string;
+    destToken: string;
+    originAmount: BigNumberish;
+    destAmount: BigNumberish;
+    originFeeAmount: BigNumberish;
+    sendChainGas: boolean;
+    deadline: BigNumberish;
+    nonce: BigNumberish;
+  };
 
   export type BridgeTransactionStructOutput = [
     number,
@@ -91,1541 +91,1606 @@ export declare namespace IFastBridge {
     BigNumber,
     BigNumber
   ] & {
-    originChainId: number
-    destChainId: number
-    originSender: string
-    destRecipient: string
-    originToken: string
-    destToken: string
-    originAmount: BigNumber
-    destAmount: BigNumber
-    originFeeAmount: BigNumber
-    sendChainGas: boolean
-    deadline: BigNumber
-    nonce: BigNumber
-  }
+    originChainId: number;
+    destChainId: number;
+    originSender: string;
+    destRecipient: string;
+    originToken: string;
+    destToken: string;
+    originAmount: BigNumber;
+    destAmount: BigNumber;
+    originFeeAmount: BigNumber;
+    sendChainGas: boolean;
+    deadline: BigNumber;
+    nonce: BigNumber;
+  };
 }
 
 export interface FastBridgeInterface extends utils.Interface {
   functions: {
-    'DEFAULT_ADMIN_ROLE()': FunctionFragment
-    'DISPUTE_PERIOD()': FunctionFragment
-    'FEE_BPS()': FunctionFragment
-    'FEE_RATE_MAX()': FunctionFragment
-    'GOVERNOR_ROLE()': FunctionFragment
-    'GUARD_ROLE()': FunctionFragment
-    'MIN_DEADLINE_PERIOD()': FunctionFragment
-    'RELAYER_ROLE()': FunctionFragment
-    'addGovernor(address)': FunctionFragment
-    'addGuard(address)': FunctionFragment
-    'addRelayer(address)': FunctionFragment
-    'bridge((uint32,address,address,address,address,uint256,uint256,bool,uint256))': FunctionFragment
-    'bridgeProofs(bytes32)': FunctionFragment
-    'bridgeRelays(bytes32)': FunctionFragment
-    'bridgeStatuses(bytes32)': FunctionFragment
-    'canClaim(bytes32,address)': FunctionFragment
-    'chainGasAmount()': FunctionFragment
-    'claim(bytes,address)': FunctionFragment
-    'deployBlock()': FunctionFragment
-    'dispute(bytes32)': FunctionFragment
-    'getBridgeTransaction(bytes)': FunctionFragment
-    'getRoleAdmin(bytes32)': FunctionFragment
-    'grantRole(bytes32,address)': FunctionFragment
-    'hasRole(bytes32,address)': FunctionFragment
-    'nonce()': FunctionFragment
-    'protocolFeeRate()': FunctionFragment
-    'protocolFees(address)': FunctionFragment
-    'prove(bytes,bytes32)': FunctionFragment
-    'refund(bytes,address)': FunctionFragment
-    'relay(bytes)': FunctionFragment
-    'removeGovernor(address)': FunctionFragment
-    'removeGuard(address)': FunctionFragment
-    'removeRelayer(address)': FunctionFragment
-    'renounceRole(bytes32,address)': FunctionFragment
-    'revokeRole(bytes32,address)': FunctionFragment
-    'setChainGasAmount(uint256)': FunctionFragment
-    'setProtocolFeeRate(uint256)': FunctionFragment
-    'supportsInterface(bytes4)': FunctionFragment
-    'sweepProtocolFees(address,address)': FunctionFragment
-  }
+    "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "DISPUTE_PERIOD()": FunctionFragment;
+    "FEE_BPS()": FunctionFragment;
+    "FEE_RATE_MAX()": FunctionFragment;
+    "GOVERNOR_ROLE()": FunctionFragment;
+    "GUARD_ROLE()": FunctionFragment;
+    "MIN_DEADLINE_PERIOD()": FunctionFragment;
+    "RELAYER_ROLE()": FunctionFragment;
+    "addGovernor(address)": FunctionFragment;
+    "addGuard(address)": FunctionFragment;
+    "addRelayer(address)": FunctionFragment;
+    "bridge((uint32,address,address,address,address,uint256,uint256,bool,uint256))": FunctionFragment;
+    "bridgeProofs(bytes32)": FunctionFragment;
+    "bridgeRelays(bytes32)": FunctionFragment;
+    "bridgeStatuses(bytes32)": FunctionFragment;
+    "canClaim(bytes32,address)": FunctionFragment;
+    "chainGasAmount()": FunctionFragment;
+    "claim(bytes,address)": FunctionFragment;
+    "deployBlock()": FunctionFragment;
+    "dispute(bytes32)": FunctionFragment;
+    "getBridgeTransaction(bytes)": FunctionFragment;
+    "getRoleAdmin(bytes32)": FunctionFragment;
+    "grantRole(bytes32,address)": FunctionFragment;
+    "hasRole(bytes32,address)": FunctionFragment;
+    "nonce()": FunctionFragment;
+    "protocolFeeRate()": FunctionFragment;
+    "protocolFees(address)": FunctionFragment;
+    "prove(bytes,bytes32)": FunctionFragment;
+    "refund(bytes)": FunctionFragment;
+    "relay(bytes)": FunctionFragment;
+    "removeGovernor(address)": FunctionFragment;
+    "removeGuard(address)": FunctionFragment;
+    "removeRelayer(address)": FunctionFragment;
+    "renounceRole(bytes32,address)": FunctionFragment;
+    "revokeRole(bytes32,address)": FunctionFragment;
+    "setChainGasAmount(uint256)": FunctionFragment;
+    "setProtocolFeeRate(uint256)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
+    "sweepProtocolFees(address,address)": FunctionFragment;
+  };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | 'DEFAULT_ADMIN_ROLE'
-      | 'DISPUTE_PERIOD'
-      | 'FEE_BPS'
-      | 'FEE_RATE_MAX'
-      | 'GOVERNOR_ROLE'
-      | 'GUARD_ROLE'
-      | 'MIN_DEADLINE_PERIOD'
-      | 'RELAYER_ROLE'
-      | 'addGovernor'
-      | 'addGuard'
-      | 'addRelayer'
-      | 'bridge'
-      | 'bridgeProofs'
-      | 'bridgeRelays'
-      | 'bridgeStatuses'
-      | 'canClaim'
-      | 'chainGasAmount'
-      | 'claim'
-      | 'deployBlock'
-      | 'dispute'
-      | 'getBridgeTransaction'
-      | 'getRoleAdmin'
-      | 'grantRole'
-      | 'hasRole'
-      | 'nonce'
-      | 'protocolFeeRate'
-      | 'protocolFees'
-      | 'prove'
-      | 'refund'
-      | 'relay'
-      | 'removeGovernor'
-      | 'removeGuard'
-      | 'removeRelayer'
-      | 'renounceRole'
-      | 'revokeRole'
-      | 'setChainGasAmount'
-      | 'setProtocolFeeRate'
-      | 'supportsInterface'
-      | 'sweepProtocolFees'
-  ): FunctionFragment
+      | "DEFAULT_ADMIN_ROLE"
+      | "DISPUTE_PERIOD"
+      | "FEE_BPS"
+      | "FEE_RATE_MAX"
+      | "GOVERNOR_ROLE"
+      | "GUARD_ROLE"
+      | "MIN_DEADLINE_PERIOD"
+      | "RELAYER_ROLE"
+      | "addGovernor"
+      | "addGuard"
+      | "addRelayer"
+      | "bridge"
+      | "bridgeProofs"
+      | "bridgeRelays"
+      | "bridgeStatuses"
+      | "canClaim"
+      | "chainGasAmount"
+      | "claim"
+      | "deployBlock"
+      | "dispute"
+      | "getBridgeTransaction"
+      | "getRoleAdmin"
+      | "grantRole"
+      | "hasRole"
+      | "nonce"
+      | "protocolFeeRate"
+      | "protocolFees"
+      | "prove"
+      | "refund"
+      | "relay"
+      | "removeGovernor"
+      | "removeGuard"
+      | "removeRelayer"
+      | "renounceRole"
+      | "revokeRole"
+      | "setChainGasAmount"
+      | "setProtocolFeeRate"
+      | "supportsInterface"
+      | "sweepProtocolFees"
+  ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: 'DEFAULT_ADMIN_ROLE',
+    functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'DISPUTE_PERIOD',
+    functionFragment: "DISPUTE_PERIOD",
     values?: undefined
-  ): string
-  encodeFunctionData(functionFragment: 'FEE_BPS', values?: undefined): string
+  ): string;
+  encodeFunctionData(functionFragment: "FEE_BPS", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: 'FEE_RATE_MAX',
+    functionFragment: "FEE_RATE_MAX",
     values?: undefined
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'GOVERNOR_ROLE',
+    functionFragment: "GOVERNOR_ROLE",
     values?: undefined
-  ): string
-  encodeFunctionData(functionFragment: 'GUARD_ROLE', values?: undefined): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'MIN_DEADLINE_PERIOD',
+    functionFragment: "GUARD_ROLE",
     values?: undefined
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'RELAYER_ROLE',
+    functionFragment: "MIN_DEADLINE_PERIOD",
     values?: undefined
-  ): string
-  encodeFunctionData(functionFragment: 'addGovernor', values: [string]): string
-  encodeFunctionData(functionFragment: 'addGuard', values: [string]): string
-  encodeFunctionData(functionFragment: 'addRelayer', values: [string]): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'bridge',
+    functionFragment: "RELAYER_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "addGovernor", values: [string]): string;
+  encodeFunctionData(functionFragment: "addGuard", values: [string]): string;
+  encodeFunctionData(functionFragment: "addRelayer", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "bridge",
     values: [IFastBridge.BridgeParamsStruct]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'bridgeProofs',
+    functionFragment: "bridgeProofs",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'bridgeRelays',
+    functionFragment: "bridgeRelays",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'bridgeStatuses',
+    functionFragment: "bridgeStatuses",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'canClaim',
+    functionFragment: "canClaim",
     values: [BytesLike, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'chainGasAmount',
+    functionFragment: "chainGasAmount",
     values?: undefined
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'claim',
+    functionFragment: "claim",
     values: [BytesLike, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'deployBlock',
+    functionFragment: "deployBlock",
     values?: undefined
-  ): string
-  encodeFunctionData(functionFragment: 'dispute', values: [BytesLike]): string
+  ): string;
+  encodeFunctionData(functionFragment: "dispute", values: [BytesLike]): string;
   encodeFunctionData(
-    functionFragment: 'getBridgeTransaction',
+    functionFragment: "getBridgeTransaction",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'getRoleAdmin',
+    functionFragment: "getRoleAdmin",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'grantRole',
+    functionFragment: "grantRole",
     values: [BytesLike, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'hasRole',
+    functionFragment: "hasRole",
     values: [BytesLike, string]
-  ): string
-  encodeFunctionData(functionFragment: 'nonce', values?: undefined): string
+  ): string;
+  encodeFunctionData(functionFragment: "nonce", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: 'protocolFeeRate',
+    functionFragment: "protocolFeeRate",
     values?: undefined
-  ): string
-  encodeFunctionData(functionFragment: 'protocolFees', values: [string]): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'prove',
+    functionFragment: "protocolFees",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "prove",
     values: [BytesLike, BytesLike]
-  ): string
+  ): string;
+  encodeFunctionData(functionFragment: "refund", values: [BytesLike]): string;
+  encodeFunctionData(functionFragment: "relay", values: [BytesLike]): string;
   encodeFunctionData(
-    functionFragment: 'refund',
-    values: [BytesLike, string]
-  ): string
-  encodeFunctionData(functionFragment: 'relay', values: [BytesLike]): string
-  encodeFunctionData(
-    functionFragment: 'removeGovernor',
+    functionFragment: "removeGovernor",
     values: [string]
-  ): string
-  encodeFunctionData(functionFragment: 'removeGuard', values: [string]): string
+  ): string;
+  encodeFunctionData(functionFragment: "removeGuard", values: [string]): string;
   encodeFunctionData(
-    functionFragment: 'removeRelayer',
+    functionFragment: "removeRelayer",
     values: [string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'renounceRole',
+    functionFragment: "renounceRole",
     values: [BytesLike, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'revokeRole',
+    functionFragment: "revokeRole",
     values: [BytesLike, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setChainGasAmount',
+    functionFragment: "setChainGasAmount",
     values: [BigNumberish]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setProtocolFeeRate',
+    functionFragment: "setProtocolFeeRate",
     values: [BigNumberish]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'supportsInterface',
+    functionFragment: "supportsInterface",
     values: [BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'sweepProtocolFees',
+    functionFragment: "sweepProtocolFees",
     values: [string, string]
-  ): string
+  ): string;
 
   decodeFunctionResult(
-    functionFragment: 'DEFAULT_ADMIN_ROLE',
+    functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'DISPUTE_PERIOD',
+    functionFragment: "DISPUTE_PERIOD",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'FEE_BPS', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "FEE_BPS", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'FEE_RATE_MAX',
+    functionFragment: "FEE_RATE_MAX",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'GOVERNOR_ROLE',
+    functionFragment: "GOVERNOR_ROLE",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'GUARD_ROLE', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "GUARD_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'MIN_DEADLINE_PERIOD',
+    functionFragment: "MIN_DEADLINE_PERIOD",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'RELAYER_ROLE',
+    functionFragment: "RELAYER_ROLE",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'addGovernor', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addGuard', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addRelayer', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'bridge', data: BytesLike): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'bridgeProofs',
+    functionFragment: "addGovernor",
     data: BytesLike
-  ): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "addGuard", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addRelayer", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "bridge", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'bridgeRelays',
+    functionFragment: "bridgeProofs",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'bridgeStatuses',
+    functionFragment: "bridgeRelays",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'canClaim', data: BytesLike): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'chainGasAmount',
+    functionFragment: "bridgeStatuses",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'claim', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'deployBlock', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'dispute', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "canClaim", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'getBridgeTransaction',
+    functionFragment: "chainGasAmount",
     data: BytesLike
-  ): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'getRoleAdmin',
+    functionFragment: "deployBlock",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'grantRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'hasRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'nonce', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "dispute", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'protocolFeeRate',
+    functionFragment: "getBridgeTransaction",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'protocolFees',
+    functionFragment: "getRoleAdmin",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'prove', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'refund', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'relay', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "nonce", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'removeGovernor',
+    functionFragment: "protocolFeeRate",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'removeGuard', data: BytesLike): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'removeRelayer',
+    functionFragment: "protocolFees",
     data: BytesLike
-  ): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "prove", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "refund", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "relay", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'renounceRole',
+    functionFragment: "removeGovernor",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'revokeRole', data: BytesLike): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'setChainGasAmount',
+    functionFragment: "removeGuard",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'setProtocolFeeRate',
+    functionFragment: "removeRelayer",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'supportsInterface',
+    functionFragment: "renounceRole",
     data: BytesLike
-  ): Result
+  ): Result;
+  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'sweepProtocolFees',
+    functionFragment: "setChainGasAmount",
     data: BytesLike
-  ): Result
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProtocolFeeRate",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "sweepProtocolFees",
+    data: BytesLike
+  ): Result;
 
   events: {
-    'BridgeDepositClaimed(bytes32,address,address,address,uint256)': EventFragment
-    'BridgeDepositRefunded(bytes32,address,address,uint256)': EventFragment
-    'BridgeProofDisputed(bytes32,address)': EventFragment
-    'BridgeProofProvided(bytes32,address,bytes32)': EventFragment
-    'BridgeRelayed(bytes32,address,address,address,uint256,uint256)': EventFragment
-    'BridgeRequested(bytes32,address,bytes)': EventFragment
-    'ChainGasAmountUpdated(uint256,uint256)': EventFragment
-    'FeeRateUpdated(uint256,uint256)': EventFragment
-    'FeesSwept(address,address,uint256)': EventFragment
-    'GovernorAdded(address)': EventFragment
-    'GovernorRemoved(address)': EventFragment
-    'GuardAdded(address)': EventFragment
-    'GuardRemoved(address)': EventFragment
-    'RelayerAdded(address)': EventFragment
-    'RelayerRemoved(address)': EventFragment
-    'RoleAdminChanged(bytes32,bytes32,bytes32)': EventFragment
-    'RoleGranted(bytes32,address,address)': EventFragment
-    'RoleRevoked(bytes32,address,address)': EventFragment
-  }
+    "BridgeDepositClaimed(bytes32,address,address,address,uint256)": EventFragment;
+    "BridgeDepositRefunded(bytes32,address,address,uint256)": EventFragment;
+    "BridgeProofDisputed(bytes32,address)": EventFragment;
+    "BridgeProofProvided(bytes32,address,bytes32)": EventFragment;
+    "BridgeRelayed(bytes32,address,address,uint32,address,address,uint256,uint256,uint256)": EventFragment;
+    "BridgeRequested(bytes32,address,bytes,uint32,address,address,uint256,uint256,bool)": EventFragment;
+    "ChainGasAmountUpdated(uint256,uint256)": EventFragment;
+    "FeeRateUpdated(uint256,uint256)": EventFragment;
+    "FeesSwept(address,address,uint256)": EventFragment;
+    "GovernorAdded(address)": EventFragment;
+    "GovernorRemoved(address)": EventFragment;
+    "GuardAdded(address)": EventFragment;
+    "GuardRemoved(address)": EventFragment;
+    "RelayerAdded(address)": EventFragment;
+    "RelayerRemoved(address)": EventFragment;
+    "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
+    "RoleGranted(bytes32,address,address)": EventFragment;
+    "RoleRevoked(bytes32,address,address)": EventFragment;
+  };
 
-  getEvent(nameOrSignatureOrTopic: 'BridgeDepositClaimed'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BridgeDepositRefunded'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BridgeProofDisputed'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BridgeProofProvided'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BridgeRelayed'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BridgeRequested'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'ChainGasAmountUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'FeeRateUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'FeesSwept'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GovernorAdded'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GovernorRemoved'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GuardAdded'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GuardRemoved'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'RelayerAdded'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'RelayerRemoved'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'RoleAdminChanged'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'RoleGranted'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'RoleRevoked'): EventFragment
+  getEvent(nameOrSignatureOrTopic: "BridgeDepositClaimed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BridgeDepositRefunded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BridgeProofDisputed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BridgeProofProvided"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BridgeRelayed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BridgeRequested"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChainGasAmountUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeRateUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeesSwept"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GovernorAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GovernorRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GuardAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GuardRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RelayerAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RelayerRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
 }
 
 export interface BridgeDepositClaimedEventObject {
-  transactionId: string
-  relayer: string
-  to: string
-  token: string
-  amount: BigNumber
+  transactionId: string;
+  relayer: string;
+  to: string;
+  token: string;
+  amount: BigNumber;
 }
 export type BridgeDepositClaimedEvent = TypedEvent<
   [string, string, string, string, BigNumber],
   BridgeDepositClaimedEventObject
->
+>;
 
 export type BridgeDepositClaimedEventFilter =
-  TypedEventFilter<BridgeDepositClaimedEvent>
+  TypedEventFilter<BridgeDepositClaimedEvent>;
 
 export interface BridgeDepositRefundedEventObject {
-  transactionId: string
-  to: string
-  token: string
-  amount: BigNumber
+  transactionId: string;
+  to: string;
+  token: string;
+  amount: BigNumber;
 }
 export type BridgeDepositRefundedEvent = TypedEvent<
   [string, string, string, BigNumber],
   BridgeDepositRefundedEventObject
->
+>;
 
 export type BridgeDepositRefundedEventFilter =
-  TypedEventFilter<BridgeDepositRefundedEvent>
+  TypedEventFilter<BridgeDepositRefundedEvent>;
 
 export interface BridgeProofDisputedEventObject {
-  transactionId: string
-  relayer: string
+  transactionId: string;
+  relayer: string;
 }
 export type BridgeProofDisputedEvent = TypedEvent<
   [string, string],
   BridgeProofDisputedEventObject
->
+>;
 
 export type BridgeProofDisputedEventFilter =
-  TypedEventFilter<BridgeProofDisputedEvent>
+  TypedEventFilter<BridgeProofDisputedEvent>;
 
 export interface BridgeProofProvidedEventObject {
-  transactionId: string
-  relayer: string
-  transactionHash: string
+  transactionId: string;
+  relayer: string;
+  transactionHash: string;
 }
 export type BridgeProofProvidedEvent = TypedEvent<
   [string, string, string],
   BridgeProofProvidedEventObject
->
+>;
 
 export type BridgeProofProvidedEventFilter =
-  TypedEventFilter<BridgeProofProvidedEvent>
+  TypedEventFilter<BridgeProofProvidedEvent>;
 
 export interface BridgeRelayedEventObject {
-  transactionId: string
-  relayer: string
-  to: string
-  token: string
-  amount: BigNumber
-  chainGasAmount: BigNumber
+  transactionId: string;
+  relayer: string;
+  to: string;
+  originChainId: number;
+  originToken: string;
+  destToken: string;
+  originAmount: BigNumber;
+  destAmount: BigNumber;
+  chainGasAmount: BigNumber;
 }
 export type BridgeRelayedEvent = TypedEvent<
-  [string, string, string, string, BigNumber, BigNumber],
+  [
+    string,
+    string,
+    string,
+    number,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   BridgeRelayedEventObject
->
+>;
 
-export type BridgeRelayedEventFilter = TypedEventFilter<BridgeRelayedEvent>
+export type BridgeRelayedEventFilter = TypedEventFilter<BridgeRelayedEvent>;
 
 export interface BridgeRequestedEventObject {
-  transactionId: string
-  sender: string
-  request: string
+  transactionId: string;
+  sender: string;
+  request: string;
+  destChainId: number;
+  originToken: string;
+  destToken: string;
+  originAmount: BigNumber;
+  destAmount: BigNumber;
+  sendChainGas: boolean;
 }
 export type BridgeRequestedEvent = TypedEvent<
-  [string, string, string],
+  [
+    string,
+    string,
+    string,
+    number,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    boolean
+  ],
   BridgeRequestedEventObject
->
+>;
 
-export type BridgeRequestedEventFilter = TypedEventFilter<BridgeRequestedEvent>
+export type BridgeRequestedEventFilter = TypedEventFilter<BridgeRequestedEvent>;
 
 export interface ChainGasAmountUpdatedEventObject {
-  oldChainGasAmount: BigNumber
-  newChainGasAmount: BigNumber
+  oldChainGasAmount: BigNumber;
+  newChainGasAmount: BigNumber;
 }
 export type ChainGasAmountUpdatedEvent = TypedEvent<
   [BigNumber, BigNumber],
   ChainGasAmountUpdatedEventObject
->
+>;
 
 export type ChainGasAmountUpdatedEventFilter =
-  TypedEventFilter<ChainGasAmountUpdatedEvent>
+  TypedEventFilter<ChainGasAmountUpdatedEvent>;
 
 export interface FeeRateUpdatedEventObject {
-  oldFeeRate: BigNumber
-  newFeeRate: BigNumber
+  oldFeeRate: BigNumber;
+  newFeeRate: BigNumber;
 }
 export type FeeRateUpdatedEvent = TypedEvent<
   [BigNumber, BigNumber],
   FeeRateUpdatedEventObject
->
+>;
 
-export type FeeRateUpdatedEventFilter = TypedEventFilter<FeeRateUpdatedEvent>
+export type FeeRateUpdatedEventFilter = TypedEventFilter<FeeRateUpdatedEvent>;
 
 export interface FeesSweptEventObject {
-  token: string
-  recipient: string
-  amount: BigNumber
+  token: string;
+  recipient: string;
+  amount: BigNumber;
 }
 export type FeesSweptEvent = TypedEvent<
   [string, string, BigNumber],
   FeesSweptEventObject
->
+>;
 
-export type FeesSweptEventFilter = TypedEventFilter<FeesSweptEvent>
+export type FeesSweptEventFilter = TypedEventFilter<FeesSweptEvent>;
 
 export interface GovernorAddedEventObject {
-  governor: string
+  governor: string;
 }
-export type GovernorAddedEvent = TypedEvent<[string], GovernorAddedEventObject>
+export type GovernorAddedEvent = TypedEvent<[string], GovernorAddedEventObject>;
 
-export type GovernorAddedEventFilter = TypedEventFilter<GovernorAddedEvent>
+export type GovernorAddedEventFilter = TypedEventFilter<GovernorAddedEvent>;
 
 export interface GovernorRemovedEventObject {
-  governor: string
+  governor: string;
 }
 export type GovernorRemovedEvent = TypedEvent<
   [string],
   GovernorRemovedEventObject
->
+>;
 
-export type GovernorRemovedEventFilter = TypedEventFilter<GovernorRemovedEvent>
+export type GovernorRemovedEventFilter = TypedEventFilter<GovernorRemovedEvent>;
 
 export interface GuardAddedEventObject {
-  guard: string
+  guard: string;
 }
-export type GuardAddedEvent = TypedEvent<[string], GuardAddedEventObject>
+export type GuardAddedEvent = TypedEvent<[string], GuardAddedEventObject>;
 
-export type GuardAddedEventFilter = TypedEventFilter<GuardAddedEvent>
+export type GuardAddedEventFilter = TypedEventFilter<GuardAddedEvent>;
 
 export interface GuardRemovedEventObject {
-  guard: string
+  guard: string;
 }
-export type GuardRemovedEvent = TypedEvent<[string], GuardRemovedEventObject>
+export type GuardRemovedEvent = TypedEvent<[string], GuardRemovedEventObject>;
 
-export type GuardRemovedEventFilter = TypedEventFilter<GuardRemovedEvent>
+export type GuardRemovedEventFilter = TypedEventFilter<GuardRemovedEvent>;
 
 export interface RelayerAddedEventObject {
-  relayer: string
+  relayer: string;
 }
-export type RelayerAddedEvent = TypedEvent<[string], RelayerAddedEventObject>
+export type RelayerAddedEvent = TypedEvent<[string], RelayerAddedEventObject>;
 
-export type RelayerAddedEventFilter = TypedEventFilter<RelayerAddedEvent>
+export type RelayerAddedEventFilter = TypedEventFilter<RelayerAddedEvent>;
 
 export interface RelayerRemovedEventObject {
-  relayer: string
+  relayer: string;
 }
 export type RelayerRemovedEvent = TypedEvent<
   [string],
   RelayerRemovedEventObject
->
+>;
 
-export type RelayerRemovedEventFilter = TypedEventFilter<RelayerRemovedEvent>
+export type RelayerRemovedEventFilter = TypedEventFilter<RelayerRemovedEvent>;
 
 export interface RoleAdminChangedEventObject {
-  role: string
-  previousAdminRole: string
-  newAdminRole: string
+  role: string;
+  previousAdminRole: string;
+  newAdminRole: string;
 }
 export type RoleAdminChangedEvent = TypedEvent<
   [string, string, string],
   RoleAdminChangedEventObject
->
+>;
 
 export type RoleAdminChangedEventFilter =
-  TypedEventFilter<RoleAdminChangedEvent>
+  TypedEventFilter<RoleAdminChangedEvent>;
 
 export interface RoleGrantedEventObject {
-  role: string
-  account: string
-  sender: string
+  role: string;
+  account: string;
+  sender: string;
 }
 export type RoleGrantedEvent = TypedEvent<
   [string, string, string],
   RoleGrantedEventObject
->
+>;
 
-export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>
+export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>;
 
 export interface RoleRevokedEventObject {
-  role: string
-  account: string
-  sender: string
+  role: string;
+  account: string;
+  sender: string;
 }
 export type RoleRevokedEvent = TypedEvent<
   [string, string, string],
   RoleRevokedEventObject
->
+>;
 
-export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>
+export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export interface FastBridge extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this
-  attach(addressOrName: string): this
-  deployed(): Promise<this>
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
-  interface: FastBridgeInterface
+  interface: FastBridgeInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>
+  ): Promise<Array<TEvent>>;
 
   listeners<TEvent extends TypedEvent>(
     eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>
-  listeners(eventName?: string): Array<Listener>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
   removeAllListeners<TEvent extends TypedEvent>(
     eventFilter: TypedEventFilter<TEvent>
-  ): this
-  removeAllListeners(eventName?: string): this
-  off: OnEvent<this>
-  on: OnEvent<this>
-  once: OnEvent<this>
-  removeListener: OnEvent<this>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
   functions: {
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>
+    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    FEE_BPS(overrides?: CallOverrides): Promise<[BigNumber]>
+    FEE_BPS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    FEE_RATE_MAX(overrides?: CallOverrides): Promise<[BigNumber]>
+    FEE_RATE_MAX(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<[string]>
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    GUARD_ROLE(overrides?: CallOverrides): Promise<[string]>
+    GUARD_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>
+    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    RELAYER_ROLE(overrides?: CallOverrides): Promise<[string]>
+    RELAYER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     addGovernor(
       _governor: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     addGuard(
       _guard: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     addRelayer(
       _relayer: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     bridge(
       params: IFastBridge.BridgeParamsStruct,
       overrides?: PayableOverrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     bridgeProofs(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>
+    ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>;
 
-    bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<[boolean]>
+    bridgeRelays(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     bridgeStatuses(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[number]>
+    ): Promise<[number]>;
 
     canClaim(
       transactionId: BytesLike,
       relayer: string,
       overrides?: CallOverrides
-    ): Promise<[boolean]>
+    ): Promise<[boolean]>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<[BigNumber]>
+    chainGasAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     claim(
       request: BytesLike,
       to: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    deployBlock(overrides?: CallOverrides): Promise<[BigNumber]>
+    deployBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     dispute(
       transactionId: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     getBridgeTransaction(
       request: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[IFastBridge.BridgeTransactionStructOutput]>
+    ): Promise<[IFastBridge.BridgeTransactionStructOutput]>;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
     grantRole(
       role: BytesLike,
       account: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     hasRole(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<[boolean]>
+    ): Promise<[boolean]>;
 
-    nonce(overrides?: CallOverrides): Promise<[BigNumber]>
+    nonce(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    protocolFeeRate(overrides?: CallOverrides): Promise<[BigNumber]>
+    protocolFeeRate(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    protocolFees(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>
+    protocolFees(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     prove(
       request: BytesLike,
       destTxHash: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     refund(
       request: BytesLike,
-      to: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     relay(
       request: BytesLike,
       overrides?: PayableOverrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     removeGovernor(
       _governor: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     removeGuard(
       _guard: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     removeRelayer(
       _relayer: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     renounceRole(
       role: BytesLike,
       callerConfirmation: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     revokeRole(
       role: BytesLike,
       account: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setChainGasAmount(
       newChainGasAmount: BigNumberish,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setProtocolFeeRate(
       newFeeRate: BigNumberish,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[boolean]>
+    ): Promise<[boolean]>;
 
     sweepProtocolFees(
       token: string,
       recipient: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
-  }
+    ): Promise<ContractTransaction>;
+  };
 
-  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>
+  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+  DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-  FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>
+  FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>;
 
-  FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>
+  FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>;
 
-  GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>
+  GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  GUARD_ROLE(overrides?: CallOverrides): Promise<string>
+  GUARD_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+  MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-  RELAYER_ROLE(overrides?: CallOverrides): Promise<string>
+  RELAYER_ROLE(overrides?: CallOverrides): Promise<string>;
 
   addGovernor(
     _governor: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   addGuard(
     _guard: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   addRelayer(
     _relayer: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   bridge(
     params: IFastBridge.BridgeParamsStruct,
     overrides?: PayableOverrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   bridgeProofs(
     arg0: BytesLike,
     overrides?: CallOverrides
-  ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>
+  ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>;
 
-  bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>
+  bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
-  bridgeStatuses(arg0: BytesLike, overrides?: CallOverrides): Promise<number>
+  bridgeStatuses(arg0: BytesLike, overrides?: CallOverrides): Promise<number>;
 
   canClaim(
     transactionId: BytesLike,
     relayer: string,
     overrides?: CallOverrides
-  ): Promise<boolean>
+  ): Promise<boolean>;
 
-  chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
+  chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
   claim(
     request: BytesLike,
     to: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  deployBlock(overrides?: CallOverrides): Promise<BigNumber>
+  deployBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
   dispute(
     transactionId: BytesLike,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   getBridgeTransaction(
     request: BytesLike,
     overrides?: CallOverrides
-  ): Promise<IFastBridge.BridgeTransactionStructOutput>
+  ): Promise<IFastBridge.BridgeTransactionStructOutput>;
 
-  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>
+  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
   grantRole(
     role: BytesLike,
     account: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   hasRole(
     role: BytesLike,
     account: string,
     overrides?: CallOverrides
-  ): Promise<boolean>
+  ): Promise<boolean>;
 
-  nonce(overrides?: CallOverrides): Promise<BigNumber>
+  nonce(overrides?: CallOverrides): Promise<BigNumber>;
 
-  protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>
+  protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>;
 
-  protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
+  protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   prove(
     request: BytesLike,
     destTxHash: BytesLike,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   refund(
     request: BytesLike,
-    to: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   relay(
     request: BytesLike,
     overrides?: PayableOverrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   removeGovernor(
     _governor: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   removeGuard(
     _guard: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   removeRelayer(
     _relayer: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   renounceRole(
     role: BytesLike,
     callerConfirmation: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   revokeRole(
     role: BytesLike,
     account: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setChainGasAmount(
     newChainGasAmount: BigNumberish,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setProtocolFeeRate(
     newFeeRate: BigNumberish,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
-  ): Promise<boolean>
+  ): Promise<boolean>;
 
   sweepProtocolFees(
     token: string,
     recipient: string,
     overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>;
 
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    GUARD_ROLE(overrides?: CallOverrides): Promise<string>
+    GUARD_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-    RELAYER_ROLE(overrides?: CallOverrides): Promise<string>
+    RELAYER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    addGovernor(_governor: string, overrides?: CallOverrides): Promise<void>
+    addGovernor(_governor: string, overrides?: CallOverrides): Promise<void>;
 
-    addGuard(_guard: string, overrides?: CallOverrides): Promise<void>
+    addGuard(_guard: string, overrides?: CallOverrides): Promise<void>;
 
-    addRelayer(_relayer: string, overrides?: CallOverrides): Promise<void>
+    addRelayer(_relayer: string, overrides?: CallOverrides): Promise<void>;
 
     bridge(
       params: IFastBridge.BridgeParamsStruct,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     bridgeProofs(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>
+    ): Promise<[BigNumber, string] & { timestamp: BigNumber; relayer: string }>;
 
-    bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>
+    bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
-    bridgeStatuses(arg0: BytesLike, overrides?: CallOverrides): Promise<number>
+    bridgeStatuses(arg0: BytesLike, overrides?: CallOverrides): Promise<number>;
 
     canClaim(
       transactionId: BytesLike,
       relayer: string,
       overrides?: CallOverrides
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
+    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
     claim(
       request: BytesLike,
       to: string,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    deployBlock(overrides?: CallOverrides): Promise<BigNumber>
+    deployBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
-    dispute(transactionId: BytesLike, overrides?: CallOverrides): Promise<void>
+    dispute(transactionId: BytesLike, overrides?: CallOverrides): Promise<void>;
 
     getBridgeTransaction(
       request: BytesLike,
       overrides?: CallOverrides
-    ): Promise<IFastBridge.BridgeTransactionStructOutput>
+    ): Promise<IFastBridge.BridgeTransactionStructOutput>;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
     grantRole(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     hasRole(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
-    nonce(overrides?: CallOverrides): Promise<BigNumber>
+    nonce(overrides?: CallOverrides): Promise<BigNumber>;
 
-    protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>
+    protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>;
 
-    protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
+    protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     prove(
       request: BytesLike,
       destTxHash: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    refund(
-      request: BytesLike,
-      to: string,
-      overrides?: CallOverrides
-    ): Promise<void>
+    refund(request: BytesLike, overrides?: CallOverrides): Promise<void>;
 
-    relay(request: BytesLike, overrides?: CallOverrides): Promise<void>
+    relay(request: BytesLike, overrides?: CallOverrides): Promise<void>;
 
-    removeGovernor(_governor: string, overrides?: CallOverrides): Promise<void>
+    removeGovernor(_governor: string, overrides?: CallOverrides): Promise<void>;
 
-    removeGuard(_guard: string, overrides?: CallOverrides): Promise<void>
+    removeGuard(_guard: string, overrides?: CallOverrides): Promise<void>;
 
-    removeRelayer(_relayer: string, overrides?: CallOverrides): Promise<void>
+    removeRelayer(_relayer: string, overrides?: CallOverrides): Promise<void>;
 
     renounceRole(
       role: BytesLike,
       callerConfirmation: string,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     revokeRole(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     setChainGasAmount(
       newChainGasAmount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     setProtocolFeeRate(
       newFeeRate: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
     sweepProtocolFees(
       token: string,
       recipient: string,
       overrides?: CallOverrides
-    ): Promise<void>
-  }
+    ): Promise<void>;
+  };
 
   filters: {
-    'BridgeDepositClaimed(bytes32,address,address,address,uint256)'(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
+    "BridgeDepositClaimed(bytes32,address,address,address,uint256)"(
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
       token?: null,
       amount?: null
-    ): BridgeDepositClaimedEventFilter
+    ): BridgeDepositClaimedEventFilter;
     BridgeDepositClaimed(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
       token?: null,
       amount?: null
-    ): BridgeDepositClaimedEventFilter
+    ): BridgeDepositClaimedEventFilter;
 
-    'BridgeDepositRefunded(bytes32,address,address,uint256)'(
-      transactionId?: null,
-      to?: null,
+    "BridgeDepositRefunded(bytes32,address,address,uint256)"(
+      transactionId?: BytesLike | null,
+      to?: string | null,
       token?: null,
       amount?: null
-    ): BridgeDepositRefundedEventFilter
+    ): BridgeDepositRefundedEventFilter;
     BridgeDepositRefunded(
-      transactionId?: null,
-      to?: null,
+      transactionId?: BytesLike | null,
+      to?: string | null,
       token?: null,
       amount?: null
-    ): BridgeDepositRefundedEventFilter
+    ): BridgeDepositRefundedEventFilter;
 
-    'BridgeProofDisputed(bytes32,address)'(
-      transactionId?: null,
-      relayer?: null
-    ): BridgeProofDisputedEventFilter
+    "BridgeProofDisputed(bytes32,address)"(
+      transactionId?: BytesLike | null,
+      relayer?: string | null
+    ): BridgeProofDisputedEventFilter;
     BridgeProofDisputed(
-      transactionId?: null,
-      relayer?: null
-    ): BridgeProofDisputedEventFilter
+      transactionId?: BytesLike | null,
+      relayer?: string | null
+    ): BridgeProofDisputedEventFilter;
 
-    'BridgeProofProvided(bytes32,address,bytes32)'(
-      transactionId?: null,
-      relayer?: null,
+    "BridgeProofProvided(bytes32,address,bytes32)"(
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
       transactionHash?: null
-    ): BridgeProofProvidedEventFilter
+    ): BridgeProofProvidedEventFilter;
     BridgeProofProvided(
-      transactionId?: null,
-      relayer?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
       transactionHash?: null
-    ): BridgeProofProvidedEventFilter
+    ): BridgeProofProvidedEventFilter;
 
-    'BridgeRelayed(bytes32,address,address,address,uint256,uint256)'(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
-      token?: null,
-      amount?: null,
+    "BridgeRelayed(bytes32,address,address,uint32,address,address,uint256,uint256,uint256)"(
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
+      originChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
       chainGasAmount?: null
-    ): BridgeRelayedEventFilter
+    ): BridgeRelayedEventFilter;
     BridgeRelayed(
-      transactionId?: null,
-      relayer?: null,
-      to?: null,
-      token?: null,
-      amount?: null,
+      transactionId?: BytesLike | null,
+      relayer?: string | null,
+      to?: string | null,
+      originChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
       chainGasAmount?: null
-    ): BridgeRelayedEventFilter
+    ): BridgeRelayedEventFilter;
 
-    'BridgeRequested(bytes32,address,bytes)'(
-      transactionId?: null,
-      sender?: null,
-      request?: null
-    ): BridgeRequestedEventFilter
+    "BridgeRequested(bytes32,address,bytes,uint32,address,address,uint256,uint256,bool)"(
+      transactionId?: BytesLike | null,
+      sender?: string | null,
+      request?: null,
+      destChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
+      sendChainGas?: null
+    ): BridgeRequestedEventFilter;
     BridgeRequested(
-      transactionId?: null,
-      sender?: null,
-      request?: null
-    ): BridgeRequestedEventFilter
+      transactionId?: BytesLike | null,
+      sender?: string | null,
+      request?: null,
+      destChainId?: null,
+      originToken?: null,
+      destToken?: null,
+      originAmount?: null,
+      destAmount?: null,
+      sendChainGas?: null
+    ): BridgeRequestedEventFilter;
 
-    'ChainGasAmountUpdated(uint256,uint256)'(
+    "ChainGasAmountUpdated(uint256,uint256)"(
       oldChainGasAmount?: null,
       newChainGasAmount?: null
-    ): ChainGasAmountUpdatedEventFilter
+    ): ChainGasAmountUpdatedEventFilter;
     ChainGasAmountUpdated(
       oldChainGasAmount?: null,
       newChainGasAmount?: null
-    ): ChainGasAmountUpdatedEventFilter
+    ): ChainGasAmountUpdatedEventFilter;
 
-    'FeeRateUpdated(uint256,uint256)'(
+    "FeeRateUpdated(uint256,uint256)"(
       oldFeeRate?: null,
       newFeeRate?: null
-    ): FeeRateUpdatedEventFilter
+    ): FeeRateUpdatedEventFilter;
     FeeRateUpdated(
       oldFeeRate?: null,
       newFeeRate?: null
-    ): FeeRateUpdatedEventFilter
+    ): FeeRateUpdatedEventFilter;
 
-    'FeesSwept(address,address,uint256)'(
+    "FeesSwept(address,address,uint256)"(
       token?: null,
       recipient?: null,
       amount?: null
-    ): FeesSweptEventFilter
+    ): FeesSweptEventFilter;
     FeesSwept(
       token?: null,
       recipient?: null,
       amount?: null
-    ): FeesSweptEventFilter
+    ): FeesSweptEventFilter;
 
-    'GovernorAdded(address)'(governor?: null): GovernorAddedEventFilter
-    GovernorAdded(governor?: null): GovernorAddedEventFilter
+    "GovernorAdded(address)"(governor?: null): GovernorAddedEventFilter;
+    GovernorAdded(governor?: null): GovernorAddedEventFilter;
 
-    'GovernorRemoved(address)'(governor?: null): GovernorRemovedEventFilter
-    GovernorRemoved(governor?: null): GovernorRemovedEventFilter
+    "GovernorRemoved(address)"(governor?: null): GovernorRemovedEventFilter;
+    GovernorRemoved(governor?: null): GovernorRemovedEventFilter;
 
-    'GuardAdded(address)'(guard?: null): GuardAddedEventFilter
-    GuardAdded(guard?: null): GuardAddedEventFilter
+    "GuardAdded(address)"(guard?: null): GuardAddedEventFilter;
+    GuardAdded(guard?: null): GuardAddedEventFilter;
 
-    'GuardRemoved(address)'(guard?: null): GuardRemovedEventFilter
-    GuardRemoved(guard?: null): GuardRemovedEventFilter
+    "GuardRemoved(address)"(guard?: null): GuardRemovedEventFilter;
+    GuardRemoved(guard?: null): GuardRemovedEventFilter;
 
-    'RelayerAdded(address)'(relayer?: null): RelayerAddedEventFilter
-    RelayerAdded(relayer?: null): RelayerAddedEventFilter
+    "RelayerAdded(address)"(relayer?: null): RelayerAddedEventFilter;
+    RelayerAdded(relayer?: null): RelayerAddedEventFilter;
 
-    'RelayerRemoved(address)'(relayer?: null): RelayerRemovedEventFilter
-    RelayerRemoved(relayer?: null): RelayerRemovedEventFilter
+    "RelayerRemoved(address)"(relayer?: null): RelayerRemovedEventFilter;
+    RelayerRemoved(relayer?: null): RelayerRemovedEventFilter;
 
-    'RoleAdminChanged(bytes32,bytes32,bytes32)'(
+    "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
       previousAdminRole?: BytesLike | null,
       newAdminRole?: BytesLike | null
-    ): RoleAdminChangedEventFilter
+    ): RoleAdminChangedEventFilter;
     RoleAdminChanged(
       role?: BytesLike | null,
       previousAdminRole?: BytesLike | null,
       newAdminRole?: BytesLike | null
-    ): RoleAdminChangedEventFilter
+    ): RoleAdminChangedEventFilter;
 
-    'RoleGranted(bytes32,address,address)'(
+    "RoleGranted(bytes32,address,address)"(
       role?: BytesLike | null,
       account?: string | null,
       sender?: string | null
-    ): RoleGrantedEventFilter
+    ): RoleGrantedEventFilter;
     RoleGranted(
       role?: BytesLike | null,
       account?: string | null,
       sender?: string | null
-    ): RoleGrantedEventFilter
+    ): RoleGrantedEventFilter;
 
-    'RoleRevoked(bytes32,address,address)'(
+    "RoleRevoked(bytes32,address,address)"(
       role?: BytesLike | null,
       account?: string | null,
       sender?: string | null
-    ): RoleRevokedEventFilter
+    ): RoleRevokedEventFilter;
     RoleRevoked(
       role?: BytesLike | null,
       account?: string | null,
       sender?: string | null
-    ): RoleRevokedEventFilter
-  }
+    ): RoleRevokedEventFilter;
+  };
 
   estimateGas: {
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_BPS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>
+    FEE_RATE_MAX(overrides?: CallOverrides): Promise<BigNumber>;
 
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    GUARD_ROLE(overrides?: CallOverrides): Promise<BigNumber>
+    GUARD_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>
+    MIN_DEADLINE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
 
-    RELAYER_ROLE(overrides?: CallOverrides): Promise<BigNumber>
-
-    addGovernor(
-      _governor: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    addGuard(
-      _guard: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    addRelayer(
-      _relayer: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    bridge(
-      params: IFastBridge.BridgeParamsStruct,
-      overrides?: PayableOverrides & { from?: string }
-    ): Promise<BigNumber>
-
-    bridgeProofs(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
-
-    bridgeRelays(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
-
-    bridgeStatuses(
-      arg0: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    canClaim(
-      transactionId: BytesLike,
-      relayer: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>
-
-    claim(
-      request: BytesLike,
-      to: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    deployBlock(overrides?: CallOverrides): Promise<BigNumber>
-
-    dispute(
-      transactionId: BytesLike,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    getBridgeTransaction(
-      request: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
-
-    grantRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    hasRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    nonce(overrides?: CallOverrides): Promise<BigNumber>
-
-    protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>
-
-    protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
-
-    prove(
-      request: BytesLike,
-      destTxHash: BytesLike,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    refund(
-      request: BytesLike,
-      to: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    relay(
-      request: BytesLike,
-      overrides?: PayableOverrides & { from?: string }
-    ): Promise<BigNumber>
-
-    removeGovernor(
-      _governor: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    removeGuard(
-      _guard: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    removeRelayer(
-      _relayer: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    renounceRole(
-      role: BytesLike,
-      callerConfirmation: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    revokeRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    setChainGasAmount(
-      newChainGasAmount: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    setProtocolFeeRate(
-      newFeeRate: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    sweepProtocolFees(
-      token: string,
-      recipient: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>
-  }
-
-  populateTransaction: {
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    FEE_BPS(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    FEE_RATE_MAX(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    GUARD_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    MIN_DEADLINE_PERIOD(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    RELAYER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    RELAYER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     addGovernor(
       _governor: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     addGuard(
       _guard: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     addRelayer(
       _relayer: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     bridge(
       params: IFastBridge.BridgeParamsStruct,
       overrides?: PayableOverrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     bridgeProofs(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     bridgeRelays(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     bridgeStatuses(
       arg0: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     canClaim(
       transactionId: BytesLike,
       relayer: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
     claim(
       request: BytesLike,
       to: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    deployBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    deployBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
     dispute(
       transactionId: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     getBridgeTransaction(
       request: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     grantRole(
       role: BytesLike,
       account: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     hasRole(
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    nonce(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    nonce(overrides?: CallOverrides): Promise<BigNumber>;
 
-    protocolFeeRate(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    protocolFeeRate(overrides?: CallOverrides): Promise<BigNumber>;
 
-    protocolFees(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    protocolFees(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     prove(
       request: BytesLike,
       destTxHash: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     refund(
       request: BytesLike,
-      to: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     relay(
       request: BytesLike,
       overrides?: PayableOverrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     removeGovernor(
       _governor: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     removeGuard(
       _guard: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     removeRelayer(
       _relayer: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     renounceRole(
       role: BytesLike,
       callerConfirmation: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     revokeRole(
       role: BytesLike,
       account: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setChainGasAmount(
       newChainGasAmount: BigNumberish,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setProtocolFeeRate(
       newFeeRate: BigNumberish,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     sweepProtocolFees(
       token: string,
       recipient: string,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>
-  }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    DEFAULT_ADMIN_ROLE(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    DISPUTE_PERIOD(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    FEE_BPS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    FEE_RATE_MAX(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    GUARD_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    MIN_DEADLINE_PERIOD(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    RELAYER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    addGovernor(
+      _governor: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    addGuard(
+      _guard: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    addRelayer(
+      _relayer: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    bridge(
+      params: IFastBridge.BridgeParamsStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    bridgeProofs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    bridgeRelays(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    bridgeStatuses(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    canClaim(
+      transactionId: BytesLike,
+      relayer: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    chainGasAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    claim(
+      request: BytesLike,
+      to: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    deployBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    dispute(
+      transactionId: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    getBridgeTransaction(
+      request: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRoleAdmin(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    nonce(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    protocolFeeRate(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    protocolFees(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    prove(
+      request: BytesLike,
+      destTxHash: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    refund(
+      request: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    relay(
+      request: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    removeGovernor(
+      _governor: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    removeGuard(
+      _guard: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    removeRelayer(
+      _relayer: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    renounceRole(
+      role: BytesLike,
+      callerConfirmation: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    setChainGasAmount(
+      newChainGasAmount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    setProtocolFeeRate(
+      newFeeRate: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    sweepProtocolFees(
+      token: string,
+      recipient: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+  };
 }
