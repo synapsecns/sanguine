@@ -4,6 +4,9 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"strconv"
 	"strings"
@@ -85,31 +88,47 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 }
 
 // ShouldProcess determines if a quote should be processed.
-func (m *Manager) ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool {
+func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "shouldProcess", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(quote.TransactionID[:])),
+	))
+
+	defer func() {
+		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
+	}()
+
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
 	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
+		span.AddEvent(fmt.Sprintf("%s not in %s or %s not found", quote.GetDestIDPair(), strings.Join(destPairs, ", "), quote.GetOriginIDPair()))
 		return false
 	}
 
 	// handle decimals.
 	// this will never get hit if we're operating correctly.
 	if quote.OriginTokenDecimals != quote.DestTokenDecimals {
-		logger.Errorf("Pairing tokens with two different decimals is disabled as a safety feature right now.")
+		span.AddEvent("Pairing tokens with two different decimals is disabled as a safety feature right now.")
 		return false
 	}
 
 	// then check if we'll make money on it
 	isProfitable, err := m.isProfitableQuote(ctx, quote)
 	if err != nil {
-		logger.Errorf("Error checking if quote is profitable: %v", err)
+		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
 		return false
 	}
 	return isProfitable
 }
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
-func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteRequest) (bool, error) {
+func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.QuoteRequest) (isProfitable bool, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "isProfitableQuote")
+
+	defer func() {
+		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", isProfitable)))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	destTokenID, err := m.config.GetTokenName(quote.Transaction.DestChainId, quote.Transaction.DestToken.String())
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
@@ -118,6 +137,12 @@ func (m *Manager) isProfitableQuote(ctx context.Context, quote reldb.QuoteReques
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
+
+	span.AddEvent("fee", trace.WithAttributes(attribute.String("fee", fee.String())))
+	span.AddEvent("cost", trace.WithAttributes(attribute.String("cost", quote.Transaction.OriginAmount.String())))
+	span.AddEvent("dest_amount", trace.WithAttributes(attribute.String("dest_amount", quote.Transaction.DestAmount.String())))
+	span.AddEvent("origin_amount", trace.WithAttributes(attribute.String("origin_amount", quote.Transaction.OriginAmount.String())))
+
 	// NOTE: this logic assumes that the origin and destination tokens have the same price.
 	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
 	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
