@@ -43,6 +43,11 @@ describe('FastBridgeRouterSet', () => {
       rawParams: '9',
     }
 
+    const biggerDestQuery: CCTPRouterQuery = {
+      ...destQuery,
+      minAmountOut: originQuery.minAmountOut.add(fixedFee),
+    }
+
     describe('0% slippage', () => {
       createSlippageTests(
         routerSet,
@@ -79,6 +84,19 @@ describe('FastBridgeRouterSet', () => {
         parseFixed('998', 18),
         destQuery.minAmountOut,
         100,
+        10000
+      )
+    })
+
+    // If destination amount is bigger than origin amount, origin slippage is capped at zero
+    describe('0.1% slippage with bigger destination amount', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        biggerDestQuery,
+        originQuery.minAmountOut,
+        biggerDestQuery.minAmountOut,
+        10,
         10000
       )
     })
