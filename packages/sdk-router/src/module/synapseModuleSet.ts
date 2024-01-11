@@ -131,6 +131,27 @@ export abstract class SynapseModuleSet {
   }
 
   /**
+   * Returns the deadlines to use for the given module transaction.
+   *
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
+   * @returns The deadlines to use.
+   */
+  public getModuleDeadlines(
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
+  ): {
+    originModuleDeadline: BigNumber
+    destModuleDeadline: BigNumber
+  } {
+    const { originPeriod, destPeriod } = this.getDefaultPeriods()
+    return {
+      originModuleDeadline: applyOptionalDeadline(originDeadline, originPeriod),
+      destModuleDeadline: applyOptionalDeadline(destDeadline, destPeriod),
+    }
+  }
+
+  /**
    * Applies the specified slippage to the given queries by modifying the minAmountOut.
    * Note: the original queries are preserved unchanged.
    *
@@ -169,9 +190,10 @@ export abstract class SynapseModuleSet {
       'Invalid bridge module name'
     )
     const { originQuery, destQuery } = bridgeRoute
-    const { originPeriod, destPeriod } = this.getDefaultPeriods()
-    originQuery.deadline = applyOptionalDeadline(originDeadline, originPeriod)
-    destQuery.deadline = applyOptionalDeadline(destDeadline, destPeriod)
+    const { originModuleDeadline, destModuleDeadline } =
+      this.getModuleDeadlines(originDeadline, destDeadline)
+    originQuery.deadline = originModuleDeadline
+    destQuery.deadline = destModuleDeadline
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
       feeAmount,

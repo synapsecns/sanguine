@@ -4,7 +4,7 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, SynapseModuleSet, Query } from '../module'
+import { BridgeQuote, SynapseModuleSet, Query, modifyDeadline } from '../module'
 
 /**
  * Executes a bridge operation between two different chains. Depending on the origin router address, the operation
@@ -151,11 +151,38 @@ export async function allBridgeQuotes(
 }
 
 /**
+ * Applies the deadlines to the given bridge queries, according to bridge module's default deadline settings.
+ *
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param originQueryInitial - The query for the origin chain
+ * @param destQueryInitial - The query for the destination chain
+ * @param originDeadline - The deadline to use on the origin chain (optional, default depends on the module).
+ * @param destDeadline - The deadline to use on the destination chain (optional, default depends on the module).
+ * @returns The origin and destination queries with the deadlines applied.
+ */
+export function applyBridgeDeadline(
+  this: SynapseSDK,
+  bridgeModuleName: string,
+  originQueryInitial: Query,
+  destQueryInitial: Query,
+  originDeadline?: BigNumber,
+  destDeadline?: BigNumber
+): { originQuery: Query; destQuery: Query } {
+  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const { originModuleDeadline, destModuleDeadline } =
+    moduleSet.getModuleDeadlines(originDeadline, destDeadline)
+  return {
+    originQuery: modifyDeadline(originQueryInitial, originModuleDeadline),
+    destQuery: modifyDeadline(destQueryInitial, destModuleDeadline),
+  }
+}
+
+/**
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
  *
  * @param bridgeModuleName - The name of the bridge module.
- * @param originQueryPrecise - The query for the origin chain, coming from `allBridgeQuotes()`.
- * @param destQueryPrecise - The query for the destination chain, coming from `allBridgeQuotes()`.
+ * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
+ * @param destQueryInitial - The query for the destination chain, coming from `allBridgeQuotes()`.
  * @param slipNumerator - The numerator of the slippage tolerance.
  * @param slipDenominator - The denominator of the slippage tolerance, defaults to 10000.
  * @returns - The origin and destination queries with slippage applied.
@@ -163,15 +190,15 @@ export async function allBridgeQuotes(
 export function applyBridgeSlippage(
   this: SynapseSDK,
   bridgeModuleName: string,
-  originQueryPrecise: Query,
-  destQueryPrecise: Query,
+  originQueryInitial: Query,
+  destQueryInitial: Query,
   slipNumerator: number,
   slipDenominator: number = 10000
 ): { originQuery: Query; destQuery: Query } {
   const moduleSet = getModuleSet.call(this, bridgeModuleName)
   return moduleSet.applySlippage(
-    originQueryPrecise,
-    destQueryPrecise,
+    originQueryInitial,
+    destQueryInitial,
     slipNumerator,
     slipDenominator
   )
