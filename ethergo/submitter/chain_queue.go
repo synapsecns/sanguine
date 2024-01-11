@@ -157,13 +157,9 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		newGasEstimate := tx.Gas()
-
-		if c.config.GetDynamicGasEstimate(c.chainIDInt()) {
-			newGasEstimate, err = c.getGasEstimate(ctx, c.client, c.chainIDInt(), tx)
-			if err != nil {
-				return fmt.Errorf("could not get gas estimate: %w", err)
-			}
+		newGasEstimate, err := c.getGasEstimate(ctx, c.client, c.chainIDInt(), tx)
+		if err != nil {
+			return fmt.Errorf("could not get gas estimate: %w", err)
 		}
 
 		transactor, err := c.signer.GetTransactor(ctx, c.chainID)
