@@ -31,16 +31,12 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
-} from '@/slices/portfolio/hooks'
+import { fetchAndStoreSingleTokenBalance } from '@/slices/portfolio/hooks'
 import {
   usePortfolioBalances,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
 import { FetchState } from '@/slices/portfolio/actions'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'

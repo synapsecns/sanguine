@@ -5,7 +5,6 @@ import {
   PortfolioTabs,
   FetchState,
   setActiveTab,
-  // updateSingleTokenAllowance,
   resetPortfolioState,
   typeSearchInput,
   resetSearchState,
@@ -13,7 +12,6 @@ import {
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
-  // fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
   fetchAndStoreSearchInputPortfolioBalances,
 } from './hooks'
