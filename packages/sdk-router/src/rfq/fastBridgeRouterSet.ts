@@ -14,6 +14,7 @@ import {
   SynapseModule,
   SynapseModuleSet,
   createNoSwapQuery,
+  applySlippage as applySlippageToQuery,
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
@@ -158,15 +159,30 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     slipNumerator: number,
     slipDenominator: number
   ): { originQuery: Query; destQuery: Query } {
-    // TODO: implement
-    console.log(
+    // Max slippage for origin swap is 5% of the fixed fee
+    // Relayer is using a 10% buffer for the fixed fee, so if origin swap slippage
+    // is under 5% of the fixed fee, the relayer will still honor the quote.
+    // Note: this assumes that destQueryPrecise.minAmountOut < originQueryPrecise.minAmountOut
+    const maxOriginSlippage = originQueryPrecise.minAmountOut
+      .sub(destQueryPrecise.minAmountOut)
+      .div(20)
+    const originQuery = applySlippageToQuery(
       originQueryPrecise,
-      destQueryPrecise,
       slipNumerator,
       slipDenominator
     )
+    if (
+      originQuery.minAmountOut
+        .add(maxOriginSlippage)
+        .lt(originQueryPrecise.minAmountOut)
+    ) {
+      originQuery.minAmountOut =
+        originQueryPrecise.minAmountOut.sub(maxOriginSlippage)
+    }
+    // Never modify the dest query, as the exact amount from it will always be used by the Relayer
+    // So applying slippage there will only reduce the user proceeds on the destination chain
     return {
-      originQuery: originQueryPrecise,
+      originQuery,
       destQuery: destQueryPrecise,
     }
   }
