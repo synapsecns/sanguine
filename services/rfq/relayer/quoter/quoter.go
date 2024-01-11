@@ -4,15 +4,17 @@ package quoter
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"strconv"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -112,6 +114,27 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false
 	}
 
+	// if sending a gas token, make sure we do not exceed min_gas_token
+	if chain.IsGasToken(quote.Transaction.DestToken) {
+		balance, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), quote.Transaction.DestToken)
+		if err != nil {
+			span.RecordError(fmt.Errorf("error getting committable balance: %w", err))
+			return false
+		}
+		minGasToken, err := m.config.GetMinGasToken()
+		if err != nil {
+			span.RecordError(fmt.Errorf("error getting min gas token: %w", err))
+			return false
+		}
+		if balance.Cmp(minGasToken) < 0 {
+			span.AddEvent("minGasToken exceeds committable balance", trace.WithAttributes(
+				attribute.String("minGasToken", minGasToken.String()),
+				attribute.String("committableBalance", balance.String()),
+			))
+			return false
+		}
+	}
+
 	// then check if we'll make money on it
 	isProfitable, err := m.isProfitableQuote(ctx, quote)
 	if err != nil {
@@ -198,6 +221,12 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
 	}
+
+	quoteAmount, err := m.getQuoteAmount(address, balance)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote amount: %w", err)
+	}
+
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
@@ -226,8 +255,8 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              balance.String(),
-					MaxOriginAmount:         balance.String(),
+					DestAmount:              quoteAmount.String(),
+					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
 					DestFastBridgeAddress:   destChainCfg.Bridge,
@@ -239,7 +268,21 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-// Submits a single quote.
+// getQuoteAmount returns the quote size for a given token.
+func (m *Manager) getQuoteAmount(address common.Address, balance *big.Int) (*big.Int, error) {
+	quoteAmount := new(big.Int).Set(balance)
+	if chain.IsGasToken(address) {
+		// Deduct the minimum gas token balance from the quote amount.
+		minGasToken, ok := new(big.Int).SetString(m.config.MinGasToken, 10)
+		if !ok {
+			return nil, fmt.Errorf("error converting min gas token %s to big.Int", m.config.MinGasToken)
+		}
+		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
+	}
+	return quoteAmount, nil
+}
+
+// submitQuote submits a quote to the RFQ API.
 func (m *Manager) submitQuote(quote model.PutQuoteRequest) error {
 	err := m.rfqClient.PutQuote(&quote)
 	if err != nil {
