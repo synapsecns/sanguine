@@ -230,10 +230,10 @@ func (i *IntegrationSuite) setupRelayer() {
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:    60,
-			TokenPriceCacheTTLSeconds:  60,
-			BaseOriginGasEstimate:      500000,
-			BaseDestinationGasEstimate: 1000000,
+			GasPriceCacheTTLSeconds:   60,
+			TokenPriceCacheTTLSeconds: 60,
+			BaseOriginGasEstimate:     500000,
+			BaseDestGasEstimate:       1000000,
 		},
 	}
 

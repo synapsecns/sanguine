@@ -53,11 +53,11 @@ func (s *PricerSuite) TestGetOriginFeeWithOverrides() {
 	// Set chain fee overrides.
 	l1ChainID := uint32(1)
 	s.config.FeePricer.ChainFeeParams[s.origin] = relconfig.ChainFeeParams{
-		OriginGasEstimate:           5_000_000,
-		DestinationGasEstimate:      10_000_000,
-		L1FeeChainID:                l1ChainID,
-		L1FeeOriginGasEstimate:      1_000_000,
-		L1FeeDestinationGasEstimate: 2_000_000,
+		OriginGasEstimate:      5_000_000,
+		DestGasEstimate:        10_000_000,
+		L1FeeChainID:           l1ChainID,
+		L1FeeOriginGasEstimate: 1_000_000,
+		L1FeeDestGasEstimate:   2_000_000,
 	}
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
@@ -138,11 +138,11 @@ func (s *PricerSuite) TestGetDestinationFeeWithOverrides() {
 	// Set chain fee overrides.
 	l1ChainID := uint32(1)
 	s.config.FeePricer.ChainFeeParams[s.destination] = relconfig.ChainFeeParams{
-		OriginGasEstimate:           5_000_000,
-		DestinationGasEstimate:      10_000_000,
-		L1FeeChainID:                l1ChainID,
-		L1FeeOriginGasEstimate:      1_000_000,
-		L1FeeDestinationGasEstimate: 2_000_000,
+		OriginGasEstimate:      5_000_000,
+		DestGasEstimate:        10_000_000,
+		L1FeeChainID:           l1ChainID,
+		L1FeeOriginGasEstimate: 1_000_000,
+		L1FeeDestGasEstimate:   2_000_000,
 	}
 
 	// Build a new FeePricer with a mocked client for fetching gas price.

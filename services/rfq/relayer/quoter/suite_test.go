@@ -72,10 +72,10 @@ func (s *QuoterSuite) SetupTest() {
 			},
 		},
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:    60,
-			TokenPriceCacheTTLSeconds:  60,
-			BaseOriginGasEstimate:      500000,
-			BaseDestinationGasEstimate: 1000000,
+			GasPriceCacheTTLSeconds:   60,
+			TokenPriceCacheTTLSeconds: 60,
+			BaseOriginGasEstimate:     500000,
+			BaseDestGasEstimate:       1000000,
 		},
 		QuotableTokens: map[string][]string{
 			"42161-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {"137-0x0b2c639c533813f4aa9d7837caf62653d097ff85", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},

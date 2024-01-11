@@ -33,11 +33,11 @@ func (c *PricerSuite) SetupTest() {
 	c.l1ChainID = 1
 	c.config = relconfig.Config{
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:    60,
-			TokenPriceCacheTTLSeconds:  60,
-			BaseOriginGasEstimate:      500000,
-			BaseDestinationGasEstimate: 1000000,
-			ChainFeeParams:             make(map[uint32]relconfig.ChainFeeParams),
+			GasPriceCacheTTLSeconds:   60,
+			TokenPriceCacheTTLSeconds: 60,
+			BaseOriginGasEstimate:     500000,
+			BaseDestGasEstimate:       1000000,
+			ChainFeeParams:            make(map[uint32]relconfig.ChainFeeParams),
 		},
 		Chains: map[int]relconfig.ChainConfig{
 			int(c.origin): relconfig.ChainConfig{
