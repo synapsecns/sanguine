@@ -31,7 +31,14 @@ import {
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
 } from './constants'
-import { BridgeQuote, FeeConfig, RouterQuery, SwapQuote } from './module'
+import {
+  BridgeQuote,
+  FeeConfig,
+  Query,
+  RouterQuery,
+  SwapQuote,
+  SynapseModuleSet,
+} from './module'
 import * as operations from './operations'
 
 // Override fetch to exclude RFQ from tests
@@ -693,6 +700,99 @@ describe('SynapseSDK', () => {
       expect(allQuotes.length).toEqual(1)
       expectCorrectBridgeQuote(allQuotes[0])
       expect(allQuotes[0].bridgeModuleName).toEqual('SynapseBridge')
+    })
+  })
+
+  describe('applyBridgeSlippage', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
+    )
+
+    const originQuery: Query = {
+      routerAdapter: '1',
+      tokenOut: '2',
+      minAmountOut: BigNumber.from(3),
+      deadline: BigNumber.from(4),
+      rawParams: '5',
+    }
+    const destQuery: Query = {
+      routerAdapter: '6',
+      tokenOut: '7',
+      minAmountOut: BigNumber.from(8),
+      deadline: BigNumber.from(9),
+      rawParams: '10',
+    }
+
+    const createApplySlippageTests = (moduleSet: SynapseModuleSet) => {
+      describe(`${moduleSet.bridgeModuleName} module`, () => {
+        beforeEach(() => {
+          jest.spyOn(moduleSet, 'applySlippage').mockImplementation(jest.fn())
+        })
+
+        it('Applies slippage', () => {
+          synapse.applyBridgeSlippage(
+            moduleSet.bridgeModuleName,
+            originQuery,
+            destQuery,
+            10,
+            100
+          )
+          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+            originQuery,
+            destQuery,
+            10,
+            100
+          )
+        })
+
+        it('Uses default denominator of 10000', () => {
+          synapse.applyBridgeSlippage(
+            moduleSet.bridgeModuleName,
+            originQuery,
+            destQuery,
+            10
+          )
+          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+            originQuery,
+            destQuery,
+            10,
+            10000
+          )
+        })
+
+        it('Uses default slippage of 10 bips', () => {
+          synapse.applyBridgeSlippage(
+            moduleSet.bridgeModuleName,
+            originQuery,
+            destQuery
+          )
+          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+            originQuery,
+            destQuery,
+            10,
+            10000
+          )
+        })
+      })
+    }
+
+    createApplySlippageTests(synapse.synapseRouterSet)
+
+    createApplySlippageTests(synapse.synapseCCTPRouterSet)
+
+    createApplySlippageTests(synapse.fastBridgeRouterSet)
+
+    it('Throws on unknown bridge module', () => {
+      expect(() =>
+        synapse.applyBridgeSlippage(
+          'UnknownBridgeModule',
+          originQuery,
+          destQuery,
+          10,
+          10000
+        )
+      ).toThrow('Unknown bridge module')
     })
   })
 
