@@ -20,15 +20,8 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
-
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
-import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
-import { resetFetchedBridgeQuotes } from '@/slices/bridge/actions'
-import { stringToBigInt } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
-import { isEmptyString } from '@/utils/isEmptyString'
+import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -52,6 +45,9 @@ export const ToTokenListOverlay = () => {
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useAppDispatch()
   const overlayRef = useRef(null)
+
+  /** Fetch Alternative Bridge Quotes when component renders */
+  useAlternateBridgeQuotes()
 
   let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
@@ -236,53 +232,6 @@ export const ToTokenListOverlay = () => {
   const totalPossibleTokens: number = useMemo(() => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
-
-  /** Fetch Alternative Bridge Quotes when component renders */
-
-  const { synapseSDK } = useSynapseContext()
-
-  useEffect(() => {
-    console.log('debouncedToTokensFromValue:', debouncedToTokensFromValue)
-
-    const isInputInvalid =
-      hasOnlyZeroes(debouncedToTokensFromValue) ||
-      isEmptyString(debouncedToTokensFromValue)
-
-    if (
-      !isInputInvalid &&
-      fromChainId &&
-      toChainId &&
-      fromToken &&
-      toToken &&
-      synapseSDK
-    ) {
-      const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
-        (token: Token) => {
-          return {
-            originChainId: fromChainId,
-            originToken: fromToken as Token,
-            destinationChainId: toChainId,
-            destinationTokenAddress: token?.addresses[toChainId] as Address,
-            destinationToken: token as Token,
-            amount: stringToBigInt(
-              debouncedToTokensFromValue,
-              fromToken?.decimals[fromChainId]
-            ),
-          }
-        }
-      )
-      dispatch(
-        fetchAndStoreBridgeQuotes({
-          requests: bridgeQuoteRequests,
-          synapseSDK,
-        })
-      )
-    }
-
-    if (isInputInvalid) {
-      dispatch(resetFetchedBridgeQuotes())
-    }
-  }, [debouncedToTokensFromValue])
 
   return (
     <div
