@@ -162,10 +162,13 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     // Max slippage for origin swap is 5% of the fixed fee
     // Relayer is using a 10% buffer for the fixed fee, so if origin swap slippage
     // is under 5% of the fixed fee, the relayer will still honor the quote.
-    // Note: this assumes that destQueryPrecise.minAmountOut < originQueryPrecise.minAmountOut
-    const maxOriginSlippage = originQueryPrecise.minAmountOut
+    let maxOriginSlippage = originQueryPrecise.minAmountOut
       .sub(destQueryPrecise.minAmountOut)
       .div(20)
+    // TODO: figure out a better way to handle destAmount > originAmount
+    if (maxOriginSlippage.isNegative()) {
+      maxOriginSlippage = BigNumber.from(0)
+    }
     const originQuery = applySlippageToQuery(
       originQueryPrecise,
       slipNumerator,
