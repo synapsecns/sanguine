@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
-import { FastBridgeSet } from './rfq'
+import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
   SynapseCCTPRouterSet,
@@ -10,19 +10,13 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import {
-  SynapseModuleSet,
-  Query,
-  applySlippage,
-  applySlippageInBips,
-  modifyDeadline,
-} from './module'
+import { SynapseModuleSet, Query } from './module'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
-  public fastBridgeSet: FastBridgeSet
+  public fastBridgeRouterSet: FastBridgeRouterSet
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -50,11 +44,11 @@ class SynapseSDK {
     // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
-    this.fastBridgeSet = new FastBridgeSet(chainProviders)
+    this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
-      this.fastBridgeSet,
+      this.fastBridgeRouterSet,
     ]
   }
 
@@ -83,9 +77,10 @@ class SynapseSDK {
   public swapQuote = operations.swapQuote
 
   // Define Query operations
-  public applySlippage = applySlippage
-  public applySlippageInBips = applySlippageInBips
-  public modifyDeadline = modifyDeadline
+  public applyBridgeDeadline = operations.applyBridgeDeadline
+  public applyBridgeSlippage = operations.applyBridgeSlippage
+  public applySwapDeadline = operations.applySwapDeadline
+  public applySwapSlippage = operations.applySwapSlippage
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }

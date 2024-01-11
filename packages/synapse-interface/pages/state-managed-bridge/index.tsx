@@ -189,15 +189,17 @@ const StateManagedBridge = () => {
 
       const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
 
-      const originTokenDecimals = fromToken?.decimals[fromChainId]
+      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
+      // debouncedFromValue is in originToken decimals
+      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
+      // Adjust feeAmount to be in originToken decimals
       const adjustedFeeAmount =
-        BigInt(feeAmount) <
-        stringToBigInt(
-          `${debouncedFromValue}`,
-          fromToken?.decimals[fromChainId]
-        )
-          ? BigInt(feeAmount)
-          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+        (BigInt(feeAmount) *
+          stringToBigInt(
+            `${debouncedFromValue}`,
+            fromToken?.decimals[fromChainId]
+          )) /
+        BigInt(originQuery.minAmountOut)
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -225,14 +227,28 @@ const StateManagedBridge = () => {
       }
 
       // TODO: do this properly (RFQ needs no slippage, others do)
-      const originMinWithSlippage =
-        bridgeModuleName === 'SynapseRFQ'
-          ? originQuery?.minAmountOut ?? 0n
-          : subtractSlippage(originQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
-      const destMinWithSlippage =
-        bridgeModuleName === 'SynapseRFQ'
-          ? destQuery?.minAmountOut ?? 0n
-          : subtractSlippage(destQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
+      let originMinWithSlippage, destMinWithSlippage
+      if (bridgeModuleName === 'SynapseRFQ') {
+        // Relayer should take the request with slippage of 5% feeAmount
+        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
+          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+        } else {
+          originMinWithSlippage = 0n
+        }
+        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
+      } else {
+        originMinWithSlippage = subtractSlippage(
+          originQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+        destMinWithSlippage = subtractSlippage(
+          destQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+      }
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
