@@ -3,6 +3,7 @@ package relconfig
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 
@@ -37,6 +38,8 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
+	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
+	MinGasToken string `yaml:"min_gas_token"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -205,6 +208,15 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 		return defaultFixedFeeMultiplier
 	}
 	return c.FeePricer.FixedFeeMultiplier
+}
+
+// GetMinGasToken returns the min gas token.
+func (c Config) GetMinGasToken() (*big.Int, error) {
+	minGasToken, ok := new(big.Int).SetString(c.MinGasToken, 10)
+	if !ok {
+		return nil, fmt.Errorf("could not parse min gas token %s", c.MinGasToken)
+	}
+	return minGasToken, nil
 }
 
 var _ IConfig = &Config{}
