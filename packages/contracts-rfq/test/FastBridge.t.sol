@@ -1136,6 +1136,34 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
+    function test_failedRelayTimeExceeded() public {
+        // Set up the roles for the test
+        setUpRoles();
+
+        vm.prank(owner);
+        fastBridge.addRelayer(address(this));
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+
+        // Start a prank with the relayer
+        vm.startPrank(relayer);
+
+        // Approve the fastBridge to spend the maximum amount of ethUSDC from the relayer
+        ethUSDC.approve(address(fastBridge), type(uint256).max);
+
+        // deadline of 60 min on relay
+        vm.warp(block.timestamp + 61 minutes);
+
+        // Relay the destination bridge
+        vm.expectRevert(abi.encodeWithSelector(DeadlineExceeded.selector));
+        vm.chainId(1); // set to dest chain
+        fastBridge.relay(request);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
     // This test checks if the destination bridge has already been relayed
     function test_alreadyRelayedDestination() public {
         // First, we successfully relay the destination
@@ -1265,7 +1293,8 @@ contract FastBridgeTest is Test {
         // We define a fake transaction hash to be the proof from dest chain
         bytes32 fakeTxnHash = bytes32("0x01");
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         // We provide the relay proof
         vm.expectRevert(abi.encodeWithSelector(DeadlineExceeded.selector));
@@ -1656,7 +1685,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1689,7 +1719,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
@@ -1717,7 +1748,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1751,7 +1783,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
@@ -1778,7 +1811,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1809,7 +1843,8 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1839,7 +1874,7 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 59 minutes);
+        vm.warp(block.timestamp + 119 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
         fastBridge.refund(request);
@@ -1856,7 +1891,8 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.warp(block.timestamp + 61 minutes);
+        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
+        vm.warp(block.timestamp + 121 minutes);
 
         vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
         fastBridge.refund(request);
