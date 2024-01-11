@@ -84,6 +84,7 @@ class SynapseSDK {
 
   // Define Query operations
   public applyBridgeSlippage = operations.applyBridgeSlippage
+  public applySwapSlippage = operations.applySwapSlippage
   public applySlippage = applySlippage
   public applySlippageInBips = applySlippageInBips
   public modifyDeadline = modifyDeadline

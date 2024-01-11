@@ -1,5 +1,5 @@
 import { getModuleSet } from './bridge'
-import { Query } from '../module'
+import { Query, applySlippage } from '../module'
 import { SynapseSDK } from '../sdk'
 
 export function applyBridgeSlippage(
@@ -17,4 +17,12 @@ export function applyBridgeSlippage(
     slipNumerator,
     slipDenominator
   )
+}
+
+export const applySwapSlippage = (
+  query: Query,
+  slipNumerator: number,
+  slipDenominator: number = 10000
+): Query => {
+  return applySlippage(query, slipNumerator, slipDenominator)
 }
