@@ -5,6 +5,7 @@ import { BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils/deadlines'
+import { Query } from './query'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -128,6 +129,23 @@ export abstract class SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   }
+
+  /**
+   * Applies the specified slippage to the given queries by modifying the minAmountOut.
+   * Note: the original queries are preserved unchanged.
+   *
+   * @param originQueryPrecise - The query for the origin chain with the precise minAmountOut.
+   * @param destQueryPrecise - The query for the destination chain with the precise minAmountOut.
+   * @param slipNumerator - The numerator of the slippage.
+   * @param slipDenominator - The denominator of the slippage.
+   * @returns The modified queries with the reduced minAmountOut.
+   */
+  abstract applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query }
 
   /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.

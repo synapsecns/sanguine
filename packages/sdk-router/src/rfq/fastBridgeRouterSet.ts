@@ -150,6 +150,28 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
+   * @inheritdoc SynapseModuleSet.applySlippage
+   */
+  public applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query } {
+    // TODO: implement
+    console.log(
+      originQueryPrecise,
+      destQueryPrecise,
+      slipNumerator,
+      slipDenominator
+    )
+    return {
+      originQuery: originQueryPrecise,
+      destQuery: destQueryPrecise,
+    }
+  }
+
+  /**
    * Returns the existing FastBridgeRouter instance for the given chain.
    *
    * @throws Will throw an error if FastBridgeRouter is not deployed on the given chain.
