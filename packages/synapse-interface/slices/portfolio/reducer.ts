@@ -12,13 +12,9 @@ import {
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenBalance,
   fetchAndStoreSearchInputPortfolioBalances,
 } from './hooks'
-import {
-  NetworkTokenBalances,
-  TokenAndBalance,
-} from '@/utils/actions/fetchPortfolioBalances'
+import { NetworkTokenBalances } from '@/utils/actions/fetchPortfolioBalances'
 
 export interface PortfolioState {
   activeTab: PortfolioTabs
@@ -55,16 +51,6 @@ export const portfolioSlice = createSlice({
       })
       .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
         state.searchInput = searchInput
-      })
-      .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
-        const { chainId, tokenAddress, balance, parsedBalance } = action.payload
-
-        state.balances[chainId].forEach((token: TokenAndBalance) => {
-          if (token.tokenAddress === tokenAddress) {
-            token.balance = balance
-            token.parsedBalance = parsedBalance
-          }
-        })
       })
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
         state.status = FetchState.LOADING
