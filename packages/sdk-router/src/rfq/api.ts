@@ -5,19 +5,35 @@ import {
 } from './quote'
 
 const API_URL = 'https://rfq-api.omnirpc.io'
+const API_TIMEOUT = 2000
+
+const fetchWithTimeout = async (
+  url: string,
+  timeout: number
+): Promise<Response> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  return fetch(url, { signal: controller.signal }).finally(() =>
+    clearTimeout(timeoutId)
+  )
+}
 
 /**
  * Hits Quoter API /quotes endpoint to get all quotes.
  *
  * @returns A promise that resolves to the list of quotes.
+ * Will return an empty list if the request fails or times out.
  */
 export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
-  const response = await fetch(API_URL + '/quotes')
-  // Return empty list if response is not ok
-  if (!response.ok) {
+  try {
+    const response = await fetchWithTimeout(`${API_URL}/quotes`, API_TIMEOUT)
+    if (!response.ok) {
+      return []
+    }
+    // The response is a list of quotes in the FastBridgeQuoteAPI format
+    const quotes: FastBridgeQuoteAPI[] = await response.json()
+    return quotes.map(unmarshallFastBridgeQuote)
+  } catch (error) {
     return []
   }
-  // The response is a list of quotes in the FastBridgeQuoteAPI format
-  const quotes: FastBridgeQuoteAPI[] = await response.json()
-  return quotes.map(unmarshallFastBridgeQuote)
 }
