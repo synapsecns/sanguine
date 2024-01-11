@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getAccount, Address } from '@wagmi/core'
+import { getAccount } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
 import { FetchState, typeSearchInput, resetSearchState } from './actions'
@@ -9,10 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalances,
-  getTokenBalances,
-  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { Token } from '@/utils/types'
 import { initialState } from './reducer'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
