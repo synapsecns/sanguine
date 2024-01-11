@@ -62,16 +62,28 @@ export async function fetchBridgeQuote(
         (BigInt(feeAmount) * BigInt(amount)) / BigInt(originQuery.minAmountOut)
 
       // TODO: do this properly (RFQ needs no slippage, others do)
-      const originMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (originQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        originQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-      const destMinWithSlippage = bridgeModuleName === "SynapseRFQ" ? (destQuery?.minAmountOut ?? 0n) : subtractSlippage(
-        destQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
+      let originMinWithSlippage, destMinWithSlippage
+      if (bridgeModuleName === 'SynapseRFQ') {
+        // Relayer should take the request with slippage of 5% feeAmount
+        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
+          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+        } else {
+          originMinWithSlippage = 0n
+        }
+        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
+      } else {
+        originMinWithSlippage = subtractSlippage(
+          originQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+        destMinWithSlippage = subtractSlippage(
+          destQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+      }
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
