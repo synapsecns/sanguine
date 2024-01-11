@@ -2,7 +2,12 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
-import { Query, SwapQuote, applySlippage, modifyDeadline } from '../module'
+import {
+  Query,
+  SwapQuote,
+  applySlippageToQuery,
+  applyDeadlineToQuery,
+} from '../module'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
 import { TEN_MINUTES, applyOptionalDeadline } from '../utils/deadlines'
@@ -79,7 +84,7 @@ export const applySwapDeadline = (
   queryInitial: Query,
   deadline?: BigNumber
 ): Query => {
-  return modifyDeadline(
+  return applyDeadlineToQuery(
     queryInitial,
     applyOptionalDeadline(deadline, TEN_MINUTES)
   )
@@ -98,5 +103,5 @@ export const applySwapSlippage = (
   slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): Query => {
-  return applySlippage(queryInitial, slipNumerator, slipDenominator)
+  return applySlippageToQuery(queryInitial, slipNumerator, slipDenominator)
 }

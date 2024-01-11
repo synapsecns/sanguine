@@ -12,7 +12,7 @@ import {
   SynapseModuleSet,
 } from '../module'
 import {
-  applySlippage as applySlippageToQuery,
+  applySlippageToQuery,
   Query,
   hasComplexBridgeAction,
 } from '../module/query'

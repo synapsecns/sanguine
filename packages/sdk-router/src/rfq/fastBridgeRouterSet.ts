@@ -14,7 +14,7 @@ import {
   SynapseModule,
   SynapseModuleSet,
   createNoSwapQuery,
-  applySlippage as applySlippageToQuery,
+  applySlippageToQuery,
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'

@@ -4,7 +4,12 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
 import { handleNativeToken } from '../utils/handleNativeToken'
-import { BridgeQuote, SynapseModuleSet, Query, modifyDeadline } from '../module'
+import {
+  BridgeQuote,
+  SynapseModuleSet,
+  Query,
+  applyDeadlineToQuery,
+} from '../module'
 
 /**
  * Executes a bridge operation between two different chains. Depending on the origin router address, the operation
@@ -172,8 +177,8 @@ export function applyBridgeDeadline(
   const { originModuleDeadline, destModuleDeadline } =
     moduleSet.getModuleDeadlines(originDeadline, destDeadline)
   return {
-    originQuery: modifyDeadline(originQueryInitial, originModuleDeadline),
-    destQuery: modifyDeadline(destQueryInitial, destModuleDeadline),
+    originQuery: applyDeadlineToQuery(originQueryInitial, originModuleDeadline),
+    destQuery: applyDeadlineToQuery(destQueryInitial, destModuleDeadline),
   }
 }
 
