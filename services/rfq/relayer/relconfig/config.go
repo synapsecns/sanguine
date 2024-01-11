@@ -266,6 +266,9 @@ func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) 
 	if origin {
 		gasEstimate = chainFeeParams.L1FeeOriginGasEstimate
 	}
+	if chainFeeParams.L1FeeChainID <= 0 || gasEstimate <= 0 {
+		return 0, 0, false
+	}
 	return chainFeeParams.L1FeeChainID, gasEstimate, true
 }
 
