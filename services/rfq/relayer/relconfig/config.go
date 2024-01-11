@@ -77,6 +77,22 @@ type FeePricerConfig struct {
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
+	// ChainFeeParams are parameters that correspond to specific chains.
+	ChainFeeParams map[int]ChainFeeParams `yaml:"chain_fee_params"`
+}
+
+// ChainFeeParams represents the chain fee params.
+type ChainFeeParams struct {
+	// OriginGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
+	OriginGasEstimate int `yaml:"origin_gas_estimate"`
+	// DestinationGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
+	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
+	// L1FeeChainID indicates the chain ID for the L1 fee (if needed, for example on optimism).
+	L1FeeChainID int `yaml:"l1_fee_chain_id"`
+	// L1FeeOriginGasEstimate is the gas estimate for the L1 fee on origin.
+	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
+	// L1FeeDestinationGasEstimate is the gas estimate for the L1 fee on destination.
+	L1FeeDestinationGasEstimate int `yaml:"l1_fee_destination_gas_estimate"`
 }
 
 // LoadConfig loads the config from the given path.
@@ -203,6 +219,50 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 		return defaultFixedFeeMultiplier
 	}
 	return c.FeePricer.FixedFeeMultiplier
+}
+
+// GetChainFeeParams returns the chain fee params for the given chain.
+func (c Config) getChainFeeParams(chainID int) (ChainFeeParams, error) {
+	chainFeeParams, ok := c.FeePricer.ChainFeeParams[chainID]
+	if !ok {
+		return ChainFeeParams{}, fmt.Errorf("no chain fee params for chain %d", chainID)
+	}
+	return chainFeeParams, nil
+}
+
+// GetOriginGasEstimate returns the origin gas estimate for the given chain.
+func (c Config) GetOriginGasEstimate(chainID int) int {
+	gasEstimate := c.FeePricer.BaseOriginGasEstimate
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return gasEstimate
+	}
+	if chainFeeParams.OriginGasEstimate > 0 {
+		gasEstimate = chainFeeParams.OriginGasEstimate
+	}
+	return gasEstimate
+}
+
+// GetDestinationGasEstimate returns the destination gas estimate for the given chain.
+func (c Config) GetDestinationGasEstimate(chainID int) int {
+	gasEstimate := c.FeePricer.BaseDestinationGasEstimate
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return gasEstimate
+	}
+	if chainFeeParams.DestinationGasEstimate > 0 {
+		gasEstimate = chainFeeParams.DestinationGasEstimate
+	}
+	return gasEstimate
+}
+
+// GetL1FeeParams returns the L1 fee params for the given chain.
+func (c Config) GetL1FeeParams(chainID int) (int, int, bool) {
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return 0, 0, false
+	}
+	return chainFeeParams.L1FeeChainID, chainFeeParams.L1FeeOriginGasEstimate, true
 }
 
 var _ IConfig = &Config{}
