@@ -39,5 +39,5 @@ type IConfig interface {
 	// GetDestinationGasEstimate returns the destination gas estimate for the given chain.
 	GetDestinationGasEstimate(chainID uint32) int
 	// GetL1FeeParams returns the L1 fee params for the given chain.
-	GetL1FeeParams(chainID uint32) (uint32, int, bool)
+	GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool)
 }

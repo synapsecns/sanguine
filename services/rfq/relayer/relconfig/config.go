@@ -257,12 +257,16 @@ func (c Config) GetDestinationGasEstimate(chainID uint32) int {
 }
 
 // GetL1FeeParams returns the L1 fee params for the given chain.
-func (c Config) GetL1FeeParams(chainID uint32) (uint32, int, bool) {
+func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
 	chainFeeParams, err := c.getChainFeeParams(chainID)
 	if err != nil {
 		return 0, 0, false
 	}
-	return chainFeeParams.L1FeeChainID, chainFeeParams.L1FeeOriginGasEstimate, true
+	gasEstimate := chainFeeParams.L1FeeDestinationGasEstimate
+	if origin {
+		gasEstimate = chainFeeParams.L1FeeOriginGasEstimate
+	}
+	return chainFeeParams.L1FeeChainID, gasEstimate, true
 }
 
 var _ IConfig = &Config{}

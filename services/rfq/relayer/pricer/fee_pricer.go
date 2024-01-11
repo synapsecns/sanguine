@@ -81,7 +81,7 @@ func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32
 	}
 
 	// If specified, calculate and add the L1 fee
-	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(origin)
+	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(origin, true)
 	if useL1Fee {
 		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
 		if err != nil {
@@ -100,7 +100,7 @@ func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination u
 	}
 
 	// If specified, calculate and add the L1 fee
-	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination)
+	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
 	if useL1Fee {
 		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
 		if err != nil {
