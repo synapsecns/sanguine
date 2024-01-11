@@ -4,32 +4,32 @@ import invariant from 'tiny-invariant'
 
 import {
   BigintIsh,
-  FAST_BRIDGE_ADDRESS_MAP,
+  FAST_BRIDGE_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_RFQ,
 } from '../constants'
 import {
   BridgeRoute,
   FeeConfig,
+  Query,
   SynapseModule,
   SynapseModuleSet,
-  Query,
   createNoSwapQuery,
 } from '../module'
+import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
-import { FastBridge } from './fastBridge'
-import { marshallTicker } from './ticker'
-import { FastBridgeQuote, applyQuote } from './quote'
-import { getAllQuotes } from './api'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import { FastBridgeQuote, applyQuote } from './quote'
+import { marshallTicker } from './ticker'
+import { getAllQuotes } from './api'
 
-export class FastBridgeSet extends SynapseModuleSet {
+export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
 
   public readonly bridgeModuleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
 
-  public fastBridges: {
-    [chainId: number]: FastBridge
+  public routers: {
+    [chainId: number]: FastBridgeRouter
   }
   public providers: {
     [chainId: number]: Provider
@@ -37,13 +37,13 @@ export class FastBridgeSet extends SynapseModuleSet {
 
   constructor(chains: ChainProvider[]) {
     super()
-    this.fastBridges = {}
+    this.routers = {}
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
-      const address = FAST_BRIDGE_ADDRESS_MAP[chainId]
-      // Skip chains without a FastBridge address
+      const address = FAST_BRIDGE_ROUTER_ADDRESS_MAP[chainId]
+      // Skip chains without a FastBridgeRouter address
       if (address) {
-        this.fastBridges[chainId] = new FastBridge(chainId, provider, address)
+        this.routers[chainId] = new FastBridgeRouter(chainId, provider, address)
         this.providers[chainId] = provider
       }
     })
@@ -53,11 +53,11 @@ export class FastBridgeSet extends SynapseModuleSet {
    * @inheritdoc SynapseModuleSet.getModule
    */
   public getModule(chainId: number): SynapseModule | undefined {
-    return this.fastBridges[chainId]
+    return this.routers[chainId]
   }
 
   /**
-   * @inheritdoc RouterSet.getOriginAmountOut
+   * @inheritdoc SynapseModuleSet.getOriginAmountOut
    */
   public getEstimatedTime(chainId: number): number {
     const medianTime = MEDIAN_TIME_RFQ[chainId as keyof typeof MEDIAN_TIME_RFQ]
@@ -75,6 +75,10 @@ export class FastBridgeSet extends SynapseModuleSet {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<BridgeRoute[]> {
+    // Check that Routers exist on both chains
+    if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
+      return []
+    }
     // Get all quotes that result in the final token
     const allQuotes: FastBridgeQuote[] = await this.getQuotes(
       originChainId,
@@ -93,6 +97,7 @@ export class FastBridgeSet extends SynapseModuleSet {
         quote,
         originQuery,
         // Apply quote to the proceeds of the origin swap
+        // TODO: handle optional gas airdrop pricing
         destAmountOut: applyQuote(quote, originQuery.minAmountOut),
       }))
       .filter(({ destAmountOut }) => destAmountOut.gt(0))
@@ -105,6 +110,7 @@ export class FastBridgeSet extends SynapseModuleSet {
         },
         originQuery,
         // On-chain swaps are not supported for RFQ tokens
+        // TODO: signal optional gas airdrop
         destQuery: createNoSwapQuery(tokenOut, destAmountOut),
         bridgeModuleName: this.bridgeModuleName,
       }))
@@ -113,13 +119,15 @@ export class FastBridgeSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getFeeData
    */
-  async getFeeData(): Promise<{
+  public async getFeeData(bridgeRoute: BridgeRoute): Promise<{
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // TODO: figure out if we need to report anything here
+    // Origin Out vs Dest Out is the effective fee
     return {
-      feeAmount: BigNumber.from(0),
+      feeAmount: bridgeRoute.originQuery.minAmountOut.sub(
+        bridgeRoute.destQuery.minAmountOut
+      ),
       feeConfig: {
         bridgeFee: 0,
         minFee: BigNumber.from(0),
@@ -131,7 +139,7 @@ export class FastBridgeSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getDefaultPeriods
    */
-  getDefaultPeriods(): {
+  public getDefaultPeriods(): {
     originPeriod: number
     destPeriod: number
   } {
@@ -139,6 +147,25 @@ export class FastBridgeSet extends SynapseModuleSet {
       originPeriod: TEN_MINUTES,
       destPeriod: ONE_HOUR,
     }
+  }
+
+  /**
+   * Returns the existing FastBridgeRouter instance for the given chain.
+   *
+   * @throws Will throw an error if FastBridgeRouter is not deployed on the given chain.
+   */
+  public getFastBridgeRouter(chainId: number): FastBridgeRouter {
+    return this.getExistingModule(chainId) as FastBridgeRouter
+  }
+
+  /**
+   * Returns the address of the FastBridge contract for the given chain.
+   */
+  public async getFastBridgeAddress(chainId: number): Promise<string> {
+    const fastBridgeContract = await this.getFastBridgeRouter(
+      chainId
+    ).getFastBridgeContract()
+    return fastBridgeContract.address
   }
 
   /**
@@ -151,21 +178,22 @@ export class FastBridgeSet extends SynapseModuleSet {
     amountIn: BigintIsh,
     allQuotes: FastBridgeQuote[]
   ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
-    // TODO: change this to "find best path" once swaps on the origin chain are supported
-    invariant(originChainId, 'Origin chain ID is required')
+    // Get queries for swaps on the origin chain into the "RFQ-supported token"
+    const originQueries = await this.getFastBridgeRouter(
+      originChainId
+    ).getOriginAmountOut(
+      tokenIn,
+      allQuotes.map((quote) => quote.ticker.originToken.token),
+      amountIn
+    )
+    // Note: allQuotes.length === originQueries.length
+    // Zip the quotes and queries together, filter out "no path found" queries
     return allQuotes
-      .filter(
-        (quote) =>
-          quote.ticker.originToken.token.toLowerCase() === tokenIn.toLowerCase()
-      )
-      .filter((quote) => {
-        const age = Date.now() - quote.updatedAt
-        return 0 <= age && age < FastBridgeSet.MAX_QUOTE_AGE_MILLISECONDS
-      })
-      .map((quote) => ({
+      .map((quote, index) => ({
         quote,
-        originQuery: createNoSwapQuery(tokenIn, BigNumber.from(amountIn)),
+        originQuery: originQueries[index],
       }))
+      .filter(({ originQuery }) => originQuery.minAmountOut.gt(0))
   }
 
   /**
@@ -181,13 +209,9 @@ export class FastBridgeSet extends SynapseModuleSet {
     destChainId: number,
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
-    if (
-      !FAST_BRIDGE_ADDRESS_MAP[originChainId] ||
-      !FAST_BRIDGE_ADDRESS_MAP[destChainId]
-    ) {
-      return []
-    }
     const allQuotes = await getAllQuotes()
+    const originFB = await this.getFastBridgeAddress(originChainId)
+    const destFB = await this.getFastBridgeAddress(destChainId)
     return allQuotes
       .filter(
         (quote) =>
@@ -198,10 +222,12 @@ export class FastBridgeSet extends SynapseModuleSet {
       )
       .filter(
         (quote) =>
-          quote.originFastBridge.toLowerCase() ===
-            FAST_BRIDGE_ADDRESS_MAP[originChainId].toLowerCase() &&
-          quote.destFastBridge.toLowerCase() ===
-            FAST_BRIDGE_ADDRESS_MAP[destChainId].toLowerCase()
+          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
+          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
       )
+      .filter((quote) => {
+        const age = Date.now() - quote.updatedAt
+        return 0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
+      })
   }
 }

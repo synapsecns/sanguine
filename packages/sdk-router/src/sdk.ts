@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
-import { FastBridgeSet } from './rfq'
+import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
   SynapseCCTPRouterSet,
@@ -22,7 +22,7 @@ class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
-  public fastBridgeSet: FastBridgeSet
+  public fastBridgeRouterSet: FastBridgeRouterSet
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -50,11 +50,11 @@ class SynapseSDK {
     // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
-    this.fastBridgeSet = new FastBridgeSet(chainProviders)
+    this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
-      this.fastBridgeSet,
+      this.fastBridgeRouterSet,
     ]
   }
 
