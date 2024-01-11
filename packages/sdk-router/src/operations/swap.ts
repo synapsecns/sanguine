@@ -86,15 +86,16 @@ export const applySwapDeadline = (
 }
 /**
  * Applies slippage to the given swap query.
+ * Note: default slippage is 10 bips (0.1%).
  *
  * @param queryInitial - The swap query, coming from `swapQuote()`
- * @param slipNumerator - The numerator of the slippage percentage
+ * @param slipNumerator - The numerator of the slippage percentage, defaults to 10
  * @param slipDenominator - The denominator of the slippage percentage, defaults to 10000
  * @returns The swap query with slippage applied
  */
 export const applySwapSlippage = (
   queryInitial: Query,
-  slipNumerator: number,
+  slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): Query => {
   return applySlippage(queryInitial, slipNumerator, slipDenominator)

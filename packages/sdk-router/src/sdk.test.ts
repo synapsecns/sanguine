@@ -760,6 +760,20 @@ describe('SynapseSDK', () => {
             10000
           )
         })
+
+        it('Uses default slippage of 10 bips', () => {
+          synapse.applyBridgeSlippage(
+            moduleSet.bridgeModuleName,
+            originQuery,
+            destQuery
+          )
+          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+            originQuery,
+            destQuery,
+            10,
+            10000
+          )
+        })
       })
     }
 

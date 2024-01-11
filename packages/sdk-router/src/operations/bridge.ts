@@ -179,11 +179,12 @@ export function applyBridgeDeadline(
 
 /**
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
+ * Note: default slippage is 10 bips (0.1%).
  *
  * @param bridgeModuleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
  * @param destQueryInitial - The query for the destination chain, coming from `allBridgeQuotes()`.
- * @param slipNumerator - The numerator of the slippage tolerance.
+ * @param slipNumerator - The numerator of the slippage tolerance, defaults to 10.
  * @param slipDenominator - The denominator of the slippage tolerance, defaults to 10000.
  * @returns - The origin and destination queries with slippage applied.
  */
@@ -192,7 +193,7 @@ export function applyBridgeSlippage(
   bridgeModuleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
-  slipNumerator: number,
+  slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): { originQuery: Query; destQuery: Query } {
   const moduleSet = getModuleSet.call(this, bridgeModuleName)
