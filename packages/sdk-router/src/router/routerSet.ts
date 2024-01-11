@@ -11,7 +11,11 @@ import {
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
-import { Query, hasComplexBridgeAction } from '../module/query'
+import {
+  applySlippage as applySlippageToQuery,
+  Query,
+  hasComplexBridgeAction,
+} from '../module/query'
 import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export type ChainProvider = {
@@ -184,16 +188,17 @@ export abstract class RouterSet extends SynapseModuleSet {
     slipNumerator: number,
     slipDenominator: number
   ): { originQuery: Query; destQuery: Query } {
-    // TODO: implement
-    console.log(
-      originQueryPrecise,
-      destQueryPrecise,
-      slipNumerator,
-      slipDenominator
-    )
     return {
-      originQuery: originQueryPrecise,
-      destQuery: destQueryPrecise,
+      originQuery: applySlippageToQuery(
+        originQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
+      destQuery: applySlippageToQuery(
+        destQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
     }
   }
 }
