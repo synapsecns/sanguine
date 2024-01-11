@@ -1,4 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
+import { BigNumber, parseFixed } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
 import { getTestProvider } from '../constants/testProviders'
 import {
@@ -11,6 +13,8 @@ import {
 import { ChainProvider } from './routerSet'
 import { SynapseRouterSet } from './synapseRouterSet'
 import { SynapseRouter } from './synapseRouter'
+import { RouterQuery } from '../module'
+import { createSlippageTests } from './synapseCCTPRouterSet.test'
 
 describe('SynapseRouterSet', () => {
   const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
@@ -111,6 +115,93 @@ describe('SynapseRouterSet', () => {
       expect(() =>
         routerSet.getSynapseRouter(SupportedChainId.AVALANCHE)
       ).toThrow('No module found for chain 43114')
+    })
+  })
+
+  describe('applySlippage', () => {
+    const originQuery: RouterQuery = {
+      swapAdapter: '1',
+      tokenOut: '2',
+      minAmountOut: parseFixed('1000', 18),
+      deadline: BigNumber.from(3),
+      rawParams: '4',
+    }
+
+    const destQuery: RouterQuery = {
+      swapAdapter: '5',
+      tokenOut: '6',
+      minAmountOut: parseFixed('2000', 6),
+      deadline: BigNumber.from(8),
+      rawParams: '9',
+    }
+
+    describe('0% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('1000', 18),
+        parseFixed('2000', 6),
+        0,
+        10000
+      )
+    })
+
+    describe('1% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('990', 18),
+        parseFixed('1980', 6),
+        100,
+        10000
+      )
+    })
+
+    describe('10% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('900', 18),
+        parseFixed('1800', 6),
+        1000,
+        10000
+      )
+    })
+
+    describe('100% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        Zero,
+        Zero,
+        10000,
+        10000
+      )
+    })
+
+    describe('Rounds down', () => {
+      const originQueryPlusOne: RouterQuery = {
+        ...originQuery,
+        minAmountOut: originQuery.minAmountOut.add(1),
+      }
+      const destQueryPlusOne: RouterQuery = {
+        ...destQuery,
+        minAmountOut: destQuery.minAmountOut.add(1),
+      }
+
+      createSlippageTests(
+        routerSet,
+        originQueryPlusOne,
+        destQueryPlusOne,
+        parseFixed('990', 18).add(1),
+        parseFixed('1980', 6).add(1),
+        100,
+        10000
+      )
     })
   })
 
