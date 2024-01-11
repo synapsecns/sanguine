@@ -15,6 +15,10 @@ import { BridgeQuoteRequest } from '../actions/fetchBridgeQuotes'
 import { Token } from '../types'
 import { stringToBigInt } from '../bigint/format'
 
+/**
+ * Hook to trigger fetching alternative bridge quotes
+ * based on current user input conditions
+ */
 export const useAlternateBridgeQuotes = () => {
   const dispatch = useAppDispatch()
   const { synapseSDK } = useSynapseContext()
