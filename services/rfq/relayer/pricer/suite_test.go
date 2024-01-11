@@ -40,14 +40,14 @@ func (c *PricerSuite) SetupTest() {
 			ChainFeeParams:            make(map[uint32]relconfig.ChainFeeParams),
 		},
 		Chains: map[int]relconfig.ChainConfig{
-			int(c.origin): relconfig.ChainConfig{
+			int(c.origin): {
 				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": relconfig.TokenConfig{
+					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
 						PriceUSD: 1,
 						Decimals: 6,
 					},
-					"ETH": relconfig.TokenConfig{
+					"ETH": {
 						Address:  "",
 						PriceUSD: 2000,
 						Decimals: 18,
@@ -55,14 +55,14 @@ func (c *PricerSuite) SetupTest() {
 				},
 				NativeToken: "ETH",
 			},
-			int(c.destination): relconfig.ChainConfig{
+			int(c.destination): {
 				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": relconfig.TokenConfig{
+					"USDC": {
 						Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
 						PriceUSD: 1,
 						Decimals: 6,
 					},
-					"MATIC": relconfig.TokenConfig{
+					"MATIC": {
 						Address:  "",
 						PriceUSD: 0.5,
 						Decimals: 18,
@@ -70,9 +70,9 @@ func (c *PricerSuite) SetupTest() {
 				},
 				NativeToken: "MATIC",
 			},
-			int(c.l1ChainID): relconfig.ChainConfig{
+			int(c.l1ChainID): {
 				Tokens: map[string]relconfig.TokenConfig{
-					"ETH": relconfig.TokenConfig{
+					"ETH": {
 						Address:  "",
 						PriceUSD: 2000,
 						Decimals: 18,

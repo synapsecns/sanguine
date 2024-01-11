@@ -92,7 +92,7 @@ func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32
 	return fee, nil
 }
 
-func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+func (f *feePricer) GetDestinationFee(ctx context.Context, _, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
 	// Calculate the destination fee
 	fee, err := f.getFee(ctx, destination, destination, f.config.GetDestGasEstimate(destination), denomToken, useMultiplier)
 	if err != nil {
