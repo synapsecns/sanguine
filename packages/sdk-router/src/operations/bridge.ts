@@ -151,6 +151,33 @@ export async function allBridgeQuotes(
 }
 
 /**
+ * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
+ *
+ * @param bridgeModuleName - The name of the bridge module.
+ * @param originQueryPrecise - The query for the origin chain, coming from `allBridgeQuotes()`.
+ * @param destQueryPrecise - The query for the destination chain, coming from `allBridgeQuotes()`.
+ * @param slipNumerator - The numerator of the slippage tolerance.
+ * @param slipDenominator - The denominator of the slippage tolerance, defaults to 10000.
+ * @returns - The origin and destination queries with slippage applied.
+ */
+export function applyBridgeSlippage(
+  this: SynapseSDK,
+  bridgeModuleName: string,
+  originQueryPrecise: Query,
+  destQueryPrecise: Query,
+  slipNumerator: number,
+  slipDenominator: number = 10000
+): { originQuery: Query; destQuery: Query } {
+  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  return moduleSet.applySlippage(
+    originQueryPrecise,
+    destQueryPrecise,
+    slipNumerator,
+    slipDenominator
+  )
+}
+
+/**
  * Gets the unique Synapse txId for a bridge operation that happened within a given transaction.
  * Synapse txId is known as "kappa" for SynapseBridge contract and "requestID" for SynapseCCTP contract.
  * This function is meant to abstract away the differences between the two bridge modules.
