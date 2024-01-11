@@ -85,7 +85,7 @@ type FeePricerConfig struct {
 type ChainFeeParams struct {
 	// OriginGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
 	OriginGasEstimate int `yaml:"origin_gas_estimate"`
-	// DestinationGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
+	// DestinationGasEstimate is the gas estimate to use for destination transactions (this will override base gas estimates).
 	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
 	// L1FeeChainID indicates the chain ID for the L1 fee (if needed, for example on optimism).
 	L1FeeChainID uint32 `yaml:"l1_fee_chain_id"`
