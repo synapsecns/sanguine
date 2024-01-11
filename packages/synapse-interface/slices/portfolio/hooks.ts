@@ -96,33 +96,3 @@ export const useFetchPortfolioBalances = (): {
 
   return { balances, fetchPortfolioBalances: fetch, status, error }
 }
-
-export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
-  'portfolio/fetchAndStoreSingleTokenBalance',
-  async ({
-    token,
-    routerAddress,
-    address,
-    chainId,
-  }: {
-    token: Token
-    routerAddress: Address
-    address: Address
-    chainId: number
-  }) => {
-    const data: TokenAndBalance[] = await getTokenBalances(
-      address,
-      [token],
-      chainId
-    )
-    const { balance, parsedBalance }: TokenAndBalance = data[0]
-    const tokenAddress = token.addresses[chainId] as Address
-    return {
-      routerAddress,
-      chainId,
-      tokenAddress,
-      balance,
-      parsedBalance,
-    }
-  }
-)
