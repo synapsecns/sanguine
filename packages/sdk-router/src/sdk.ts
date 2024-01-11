@@ -10,13 +10,7 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import {
-  SynapseModuleSet,
-  Query,
-  applySlippage,
-  applySlippageInBips,
-  modifyDeadline,
-} from './module'
+import { SynapseModuleSet, Query } from './module'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
@@ -87,9 +81,6 @@ class SynapseSDK {
   public applyBridgeSlippage = operations.applyBridgeSlippage
   public applySwapDeadline = operations.applySwapDeadline
   public applySwapSlippage = operations.applySwapSlippage
-  public applySlippage = applySlippage
-  public applySlippageInBips = applySlippageInBips
-  public modifyDeadline = modifyDeadline
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }

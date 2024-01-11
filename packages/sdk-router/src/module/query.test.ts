@@ -9,7 +9,6 @@ import {
   narrowToCCTPRouterQuery,
   modifyDeadline,
   applySlippage,
-  applySlippageInBips,
   createNoSwapQuery,
 } from './query'
 
@@ -310,75 +309,6 @@ describe('#query', () => {
           'Slippage cannot be greater than 1'
         )
       })
-    })
-  })
-
-  describe('applySlippageInBips parity', () => {
-    // 1M in 18 decimals
-    const query: RouterQuery = {
-      swapAdapter: '1',
-      tokenOut: '2',
-      minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
-      deadline: BigNumber.from(4),
-      rawParams: '5',
-    }
-
-    it('applies 0% slippage', () => {
-      const newQuery = applySlippage(query, 0, 10000)
-      const newQueryInBips = applySlippageInBips(query, 0)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 0.5% slippage', () => {
-      // 50 bips
-      const newQuery = applySlippage(query, 50, 10000)
-      const newQueryInBips = applySlippageInBips(query, 50)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 10% slippage', () => {
-      const newQuery = applySlippage(query, 10, 100)
-      const newQueryInBips = applySlippageInBips(query, 1000)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 100% slippage', () => {
-      const newQuery = applySlippage(query, 1, 1)
-      const newQueryInBips = applySlippageInBips(query, 10000)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('rounds down', () => {
-      const queryPlusOne = {
-        ...query,
-        minAmountOut: query.minAmountOut.add(1),
-      }
-      const newQuery = applySlippage(queryPlusOne, 50, 10000)
-      const newQueryInBips = applySlippageInBips(queryPlusOne, 50)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('does not modify the original query', () => {
-      applySlippageInBips(query, 50)
-      expect(query).toEqual({
-        swapAdapter: '1',
-        tokenOut: '2',
-        minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
-        deadline: BigNumber.from(4),
-        rawParams: '5',
-      })
-    })
-
-    it('throws if basis points are negative', () => {
-      expect(() => applySlippageInBips(routerQuery, -1)).toThrow(
-        'Slippage numerator cannot be negative'
-      )
-    })
-
-    it('throws if basis points are greater than 10000', () => {
-      expect(() => applySlippageInBips(routerQuery, 10001)).toThrow(
-        'Slippage cannot be greater than 1'
-      )
     })
   })
 

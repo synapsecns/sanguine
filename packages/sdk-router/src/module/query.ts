@@ -149,24 +149,6 @@ export const applySlippage = (
 }
 
 /**
- * Applies the slippage (in basis points) to the query's minAmountOut (rounded down), and returns the modified query
- * with the reduced minAmountOut.
- * Note: the original query is preserved unchanged.
- * Note: the slippage is applied as a fraction of 10000, e.g. 100 bips = 1%.
- *
- * @param query - The query to modify.
- * @param slipBasisPoints - The slippage in basis points.
- * @returns The modified query with the reduced minAmountOut.
- * @throws If the basis points are invalid (<0, >10000)
- */
-export const applySlippageInBips = (
-  query: Query,
-  slipBasisPoints: number
-): Query => {
-  return applySlippage(query, slipBasisPoints, 10000)
-}
-
-/**
  * Creates a Query object for a no-swap bridge action.
  *
  * @param token - The token to bridge.
