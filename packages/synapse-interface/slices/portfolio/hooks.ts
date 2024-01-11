@@ -12,7 +12,6 @@ import {
   getTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { getTokenAllowance } from './../../utils/actions/getTokenAllowance'
 import { Token } from '@/utils/types'
 import { initialState } from './reducer'
 
@@ -118,17 +117,10 @@ export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
     )
     const { balance, parsedBalance }: TokenAndBalance = data[0]
     const tokenAddress = token.addresses[chainId] as Address
-    const allowance = await getTokenAllowance(
-      routerAddress,
-      tokenAddress,
-      address,
-      chainId
-    )
     return {
       routerAddress,
       chainId,
       tokenAddress,
-      allowance,
       balance,
       parsedBalance,
     }
