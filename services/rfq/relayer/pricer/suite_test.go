@@ -31,10 +31,10 @@ func (c *PricerSuite) SetupTest() {
 	c.destination = 137
 	c.config = relconfig.Config{
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:   60,
-			TokenPriceCacheTTLSeconds: 60,
-			OriginGasEstimate:         500000,
-			DestinationGasEstimate:    1000000,
+			GasPriceCacheTTLSeconds:    60,
+			TokenPriceCacheTTLSeconds:  60,
+			BaseOriginGasEstimate:      500000,
+			BaseDestinationGasEstimate: 1000000,
 		},
 		Chains: map[int]relconfig.ChainConfig{
 			int(c.origin): relconfig.ChainConfig{

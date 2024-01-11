@@ -74,11 +74,11 @@ func (f *feePricer) Start(ctx context.Context) {
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
 func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
-	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().OriginGasEstimate, denomToken, useMultiplier)
+	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().BaseOriginGasEstimate, denomToken, useMultiplier)
 }
 
 func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
-	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken, useMultiplier)
+	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().BaseDestinationGasEstimate, denomToken, useMultiplier)
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (_ *big.Int, err error) {

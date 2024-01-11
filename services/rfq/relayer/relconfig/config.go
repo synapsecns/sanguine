@@ -67,10 +67,10 @@ type DatabaseConfig struct {
 
 // FeePricerConfig represents the configuration for the fee pricer.
 type FeePricerConfig struct {
-	// OriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
-	OriginGasEstimate int `yaml:"origin_gas_estimate"`
-	// DestinationGasEstimate is the gas required to execute relay transaction on destination chain.
-	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
+	// BaseOriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
+	BaseOriginGasEstimate int `yaml:"base_origin_gas_estimate"`
+	// BaseDestinationGasEstimate is the gas required to execute relay transaction on destination chain.
+	BaseDestinationGasEstimate int `yaml:"base_destination_gas_estimate"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
