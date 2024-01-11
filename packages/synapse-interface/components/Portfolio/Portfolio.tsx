@@ -131,13 +131,10 @@ export const Portfolio = () => {
   }, [address])
 
   useEffect(() => {
-    ;(async () => {
-      if (address && chain?.id) {
-        await dispatch(setFromChainId(chain.id))
-        await dispatch(fetchAndStorePortfolioBalances(address))
-      }
-    })()
-  }, [chain, address])
+    if (address && chain?.id) {
+      dispatch(setFromChainId(chain.id))
+    }
+  }, [chain])
 
   const [mounted, setMounted] = useState<boolean>(false)
   useEffect(() => setMounted(true), [])
