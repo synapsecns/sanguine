@@ -74,11 +74,41 @@ func (f *feePricer) Start(ctx context.Context) {
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
 func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
-	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().BaseOriginGasEstimate, denomToken, useMultiplier)
+	// Calculate the origin fee
+	fee, err := f.getFee(ctx, origin, destination, f.config.GetOriginGasEstimate(origin), denomToken, useMultiplier)
+	if err != nil {
+		return nil, err
+	}
+
+	// If specified, calculate and add the L1 fee
+	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(origin)
+	if useL1Fee {
+		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, l1Fee)
+	}
+	return fee, nil
 }
 
 func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
-	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().BaseDestinationGasEstimate, denomToken, useMultiplier)
+	// Calculate the destination fee
+	fee, err := f.getFee(ctx, destination, destination, f.config.GetDestinationGasEstimate(destination), denomToken, useMultiplier)
+	if err != nil {
+		return nil, err
+	}
+
+	// If specified, calculate and add the L1 fee
+	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination)
+	if useL1Fee {
+		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, l1Fee)
+	}
+	return fee, nil
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
@@ -211,7 +241,6 @@ func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, e
 			if token == tokenName {
 				return tokenConfig.PriceUSD, nil
 			}
-
 		}
 	}
 	return 0, fmt.Errorf("could not get price for token: %s", token)

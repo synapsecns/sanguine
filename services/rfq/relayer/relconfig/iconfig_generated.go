@@ -35,9 +35,9 @@ type IConfig interface {
 	// GetFixedFeeMultiplier returns the fixed fee multiplier.
 	GetFixedFeeMultiplier() float64
 	// GetOriginGasEstimate returns the origin gas estimate for the given chain.
-	GetOriginGasEstimate(chainID int) int
+	GetOriginGasEstimate(chainID uint32) int
 	// GetDestinationGasEstimate returns the destination gas estimate for the given chain.
-	GetDestinationGasEstimate(chainID int) int
+	GetDestinationGasEstimate(chainID uint32) int
 	// GetL1FeeParams returns the L1 fee params for the given chain.
-	GetL1FeeParams(chainID int) (int, int, bool)
+	GetL1FeeParams(chainID uint32) (uint32, int, bool)
 }
