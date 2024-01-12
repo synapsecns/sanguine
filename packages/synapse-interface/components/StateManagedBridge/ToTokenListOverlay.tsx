@@ -178,7 +178,6 @@ export const ToTokenListOverlay = () => {
       fromChainId && toChainId && fromToken && toToken
     )
     const isFetchLoading: boolean =
-      // toTokensBridgeQuotesStatus === FetchState.IDLE ||
       toTokensBridgeQuotesStatus === FetchState.LOADING
 
     return hasRequiredUserInput && isFetchLoading
