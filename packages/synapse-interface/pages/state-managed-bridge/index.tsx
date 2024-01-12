@@ -160,6 +160,7 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
+        gasDropAmount,
       } = await synapseSDK.bridgeQuote(
         fromChainId,
         toChainId,
@@ -249,6 +250,14 @@ const StateManagedBridge = () => {
             },
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
+            rawGasDropAmount: BigInt(gasDropAmount.toString()),
+            parsedGasDropAmount: commify(
+              formatBigIntToString(
+                BigInt(gasDropAmount.toString()),
+                toToken.decimals[toChainId],
+                8
+              )
+            ),
           })
         )
 
