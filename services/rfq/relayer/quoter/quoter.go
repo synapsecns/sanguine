@@ -195,7 +195,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
-	quoteAmount := m.getQuoteAmount(chainID, address, balance)
+	quoteAmount := m.getQuoteAmount(ctx, chainID, address, balance)
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
@@ -242,19 +242,39 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-func (m *Manager) getQuoteAmount(chainID int, address common.Address, balance *big.Int) *big.Int {
+func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) *big.Int {
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
+		attribute.String(metrics.ChainID, strconv.Itoa(chainID)),
+		attribute.String("address", address.String()),
+		attribute.String("balance", balance.String()),
+	))
+
+	var quoteAmount *big.Int
+	defer func() {
+		span.SetAttributes(attribute.String("quote_amount", quoteAmount.String()))
+		metrics.EndSpan(span)
+	}()
+
 	// Apply the quotePct
 	balanceFlt := new(big.Float).SetInt(balance)
-	quoteAmount, _ := new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
+	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
 
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
+		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
+			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("min_quote_amount", minQuoteAmount.String()),
+		))
 		quoteAmount = minQuoteAmount
 	}
 
 	// Finally, clip the quoteAmount by the balance
 	if quoteAmount.Cmp(balance) > 0 {
+		span.AddEvent("quote amount greater than balance", trace.WithAttributes(
+			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("balance", balance.String()),
+		))
 		quoteAmount = balance
 	}
 	return quoteAmount

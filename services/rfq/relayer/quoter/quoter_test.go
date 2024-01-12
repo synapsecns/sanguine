@@ -88,31 +88,31 @@ func (s *QuoterSuite) TestGetQuoteAmount() {
 	}
 
 	// Set default quote params; should return the balance.
-	quoteAmount := s.manager.GetQuoteAmount(chainID, address, balance)
+	quoteAmount := s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
 	expectedAmount := balance
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
 	setQuoteParams(50, "0")
-	quoteAmount = s.manager.GetQuoteAmount(chainID, address, balance)
+	quoteAmount = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(50, "500")
-	quoteAmount = s.manager.GetQuoteAmount(chainID, address, balance)
+	quoteAmount = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(25, "500")
-	quoteAmount = s.manager.GetQuoteAmount(chainID, address, balance)
+	quoteAmount = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
 	setQuoteParams(25, "1500")
-	quoteAmount = s.manager.GetQuoteAmount(chainID, address, balance)
+	quoteAmount = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 }
