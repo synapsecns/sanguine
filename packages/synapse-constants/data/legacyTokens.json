@@ -1,6 +1,11 @@
 {
-  "Address 1": {
-    "destinationReplacement": "USDC.e", 
-    "destinationSubtraction": "synFrax"
+  "toTokenSymbol": [
+    "synFRAX"
+  ],
+  "fromTokenSymbol": [
+    ""
+  ],
+  "correctDestinationTokens": {
+    "synFRAX": "FRAX"
   }
 }

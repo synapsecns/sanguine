@@ -33,6 +33,9 @@ const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
 // Chain IDs where SynapseCCTPRouter is allowed
 const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
+// Legacy tokens to not include in bridgeMap
+const legacyTokens = require('../data/legacyTokens.json')
+
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
 const SwapQuoters = {}
@@ -162,8 +165,6 @@ const getCCTPOriginMap = async (chainId) => {
   return tokensToSymbols
 }
 
-// Function to get a list of bridge token symbols that could be swapped
-// into a token on a destination chain.
 const getDestinationBridgeSymbols = async (chainId, token) => {
   // Get list of connected bridge tokens: (symbol, token) pairs
   const connectedBridgeTokens = await SynapseRouters[
@@ -171,17 +172,32 @@ const getDestinationBridgeSymbols = async (chainId, token) => {
   ].getConnectedBridgeTokens(token)
   const symbolSet = new Set()
   connectedBridgeTokens.forEach((bridgeToken) => {
-    symbolSet.add(bridgeToken.symbol)
+    // Check if the symbol is a legacy token
+    if (legacyTokens.toTokenSymbol.includes(bridgeToken.symbol)) {
+      // Replace with the correct destination token
+      symbolSet.add(legacyTokens.correctDestinationTokens[bridgeToken.symbol])
+    } else {
+      symbolSet.add(bridgeToken.symbol)
+    }
   })
+
   // Get a list of bridge token symbols from CCTP if CCTP is supported on the chain
   if (SynapseCCTPRouters[chainId]) {
     const connectedCctpTokens = await SynapseCCTPRouters[
       chainId
     ].getConnectedBridgeTokens(token)
     connectedCctpTokens.forEach((bridgeToken) => {
-      symbolSet.add(bridgeToken.symbol)
+      // Check if the symbol is a legacy token
+      if (legacyTokens.toTokenSymbol.includes(bridgeToken.symbol)) {
+        // Replace with the correct destination token
+        symbolSet.add(legacyTokens.correctDestinationTokens[bridgeToken.symbol])
+      } else {
+        symbolSet.add(bridgeToken.symbol)
+      }
     })
   }
+
+  // Convert the set to an array, sort it, and remove duplicates
   return Array.from(symbolSet).sort()
 }
 
@@ -259,8 +275,8 @@ const printMaps = async () => {
   const bridgeMap = {}
   const bridgeSymbolsMap = {}
   console.log('Starting on chains: ', Object.keys(providers))
-  await Promise.all(
-    Object.keys(providers).map(async (chainId) => {
+  for (const chainId of Object.keys(providers)) {
+    try {
       // Get map from token to set of bridge token symbols
       const { originMap, poolSets } = await getBridgeOriginMap(chainId)
       // Add tokens from CCTP originMap to global originMap
@@ -283,8 +299,10 @@ const printMaps = async () => {
       bridgeMap[chainId] = sortMapByKeys(tokens)
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
       console.log('Finished chain: ', chainId)
-    })
-  )
+    } catch (error) {
+      console.error(`Error occurred with chainId: ${chainId}`, error)
+    }
+  }
   prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 
@@ -324,8 +342,10 @@ const extractBridgeSymbolsMap = (tokens) => {
   const bridgeSymbolsMap = {}
   bridgeSymbols.forEach((symbol) => {
     bridgeSymbolsMap[symbol] = {
-      origin: Array.from(bridgeSymbolsOriginSets[symbol]).sort(),
-      destination: Array.from(bridgeSymbolsDestinationSets[symbol]).sort(),
+      origin: Array.from(bridgeSymbolsOriginSets[symbol] || []).sort(),
+      destination: Array.from(
+        bridgeSymbolsDestinationSets[symbol] || []
+      ).sort(),
     }
   })
   return bridgeSymbolsMap

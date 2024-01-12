@@ -120,7 +120,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'FRAX',
       origin: ['CCTP.USDC', 'DAI', 'USDC', 'USDT', 'nUSD', 'synFRAX'],
-      destination: ['CCTP.USDC', 'synFRAX'],
+      destination: ['CCTP.USDC', 'FRAX'],
       swappable: [
         '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
         '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
@@ -644,7 +644,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'synFRAX',
       origin: ['synFRAX'],
-      destination: ['synFRAX'],
+      destination: ['FRAX'],
       swappable: [],
     },
     '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83': {
@@ -892,7 +892,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'synFRAX',
       origin: ['synFRAX'],
-      destination: ['synFRAX'],
+      destination: ['FRAX'],
       swappable: [],
     },
     '0xF44938b0125A6662f9536281aD2CD6c499F22004': {
@@ -936,7 +936,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'synFRAX',
       origin: ['synFRAX'],
-      destination: ['synFRAX'],
+      destination: ['FRAX'],
       swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
@@ -959,7 +959,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'FRAX',
       origin: ['synFRAX'],
-      destination: ['synFRAX'],
+      destination: ['FRAX'],
       swappable: [],
     },
     '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d': {
@@ -1759,7 +1759,7 @@ export const BRIDGE_MAP = {
       decimals: 18,
       symbol: 'synFRAX',
       origin: ['synFRAX'],
-      destination: ['synFRAX'],
+      destination: ['FRAX'],
       swappable: [],
     },
     '0x28b42698Caf46B4B012CF38b6C75867E0762186D': {
