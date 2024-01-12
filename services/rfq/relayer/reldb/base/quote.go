@@ -34,7 +34,26 @@ func (s Store) GetQuoteRequestByID(ctx context.Context, id [32]byte) (*reldb.Quo
 	}
 
 	if tx.Error != nil {
-		return nil, fmt.Errorf("could not get quote id")
+		return nil, fmt.Errorf("could not get quote")
+	}
+
+	qr, err := modelResult.ToQuoteRequest()
+	if err != nil {
+		return nil, err
+	}
+	return qr, nil
+}
+
+// GetQuoteRequestByOriginTxHash gets a quote request by tx hash. Should return ErrNoQuoteForID if not found.
+func (s Store) GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.Hash) (*reldb.QuoteRequest, error) {
+	var modelResult RequestForQuote
+	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", originTxHashFieldName), txHash.String()).First(&modelResult)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, reldb.ErrNoQuoteForTxHash
+	}
+
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get quote")
 	}
 
 	qr, err := modelResult.ToQuoteRequest()

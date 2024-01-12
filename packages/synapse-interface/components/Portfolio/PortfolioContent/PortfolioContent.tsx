@@ -1,14 +1,13 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Address } from 'wagmi'
 import Link from 'next/link'
 import {
-  NetworkTokenBalancesAndAllowances,
-  TokenWithBalanceAndAllowances,
+  NetworkTokenBalances,
+  TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { SingleNetworkPortfolio } from './SingleNetworkPortfolio'
 import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './components/ConnectWalletButton'
-import { CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -17,7 +16,7 @@ type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
   selectedFromChainId: number
-  networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
+  networkPortfolioWithBalances: NetworkTokenBalances
   fetchState: FetchState
   visibility: boolean
   searchInputActive: boolean
@@ -107,7 +106,7 @@ export const PortfolioContent = ({
                 portfolioChainId={Number(chainId) as number}
                 connectedChainId={connectedChainId as number}
                 selectedFromChainId={selectedFromChainId as number}
-                portfolioTokens={tokens as TokenWithBalanceAndAllowances[]}
+                portfolioTokens={tokens as TokenAndBalance[]}
                 initializeExpanded={false}
                 fetchState={fetchState as FetchState}
               />
@@ -120,12 +119,12 @@ export const PortfolioContent = ({
 
 function getCurrentNetworkPortfolio(
   currentChainId: number,
-  networks: NetworkTokenBalancesAndAllowances
+  networks: NetworkTokenBalances
 ): {
-  currentNetworkPortfolio: NetworkTokenBalancesAndAllowances
-  remainingNetworksPortfolios: NetworkTokenBalancesAndAllowances
+  currentNetworkPortfolio: NetworkTokenBalances
+  remainingNetworksPortfolios: NetworkTokenBalances
 } {
-  const currentNetworkPortfolio: NetworkTokenBalancesAndAllowances = {
+  const currentNetworkPortfolio: NetworkTokenBalances = {
     [currentChainId]: networks[currentChainId],
   }
 
