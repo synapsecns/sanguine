@@ -5,7 +5,7 @@ import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'viem'
 import {} from 'wagmi'
 
 import {

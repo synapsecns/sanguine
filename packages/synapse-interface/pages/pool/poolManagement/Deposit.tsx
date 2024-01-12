@@ -20,7 +20,6 @@ import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
-import { getAddress } from '@ethersproject/address'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
@@ -37,7 +36,7 @@ import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
-import { zeroAddress } from 'viem'
+import { getAddress, zeroAddress } from 'viem'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
