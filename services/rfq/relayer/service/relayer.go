@@ -223,7 +223,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted)
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
