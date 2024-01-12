@@ -67,6 +67,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
+   * @inheritdoc SynapseModuleSet.getGasDropAmount
+   */
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    // TODO: implement
+    invariant(bridgeRoute, 'bridgeRoute is required')
+    return Promise.resolve(BigNumber.from(0))
+  }
+
+  /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
   public async getBridgeRoutes(

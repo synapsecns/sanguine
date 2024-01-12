@@ -1,8 +1,10 @@
 import invariant from 'tiny-invariant'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
+import { BridgeRoute } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
@@ -26,6 +28,15 @@ export class SynapseCCTPRouterSet extends RouterSet {
       MEDIAN_TIME_CCTP[chainId as keyof typeof MEDIAN_TIME_CCTP]
     invariant(medianTime, `No estimated time for chain ${chainId}`)
     return medianTime
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.getGasDropAmount
+   */
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    // TODO: implement
+    invariant(bridgeRoute, 'bridgeRoute is required')
+    return Promise.resolve(BigNumber.from(0))
   }
 
   /**

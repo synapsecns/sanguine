@@ -1,8 +1,10 @@
 import invariant from 'tiny-invariant'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
+import { BridgeRoute } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -34,6 +36,15 @@ export class SynapseRouterSet extends RouterSet {
       MEDIAN_TIME_BRIDGE[chainId as keyof typeof MEDIAN_TIME_BRIDGE]
     invariant(medianTime, `No estimated time for chain ${chainId}`)
     return medianTime
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.getGasDropAmount
+   */
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    // TODO: implement
+    invariant(bridgeRoute, 'bridgeRoute is required')
+    return Promise.resolve(BigNumber.from(0))
   }
 
   /**
