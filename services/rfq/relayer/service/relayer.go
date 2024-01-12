@@ -79,7 +79,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
-		return nil, fmt.Errorf("could not get signer")
+		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 
 	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
