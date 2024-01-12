@@ -937,6 +937,8 @@ contract FastBridgeTest is Test {
         emit BridgeRelayed(
             transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
+        // Expect not doing any calls to user address
+        vm.expectCall(user, "", 0);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay(request);
@@ -990,6 +992,8 @@ contract FastBridgeTest is Test {
             10.97e18,
             0
         );
+        // Expect exactly one call to user address
+        vm.expectCall(user, "", 1);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
@@ -1046,6 +1050,8 @@ contract FastBridgeTest is Test {
             10.97e18,
             0.005e18
         );
+        // Expect exactly one call to user address
+        vm.expectCall(user, "", 1);
 
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
@@ -1095,6 +1101,8 @@ contract FastBridgeTest is Test {
         emit BridgeRelayed(
             transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
         );
+        // Expect exactly one call to user address
+        vm.expectCall(user, "", 1);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay{value: chainGasAmount}(request);
@@ -1137,6 +1145,8 @@ contract FastBridgeTest is Test {
         emit BridgeRelayed(
             transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
+        // Expect not doing any calls to user address
+        vm.expectCall(user, "", 0);
         // Relay the destination bridge
         vm.chainId(1); // set to dest chain
         fastBridge.relay(request);
