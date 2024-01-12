@@ -106,6 +106,11 @@ export class FastBridgeRouter implements SynapseModule {
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
+  public async chainGasAmount(): Promise<BigNumber> {
+    const fastBridgeContract = await this.getFastBridgeContract()
+    return fastBridgeContract.chainGasAmount()
+  }
+
   public async getFastBridgeContract(): Promise<FastBridgeContract> {
     // Populate the cache if necessary
     if (!this.fastBridgeContractCache) {
