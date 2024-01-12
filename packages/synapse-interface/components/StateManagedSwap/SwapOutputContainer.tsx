@@ -48,9 +48,9 @@ export const SwapOutputContainer = ({}) => {
                 `}
                 placeholder="0.0000"
                 value={
-                  swapQuote.outputAmountString === '0'
+                  swapQuote.parsedOutputAmount === '0'
                     ? ''
-                    : swapQuote.outputAmountString
+                    : swapQuote.parsedOutputAmount
                 }
                 name="inputRow"
                 autoComplete="off"

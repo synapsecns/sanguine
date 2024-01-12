@@ -4,8 +4,8 @@ import * as CHAINS from '@constants/chains/master'
 import { SwapQuote } from '@types'
 export const QUOTE_POLLING_INTERVAL = 10000
 export const EMPTY_SWAP_QUOTE: SwapQuote = {
-  outputAmount: 0n,
-  outputAmountString: '',
+  rawOutputAmount: 0n,
+  parsedOutputAmount: '',
   routerAddress: '',
   allowance: 0n,
   exchangeRate: 0n,
@@ -13,8 +13,8 @@ export const EMPTY_SWAP_QUOTE: SwapQuote = {
   quote: null,
 }
 export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
-  outputAmount: 0n,
-  outputAmountString: '0',
+  rawOutputAmount: 0n,
+  parsedOutputAmount: '0',
   routerAddress: '',
   allowance: 0n,
   exchangeRate: 0n,

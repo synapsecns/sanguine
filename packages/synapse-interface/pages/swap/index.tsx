@@ -171,8 +171,8 @@ const StateManagedSwap = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setSwapQuote({
-            outputAmount: toValueBigInt,
-            outputAmountString: commify(
+            rawOutputAmount: toValueBigInt,
+            parsedOutputAmount: commify(
               formatBigIntToString(
                 toValueBigInt,
                 swapToToken.decimals[swapChainId],
@@ -260,7 +260,7 @@ const StateManagedSwap = () => {
         swapFromToken: swapFromToken.symbol,
         swapToToken: swapToToken.symbol,
         inputAmount: swapFromValue,
-        expectedReceivedAmount: swapQuote.outputAmountString,
+        expectedReceivedAmount: swapQuote.parsedOutputAmount,
         exchangeRate: swapQuote.exchangeRate,
       },
       true
@@ -307,7 +307,7 @@ const StateManagedSwap = () => {
           address,
           originChainId: swapChainId,
           inputAmount: swapFromValue,
-          expectedReceivedAmount: swapQuote.outputAmountString,
+          expectedReceivedAmount: swapQuote.parsedOutputAmount,
           exchangeRate: swapQuote.exchangeRate,
         })
 
