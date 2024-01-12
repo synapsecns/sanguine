@@ -30,7 +30,6 @@ export const EMPTY_BRIDGE_QUOTE_ZERO = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
-  gasDropAmount: 0n,
   rawGasDropAmount: 0n,
   parsedGasDropAmount: '0',
 }
