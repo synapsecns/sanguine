@@ -155,7 +155,7 @@ export const OPTIMISM: Chain = {
   codeName: 'optimism',
   blockTime: 2000,
   rpcUrls: {
-    primary: 'https://optimism.llamarpc.com',
+    primary: 'https://optimism.publicnode.com',
     fallback: 'https://1rpc.io/op',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
