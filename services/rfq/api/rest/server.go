@@ -23,9 +23,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
 
-// APIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
+// QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
-type APIServer struct {
+type QuoterAPIServer struct {
 	cfg                 config.Config
 	db                  db.APIDB
 	engine              *gin.Engine
@@ -42,7 +42,7 @@ func NewAPI(
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
 	store db.APIDB,
-) (*APIServer, error) {
+) (*QuoterAPIServer, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
 	}
@@ -68,7 +68,7 @@ func NewAPI(
 		}
 	}
 
-	return &APIServer{
+	return &QuoterAPIServer{
 		cfg:                 cfg,
 		db:                  store,
 		omnirpcClient:       omniRPCClient,
@@ -84,8 +84,8 @@ const (
 
 var logger = log.Logger("rfq-api")
 
-// Run runs the rest api server.
-func (r *APIServer) Run(ctx context.Context) error {
+// Run runs the quoter api server.
+func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db)
@@ -112,7 +112,7 @@ func (r *APIServer) Run(ctx context.Context) error {
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
-func (r *APIServer) AuthMiddleware() gin.HandlerFunc {
+func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.PutQuoteRequest
 		if err := c.BindJSON(&req); err != nil {

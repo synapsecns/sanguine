@@ -54,11 +54,8 @@ export default function Updater(): null {
     fallbackQueryHistoricalTransactions,
     pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const {
-    activeTab,
-    searchInput,
-    searchedBalancesAndAllowances,
-  }: PortfolioState = usePortfolioState()
+  const { activeTab, searchInput, searchedBalances }: PortfolioState =
+    usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({
@@ -77,8 +74,8 @@ export default function Updater(): null {
   })
 
   const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances).length > 0
-  }, [searchedBalancesAndAllowances])
+    return Object.keys(searchedBalances).length > 0
+  }, [searchedBalances])
 
   /**
    * Handle fetching for historical and pending activity by polling Explorer endpoint
@@ -95,9 +92,9 @@ export default function Updater(): null {
         address: address,
         startTime: queryPendingTime,
       })
-    } else if (masqueradeActive && searchedBalancesAndAllowances) {
+    } else if (masqueradeActive && searchedBalances) {
       const queriedAddress: Address = Object.keys(
-        searchedBalancesAndAllowances
+        searchedBalances
       )[0] as Address
       fetchUserHistoricalActivity({
         address: getValidAddress(queriedAddress),
@@ -118,7 +115,7 @@ export default function Updater(): null {
         startTime: null,
       }).unsubscribe()
     }
-  }, [address, masqueradeActive, searchedBalancesAndAllowances])
+  }, [address, masqueradeActive, searchedBalances])
 
   // Load fetched historical transactions into state along with fetch status
   useEffect(() => {

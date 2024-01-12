@@ -11,6 +11,7 @@ import (
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
 func (s *PricerSuite) TestGetOriginFee() {
@@ -48,6 +49,56 @@ func (s *PricerSuite) TestGetOriginFee() {
 	s.Equal(expectedFee, fee)
 }
 
+func (s *PricerSuite) TestGetOriginFeeWithOverrides() {
+	// Set chain fee overrides.
+	l1ChainID := uint32(1)
+	s.config.FeePricer.ChainFeeParams[s.origin] = relconfig.ChainFeeParams{
+		OriginGasEstimate:      5_000_000,
+		DestGasEstimate:        10_000_000,
+		L1FeeChainID:           l1ChainID,
+		L1FeeOriginGasEstimate: 1_000_000,
+		L1FeeDestGasEstimate:   2_000_000,
+	}
+
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Return(client, nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the origin fee.
+	fee, err := feePricer.GetOriginFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+
+	/*
+		The expected fee should be:
+		fee_eth: gas_price * gas_estimate / native_decimals_factor
+		fee_usd: fee_eth * eth_price_usd
+		fee_usdc: fee_usd * usdc_price_usd
+		fee_usdc_decimals: fee_usdc * usdc_decimals_factor
+		fee_usdc_decimals = (((gas_price * gas_estimate / native_decimals_factor) * eth_price_usd) * usdc_price_usd) * usdc_decimals_factor
+		So, with our numbers:
+		fee_denom = (((100e9 * 5000000 / 1e18) * 2000) * 1) * 1e6 = 1_000_000_000
+
+		Then, add the l1 fee component:
+		fee_denom = (((100e9 * 1000000 / 1e18) * 2000) * 1) * 1e6 = 200_000_000
+
+		So, the total is: 1_200_000_000
+	*/
+
+	expectedFee := big.NewInt(1_200_000_000) // 1200 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetOriginFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
 func (s *PricerSuite) TestGetDestinationFee() {
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -74,6 +125,56 @@ func (s *PricerSuite) TestGetDestinationFee() {
 	*/
 
 	expectedFee := big.NewInt(250_000) // 0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeWithOverrides() {
+	// Set chain fee overrides.
+	l1ChainID := uint32(1)
+	s.config.FeePricer.ChainFeeParams[s.destination] = relconfig.ChainFeeParams{
+		OriginGasEstimate:      5_000_000,
+		DestGasEstimate:        10_000_000,
+		L1FeeChainID:           l1ChainID,
+		L1FeeOriginGasEstimate: 1_000_000,
+		L1FeeDestGasEstimate:   2_000_000,
+	}
+
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := &types.Header{BaseFee: big.NewInt(500_000_000_000)} // 500 gwei
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Return(client, nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+
+	/*
+		The expected fee should be:
+		fee_matic: gas_price * gas_estimate / native_decimals_factor
+		fee_usd: fee_matic * matic_price_usd
+		fee_usdc: fee_usd * usdc_price_usd
+		fee_usdc_decimals: fee_usdc * usdc_decimals_factor
+		fee_usdc_decimals = (((gas_price * gas_estimate / native_decimals_factor) * matic_price_usd) * usdc_price_usd) * usdc_decimals_factor
+		So, with our numbers:
+		fee_denom = (((500e9 * 10_000_000 / 1e18) * 0.5) * 1) * 1e6 = 2_500_000
+
+		Then, add the l1 fee component:
+		fee_denom = (((500e9 * 2_000_000 / 1e18) * 2000) * 1) * 1e6 = 2_000_000_000
+
+		So, the total is: 2_002_500_000
+	*/
+
+	expectedFee := big.NewInt(2_002_500_000) // 2002.5 usd
 	s.Equal(expectedFee, fee)
 
 	// Ensure that the fee has been cached.

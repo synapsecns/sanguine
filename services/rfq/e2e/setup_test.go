@@ -36,7 +36,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
 
-func (i *IntegrationSuite) setupAPI() {
+func (i *IntegrationSuite) setupQuoterAPI() {
 	dbPath := filet.TmpDir(i.T(), "")
 	apiPort, err := freeport.GetFreePort()
 	i.NoError(err)
@@ -189,6 +189,8 @@ func (i *IntegrationSuite) setupRelayer() {
 	wg.Wait()
 
 	// construct the config
+	relayerApiPort, err := freeport.GetFreePort()
+	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
 	cfg := relconfig.Config{
 		// generated ex-post facto
@@ -229,11 +231,12 @@ func (i *IntegrationSuite) setupRelayer() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
+		RelayerAPIPort: strconv.Itoa(relayerApiPort),
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
-			OriginGasEstimate:         500000,
-			DestinationGasEstimate:    1000000,
+			BaseOriginGasEstimate:     500000,
+			BaseDestGasEstimate:       1000000,
 		},
 	}
 
@@ -277,7 +280,6 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
-	var err error
 	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
 	go func() {
