@@ -1111,6 +1111,48 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
+    function test_successfulRelayDestinationWithChainGasAmountZero() public {
+        // Set up the roles for the test
+        setUpRoles();
+
+        // deal some dest ETH to relayer
+        deal(relayer, 100e18);
+
+        // get bridge request and tx id
+        // chain gas param should be true but we forward 0 amount since not set by governor
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+
+        // Get the initial information of the bridge transaction; make sure not relayed
+        assertEq(fastBridge.bridgeRelays(transactionId), false);
+
+        // Start a prank with the relayer
+        vm.startPrank(relayer);
+        // Approve the fastBridge to spend the maximum amount of ethUSDC from the relayer
+        ethUSDC.approve(address(fastBridge), type(uint256).max);
+        // Check the initial balances of the relayer and the user
+        assertEq(ethUSDC.balanceOf(relayer), 100 * 10 ** 6);
+        assertEq(ethUSDC.balanceOf(user), 100 * 10 ** 6);
+        // Expect the BridgeRelayed event to be emitted
+        vm.expectEmit();
+        emit BridgeRelayed(
+            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
+        );
+        // Relay the destination bridge
+        vm.chainId(1); // set to dest chain
+        fastBridge.relay(request);
+        // Check the balances of the relayer and the user after relaying the destination bridge
+        assertEq(ethUSDC.balanceOf(relayer), 89.03e6);
+        assertEq(ethUSDC.balanceOf(user), 110.97e6);
+        assertEq(relayer.balance, 100e18);
+        assertEq(user.balance, 0);
+
+        // Get the returned information of the bridge transaction relays status
+        assertEq(fastBridge.bridgeRelays(transactionId), true);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
     function test_failedRelayNotDestChain() public {
         // Set up the roles for the test
         setUpRoles();
