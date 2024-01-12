@@ -52,8 +52,8 @@ export type PoolData = {
 }
 
 export type BridgeQuote = {
-  outputAmount: bigint
-  outputAmountString: string
+  rawOutputAmount: bigint
+  parsedOutputAmount: string
   routerAddress: string
   allowance: bigint
   exchangeRate: bigint

@@ -55,9 +55,9 @@ store.subscribe(() => {
       previousState.bridge.bridgeQuote,
       currentState.bridge.bridgeQuote
     ) &&
-    currentState.bridge.bridgeQuote.outputAmount !== 0n
+    currentState.bridge.bridgeQuote.rawOutputAmount !== 0n
   ) {
-    const { outputAmountString, routerAddress, exchangeRate } =
+    const { parsedOutputAmount, routerAddress, exchangeRate } =
       bridgeState.bridgeQuote
     const { fromChainId, toChainId, fromToken, toToken, fromValue } =
       bridgeState
@@ -70,7 +70,7 @@ store.subscribe(() => {
       fromToken: fromToken?.symbol,
       toToken: toToken?.symbol,
       inputAmountString: fromValue,
-      outputAmountString,
+      outputAmountString: parsedOutputAmount,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),
     }

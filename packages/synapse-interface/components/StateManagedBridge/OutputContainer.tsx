@@ -65,9 +65,9 @@ export const OutputContainer = ({}) => {
                 `}
                 placeholder="0.0000"
                 value={
-                  bridgeQuote?.outputAmountString === '0'
+                  bridgeQuote?.parsedOutputAmount === '0'
                     ? ''
-                    : bridgeQuote?.outputAmountString
+                    : bridgeQuote?.parsedOutputAmount
                 }
                 name="inputRow"
                 autoComplete="off"

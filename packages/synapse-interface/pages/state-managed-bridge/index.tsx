@@ -223,8 +223,8 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            outputAmount: toValueBigInt,
-            outputAmountString: commify(
+            rawOutputAmount: toValueBigInt,
+            parsedOutputAmount: commify(
               formatBigIntToString(
                 toValueBigInt,
                 toToken.decimals[toChainId],
@@ -320,7 +320,7 @@ const StateManagedBridge = () => {
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
-        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        expectedReceivedAmount: bridgeQuote.parsedOutputAmount,
         slippage: bridgeQuote.exchangeRate,
       },
       true
@@ -390,7 +390,7 @@ const StateManagedBridge = () => {
           originChainId: fromChainId,
           destinationChainId: toChainId,
           inputAmount: debouncedFromValue,
-          expectedReceivedAmount: bridgeQuote.outputAmountString,
+          expectedReceivedAmount: bridgeQuote.parsedOutputAmount,
           slippage: bridgeQuote.exchangeRate,
         })
         dispatch(
