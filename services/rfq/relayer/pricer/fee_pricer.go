@@ -77,7 +77,7 @@ func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32
 	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().OriginGasEstimate, denomToken, useMultiplier)
 }
 
-func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+func (f *feePricer) GetDestinationFee(ctx context.Context, _, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
 	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken, useMultiplier)
 }
 

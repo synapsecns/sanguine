@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
@@ -32,6 +33,7 @@ type Relayer struct {
 	db             reldb.Service
 	client         omnirpcClient.RPCClient
 	chainListeners map[int]listener.ContractListener
+	apiServer      *relapi.RelayerAPIServer
 	inventory      inventory.Manager
 	quoter         quoter.Quoter
 	submitter      submitter.TransactionSubmitter
@@ -94,6 +96,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
+	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get api server: %w", err)
+	}
+
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
@@ -106,6 +113,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		submitter:      sm,
 		signer:         sg,
 		chainListeners: chainListeners,
+		apiServer:      apiServer,
 	}
 	return &rel, nil
 }
@@ -174,6 +182,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		err := r.submitter.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("could not start submitter: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		err := r.apiServer.Run(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start api server: %w", err)
 		}
 		return nil
 	})

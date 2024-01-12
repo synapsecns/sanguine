@@ -27,13 +27,14 @@ type IntegrationSuite struct {
 	originBackend backends.SimulatedTestBackend
 	destBackend   backends.SimulatedTestBackend
 	//omniserver is the omnirpc server address
-	omniServer    string
-	omniClient    omnirpcClient.RPCClient
-	metrics       metrics.Handler
-	apiServer     string
-	relayer       *service.Relayer
-	relayerWallet wallet.Wallet
-	userWallet    wallet.Wallet
+	omniServer       string
+	omniClient       omnirpcClient.RPCClient
+	metrics          metrics.Handler
+	apiServer        string
+	relayerApiServer string
+	relayer          *service.Relayer
+	relayerWallet    wallet.Wallet
+	userWallet       wallet.Wallet
 }
 
 func NewIntegrationSuite(tb testing.TB) *IntegrationSuite {
@@ -68,7 +69,7 @@ func (i *IntegrationSuite) SetupTest() {
 	i.setupBackends()
 
 	// setup the api server
-	i.setupAPI()
+	i.setupQuoterAPI()
 	i.setupRelayer()
 
 }
@@ -112,7 +113,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		i.NoError(err)
 
 		// let's figure out the amount of usdc we need
-
 		for _, quote := range allQuotes {
 			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
@@ -176,7 +176,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		i.NoError(err)
 
 		// let's figure out the amount of usdc we need
-
 		for _, quote := range allQuotes {
 			if common.HexToAddress(quote.DestTokenAddr) == originUSDC.Address() && quote.DestChainID == originBackendChainID {
 
@@ -192,5 +191,4 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		return false
 	})
-
 }

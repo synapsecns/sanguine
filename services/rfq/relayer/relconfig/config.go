@@ -25,6 +25,8 @@ type Config struct {
 	OmniRPCURL string `yaml:"omnirpc_url"`
 	// RfqAPIURL is the URL of the RFQ API.
 	RfqAPIURL string `yaml:"rfq_url"`
+	// RelayerAPIPort is the port of the relayer API.
+	RelayerAPIPort string `yaml:"relayer_api_port"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 	// QuotableTokens is a map of token -> list of quotable tokens.
