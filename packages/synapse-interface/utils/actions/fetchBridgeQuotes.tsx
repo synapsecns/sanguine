@@ -103,7 +103,7 @@ export async function fetchBridgeQuote(
         parsedGasDropAmount: commify(
           formatBigIntToString(
             BigInt(gasDropAmount.toString()),
-            CHAINS_BY_ID[destinationChainId].nativeCurrency.decimals,,
+            CHAINS_BY_ID[destinationChainId].nativeCurrency.decimals,
             8
           )
         ),
