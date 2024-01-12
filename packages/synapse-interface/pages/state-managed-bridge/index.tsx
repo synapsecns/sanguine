@@ -68,6 +68,8 @@ import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListO
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
+import { waitForTransaction } from '@wagmi/core'
+
 const StateManagedBridge = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
@@ -383,66 +385,63 @@ const StateManagedBridge = () => {
         `Bridging from ${fromToken?.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
-
-      try {
-        segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-          address,
-          originChainId: fromChainId,
-          destinationChainId: toChainId,
-          inputAmount: debouncedFromValue,
-          expectedReceivedAmount: bridgeQuote.parsedOutputAmount,
-          slippage: bridgeQuote.exchangeRate,
+      segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+        address,
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: debouncedFromValue,
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      })
+      dispatch(
+        updatePendingBridgeTransaction({
+          id: currentTimestamp,
+          timestamp: undefined,
+          transactionHash: tx,
+          isSubmitted: false,
         })
-        dispatch(
-          updatePendingBridgeTransaction({
-            id: currentTimestamp,
-            timestamp: undefined,
-            transactionHash: tx,
-            isSubmitted: false,
-          })
-        )
-        /** Update Origin Chain token balances after valid txHash  */
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address,
-            chainId: fromChainId,
-          })
-        )
-        dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-        dispatch(setDestinationAddress(null))
-        dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(''))
+      )
+      dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+      dispatch(setDestinationAddress(null))
+      dispatch(setShowDestinationAddress(false))
+      dispatch(updateFromValue(''))
 
-        const successToastContent = (
+      const successToastContent = (
+        <div>
           <div>
-            <div>
-              Successfully initiated bridge from {fromToken?.symbol} on{' '}
-              {originChainName} to {toToken.symbol} on {destinationChainName}
-            </div>
-            <ExplorerToastLink
-              transactionHash={tx ?? zeroAddress}
-              chainId={fromChainId}
-            />
+            Successfully initiated bridge from {fromToken?.symbol} on{' '}
+            {originChainName} to {toToken.symbol} on {destinationChainName}
           </div>
-        )
+          <ExplorerToastLink
+            transactionHash={tx ?? zeroAddress}
+            chainId={fromChainId}
+          />
+        </div>
+      )
 
-        successPopup = toast.success(successToastContent, {
-          id: 'bridge-success-popup',
-          duration: 10000,
-        })
+      successPopup = toast.success(successToastContent, {
+        id: 'bridge-success-popup',
+        duration: 10000,
+      })
 
-        toast.dismiss(pendingPopup)
+      toast.dismiss(pendingPopup)
 
-        return tx
-      } catch (error) {
-        segmentAnalyticsEvent(`[Bridge] error bridging`, {
+      const transactionReceipt = await waitForTransaction({
+        hash: tx as Address,
+        timeout: 30_000,
+      })
+      console.log('Transaction Receipt: ', transactionReceipt)
+
+      /** Update Origin Chain token balances after resolved tx or timeout reached */
+      /** Assume tx has been actually resolved if above times out */
+      dispatch(
+        fetchAndStoreSingleNetworkPortfolioBalances({
           address,
-          errorCode: error.code,
+          chainId: fromChainId,
         })
-        dispatch(removePendingBridgeTransaction(currentTimestamp))
-        console.log(`Transaction failed with error: ${error}`)
-        toast.dismiss(pendingPopup)
-      }
+      )
+
+      return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
         address,
