@@ -467,7 +467,7 @@ const StateManagedBridge = () => {
 
       await waitForTransaction({
         hash: tx as Address,
-        timeout: 3_000,
+        timeout: 30_000,
       })
       /** Update Origin Chain token balances after resolved tx  */
       dispatch(
