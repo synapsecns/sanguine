@@ -233,8 +233,9 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 
 	var tokenCfg *TokenConfig
 	for _, cfg := range chainCfg.Tokens {
-		if strings.ToLower(cfg.Address) == strings.ToLower(addr.String()) {
-			tokenCfg = &cfg
+		if strings.EqualFold(cfg.Address, addr.String()) {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
 			break
 		}
 	}
