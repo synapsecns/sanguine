@@ -243,7 +243,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 }
 
 func (m *Manager) getQuoteAmount(chainID int, address common.Address, balance *big.Int) *big.Int {
-	// Apply the QuotePct
+	// Apply the quotePct
 	balanceFlt := new(big.Float).SetInt(balance)
 	quoteAmount, _ := new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
 
