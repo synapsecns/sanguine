@@ -50,5 +50,5 @@ type IConfig interface {
 	// Note that this getter returns the value in native token decimals.
 	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
 	// GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
-	GetDeadlineBuffer() time.Duration
+	GetDeadlineBuffer(chainID int) time.Duration
 }
