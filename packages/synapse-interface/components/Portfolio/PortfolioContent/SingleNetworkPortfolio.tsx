@@ -4,8 +4,7 @@ import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
-  TokenWithBalanceAndAllowances,
-  separateTokensByAllowance,
+  TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
@@ -24,7 +23,7 @@ type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
-  portfolioTokens: TokenWithBalanceAndAllowances[]
+  portfolioTokens: TokenAndBalance[]
   initializeExpanded: boolean
   fetchState: FetchState
 }
@@ -43,14 +42,7 @@ export const SingleNetworkPortfolio = ({
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
   const isUnsupportedChain: boolean = currentChain ? false : true
 
-  const [tokensWithAllowance, tokensWithoutAllowance] =
-    separateTokensByAllowance(portfolioTokens)
-
-  const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
-    sortTokensByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
+  const sortedTokens: TokenAndBalance[] =
     sortTokensByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
@@ -90,9 +82,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer
-            portfolioTokens={sortedTokensForVisualizer}
-          />
+          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
         }
       >
         {isUnsupportedChain && (
@@ -120,35 +110,17 @@ export const SingleNetworkPortfolio = ({
             connectedChain={currentChain}
           />
         )}
-        {sortedTokensWithAllowance &&
-          sortedTokensWithAllowance.length > 0 &&
-          sortedTokensWithAllowance.map(
-            ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
-              <PortfolioTokenAsset
-                key={token.symbol}
-                token={token}
-                balance={balance}
-                allowances={allowances}
-                portfolioChainId={portfolioChainId}
-                connectedChainId={connectedChainId}
-                isApproved={true}
-              />
-            )
-          )}
-        {sortedTokensWithoutAllowance &&
-          sortedTokensWithoutAllowance.length > 0 &&
-          sortedTokensWithoutAllowance.map(
-            ({ token, balance }: TokenWithBalanceAndAllowances) => (
-              <PortfolioTokenAsset
-                key={token.symbol}
-                token={token}
-                balance={balance}
-                portfolioChainId={portfolioChainId}
-                connectedChainId={connectedChainId}
-                isApproved={false}
-              />
-            )
-          )}
+        {sortedTokens &&
+          sortedTokens.length > 0 &&
+          sortedTokens.map(({ token, balance }: TokenAndBalance) => (
+            <PortfolioTokenAsset
+              key={token.symbol}
+              token={token}
+              balance={balance}
+              portfolioChainId={portfolioChainId}
+              connectedChainId={connectedChainId}
+            />
+          ))}
       </PortfolioAccordion>
     </div>
   )
@@ -191,7 +163,7 @@ const PortfolioNetwork = ({
 export const PortfolioTokenVisualizer = ({
   portfolioTokens,
 }: {
-  portfolioTokens: TokenWithBalanceAndAllowances[]
+  portfolioTokens: TokenAndBalance[]
 }) => {
   const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
@@ -207,8 +179,6 @@ export const PortfolioTokenVisualizer = ({
       : 0
   const hasOnlyOneToken: boolean =
     portfolioTokens && portfolioTokens.length === 1
-  const hasOnlyTwoTokens: boolean =
-    portfolioTokens && portfolioTokens.length === 2
 
   if (hasNoTokens) {
     return (
@@ -281,19 +251,17 @@ export const PortfolioTokenVisualizer = ({
       )}
       <div className="relative inline-block">
         <HoverContent isHovered={isT3Hovered}>
-          {portfolioTokens?.map(
-            (token: TokenWithBalanceAndAllowances, key: number) => {
-              if (key > 1) {
-                const tokenSymbol = token.token.symbol
-                const balance = token.parsedBalance
-                return (
-                  <div className="whitespace-nowrap" key={key}>
-                    {balance} {tokenSymbol}
-                  </div>
-                )
-              }
+          {portfolioTokens?.map((token: TokenAndBalance, key: number) => {
+            if (key > 1) {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap" key={key}>
+                  {balance} {tokenSymbol}
+                </div>
+              )
             }
-          )}
+          })}
         </HoverContent>
       </div>
     </div>

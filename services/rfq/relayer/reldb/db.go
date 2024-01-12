@@ -32,6 +32,8 @@ type Reader interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	// GetQuoteRequestByID gets a quote request by id. Should return ErrNoQuoteForID if not found
 	GetQuoteRequestByID(ctx context.Context, id [32]byte) (*QuoteRequest, error)
+	// GetQuoteRequestByOriginTxHash gets a quote request by origin tx hash. Should return ErrNoQuoteForTxHash if not found
+	GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.Hash) (*QuoteRequest, error)
 	// GetQuoteResultsByStatus gets quote results by status
 	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
 }
@@ -48,7 +50,9 @@ var (
 	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
 	ErrNoLatestBlockForChainID = errors.New("no latest block for chainId")
 	// ErrNoQuoteForID means the quote was not found.
-	ErrNoQuoteForID = errors.New("no quote found")
+	ErrNoQuoteForID = errors.New("no quote found for tx id")
+	// ErrNoQuoteForTxHash means the quote was not found.
+	ErrNoQuoteForTxHash = errors.New("no quote found for tx hash")
 )
 
 // QuoteRequest is the quote request object.

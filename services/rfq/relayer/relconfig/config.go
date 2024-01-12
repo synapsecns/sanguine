@@ -3,9 +3,11 @@ package relconfig
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
@@ -25,6 +27,8 @@ type Config struct {
 	OmniRPCURL string `yaml:"omnirpc_url"`
 	// RfqAPIURL is the URL of the RFQ API.
 	RfqAPIURL string `yaml:"rfq_url"`
+	// RelayerAPIPort is the port of the relayer API.
+	RelayerAPIPort string `yaml:"relayer_api_port"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 	// QuotableTokens is a map of token -> list of quotable tokens.
@@ -35,6 +39,8 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
+	// QuotePct is the percent of balance to quote.
+	QuotePct float64 `yaml:"quote_pct"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -57,6 +63,8 @@ type TokenConfig struct {
 	Decimals uint8 `yaml:"decimals"`
 	// For now, specify the USD price of the token in the config.
 	PriceUSD float64 `yaml:"price_usd"`
+	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
+	MinQuoteAmount string `yaml:"min_quote_amount"`
 }
 
 // DatabaseConfig represents the configuration for the database.
@@ -270,6 +278,51 @@ func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) 
 		return 0, 0, false
 	}
 	return chainFeeParams.L1FeeChainID, gasEstimate, true
+}
+
+const defaultQuotePct = 100.
+
+// GetQuotePct returns the quote percentage.
+func (c Config) GetQuotePct() float64 {
+	if c.QuotePct <= 0 {
+		return defaultQuotePct
+	}
+	return c.QuotePct
+}
+
+const defaultMinQuoteAmount = 0
+
+// GetMinQuoteAmount returns the quote amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if strings.EqualFold(cfg.Address, addr.String()) {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)
+	if !ok {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+
+	// Scale the minQuoteAmount by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
 }
 
 var _ IConfig = &Config{}

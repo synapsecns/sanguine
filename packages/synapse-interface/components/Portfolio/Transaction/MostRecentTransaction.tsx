@@ -26,8 +26,7 @@ export const MostRecentTransaction = () => {
     fallbackQueryPendingTransactions,
     pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
-    usePortfolioState()
+  const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesBeforeNow(0)
@@ -42,8 +41,8 @@ export const MostRecentTransaction = () => {
   }, [])
 
   const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances).length > 0
-  }, [searchedBalancesAndAllowances])
+    return Object.keys(searchedBalances).length > 0
+  }, [searchedBalances])
 
   const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
     useMemo(() => {

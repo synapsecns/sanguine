@@ -1,11 +1,10 @@
-package client_test
+package relapi_test
 
 import (
 	"fmt"
 	"math/big"
-	"sync"
+	"strconv"
 	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -21,41 +20,45 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/api/client"
-	"github.com/synapsecns/sanguine/services/rfq/api/config"
-	"github.com/synapsecns/sanguine/services/rfq/api/db"
-	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
-	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"golang.org/x/sync/errgroup"
 )
 
-type ClientSuite struct {
+// RelayerServer suite is the relayer API server test suite.
+type RelayerServerSuite struct {
 	*testsuite.TestSuite
 	omniRPCClient        omniClient.RPCClient
 	omniRPCTestBackends  []backends.SimulatedTestBackend
 	testBackends         map[uint64]backends.SimulatedTestBackend
+	originChainID        uint32
+	destChainID          uint32
 	fastBridgeAddressMap *xsync.MapOf[uint64, common.Address]
-	database             db.APIDB
-	cfg                  config.Config
+	database             reldb.Service
+	cfg                  relconfig.Config
 	testWallet           wallet.Wallet
 	handler              metrics.Handler
-	QuoterAPIServer      *rest.QuoterAPIServer
+	RelayerAPIServer     *relapi.RelayerAPIServer
 	port                 uint16
-	client               client.AuthenticatedClient
+	wallet               wallet.Wallet
 }
 
-func NewTestClientSuite(tb testing.TB) *ClientSuite {
+// NewRelayerServerSuite creates a end-to-end test suite.
+func NewRelayerServerSuite(tb testing.TB) *RelayerServerSuite {
 	tb.Helper()
-
-	return &ClientSuite{
+	return &RelayerServerSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
-func (c *ClientSuite) SetupTest() {
+func (c *RelayerServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
 	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
@@ -70,57 +73,57 @@ func (c *ClientSuite) SetupTest() {
 	c.port = uint16(port)
 	c.Require().NoError(err)
 
-	testConfig := config.Config{
-		Database: config.DatabaseConfig{
+	c.originChainID = 1
+	c.destChainID = 42161
+
+	testConfig := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			int(c.originChainID): {
+				Bridge: ethFastBridgeAddress.Hex(),
+			},
+			int(c.destChainID): {
+				Bridge: arbFastBridgeAddress.Hex(),
+			},
+		},
+		RelayerAPIPort: strconv.Itoa(port),
+		Database: relconfig.DatabaseConfig{
 			Type: "sqlite",
 			DSN:  filet.TmpFile(c.T(), "", "").Name(),
 		},
-		OmniRPCURL: testOmnirpc,
-		Bridges: map[uint32]string{
-			1:     ethFastBridgeAddress.Hex(),
-			42161: arbFastBridgeAddress.Hex(),
-		},
-		Port: fmt.Sprintf("%d", port),
 	}
 	c.cfg = testConfig
 
-	QuoterAPIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
+	c.wallet, err = wallet.FromRandom()
 	c.Require().NoError(err)
-	c.QuoterAPIServer = QuoterAPIServer
+	signer := localsigner.NewSigner(c.wallet.PrivateKey())
+	submitterCfg := &submitterConfig.Config{}
+	ts := submitter.NewTransactionSubmitter(c.handler, signer, omniRPCClient, c.database.SubmitterDB(), submitterCfg)
 
-	go func() {
-		err := c.QuoterAPIServer.Run(c.GetTestContext())
-		c.Require().NoError(err)
-	}()
-	time.Sleep(2 * time.Second) // Wait for the server to start.
-
-	c.client, err = client.NewAuthenticatedClient(metrics.Get(), fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(c.testWallet.PrivateKey()))
+	server, err := relapi.NewRelayerAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database, ts)
 	c.Require().NoError(err)
+	c.RelayerAPIServer = server
 }
 
-func (c *ClientSuite) SetupSuite() {
+func (c *RelayerServerSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
 	// let's create 2 mock chains
 	chainIDs := []uint64{1, 42161}
 
 	c.testBackends = make(map[uint64]backends.SimulatedTestBackend)
-	var mux sync.Mutex
 
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
-		chainID := chainID // capture func literal
-		g.Go(func() error {
-			// Setup backend for the suite to have RPC support
-			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
+		// Setup Anvil backend for the suite to have RPC support
+		// anvilOpts := anvil.NewAnvilOptionBuilder()
+		// anvilOpts.SetChainID(chainID)
+		// anvilOpts.SetBlockTime(1 * time.Second)
+		// backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
+		backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
-			// add the backend to the list of backends
-			mux.Lock()
-			defer mux.Unlock()
-			c.testBackends[chainID] = backend
-			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
-			return nil
-		})
+		// add the backend to the list of backends
+		c.testBackends[chainID] = backend
+		c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
 	}
 
 	// wait for all backends to be ready
@@ -140,10 +143,11 @@ func (c *ClientSuite) SetupSuite() {
 	g, _ = errgroup.WithContext(c.GetSuiteContext())
 	for _, backend := range c.testBackends {
 		backend := backend
+		// TODO: functionalize me
 		g.Go(func() error {
 			chainID, err := backend.ChainID(c.GetSuiteContext())
 			if err != nil {
-				return fmt.Errorf("could not get chainID: %w", err)
+				return fmt.Errorf("could not get chain id: %w", err)
 			}
 			// Create an auth to interact with the blockchain
 			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)
@@ -177,13 +181,12 @@ func (c *ClientSuite) SetupSuite() {
 	metricsHandler := metrics.NewNullHandler()
 	c.handler = metricsHandler
 	// TODO use temp file / in memory sqlite3 to not create in directory files
-	testDB, err := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
-	c.Require().NoError(err)
+	testDB, _ := connect.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
 	c.database = testDB
 	// setup config
 }
 
 // TestConfigSuite runs the integration test suite.
-func TestClientSuite(t *testing.T) {
-	suite.Run(t, NewTestClientSuite(t))
+func TestRelayerServerSuite(t *testing.T) {
+	suite.Run(t, NewRelayerServerSuite(t))
 }
