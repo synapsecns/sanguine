@@ -19,8 +19,6 @@ import { TransactionOptions } from './TransactionOptions'
 import { getExplorerTxUrl, getExplorerAddressUrl } from '@/constants/urls'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Chain } from '@/utils/types'
-import { useFallbackBridgeOriginQuery } from '@/utils/hooks/useFallbackBridgeOriginQuery'
-import { useFallbackBridgeDestinationQuery } from '@/utils/hooks/useFallbackBridgeDestinationQuery'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { DISCORD_URL } from '@/constants/urls'
 import { useApplicationState } from '@/slices/application/hooks'
@@ -160,22 +158,6 @@ export const PendingTransaction = ({
     }
     return BridgeType.Bridge
   }, [synapseSDK, bridgeModuleName, formattedEventType])
-
-  useFallbackBridgeOriginQuery({
-    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-    chainId: originChain?.id,
-    txnHash: transactionHash,
-    bridgeType: bridgeType,
-  })
-
-  useFallbackBridgeDestinationQuery({
-    useFallback: useFallback || (isDelayed && isReconnectedAndRetryFallback),
-    chainId: destinationChain?.id,
-    address: destinationAddress,
-    kappa: kappa,
-    timestamp: startedTimestamp,
-    bridgeType: bridgeType,
-  })
 
   const _isComplete = useBridgeTxStatus({
     originChainId: originChain.id,

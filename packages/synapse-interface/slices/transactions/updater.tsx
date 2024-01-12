@@ -18,15 +18,9 @@ import {
   updatePendingBridgeTransactions,
   removePendingBridgeTransaction,
   PendingBridgeTransaction,
-  addFallbackQueryHistoricalTransaction,
-  removeFallbackQueryHistoricalTransaction,
-  removeFallbackQueryPendingTransaction,
   resetTransactionsState,
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
-  addSeenHistoricalTransaction,
-  addPendingAwaitingCompletionTransaction,
-  removePendingAwaitingCompletionTransaction,
 } from './actions'
 import { PortfolioState } from '../portfolio/reducer'
 import { usePortfolioState } from '../portfolio/hooks'
