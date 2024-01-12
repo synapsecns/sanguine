@@ -75,16 +75,32 @@ type DatabaseConfig struct {
 
 // FeePricerConfig represents the configuration for the fee pricer.
 type FeePricerConfig struct {
-	// OriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
-	OriginGasEstimate int `yaml:"origin_gas_estimate"`
-	// DestinationGasEstimate is the gas required to execute relay transaction on destination chain.
-	DestinationGasEstimate int `yaml:"destination_gas_estimate"`
+	// BaseOriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
+	BaseOriginGasEstimate int `yaml:"base_origin_gas_estimate"`
+	// BaseDestGasEstimate is the gas required to execute relay transaction on destination chain.
+	BaseDestGasEstimate int `yaml:"base_dest_gas_estimate"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
+	// ChainFeeParams are parameters that correspond to specific chains.
+	ChainFeeParams map[uint32]ChainFeeParams `yaml:"chain_fee_params"`
+}
+
+// ChainFeeParams represents the chain fee params.
+type ChainFeeParams struct {
+	// OriginGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
+	OriginGasEstimate int `yaml:"origin_gas_estimate"`
+	// DestGasEstimate is the gas estimate to use for destination transactions (this will override base gas estimates).
+	DestGasEstimate int `yaml:"dest_gas_estimate"`
+	// L1FeeChainID indicates the chain ID for the L1 fee (if needed, for example on optimism).
+	L1FeeChainID uint32 `yaml:"l1_fee_chain_id"`
+	// L1FeeOriginGasEstimate is the gas estimate for the L1 fee on origin.
+	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
+	// L1FeeDestGasEstimate is the gas estimate for the L1 fee on destination.
+	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
 }
 
 // LoadConfig loads the config from the given path.
@@ -211,6 +227,57 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 		return defaultFixedFeeMultiplier
 	}
 	return c.FeePricer.FixedFeeMultiplier
+}
+
+// GetChainFeeParams returns the chain fee params for the given chain.
+func (c Config) getChainFeeParams(chainID uint32) (ChainFeeParams, error) {
+	chainFeeParams, ok := c.FeePricer.ChainFeeParams[chainID]
+	if !ok {
+		return ChainFeeParams{}, fmt.Errorf("no chain fee params for chain %d", chainID)
+	}
+	return chainFeeParams, nil
+}
+
+// GetOriginGasEstimate returns the origin gas estimate for the given chain.
+func (c Config) GetOriginGasEstimate(chainID uint32) int {
+	gasEstimate := c.FeePricer.BaseOriginGasEstimate
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return gasEstimate
+	}
+	if chainFeeParams.OriginGasEstimate > 0 {
+		gasEstimate = chainFeeParams.OriginGasEstimate
+	}
+	return gasEstimate
+}
+
+// GetDestGasEstimate returns the destination gas estimate for the given chain.
+func (c Config) GetDestGasEstimate(chainID uint32) int {
+	gasEstimate := c.FeePricer.BaseDestGasEstimate
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return gasEstimate
+	}
+	if chainFeeParams.DestGasEstimate > 0 {
+		gasEstimate = chainFeeParams.DestGasEstimate
+	}
+	return gasEstimate
+}
+
+// GetL1FeeParams returns the L1 fee params for the given chain.
+func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
+	chainFeeParams, err := c.getChainFeeParams(chainID)
+	if err != nil {
+		return 0, 0, false
+	}
+	gasEstimate := chainFeeParams.L1FeeDestGasEstimate
+	if origin {
+		gasEstimate = chainFeeParams.L1FeeOriginGasEstimate
+	}
+	if chainFeeParams.L1FeeChainID <= 0 || gasEstimate <= 0 {
+		return 0, 0, false
+	}
+	return chainFeeParams.L1FeeChainID, gasEstimate, true
 }
 
 const defaultQuotePct = 100.
