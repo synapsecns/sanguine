@@ -8,6 +8,7 @@ import {
 import { subtractSlippage } from '../slippage'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export interface BridgeQuoteResponse extends BridgeQuote {
   destinationToken: Token
@@ -102,7 +103,7 @@ export async function fetchBridgeQuote(
         parsedGasDropAmount: commify(
           formatBigIntToString(
             BigInt(gasDropAmount.toString()),
-            destinationToken.decimals[destinationChainId],
+            CHAINS_BY_ID[destinationChainId].nativeCurrency.decimals,,
             8
           )
         ),

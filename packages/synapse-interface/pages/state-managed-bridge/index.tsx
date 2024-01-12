@@ -254,7 +254,7 @@ const StateManagedBridge = () => {
             parsedGasDropAmount: commify(
               formatBigIntToString(
                 BigInt(gasDropAmount.toString()),
-                toToken.decimals[toChainId],
+                CHAINS_BY_ID[toChainId].nativeCurrency.decimals,
                 8
               )
             ),
