@@ -5,7 +5,6 @@ import {
   PortfolioTabs,
   FetchState,
   setActiveTab,
-  updateSingleTokenAllowance,
   resetPortfolioState,
   typeSearchInput,
   resetSearchState,
@@ -13,36 +12,31 @@ import {
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
   fetchAndStoreSearchInputPortfolioBalances,
 } from './hooks'
-import {
-  NetworkTokenBalancesAndAllowances,
-  TokenWithBalanceAndAllowances,
-} from '@/utils/actions/fetchPortfolioBalances'
+import { NetworkTokenBalances } from '@/utils/actions/fetchPortfolioBalances'
 
 export interface PortfolioState {
   activeTab: PortfolioTabs
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  poolTokenBalances: NetworkTokenBalancesAndAllowances
+  balances: NetworkTokenBalances
+  poolTokenBalances: NetworkTokenBalances
   status: FetchState
   error?: string
   searchInput: string
-  searchedBalancesAndAllowances: {
-    [index: Address]: NetworkTokenBalancesAndAllowances
+  searchedBalances: {
+    [index: Address]: NetworkTokenBalances
   }
   searchStatus: FetchState
 }
 
 export const initialState: PortfolioState = {
   activeTab: PortfolioTabs.PORTFOLIO,
-  balancesAndAllowances: {},
+  balances: {},
   poolTokenBalances: {},
   status: FetchState.IDLE,
   error: null,
   searchInput: '',
-  searchedBalancesAndAllowances: {},
+  searchedBalances: {},
   searchStatus: FetchState.IDLE,
 }
 
@@ -58,55 +52,12 @@ export const portfolioSlice = createSlice({
       .addCase(typeSearchInput, (state, { payload: { searchInput } }) => {
         state.searchInput = searchInput
       })
-      .addCase(updateSingleTokenAllowance, (state, action) => {
-        const { chainId, allowance, spender, token } = action.payload
-
-        state.balancesAndAllowances[chainId].forEach(
-          (t: TokenWithBalanceAndAllowances) => {
-            if (t.tokenAddress === token.addresses[chainId]) {
-              t.allowances[spender] = allowance
-            }
-          }
-        )
-      })
-      .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
-        const { routerAddress, chainId, tokenAddress, allowance } =
-          action.payload
-
-        state.balancesAndAllowances[chainId].forEach(
-          (token: TokenWithBalanceAndAllowances) => {
-            if (token.tokenAddress === tokenAddress) {
-              token.allowances[routerAddress] = allowance
-            }
-          }
-        )
-      })
-      .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
-        const {
-          routerAddress,
-          chainId,
-          tokenAddress,
-          allowance,
-          balance,
-          parsedBalance,
-        } = action.payload
-
-        state.balancesAndAllowances[chainId].forEach(
-          (token: TokenWithBalanceAndAllowances) => {
-            if (token.tokenAddress === tokenAddress) {
-              token.allowances[routerAddress] = allowance
-              token.balance = balance
-              token.parsedBalance = parsedBalance
-            }
-          }
-        )
-      })
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
         state.status = FetchState.LOADING
       })
       .addCase(fetchAndStorePortfolioBalances.fulfilled, (state, action) => {
         state.status = FetchState.VALID
-        state.balancesAndAllowances = action.payload.balancesAndAllowances
+        state.balances = action.payload.balances
         state.poolTokenBalances = action.payload.poolTokenBalances
       })
       .addCase(fetchAndStorePortfolioBalances.rejected, (state, action) => {
@@ -119,9 +70,9 @@ export const portfolioSlice = createSlice({
       .addCase(
         fetchAndStoreSearchInputPortfolioBalances.fulfilled,
         (state, action) => {
-          const { balancesAndAllowances, address } = action.payload
+          const { balances, address } = action.payload
           state.searchStatus = FetchState.VALID
-          state.searchedBalancesAndAllowances[address] = balancesAndAllowances
+          state.searchedBalances[address] = balances
         }
       )
       .addCase(
@@ -134,30 +85,24 @@ export const portfolioSlice = createSlice({
       .addCase(
         fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
         (state, action) => {
-          const { balancesAndAllowances } = action.payload
+          const { balances } = action.payload
 
-          Object.entries(balancesAndAllowances).forEach(
-            ([chainId, mergedBalancesAndAllowances]) => {
-              state.balancesAndAllowances[chainId] = [
-                ...mergedBalancesAndAllowances,
-              ]
-            }
-          )
+          Object.entries(balances).forEach(([chainId, tokenBalances]) => {
+            state.balances[chainId] = [...tokenBalances]
+          })
         }
       )
       .addCase(resetSearchState, (state) => {
-        state.searchedBalancesAndAllowances =
-          initialState.searchedBalancesAndAllowances
+        state.searchedBalances = initialState.searchedBalances
         state.searchStatus = initialState.searchStatus
       })
       .addCase(resetPortfolioState, (state) => {
         state.activeTab = initialState.activeTab
-        state.balancesAndAllowances = initialState.balancesAndAllowances
+        state.balances = initialState.balances
         state.status = initialState.status
         state.error = initialState.error
         state.searchInput = initialState.searchInput
-        state.searchedBalancesAndAllowances =
-          initialState.searchedBalancesAndAllowances
+        state.searchedBalances = initialState.searchedBalances
         state.searchStatus = initialState.searchStatus
         state.poolTokenBalances = initialState.poolTokenBalances
       })
