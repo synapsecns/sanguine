@@ -19,7 +19,6 @@ export const MostRecentTransaction = () => {
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
-    isUserPendingTransactionsLoading,
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
     fallbackQueryHistoricalTransactions,
@@ -125,7 +124,7 @@ export const MostRecentTransaction = () => {
 
   let transaction
 
-  if (isUserHistoricalTransactionsLoading || isUserPendingTransactionsLoading) {
+  if (isUserHistoricalTransactionsLoading) {
     return null
   }
 

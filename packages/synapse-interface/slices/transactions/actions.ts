@@ -40,12 +40,6 @@ export const updateUserHistoricalTransactions = createAction<
 export const updateIsUserHistoricalTransactionsLoading = createAction<boolean>(
   'transactions/updateIsUserHistoricalTransactionsLoading'
 )
-export const updateUserPendingTransactions = createAction<BridgeTransaction[]>(
-  'transactions/updateUserPendingTransactions'
-)
-export const updateIsUserPendingTransactionsLoading = createAction<boolean>(
-  'transactions/updateIsUserPendingTransactionsLoading'
-)
 export const addSeenHistoricalTransaction = createAction<BridgeTransaction>(
   'transactions/addSeenHistoricalTransaction'
 )

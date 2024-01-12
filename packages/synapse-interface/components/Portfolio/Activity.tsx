@@ -21,7 +21,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
-    isUserPendingTransactionsLoading,
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
     fallbackQueryHistoricalTransactions,
@@ -83,8 +82,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     return !hasPendingTransactions && !hasHistoricalTransactions
   }, [hasPendingTransactions, hasHistoricalTransactions, address])
 
-  const isLoading: boolean =
-    isUserHistoricalTransactionsLoading && isUserPendingTransactionsLoading
+  const isLoading: boolean = isUserHistoricalTransactionsLoading
 
   const searchInputActive: boolean = searchInput.length > 0
 

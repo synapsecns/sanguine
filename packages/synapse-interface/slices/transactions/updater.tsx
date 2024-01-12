@@ -22,10 +22,8 @@ import {
   removeFallbackQueryHistoricalTransaction,
   removeFallbackQueryPendingTransaction,
   resetTransactionsState,
-  updateIsUserPendingTransactionsLoading,
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
-  updateUserPendingTransactions,
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
@@ -45,9 +43,7 @@ export default function Updater(): null {
   const dispatch = useAppDispatch()
   const {
     isUserHistoricalTransactionsLoading,
-    isUserPendingTransactionsLoading,
     userHistoricalTransactions,
-    userPendingTransactions,
     seenHistoricalTransactions,
     pendingAwaitingCompletionTransactions,
     fallbackQueryPendingTransactions,
@@ -59,11 +55,6 @@ export default function Updater(): null {
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({
-      pollingInterval: POLLING_INTERVAL,
-    })
-
-  const [fetchUserPendingActivity, fetchedPendingActivity] =
-    useLazyGetUserPendingTransactionsQuery({
       pollingInterval: POLLING_INTERVAL,
     })
 
@@ -88,10 +79,6 @@ export default function Updater(): null {
         address: address,
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
     } else if (masqueradeActive && searchedBalances) {
       const queriedAddress: Address = Object.keys(
         searchedBalances
@@ -100,17 +87,8 @@ export default function Updater(): null {
         address: getValidAddress(queriedAddress),
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: getValidAddress(queriedAddress),
-        startTime: queryPendingTime,
-      })
     } else {
       fetchUserHistoricalActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
-
-      fetchUserPendingActivity({
         address: null,
         startTime: null,
       }).unsubscribe()
@@ -144,26 +122,6 @@ export default function Updater(): null {
     masqueradeActive,
   ])
 
-  // Load fetched pending transactions into state along with fetch status
-  useEffect(() => {
-    const {
-      isLoading,
-      isUninitialized,
-      isSuccess,
-      data: pendingData,
-    } = fetchedPendingActivity
-
-    if (address && isUserPendingTransactionsLoading) {
-      !isLoading &&
-        !isUninitialized &&
-        dispatch(updateIsUserPendingTransactionsLoading(false))
-    }
-
-    if (address && isSuccess) {
-      dispatch(updateUserPendingTransactions(pendingData?.bridgeTransactions))
-    }
-  }, [fetchedPendingActivity, isUserPendingTransactionsLoading, address])
-
   /**
    * Handles removing recent pending unindexed bridge transactions + stale unsubmitted pending bridge transactions
    * from Bridge state once Explorer or Fallback query confirms transactions
@@ -173,11 +131,6 @@ export default function Updater(): null {
       pendingBridgeTransactions
         ?.filter(
           (recentTx) =>
-            (userPendingTransactions &&
-              userPendingTransactions?.some(
-                (pendingTx: BridgeTransaction) =>
-                  pendingTx.fromInfo.txnHash === recentTx.transactionHash
-              )) ||
             (userHistoricalTransactions &&
               userHistoricalTransactions?.some(
                 (historicalTx: BridgeTransaction) =>
@@ -204,40 +157,8 @@ export default function Updater(): null {
   }, [
     pendingBridgeTransactions,
     userHistoricalTransactions,
-    userPendingTransactions,
     fallbackQueryPendingTransactions,
   ])
-
-  // Store pending transactions until completed based on Explorer query
-  useEffect(() => {
-    if (checkTransactionsExist(userPendingTransactions)) {
-      userPendingTransactions.forEach(
-        (pendingTransaction: BridgeTransaction) => {
-          let isStored: boolean = false
-
-          if (checkTransactionsExist(pendingAwaitingCompletionTransactions)) {
-            isStored = pendingAwaitingCompletionTransactions?.some(
-              (storedTransaction: BridgeTransaction) =>
-                storedTransaction?.kappa === pendingTransaction?.kappa
-            )
-          }
-
-          if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
-            isStored = fallbackQueryHistoricalTransactions?.some(
-              (storedTransaction: BridgeTransaction) =>
-                storedTransaction?.kappa === pendingTransaction?.kappa
-            )
-          }
-
-          if (!isStored) {
-            dispatch(
-              addPendingAwaitingCompletionTransaction(pendingTransaction)
-            )
-          }
-        }
-      )
-    }
-  }, [userPendingTransactions, fallbackQueryHistoricalTransactions])
 
   // Handle updating stored pending transactions state throughout progress
   useEffect(() => {

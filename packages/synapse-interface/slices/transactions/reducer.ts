@@ -8,8 +8,6 @@ import {
   updatePendingBridgeTransactions,
   updateUserHistoricalTransactions,
   updateIsUserHistoricalTransactionsLoading,
-  updateUserPendingTransactions,
-  updateIsUserPendingTransactionsLoading,
   addSeenHistoricalTransaction,
   addPendingAwaitingCompletionTransaction,
   removePendingAwaitingCompletionTransaction,
@@ -25,8 +23,6 @@ import { BridgeTransaction } from '../api/generated'
 export interface TransactionsState {
   userHistoricalTransactions: BridgeTransaction[]
   isUserHistoricalTransactionsLoading: boolean
-  userPendingTransactions: BridgeTransaction[]
-  isUserPendingTransactionsLoading: boolean
   seenHistoricalTransactions: BridgeTransaction[]
   pendingAwaitingCompletionTransactions: BridgeTransaction[]
   fallbackQueryPendingTransactions: BridgeTransaction[]
@@ -37,8 +33,6 @@ export interface TransactionsState {
 const initialState: TransactionsState = {
   userHistoricalTransactions: [],
   isUserHistoricalTransactionsLoading: true,
-  userPendingTransactions: [],
-  isUserPendingTransactionsLoading: true,
   seenHistoricalTransactions: [],
   pendingAwaitingCompletionTransactions: [],
   fallbackQueryPendingTransactions: [],
@@ -113,18 +107,6 @@ export const transactionsSlice = createSlice({
         updateIsUserHistoricalTransactionsLoading,
         (state, action: PayloadAction<boolean>) => {
           state.isUserHistoricalTransactionsLoading = action.payload
-        }
-      )
-      .addCase(
-        updateUserPendingTransactions,
-        (state, action: PayloadAction<BridgeTransaction[]>) => {
-          state.userPendingTransactions = action.payload
-        }
-      )
-      .addCase(
-        updateIsUserPendingTransactionsLoading,
-        (state, action: PayloadAction<boolean>) => {
-          state.isUserPendingTransactionsLoading = action.payload
         }
       )
       .addCase(
@@ -231,7 +213,6 @@ export const transactionsSlice = createSlice({
           initialState.userHistoricalTransactions
         state.isUserHistoricalTransactionsLoading =
           initialState.isUserHistoricalTransactionsLoading
-        state.userPendingTransactions = initialState.userPendingTransactions
         state.seenHistoricalTransactions =
           initialState.seenHistoricalTransactions
         state.pendingAwaitingCompletionTransactions =
