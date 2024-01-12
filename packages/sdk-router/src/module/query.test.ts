@@ -7,9 +7,9 @@ import {
   reduceToQuery,
   narrowToRouterQuery,
   narrowToCCTPRouterQuery,
-  modifyDeadline,
-  applySlippage,
-  applySlippageInBips,
+  applyDeadlineToQuery,
+  applySlippageToQuery,
+  createNoSwapQuery,
 } from './query'
 
 describe('#query', () => {
@@ -76,10 +76,10 @@ describe('#query', () => {
     })
   })
 
-  describe('modifyDeadline', () => {
+  describe('applyDeadlineToQuery', () => {
     describe('RouterQuery', () => {
       it('modifies the deadline', () => {
-        const query = modifyDeadline(routerQuery, BigNumber.from(42))
+        const query = applyDeadlineToQuery(routerQuery, BigNumber.from(42))
         expect(query).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -90,7 +90,7 @@ describe('#query', () => {
       })
 
       it('does not modify the original query', () => {
-        modifyDeadline(routerQuery, BigNumber.from(42))
+        applyDeadlineToQuery(routerQuery, BigNumber.from(42))
         expect(routerQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -103,7 +103,7 @@ describe('#query', () => {
 
     describe('CCTPRouterQuery', () => {
       it('modifies the deadline', () => {
-        const query = modifyDeadline(cctpRouterQuery, BigNumber.from(42))
+        const query = applyDeadlineToQuery(cctpRouterQuery, BigNumber.from(42))
         expect(query).toEqual({
           routerAdapter: '6',
           tokenOut: '7',
@@ -114,7 +114,7 @@ describe('#query', () => {
       })
 
       it('does not modify the original query', () => {
-        modifyDeadline(cctpRouterQuery, BigNumber.from(42))
+        applyDeadlineToQuery(cctpRouterQuery, BigNumber.from(42))
         expect(cctpRouterQuery).toEqual({
           routerAdapter: '6',
           tokenOut: '7',
@@ -126,7 +126,7 @@ describe('#query', () => {
     })
   })
 
-  describe('applySlippage', () => {
+  describe('applySlippageToQuery', () => {
     describe('RouterQuery', () => {
       // 1M in 18 decimals
       const query: RouterQuery = {
@@ -138,7 +138,7 @@ describe('#query', () => {
       }
 
       it('applies 0% slippage', () => {
-        const newQuery = applySlippage(query, 0, 10000)
+        const newQuery = applySlippageToQuery(query, 0, 10000)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -150,7 +150,7 @@ describe('#query', () => {
 
       it('applies 0.5% slippage', () => {
         // 50 bips
-        const newQuery = applySlippage(query, 50, 10000)
+        const newQuery = applySlippageToQuery(query, 50, 10000)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -161,7 +161,7 @@ describe('#query', () => {
       })
 
       it('applies 10% slippage', () => {
-        const newQuery = applySlippage(query, 10, 100)
+        const newQuery = applySlippageToQuery(query, 10, 100)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -172,7 +172,7 @@ describe('#query', () => {
       })
 
       it('applies 100% slippage', () => {
-        const newQuery = applySlippage(query, 1, 1)
+        const newQuery = applySlippageToQuery(query, 1, 1)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -187,7 +187,7 @@ describe('#query', () => {
           ...query,
           minAmountOut: query.minAmountOut.add(1),
         }
-        const newQuery = applySlippage(queryPlusOne, 50, 10000)
+        const newQuery = applySlippageToQuery(queryPlusOne, 50, 10000)
         expect(newQuery).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -198,7 +198,7 @@ describe('#query', () => {
       })
 
       it('does not modify the original query', () => {
-        applySlippage(query, 50, 10000)
+        applySlippageToQuery(query, 50, 10000)
         expect(query).toEqual({
           swapAdapter: '1',
           tokenOut: '2',
@@ -220,7 +220,7 @@ describe('#query', () => {
       }
 
       it('applies 0% slippage', () => {
-        const newQuery = applySlippage(query, 0, 10000)
+        const newQuery = applySlippageToQuery(query, 0, 10000)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -232,7 +232,7 @@ describe('#query', () => {
 
       it('applies 0.5% slippage', () => {
         // 50 bips
-        const newQuery = applySlippage(query, 50, 10000)
+        const newQuery = applySlippageToQuery(query, 50, 10000)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -243,7 +243,7 @@ describe('#query', () => {
       })
 
       it('applies 10% slippage', () => {
-        const newQuery = applySlippage(query, 10, 100)
+        const newQuery = applySlippageToQuery(query, 10, 100)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -254,7 +254,7 @@ describe('#query', () => {
       })
 
       it('applies 100% slippage', () => {
-        const newQuery = applySlippage(query, 1, 1)
+        const newQuery = applySlippageToQuery(query, 1, 1)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -269,7 +269,7 @@ describe('#query', () => {
           ...query,
           minAmountOut: query.minAmountOut.add(1),
         }
-        const newQuery = applySlippage(queryPlusOne, 50, 10000)
+        const newQuery = applySlippageToQuery(queryPlusOne, 50, 10000)
         expect(newQuery).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -280,7 +280,7 @@ describe('#query', () => {
       })
 
       it('does not modify the original query', () => {
-        applySlippage(query, 50, 10000)
+        applySlippageToQuery(query, 50, 10000)
         expect(query).toEqual({
           routerAdapter: '1',
           tokenOut: '2',
@@ -293,91 +293,33 @@ describe('#query', () => {
 
     describe('errors', () => {
       it('throws if slippage denominator is zero', () => {
-        expect(() => applySlippage(routerQuery, 1, 0)).toThrow(
+        expect(() => applySlippageToQuery(routerQuery, 1, 0)).toThrow(
           'Slippage denominator cannot be zero'
         )
       })
 
       it('throws if slippage numerator is negative', () => {
-        expect(() => applySlippage(routerQuery, -1, 1)).toThrow(
+        expect(() => applySlippageToQuery(routerQuery, -1, 1)).toThrow(
           'Slippage numerator cannot be negative'
         )
       })
 
       it('throws if slippage numerator is greater than denominator', () => {
-        expect(() => applySlippage(routerQuery, 2, 1)).toThrow(
+        expect(() => applySlippageToQuery(routerQuery, 2, 1)).toThrow(
           'Slippage cannot be greater than 1'
         )
       })
     })
   })
 
-  describe('applySlippageInBips parity', () => {
-    // 1M in 18 decimals
-    const query: RouterQuery = {
-      swapAdapter: '1',
-      tokenOut: '2',
-      minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
-      deadline: BigNumber.from(4),
-      rawParams: '5',
-    }
-
-    it('applies 0% slippage', () => {
-      const newQuery = applySlippage(query, 0, 10000)
-      const newQueryInBips = applySlippageInBips(query, 0)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 0.5% slippage', () => {
-      // 50 bips
-      const newQuery = applySlippage(query, 50, 10000)
-      const newQueryInBips = applySlippageInBips(query, 50)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 10% slippage', () => {
-      const newQuery = applySlippage(query, 10, 100)
-      const newQueryInBips = applySlippageInBips(query, 1000)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('applies 100% slippage', () => {
-      const newQuery = applySlippage(query, 1, 1)
-      const newQueryInBips = applySlippageInBips(query, 10000)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('rounds down', () => {
-      const queryPlusOne = {
-        ...query,
-        minAmountOut: query.minAmountOut.add(1),
-      }
-      const newQuery = applySlippage(queryPlusOne, 50, 10000)
-      const newQueryInBips = applySlippageInBips(queryPlusOne, 50)
-      expect(newQuery).toEqual(newQueryInBips)
-    })
-
-    it('does not modify the original query', () => {
-      applySlippageInBips(query, 50)
-      expect(query).toEqual({
-        swapAdapter: '1',
-        tokenOut: '2',
-        minAmountOut: BigNumber.from(10).pow(18).mul(1_000_000),
-        deadline: BigNumber.from(4),
-        rawParams: '5',
-      })
-    })
-
-    it('throws if basis points are negative', () => {
-      expect(() => applySlippageInBips(routerQuery, -1)).toThrow(
-        'Slippage numerator cannot be negative'
-      )
-    })
-
-    it('throws if basis points are greater than 10000', () => {
-      expect(() => applySlippageInBips(routerQuery, 10001)).toThrow(
-        'Slippage cannot be greater than 1'
-      )
+  it('createNoSwapQuery', () => {
+    const query = createNoSwapQuery('1', BigNumber.from(2))
+    expect(query).toEqual({
+      routerAdapter: '0x0000000000000000000000000000000000000000',
+      tokenOut: '1',
+      minAmountOut: BigNumber.from(2),
+      deadline: BigNumber.from(0),
+      rawParams: '0x',
     })
   })
 })

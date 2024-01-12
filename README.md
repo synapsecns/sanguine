@@ -61,6 +61,7 @@ root
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
+│   ├── <a href="./packages/contracts-rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
@@ -68,7 +69,8 @@ root
 │   ├── <a href="./packages/sdk-router">synapse-interface</a>: Synapse frontend code
 ├── <a href="./services">services</a>
 │   ├── <a href="./services/cctp-relayer">CCTP Relayer</a>: CCTP message relayer
-│   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer backend
+│   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer ba
+│   ├── <a href="./services/rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 │   ├── <a href="./services/sinner">sinner</a>: [Synapse Interchain Network](https://interchain.synapseprotocol.com/) indexer & query interface

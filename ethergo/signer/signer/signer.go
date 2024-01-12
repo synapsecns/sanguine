@@ -4,11 +4,12 @@ package signer
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 // Signer provides a common interface for signing/transacting.

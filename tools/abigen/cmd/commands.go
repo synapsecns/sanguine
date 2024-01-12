@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 	"github.com/urfave/cli/v2"
+	"os"
 )
 
 var solFlag = &cli.StringFlag{
@@ -31,10 +34,35 @@ var urlFlag = &cli.StringFlag{
 	Usage: "url of the etherscan api to use",
 }
 
+var disableCI = &cli.BoolFlag{
+	Name:  "disable-ci",
+	Usage: "wether or not to disable regeneration on ci",
+}
+
+var disableCIEtherscan = &cli.BoolFlag{
+	Name:  disableCI.Name,
+	Usage: "wether or not to disable regeneration on ci, this is disabled on etherscan by default because of api keys",
+	Value: true,
+}
+
 var optimizerRunsFlags = &cli.IntFlag{
 	Name:  "optimizer-runs",
 	Usage: "number of optimizations to run.",
 	Value: 10000,
+}
+
+var evmVersionFlags = &cli.StringFlag{
+	Name:  "evm-version",
+	Usage: "evm version to target",
+}
+
+// strToPt converts a string to a pointer
+// crucially, will return nil if stirng is empty
+func strToPt(str string) *string {
+	if str == "" {
+		return nil
+	}
+	return core.PtrTo(str)
 }
 
 // GenerateCommand generates abi using flags.
@@ -47,10 +75,16 @@ var GenerateCommand = &cli.Command{
 		filenameFlag,
 		solVersionFlag,
 		optimizerRunsFlags,
+		evmVersionFlags,
+		disableCI,
 	},
 	Action: func(context *cli.Context) error {
+		if context.Bool(disableCI.Name) && os.Getenv("CI") != "" {
+			fmt.Print("skipping generation")
+			return nil
+		}
 		//nolint: wrapcheck
-		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name))
+		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
 	},
 }
 
@@ -75,10 +109,15 @@ var EtherscanCommand = &cli.Command{
 		filenameFlag,
 		solVersionFlag,
 		urlFlag,
+		disableCIEtherscan,
 	},
 	// TODO this needs to embed optimizations, etc from the real deployed contract.
 	Action: func(context *cli.Context) error {
+		if context.Bool(disableCIEtherscan.Name) && os.Getenv("CI") != "" {
+			fmt.Print("skipping generation")
+			return nil
+		}
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.String()), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.Name), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
 	},
 }

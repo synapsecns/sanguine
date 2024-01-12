@@ -54,22 +54,36 @@ export async function fetchBridgeQuote(
       )
 
       const toValueBigInt: bigint = BigInt(maxAmountOut.toString()) ?? 0n
-      const originTokenDecimals: number = originToken.decimals[originChainId]
-      const adjustedFeeAmount: bigint =
-        BigInt(feeAmount) < amount
-          ? BigInt(feeAmount)
-          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
+      // amount is in originToken decimals
+      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
+      // Adjust feeAmount to be in originToken decimals
+      const adjustedFeeAmount =
+        (BigInt(feeAmount) * BigInt(amount)) / BigInt(originQuery.minAmountOut)
 
-      const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-      const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
+      // TODO: do this properly (RFQ needs no slippage, others do)
+      let originMinWithSlippage, destMinWithSlippage
+      if (bridgeModuleName === 'SynapseRFQ') {
+        // Relayer should take the request with slippage of 5% feeAmount
+        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
+          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+        } else {
+          originMinWithSlippage = 0n
+        }
+        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
+      } else {
+        originMinWithSlippage = subtractSlippage(
+          originQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+        destMinWithSlippage = subtractSlippage(
+          destQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+      }
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage

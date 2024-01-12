@@ -169,7 +169,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// onChainNonce is the latest nonce from eth_transactionCount. db nonce is latest nonce from db + 1
 	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 
@@ -469,19 +469,17 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// if it needs a dynamic gas estimate, we'll get it.
-	if t.config.GetDynamicGasEstimate(chainID) {
-		call, err := util.TxToCall(tx)
-		if err != nil {
-			return 0, fmt.Errorf("could not convert tx to call: %w", err)
-		}
+	// since we checked for dynamic gas estimate above, we can fetch the gas estimate here
+	call, err := util.TxToCall(tx)
+	if err != nil {
+		return 0, fmt.Errorf("could not convert tx to call: %w", err)
+	}
 
-		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
-		}
+	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+	if err != nil {
+		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+		// fallback to default
+		return t.config.GetGasEstimate(chainID), nil
 	}
 
 	return gasEstimate, nil

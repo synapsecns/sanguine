@@ -86,11 +86,13 @@ export type BridgeTransaction = {
 export enum BridgeTxType {
   Destination = 'DESTINATION',
   Origin = 'ORIGIN',
+  Rfq = 'RFQ',
 }
 
 export enum BridgeType {
   Bridge = 'BRIDGE',
   Cctp = 'CCTP',
+  Rfq = 'RFQ',
 }
 
 /** BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher. */
@@ -111,6 +113,7 @@ export type ContractQuery = {
 export enum ContractType {
   Bridge = 'BRIDGE',
   Cctp = 'CCTP',
+  Rfq = 'RFQ',
 }
 
 export enum DailyStatisticType {

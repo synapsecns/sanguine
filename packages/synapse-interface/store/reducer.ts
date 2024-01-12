@@ -3,6 +3,7 @@ import { PersistConfig, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
 import application from '@/slices/application/reducer'
+import _transactions from '@/slices/_transactions/reducer'
 import bridge from '@/slices/bridge/reducer'
 import portfolio from '@/slices/portfolio/reducer'
 import swap from '@/slices/swap/reducer'
@@ -20,6 +21,7 @@ import { RootActions } from '@/slices/application/actions'
 const persistedReducers = {
   application,
   transactions,
+  _transactions,
 }
 
 export const storageKey: string = 'synapse-interface'

@@ -27,8 +27,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     fallbackQueryHistoricalTransactions,
     pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
-  const { searchInput, searchedBalancesAndAllowances }: PortfolioState =
-    usePortfolioState()
+  const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
   const pendingAwaitingCompletionTransactionsWithFallback: BridgeTransaction[] =
     useMemo(() => {
@@ -90,12 +89,12 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const searchInputActive: boolean = searchInput.length > 0
 
   const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances).length > 0
-  }, [searchedBalancesAndAllowances])
+    return Object.keys(searchedBalances).length > 0
+  }, [searchedBalances])
 
   const masqueradeAddress: Address = useMemo(() => {
-    return Object.keys(searchedBalancesAndAllowances)[0] as Address
-  }, [searchedBalancesAndAllowances])
+    return Object.keys(searchedBalances)[0] as Address
+  }, [searchedBalances])
 
   const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
     useMemo(() => {
@@ -232,7 +231,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {viewingAddress && !isLoading && hasPendingTransactions && (
+      {/* {viewingAddress && !isLoading && hasPendingTransactions && (
         <ActivitySection title="Pending" twClassName="flex flex-col mb-5">
           {pendingAwaitingCompletionTransactionsWithFallback &&
             pendingAwaitingCompletionTransactionsWithFallback.map(
@@ -276,7 +275,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             )}
           <PendingTransactionAwaitingIndexing />
         </ActivitySection>
-      )}
+      )} */}
 
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
