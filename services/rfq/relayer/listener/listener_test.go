@@ -2,15 +2,16 @@ package listener_test
 
 import (
 	"context"
+	"math/big"
+	"sync"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
-	"math/big"
-	"sync"
-	"time"
 )
 
 func (l *ListenerTestSuite) TestListenForEvents() {
@@ -40,6 +41,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 				Deadline:     new(big.Int).SetUint64(uint64(time.Now().Add(-1 * time.Second * time.Duration(gofakeit.Uint16())).Unix())),
 			})
 			l.NoError(err)
+			l.NotNil(bridgeRequestTX)
 
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeRequestTX)
 
@@ -63,6 +65,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 				// gasAmount
 				new(big.Int).SetUint64(gofakeit.Uint64()))
 			l.NoError(err)
+			l.NotNil(bridgeResponseTX)
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeResponseTX)
 		}(i)
 	}

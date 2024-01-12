@@ -39,7 +39,7 @@ type ServerSuite struct {
 	cfg                  config.Config
 	testWallet           wallet.Wallet
 	handler              metrics.Handler
-	APIServer            *rest.APIServer
+	QuoterAPIServer      *rest.QuoterAPIServer
 	port                 uint16
 }
 
@@ -80,13 +80,13 @@ func (c *ServerSuite) SetupTest() {
 	}
 	c.cfg = testConfig
 
-	APIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
+	QuoterAPIServer, err := rest.NewAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
 	c.Require().NoError(err)
 
-	c.APIServer = APIServer
+	c.QuoterAPIServer = QuoterAPIServer
 
 	// go func() {
-	// 	err := c.APIServer.Run(c.GetTestContext())
+	// 	err := c.QuoterAPIServer.Run(c.GetTestContext())
 	// 	c.Require().NoError(err)
 	// }()
 	// time.Sleep(2 * time.Second) // Wait for the server to start.
