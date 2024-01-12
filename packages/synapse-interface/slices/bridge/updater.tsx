@@ -1,20 +1,11 @@
 import { useEffect } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { Address } from 'viem'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, setIsLoading, initialState } from './reducer'
-import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
-import { fetchAndStoreBridgeQuotes } from '@/slices/bridge/hooks'
 import {
-  resetFetchedBridgeQuotes,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from './actions'
-import { resetBridgeQuote } from './reducer'
-import { Token } from '@/utils/types'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
