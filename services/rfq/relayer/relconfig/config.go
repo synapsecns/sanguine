@@ -41,6 +41,10 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// TrmApiKey is the TRM API key.
+	TRMApiKey string `yaml:"trm_api_key"`
+	// TRMConfigFile is the TRM config file.
+	TRMConfigFile string `yaml:"trm_config_file"`
 }
 
 // ChainConfig represents the configuration for a chain.

@@ -4,6 +4,7 @@ package quoter
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
 	"math/big"
 	"strconv"
 	"strings"
@@ -36,7 +37,7 @@ type Quoter interface {
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
-	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool
+	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -57,6 +58,8 @@ type Manager struct {
 	// quotableTokens is a map of token -> list of quotable tokens.
 	// should be removed in config overhaul
 	quotableTokens map[string][]string
+	// simpleScreener is used to screen addresses.
+	simpleScreener *screener.SimpleScreener
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -77,6 +80,14 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		qt[strings.ToLower(token)] = processedDestTokens
 	}
 
+	var ss *screener.SimpleScreener
+	if config.TRMConfigFile != "" && config.TRMApiKey != "" {
+		ss, err = screener.NewSimpleScreener(config.TRMApiKey, config.TRMConfigFile)
+		if err != nil {
+			return nil, fmt.Errorf("error creating simple screener: %w", err)
+		}
+	}
+
 	return &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
@@ -85,41 +96,64 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		relayerSigner:    relayerSigner,
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
+		simpleScreener:   ss,
 	}, nil
 }
 
 // ShouldProcess determines if a quote should be processed.
-func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool) {
+func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "shouldProcess", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(quote.TransactionID[:])),
 	))
 
 	defer func() {
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
-		metrics.EndSpan(span)
+		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if m.simpleScreener != nil {
+		blocked, err := m.simpleScreener.ScreenAddress(ctx, quote.Transaction.OriginSender)
+		if err != nil {
+			span.RecordError(fmt.Errorf("error screening address: %w", err))
+			return false, err
+		}
+		if blocked {
+			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.OriginSender))
+			return false, nil
+		}
+
+		blocked, err = m.simpleScreener.ScreenAddress(ctx, quote.Transaction.DestRecipient)
+		if err != nil {
+			span.RecordError(fmt.Errorf("error screening address: %w", err))
+			return false, err
+		}
+		if blocked {
+			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.DestRecipient))
+			return false, nil
+		}
+	}
 
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
 	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
 		span.AddEvent(fmt.Sprintf("%s not in %s or %s not found", quote.GetDestIDPair(), strings.Join(destPairs, ", "), quote.GetOriginIDPair()))
-		return false
+		return false, nil
 	}
 
 	// handle decimals.
 	// this will never get hit if we're operating correctly.
 	if quote.OriginTokenDecimals != quote.DestTokenDecimals {
 		span.AddEvent("Pairing tokens with two different decimals is disabled as a safety feature right now.")
-		return false
+		return false, nil
 	}
 
 	// then check if we'll make money on it
 	isProfitable, err := m.isProfitableQuote(ctx, quote)
 	if err != nil {
 		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
-		return false
+		return false, err
 	}
-	return isProfitable
+	return isProfitable, nil
 }
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.

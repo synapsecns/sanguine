@@ -3,7 +3,8 @@ package trmlabs_test
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
 	"os"
 	"testing"
 )
@@ -15,16 +16,14 @@ func TestClient(t *testing.T) {
 
 	apiKey := os.Getenv("TRM_API_KEY")
 
-	url := "https://api.trmlabs.com/"
-
 	ctx := context.Background()
 
-	client, err := trmlabs.NewClient(apiKey, url)
+	client, err := screener.NewSimpleScreener(apiKey, "/Users/jake/Downloads/risk_engine_2024-01-12_001124.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	results, err := client.ScreenAddress(ctx, "0x0000000000000000000000000000000000000000")
+	results, err := client.ScreenAddress(ctx, common.HexToAddress("0x0000000000000000000000000000000000000000"))
 	if err != nil {
 		t.Fatal(err)
 	}
