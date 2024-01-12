@@ -390,7 +390,7 @@ const StateManagedBridge = () => {
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
-        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        expectedReceivedAmount: bridgeQuote.parsedOutputAmount,
         slippage: bridgeQuote.exchangeRate,
       })
       dispatch(
