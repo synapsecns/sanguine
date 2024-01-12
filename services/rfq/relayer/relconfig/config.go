@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
@@ -41,6 +42,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// DeadlineSeconds is the deadline for relaying a transaction.
+	DeadlineSeconds int `yaml:"deadline_seconds"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -323,6 +326,15 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
+}
+
+// GetDeadline returns the deadline for relaying a transaction.
+func (c Config) GetDeadline() *time.Duration {
+	if c.DeadlineSeconds <= 0 {
+		return nil
+	}
+	duration := time.Duration(c.DeadlineSeconds) * time.Second
+	return &duration
 }
 
 var _ IConfig = &Config{}

@@ -4,6 +4,7 @@ package relconfig
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -48,4 +49,6 @@ type IConfig interface {
 	// GetMinQuoteAmount returns the quote amount for the given chain and address.
 	// Note that this getter returns the value in native token decimals.
 	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
+	// GetDeadline returns the deadline for relaying a transaction.
+	GetDeadline() *time.Duration
 }
