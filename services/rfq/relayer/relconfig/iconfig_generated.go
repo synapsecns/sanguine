@@ -3,6 +3,9 @@
 package relconfig
 
 import (
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
@@ -34,4 +37,9 @@ type IConfig interface {
 	GetTokenName(chain uint32, addr string) (string, error)
 	// GetFixedFeeMultiplier returns the fixed fee multiplier.
 	GetFixedFeeMultiplier() float64
+	// GetQuotePct returns the quote percentage.
+	GetQuotePct() float64
+	// GetMinQuoteAmount returns the quote amount for the given chain and address.
+	// Note that this getter returns the value in native token decimals.
+	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
 }
