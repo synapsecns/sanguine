@@ -1,0 +1,32 @@
+project_name: your-module-name
+
+monorepo:
+  tag_prefix: contrib/screener-api
+  dir: contrib/screener-api
+
+# TODO: add builds
+# TODO: add docker
+builds:
+  - skip: true
+
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
