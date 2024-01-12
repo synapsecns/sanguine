@@ -465,11 +465,14 @@ const StateManagedBridge = () => {
 
       toast.dismiss(pendingPopup)
 
-      await waitForTransaction({
+      const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
         timeout: 30_000,
       })
-      /** Update Origin Chain token balances after resolved tx  */
+      console.log('Transaction Receipt: ', transactionReceipt)
+
+      /** Update Origin Chain token balances after resolved tx or timeout reached */
+      /** Assume tx has been actually resolved if above times out */
       dispatch(
         fetchAndStoreSingleNetworkPortfolioBalances({
           address,
