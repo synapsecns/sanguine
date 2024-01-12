@@ -45,6 +45,7 @@ export const MEDIAN_TIME_CCTP = {
  * TODO: Update this value once we have a better estimate.
  */
 export const MEDIAN_TIME_RFQ = {
+  [SupportedChainId.ETH]: 30,
   [SupportedChainId.OPTIMISM]: 30,
   [SupportedChainId.ARBITRUM]: 30,
 }

@@ -56,18 +56,13 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenAllowance,
-  useFetchPortfolioBalances,
-} from '@/slices/portfolio/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
@@ -189,15 +184,17 @@ const StateManagedBridge = () => {
 
       const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
 
-      const originTokenDecimals = fromToken?.decimals[fromChainId]
+      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
+      // debouncedFromValue is in originToken decimals
+      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
+      // Adjust feeAmount to be in originToken decimals
       const adjustedFeeAmount =
-        BigInt(feeAmount) <
-        stringToBigInt(
-          `${debouncedFromValue}`,
-          fromToken?.decimals[fromChainId]
-        )
-          ? BigInt(feeAmount)
-          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
+        (BigInt(feeAmount) *
+          stringToBigInt(
+            `${debouncedFromValue}`,
+            fromToken?.decimals[fromChainId]
+          )) /
+        BigInt(originQuery.minAmountOut)
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -213,26 +210,29 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
-      if (fromToken?.addresses[fromChainId] !== zeroAddress && address) {
-        dispatch(
-          updateSingleTokenAllowance({
-            chainId: fromChainId,
-            allowance: allowance,
-            spender: routerAddress,
-            token: fromToken,
-          })
+      // TODO: do this properly (RFQ needs no slippage, others do)
+      let originMinWithSlippage, destMinWithSlippage
+      if (bridgeModuleName === 'SynapseRFQ') {
+        // Relayer should take the request with slippage of 5% feeAmount
+        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
+          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+        } else {
+          originMinWithSlippage = 0n
+        }
+        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
+      } else {
+        originMinWithSlippage = subtractSlippage(
+          originQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
+        )
+        destMinWithSlippage = subtractSlippage(
+          destQuery?.minAmountOut ?? 0n,
+          'ONE_TENTH',
+          null
         )
       }
-
-      // TODO: do this properly (RFQ needs no slippage, others do)
-      const originMinWithSlippage =
-        bridgeModuleName === 'SynapseRFQ'
-          ? originQuery?.minAmountOut ?? 0n
-          : subtractSlippage(originQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
-      const destMinWithSlippage =
-        bridgeModuleName === 'SynapseRFQ'
-          ? destQuery?.minAmountOut ?? 0n
-          : subtractSlippage(destQuery?.minAmountOut ?? 0n, 'ONE_TENTH', null)
 
       let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
@@ -272,7 +272,9 @@ const StateManagedBridge = () => {
           })
         )
 
-        toast.dismiss(quoteToast)
+        if (quoteToast) {
+          toast.dismiss(quoteToast)
+        }
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
@@ -312,23 +314,10 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: bridgeQuote?.routerAddress as Address,
-            tokenAddress: fromToken?.addresses[fromChainId] as Address,
-            address: address,
-            chainId: fromChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+      )
+      await tx
+      /** Re-fetch bridge quote to re-check approval state */
+      getAndSetBridgeQuote()
     } catch (error) {
       return txErrorHandler(error)
     }

@@ -14,13 +14,13 @@ export const PoolHeader = memo(
     const [mounted, setMounted] = useState(false)
     const { chain: connectedChain } = useNetwork()
     const chain = CHAINS_BY_ID[pool.chainId]
-    const { balancesAndAllowances } = usePortfolioState()
+    const { balances } = usePortfolioState()
 
     useEffect(() => {
       setMounted(true)
     }, [])
     const canDeposit = useMemo(() => {
-      const balancesForChain = _(balancesAndAllowances[pool.chainId])
+      const balancesForChain = _(balances[pool.chainId])
         .pickBy((value, _key) => value.balance > 0n)
         .value()
 
@@ -38,7 +38,7 @@ export const PoolHeader = memo(
           )
         })
       })
-    }, [pool, balancesAndAllowances, address])
+    }, [pool, balances, address])
     return (
       <div className="flex items-center justify-between p-3 pt-2 pb-2 pl-3 border border-transparent ">
         <div className="flex items-center">

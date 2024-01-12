@@ -2,8 +2,8 @@ import { mock } from 'jest-mock-extended'
 import { BigNumber, providers } from 'ethers'
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider'
 
-import { BridgeParams, FastBridge } from './fastBridge'
-import { FAST_BRIDGE_ADDRESS_MAP, SupportedChainId } from '../constants'
+import { FastBridgeRouter } from './fastBridgeRouter'
+import { FAST_BRIDGE_ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { NATIVE_ADDRESS } from '../constants/testValues'
 import { Query } from '../module'
 
@@ -16,6 +16,7 @@ jest.mock('@ethersproject/contracts', () => {
         address: args[0],
         interface: args[1],
         bridgeRelays: jest.fn(),
+        fastBridge: jest.fn(),
         populateTransaction: {
           bridge: actualInstance.populateTransaction.bridge,
         },
@@ -26,98 +27,97 @@ jest.mock('@ethersproject/contracts', () => {
 
 const expectCorrectPopulatedTx = (
   populatedTx: any,
+  originToken: string,
+  originAmount: number,
   expectedAddress: string,
-  expectedBridgeParams: BridgeParams
+  expectedData: string
 ) => {
   expect(populatedTx).toBeDefined()
   expect(populatedTx.to).toEqual(expectedAddress)
-  expect(populatedTx.data).toEqual(
-    FastBridge.fastBridgeInterface.encodeFunctionData('bridge', [
-      expectedBridgeParams,
-    ])
-  )
-  if (
-    expectedBridgeParams.originToken.toLowerCase() ===
-    NATIVE_ADDRESS.toLowerCase()
-  ) {
-    expect(populatedTx.value).toEqual(
-      BigNumber.from(expectedBridgeParams.originAmount)
-    )
+  expect(populatedTx.data).toEqual(expectedData)
+  if (originToken.toLowerCase() === NATIVE_ADDRESS.toLowerCase()) {
+    expect(populatedTx.value).toEqual(BigNumber.from(originAmount))
   } else {
     expect(populatedTx.value).toEqual(BigNumber.from(0))
   }
 }
 
-const createBridgeTests = (
-  fastBridge: FastBridge,
-  expectedBridgeParams: BridgeParams,
+type BridgeTestsParams = {
+  dstChainId: number
+  sender: string
+  to: string
+  originAmount: number
+  destAmount: number
+  deadline: number
+}
+
+const createBridgeTest = (
+  fastBridgeRouter: FastBridgeRouter,
+  bridgeParams: BridgeTestsParams,
   originQuery: Query,
   destQuery: Query
 ) => {
-  it('bridge without sendChainGas', async () => {
-    const populatedTx = await fastBridge.bridge(
-      expectedBridgeParams.to,
-      SupportedChainId.OPTIMISM,
-      expectedBridgeParams.originToken,
-      BigNumber.from(expectedBridgeParams.originAmount),
+  it('bridge', async () => {
+    const populatedTx = await fastBridgeRouter.bridge(
+      bridgeParams.to,
+      bridgeParams.dstChainId,
+      originQuery.tokenOut,
+      bridgeParams.originAmount,
       originQuery,
       destQuery
     )
+    const expectedData =
+      FastBridgeRouter.fastBridgeRouterInterface.encodeFunctionData('bridge', [
+        bridgeParams.to,
+        bridgeParams.dstChainId,
+        originQuery.tokenOut,
+        bridgeParams.originAmount,
+        originQuery,
+        destQuery,
+      ])
     expectCorrectPopulatedTx(
       populatedTx,
-      FAST_BRIDGE_ADDRESS_MAP[SupportedChainId.ARBITRUM],
-      expectedBridgeParams
-    )
-  })
-
-  it.skip('bridge with sendChainGas', async () => {
-    const bridgeParamsWithGas = {
-      ...expectedBridgeParams,
-      sendChainGas: true,
-    }
-    // TODO: adjust this test once sendChainGas is supported
-    const destQueryWithGas = {
-      ...destQuery,
-      rawParams: '0x0',
-    }
-    const populatedTx = await fastBridge.bridge(
-      expectedBridgeParams.to,
-      SupportedChainId.OPTIMISM,
-      expectedBridgeParams.originToken,
-      BigNumber.from(expectedBridgeParams.originAmount),
-      originQuery,
-      destQueryWithGas
-    )
-    expectCorrectPopulatedTx(
-      populatedTx,
-      FAST_BRIDGE_ADDRESS_MAP[SupportedChainId.ARBITRUM],
-      bridgeParamsWithGas
+      originQuery.tokenOut,
+      bridgeParams.originAmount,
+      fastBridgeRouter.address,
+      expectedData
     )
   })
 }
 
-describe('FastBridge', () => {
+describe('FastBridgeRouter', () => {
   const mockProvider = mock<providers.Provider>()
 
-  const fastBridge = new FastBridge(
+  const fastBridgeRouter = new FastBridgeRouter(
     SupportedChainId.ARBITRUM,
     mockProvider,
-    FAST_BRIDGE_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+    FAST_BRIDGE_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
   )
 
   const mockedTxHash = '0x1234'
   const mockedSynapseTxId = '0x4321'
 
+  const mockedFastBridgeAddress = '0x000000000000000000000000000000000000dEaD'
+
+  beforeAll(async () => {
+    // Override .fastBridge()
+    jest
+      .spyOn(fastBridgeRouter['routerContract'], 'fastBridge')
+      .mockImplementation(() => Promise.resolve(mockedFastBridgeAddress))
+    // Populate the cache
+    await fastBridgeRouter.getFastBridgeContract()
+  })
+
   describe('getSynapseTxId', () => {
+    // keccak256('BridgeRequested(bytes32,address,bytes)')
     const bridgeRequestedTopic =
-      '0x2a8233b619c9d479346e133f609855c0a94d89fbcfa62f846a9f0cfdd1198ccf'
+      '0x120ea0364f36cdac7983bcfdd55270ca09d7f9b314a2ebc425a3b01ab1d6403a'
     const mockedOriginLog = {
-      address: fastBridge.address,
-      // keccak256('BridgeRequested(bytes32,address,bytes)')
+      address: mockedFastBridgeAddress,
       topics: [bridgeRequestedTopic],
     } as Log
     const mockedUnrelatedLog = {
-      address: fastBridge.address,
+      address: mockedFastBridgeAddress,
       topics: ['0x0'],
     } as Log
     const mockedReceipt = {
@@ -134,7 +134,7 @@ describe('FastBridge', () => {
         }
       })
       // Return the mocked Synapse transaction ID for the mocked origin log
-      fastBridge['fastBridgeContract'].interface.parseLog = jest.fn(
+      fastBridgeRouter['fastBridgeContractCache']!.interface.parseLog = jest.fn(
         (log: { topics: Array<string>; data: string }) => ({
           args: {
             transactionId:
@@ -142,7 +142,7 @@ describe('FastBridge', () => {
           },
         })
       ) as any
-      const result = await fastBridge.getSynapseTxId(mockedTxHash)
+      const result = await fastBridgeRouter.getSynapseTxId(mockedTxHash)
       expect(result).toEqual(mockedSynapseTxId)
     })
   })
@@ -151,31 +151,31 @@ describe('FastBridge', () => {
     it('returns false when bridgeRelays returns false', async () => {
       // Returns false only when mockedSynapseTxId is passed
       jest
-        .spyOn(fastBridge['fastBridgeContract'], 'bridgeRelays')
+        .spyOn(fastBridgeRouter['fastBridgeContractCache']!, 'bridgeRelays')
         .mockImplementation((synapseTxId) =>
           Promise.resolve(synapseTxId !== mockedSynapseTxId)
         )
-      const result = await fastBridge.getBridgeTxStatus(mockedSynapseTxId)
+      const result = await fastBridgeRouter.getBridgeTxStatus(mockedSynapseTxId)
       expect(result).toEqual(false)
     })
 
     it('returns true when bridgeRelays returns true', async () => {
       // Returns true only when mockedSynapseTxId is passed
       jest
-        .spyOn(fastBridge['fastBridgeContract'], 'bridgeRelays')
+        .spyOn(fastBridgeRouter['fastBridgeContractCache']!, 'bridgeRelays')
         .mockImplementation((synapseTxId) =>
           Promise.resolve(synapseTxId === mockedSynapseTxId)
         )
-      const result = await fastBridge.getBridgeTxStatus(mockedSynapseTxId)
+      const result = await fastBridgeRouter.getBridgeTxStatus(mockedSynapseTxId)
       expect(result).toEqual(true)
     })
   })
 
   describe('bridge', () => {
-    const expectedBridgeParamsFragment = {
+    const bridgeParams: BridgeTestsParams = {
       dstChainId: SupportedChainId.OPTIMISM,
       sender: '0x0000000000000000000000000000000000000001',
-      to: '0x0000000000000000000000000000000000000001',
+      to: '0x0000000000000000000000000000000000000002',
       originAmount: 1234,
       destAmount: 5678,
       deadline: 9999,
@@ -183,68 +183,44 @@ describe('FastBridge', () => {
 
     const originQueryFragment = {
       routerAdapter: '0x0000000000000000000000000000000000000000',
-      minAmountOut: BigNumber.from(expectedBridgeParamsFragment.originAmount),
+      minAmountOut: BigNumber.from(bridgeParams.originAmount),
       deadline: BigNumber.from(8888),
       rawParams: '0x',
     }
 
     const destQueryFragment = {
       routerAdapter: '0x0000000000000000000000000000000000000000',
-      minAmountOut: BigNumber.from(expectedBridgeParamsFragment.destAmount),
-      deadline: BigNumber.from(expectedBridgeParamsFragment.deadline),
-      rawParams: '0x',
+      minAmountOut: BigNumber.from(bridgeParams.destAmount),
+      deadline: BigNumber.from(bridgeParams.deadline),
+      rawParams: '0x2a',
     }
 
-    describe('bridge ERC20 token', () => {
-      const expectedBridgeParams: BridgeParams = {
-        ...expectedBridgeParamsFragment,
-        originToken: '0x000000000000000000000000000000000000000A',
-        destToken: '0x000000000000000000000000000000000000000b',
-        sendChainGas: false,
-      }
-
+    describe('ERC20 token', () => {
       const originQuery: Query = {
         ...originQueryFragment,
-        tokenOut: expectedBridgeParams.originToken,
+        tokenOut: '0x000000000000000000000000000000000000000A',
       }
 
       const destQuery: Query = {
         ...destQueryFragment,
-        tokenOut: expectedBridgeParams.destToken,
+        tokenOut: '0x000000000000000000000000000000000000000b',
       }
 
-      createBridgeTests(
-        fastBridge,
-        expectedBridgeParams,
-        originQuery,
-        destQuery
-      )
+      createBridgeTest(fastBridgeRouter, bridgeParams, originQuery, destQuery)
     })
 
-    describe('bridge native token', () => {
-      const expectedBridgeParams: BridgeParams = {
-        ...expectedBridgeParamsFragment,
-        originToken: NATIVE_ADDRESS,
-        destToken: NATIVE_ADDRESS,
-        sendChainGas: false,
-      }
-
+    describe('Native token', () => {
       const originQuery: Query = {
         ...originQueryFragment,
-        tokenOut: expectedBridgeParams.originToken,
+        tokenOut: NATIVE_ADDRESS,
       }
 
       const destQuery: Query = {
         ...destQueryFragment,
-        tokenOut: expectedBridgeParams.destToken,
+        tokenOut: NATIVE_ADDRESS,
       }
 
-      createBridgeTests(
-        fastBridge,
-        expectedBridgeParams,
-        originQuery,
-        destQuery
-      )
+      createBridgeTest(fastBridgeRouter, bridgeParams, originQuery, destQuery)
     })
   })
 })

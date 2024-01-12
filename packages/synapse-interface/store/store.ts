@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
-import { getAccount } from '@wagmi/core'
 import { persistStore } from 'redux-persist'
 
 import { api } from '@/slices/api/slice'
@@ -43,11 +42,10 @@ export type AppDispatch = typeof store.dispatch
 let previousState = store.getState()
 
 store.subscribe(() => {
-  const account = getAccount()
-  const { address } = account
-
   const currentState = store.getState()
   const bridgeState = currentState.bridge
+
+  const address = currentState.application?.lastConnectedAddress
 
   let eventTitle
   let eventData

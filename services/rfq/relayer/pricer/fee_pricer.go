@@ -20,11 +20,11 @@ type FeePricer interface {
 	// Start starts the fee pricer.
 	Start(ctx context.Context)
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
+	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
+	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
-	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error)
+	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 }
@@ -73,29 +73,34 @@ func (f *feePricer) Start(ctx context.Context) {
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
-func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().OriginGasEstimate, denomToken)
+func (f *feePricer) GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+	return f.getFee(ctx, origin, destination, f.config.GetFeePricer().OriginGasEstimate, denomToken, useMultiplier)
 }
 
-func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
-	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken)
+func (f *feePricer) GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+	return f.getFee(ctx, destination, destination, f.config.GetFeePricer().DestinationGasEstimate, denomToken, useMultiplier)
 }
 
-func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string) (*big.Int, error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
 		attribute.String("denom_token", denomToken),
+		attribute.Bool("use_multiplier", useMultiplier),
 	))
 
-	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken)
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken, useMultiplier)
 	if err != nil {
 		span.AddEvent("could not get origin fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),
 		))
 		return nil, err
 	}
-	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken)
+	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, useMultiplier)
 	if err != nil {
 		span.AddEvent("could not get destination fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),
@@ -111,13 +116,17 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 	return totalFee, nil
 }
 
-func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string) (*big.Int, error) {
+func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getFee", trace.WithAttributes(
 		attribute.Int("gas_chain", int(gasChain)),
 		attribute.Int("denom_chain", int(denomChain)),
 		attribute.Int("gas_estimate", gasEstimate),
 		attribute.String("denom_token", denomToken),
 	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	gasPrice, err := f.GetGasPrice(ctx, gasChain)
 	if err != nil {
@@ -149,8 +158,14 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	// Note that this rounds towards zero- we may need to apply rounding here if
 	// we want to be conservative and lean towards overestimating fees.
 	feeUSDCDecimals := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+
+	multiplier := f.config.GetFixedFeeMultiplier()
+	if !useMultiplier {
+		multiplier = 1
+	}
+
 	// Apply the fixed fee multiplier.
-	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(f.config.GetFixedFeeMultiplier())).Int(nil)
+	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(multiplier)).Int(nil)
 	span.SetAttributes(
 		attribute.String("gas_price", gasPrice.String()),
 		attribute.Float64("native_token_price", nativeTokenPrice),
