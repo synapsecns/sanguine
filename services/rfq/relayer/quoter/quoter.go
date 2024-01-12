@@ -4,12 +4,13 @@ package quoter
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -194,11 +195,13 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+	quoteAmount := m.getQuoteAmount(chainID, address, balance)
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
 	}
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
+
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
@@ -226,8 +229,8 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              balance.String(),
-					MaxOriginAmount:         balance.String(),
+					DestAmount:              quoteAmount.String(),
+					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
 					DestFastBridgeAddress:   destChainCfg.Bridge,
@@ -237,6 +240,24 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 		}
 	}
 	return quotes, nil
+}
+
+func (m *Manager) getQuoteAmount(chainID int, address common.Address, balance *big.Int) *big.Int {
+	// Apply the QuotePct
+	balanceFlt := new(big.Float).SetInt(balance)
+	quoteAmount, _ := new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct())).Int(nil)
+
+	// Clip the quoteAmount by the minQuoteAmount
+	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
+	if quoteAmount.Cmp(minQuoteAmount) < 0 {
+		quoteAmount = minQuoteAmount
+	}
+
+	// Finally, clip the quoteAmount by the balance
+	if quoteAmount.Cmp(balance) > 0 {
+		quoteAmount = balance
+	}
+	return quoteAmount
 }
 
 // Submits a single quote.
