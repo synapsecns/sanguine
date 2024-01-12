@@ -230,8 +230,15 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	if !ok {
 		return big.NewInt(defaultMinQuoteAmount)
 	}
-	tokenCfg, ok := chainCfg.Tokens[strings.ToLower(addr.String())]
-	if !ok {
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if strings.ToLower(cfg.Address) == strings.ToLower(addr.String()) {
+			tokenCfg = &cfg
+			break
+		}
+	}
+	if tokenCfg == nil {
 		return big.NewInt(defaultMinQuoteAmount)
 	}
 	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)

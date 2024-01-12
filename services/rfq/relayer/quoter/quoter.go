@@ -245,7 +245,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 func (m *Manager) getQuoteAmount(chainID int, address common.Address, balance *big.Int) *big.Int {
 	// Apply the QuotePct
 	balanceFlt := new(big.Float).SetInt(balance)
-	quoteAmount, _ := new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct())).Int(nil)
+	quoteAmount, _ := new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
 
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
