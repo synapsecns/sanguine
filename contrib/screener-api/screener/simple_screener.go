@@ -121,8 +121,8 @@ func (s *SimpleScreener) ScreenAddress(parentCtx context.Context, address common
 			}
 
 			riskParam := strings.ToLower(fmt.Sprintf("%s_%s", ri.Category, ri.RiskType))
-			_, found := s.risks[riskParam]
-			if found && (incoming > 0 || outgoing > 0) {
+			isBlocked, found := s.risks[riskParam]
+			if isBlocked && found && (incoming > 0 || outgoing > 0) {
 				span.AddEvent(fmt.Sprintf("%s found", riskParam))
 				s.cache.Set(address.String(), true, cache.DefaultExpiration)
 				return true, nil
