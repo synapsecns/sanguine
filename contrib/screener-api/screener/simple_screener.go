@@ -7,6 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/patrickmn/go-cache"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"os"
 	"strconv"
@@ -15,12 +18,13 @@ import (
 )
 
 type SimpleScreener struct {
-	client trmlabs.Client
-	cache  *cache.Cache
-	risks  map[string]bool
+	client  trmlabs.Client
+	cache   *cache.Cache
+	risks   map[string]bool
+	metrics metrics.Handler
 }
 
-func NewSimpleScreener(apiKey, blacklistFile string) (*SimpleScreener, error) {
+func NewSimpleScreener(apiKey, blacklistFile string, handler metrics.Handler) (*SimpleScreener, error) {
 	risks, err := parseBlacklist(blacklistFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse blacklist: %w", err)
@@ -31,9 +35,10 @@ func NewSimpleScreener(apiKey, blacklistFile string) (*SimpleScreener, error) {
 		return nil, fmt.Errorf("could not create client: %w", err)
 	}
 	return &SimpleScreener{
-		client: client,
-		cache:  c,
-		risks:  risks,
+		client:  client,
+		cache:   c,
+		metrics: handler,
+		risks:   risks,
 	}, nil
 }
 
@@ -78,9 +83,19 @@ func parseBlacklist(blacklistFile string) (map[string]bool, error) {
 	return risks, nil
 }
 
-func (s *SimpleScreener) ScreenAddress(ctx context.Context, address common.Address) (blocked bool, err error) {
+func (s *SimpleScreener) ScreenAddress(parentCtx context.Context, address common.Address) (blocked bool, err error) {
+	ctx, span := s.metrics.Tracer().Start(parentCtx, "ScreenAddress", trace.WithAttributes(
+		attribute.String("address", address.String()),
+	))
+
+	defer func() {
+		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", blocked)))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	unmarshalledBlocked, found := s.cache.Get(address.String())
 	if found {
+		span.AddEvent("used_cache")
 		blocked, ok := unmarshalledBlocked.(bool)
 		if ok {
 			return blocked, nil
@@ -108,6 +123,7 @@ func (s *SimpleScreener) ScreenAddress(ctx context.Context, address common.Addre
 			riskParam := strings.ToLower(fmt.Sprintf("%s_%s", ri.Category, ri.RiskType))
 			_, found := s.risks[riskParam]
 			if found && (incoming > 0 || outgoing > 0) {
+				span.AddEvent(fmt.Sprintf("%s found", riskParam))
 				s.cache.Set(address.String(), true, cache.DefaultExpiration)
 				return true, nil
 			}
