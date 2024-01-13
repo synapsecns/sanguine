@@ -154,6 +154,26 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
+      const defaultQuote = await synapseSDK.bridgeQuote(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+      )
+
+      const allQuotes = await synapseSDK.allBridgeQuotes(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+      )
+
+      const rfqQuote = allQuotes.find(
+        (quote) => quote.bridgeModuleName === 'SynapseRFQ'
+      )
+
       const {
         feeAmount,
         routerAddress,
@@ -162,13 +182,7 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
-      } = await synapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
-      )
+      } = rfqQuote ? rfqQuote : defaultQuote
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
