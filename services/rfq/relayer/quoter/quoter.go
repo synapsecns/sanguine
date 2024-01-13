@@ -82,7 +82,7 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 
 	var ss *screener.SimpleScreener
 	if config.TRMConfigFile != "" && config.TRMApiKey != "" {
-		ss, err = screener.NewSimpleScreener(config.TRMApiKey, config.TRMConfigFile)
+		ss, err = screener.NewSimpleScreener(config.TRMApiKey, config.TRMConfigFile, metricsHandler)
 		if err != nil {
 			return nil, fmt.Errorf("error creating simple screener: %w", err)
 		}
