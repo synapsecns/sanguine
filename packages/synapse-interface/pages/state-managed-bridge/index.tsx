@@ -154,14 +154,6 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
-      const defaultQuote = await synapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
-      )
-
       const allQuotes = await synapseSDK.allBridgeQuotes(
         fromChainId,
         toChainId,
@@ -174,6 +166,20 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
+      let quote
+
+      if (rfqQuote) {
+        quote = rfqQuote
+      } else {
+        quote = await synapseSDK.bridgeQuote(
+          fromChainId,
+          toChainId,
+          fromToken.addresses[fromChainId],
+          toToken.addresses[toChainId],
+          stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        )
+      }
+
       const {
         feeAmount,
         routerAddress,
@@ -182,7 +188,7 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
-      } = rfqQuote ? rfqQuote : defaultQuote
+      } = quote
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
