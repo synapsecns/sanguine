@@ -1,6 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
+import { Zero } from '@ethersproject/constants'
 
 import {
   BigintIsh,
@@ -36,6 +37,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
+  // The answer to life, the universe, and everything
+  private readonly GAS_REBATE_FLAG = '0x2a'
+
   constructor(chains: ChainProvider[]) {
     super()
     this.routers = {}
@@ -64,6 +68,21 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     const medianTime = MEDIAN_TIME_RFQ[chainId as keyof typeof MEDIAN_TIME_RFQ]
     invariant(medianTime, `No estimated time for chain ${chainId}`)
     return medianTime
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.getGasDropAmount
+   */
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    // TODO: test this once chainGasAmount is set to be non-zero
+    if (
+      bridgeRoute.destQuery.rawParams
+        .toLowerCase()
+        .startsWith(this.GAS_REBATE_FLAG)
+    ) {
+      return this.getFastBridgeRouter(bridgeRoute.destChainId).chainGasAmount()
+    }
+    return Zero
   }
 
   /**

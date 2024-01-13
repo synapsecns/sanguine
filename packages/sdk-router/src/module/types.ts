@@ -63,6 +63,7 @@ export type BridgeQuote = {
   destQuery: Query
   estimatedTime: number
   bridgeModuleName: string
+  gasDropAmount: BigNumber
 }
 
 /**

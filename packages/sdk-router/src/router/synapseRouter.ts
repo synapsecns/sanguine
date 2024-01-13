@@ -4,8 +4,10 @@ import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 import { solidityKeccak256 } from 'ethers/lib/utils'
+import { AddressZero } from '@ethersproject/constants'
 
 import routerAbi from '../abi/SynapseRouter.json'
+import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
 import {
   SynapseRouter as SynapseRouterContract,
   PoolStructOutput,
@@ -54,6 +56,18 @@ const wrapToPool = (pool: PoolStructOutput): Pool => {
 }
 
 /**
+ * Enum representing the type of a SynapseBridge token.
+ * NotSupported: the token is not supported by the SynapseBridge contract.
+ * Redeem: the token is supported by the SynapseBridge contract by burning or minting on this chain.
+ * Deposit: the token is supported by the SynapseBridge contract by depositing or withdrawing on this chain.
+ */
+export enum BridgeTokenType {
+  NotSupported = -1,
+  Redeem,
+  Deposit,
+}
+
+/**
  * Wrapper class for interacting with a SynapseRouter contract.
  * Abstracts away the contract interaction: the Router users don't need to know about the contract,
  * or the data structures used to interact with it.
@@ -64,7 +78,7 @@ export class SynapseRouter extends Router {
   public readonly address: string
 
   private readonly routerContract: SynapseRouterContract
-  private bridgeContractCache: Contract | undefined
+  private bridgeContractCache?: SynapseBridgeContract
 
   // All possible events emitted by the SynapseBridge contract in the origin transaction (in alphabetical order)
   private readonly originEvents = [
@@ -187,7 +201,7 @@ export class SynapseRouter extends Router {
 
   // ═════════════════════════════════════════ SYNAPSE ROUTER (V1) ONLY ══════════════════════════════════════════════
 
-  private async getBridgeContract(): Promise<Contract> {
+  private async getBridgeContract(): Promise<SynapseBridgeContract> {
     // Populate the cache if necessary
     if (!this.bridgeContractCache) {
       const bridgeAddress = await this.routerContract.synapseBridge()
@@ -195,7 +209,7 @@ export class SynapseRouter extends Router {
         bridgeAddress,
         new Interface(bridgeAbi),
         this.provider
-      )
+      ) as SynapseBridgeContract
     }
     // Return the cached contract
     return this.bridgeContractCache
@@ -204,6 +218,16 @@ export class SynapseRouter extends Router {
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
+  }
+
+  public async getBridgeTokenType(token: string): Promise<BridgeTokenType> {
+    const tokenConfig = await this.routerContract.config(token)
+    // Check if token is supported
+    if (tokenConfig.bridgeToken === AddressZero) {
+      return BridgeTokenType.NotSupported
+    }
+    // Otherwise tokenConfig.tokenType is either 0 (Redeem) or 1 (Deposit)
+    return tokenConfig.tokenType
   }
 
   public async getPoolTokens(poolAddress: string): Promise<PoolToken[]> {
