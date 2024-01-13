@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -93,9 +94,20 @@ func (s *SimpleScreener) ScreenAddress(ctx context.Context, address common.Addre
 
 	for _, addressRisk := range res {
 		for _, ri := range addressRisk.AddressRiskIndicators {
+			// TODO: can do in json converter
+			incoming, err := strconv.ParseFloat(ri.IncomingVolumeUsd, 10)
+			if err != nil {
+				return false, fmt.Errorf("could not parse incoming volume: %w", err)
+			}
+
+			outgoing, err := strconv.ParseFloat(ri.OutgoingVolumeUsd, 10)
+			if err != nil {
+				return false, fmt.Errorf("could not parse outgoing volume: %w", err)
+			}
+
 			riskParam := strings.ToLower(fmt.Sprintf("%s_%s", ri.Category, ri.RiskType))
 			_, found := s.risks[riskParam]
-			if found {
+			if found && (incoming > 0 || outgoing > 0) {
 				s.cache.Set(address.String(), true, cache.DefaultExpiration)
 				return true, nil
 			}
