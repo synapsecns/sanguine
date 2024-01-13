@@ -215,17 +215,17 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       className={`${visibility ? 'block' : 'hidden'}`}
     >
       {!viewingAddress && (
-        <div className="text-secondary">
+        <div className="opacity-70">
           Your pending and recent transactions will appear here.
         </div>
       )}
 
       {viewingAddress && isLoading && (
-        <div className="text-secondary">Loading activity...</div>
+        <div className="opacity-70">Loading activity…</div>
       )}
 
       {viewingAddress && !isLoading && hasNoTransactions && (
-        <div className="text-secondary">
+        <div className="opacity-70">
           No transactions in last 30 days.
           <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
@@ -367,7 +367,7 @@ export const ActivitySection = ({
 }) => {
   return (
     <div data-test-id="activity-section" className={twClassName}>
-      <h3 className="mb-2 text-xl text-white">{title}</h3>
+      <h3 className="mb-2 text-xl">{title}</h3>
       {children}
     </div>
   )

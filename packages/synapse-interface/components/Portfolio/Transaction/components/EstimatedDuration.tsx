@@ -20,13 +20,13 @@ export const EstimatedDuration = ({
             {timeRemaining} - {timeRemaining + 1} min
           </div>
           {transactionStatus !== TransactionStatus.PENDING_WALLET_ACTION && (
-            <ProcessingIcon className="fill-[#343036] mt-0.5" />
+            <ProcessingIcon className="bg-zinc-200 fill-zinc-400 dark:bg-zinc-800 dark:fill-zinc-600 mt-0.5" />
           )}
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div>Waiting... </div>
-          <ProcessingIcon className="fill-[#343036] mt-0.5" />
+          <div>Waiting… </div>
+          <ProcessingIcon className="bg-zinc-200 fill-zinc-400 dark:bg-zinc-800 dark:fill-zinc-600 mt-0.5" />
         </React.Fragment>
       )}
     </div>

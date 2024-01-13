@@ -15,10 +15,10 @@ export function MoreButton({
   return (
     <Button
       onClick={onClick ? onClick : () => {}}
-      className="w-full rounded-md p-2 border border-[#2F2F2F] hover:border-white"
+      className="rounded-md p-2 border border-zinc-500 hover:bg-zinc-100 hover:dark:bg-zinc-800"
       {...props}
     >
-      <DotsHorizontalIcon className="w-5 h-5" />
+      <DotsHorizontalIcon className="w-5 h-5 stroke-black dark:stroke-white" />
     </Button>
   )
 }

@@ -43,18 +43,20 @@ export const PortfolioAccordion = ({
     <div
       data-test-id="portfolio-accordion"
       className={
-        isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
+        isExpanded ? 'rounded-md shadow-md' : 'shadow-none'
       }
     >
       <div
         data-test-id="portfolio-accordion-header"
         className={`
-          flex items-center justify-between border border-transparent pr-2 select-none
-          hover:border-[#3D3D5C] hover:bg-[#272731]
-          active:border-[#3D3D5C] active:opacity-[67%]
+          flex items-center justify-between
+          border border-transparent
+          pr-2 select-none
+          hover:bg-zinc-100 hover:dark:bg-zinc-800
+          active:opacity-70
           ${
             isExpanded
-              ? 'bg-tint rounded-t-md hover:rounded-t-md'
+              ? 'bg-zinc-100 dark:bg-zinc-800 hover:border-b-zinc-200 hover:dark:border-b-zinc-700 rounded-t-md'
               : 'bg-transparent rounded-md'
           }
         `}
@@ -80,10 +82,7 @@ export const PortfolioAccordion = ({
           isHovered={isHovered}
         />
       </div>
-      <div
-        data-test-id="portfolio-accordion-contents"
-        className="flex flex-col"
-      >
+      <div data-test-id="portfolio-accordion-contents">
         {isExpanded && <React.Fragment>{children}</React.Fragment>}
       </div>
     </div>
@@ -99,20 +98,19 @@ export const AccordionIcon = ({
   onClick: () => void
   isHovered: boolean
 }) => {
+
+  const chevronStyles = "w-4 h-4 stroke-[3] stroke-separator stroke-zinc-500 opacity-70 group-hover:opacity-100"
+
   return (
     <div
       data-test-id="accordion-icon"
       onClick={onClick}
-      className={`
-        p-1 mx-2 border border-surface rounded-full
-        cursor-pointer hover:border-transparent active:border-transparent
-        ${isHovered ? 'border-transparent' : 'border-surface'}
-      `}
+      className="group p-1 mx-2 border border-zinc-500 rounded-full cursor-pointer"
     >
       {isExpanded ? (
-        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-separator" />
+        <ChevronDoubleUpIcon className={chevronStyles} />
       ) : (
-        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-separator" />
+        <ChevronDoubleDownIcon className={chevronStyles} />
       )}
     </div>
   )

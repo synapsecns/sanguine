@@ -85,8 +85,11 @@ export const PortfolioTokenAsset = ({
     <div
       data-test-id="portfolio-token-asset"
       className={`
-        p-2 flex items-center border-y text-white justify-between last:rounded-b-md
-        ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
+        p-2 flex items-center border-y justify-between last:rounded-b-md
+        ${isTokenSelected
+          ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700'
+          : 'border-transparent'
+        }
       `}
     >
       <div
@@ -94,7 +97,7 @@ export const PortfolioTokenAsset = ({
         className={`
           flex items-center gap-2
           pl-2 pr-4 py-2 cursor-pointer rounded
-          hover:bg-surface active:opacity-70
+          hover:bg-zinc-200 hover:dark:bg-zinc-800 active:opacity-70
         `}
         title={`${parsedBalanceLong} ${symbol}`}
       >
@@ -162,8 +165,8 @@ const PortfolioAssetActionButton = ({
         data-test-id="portfolio-asset-action-button"
         className={`
           py-1 px-6 rounded-sm
-          border border-synapsePurple
-          ${!isDisabled && 'cursor-pointer hover:bg-surface active:opacity-70'}
+          border border-synapse-500
+          ${!isDisabled && 'cursor-pointer hover:bg-zinc-100 hover:dark:bg-zinc-800 active:opacity-70'}
         `}
         onClick={selectCallback}
         disabled={isDisabled}

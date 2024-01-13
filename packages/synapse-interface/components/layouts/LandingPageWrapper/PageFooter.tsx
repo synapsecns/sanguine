@@ -115,7 +115,7 @@ const supportList: FooterDataProps[] = [
 export function PageFooter() {
   return (
     <footer>
-      <div className="p-8 flex flex-wrap gap-8 justify-between max-w-4xl m-auto">
+      <div className="p-10 flex flex-wrap gap-8 justify-between max-w-6xl m-auto">
           <SynapseTitleLogo showText={true} />
           <div className="flex flex-wrap gap-8">
             <FooterBlock elements={functionsList} />
@@ -123,28 +123,24 @@ export function PageFooter() {
             <FooterBlock elements={supportList} />
           </div>
       </div>
-      <div className="text-secondaryTextColor pb-12 flex gap-2 justify-center">
-        <div className="text-opacity-50 text-secondaryTextColor">
-          <a
-            className="duration-75 hover:text-white transform-gpu hover:transition-all"
-            href={TERMS_OF_SERVICE_PATH}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Terms of Use
-          </a>
-        </div>
-        <p>｜</p>
-        <div className="text-opacity-50 text-secondaryTextColor">
-          <a
-            className="duration-75 hover:text-white transform-gpu hover:transition-all"
-            href={PRIVACY_POLICY_PATH}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Privacy Policy
-          </a>
-        </div>
+      <div className="pb-12 flex gap-2 justify-center">
+        <a
+          className="opacity-60 hover:opacity-100"
+          href={TERMS_OF_SERVICE_PATH}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Terms of Use
+        </a>
+      <span className="opacity-60">|</span>
+        <a
+          className="opacity-60 hover:opacity-100"
+          href={PRIVACY_POLICY_PATH}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Privacy Policy
+        </a>
       </div>
     </footer>
   )
@@ -152,7 +148,7 @@ export function PageFooter() {
 
 function FooterBlock({ elements }: { elements: FooterDataProps[] }) {
   return (
-    <div className="text-base leading-8 text-left text-white md:text-left lg:text-right">
+    <div className="text-base leading-8 text-left md:text-left lg:text-right">
       {elements.map((element, i) => (
         <DisplayText element={element} key={i} />
       ))}
@@ -165,9 +161,9 @@ function DisplayText({ element }: { element: FooterDataProps }) {
 
   if (type === FooterType.URL) {
     return (
-      <div className="text-opacity-50 text-secondaryTextColor">
+      <div>
         <a
-          className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
+          className="opacity-60 hover:opacity-100"
           href={url}
           target="_blank"
           rel="noreferrer"
@@ -178,9 +174,9 @@ function DisplayText({ element }: { element: FooterDataProps }) {
     )
   } else if (type === FooterType.PATH) {
     return (
-      <div className="text-opacity-50 text-secondaryTextColor">
+      <div>
         <Link
-          className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
+          className="opacity-60 hover:opacity-100"
           href={url}
         >
           {text}
@@ -188,6 +184,6 @@ function DisplayText({ element }: { element: FooterDataProps }) {
       </div>
     )
   } else {
-    return <div className="opacity-80">{text}</div>
+    return <>{text}</>
   }
 }

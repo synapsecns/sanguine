@@ -27,7 +27,7 @@ export const UserExplorerLink = ({
     ? `${EXPLORER_PATH}address/${connectedAddress}`
     : EXPLORER_PATH
   return (
-    <div data-test-id="explorer-link" className="text-[#99E6FF] my-3">
+    <div data-test-id="explorer-link" className="text-sky-500 my-3">
       <Link href={explorerLink} target="_blank">
         <span className="hover:underline">Explorer</span> →
       </Link>

@@ -60,7 +60,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div
       data-test-id="single-network-portfolio"
-      className="flex flex-col mb-4 border rounded-md border-surface"
+      className="flex flex-col mb-4 border rounded-md border-zinc-400 dark:border-zinc-700"
     >
       <PortfolioAccordion
         connectedChainId={connectedChainId}
@@ -152,7 +152,7 @@ const PortfolioNetwork = ({
             src={chainIcon}
           />
         )}
-        <div className="text-lg font-medium text-white">
+        <div className="text-lg font-medium">
           {isUnsupportedChain ? 'Unsupported Network' : displayName}
         </div>
       </div>
@@ -184,16 +184,16 @@ export const PortfolioTokenVisualizer = ({
     return (
       <div
         data-test-id="portfolio-token-visualizer"
-        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
+        className="flex items-center mr-2 opacity-70"
       >
-        -
+        &minus;
       </div>
     )
   }
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center space-x-2 cursor-pointer hover-trigger"
+      className="flex items-center gap-2 cursor-pointer"
     >
       {hasOneToken && (
         <div>
@@ -216,7 +216,7 @@ export const PortfolioTokenVisualizer = ({
         </div>
       )}
       {hasOnlyOneToken && (
-        <div className="text-white whitespace-nowrap">
+        <div className="whitespace-nowrap">
           {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
         </div>
       )}
@@ -242,14 +242,13 @@ export const PortfolioTokenVisualizer = ({
       )}
       {numOverTwoTokens > 0 && (
         <div
-          className="text-white"
           onMouseEnter={() => setIsT3Hovered(true)}
           onMouseLeave={() => setIsT3Hovered(false)}
         >
           + {numOverTwoTokens}
         </div>
       )}
-      <div className="relative inline-block">
+      <div className="relative">
         <HoverContent isHovered={isT3Hovered}>
           {portfolioTokens?.map((token: TokenAndBalance, key: number) => {
             if (key > 1) {
@@ -279,9 +278,9 @@ export const HoverContent = ({
     return (
       <div
         className={`
-          absolute z-50 hover-content p-2 text-white
-          border border-solid border-[#252537]
-          bg-[#101018] rounded-md text-left
+          absolute z-50 px-2 py-1 rounded bottom-8 -right-10
+          border border-zinc-300 dark:border-zinc-700
+          bg-zinc-50 dark:bg-zinc-900
         `}
       >
         {children}

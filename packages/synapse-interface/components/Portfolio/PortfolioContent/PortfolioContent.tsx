@@ -140,8 +140,8 @@ function getCurrentNetworkPortfolio(
 const LoadingPortfolioContent = () => {
   return (
     <>
-      <p data-test-id="loading-portfolio-content" className="text-[#CCCAD3BF]">
-        Loading assets...
+      <p data-test-id="loading-portfolio-content">
+        Loading assets…
       </p>
     </>
   )
@@ -157,25 +157,22 @@ export const EmptyPortfolioContent = ({
   const shortened: string = shortenAddress(connectedAddress)
   return (
     <div data-test-id="empty-portfolio-content" className="p-4">
-      <p className="text-[#C2C2D6] mb-4">
+      <p className="mb-4">
         No bridgeable assets found {connectedAddress && `for ${shortened}`} on{' '}
         {connectedChain?.name}.
       </p>
-      <p className="text-[#C2C2D6] mb-4">
+      <p className="mb-4">
         Don't see a chain or token you want to bridge?
       </p>
-      <a className="text-[#C2C2D6]">
-        Let us know on
-        <Link
-          className="text-[#99E6FF] underline px-1"
+      <a>
+        Let us know on <Link
+          className="text-sky-500 underline"
           href={TWITTER_URL}
           target="_blank"
         >
           Twitter
-        </Link>
-        or
-        <Link
-          className="text-[#99E6FF] underline pl-1"
+        </Link> or <Link
+          className="text-sky-500 underline"
           href={DISCORD_URL}
           target="_blank"
         >
@@ -189,12 +186,12 @@ export const EmptyPortfolioContent = ({
 
 export const HomeContent = () => {
   return (
-    <div data-test-id="portfolio-home-content" className="text-white">
+    <div data-test-id="portfolio-home-content">
       <p className="mb-3">
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.
       </p>
-      <p className="mb-5">
+      <p className="mb-3">
         Get route quotes in the Bridge panel, and connect your wallet when you
         are ready to submit a transaction.
       </p>
@@ -211,9 +208,8 @@ export const NoSearchResultsContent = ({
   return (
     <div
       data-test-id="portfolio-no-search-results-content"
-      className="text-white"
     >
-      <p className="mb-3 break-words">No results found for '{searchStr}'.</p>
+      No results found for '{searchStr}'.
     </div>
   )
 }

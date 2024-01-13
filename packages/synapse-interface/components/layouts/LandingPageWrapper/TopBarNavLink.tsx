@@ -15,18 +15,9 @@ export function TopBarNavLink({
   const router = useRouter()
 
   const isInternal = to[0] === '/' || to[0] === '#'
-  const linkContent = (
-    <div className={`py-2 px-2 ${className}`}>
-      <span className="transition-all duration-75 transform-gpu whitespace-nowrap">
-        {labelText}
-      </span>
-    </div>
-  )
 
   const linkClassName = `
-    px-2 tracking-wide
-    transform-gpu transition-all duration-75
-    text-white ${
+    px-4 py-2 ${
       match &&
       (typeof match === 'string'
         ? router.asPath.includes(match)
@@ -34,28 +25,24 @@ export function TopBarNavLink({
         ? match.test(router.asPath)
         : router.asPath.startsWith(match.startsWith) &&
           router.asPath.endsWith(match.endsWith))
-        ? 'text-opacity-100'
-        : 'text-opacity-30'
+        ? 'opacity-100 cursor-default'
+        : 'opacity-40'
     }
-    hover:text-opacity-100
+    hover:opacity-100
   `
 
-  if (isInternal) {
-    return (
-      <Link
-        href={to}
-        className={linkClassName}
-        // activeClassName="!text-opacity-100"
-        data-test-id="nav-link"
-      >
-        {linkContent}
-      </Link>
-    )
-  } else {
-    return (
-      <a href={to} target="_blank" className={linkClassName}>
-        {linkContent}
-      </a>
-    )
-  }
+  return isInternal
+  ? (
+    <Link
+      href={to}
+      className={linkClassName}
+      data-test-id="nav-link"
+    >
+      {labelText}
+    </Link>
+  ) : (
+    <a href={to} target="_blank" className={linkClassName}>
+      {labelText}
+    </a>
+  )
 }

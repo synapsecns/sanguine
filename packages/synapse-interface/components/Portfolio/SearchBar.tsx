@@ -53,11 +53,11 @@ export const SearchBar = () => {
   const placeholder: string = useMemo(() => {
     switch (activeTab) {
       case PortfolioTabs.PORTFOLIO:
-        return 'Tokens, chains...'
+        return 'Tokens, chains…'
       case PortfolioTabs.ACTIVITY:
-        return 'Bridge txs...'
+        return 'Bridge txs…'
       default:
-        return 'Search...'
+        return 'Search…'
     }
   }, [activeTab])
 
@@ -97,13 +97,12 @@ export const SearchBar = () => {
     <div
       data-test-id="portfolio-search-bar"
       className={`
-        relative flex items-center ml-auto
-        border rounded-xl
+        flex items-center border rounded-full ml-auto pr-2 relative
         ${!mounted && 'border-opacity-30'}
         ${
           isFocused || isActive
-            ? 'border-synapsePurple bg-tint'
-            : 'border-separator bg-transparent'
+            ? 'border-fuchsia-500 bg-zinc-100 dark:bg-zinc-800'
+            : 'border-zinc-500'
         }
       `}
     >
@@ -137,12 +136,11 @@ export default function FilterInput({
       data-test-id="filter-input"
       className={`
         flex-grow py-2.5 pl-4 pr-1
-        font-normal text-sm text-primaryTextColor
-        border h-full w-6/12 rounded-xl bg-transparent custom-shadow
-        placeholder-white placeholder-opacity-40
+        font-normal text-sm w-1/2
+        bg-transparent custom-shadow
         border-transparent outline-none ring-0
         focus:outline-none focus:ring-0 focus:border-transparent
-        ${disabled && 'opacity-30'}
+        ${disabled && 'opacity-40'}
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
@@ -163,14 +161,15 @@ export const ClearSearchButton = ({
       data-test-id="clear-search-button"
       className={`
         ${show ? 'visible' : 'invisible'}
-        flex w-6 h-6 mr-2
-        items-center justify-center
-        border border-separator rounded-full
-        hover:cursor-pointer hover:border-secondary
+        w-6 h-6
+        flex items-center justify-center
+        border border-current rounded-full
+        opacity-70
+        hover:cursor-pointer hover:opacity-100
       `}
       onClick={onClick}
     >
-      <XIcon strokeWidth={3} className="inline w-4 text-secondary" />
+      <XIcon strokeWidth={3} className="w-4" />
     </button>
   )
 }
@@ -187,16 +186,15 @@ export const ViewSearchAddressBanner = ({
       data-test-id="view-search-address-banner"
       className={`
         flex justify-between p-3 mb-3
-        border border-synapsePurple rounded-sm
+        border border-purple-500 rounded
       `}
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
       }}
     >
-      <div className="flex space-x-1">
-        <div className="text-secondary ">Viewing</div>
-        <div className="font-bold text-primary">{shortened}</div>
+      <div>
+        Viewing <span className="font-medium">{shortened}</span>
       </div>
       <ClearSearchButton onClick={clearSearchResults} show={true} />
     </div>

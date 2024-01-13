@@ -29,18 +29,18 @@ export const Completed = ({
   return (
     <div
       data-test-id="completed"
-      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
+      className="flex flex-col text-right gap-1 text-sm whitespace-nowrap cursor-pointer hover:underline"
       onClick={handleExplorerClick}
     >
       {isDestinationValid && !isDestinationSender && (
         <div>to {shortenAddress(destinationAddress)} </div>
       )}
       {isToday ? (
-        <div className="text-[#3BDD77] hover:underline cursor-pointer">
+        <div className="text-green-500">
           Today
         </div>
       ) : (
-        <div className="cursor-pointer hover:underline">
+        <div className="opacity-50">
           {formattedTime ? formattedTime : 'Completed'}
         </div>
       )}

@@ -27,24 +27,12 @@ import { PageFooter } from './PageFooter'
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
-    <div
-      style={{
-        background:
-          'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-      }}
-    >
+    <div className={`
+      bg-zinc-50 text-zinc-950
+      dark:bg-zinc-900 dark:text-zinc-200
+    `}>
       <LandingNav />
-
-      <div
-        style={{
-          backgroundImage: `url('landingBg.svg')`,
-          backgroundSize: '800px',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        {children}
-      </div>
+      {children}
       <PageFooter />
     </div>
   )
@@ -53,12 +41,12 @@ export function LandingPageWrapper({ children }: { children: any }) {
 export function LandingNav() {
   return (
     <Popover>
-      <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
+      <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto text-zinc-950 dark:text-zinc-50 tracking-wide">
         <SynapseTitleLogo showText={true} />
         <div className="lg:hidden">
           <Popover.Button
             data-test-id="mobile-navbar-button"
-            className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
+            className="p-2 opacity-40 hover:opacity-100 rounded-md hover:bg-zinc-200 hover:dark:bg-zinc-700 focus:outline-none"
           >
             <span className="sr-only">Open menu</span>
             <MenuIcon className="w-8 h-8" aria-hidden="true" />
@@ -102,12 +90,12 @@ export function LandingNav() {
       >
         <Popover.Panel focus className="absolute top-0 z-10 w-screen">
           <div
-            className="bg-bgLight"
+            className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-400 dark:border-zinc-700 shadow-lg"
             // data-test-id="mobile-nav"
           >
             <div className="flex items-center px-4 pt-4 place-content-between">
               <SynapseTitleLogo showText={true} />
-              <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
+              <Popover.Button className="p-2 opacity-70 hover:opacity-100 hover:bg-zinc-300 hover:dark:bg-zinc-700 rounded-md focus:outline-none">
                 <span className="sr-only">Close menu</span>
                 <XIcon className="w-8 h-8" aria-hidden="true" />
               </Popover.Button>
@@ -115,7 +103,7 @@ export function LandingNav() {
             <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
-            <div className="px-2 py-4 bg-white/10">
+            <div className="px-2 py-4 bg-white dark:bg-zinc-800">
               <Wallet />
             </div>
           </div>
@@ -149,10 +137,8 @@ export function PopoverPanelContainer({
           mt-3 w-screen max-w-xs sm:px-0
         `}
       >
-        <div className="overflow-hidden rounded-md shadow-xl">
-          <div className="relative grid gap-3 bg-bgLight px-2.5 py-3  sm:p-2">
-            {children}
-          </div>
+        <div className="overflow-hidden rounded-md shadow-xl relative grid gap-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-2.5 py-3 sm:p-2">
+          {children}
         </div>
       </Popover.Panel>
     </Transition>
@@ -242,7 +228,7 @@ function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
       href={to}
       target={isInternal ? undefined : '_blank'}
       className={`
-        px-4 py-2 text-2xl font-medium text-white
+        px-4 py-2 text-2xl font-medium
         ${!(isInternal && match) && 'opacity-30 hover:opacity-100'}`}
     >
       {labelText}
@@ -266,10 +252,10 @@ function MoreInfoItem({
       key={labelText}
       href={to}
       target={to[0] === '/' ? undefined : '_blank'}
-      className={`block px-3 pt-2 pb-2 rounded-md hover:bg-white hover:bg-opacity-10 ${className}`}
+      className={`block px-3 pt-2 pb-2 rounded-md hover:bg-zinc-200 hover:dark:bg-zinc-800 ${className}`}
     >
-      <p className="text-base font-medium text-white">{labelText}</p>
-      <p className="hidden mt-1 text-sm text-white text-opacity-60 md:block">
+      <p className="font-medium">{labelText}</p>
+      <p className="hidden mt-1 text-sm md:block">
         {description}
       </p>
     </a>
@@ -293,7 +279,7 @@ function MiniInfoItem({
       target="_blank"
     >
       <div>
-        <p className="text-base text-white text-opacity-40 group-hover:text-white">
+        <p className="group-hover:opacity-70">
           {icon}
           <span className="mt-1">{labelText}</span>
         </p>

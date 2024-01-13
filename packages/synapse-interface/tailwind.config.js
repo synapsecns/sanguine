@@ -30,7 +30,7 @@ const makeShadow = (name, rgb) => {
 }
 
 module.exports = {
-  darkMode: 'class',
+  // darkMode: 'class',
   content: ['./**/*.{js,jsx,ts,tsx}'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx}',
@@ -111,6 +111,7 @@ module.exports = {
       },
       colors: {
         // updated colors
+        synapse: '',
         strong: '#FCFCFD',
         primary: '#EEEDEF',
         secondary: '#C0BCC2',
@@ -118,7 +119,7 @@ module.exports = {
         surface: '#343036',
         tint: '#252226',
         background: '#151315',
-        synapsePurple: '#D747FF',
+        synapse: colors.fuchsia,
         blueText: '#99E6FF',
         // previous colors
         bgBase: '#252028',

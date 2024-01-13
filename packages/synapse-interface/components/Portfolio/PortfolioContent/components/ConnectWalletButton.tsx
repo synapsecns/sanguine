@@ -10,16 +10,6 @@ export function ConnectWalletButton() {
     setClientReady(true)
   }, [])
 
-  const buttonClassName = `
-    h-10 border-[#CA5CFF] border-[1.5px] flex items-center border
-    text-base text-white px-6 py-5 hover:opacity-75 rounded-lg
-    text-center transform-gpu transition-all duration-75
-  `
-
-  const buttonStyle = {
-    borderRadius: '30px',
-  }
-
   return (
     <div data-test-id="connect-wallet-button">
       {clientReady && (
@@ -31,8 +21,7 @@ export function ConnectWalletButton() {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
-                        className={buttonClassName}
-                        style={buttonStyle}
+                        className="px-6 py-2 border border-purple-500 rounded-full hover:opacity-70"
                         onClick={openConnectModal}
                       >
                         Connect Wallet

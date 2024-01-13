@@ -106,9 +106,9 @@ export const Wallet = () => {
                       onClick={openChainModal}
                       type="button"
                       className={`
-                        flex items-center gap-2 text-white transition-all duration-100th
-                        rounded-md py-2 px-2.5 border border-bgLight
-                        active:bg-bgLightest/10 hover:bg-bgLightest/10
+                        flex items-center gap-2 text-sm font-semibold
+                        rounded-md py-2 px-2.5 border border-zinc-500
+                        active:opacity-70 hover:bg-zinc-200 hover:dark:bg-zinc-800
                         whitespace-nowrap
                         `}
                     >
@@ -144,9 +144,11 @@ export const Wallet = () => {
                       onClick={openAccountModal}
                       type="button"
                       className={`
-                        text-white transition-all duration-100 rounded-md
-                        py-2 px-2.5 bg-bgLight hover:bg-opacity-70
-                        hover:bg-bgLightest active:bg-bgLightest text-sm
+                        rounded-md font-semibold
+                        py-2 px-2.5 bg-zinc-200 dark:bg-zinc-800
+                        hover:bg-zinc-300 dark:hover:bg-zinc-700 active:opacity-70 text-sm
+                        border border-transparent
+                        hover:border-zinc-500
                         whitespace-nowrap font-bold
                       `}
                     >

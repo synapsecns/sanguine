@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const BANNER_VERSION = '3'
+const bannerClassName = "flex items-center p-3 border border-purple-400 rounded max-w-lg mx-auto"
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -32,11 +33,12 @@ export const Banner = () => {
 
   if (!showBanner || !hasMounted) return null
 
+
+
   return (
-    <div className="flex items-center justify-center px-4 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:px-8 md:px-12">
       <div
         id="banner-default"
-        className="flex items-center pl-3 pr-3 pt-1 pb-1 border border-[#AC8FFF] rounded-md text-primaryTextColor"
+        className={bannerClassName}
         role="alert"
         style={{
           background:
@@ -44,35 +46,29 @@ export const Banner = () => {
           borderRadius: '10px',
         }}
       >
-        <div className="m-1 font-thin">
-          <div className="container mx-auto">
-            <p className="text-md">
-              {/* TODO: replace w/ tweetlink directly */}
-              <a
-                href={
-                  'https://twitter.com/SynapseProtocol/status/1726659540551352387'
-                }
-                target={'_blank'}
-              >
-                Synapse now supports Solana at solana.synapseprotocol.com
-              </a>
-            </p>
-          </div>
-        </div>
+        {/* TODO: replace w/ tweetlink directly */}
+        <a
+          href={
+            'https://twitter.com/SynapseProtocol/status/1726659540551352387'
+          }
+          target={'_blank'}
+        >
+          Synapse now supports Solana at solana.synapseprotocol.com
+        </a>
         <button
           type="button"
           className={`
             inline-flex items-center justify-center
             h-7 w-7
             ml-auto -mx-1.5 -my-1.5 p-1.5
-            text-primaryTextColor
           `}
           data-dismiss-target="#banner-default"
           aria-label="Close"
           onClick={() => setShowBanner(false)}
         >
           <svg
-            className="w-[9px] h-[9px]"
+            width="9px"
+            height="9px"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -88,7 +84,6 @@ export const Banner = () => {
           </svg>
         </button>
       </div>
-    </div>
   )
 }
 
@@ -123,55 +118,46 @@ export const CustomBanner = ({ text, link }: { text: string; link?: any }) => {
   if (!showBanner || !hasMounted) return null
 
   return (
-    <div className="flex items-center justify-center px-4 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:px-8 md:px-12">
-      <div
-        id="banner-default"
-        className="flex items-center pl-3 pr-3 pt-1 pb-1 border border-[#AC8FFF] rounded-md text-primaryTextColor"
-        role="alert"
-        style={{
-          background:
-            'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
-          borderRadius: '10px',
-        }}
+    <div
+      id="banner-default"
+      className={bannerClassName}
+      role="alert"
+      style={{
+        background:
+          'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
+        borderRadius: '10px',
+      }}
+    >
+      <a href={link} target={'_blank'}>
+        {text}
+      </a>
+      <button
+        type="button"
+        className={`
+          inline-flex items-center justify-center
+          h-7 w-7
+          ml-auto -mx-1.5 -my-1.5 p-1.5
+        `}
+        data-dismiss-target="#banner-default"
+        aria-label="Close"
+        onClick={() => setShowBanner(false)}
       >
-        <div className="m-1 font-thin">
-          <div className="container mx-auto">
-            <p className="text-md">
-              <a href={link} target={'_blank'}>
-                {text}
-              </a>
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          className={`
-            inline-flex items-center justify-center
-            h-7 w-7
-            ml-auto -mx-1.5 -my-1.5 p-1.5
-            text-primaryTextColor
-          `}
-          data-dismiss-target="#banner-default"
-          aria-label="Close"
-          onClick={() => setShowBanner(false)}
+        <svg
+          className="w-[9px] h-[9px]"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 14 14"
         >
-          <svg
-            className="w-[9px] h-[9px]"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 14 14"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-            />
-          </svg>
-        </button>
-      </div>
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+          />
+        </svg>
+      </button>
     </div>
   )
 }
@@ -208,62 +194,51 @@ export const InterruptedServiceBanner = () => {
 
   return (
     <div
-      className="flex items-center justify-center mx-auto lg:flex-row lg:px-20"
+      id="banner-default"
+      className={bannerClassName}
+      role="alert"
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
       }}
     >
-      <div
-        id="banner-default"
-        className="flex items-center px-8 pt-1 pb-1 rounded-md text-primaryTextColor"
-        role="alert"
+      <p>
+        Synapse Explorer and the transaction watcher may not appear
+        during planned maintenance on 2023-11-01 from 5am - 7pm UTC.
+        <br className="block lg:hidden" />
+        <br className="block lg:hidden" />
+        <div className="hidden lg:inline"> </div>
+        Transactions will still go through as expected. Please confirm
+        transactions using the native explorer for your destination
+        chain during this time.
+      </p>
+      <button
+        type="button"
+        className={`
+          inline-flex items-center justify-center
+          h-7 w-7
+          ml-auto -mx-1.5 -my-1.5 p-1.5
+        `}
+        data-dismiss-target="#banner-default"
+        aria-label="Close"
+        onClick={() => setShowBanner(false)}
       >
-        <div className="m-1 font-thin">
-          <div className="container mx-auto">
-            <p className="text-md">
-              <div>
-                Synapse Explorer and the transaction watcher may not appear
-                during planned maintenance on 2023-11-01 from 5am - 7pm UTC.
-                <br className="block lg:hidden" />
-                <br className="block lg:hidden" />
-                <div className="hidden lg:inline"> </div>
-                Transactions will still go through as expected. Please confirm
-                transactions using the native explorer for your destination
-                chain during this time.
-              </div>
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          className={`
-            inline-flex items-center justify-center
-            h-7 w-7
-            ml-auto -mx-1.5 -my-1.5 p-1.5
-            text-primaryTextColor
-          `}
-          data-dismiss-target="#banner-default"
-          aria-label="Close"
-          onClick={() => setShowBanner(false)}
+        <svg
+          className="w-[9px] h-[9px]"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 14 14"
         >
-          <svg
-            className="w-[9px] h-[9px]"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 14 14"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-            />
-          </svg>
-        </button>
-      </div>
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+          />
+        </svg>
+      </button>
     </div>
   )
 }

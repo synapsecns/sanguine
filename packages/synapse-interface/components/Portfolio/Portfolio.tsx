@@ -139,7 +139,7 @@ export const Portfolio = () => {
   return (
     <div
       data-test-id="portfolio"
-      className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
+      className="w-full max-w-lg mx-auto lg:mx-0"
     >
       <PortfolioTabManager />
       <div className="mt-6">

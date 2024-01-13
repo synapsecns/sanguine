@@ -27,27 +27,23 @@ export const PortfolioConnectButton = ({
   )
 }
 
+const buttonStyles = `
+  flex gap-2 items-center text-sm
+  px-3 py-1 rounded-full
+  border border-transparent
+  hover:border-zinc-500
+`
+
 const ConnectedButton = () => {
   return (
     <button
       data-test-id="connected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        hover:border-[#3D3D5C] hover:cursor-not-allowed
-      `}
+      className={`${buttonStyles} hover:opacity-70 hover:cursor-not-allowed`}
     >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
-          `}
-        />
+      <>
+        <span className="w-2 h-2 bg-green-500 rounded-full" />
         Connected
-      </div>
+      </>
     </button>
   )
 }
@@ -75,35 +71,19 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   return (
     <button
       data-test-id="connect-button"
-      className={`
-        flex items-right justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        hover:border-[#3D3D5C]
-      `}
+      className={buttonStyles}
       onClick={handleConnectNetwork}
     >
       {isConnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
-            `}
-          />
-          Connecting...
-        </div>
+        <>
+          <span className="w-2 h-2 border border-green-300 rounded-full" />
+          Connecting…
+        </>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
+        <>
+          <span className="w-2 h-2 border border-indigo-300 rounded-full" />
           Connect
-        </div>
+        </>
       )}
     </button>
   )

@@ -3,7 +3,13 @@
 @tailwind utilities;
 
 :root {
-  background: hsl(256deg 7.5% 9.25%);
+  @apply bg-zinc-50;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @apply bg-zinc-900;
+  }
 }
 
 body {

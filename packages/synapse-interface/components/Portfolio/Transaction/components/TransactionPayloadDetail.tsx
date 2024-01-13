@@ -64,8 +64,8 @@ export const TransactionPayloadDetail = ({
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
           className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
+            flex px-1 items-center cursor-pointer rounded-sm w-fit
+            hover:bg-zinc-200 hover:dark:bg-zinc-700 active:opacity-70
           `}
         >
           <Image
@@ -76,14 +76,13 @@ export const TransactionPayloadDetail = ({
           <div className="whitespace-nowrap">{chain.name}</div>
         </div>
       )}
-
       {token && tokenAmount && (
         <div
           data-test-id="transaction-payload-token"
           onClick={handleSelectTokenCallback}
           className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
+            flex px-1 items-center cursor-pointer rounded-sm w-fit
+            hover:bg-zinc-200 hover:dark:bg-zinc-700 active:opacity-70
           `}
         >
           <Image
