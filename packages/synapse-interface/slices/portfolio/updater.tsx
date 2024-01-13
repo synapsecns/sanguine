@@ -16,7 +16,6 @@ export default function Updater(): null {
     pendingBridgeTransactions,
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
-    fallbackQueryHistoricalTransactions,
   }: TransactionsState = useTransactionsState()
 
   // Update Origin balances when transaction resolves
@@ -56,30 +55,6 @@ export default function Updater(): null {
       updateDestinationBalancesForLastTransaction()
     }
   }, [userHistoricalTransactions, address])
-
-  // Update Destination balances for new fallback historical transactions
-  useEffect(() => {
-    if (
-      !address ||
-      !checkTransactionsExist(fallbackQueryHistoricalTransactions)
-    )
-      return
-    if (checkTransactionsExist(fallbackQueryHistoricalTransactions)) {
-      const updateDestinationBalancesForNewestTransaction = async () => {
-        const newestTransaction: BridgeTransaction =
-          fallbackQueryHistoricalTransactions[0]
-        const updateChainId: number = newestTransaction?.fromInfo?.chainID
-
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address: address as Address,
-            chainId: updateChainId,
-          })
-        )
-      }
-      updateDestinationBalancesForNewestTransaction()
-    }
-  }, [fallbackQueryHistoricalTransactions])
 
   return null
 }

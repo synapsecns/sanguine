@@ -15,20 +15,12 @@ import { BridgeTransaction } from '../api/generated'
 export interface TransactionsState {
   userHistoricalTransactions: BridgeTransaction[]
   isUserHistoricalTransactionsLoading: boolean
-  seenHistoricalTransactions: BridgeTransaction[]
-  pendingAwaitingCompletionTransactions: BridgeTransaction[]
-  fallbackQueryPendingTransactions: BridgeTransaction[]
-  fallbackQueryHistoricalTransactions: BridgeTransaction[]
   pendingBridgeTransactions: PendingBridgeTransaction[]
 }
 
 const initialState: TransactionsState = {
   userHistoricalTransactions: [],
   isUserHistoricalTransactionsLoading: true,
-  seenHistoricalTransactions: [],
-  pendingAwaitingCompletionTransactions: [],
-  fallbackQueryPendingTransactions: [],
-  fallbackQueryHistoricalTransactions: [],
   pendingBridgeTransactions: [],
 }
 
@@ -107,14 +99,6 @@ export const transactionsSlice = createSlice({
           initialState.userHistoricalTransactions
         state.isUserHistoricalTransactionsLoading =
           initialState.isUserHistoricalTransactionsLoading
-        state.seenHistoricalTransactions =
-          initialState.seenHistoricalTransactions
-        state.pendingAwaitingCompletionTransactions =
-          initialState.pendingAwaitingCompletionTransactions
-        state.fallbackQueryPendingTransactions =
-          initialState.fallbackQueryPendingTransactions
-        state.fallbackQueryHistoricalTransactions =
-          initialState.fallbackQueryHistoricalTransactions
       })
   },
 })

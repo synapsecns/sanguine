@@ -1,32 +1,18 @@
 import { useEffect, useMemo } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
-import {
-  useLazyGetUserHistoricalActivityQuery,
-  useLazyGetUserPendingTransactionsQuery,
-  BridgeTransaction,
-  api,
-} from '../api/generated'
+import { useLazyGetUserHistoricalActivityQuery } from '../api/generated'
 import { useTransactionsState } from './hooks'
 import { TransactionsState } from './reducer'
+import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
 import {
-  getTimeMinutesBeforeNow,
-  oneMonthInMinutes,
-  oneDayInMinutes,
-} from '@/utils/time'
-import {
-  updatePendingBridgeTransactions,
-  removePendingBridgeTransaction,
-  PendingBridgeTransaction,
   resetTransactionsState,
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
 } from './actions'
 import { PortfolioState } from '../portfolio/reducer'
 import { usePortfolioState } from '../portfolio/hooks'
-import { PortfolioTabs } from '../portfolio/actions'
 import { getValidAddress } from '@/utils/isValidAddress'
-import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 
