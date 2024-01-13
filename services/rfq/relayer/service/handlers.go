@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 	"strings"
-
-	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -175,32 +172,16 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	gasAmount := big.NewInt(0)
-
-	if request.Transaction.SendChainGas {
-		gasAmount, err = q.Dest.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return fmt.Errorf("could not get chain gas amount: %w", err)
-		}
-	}
-
-	nonce, err := q.Dest.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.Value = core.CopyBigInt(gasAmount)
-
-		tx, err = q.Dest.Bridge.Relay(transactor, request.RawRequest)
-		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
-		}
-
-		return tx, nil
-	})
-	if err != nil {
-		return fmt.Errorf("could not submit transaction: %w", err)
-	}
-
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
+	if err != nil {
+		return fmt.Errorf("could not update quote request status: %w", err)
+	}
 
 	// TODO: store the dest txhash connected to the nonce
+	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not submit relay: %w", err)
+	}
 	_ = nonce
 
 	if err != nil {
@@ -244,7 +225,6 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
 	// relays been completed, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		// MAJO MAJOR TODO should be dest tx hash
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)

@@ -5,6 +5,7 @@ import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
+import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
 import {
@@ -32,7 +33,7 @@ export class SynapseCCTPRouter extends Router {
   public readonly address: string
 
   private readonly routerContract: SynapseCCTPRouterContract
-  private cctpContractCache: Contract | undefined
+  private cctpContractCache?: SynapseCCTPContract
 
   // All possible events emitted by the SynapseCCTP contract in the origin transaction
   private readonly originEvents = ['CircleRequestSent']
@@ -155,7 +156,12 @@ export class SynapseCCTPRouter extends Router {
     return cctpContract.isRequestFulfilled(synapseTxId)
   }
 
-  private async getCctpContract(): Promise<Contract> {
+  public async chainGasAmount(): Promise<BigNumber> {
+    const cctpContract = await this.getCctpContract()
+    return cctpContract.chainGasAmount()
+  }
+
+  private async getCctpContract(): Promise<SynapseCCTPContract> {
     // Populate the cache if necessary
     if (!this.cctpContractCache) {
       const cctpAddress = await this.routerContract.synapseCCTP()
@@ -163,7 +169,7 @@ export class SynapseCCTPRouter extends Router {
         cctpAddress,
         new Interface(cctpAbi),
         this.provider
-      )
+      ) as SynapseCCTPContract
     }
     // Return the cached contract
     return this.cctpContractCache
