@@ -23,6 +23,7 @@ func init() {
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	statusFieldName = namer.GetConsistentName("Status")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
+	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
 }
 
@@ -35,6 +36,8 @@ var (
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
+	// originTxHashFieldName is the origin tx hash field name.
+	originTxHashFieldName string
 	// destTxHashFieldName is the dest tx hash field name.
 	destTxHashFieldName string
 )
@@ -109,16 +112,6 @@ type RequestForQuote struct {
 	SendChainGas bool
 }
 
-func stringToNullString(s string) sql.NullString {
-	if s == "" {
-		return sql.NullString{Valid: false}
-	}
-	return sql.NullString{
-		String: s,
-		Valid:  true,
-	}
-}
-
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
 // TODO: roundtripper test.
@@ -145,6 +138,16 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
+	}
+}
+
+func stringToNullString(s string) sql.NullString {
+	if s == "" {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
 	}
 }
 

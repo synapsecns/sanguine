@@ -8,6 +8,7 @@
       "function": null,
       "arguments": [
         "0xbd88862FCc17De436f7BD17276C537aCADDa9a67"
+        "0xbd88862FCc17De436f7BD17276C537aCADDa9a67"
       ],
       "transaction": {
         "type": "0x02",
@@ -28,6 +29,7 @@
       "contractAddress": "0x6C0771aD91442D670159a8171C35F4828E19aFd2",
       "function": "addRelayer(address)",
       "arguments": [
+        "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3"
         "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3"
       ],
       "transaction": {

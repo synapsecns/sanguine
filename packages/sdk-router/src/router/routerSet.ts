@@ -11,7 +11,11 @@ import {
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
-import { hasComplexBridgeAction } from '../module/query'
+import {
+  applySlippageToQuery,
+  Query,
+  hasComplexBridgeAction,
+} from '../module/query'
 import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export type ChainProvider = {
@@ -172,6 +176,29 @@ export abstract class RouterSet extends SynapseModuleSet {
     return {
       originPeriod: TEN_MINUTES,
       destPeriod: ONE_WEEK,
+    }
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.applySlippage
+   */
+  public applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query } {
+    return {
+      originQuery: applySlippageToQuery(
+        originQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
+      destQuery: applySlippageToQuery(
+        destQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
     }
   }
 }

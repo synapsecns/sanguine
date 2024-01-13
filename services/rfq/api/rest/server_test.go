@@ -15,9 +15,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-func (c *ServerSuite) TestNewAPIServer() {
+func (c *ServerSuite) TestNewQuoterAPIServer() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes", c.port), nil)
 	c.Require().NoError(err)
@@ -34,7 +34,7 @@ func (c *ServerSuite) TestNewAPIServer() {
 // TestEIP191_SuccessfulSignature tests the EIP191 signature process for successful authentication.
 func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Prepare the authorization header with a signed timestamp.
 	header, err := c.prepareAuthHeader(c.testWallet)
@@ -65,7 +65,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 // TestEIP191_UnsuccessfulSignature tests the EIP191 signature process with an incorrect wallet signature.
 func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Prepare the authorization header with a signed timestamp using an incorrect wallet.
 	randomWallet, err := wallet.FromRandom()
@@ -97,7 +97,7 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 // TestEIP191_SuccessfulPutSubmission tests a successful PUT request submission.
 func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	// Prepare the authorization header with a signed timestamp.
 	header, err := c.prepareAuthHeader(c.testWallet)
@@ -120,7 +120,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 }
 
 func (c *ServerSuite) TestPutAndGetQuote() {
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	header, err := c.prepareAuthHeader(c.testWallet)
 	c.Require().NoError(err)
@@ -162,7 +162,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 }
 
 func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
-	c.startAPIServer()
+	c.startQuoterAPIServer()
 
 	header, err := c.prepareAuthHeader(c.testWallet)
 	c.Require().NoError(err)
@@ -203,10 +203,10 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	c.Assert().True(found, "Newly added quote not found")
 }
 
-// startAPIServer starts the API server and waits for it to initialize.
-func (c *ServerSuite) startAPIServer() {
+// startQuoterAPIServer starts the API server and waits for it to initialize.
+func (c *ServerSuite) startQuoterAPIServer() {
 	go func() {
-		err := c.APIServer.Run(c.GetTestContext())
+		err := c.QuoterAPIServer.Run(c.GetTestContext())
 		c.Require().NoError(err)
 	}()
 	time.Sleep(2 * time.Second) // Wait for the server to start.
