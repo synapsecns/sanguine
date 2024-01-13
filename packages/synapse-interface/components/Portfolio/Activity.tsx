@@ -11,7 +11,6 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { Transaction, TransactionType } from './Transaction/Transaction'
-import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
@@ -202,35 +201,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
     </div>
-  )
-}
-
-export const PendingTransactionAwaitingIndexing = () => {
-  const { address } = useAccount()
-  const { pendingBridgeTransactions }: TransactionsState =
-    useTransactionsState()
-  return (
-    <>
-      {pendingBridgeTransactions.map(
-        (transaction: PendingBridgeTransaction, key: number) => (
-          <PendingTransaction
-            key={key}
-            connectedAddress={address as Address}
-            originChain={transaction.originChain as Chain}
-            originToken={transaction.originToken as Token}
-            originValue={Number(transaction.originValue)}
-            destinationChain={transaction.destinationChain as Chain}
-            destinationToken={transaction.destinationToken as Token}
-            estimatedDuration={transaction.estimatedTime}
-            transactionHash={transaction.transactionHash}
-            bridgeModuleName={transaction.bridgeModuleName}
-            isSubmitted={transaction.isSubmitted as boolean}
-            startedTimestamp={transaction.timestamp as number}
-            transactionType={TransactionType.PENDING}
-          />
-        )
-      )}
-    </>
   )
 }
 
