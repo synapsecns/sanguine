@@ -18,6 +18,7 @@ package londinium_test
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/trie"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 	"math"
 	"math/big"
@@ -71,7 +72,8 @@ func newTestBackend(t *testing.T) *testBackend {
 	)
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
-	genesis, _ := gspec.Commit(db)
+	triedb := trie.NewDatabase(db)
+	genesis, _ := gspec.Commit(db, triedb)
 
 	// Generate testing blocks
 	blocks, _ := core.GenerateChain(params.TestChainConfig, genesis, engine, db, 32, func(i int, b *core.BlockGen) {
@@ -84,10 +86,11 @@ func newTestBackend(t *testing.T) *testBackend {
 	})
 	// Construct testing chain
 	diskdb := rawdb.NewMemoryDatabase()
-	_, err := gspec.Commit(diskdb)
+	disktriedb := trie.NewDatabase(diskdb)
+	_, err := gspec.Commit(diskdb, disktriedb)
 	Nil(t, err)
 
-	chain, err := core.NewBlockChain(diskdb, nil, params.TestChainConfig, engine, vm.Config{}, nil, nil)
+	chain, err := core.NewBlockChain(diskdb, nil, gspec, nil, engine, vm.Config{}, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to create local chain, %v", err)
 	}

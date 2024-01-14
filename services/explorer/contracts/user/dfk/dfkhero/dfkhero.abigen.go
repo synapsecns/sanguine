@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // Hero is an auto generated low-level Go binding around an user-defined struct.
@@ -269,11 +270,11 @@ func NewAddressUpgradeableFilterer(address common.Address, filterer bind.Contrac
 
 // bindAddressUpgradeable binds a generic wrapper to an already deployed contract.
 func bindAddressUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AddressUpgradeableABI))
+	parsed, err := AddressUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -420,11 +421,11 @@ func NewContextUpgradeableFilterer(address common.Address, filterer bind.Contrac
 
 // bindContextUpgradeable binds a generic wrapper to an already deployed contract.
 func bindContextUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(ContextUpgradeableABI))
+	parsed, err := ContextUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -615,11 +616,11 @@ func NewHeroBridgeUpgradeableFilterer(address common.Address, filterer bind.Cont
 
 // bindHeroBridgeUpgradeable binds a generic wrapper to an already deployed contract.
 func bindHeroBridgeUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(HeroBridgeUpgradeableABI))
+	parsed, err := HeroBridgeUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1772,11 +1773,11 @@ func NewIAssistingAuctionFilterer(address common.Address, filterer bind.Contract
 
 // bindIAssistingAuction binds a generic wrapper to an already deployed contract.
 func bindIAssistingAuction(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IAssistingAuctionABI))
+	parsed, err := IAssistingAuctionMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -2432,11 +2433,11 @@ func NewIHeroCoreUpgradeableFilterer(address common.Address, filterer bind.Contr
 
 // bindIHeroCoreUpgradeable binds a generic wrapper to an already deployed contract.
 func bindIHeroCoreUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IHeroCoreUpgradeableABI))
+	parsed, err := IHeroCoreUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4421,11 +4422,11 @@ func NewIMessageBusFilterer(address common.Address, filterer bind.ContractFilter
 
 // bindIMessageBus binds a generic wrapper to an already deployed contract.
 func bindIMessageBus(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IMessageBusABI))
+	parsed, err := IMessageBusMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4663,11 +4664,11 @@ func NewISynMessagingReceiverFilterer(address common.Address, filterer bind.Cont
 
 // bindISynMessagingReceiver binds a generic wrapper to an already deployed contract.
 func bindISynMessagingReceiver(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(ISynMessagingReceiverABI))
+	parsed, err := ISynMessagingReceiverMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4835,11 +4836,11 @@ func NewInitializableFilterer(address common.Address, filterer bind.ContractFilt
 
 // bindInitializable binds a generic wrapper to an already deployed contract.
 func bindInitializable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(InitializableABI))
+	parsed, err := InitializableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4995,11 +4996,11 @@ func NewOwnableUpgradeableFilterer(address common.Address, filterer bind.Contrac
 
 // bindOwnableUpgradeable binds a generic wrapper to an already deployed contract.
 func bindOwnableUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(OwnableUpgradeableABI))
+	parsed, err := OwnableUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -5386,11 +5387,11 @@ func NewSynMessagingReceiverUpgradeableFilterer(address common.Address, filterer
 
 // bindSynMessagingReceiverUpgradeable binds a generic wrapper to an already deployed contract.
 func bindSynMessagingReceiverUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SynMessagingReceiverUpgradeableABI))
+	parsed, err := SynMessagingReceiverUpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
