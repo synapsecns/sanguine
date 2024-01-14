@@ -55,6 +55,7 @@ func TestCopyPointer(t *testing.T) {
 
 	newPtr := core.CopyPointer(originalPtr)
 
+	// nolint: staticcheck
 	if newPtr == nil {
 		t.Errorf("CopyPointer returned nil")
 	}
@@ -63,6 +64,7 @@ func TestCopyPointer(t *testing.T) {
 		t.Errorf("CopyPointer returned the same pointer")
 	}
 
+	//nolint: staticcheck
 	if *newPtr != *originalPtr {
 		t.Errorf("CopyPointer did not copy the value correctly, got %d, want %d", *newPtr, *originalPtr)
 	}

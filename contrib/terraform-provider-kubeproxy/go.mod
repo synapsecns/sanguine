@@ -17,7 +17,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 	github.com/zclconf/go-cty v1.12.1
-	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 	golang.org/x/mod v0.14.0
 	golang.org/x/tools v0.13.0
 	google.golang.org/grpc v1.59.0
@@ -63,7 +63,7 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gammazero/deque v0.0.0-20180920172122-f6adf94963e4 // indirect
 	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92 // indirect
 	github.com/gartnera/gcloud v0.0.15 // indirect

@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // AbstractFiatTokenV1MetaData contains all meta data concerning the AbstractFiatTokenV1 contract.
@@ -146,11 +147,11 @@ func NewAbstractFiatTokenV1Filterer(address common.Address, filterer bind.Contra
 
 // bindAbstractFiatTokenV1 binds a generic wrapper to an already deployed contract.
 func bindAbstractFiatTokenV1(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AbstractFiatTokenV1ABI))
+	parsed, err := AbstractFiatTokenV1MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -773,11 +774,11 @@ func NewAbstractFiatTokenV2Filterer(address common.Address, filterer bind.Contra
 
 // bindAbstractFiatTokenV2 binds a generic wrapper to an already deployed contract.
 func bindAbstractFiatTokenV2(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AbstractFiatTokenV2ABI))
+	parsed, err := AbstractFiatTokenV2MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1410,11 +1411,11 @@ func NewAddressFilterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindAddress binds a generic wrapper to an already deployed contract.
 func bindAddress(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AddressABI))
+	parsed, err := AddressMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1596,11 +1597,11 @@ func NewBlacklistableFilterer(address common.Address, filterer bind.ContractFilt
 
 // bindBlacklistable binds a generic wrapper to an already deployed contract.
 func bindBlacklistable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(BlacklistableABI))
+	parsed, err := BlacklistableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -2513,11 +2514,11 @@ func NewECRecoverFilterer(address common.Address, filterer bind.ContractFilterer
 
 // bindECRecover binds a generic wrapper to an already deployed contract.
 func bindECRecover(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(ECRecoverABI))
+	parsed, err := ECRecoverMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -2679,11 +2680,11 @@ func NewEIP2612Filterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindEIP2612 binds a generic wrapper to an already deployed contract.
 func bindEIP2612(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(EIP2612ABI))
+	parsed, err := EIP2612MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -3404,11 +3405,11 @@ func NewEIP3009Filterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindEIP3009 binds a generic wrapper to an already deployed contract.
 func bindEIP3009(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(EIP3009ABI))
+	parsed, err := EIP3009MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4502,11 +4503,11 @@ func NewEIP712Filterer(address common.Address, filterer bind.ContractFilterer) (
 
 // bindEIP712 binds a generic wrapper to an already deployed contract.
 func bindEIP712(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(EIP712ABI))
+	parsed, err := EIP712MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4682,11 +4683,11 @@ func NewEIP712DomainFilterer(address common.Address, filterer bind.ContractFilte
 
 // bindEIP712Domain binds a generic wrapper to an already deployed contract.
 func bindEIP712Domain(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(EIP712DomainABI))
+	parsed, err := EIP712DomainMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -4923,11 +4924,11 @@ func NewFiatTokenV1Filterer(address common.Address, filterer bind.ContractFilter
 
 // bindFiatTokenV1 binds a generic wrapper to an already deployed contract.
 func bindFiatTokenV1(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(FiatTokenV1ABI))
+	parsed, err := FiatTokenV1MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -7954,11 +7955,11 @@ func NewFiatTokenV11Filterer(address common.Address, filterer bind.ContractFilte
 
 // bindFiatTokenV11 binds a generic wrapper to an already deployed contract.
 func bindFiatTokenV11(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(FiatTokenV11ABI))
+	parsed, err := FiatTokenV11MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -11216,11 +11217,11 @@ func NewFiatTokenV2Filterer(address common.Address, filterer bind.ContractFilter
 
 // bindFiatTokenV2 binds a generic wrapper to an already deployed contract.
 func bindFiatTokenV2(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(FiatTokenV2ABI))
+	parsed, err := FiatTokenV2MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -15150,11 +15151,11 @@ func NewFiatTokenV21Filterer(address common.Address, filterer bind.ContractFilte
 
 // bindFiatTokenV21 binds a generic wrapper to an already deployed contract.
 func bindFiatTokenV21(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(FiatTokenV21ABI))
+	parsed, err := FiatTokenV21MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -19070,11 +19071,11 @@ func NewIERC20Filterer(address common.Address, filterer bind.ContractFilterer) (
 
 // bindIERC20 binds a generic wrapper to an already deployed contract.
 func bindIERC20(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IERC20ABI))
+	parsed, err := IERC20MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -19715,11 +19716,11 @@ func NewOwnableFilterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindOwnable binds a generic wrapper to an already deployed contract.
 func bindOwnable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(OwnableABI))
+	parsed, err := OwnableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -20088,11 +20089,11 @@ func NewPausableFilterer(address common.Address, filterer bind.ContractFilterer)
 
 // bindPausable binds a generic wrapper to an already deployed contract.
 func bindPausable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(PausableABI))
+	parsed, err := PausableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -20994,11 +20995,11 @@ func NewRescuableFilterer(address common.Address, filterer bind.ContractFilterer
 
 // bindRescuable binds a generic wrapper to an already deployed contract.
 func bindRescuable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(RescuableABI))
+	parsed, err := RescuableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -21571,11 +21572,11 @@ func NewSafeERC20Filterer(address common.Address, filterer bind.ContractFilterer
 
 // bindSafeERC20 binds a generic wrapper to an already deployed contract.
 func bindSafeERC20(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SafeERC20ABI))
+	parsed, err := SafeERC20MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -21744,11 +21745,11 @@ func NewSafeMathFilterer(address common.Address, filterer bind.ContractFilterer)
 
 // bindSafeMath binds a generic wrapper to an already deployed contract.
 func bindSafeMath(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SafeMathABI))
+	parsed, err := SafeMathMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
