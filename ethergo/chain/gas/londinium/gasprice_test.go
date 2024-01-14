@@ -42,14 +42,14 @@ type testBackend struct {
 
 func (b *testBackend) HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error) {
 	if number == rpc.LatestBlockNumber {
-		return b.chain.CurrentBlock().Header(), nil
+		return b.chain.CurrentBlock(), nil
 	}
 	return b.chain.GetHeaderByNumber(uint64(number)), nil
 }
 
 func (b *testBackend) BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
 	if number == rpc.LatestBlockNumber {
-		return b.chain.CurrentBlock(), nil
+		return b.chain.GetBlockByHash(b.chain.CurrentBlock().Hash()), nil
 	}
 	return b.chain.GetBlockByNumber(uint64(number)), nil
 }
