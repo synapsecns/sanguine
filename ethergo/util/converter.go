@@ -3,6 +3,7 @@ package util
 import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/pkg/errors"
 	"math/big"
@@ -10,13 +11,13 @@ import (
 
 // TxToCall converts a transaction to a call.
 func TxToCall(transaction Transaction) (*ethereum.CallMsg, error) {
-	rawMsg, err := transaction.AsMessage(types.LatestSignerForChainID(transaction.ChainId()), nil)
+	rawMsg, err := ethCore.TransactionToMessage(&transaction, types.LatestSignerForChainID(transaction.ChainId()), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not convert to call")
 	}
 
 	return &ethereum.CallMsg{
-		From:      rawMsg.From(),
+		From:      rawMsg.From,
 		To:        transaction.To(),
 		Gas:       transaction.Gas(),
 		GasPrice:  transaction.GasPrice(),
