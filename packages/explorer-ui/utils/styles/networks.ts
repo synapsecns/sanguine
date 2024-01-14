@@ -1,4 +1,6 @@
-import { ChainId } from '../../constants/chains/index'
+import { CHAINS } from '@synapse-constants'
+
+const ChainId = CHAINS.ChainId
 
 const ETH_CURRENCY_TEXT_CLASSNAME = 'text-[#5170ad] dark:text-[#78a5ff]'
 

@@ -22,8 +22,7 @@ export function MostActive({ data }) {
 
 function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
   const chain = CHAINS_BY_ID[chainId]
-  const token = TOKEN_HASH_MAP[chainId][tokenAddress] ?? {}
-  const { name } = token
+  const token = TOKEN_HASH_MAP[chainId][tokenAddress]
 
   return (
     <Tooltip
@@ -35,7 +34,7 @@ function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
               chainId={chainId}
               className="!w-4 !h-4 !opacity-100"
             />
-            <span className={getCoinTextColor(token)}>{name}</span> on{' '}
+            <span className={getCoinTextColor(token)}>{token?.symbol}</span> on{' '}
             <ChainImage chainId={chainId} className="ml-1 mr-1" />
             <span className={getNetworkTextColor(chainId)}>{chain.name}</span>
           </div>
