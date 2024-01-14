@@ -2,7 +2,7 @@ import { getCoinTextColor } from '@styles/coins'
 import { formatAmount } from '@utils/formatAmount'
 import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { TOKEN_HASH_MAP } from '@synapse-constants'
+import { TOKEN_HASH_MAP } from 'synapse-constants/dist'
 import { addressToDecimals } from '@utils/addressToDecimals'
 
 export function IconAndAmount({

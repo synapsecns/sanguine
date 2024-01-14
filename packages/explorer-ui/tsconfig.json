@@ -22,9 +22,9 @@
       "@assets/": [
         "./assets"
       ],
-      "@synapse-constants": [
-        "./node_modules/synapse-constants/dist"
-      ],
+      // "@synapse-constants/dist": [
+      //   "./node_modules/synapse-constants/dist/dist"
+      // ],
       "@assets/icons/": [
         "./assets/icons"
       ],

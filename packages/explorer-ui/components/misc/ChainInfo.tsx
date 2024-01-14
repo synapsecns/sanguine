@@ -1,7 +1,7 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { getChainUrl, getExplorerTxUrl } from '@urls'
 import Image from 'next/image'
-import { CHAINS } from '@synapse-constants'
+import { CHAINS } from 'synapse-constants/dist'
 
 const CHAINS_BY_ID = CHAINS. CHAINS_BY_ID
 

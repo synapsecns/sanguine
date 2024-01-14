@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import { CHAINS } from '@synapse-constants'
+import { CHAINS } from 'synapse-constants/dist'
 import ReactDOM from 'react-dom'
 import { formatDate } from '@utils/formatDate'
 import { TableHeader } from '@components/TransactionTable/TableHeader'

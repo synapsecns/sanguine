@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { CHAINS } from '@synapse-constants'
+import { CHAINS } from 'synapse-constants/dist'
 
 const ChainId = CHAINS.ChainId
 

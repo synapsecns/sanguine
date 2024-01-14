@@ -14,7 +14,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import MenuItem from '@mui/material/MenuItem'
-import { CHAINS } from '@synapse-constants'
+import { CHAINS } from 'synapse-constants/dist'
 
 const ChainId = CHAINS.ChainId
 const CHAIN_ENUM_BY_ID = CHAINS.CHAIN_ENUM_BY_ID

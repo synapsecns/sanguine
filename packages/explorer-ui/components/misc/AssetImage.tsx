@@ -1,5 +1,5 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { TOKEN_HASH_MAP } from '@synapse-constants'
+import { TOKEN_HASH_MAP } from 'synapse-constants/dist'
 import { getTokenAddressUrl } from '@urls'
 import Image from 'next/image'
 

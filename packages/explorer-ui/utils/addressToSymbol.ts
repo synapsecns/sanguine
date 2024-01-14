@@ -1,4 +1,4 @@
-import { TOKEN_HASH_MAP } from '@synapse-constants'
+import { TOKEN_HASH_MAP } from 'synapse-constants/dist'
 
 export function addressToSymbol({ tokenAddress, chainId }) {
   const symbol =
