@@ -336,7 +336,7 @@ var (
 
 // chainConfigs is a list of chain configs.
 var chainConfigs = []*params.ChainConfig{
-	params.MainnetChainConfig, params.RopstenChainConfig,
+	params.MainnetChainConfig, params.SepoliaChainConfig,
 	params.RinkebyChainConfig, params.RinkebyChainConfig, params.GoerliChainConfig,
 	params.AllEthashProtocolChanges, BSCChainConfig, ChapelChainConfig, RialtoChainConfig,
 	SimulatedConfig, MaticMumbaiConfig, MaticMainnetConfig, AvalancheMainnetChainConfig, AvalancheLocalChainConfig,
