@@ -7,7 +7,7 @@ const config = {
     errorDetails: true,
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.tsx'],
   },
   mode: 'production',
   entry: './dist/index.js',

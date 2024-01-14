@@ -23,7 +23,7 @@
         "./assets"
       ],
       "@synapse-constants": [
-        "../synapse-constants/dist"
+        "../../node_modules/synapse-constants/dist"
       ],
       "@assets/icons/": [
         "./assets/icons"

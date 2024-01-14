@@ -1,5 +1,4 @@
 import { Chain } from '../types'
-
 import * as all from './master'
 
 export * from './master'
@@ -8,9 +7,11 @@ export type ChainsByChainID = {
   [cID: number]: Chain
 }
 export const sortChains = (chains: Chain[]) =>
-  Object.values(chains).sort((a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0))
+  Object.values(chains).sort(
+    (a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0)
+  )
 
-  export const CHAINS_ARR = Object.values(all)
+export const CHAINS_ARR = Object.values(all)
   .filter((item): item is Chain => typeof item !== 'number')
   .sort((a: Chain, b: Chain) => (b.priorityRank ?? 0) - (a.priorityRank ?? 0))
 
