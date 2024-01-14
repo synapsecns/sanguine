@@ -7,11 +7,11 @@ package graph
 import (
 	"context"
 	"fmt"
-	ethCore "github.com/ethereum/go-ethereum/core"
 	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
