@@ -74,12 +74,6 @@ func (s *Backend) BackendName() string {
 	return BackendName
 }
 
-// EnableTenderly tells the user tenderly is not currently enabled for simulated backend type.
-func (s *Backend) EnableTenderly() (enabled bool) {
-	logger.Warnf("tenderly cannot be enabled on backend %s", BackendName)
-	return false
-}
-
 // Commit commits pending txes to the backend. Does not thing if no txes are pending.
 func (s *Backend) Commit() {
 	s.simulatedBackend.Commit()
