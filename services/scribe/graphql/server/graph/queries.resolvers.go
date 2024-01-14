@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"math/big"
 	"time"
 
@@ -174,12 +175,12 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
 
-	msgFrom, err := ethTx[0].Tx.AsMessage(types.LatestSignerForChainID(ethTx[0].Tx.ChainId()), big.NewInt(1))
+	msgFrom, err := ethCore.TransactionToMessage(&ethTx[0].Tx, types.LatestSignerForChainID(ethTx[0].Tx.ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
 
-	sender := msgFrom.From().String()
+	sender := msgFrom.From.String()
 
 	return &sender, nil
 }
