@@ -48,3 +48,32 @@ func TestArePointersEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestCopyPointer(t *testing.T) {
+	original := int64(42)
+	originalPtr := &original
+
+	newPtr := core.CopyPointer(originalPtr)
+
+	if newPtr == nil {
+		t.Errorf("CopyPointer returned nil")
+	}
+
+	if newPtr == originalPtr {
+		t.Errorf("CopyPointer returned the same pointer")
+	}
+
+	if *newPtr != *originalPtr {
+		t.Errorf("CopyPointer did not copy the value correctly, got %d, want %d", *newPtr, *originalPtr)
+	}
+}
+
+func TestCopyPointerNil(t *testing.T) {
+	var originalPtr *int64 = nil
+
+	newPtr := core.CopyPointer(originalPtr)
+
+	if newPtr != nil {
+		t.Errorf("CopyPointer did not return nil for nil input")
+	}
+}
