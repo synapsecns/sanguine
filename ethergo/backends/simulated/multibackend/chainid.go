@@ -21,7 +21,6 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 		DAOForkBlock:                  util.CopyBigInt(params.AllEthashProtocolChanges.DAOForkBlock),
 		DAOForkSupport:                params.AllEthashProtocolChanges.DAOForkSupport,
 		EIP150Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP150Block),
-		EIP150Hash:                    params.AllEthashProtocolChanges.EIP150Hash,
 		EIP155Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP155Block),
 		EIP158Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP158Block),
 		ByzantiumBlock:                util.CopyBigInt(params.AllEthashProtocolChanges.ByzantiumBlock),
@@ -62,6 +61,6 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 	backend.filterSystem = filters.NewFilterSystem(filterBackend, filters.Config{})
 	backend.events = filters.NewEventSystem(backend.filterSystem, false)
 
-	backend.rollback(blockchain.CurrentBlock())
+	backend.rollback(blockchain.GetBlock(blockchain.CurrentBlock().Hash(), blockchain.CurrentBlock().Number.Uint64()))
 	return backend
 }

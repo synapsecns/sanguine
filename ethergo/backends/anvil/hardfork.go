@@ -70,7 +70,6 @@ func (h Hardfork) ToChainConfig(chainID *big.Int) *params.ChainConfig {
 	// https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/tangerine-whistle.md
 	if h >= Tangerine {
 		baseConfig.EIP150Block = big.NewInt(0)
-		baseConfig.EIP150Hash = params.MainnetChainConfig.EIP150Hash
 	}
 
 	// https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/spurious-dragon.md
