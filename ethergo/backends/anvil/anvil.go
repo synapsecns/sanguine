@@ -286,10 +286,10 @@ func (f *Backend) ChainConfig() *params.ChainConfig {
 
 // Signer gets the signer for the chain.
 func (f *Backend) Signer() types.Signer {
-	latestBlock, err := f.BlockNumber(f.Context())
+	latestBlock, err := f.BlockByNumber(f.Context(), nil)
 	require.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), new(big.Int).SetUint64(latestBlock))
+	return types.MakeSigner(f.ChainConfig(), core.CopyBigInt(latestBlock.Number()), latestBlock.Time())
 }
 
 // FundAccount funds an account with the given amount.

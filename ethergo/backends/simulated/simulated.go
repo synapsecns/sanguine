@@ -51,7 +51,7 @@ func (s *Backend) Signer() types.Signer {
 	latestBlock, err := s.BlockByNumber(s.Context(), nil)
 	assert.Nil(s.T(), err)
 
-	return types.MakeSigner(s.chainConfig, latestBlock.Number())
+	return types.MakeSigner(s.chainConfig, latestBlock.Number(), latestBlock.Time())
 }
 
 // T gets the testing object for the backend.
