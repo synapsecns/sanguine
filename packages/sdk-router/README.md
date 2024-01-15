@@ -40,6 +40,33 @@ const synapseSDK = new SynapseSDK(chainIds, providers)
 
 ### Bridging
 
+`BridgeQuote` objects are returned by the `bridgeQuote` and `allBridgeQuotes` methods. They contain the following fields:
+
+```ts
+export type BridgeQuote = {
+  // Address of the Router contract that user will be interacting with
+  routerAddress: string
+  // Expected final amount of tokens to be received on the destination chain by the user,
+  // if the bridge transaction is completed right after the quote is generated
+  maxAmountOut: BigNumber
+  // Query object for the origin chain
+  originQuery: Query
+  // Query object for the destination chain
+  destQuery: Query
+  // Estimated median time for the bridge transaction to be completed
+  estimatedTime: number
+  // Name of the "bridge module" that will be used to bridge the tokens.
+  // Supported values are "SynapseBridge", "SynapseCCTP" and "SynapseRFQ"
+  bridgeModuleName: string
+  // Amount of native gas tokens that user will receive on the destination chain
+  // on top of the token amount
+  gasDropAmount: BigNumber
+}
+```
+
+> **Note:** `Query` objects contain information about the optional swaps to be performed on behalf of the user on origin and destination chains. The exact composition of the `Query` object, as well as the concept of the optional swaps, is abstracted away from the SDK consumer.
+> A collection of methods to modify the `Query` object is provided in the `SynapseSDK` class, allowing the consumer to be unaware of the underlying object structure.
+
 Get a bridge quote from the Synapse Bridge Router:
 
 ```ts
