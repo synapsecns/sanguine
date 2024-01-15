@@ -90,6 +90,8 @@ const bridgeQuotes: BridgeQuote[] = await synapseSDK.bridgeQuote(
 
 The returned list is sorted by the `maxAmountOut` field, so the first quote is the one yielding the highest amount of tokens on the destination chain.
 
+If either of the input/output tokens is a native gas token (e.g. ETH on Ethereum/Arbitrum, AVAX on Avalanche, etc.), the specialized address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` should be used instead of the token address.
+
 > **Note:** The `bridgeQuote` method is a wrapper around the `allBridgeQuotes` method. `bridgeQuote` returns only the first quote from the list, while `allBridgeQuotes` returns the entire list.
 
 #### Applying slippage
