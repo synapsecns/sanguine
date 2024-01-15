@@ -134,19 +134,32 @@ We recommend to not modify the destination deadline, as the behavior of the brid
 
 > **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the deadlines without having to re-fetch the quotes.
 
-Perform a bridge through a Synapse Bridge Router or Synapse CCTP Router:
+#### Performing a bridge transaction
+
+At this stage, we assume that following steps have been performed:
+
+- Bridge quotes have been fetched using the `allBridgeQuotes` or `bridgeQuote` methods.
+- Slippage has been applied to the quotes using the `applyBridgeSlippage` method.
+- User has approved `routerAddress` to spend `amountIn` of `tokenIn` on the origin chain.
+
+Use the `bridge` method to form the payload for the bridge transaction:
 
 ```ts
-const { data, to } = await Synapse.bridge(
+const { data, to, value } = await synapseSDK.bridge(
+  // User address on the destination chain that will receive the tokens
   addressTo,
-  routerAddress,
-  originChain,
-  destinationChain,
+  bridgeQuote.routerAddress,
+  // Parameters used to obtain the BridgeQuote object
+  originChainId,
+  destinationChainId,
   tokenIn,
   amountIn,
+  // Query objects with applied slippage
   originQuery,
   destQuery
 )
 ```
 
-The Synapse SDK allows quick and easy interaction with Synapse Protocol routers and bridges across multiple chains
+`data` and `to` fields should be then used to initiate the bridge transaction on the origin chain, with `value` being the amount of native gas tokens to be sent along with the transaction.
+
+> **Note**: the `bridge` method will not initiate the transaction, but will only return the payload for the transaction. The transaction should be initiated by the user using their preferred method (e.g. MetaMask, WalletConnect, etc.).
