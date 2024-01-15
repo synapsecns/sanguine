@@ -88,10 +88,10 @@ export default function Updater(): null {
         address: address,
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
+      // fetchUserPendingActivity({
+      //   address: address,
+      //   startTime: queryPendingTime,
+      // })
     } else if (masqueradeActive && searchedBalances) {
       const queriedAddress: Address = Object.keys(
         searchedBalances
@@ -100,20 +100,20 @@ export default function Updater(): null {
         address: getValidAddress(queriedAddress),
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: getValidAddress(queriedAddress),
-        startTime: queryPendingTime,
-      })
+      // fetchUserPendingActivity({
+      //   address: getValidAddress(queriedAddress),
+      //   startTime: queryPendingTime,
+      // })
     } else {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
       }).unsubscribe()
 
-      fetchUserPendingActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
+      // fetchUserPendingActivity({
+      //   address: null,
+      //   startTime: null,
+      // }).unsubscribe()
     }
   }, [address, masqueradeActive, searchedBalances])
 
