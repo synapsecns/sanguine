@@ -171,13 +171,8 @@ const StateManagedBridge = () => {
       if (rfqQuote) {
         quote = rfqQuote
       } else {
-        quote = await synapseSDK.bridgeQuote(
-          fromChainId,
-          toChainId,
-          fromToken.addresses[fromChainId],
-          toToken.addresses[toChainId],
-          stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
-        )
+        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
+        quote = allQuotes[0]
       }
 
       const {
