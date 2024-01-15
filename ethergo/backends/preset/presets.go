@@ -11,7 +11,7 @@ import (
 
 // GetRinkeby gets the rinkeby preset backend.
 func GetRinkeby() Backend {
-	chainConfig := *params.AllCliqueProtocolChanges
+	chainConfig := *params.TestChainConfig
 	chainConfig.ChainID = params.RinkebyChainConfig.ChainID
 
 	return Backend{
@@ -26,8 +26,6 @@ func GetRinkeby() Backend {
 func GetBSCTestnet() Backend {
 	chainConfig := *params.AllCliqueProtocolChanges
 	chainConfig.ChainID = client.ChapelChainConfig.ChainID
-	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
 
 	return Backend{
 		config:     &chainConfig,
@@ -37,25 +35,11 @@ func GetBSCTestnet() Backend {
 	}
 }
 
-// GetMaticMumbai gets the matic backend.
-func GetMaticMumbai() Backend {
-	chainConfig := *params.AllCliqueProtocolChanges
-	chainConfig.ChainID = client.MaticMainnetConfig.ChainID
-	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
-
-	return Backend{
-		config:     &chainConfig,
-		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8047"),
-		name:       "Matic",
-		privateKey: os.Getenv("EXPORT_KEY"),
-	}
-}
-
 // GetAvalancheLocal gets the avalanche local config.
 // TODO: this should use avalanche.
 func GetAvalancheLocal() Backend {
-	chainConfig := *client.AvalancheLocalChainConfig
+	chainConfig := *params.AllCliqueProtocolChanges
+	chainConfig.ChainID = core.CopyBigInt(client.AvalancheLocalChainConfig.ChainID)
 
 	return Backend{
 		config:     &chainConfig,
@@ -76,34 +60,6 @@ func GetMaticMumbaiFakeSynDomain() Backend {
 		config:     &chainConfig,
 		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8049"),
 		name:       "Matic",
-		privateKey: os.Getenv("EXPORT_KEY"),
-	}
-}
-
-// GetRinkebyFakeSynDomain gets the rinkeby preset backend.
-func GetRinkebyFakeSynDomain() Backend {
-	chainConfig := *params.AllCliqueProtocolChanges
-	chainConfig.ChainID = big.NewInt(int64(10))
-
-	return Backend{
-		config:     &chainConfig,
-		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8050"),
-		name:       "Rinkeby",
-		privateKey: os.Getenv("EXPORT_KEY"),
-	}
-}
-
-// GetBSCTestnetFakeSynDomain gets the bsc backend.
-func GetBSCTestnetFakeSynDomain() Backend {
-	chainConfig := *params.AllCliqueProtocolChanges
-	chainConfig.ChainID = big.NewInt(int64(10))
-	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
-
-	return Backend{
-		config:     &chainConfig,
-		rpcURL:     core.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8051"),
-		name:       "BSC Testnet",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
 }

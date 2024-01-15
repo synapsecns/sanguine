@@ -56,6 +56,5 @@ func makeEthConfig(address common.Address, config *params.ChainConfig) *ethconfi
 	ethConfig.NoPruning = true
 	ethConfig.TxLookupLimit = 0
 	ethConfig.Preimages = true
-
 	return &ethConfig
 }
