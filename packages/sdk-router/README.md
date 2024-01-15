@@ -1,6 +1,6 @@
 # Synapse Router SDK
-[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fsdk-router?style=flat-square)](https://www.npmjs.com/package/@synapsecns/sdk-router)
 
+[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fsdk-router?style=flat-square)](https://www.npmjs.com/package/@synapsecns/sdk-router)
 
 This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
@@ -8,12 +8,16 @@ This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
 # Synapse SDK
 
-The Synapse SDK allows you to interact with [Synapse Protocol](https://synapseprotocol.com/) routers and bridges. It handles:
+The Synapse SDK allows you to interact with [Synapse Protocol](https://synapseprotocol.com/) router contracts deployed on 19 chains. It handles:
 
-- Getting bridge quotes, performing bridging operations
-- Getting swap quotes, performing swaps
-- Getting liquidity pool information
-- Calculating add/remove liquidity amounts
+- Bridging operations (cross-chain swaps):
+  - Getting bridge quotes
+  - Initiating bridge transactions
+  - Tracking the status of bridge transactions
+- On-chain swap operations:
+  - Getting swap quotes
+  - Initiating swap transactions
+- Utilities for getting miscellaneous data related to protocol, fees, and chains
 
 ## Installation
 
