@@ -163,3 +163,30 @@ const { data, to, value } = await synapseSDK.bridge(
 `data` and `to` fields should be then used to initiate the bridge transaction on the origin chain, with `value` being the amount of native gas tokens to be sent along with the transaction.
 
 > **Note**: the `bridge` method will not initiate the transaction, but will only return the payload for the transaction. The transaction should be initiated by the user using their preferred method (e.g. MetaMask, WalletConnect, etc.).
+
+#### Tracking the status of the bridge transaction
+
+In order to track the status of the bridge transaction, the consumer first needs to fetch its unique "Synapse Tx ID" using the `getSynapseTxId` method:
+
+```ts
+const synapseTxId = await synapseSDK.getSynapseTxId(
+  // Chain ID of the ORIGIN chain
+  originChainId,
+  bridgeQuote.bridgeModuleName,
+  // Transaction hash of the bridge transaction on the origin chain
+  txHash
+)
+```
+
+> `synapseTxId` value stays the same for a given bridge transaction, so there is no need to re-fetch it every time the status is checked.
+
+The status of the bridge transaction can then be checked using the `getBridgeTxStatus` method:
+
+```ts
+const status: boolean = await synapseSDK.getBridgeTxStatus(
+  // Chain ID of the DESTINATION chain
+  destChainId,
+  bridgeQuote.bridgeModuleName,
+  synapseTxId
+)
+```
