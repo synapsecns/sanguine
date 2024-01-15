@@ -111,6 +111,27 @@ const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
 
 > **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the applied slippage without having to re-fetch the quotes.
 
+#### Modifying deadline
+
+Bridge quotes returned by the `allBridgeQuotes` method come with the deadlines set in `Query` objects. It is possible to further modify the deadlines before initiating the bridge transaction.
+
+```ts
+const { originQuery, destQuery } = synapseSDK.applyBridgeDeadline(
+  // fields from the BridgeQuote object returned by the allBridgeQuotes method
+  bridgeQuote.bridgeModuleName,
+  bridgeQuote.originQuery,
+  bridgeQuote.destQuery,
+  // New deadline for the origin chain (optional, default depends on the bridge module)
+  originDeadline,
+  // New deadline for the destination chain (optional, default depends on the bridge module)
+  destDeadline
+)
+```
+
+We recommend to not modify the destination deadline, as the behavior of the bridge module with expired destination deadline varies depending on the module.
+
+> **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the deadlines without having to re-fetch the quotes.
+
 Perform a bridge through a Synapse Bridge Router or Synapse CCTP Router:
 
 ```ts
