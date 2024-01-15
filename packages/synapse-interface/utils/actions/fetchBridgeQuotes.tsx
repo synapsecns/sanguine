@@ -37,6 +37,7 @@ export async function fetchBridgeQuote(
         destinationToken,
         amount,
       }: BridgeQuoteRequest = request
+
       const {
         feeAmount,
         routerAddress,
@@ -65,9 +66,10 @@ export async function fetchBridgeQuote(
       let originMinWithSlippage, destMinWithSlippage
       if (bridgeModuleName === 'SynapseRFQ') {
         // Relayer should take the request with slippage of 5% feeAmount
-        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        const maxOriginSlippage = (BigInt(feeAmount) * BigInt(5)) / BigInt(100)
         if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
-          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+          originMinWithSlippage =
+            BigInt(originQuery.minAmountOut) - maxOriginSlippage
         } else {
           originMinWithSlippage = 0n
         }
@@ -141,15 +143,21 @@ export async function fetchBridgeQuotes(
       const batchRequests = requests.slice(i, i + maxConcurrentRequests)
       const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] =
         batchRequests.map(async (request: BridgeQuoteRequest) => {
-          const results: BridgeQuoteResponse = await fetchBridgeQuote(
-            request,
-            synapseSDK
-          )
-
-          return results
+          try {
+            const results: BridgeQuoteResponse = await fetchBridgeQuote(
+              request,
+              synapseSDK
+            )
+            return results
+          } catch (error) {
+            console.error('Error in individual bridge quote request: ', error)
+            return null
+          }
         })
 
-      const batchBridgeQuotes = await Promise.all(bridgeQuotesPromises)
+      const batchBridgeQuotes = (
+        await Promise.all(bridgeQuotesPromises)
+      ).filter((quote) => quote !== null)
       bridgeQuotes.push(...batchBridgeQuotes)
 
       // Add a delay between batches of requests to avoid overloading the server
