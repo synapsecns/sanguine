@@ -92,6 +92,25 @@ The returned list is sorted by the `maxAmountOut` field, so the first quote is t
 
 > **Note:** The `bridgeQuote` method is a wrapper around the `allBridgeQuotes` method. `bridgeQuote` returns only the first quote from the list, while `allBridgeQuotes` returns the entire list.
 
+#### Applying slippage
+
+Some of the returned quotes may contain information about the optional swaps on origin and destination chains. As the liquidity composition may change over time, it is recommended to apply slippage to the quotes to account for the possible price changes. If no slippage is applied, the user transaction might be reverted due to insufficient funds. The default value for the slippage is 10 basis points (0.1%).
+
+```ts
+const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
+  // fields from the BridgeQuote object returned by the allBridgeQuotes method
+  bridgeQuote.bridgeModuleName,
+  bridgeQuote.originQuery,
+  bridgeQuote.destQuery,
+  // Numerator of the slippage percentage, optional (defaults to 10)
+  slipNumerator,
+  // Denominator of the slippage percentage, optional (defaults to 10000)
+  slipDenominator
+)
+```
+
+> **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the applied slippage without having to re-fetch the quotes.
+
 Perform a bridge through a Synapse Bridge Router or Synapse CCTP Router:
 
 ```ts
