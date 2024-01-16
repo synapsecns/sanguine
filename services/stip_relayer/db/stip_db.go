@@ -3,34 +3,26 @@ package db
 
 import (
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
-// Quote is the database model for a quote.
-type Quote struct {
-	// OriginChainID is the chain which the relayer is willing to relay from
-	OriginChainID uint64 `gorm:"column:origin_chain_id;index;primaryKey"`
-	// OriginTokenAddr is the token address for which the relayer willing to relay from
-	OriginTokenAddr string `gorm:"column:origin_token;index;primaryKey"`
-	// DestChainID is the chain which the relayer is willing to relay to
-	DestChainID uint64 `gorm:"column:dest_chain_id;index;primaryKey"`
-	// DestToken is the token address for which the relayer willing to relay to
-	DestTokenAddr string `gorm:"column:dest_token;index;primaryKey"`
-	// DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals
-	DestAmount decimal.Decimal `gorm:"column:dest_amount"`
-	// MaxOriginAmount is the maximum amount of origin tokens bridgeable
-	MaxOriginAmount decimal.Decimal `gorm:"column:max_origin_amount"`
-	// FixedFee is the fixed fee for the quote, provided in the destination token terms
-	FixedFee decimal.Decimal `gorm:"column:fixed_fee"`
-	// Address of the relayer providing the quote
-	RelayerAddr string `gorm:"column:relayer_address;primaryKey"`
-	// OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain
-	OriginFastBridgeAddress string `gorm:"column:origin_fast_bridge_address"`
-	// DestFastBridgeAddress is the address of the fast bridge contract on the destination chain
-	DestFastBridgeAddress string `gorm:"column:dest_fast_bridge_address"`
-	// UpdatedAt is the time that the quote was last upserted
-	UpdatedAt time.Time
+// ApiResponse is the model that saves Dune query API execution IDs with their results.
+type ApiResponse struct {
+	ExecutionID      string             `gorm:"column:execution_id;index;primaryKey"`
+	STIPTransactions []STIPTransactions `gorm:"foreignKey:ExecutionID"`
+}
+
+// Row is the model that saves raw Dune response data
+type STIPTransactions struct {
+	ExecutionID string    `gorm:"column:execution_id;index"`
+	Address     string    `gorm:"column:address"`
+	Amount      float64   `gorm:"column:amount"`
+	AmountUSD   float64   `gorm:"column:amount_usd"`
+	ArbPrice    float64   `gorm:"column:arb_price"`
+	BlockTime   time.Time `gorm:"column:block_time"`
+	Direction   string    `gorm:"column:direction"`
+	Hash        string    `gorm:"column:hash;index;primaryKey"`
+	Token       string    `gorm:"column:token"`
+	TokenPrice  float64   `gorm:"column:token_price"`
 }
 
 // STIPDBReader is the interface for reading from the database.
