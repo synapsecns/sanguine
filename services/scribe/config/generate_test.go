@@ -11,7 +11,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/parser/hardhat"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"path/filepath"
 	"strconv"
@@ -81,7 +80,7 @@ func (c *ConfigSuite) TestGenerateConfig() {
 }
 
 // getDeploymentsTxHash gets the tx receipt from a list of deployments by address and chainid.
-func getDeploymentsTxHash(tb testing.TB, deployments []providers.Contract, chainID uint32, contractAddress common.Address) common.Hash {
+func getDeploymentsTxHash(tb testing.TB, deployments []hardhat.Contract, chainID uint32, contractAddress common.Address) common.Hash {
 	tb.Helper()
 
 	for _, deployment := range deployments {

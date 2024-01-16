@@ -17,7 +17,6 @@ func (g *SimulatedSuite) TestGetSimulatedBackend() {
 	NotNil(g.T(), be.ChainConfig())
 	Equal(g.T(), uint(be.ChainConfig().ChainID.Uint64()), be.GetChainID())
 	Equal(g.T(), be.BackendName(), simulated.BackendName)
-	False(g.T(), be.EnableTenderly())
 
 	// generate a new mock address
 	testAddress := mocks.MockAddress()
