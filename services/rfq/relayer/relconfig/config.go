@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
@@ -41,6 +42,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
+	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -53,6 +56,8 @@ type ChainConfig struct {
 	Tokens map[string]TokenConfig `yaml:"tokens"`
 	// NativeToken is the native token of the chain (pays gas).
 	NativeToken string `yaml:"native_token"`
+	// DeadlineBufferSeconds is the deadline buffer for relaying a transaction.
+	DeadlineBufferSeconds int `yaml:"deadline_buffer_seconds"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -323,6 +328,21 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
+}
+
+const defaultDeadlineBufferSeconds = 600
+
+// GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
+func (c Config) GetDeadlineBuffer(chainID int) time.Duration {
+	deadlineBufferSeconds := defaultDeadlineBufferSeconds
+	if c.BaseDeadlineBufferSeconds > 0 {
+		deadlineBufferSeconds = c.BaseDeadlineBufferSeconds
+	}
+	chainCfg, ok := c.Chains[chainID]
+	if ok && chainCfg.DeadlineBufferSeconds > 0 {
+		deadlineBufferSeconds = chainCfg.DeadlineBufferSeconds
+	}
+	return time.Duration(deadlineBufferSeconds) * time.Second
 }
 
 var _ IConfig = &Config{}
