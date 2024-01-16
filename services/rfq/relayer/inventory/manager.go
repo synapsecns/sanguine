@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -109,6 +110,7 @@ type tokenMetadata struct {
 	balance        *big.Int
 	decimals       uint8
 	startAllowance *big.Int
+	isNative       bool
 }
 
 var (
@@ -222,28 +224,44 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
 	var deferredRegisters []registerCall
 	deferredCalls := make(map[int][]w3types.Caller)
+	// ethBalanceCalls := make(map[int]w3types.CallerFactory[*big.Int])
 
 	// iterate through all tokens to get the metadata
 	for chainID, chainCfg := range cfg.GetChains() {
 		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			if tokenName == chainCfg.NativeToken {
-				continue
-			}
+			isNativeToken := tokenName == chainCfg.NativeToken
 
-			token := common.HexToAddress(tokenCfg.Address)
+			var token common.Address
+			if isNativeToken {
+				token = chain.EthAddress
+			} else {
+				token = common.HexToAddress(tokenCfg.Address)
+			}
 			rtoken := &tokenMetadata{}
 			i.tokens[chainID][token] = rtoken
+
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
 			rtoken.startAllowance = new(big.Int)
 
-			deferredCalls[chainID] = append(deferredCalls[chainID],
-				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
-				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
-				eth.CallFunc(funcName, token).Returns(&rtoken.name),
-				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
-			)
+			if isNativeToken {
+				rtoken.isNative = true
+				rtoken.decimals = 18
+				rtoken.name = tokenName
+				// TODO: start allowance?
+				deferredCalls[chainID] = append(deferredCalls[chainID],
+					eth.Balance(i.relayerAddress, nil).Returns(rtoken.balance),
+				)
+			} else {
+				rtoken.isNative = false
+				deferredCalls[chainID] = append(deferredCalls[chainID],
+					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
+					eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
+					eth.CallFunc(funcName, token).Returns(&rtoken.name),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
+				)
+			}
 
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
@@ -312,7 +330,13 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		for tokenAddress, token := range tokenMap {
 			// update the balance
 			// TODO: make sure Returns does nothing on error
-			deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+			if token.isNative {
+				deferredCalls = append(deferredCalls,
+					eth.Balance(i.relayerAddress, nil).Returns(token.balance),
+				)
+			} else {
+				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+			}
 		}
 
 		chainID := chainID // capture func literal
