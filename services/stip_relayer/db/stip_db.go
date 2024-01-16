@@ -21,6 +21,7 @@ type STIPTransactions struct {
 	BlockTime   time.Time `gorm:"column:block_time"`
 	Direction   string    `gorm:"column:direction"`
 	Hash        string    `gorm:"column:hash;index;primaryKey"`
+	Module      string    `gorm:"column:module"`
 	Token       string    `gorm:"column:token"`
 	TokenPrice  float64   `gorm:"column:token_price"`
 	Rebated     bool      `gorm:"column:rebated"`
