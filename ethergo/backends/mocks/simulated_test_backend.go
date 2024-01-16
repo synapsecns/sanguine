@@ -370,20 +370,6 @@ func (_m *SimulatedTestBackend) ConcurrencyCount() int32 {
 	return r0
 }
 
-// EnableTenderly provides a mock function with given fields:
-func (_m *SimulatedTestBackend) EnableTenderly() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
 // EstimateGas provides a mock function with given fields: ctx, call
 func (_m *SimulatedTestBackend) EstimateGas(ctx context.Context, call ethereum.CallMsg) (uint64, error) {
 	ret := _m.Called(ctx, call)
