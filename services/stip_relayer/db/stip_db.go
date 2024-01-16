@@ -23,6 +23,8 @@ type STIPTransactions struct {
 	Hash        string    `gorm:"column:hash;index;primaryKey"`
 	Token       string    `gorm:"column:token"`
 	TokenPrice  float64   `gorm:"column:token_price"`
+	Rebated     bool      `gorm:"column:rebated"`
+	Nonce       uint64    `gorm:"column:rebated_nonce"`
 }
 
 // STIPDBReader is the interface for reading from the database.
