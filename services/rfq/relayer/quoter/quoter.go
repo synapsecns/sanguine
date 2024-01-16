@@ -314,6 +314,14 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 			return nil, fmt.Errorf("error getting min gas token: %w", err)
 		}
 		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
+		if quoteAmount.Cmp(big.NewInt(0)) < 0 {
+			err = fmt.Errorf("min gas token exceeds quote amount")
+			span.AddEvent(err.Error(), trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("min_gas_token", minGasToken.String()),
+			))
+			return nil, err
+		}
 	}
 	return quoteAmount, nil
 }
