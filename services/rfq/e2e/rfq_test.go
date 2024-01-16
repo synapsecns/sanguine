@@ -17,6 +17,7 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
@@ -85,7 +86,6 @@ func (i *IntegrationSuite) getOtherBackend(backend backends.SimulatedTestBackend
 	return nil
 }
 
-// TODO:
 func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
 	// 100k should do.
@@ -180,6 +180,106 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 			if common.HexToAddress(quote.DestTokenAddr) == originUSDC.Address() && quote.DestChainID == originBackendChainID {
 
 				// we should now have some usdc on the origin chain since we claimed
+				// this should be offered up as inventory
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(big.NewInt(0)) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+}
+
+func (i *IntegrationSuite) TestETHtoETH() {
+	// Send ETH to the relayer on destination
+	i.destBackend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), *big.NewInt(100000))
+
+	// let's give the user some money as well
+	const userWantAmount = 1
+	i.originBackend.FundAccount(i.GetTestContext(), i.userWallet.Address(), *big.NewInt(userWantAmount))
+
+	// non decimal adjusted user want amount
+	ethDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	realWantAmount := new(big.Int).Mul(big.NewInt(userWantAmount), ethDecimalsFactor)
+
+	// now our friendly user is going to check the quote and send us some ETH on the origin chain.
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := userAPIClient.GetAllQuotes()
+		i.NoError(err)
+
+		// let's figure out the amount of ETH we need
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress {
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(realWantAmount) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	// we want 499 ETH for 500 requested within a day
+	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()),
+		To:           i.userWallet.Address(),
+		OriginToken:  chain.EthAddress,
+		SendChainGas: true,
+		DestToken:    chain.EthAddress,
+		OriginAmount: realWantAmount,
+		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1000)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	})
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// TODO: this, but cleaner
+	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
+	i.NoError(err)
+
+	go func() {
+		for {
+			select {
+			case <-i.GetTestContext().Done():
+				return
+			case <-time.After(time.Second * 4):
+				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
+				// we don't need to worry about deadline since we're only doing this on origin
+				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+				i.NoError(err)
+
+				// because can claim works on last block timestamp, we need to do something
+				err = anvilClient.Mine(i.GetTestContext(), 1)
+				i.NoError(err)
+			}
+		}
+	}()
+
+	// since relayer started w/ 0 ETH, once they're offering the inventory up on origin chain we know the workflow completed
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := relayerAPIClient.GetAllQuotes()
+		i.NoError(err)
+
+		// let's figure out the amount of ETH we need
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress && quote.DestChainID == originBackendChainID {
+				// we should now have some ETH on the origin chain since we claimed
 				// this should be offered up as inventory
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
 				if destAmountBigInt.Cmp(big.NewInt(0)) > 0 {
