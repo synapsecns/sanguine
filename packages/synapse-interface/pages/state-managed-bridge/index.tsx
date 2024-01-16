@@ -162,6 +162,11 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
+      if (allQuotes.length === 0) {
+        const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        throw new Error(msg)
+      }
+
       const rfqQuote = allQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
