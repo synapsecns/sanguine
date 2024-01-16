@@ -136,6 +136,35 @@ export class FastBridgeRouter implements SynapseModule {
       rfqTokens,
       amountIn
     )
-    return queries.map(reduceToQuery)
+    const protocolFeeRate = await this.getProtocolFeeRate()
+    // Apply the protocol fee to the proceeds of each swap query
+    return queries.map(reduceToQuery).map((query) => ({
+      ...query,
+      minAmountOut: this.applyProtocolFeeRate(
+        query.minAmountOut,
+        protocolFeeRate
+      ),
+    }))
+  }
+
+  /**
+   * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
+   */
+  public async getProtocolFeeRate(): Promise<BigNumber> {
+    const fastBridgeContract = await this.getFastBridgeContract()
+    return fastBridgeContract.protocolFeeRate()
+  }
+
+  /**
+   * Applies the protocol fee to the amount.
+   *
+   * @returns The amount after the fee.
+   */
+  private applyProtocolFeeRate(
+    amount: BigNumber,
+    protocolFeeRate: BigNumber
+  ): BigNumber {
+    const protocolFee = amount.mul(protocolFeeRate).div(1_000_000)
+    return amount.sub(protocolFee)
   }
 }
