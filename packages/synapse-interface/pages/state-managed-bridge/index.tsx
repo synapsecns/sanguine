@@ -471,43 +471,46 @@ const StateManagedBridge = () => {
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <PageHeader
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div>
-            <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-              onClick={() => {
-                if (showSettingsSlideOver === true) {
-                  dispatch(setShowSettingsSlideOver(false))
-                } else {
-                  dispatch(setShowSettingsSlideOver(true))
-                }
-              }}
-            >
-              {!showSettingsSlideOver ? (
-                <>
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
-                </>
-              ) : (
-                <span>Close</span>
-              )}
-            </Button>
-          </div>
+          <Button
+            className={`
+              flex items-center p-3
+              bg-zinc-200 text-zinc-800
+              dark:bg-zinc-800 dark:text-zinc-300
+              hover:bg-zinc-300 hover:dark:bg-zinc-700
+            `}
+            onClick={() => {
+              if (showSettingsSlideOver === true) {
+                dispatch(setShowSettingsSlideOver(false))
+              } else {
+                dispatch(setShowSettingsSlideOver(true))
+              }
+            }}
+          >
+            {!showSettingsSlideOver ? (
+              <>
+                <SettingsIcon className="w-5 h-5 mr-2" />
+                <span>Settings</span>
+              </>
+            ) : (
+              <span>Close</span>
+            )}
+          </Button>
         </div>
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+            overflow-hidden
             transition-all duration-100 transform rounded-md
-            bg-bgBase
+            bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-transparent
           `}
         >
-          <div ref={bridgeDisplayRef}>
+          <div ref={bridgeDisplayRef} className="flex flex-col gap-3">
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
                 <SettingsSlideOver key="settings" />
@@ -536,27 +539,25 @@ const StateManagedBridge = () => {
             <InputContainer />
             <OutputContainer />
             <Warning />
-            <Transition
+            {/* <Transition
               appear={true}
               unmount={false}
               show={true}
               {...SECTION_TRANSITION_PROPS}
-            >
+            > */}
               <BridgeExchangeRateInfo showGasDrop={true} />
-            </Transition>
+            {/* </Transition> */}
             {showDestinationAddress && (
               <DestinationAddressInput
                 toChainId={toChainId}
                 destinationAddress={destinationAddress}
               />
             )}
-            <div className="md:my-3">
-              <BridgeTransactionButton
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-              />
-            </div>
+            <BridgeTransactionButton
+              isApproved={isApproved}
+              approveTxn={approveTxn}
+              executeBridge={executeBridge}
+            />
           </div>
         </Card>
       </div>

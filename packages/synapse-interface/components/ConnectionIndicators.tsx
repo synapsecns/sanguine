@@ -16,28 +16,22 @@ import {
 } from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
 
+const buttonBaseStyles = `
+  flex gap-2 items-center
+  px-3 py-1 rounded-full text-sm
+  transition-all duration-75
+  border border-transparent
+`
+const dotBaseStyles = "w-2 h-2 rounded-full"
+
 export const ConnectedIndicator = () => {
   return (
     <button
       data-test-id="connected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        hover:cursor-default
-        h-8
-      `}
+      className={buttonBaseStyles}
     >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
-            `}
-        />
-        Connected
-      </div>
+      <div className="w-2 h-2 bg-green-500 rounded-full" />
+      Connected
     </button>
   )
 }
@@ -51,11 +45,7 @@ const DisconnectedIndicator = () => {
     <button
       data-test-id="disconnected-button"
       className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
+        ${buttonBaseStyles}
         ${getNetworkHover(chain?.color)}
         ${getNetworkButtonBgClassNameActive(chain?.color)}
         ${getNetworkButtonBorderActive(chain?.color)}
@@ -63,15 +53,8 @@ const DisconnectedIndicator = () => {
       `}
       onClick={openConnectModal}
     >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
+        <div className={`${dotBaseStyles} bg-red-500`} />
         Disconnected
-      </div>
     </button>
   )
 }
@@ -101,11 +84,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     <button
       data-test-id="connect-button"
       className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
+        ${buttonBaseStyles}
         ${getNetworkHover(chain?.color)}
         ${getNetworkButtonBgClassNameActive(chain?.color)}
         ${getNetworkButtonBorderActive(chain?.color)}
@@ -114,28 +93,16 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       onClick={handleConnectNetwork}
     >
       {isConnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
-            `}
-          />
-          <div className="flex items-center space-x-2">
-            <div>Connecting</div>
-            <LoaderIcon />
-          </div>
-        </div>
+        <>
+          <div className={`${dotBaseStyles} border border-green-300`} />
+          Connecting
+          <LoaderIcon />
+        </>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
+        <>
+          <div className={`${dotBaseStyles} border border-indigo-300`} />
           Switch Network
-        </div>
+        </>
       )}
     </button>
   )
@@ -160,17 +127,10 @@ export function ConnectWalletButton() {
                   if (!mounted || !account || !chain || !address) {
                     return (
                       <button
-                        className={`
-                          flex items-center text-sm text-white mr-2
-                        `}
+                        className={buttonBaseStyles}
                         onClick={openConnectModal}
                       >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
+                        <div className={`${dotBaseStyles} border border-indigo-300`} />
                         Connect Wallet
                       </button>
                     )

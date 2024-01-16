@@ -168,7 +168,7 @@ export const getMenuItemHoverBgForCoin = (tokenColor: string): string => {
     case ColorOptions.GRAY:
       return `hover:bg-opacity-20 hover:bg-gray-500 dark:hover:bg-opacity-20 dark:hover:bg-gray-700`
     case ColorOptions.YELLOW:
-      return `hover:bg-opacity-20 hover:bg-yellow-500 dark:hover:bg-opacity-20 dark:hover:bg-yellow-700`
+      return `hover:bg-opacity-20 hover:bg-yellow-500 dark:hover:bg-opacity-20 dark:hover:bg-yellow-300`
     case ColorOptions.GREEN:
       return `hover:bg-opacity-20 hover:bg-green-500 dark:hover:bg-opacity-20 dark:hover:bg-green-700`
     case ColorOptions.LIME:

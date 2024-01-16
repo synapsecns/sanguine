@@ -5,14 +5,14 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 
 const BASE_PROPERTIES = `
-    w-full rounded-md px-4 py-3
-    text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
+    w-full rounded-md py-3 text-lg
+    text-white transition-all
+    hover:opacity-80 disabled:opacity-50 disabled:cursor-default
+    disabled:text-black disabled:dark:text-white
+    disabled:from-zinc-300 disabled:to-zinc-300
+    disabled:dark:from-zinc-700 disabled:dark:to-zinc-700
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
-
-const disabledClass = `opacity-30 cursor-default`
 
 export const TransactionButton = ({
   className,
@@ -44,7 +44,6 @@ export const TransactionButton = ({
       className={`
         ${className}
         ${BASE_PROPERTIES}
-        ${disabled && disabledClass}
         ${isPending && 'from-[#622e71] to-[#564071]'}
       `}
       onClick={async () => {

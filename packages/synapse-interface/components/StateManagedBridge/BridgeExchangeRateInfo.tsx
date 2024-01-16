@@ -38,6 +38,8 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
   const underFee = safeExchangeRate === 0n && safeFromAmount != '0'
 
+  console.log(numExchangeRate)
+
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
       return 'text-green-500'
@@ -70,41 +72,28 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-sm md:text-base md:px-6">
-      {showGasDrop && (
-        <div
-          className={
-            isGasDropped
-              ? 'flex items-center justify-between'
-              : 'flex justify-end'
-          }
-        >
-          {memoizedGasDropLabel}
-        </div>
-      )}
-      <div className="flex justify-between">
-        <div className="flex space-x-2 text-[#88818C]">
-          <p>Expected Price on</p>
-          {expectedToChain}
-        </div>
-        <span className="text-[#88818C]">
-          {safeFromAmount != '0' ? (
-            <>
-              {formattedExchangeRate}{' '}
-              <span className="text-white">{toToken?.symbol}</span>
-            </>
-          ) : (
-            '—'
-          )}
-        </span>
+    <div className="flex flex-col gap-1 px-1 py-2">
+      <div>
+        {showGasDrop && memoizedGasDropLabel}
       </div>
       <div className="flex justify-between">
-        <p className="text-[#88818C] ">Slippage</p>
-        {safeFromAmount != '0' && !underFee ? (
-          <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
-        ) : (
-          <span className="text-[#88818C]">—</span>
-        )}
+        <div className="flex gap-2 items-center">
+          Expected price on {expectedToChain}
+        </div>
+        <div>
+          {safeFromAmount != '0'
+            ? `${formattedExchangeRate} ${toToken?.symbol}`
+            : '−'
+          }
+        </div>
+      </div>
+      <div className="flex justify-between">
+        <div>
+          Slippage
+        </div>
+        <div className={safeFromAmount == '0' && textColor}>
+          {safeFromAmount != '0' && !underFee ? formattedPercentSlippage : '−'}
+        </div>
       </div>
     </div>
   )
@@ -139,33 +128,22 @@ const GasDropLabel = ({
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
   return (
-    <div className="flex justify-between text-[#88818C]">
-      <span className="text-[#88818C]">
-        Will also receive {formattedGasDropAmount}{' '}
-      </span>
-      <span className="ml-1 font-medium text-white">
-        {' '}
-        {symbol}{' '}
-        <span className="text-[#88818C] font-normal">
-          {airdropInDollars && `($${airdropInDollars})`}
-        </span>
-      </span>
-    </div>
+    <>
+      Will also receive {formattedGasDropAmount} {symbol} {airdropInDollars && `($${airdropInDollars})`}
+    </>
   )
 }
 
 const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
-    <span className="flex items-center space-x-1">
+    <span className="flex items-center gap-1">
       <Image
         alt="chain image"
         src={chain?.chainImg}
-        className="w-4 h-4 rounded-full"
+        className="w-4 h-4 rounded-full inline"
       />
-      <span className="text-white">
-        {chain?.name?.length > 10 ? chain?.chainSymbol : chain?.name}
-      </span>
+      {chain?.name?.length > 10 ? chain?.chainSymbol : chain?.name}
     </span>
   ) : null
 }

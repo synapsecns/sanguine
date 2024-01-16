@@ -17,53 +17,31 @@ export const FromChainSelector = () => {
   const { fromChainId } = useBridgeState()
   const fromChain = CHAINS_BY_ID[fromChainId]
 
-  let buttonContent
-
-  if (fromChainId) {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div>
-          <img
-            src={fromChain?.chainImg?.src}
-            alt={fromChain?.name}
-            className="w-6 h-6 rounded-sm"
-          />
-        </div>
-        <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">{fromChain?.name}</div>
-        </div>
-        <DropDownArrowSvg />
-      </div>
-    )
-  } else {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div className="text-left">
-          <div className="text-xs text-secondaryTextColor">From</div>
-          <div className="text-md text-primaryTextColor">Network</div>
-        </div>
-        <DropDownArrowSvg />
-      </div>
-    )
-  }
-
   return (
     <button
       data-test-id="bridge-origin-chain-list-button"
       className={`
-        bg-transparent
-        p-md
-        ${getNetworkHover(fromChain?.color)}
-        ${getNetworkButtonBgClassNameActive(fromChain?.color)}
+        flex items-center gap-1.5
+        p-2 rounded
         border border-transparent
-        ${getNetworkButtonBorderActive(fromChain?.color)}
+        active:opacity-70
+        ${getNetworkHover(fromChain?.color)}
         ${getNetworkButtonBorderHover(fromChain?.color)}
-        rounded-sm
       `}
       onClick={() => dispatch(setShowFromChainListOverlay(true))}
     >
-      <div className="flex items-center">{buttonContent}</div>
+      {fromChainId && (
+        <img
+          src={fromChain?.chainImg?.src}
+          alt={fromChain?.name}
+          className="w-6 h-6 rounded-sm"
+        />
+      )}
+      <dl className="text-left">
+        <dt className="text-sm opacity-50">From</dt>
+        <dd>{fromChain?.name || 'Network'}</dd>
+      </dl>
+      <DropDownArrowSvg className="mx-0.5" />
     </button>
   )
 }

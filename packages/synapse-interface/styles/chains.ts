@@ -511,32 +511,32 @@ export const getNetworkShadow = (chainColor: string): string => {
 export const getNetworkHover = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `hover:bg-[#5170ad] hover:bg-opacity-30 dark:hover:bg-yellow-500`
+      return `hover:bg-[#5170ad] hover:bg-opacity-30`
     case ColorOptions.YELLOW:
-      return `hover:bg-[#ecae0b] hover:bg-opacity-30 dark:hover:bg-[#ecae0b]`
+      return `hover:bg-[#ecae0b] hover:bg-opacity-30`
     case ColorOptions.GRAY:
-      return `hover:bg-gray-500 hover:bg-opacity-30 dark:hover:bg-gray-500`
+      return `hover:bg-gray-500 hover:bg-opacity-30`
     case ColorOptions.GREEN:
-      return `hover:bg-green-500 hover:bg-opacity-30 dark:hover:bg-green-500`
+      return `hover:bg-green-500 hover:bg-opacity-30`
     case ColorOptions.LIME:
-      return `hover:bg-lime-500 hover:bg-opacity-30 dark:hover:bg-lime-500`
+      return `hover:bg-lime-500 hover:bg-opacity-30`
     case ColorOptions.SKY:
-      return `hover:bg-sky-500 hover:bg-opacity-30 dark:hover:bg-sky-500`
+      return `hover:bg-sky-500 hover:bg-opacity-30`
     case ColorOptions.BLUE:
-      return `hover:bg-blue-500 hover:bg-opacity-30 dark:hover:bg-blue-500`
+      return `hover:bg-blue-500 hover:bg-opacity-30`
     case ColorOptions.ORANGE:
-      return `hover:bg-orange-500 hover:bg-opacity-30 dark:hover:bg-orange-500`
+      return `hover:bg-orange-500 hover:bg-opacity-30`
     case ColorOptions.PURPLE:
-      return `hover:bg-purple-500 hover:bg-opacity-30 dark:hover:bg-purple-500`
+      return `hover:bg-purple-500 hover:bg-opacity-30`
     case ColorOptions.INDIGO:
-      return `hover:bg-indigo-500 hover:bg-opacity-30 dark:hover:bg-indigo-500`
+      return `hover:bg-indigo-500 hover:bg-opacity-30`
     case ColorOptions.CYAN:
-      return `hover:bg-cyan-500 hover:bg-opacity-30 dark:hover:bg-cyan-500`
+      return `hover:bg-cyan-500 hover:bg-opacity-30`
     case ColorOptions.RED:
-      return `hover:bg-red-500 hover:bg-opacity-30 dark:hover:bg-red-500`
+      return `hover:bg-red-500 hover:bg-opacity-30`
     case ColorOptions.TEAL:
-      return `hover:bg-teal-500 hover:bg-opacity-30 dark:hover:bg-teal-500`
+      return `hover:bg-teal-500 hover:bg-opacity-30`
     default:
-      return `hover:bg-gray-500 hover:bg-opacity-30 dark:hover:bg-gray-500`
+      return `hover:bg-gray-500 hover:bg-opacity-30`
   }
 }

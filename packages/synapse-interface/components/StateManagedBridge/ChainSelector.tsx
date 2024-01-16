@@ -1,7 +1,10 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
+import {
+  setShowFromChainListOverlay,
+  setShowToChainListOverlay,
+} from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
@@ -12,10 +15,16 @@ import {
   getNetworkHover,
 } from '@/styles/chains'
 
-export const ToChainSelector = () => {
+export const ChainSelector = ({ side }: { side: string }) => {
+  console.log('side', side)
   const dispatch = useDispatch()
-  const { toChainId } = useBridgeState()
-  const toChain = CHAINS_BY_ID[toChainId]
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const chainId = side === 'from'
+    ? fromChainId
+    : toChainId
+
+  const chain = CHAINS_BY_ID[chainId]
 
   return (
     <button
@@ -25,21 +34,24 @@ export const ToChainSelector = () => {
         p-2 rounded
         border border-transparent
         active:opacity-70
-        ${getNetworkHover(toChain?.color)}
-        ${getNetworkButtonBorderHover(toChain?.color)}
+        ${getNetworkHover(chain?.color)}
+        ${getNetworkButtonBorderHover(chain?.color)}
       `}
-      onClick={() => dispatch(setShowToChainListOverlay(true))}
+      onClick={() => side === 'from'
+        ? dispatch(setShowFromChainListOverlay(true))
+        : dispatch(setShowToChainListOverlay(true))
+      }
     >
-      {toChainId && (
+      {chain && (
         <img
-          src={toChain?.chainImg?.src}
-          alt={toChain?.name}
+          src={chain?.chainImg?.src}
+          alt={chain?.name}
           className="w-6 h-6 rounded-sm"
         />
       )}
       <dl className="text-left">
-        <dt className="text-sm opacity-50">To</dt>
-        <dd>{toChain?.name || 'Network'}</dd>
+        <dt className="text-sm opacity-50 capitalize">{side}</dt>
+        <dd>{chain?.name || 'Network'}</dd>
       </dl>
       <DropDownArrowSvg className="mx-0.5" />
     </button>
