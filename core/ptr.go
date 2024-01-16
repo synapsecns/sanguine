@@ -47,3 +47,12 @@ func ArePointersEqual(a, b interface{}) bool {
 
 	return aValue.Pointer() == bValue.Pointer()
 }
+
+// CopyPointer is a generic function that takes a pointer of any type and returns a new pointer to a new value of the same type.
+func CopyPointer[T any](originalPtr *T) *T {
+	if originalPtr == nil {
+		return nil
+	}
+	newValue := *originalPtr
+	return &newValue
+}

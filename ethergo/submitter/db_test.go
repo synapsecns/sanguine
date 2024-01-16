@@ -99,7 +99,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				// check that the result is limited per ChainID and address
 				for _, tx := range result {
 					t.Require().Equal(backend.GetBigChainID(), tx.ChainId(), testsuite.BigIntComparer())
-					msg, err := util.TxToCall(tx)
+					msg, err := util.TxToCall(tx.Transaction)
 					t.Require().NoError(err)
 
 					t.Require().Equal(mockAccount.Address, msg.From)
