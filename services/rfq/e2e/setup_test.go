@@ -235,8 +235,8 @@ func (i *IntegrationSuite) setupRelayer() {
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
-			OriginGasEstimate:         500000,
-			DestinationGasEstimate:    1000000,
+			BaseOriginGasEstimate:     500000,
+			BaseDestGasEstimate:       1000000,
 		},
 	}
 

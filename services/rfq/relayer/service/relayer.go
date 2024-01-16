@@ -79,7 +79,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
-		return nil, fmt.Errorf("could not get signer")
+		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 
 	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
@@ -223,7 +223,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted)
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}

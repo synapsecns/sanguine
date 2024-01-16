@@ -5,6 +5,7 @@ import { BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils/deadlines'
+import { Query } from './query'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -120,6 +121,16 @@ export abstract class SynapseModuleSet {
   }>
 
   /**
+   * Retrieves the gas drop amount for a given bridge route.
+   * User will receive this amount of gas tokens on the destination chain,
+   * when the module transaction is completed.
+   *
+   * @param bridgeRoute - The bridge route to get gas drop amount for.
+   * @returns A promise that resolves to the gas drop amount.
+   */
+  abstract getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber>
+
+  /**
    * Returns the default deadline periods for this bridge module.
    *
    * @returns The default deadline periods.
@@ -128,6 +139,44 @@ export abstract class SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   }
+
+  /**
+   * Returns the deadlines to use for the given module transaction.
+   *
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
+   * @returns The deadlines to use.
+   */
+  public getModuleDeadlines(
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
+  ): {
+    originModuleDeadline: BigNumber
+    destModuleDeadline: BigNumber
+  } {
+    const { originPeriod, destPeriod } = this.getDefaultPeriods()
+    return {
+      originModuleDeadline: applyOptionalDeadline(originDeadline, originPeriod),
+      destModuleDeadline: applyOptionalDeadline(destDeadline, destPeriod),
+    }
+  }
+
+  /**
+   * Applies the specified slippage to the given queries by modifying the minAmountOut.
+   * Note: the original queries are preserved unchanged.
+   *
+   * @param originQueryPrecise - The query for the origin chain with the precise minAmountOut.
+   * @param destQueryPrecise - The query for the destination chain with the precise minAmountOut.
+   * @param slipNumerator - The numerator of the slippage.
+   * @param slipDenominator - The denominator of the slippage.
+   * @returns The modified queries with the reduced minAmountOut.
+   */
+  abstract applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query }
 
   /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.
@@ -151,9 +200,10 @@ export abstract class SynapseModuleSet {
       'Invalid bridge module name'
     )
     const { originQuery, destQuery } = bridgeRoute
-    const { originPeriod, destPeriod } = this.getDefaultPeriods()
-    originQuery.deadline = applyOptionalDeadline(originDeadline, originPeriod)
-    destQuery.deadline = applyOptionalDeadline(destDeadline, destPeriod)
+    const { originModuleDeadline, destModuleDeadline } =
+      this.getModuleDeadlines(originDeadline, destDeadline)
+    originQuery.deadline = originModuleDeadline
+    destQuery.deadline = destModuleDeadline
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
       feeAmount,
@@ -164,6 +214,7 @@ export abstract class SynapseModuleSet {
       destQuery,
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
+      gasDropAmount: await this.getGasDropAmount(bridgeRoute),
     }
   }
 }

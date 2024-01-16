@@ -3,6 +3,9 @@ name: Go Workflows
 # note, because of generate tests using path filters here is too complicated
 on:
   pull_request:
+    branches-ignore:
+        - 'gh-pages'
+        - 'fe-release'
   push:
     branches-ignore:
       - 'gh-pages'

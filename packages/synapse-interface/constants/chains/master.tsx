@@ -49,7 +49,7 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://ethereum.blockpi.network/v1/rpc/public',
+    primary: 'https://eth.llamarpc.com',
     fallback: 'https://rpc.ankr.com/eth',
   },
   explorerUrl: 'https://etherscan.com',
@@ -155,7 +155,7 @@ export const OPTIMISM: Chain = {
   codeName: 'optimism',
   blockTime: 2000,
   rpcUrls: {
-    primary: 'https://mainnet.optimism.io',
+    primary: 'https://rpc.ankr.com/optimism',
     fallback: 'https://1rpc.io/op',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },

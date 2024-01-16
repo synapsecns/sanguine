@@ -217,17 +217,18 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+	quoteAmount, err := m.getQuoteAmount(ctx, chainID, address, balance)
+	if err != nil {
+		return nil, err
+	}
+
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
 	}
 
-	quoteAmount, err := m.getQuoteAmount(address, balance)
-	if err != nil {
-		return nil, fmt.Errorf("error getting quote amount: %w", err)
-	}
-
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
+
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
@@ -268,21 +269,56 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-// getQuoteAmount returns the quote size for a given token.
-func (m *Manager) getQuoteAmount(address common.Address, balance *big.Int) (*big.Int, error) {
-	quoteAmount := new(big.Int).Set(balance)
+// submitQuote submits a quote to the RFQ API.
+func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
+		attribute.String(metrics.ChainID, strconv.Itoa(chainID)),
+		attribute.String("address", address.String()),
+		attribute.String("balance", balance.String()),
+	))
+
+	defer func() {
+		span.SetAttributes(attribute.String("quote_amount", quoteAmount.String()))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// Apply the quotePct
+	balanceFlt := new(big.Float).SetInt(balance)
+	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
+
+	// Clip the quoteAmount by the minQuoteAmount
+	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
+	if quoteAmount.Cmp(minQuoteAmount) < 0 {
+		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
+			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("min_quote_amount", minQuoteAmount.String()),
+		))
+		quoteAmount = minQuoteAmount
+	}
+
+	// Finally, clip the quoteAmount by the balance
+	if quoteAmount.Cmp(balance) > 0 {
+		span.AddEvent("quote amount greater than balance", trace.WithAttributes(
+			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("balance", balance.String()),
+		))
+		quoteAmount = balance
+	}
+
+	// Deduct gas cost from the quote amount, if necessary
 	if chain.IsGasToken(address) {
-		// Deduct the minimum gas token balance from the quote amount.
-		minGasToken, ok := new(big.Int).SetString(m.config.MinGasToken, 10)
-		if !ok {
-			return nil, fmt.Errorf("error converting min gas token %s to big.Int", m.config.MinGasToken)
+		// Deduct the minimum gas token balance from the quote amount
+		var minGasToken *big.Int
+		minGasToken, err = m.config.GetMinGasToken()
+		if err != nil {
+			return nil, fmt.Errorf("error getting min gas token: %w", err)
 		}
 		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
 	}
 	return quoteAmount, nil
 }
 
-// submitQuote submits a quote to the RFQ API.
+// Submits a single quote.
 func (m *Manager) submitQuote(quote model.PutQuoteRequest) error {
 	err := m.rfqClient.PutQuote(&quote)
 	if err != nil {
