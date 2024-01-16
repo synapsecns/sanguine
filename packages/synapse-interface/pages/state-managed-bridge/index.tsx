@@ -100,6 +100,8 @@ const StateManagedBridge = () => {
   let pendingPopup
   let successPopup
 
+  const quoteToastRef = useRef({ id: '' })
+
   const [isApproved, setIsApproved] = useState(false)
 
   const dispatch = useAppDispatch()
@@ -144,8 +146,6 @@ const StateManagedBridge = () => {
       }
     }
   }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
-
-  let quoteToast
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -295,17 +295,18 @@ const StateManagedBridge = () => {
           })
         )
 
-        if (quoteToast) {
-          toast.dismiss(quoteToast)
-        }
+        toast.dismiss(quoteToastRef.current.id)
+
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
+
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToast)
+        toast.dismiss(quoteToastRef.current.id)
+
         let message
         if (!fromChainId) {
           message = 'Please select an origin chain'
@@ -319,9 +320,10 @@ const StateManagedBridge = () => {
           message = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         }
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
 
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+
         return
       }
     } finally {
