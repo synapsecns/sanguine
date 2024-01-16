@@ -336,7 +336,8 @@ const StateManagedBridge = () => {
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromToken?.addresses[fromChainId]
+        fromToken?.addresses[fromChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
       await tx
       /** Re-fetch bridge quote to re-check approval state */
