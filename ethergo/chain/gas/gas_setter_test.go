@@ -42,8 +42,8 @@ func (s GasSuite) TestGasPriceSetterFrom0PreLondon() {
 	config.ArrowGlacierBlock = nil
 	config.GrayGlacierBlock = nil
 	config.MergeNetsplitBlock = nil
-	config.ShanghaiBlock = nil
-	config.CancunBlock = nil
+	config.ShanghaiTime = nil
+	config.CancunTime = nil
 
 	testChain := simulated.NewSimulatedBackendWithConfig(s.GetTestContext(), s.T(), config)
 	Nil(s.T(), testChain.ChainConfig().LondonBlock)
