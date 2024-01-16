@@ -3,8 +3,12 @@ package stip_relayer
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/synapsecns/sanguine/core/metrics"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -85,7 +89,64 @@ func NewSTIPRelayer(ctx context.Context,
 }
 
 func (s STIPRelayer) Run() error {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	errChan := make(chan error)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				resp, err := ExecuteDuneQuery()
+				if err != nil {
+					errChan <- fmt.Errorf("Failed to execute Dune query: %v", err)
+					return
+				}
+
+				body, err := ioutil.ReadAll(resp.Body)
+
+				if err != nil {
+					errChan <- fmt.Errorf("Failed to read response body: %v", err)
+					return
+				}
+
+				var result map[string]string
+				err = json.Unmarshal(body, &result)
+				if err != nil {
+					errChan <- fmt.Errorf("Failed to unmarshal response body: %v", err)
+					return
+				}
+
+				execution_id, ok := result["execution_id"]
+				if !ok {
+					errChan <- fmt.Errorf("No execution_id found in response")
+					return
+				}
+
+				time.Sleep(20 * time.Second)
+
+				executionResults, err := GetExecutionResults(execution_id)
+				if err != nil {
+					errChan <- err
+					return
+				}
+				fmt.Println(executionResults)
+
+				// Store executionResults in DB
+				// This part is left as a comment because it depends on the specific implementation of your DB
+				// s.db.StoreExecutionResults(executionResults)
+			}
+		}
+	}()
+
+	err := <-errChan
+	if err != nil {
+		return err
+	}
+
 	// Relayer event loop will live here
+
 	return nil
 
 	// Call ExecuteDuneQuery, wait 20 seconds
