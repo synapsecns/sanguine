@@ -17,6 +17,8 @@ jest.mock('@ethersproject/contracts', () => {
         interface: args[1],
         bridgeRelays: jest.fn(),
         fastBridge: jest.fn(),
+        getOriginAmountOut: jest.fn(),
+        protocolFeeRate: jest.fn(),
         populateTransaction: {
           bridge: actualInstance.populateTransaction.bridge,
         },
@@ -221,6 +223,97 @@ describe('FastBridgeRouter', () => {
       }
 
       createBridgeTest(fastBridgeRouter, bridgeParams, originQuery, destQuery)
+    })
+  })
+
+  describe('getOriginAmountOut', () => {
+    const mockQueryFragment = {
+      routerAdapter: '1',
+      deadline: BigNumber.from(2),
+      rawParams: '3',
+    }
+
+    const mockTokenIn = '0xA'
+    const mockRfqTokens = ['0xA', '0xB']
+
+    beforeAll(() => {
+      jest
+        .spyOn(fastBridgeRouter['routerContract'], 'getOriginAmountOut')
+        .mockImplementation((token, rfqTokens, amountIn) =>
+          Promise.resolve(
+            token === mockTokenIn
+              ? rfqTokens.map((rfqToken, index) => {
+                  const query = {
+                    ...mockQueryFragment,
+                    tokenOut: rfqToken,
+                    minAmountOut: BigNumber.from(amountIn).mul(index + 1),
+                  }
+                  const tuple: [string, string, BigNumber, BigNumber, string] =
+                    [
+                      query.routerAdapter,
+                      query.tokenOut,
+                      query.minAmountOut,
+                      query.deadline,
+                      query.rawParams,
+                    ]
+                  return Object.assign(tuple, {
+                    routerAdapter: query.routerAdapter,
+                    tokenOut: query.tokenOut,
+                    minAmountOut: query.minAmountOut,
+                    deadline: query.deadline,
+                    rawParams: query.rawParams,
+                  })
+                })
+              : []
+          )
+        )
+    })
+
+    it('Returns correct values with protocol fee = 0 bps', async () => {
+      jest
+        .spyOn(fastBridgeRouter['fastBridgeContractCache']!, 'protocolFeeRate')
+        .mockImplementation(() => Promise.resolve(BigNumber.from(0)))
+      const result = await fastBridgeRouter.getOriginAmountOut(
+        mockTokenIn,
+        mockRfqTokens,
+        1_000_001
+      )
+      expect(result).toEqual([
+        {
+          tokenOut: '0xA',
+          minAmountOut: BigNumber.from(1_000_001),
+          ...mockQueryFragment,
+        },
+        {
+          tokenOut: '0xB',
+          minAmountOut: BigNumber.from(2_000_002),
+          ...mockQueryFragment,
+        },
+      ])
+    })
+
+    it('Returns correct values with protocol fee = 10 bps', async () => {
+      // protocolFeeRate uses 10**6 as the denominator
+      jest
+        .spyOn(fastBridgeRouter['fastBridgeContractCache']!, 'protocolFeeRate')
+        .mockImplementation(() => Promise.resolve(BigNumber.from(1000)))
+      const result = await fastBridgeRouter.getOriginAmountOut(
+        mockTokenIn,
+        mockRfqTokens,
+        1_000_001
+      )
+      expect(result).toEqual([
+        {
+          tokenOut: '0xA',
+          minAmountOut: BigNumber.from(999_001),
+          ...mockQueryFragment,
+        },
+        {
+          tokenOut: '0xB',
+          minAmountOut: BigNumber.from(1_998_002),
+          ...mockQueryFragment,
+        },
+      ])
     })
   })
 })
