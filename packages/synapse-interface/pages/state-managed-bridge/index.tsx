@@ -97,9 +97,6 @@ const StateManagedBridge = () => {
     showToTokenListOverlay,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
-  let pendingPopup
-  let successPopup
-
   const quoteToastRef = useRef({ id: '' })
 
   const [isApproved, setIsApproved] = useState(false)
@@ -350,6 +347,7 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    let pendingPopup: any
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
@@ -454,7 +452,7 @@ const StateManagedBridge = () => {
         </div>
       )
 
-      successPopup = toast.success(successToastContent, {
+      toast.success(successToastContent, {
         id: 'bridge-success-popup',
         duration: 10000,
       })
