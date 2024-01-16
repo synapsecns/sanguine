@@ -76,6 +76,7 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
+  const quoteToastRef = useRef({ id: '' })
   const router = useRouter()
   const { query, pathname } = router
 
@@ -96,8 +97,6 @@ const StateManagedBridge = () => {
     showFromTokenListOverlay,
     showToTokenListOverlay,
   } = useSelector((state: RootState) => state.bridgeDisplay)
-
-  const quoteToastRef = useRef({ id: '' })
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -304,7 +303,7 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         toast.dismiss(quoteToastRef.current.id)
 
-        let message
+        let message: string
         if (!fromChainId) {
           message = 'Please select an origin chain'
         } else if (!toChainId) {
