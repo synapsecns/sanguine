@@ -15,6 +15,7 @@ type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// Submitter is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	ArbAddress      string                 `yaml:"arb_address"`
 }
 
 // LoadConfig loads the config from the given path.
