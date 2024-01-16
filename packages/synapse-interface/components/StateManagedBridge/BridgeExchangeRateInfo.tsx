@@ -3,7 +3,6 @@ import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
@@ -23,11 +22,10 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const bridgeModuleName = useSelector(
     (state: RootState) => state.bridge.bridgeQuote.bridgeModuleName
   )
-  let { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
-  if (bridgeModuleName === 'SynapseRFQ') {
-    gasDropAmount = 0n
-    loading = false
-  }
+
+  const gasDropAmount = useSelector(
+    (state: RootState) => state.bridge.bridgeQuote?.rawGasDropAmount
+  )
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
@@ -50,7 +48,7 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
 
   const isGasDropped = useMemo(() => {
     if (gasDropAmount) {
-      return gasDropAmount.gt(0)
+      return gasDropAmount > 0
     }
   }, [gasDropAmount])
 
@@ -61,9 +59,8 @@ const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const memoizedGasDropLabel = useMemo(() => {
     if (toChainId === CHAINS.ETH.id) return null
     if (!isGasDropped || !(toChainId == gasDropChainId)) return null
-    if (loading) return null
     return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-  }, [toChainId, gasDropChainId, isGasDropped, loading])
+  }, [toChainId, gasDropChainId, isGasDropped])
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
