@@ -2,6 +2,7 @@
 package db
 
 import (
+	"context"
 	"time"
 )
 
@@ -30,10 +31,13 @@ type STIPTransactions struct {
 
 // STIPDBReader is the interface for reading from the database.
 type STIPDBReader interface {
+	GetSTIPTransactionsNotRebated(ctx context.Context) ([]*STIPTransactions, error)
 }
 
 // STIPDBWriter is the interface for writing to the database.
 type STIPDBWriter interface {
+	UpdateSTIPTransactionRebated(ctx context.Context, hash string) error
+	InsertNewStipTransactions(ctx context.Context, stipTransactions []STIPTransactions) error
 }
 
 // STIPDB is the interface for the database service.
