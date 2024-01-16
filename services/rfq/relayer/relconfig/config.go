@@ -233,6 +233,9 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 
 // GetMinGasToken returns the min gas token.
 func (c Config) GetMinGasToken() (*big.Int, error) {
+	if c.MinGasToken == "" {
+		return big.NewInt(0), nil
+	}
 	minGasToken, ok := new(big.Int).SetString(c.MinGasToken, 10)
 	if !ok {
 		return nil, fmt.Errorf("could not parse min gas token %s", c.MinGasToken)
