@@ -302,18 +302,29 @@ describe('FastBridgeRouter', () => {
         mockRfqTokens,
         1_000_001
       )
+      // Protocol fees should have no effect on the result
       expect(result).toEqual([
         {
           tokenOut: '0xA',
-          minAmountOut: BigNumber.from(999_001),
+          minAmountOut: BigNumber.from(1_000_001),
           ...mockQueryFragment,
         },
         {
           tokenOut: '0xB',
-          minAmountOut: BigNumber.from(1_998_002),
+          minAmountOut: BigNumber.from(2_000_002),
           ...mockQueryFragment,
         },
       ])
+    })
+  })
+
+  describe('getProtocolFeeRate', () => {
+    it('Returns correct value', async () => {
+      jest
+        .spyOn(fastBridgeRouter['fastBridgeContractCache']!, 'protocolFeeRate')
+        .mockImplementation(() => Promise.resolve(BigNumber.from(1000)))
+      const result = await fastBridgeRouter.getProtocolFeeRate()
+      expect(result).toEqual(BigNumber.from(1000))
     })
   })
 })
