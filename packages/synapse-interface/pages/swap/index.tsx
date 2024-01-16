@@ -235,7 +235,8 @@ const StateManagedSwap = () => {
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
-        swapFromToken?.addresses[swapChainId]
+        swapFromToken?.addresses[swapChainId],
+        stringToBigInt(swapFromValue, swapFromToken?.decimals[swapChainId])
       )
       await tx
       /** Re-fetch swap quote to re-check approval state */
