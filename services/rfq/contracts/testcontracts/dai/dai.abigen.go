@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // DaiMetaData contains all meta data concerning the Dai contract.
@@ -184,11 +185,11 @@ func NewDaiFilterer(address common.Address, filterer bind.ContractFilterer) (*Da
 
 // bindDai binds a generic wrapper to an already deployed contract.
 func bindDai(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(DaiABI))
+	parsed, err := DaiMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1237,11 +1238,11 @@ func NewLibNoteFilterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindLibNote binds a generic wrapper to an already deployed contract.
 func bindLibNote(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(LibNoteABI))
+	parsed, err := LibNoteMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and

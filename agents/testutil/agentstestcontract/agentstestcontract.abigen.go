@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // AgentsTestContractMetaData contains all meta data concerning the AgentsTestContract contract.
@@ -169,11 +170,11 @@ func NewAgentsTestContractFilterer(address common.Address, filterer bind.Contrac
 
 // bindAgentsTestContract binds a generic wrapper to an already deployed contract.
 func bindAgentsTestContract(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AgentsTestContractABI))
+	parsed, err := AgentsTestContractMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
