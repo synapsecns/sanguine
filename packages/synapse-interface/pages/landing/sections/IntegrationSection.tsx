@@ -27,7 +27,7 @@ export default function IntegrationSection() {
       >
         <h2
           className={`
-            mr-6 pr-6 text-3xl text-white
+            mr-6 pr-6 text-3xl
             border-r-0 md:border-r md:border-b-1 md:border-white
           `}
         >
@@ -36,7 +36,7 @@ export default function IntegrationSection() {
         <p
           className={`
             mt-2 text-left md:mt-0
-            text-secondaryTextColor
+            text-zinc-700 dark:text-zinc-400
             max-w-lg
           `}
         >
@@ -98,8 +98,8 @@ function NetworkCard({
       <Card
         className={`
           text-center
-          border border-[#2F2F2F]
-          bg-opacity-0 bg-[#2F2F2F]
+          border border-zinc-400 dark:border-zinc-700
+          bg-none
           px-0
           py-3 md:py-5
           transform-gpu hover:transition-all duration-75
@@ -111,8 +111,8 @@ function NetworkCard({
           <ChainImg src={chainImg} />
         </div>
         <div className="inline-block ">
-          <div className="text-lg font-medium text-white">{chainName}</div>
-          <div className="mt-1 text-sm text-opacity-75 text-secondaryTextColor">
+          <div className="text-lg font-medium">{chainName}</div>
+          <div className="mt-1 text-sm text-opacity-75 text-zinc-700 dark:text-zinc-400">
             Layer {layer}
           </div>
         </div>

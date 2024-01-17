@@ -19,17 +19,17 @@ export default function SecuritySection() {
     >
       <div className="flex flex-col lg:flex-row gap-8 items-center">
         <SynapseCircuit />
-        <div className="max-w-md text-white text-center lg:text-left">
+        <div className="max-w-md text-center lg:text-left">
           <h2 className="mb-4 text-4xl font-medium">
             Securely connect every blockchain
           </h2>
-          <div className="text-secondaryTextColor">
+          <div className="text-zinc-600 dark:text-zinc-300">
             Synapse is comprised of a{' '}
-            <strong className="font-medium text-white">
+            <strong className="font-medium text-zinc-800 dark:text-zinc-200">
               cross-chain messaging framework
             </strong>{' '}
             and an{' '}
-            <strong className="font-medium text-white">
+            <strong className="font-medium text-zinc-800 dark:text-zinc-200">
               economically secure method
             </strong>{' '}
             to reach consensus on the validity of cross-chain transactions,

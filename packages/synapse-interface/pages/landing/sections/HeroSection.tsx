@@ -9,18 +9,18 @@ export default function HeroSection() {
       <h1
         className={`
           text-center text-4xl
-          font-medium text-white
+          font-medium
           md:text-[46px]
         `}
       >
         Secure cross-chain<br />communication
       </h1>
-      <p className="hidden text-center text-secondaryTextColor sm:block">
+      <p className="hidden text-center opacity-80 sm:block">
         Synapse is the most widely used, extensible, secure cross-<br />
         chain communications network. Build truly cross-chain<br />
         applications using the Synapse Protocol.
       </p>
-      <p className="text-center text-secondaryTextColor sm:hidden">
+      <p className="text-center opacity-80 sm:hidden">
         Synapse is the most widely used, extensible, secure cross-chain
         communications network. Build truly cross-chain applications using the
         Synapse Protocol.
@@ -56,7 +56,7 @@ export default function HeroSection() {
             borderRadius: '10px',
           }}
         >
-          <Button className="font-medium" onClick={() => null}>
+          <Button className="font-medium text-inherit" onClick={() => null}>
             Enter Bridge
           </Button>
         </Link>

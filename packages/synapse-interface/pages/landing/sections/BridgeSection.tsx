@@ -20,11 +20,11 @@ export default function BridgeSection() {
       <div className="flex flex-col lg:flex-row gap-8 w-full items-center">
         <div className="flex items-center w-full max-w-lg">
           <div>
-            <h2 className="mb-4 text-4xl font-medium text-left text-white">
+            <h2 className="mb-4 text-4xl font-medium text-left">
               Powering the most popular bridge
             </h2>
-            <p className="font-normal leading-7 text-left text-secondaryTextColor">
-              <strong className="font-medium text-white">Synapse Bridge</strong> is
+            <p className="font-normal leading-7 text-left text-zinc-700 dark:text-zinc-400">
+              <strong className="font-medium text-zinc-900 dark:text-zinc-300">Synapse Bridge</strong> is
               built on top of the cross-chain infrastructure enabling users to
               seamlessly transfer assets across all blockchains. The Bridge has
               become the most widely-used method to move assets cross-chain,

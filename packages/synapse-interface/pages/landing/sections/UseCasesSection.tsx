@@ -35,8 +35,8 @@ export default function UseCasesSection() {
   return (
     <SectionContainer dataTestId="landing-use-cases-section">
       <div className="flex flex-col items-center">
-        <h2 className="mr-6 text-4xl text-white mb-4">Use cases</h2>
-        <p className="text-secondaryTextColor md:text-center">
+        <h2 className="mr-6 text-4xl mb-4">Use cases</h2>
+        <p className="text-zinc-700 dark:text-zinc-400 md:text-center">
           Here’s a preview of what you can do using Synapse.
         </p>
       </div>
@@ -64,16 +64,16 @@ function UseCaseCard({ image, title, description }) {
     <Card
       className={`
         border border-white border-opacity-10
-        bg-opacity-70 bg-[#2F2F2F]
+        bg-opacity-70 bg-zinc-200 dark:bg-zinc-800
         w-full md:w-[300px] flex flex-col gap-2 max-w-xs
       `}
       divider={false}
     >
         <div className="flex -my-4 md:-my-5">{image}</div>
-        <div className="text-lg font-medium text-white mt-2">
+        <div className="text-xl font-medium mt-2 text-zinc-900 dark:text-zinc-100 -mb-1">
           {title}
         </div>
-        <div className="text-sm text-secondaryTextColor">
+        <div className="text-sm text-zinc-700 dark:text-zinc-400">
           {description}
         </div>
     </Card>

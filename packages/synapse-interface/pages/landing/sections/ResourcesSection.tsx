@@ -8,10 +8,10 @@ import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 export default function ResourcesSection() {
   return (
     <SectionContainer dataTestId="landing-resources-section" styles="max-w-5xl m-auto">
-      <h2 className="text-4xl font-medium text-center text-white">
+      <h2 className="text-4xl font-medium text-center">
         Get started now
       </h2>
-      <p className="mb-8 text-center text-secondaryTextColor">
+      <p className="mb-8 text-center text-zinc-700 dark:text-zinc-400">
         Find the resources you need to create integrations with Synapse.
       </p>
 
@@ -49,15 +49,17 @@ function ResourceCard({ title, description, buttonText, linkUrl }) {
       className={`
         text-center rounded-md border
         border-white/10
-        bg-[#2F2F2F] bg-opacity-70 p-4 max-w-xs m-auto
+        bg-zinc-200 dark:bg-zinc-800 p-4 max-w-xs m-auto
       `}
       divider={false}
     >
-      <div className="text-lg font-medium text-left text-white">{title}</div>
+      <div className="text-xl font-medium text-left text-zinc-900 dark:text-zinc-100">
+        {title}
+      </div>
       <div
         className={`
-          mt-1 mb-4 text-sm text-left
-          text-opacity-75 text-secondaryTextColor
+          mt-2 mb-4 text-sm text-left
+          text-opacity-75 text-zinc-700 dark:text-zinc-400
         `}
       >
         {description}
@@ -66,9 +68,9 @@ function ResourceCard({ title, description, buttonText, linkUrl }) {
         <Link href={linkUrl} target="_blank">
           <Button
             className={`
-            bg-white hover:opacity-75
-            text-sm text-[#18171B] font-medium
-            px-4 py-3 border rounded-md
+              bg-white hover:opacity-75
+              text-sm text-[#18171B] font-medium
+              px-4 py-3 border rounded-md
             `}
             onClick={() => null}
           >

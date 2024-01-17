@@ -47,7 +47,7 @@ export const SupportCard = ({
     <Card
       title={header}
       titleClassName="text-3xl py-2"
-      className="bg-transparent text-secondaryTextColor p-0 max-w-md"
+      className="bg-transparent p-0 max-w-md"
       divider={false}
       image={image}
     >
