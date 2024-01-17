@@ -65,7 +65,13 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	if err != nil {
 		return nil, fmt.Errorf("could not get balances: %w", err)
 	}
-	return committableBalances[chainID][token], nil
+	balance := committableBalances[chainID][token]
+	// the gas token may not be registered in the inventory tokens map,
+	// but it is always tracked in gasBalances.
+	if balance == nil && token == chain.EthAddress {
+		balance = i.gasBalances[chainID]
+	}
+	return balance, nil
 }
 
 func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
