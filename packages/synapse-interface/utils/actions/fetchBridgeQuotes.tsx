@@ -32,6 +32,7 @@ export async function fetchBridgeQuote(
         destinationToken,
         amount,
       }: BridgeQuoteRequest = request
+
       const {
         feeAmount,
         routerAddress,
@@ -55,7 +56,7 @@ export async function fetchBridgeQuote(
       // Adjust feeAmount to be in originToken decimals
       const adjustedFeeAmount =
         (BigInt(feeAmount) * BigInt(amount)) / BigInt(originQuery.minAmountOut)
-
+      
       const {
         originQuery: originQueryWithSlippage,
         destQuery: destQueryWithSlippage,
@@ -64,6 +65,7 @@ export async function fetchBridgeQuote(
         originQuery,
         destQuery
       )
+
       return {
         outputAmount: toValueBigInt,
         outputAmountString: commify(
@@ -114,15 +116,21 @@ export async function fetchBridgeQuotes(
       const batchRequests = requests.slice(i, i + maxConcurrentRequests)
       const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] =
         batchRequests.map(async (request: BridgeQuoteRequest) => {
-          const results: BridgeQuoteResponse = await fetchBridgeQuote(
-            request,
-            synapseSDK
-          )
-
-          return results
+          try {
+            const results: BridgeQuoteResponse = await fetchBridgeQuote(
+              request,
+              synapseSDK
+            )
+            return results
+          } catch (error) {
+            console.error('Error in individual bridge quote request: ', error)
+            return null
+          }
         })
 
-      const batchBridgeQuotes = await Promise.all(bridgeQuotesPromises)
+      const batchBridgeQuotes = (
+        await Promise.all(bridgeQuotesPromises)
+      ).filter((quote) => quote !== null)
       bridgeQuotes.push(...batchBridgeQuotes)
 
       // Add a delay between batches of requests to avoid overloading the server
