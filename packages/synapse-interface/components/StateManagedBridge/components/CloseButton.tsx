@@ -4,10 +4,9 @@ export const CloseButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <button
       className={`
-        flex items-center justify-center
         w-8 h-8
         hover:cursor-pointer
-        absolute right-2
+        hover:bg-zinc-300 hover:dark:bg-zinc-950 mr-1 rounded hover:text-black hover:dark:text-zinc-300
       `}
       onClick={onClick}
     >

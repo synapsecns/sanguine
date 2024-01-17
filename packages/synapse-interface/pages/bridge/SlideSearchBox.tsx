@@ -16,16 +16,10 @@ export default function SlideSearchBox({
     <input
       ref={inputRef}
       className={`
-        focus:outline-none
-        focus:ring-0
-        focus:border-none
-        border-none
-        flex-grow
-        h-full min-w-[70%]
-        p-3
-        rounded bg-zinc-200 dark:bg-zinc-800 custom-shadow
-        font-normal text-sm
-        placeholder-black placeholder-opacity-40
+        focus:outline-none focus:ring-0 focus:border-none
+        border-none bg-transparent
+        w-full h-full p-3 text-sm
+
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}

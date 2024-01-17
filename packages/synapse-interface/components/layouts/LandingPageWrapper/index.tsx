@@ -29,7 +29,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className={`
       bg-zinc-50 text-zinc-950
-      dark:bg-zinc-900 dark:text-zinc-200
+      dark:bg-zinc-900 dark:text-zinc-300
     `}>
       <LandingNav />
       {children}

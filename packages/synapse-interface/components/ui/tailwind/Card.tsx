@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 
-const baseClassname = "p-4 rounded-md text-zinc-700 dark:text-zinc-400"
+const baseClassname = "p-4 rounded-md"
 const titleBaseClassname = "font-medium text-lg text-zinc-900 dark:text-zinc-300"
 
 export default function Card({

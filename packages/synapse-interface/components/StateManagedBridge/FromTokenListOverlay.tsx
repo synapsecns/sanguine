@@ -175,17 +175,15 @@ export const FromTokenListOverlay = () => {
     <div
       ref={overlayRef}
       data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+      className="max-h-full overflow-auto"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
+      <div className="flex items-center m-2 rounded bg-zinc-200 dark:bg-zinc-900 custom-shadow">
+        <SlideSearchBox
+          placeholder="Filter by symbol, contract, or name..."
+          searchStr={searchStr}
+          onSearch={onSearch}
+        />
+        <CloseButton onClick={onClose} />
       </div>
       {possibleTokens && possibleTokens.length > 0 && (
         <>
