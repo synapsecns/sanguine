@@ -33,7 +33,6 @@ func (g *GethSuite) TestFaucet() {
 	defer cancel()
 
 	be := geth.NewEmbeddedBackend(ctx, g.T())
-	be.EnableTenderly()
 
 	targetBalance := big.NewInt(params.Ether)
 
