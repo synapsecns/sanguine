@@ -8,24 +8,21 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { BridgeState } from '@/slices/bridge/reducer'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
 
-  const fromAmount = useSelector((state: RootState) => state.bridge.fromValue)
-  const toToken = useSelector((state: RootState) => state.bridge.toToken)
-  const exchangeRate = useSelector(
-    (state: RootState) => state.bridge.bridgeQuote.exchangeRate
-  )
-  const toChainId = useSelector((state: RootState) => state.bridge.toChainId)
-  // TODO: this is ugly, refactor
-  const bridgeModuleName = useSelector(
-    (state: RootState) => state.bridge.bridgeQuote.bridgeModuleName
-  )
+  const {
+    fromValue: fromAmount,
+    toToken,
+    toChainId,
+    bridgeQuote,
+  }: BridgeState = useBridgeState()
 
-  const gasDropAmount = useSelector(
-    (state: RootState) => state.bridge.bridgeQuote?.rawGasDropAmount
-  )
+  const exchangeRate = bridgeQuote?.exchangeRate
+  const gasDropAmount = bridgeQuote?.rawGasDropAmount
 
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
   const safeFromAmount = fromAmount ?? '0'
