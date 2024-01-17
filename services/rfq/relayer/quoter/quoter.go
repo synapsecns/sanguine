@@ -180,9 +180,9 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting commitable balances: %w", err)
+		return fmt.Errorf("error getting committable balances: %w", err)
 	}
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }

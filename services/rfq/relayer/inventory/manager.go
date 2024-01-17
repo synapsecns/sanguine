@@ -35,8 +35,8 @@ type Manager interface {
 	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
 	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error)
-	// GetCommitableBalances gets the total balances commitable for all tracked tokens.
-	GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
+	// GetCommittableBalances gets the total balances committable for all tracked tokens.
+	GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
 }
@@ -57,16 +57,16 @@ type inventoryManagerImpl struct {
 	db          reldb.Service
 }
 
-// GetCommittableBalance gets the commitable balances.
+// GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
-	commitableBalances, err := i.GetCommitableBalances(ctx, options...)
+	committableBalances, err := i.GetCommittableBalances(ctx, options...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balances: %w", err)
 	}
-	return commitableBalances[chainID][token], nil
+	return committableBalances[chainID][token], nil
 }
 
-func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
+func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
 	reqOptions := makeOptions(options)
 	// TODO: hard fail if cache skip breaks
 	if reqOptions.skipCache {
