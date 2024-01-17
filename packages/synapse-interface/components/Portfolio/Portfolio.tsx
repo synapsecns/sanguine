@@ -124,10 +124,6 @@ export const Portfolio = () => {
   }, [searchInput, flattenedPortfolioData])
 
   useEffect(() => {
-    dispatch(resetPortfolioState())
-  }, [address])
-
-  useEffect(() => {
     if (address && chain?.id) {
       dispatch(setFromChainId(chain.id))
     }
