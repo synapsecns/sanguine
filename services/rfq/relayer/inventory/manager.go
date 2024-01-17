@@ -110,7 +110,7 @@ type tokenMetadata struct {
 	balance        *big.Int
 	decimals       uint8
 	startAllowance *big.Int
-	isNative       bool
+	isGasToken     bool
 }
 
 var (
@@ -230,23 +230,23 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	for chainID, chainCfg := range cfg.GetChains() {
 		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			isNativeToken := tokenName == chainCfg.NativeToken
+			rtoken := &tokenMetadata{
+				isGasToken: tokenName == chainCfg.NativeToken,
+			}
 
 			var token common.Address
-			if isNativeToken {
+			if rtoken.isGasToken {
 				token = chain.EthAddress
 			} else {
 				token = common.HexToAddress(tokenCfg.Address)
 			}
-			rtoken := &tokenMetadata{}
 			i.tokens[chainID][token] = rtoken
 
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
 			rtoken.startAllowance = new(big.Int)
 
-			if isNativeToken {
-				rtoken.isNative = true
+			if rtoken.isGasToken {
 				rtoken.decimals = 18
 				rtoken.name = tokenName
 				// TODO: start allowance?
@@ -254,7 +254,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					eth.Balance(i.relayerAddress, nil).Returns(rtoken.balance),
 				)
 			} else {
-				rtoken.isNative = false
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
@@ -330,7 +329,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		for tokenAddress, token := range tokenMap {
 			// update the balance
 			// TODO: make sure Returns does nothing on error
-			if token.isNative {
+			if token.isGasToken {
 				deferredCalls = append(deferredCalls,
 					eth.Balance(i.relayerAddress, nil).Returns(token.balance),
 				)
