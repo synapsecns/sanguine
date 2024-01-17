@@ -141,12 +141,12 @@ export const TokenSlideOver = ({
           />
         ))}
         {searchStr && (
-          <div className="px-12 py-4 text-xl text-center text-white">
+          <div className="px-12 py-4 text-xl text-center">
             No other results found for{' '}
-            <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">
+            <i className="text-opacity-60">{searchStr}</i>.
+            <div className="pt-4 text-lg text-opacity-50 align-bottom text-medium">
               Want to see a token supported on Synapse? Submit a request{' '}
-              <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">
+              <span className="text-opacity-70 hover:underline hover:cursor-pointer">
                 here
               </span>
             </div>

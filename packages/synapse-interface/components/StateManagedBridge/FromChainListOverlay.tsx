@@ -145,7 +145,7 @@ export const FromChainListOverlay = () => {
       <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mb-4 text-sm text-primaryTextColor">From…</div>
+            <div className="mb-4 text-sm">From…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -169,7 +169,7 @@ export const FromChainListOverlay = () => {
         )}
         {remainingChains && remainingChains.length > 0 && (
           <>
-            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
+            <div className="mt-4 mb-4 text-sm font-normal">
               All chains
             </div>
             {remainingChains.map(({ id: mapChainId }, idx) => {

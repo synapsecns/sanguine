@@ -16,17 +16,16 @@ export default function SlideSearchBox({
     <input
       ref={inputRef}
       className={`
-        text-primaryTextColor
         focus:outline-none
         focus:ring-0
         focus:border-none
         border-none
         flex-grow
         h-full min-w-[70%]
-        py-2 p-2
-        rounded bg-[#252226] custom-shadow
-        font-normal  text-sm
-      placeholder-white placeholder-opacity-40
+        p-3
+        rounded bg-zinc-200 dark:bg-zinc-800 custom-shadow
+        font-normal text-sm
+        placeholder-black placeholder-opacity-40
       `}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}

@@ -62,9 +62,9 @@ export const SelectSpecificNetworkButton = ({
         w-full
         px-2 py-4
         cursor-pointer
-        border-[1px] border-[#423F44]
+        border border-zinc-300 dark:border-zinc-700
         mb-1
-        ${alternateBackground && 'bg-[#282328]'}
+        ${alternateBackground && 'bg-zinc-100 dark:bg-zinc-900'}
         ${bgClassName}
         ${getNetworkButtonBorderHover(chain.color)}
         ${getNetworkHover(chain.color)}
@@ -105,7 +105,7 @@ function ButtonContent({
           className="ml-2 rounded-full w-7 h-7"
         />
         <div className="flex-col text-left">
-          <div className="text-lg font-normal text-white">{chain.name}</div>
+          <div className="text-lg font-normal">{chain.name}</div>
         </div>
       </div>
       {isOrigin && balanceTokens && balanceTokens.length > 0 ? (
@@ -137,7 +137,7 @@ const ChainTokens = ({
     return (
       <div
         data-test-id="portfolio-token-visualizer"
-        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
+        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-zinc-700 dark:text-zinc-400"
       >
         -
       </div>
@@ -169,7 +169,7 @@ const ChainTokens = ({
         </div>
       )}
       {hasOnlyOneToken && (
-        <div className="text-white whitespace-nowrap">
+        <div className="whitespace-nowrap">
           {balanceTokens[0].parsedBalance} {balanceTokens[0].token.symbol}
         </div>
       )}
@@ -195,7 +195,6 @@ const ChainTokens = ({
       )}
       {numOverTwoTokens > 0 && (
         <div
-          className="text-white"
           onMouseEnter={() => setIsT3Hovered(true)}
           onMouseLeave={() => setIsT3Hovered(false)}
         >
@@ -232,9 +231,9 @@ export const HoverContent = ({
     return (
       <div
         className={`
-          absolute -ml-28 z-50 hover-content p-2 text-white
-          border border-solid border-[#252537]
-          bg-[#101018] rounded-md text-left
+          absolute -ml-28 z-50 hover-content p-2
+          border border-solid border-zinc-300 dark:border-zinc-800
+          bg-zinc-100 dark:bg-zinc-900 rounded text-left
         `}
       >
         {children}

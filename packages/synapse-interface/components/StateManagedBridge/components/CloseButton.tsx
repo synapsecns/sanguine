@@ -11,7 +11,7 @@ export const CloseButton = ({ onClick }: { onClick: () => void }) => {
       `}
       onClick={onClick}
     >
-      <XIcon className="inline w-5 text-white" />
+      <XIcon className="inline w-5 text-inherit" />
     </button>
   )
 }

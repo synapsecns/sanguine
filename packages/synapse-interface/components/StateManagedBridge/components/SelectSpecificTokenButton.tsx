@@ -75,9 +75,9 @@ const SelectSpecificTokenButton = ({
         w-full
         px-2 py-1
         cursor-pointer
-        border-[1px] border-[#423F44]
+        border-[1px] border-zinc-300 dark:border-zinc-700
         mb-1
-        ${alternateBackground && 'bg-[#282328]'}
+        ${alternateBackground && 'bg-zinc-100 dark:bg-zinc-900'}
         ${bgClassName}
         ${classNameForMenuItemStyle}
       `}
@@ -117,7 +117,7 @@ export const OptionTag = ({ type }: { type: BestOptionType }) => {
   return (
     <div
       data-test-id="option-tag"
-      className="flex px-3 py-0.5 mr-3 text-sm whitespace-nowrap text-primary rounded-xl"
+      className="flex px-3 py-0.5 mr-3 text-sm whitespace-nowrap rounded-xl"
       style={{
         background:
           'linear-gradient(to right, rgba(128, 0, 255, 0.2), rgba(255, 0, 191, 0.2))',
@@ -144,7 +144,7 @@ export const OptionDetails = ({
         <div className="flex text-sm text-secondary whitespace-nowrap">
           1&nbsp;:&nbsp;
         </div>
-        <div className="mb-[1px] text-primary">{exchangeRate}</div>
+        <div className="mb-[1px]">{exchangeRate}</div>
       </div>
       <div className="text-sm text-right text-secondary">
         {estimatedDurationInMinutes} min
@@ -194,8 +194,8 @@ const ButtonContent = memo(
 const Coin = ({ token, showAllChains }: { token; showAllChains: boolean }) => {
   return (
     <div className="flex-col text-left">
-      <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
-      <div className="flex items-center space-x-2 text-xs text-secondaryTextColor">
+      <div className="text-lg">{token?.symbol}</div>
+      <div className="flex items-center space-x-2 text-xs text-zinc-700 dark:text-zinc-400">
         <div>{token?.name}</div>
         {showAllChains && <AvailableChains token={token} />}
       </div>
@@ -213,11 +213,11 @@ const TokenBalance = ({
   parsedBalance?: string
 }) => {
   return (
-    <div className="ml-auto mr-5 text-md text-primaryTextColor">
+    <div className="ml-auto mr-5 text-md">
       {parsedBalance && parsedBalance !== '0.0' && (
         <div>
           {parsedBalance}
-          <span className="text-md text-secondaryTextColor">
+          <span className="text-md text-zinc-700 dark:text-zinc-400">
             {' '}
             {token ? token.symbol : ''}
           </span>
@@ -264,7 +264,7 @@ const AvailableChains = ({ token }: { token: Token }) => {
           <div
             className={`
               absolute z-50 hover-content p-2 text-white
-              border border-solid border-[#252537]
+              border border-solid border-zinc-300 dark:border-zinc-700
               bg-[#101018] rounded-md
             `}
           >
