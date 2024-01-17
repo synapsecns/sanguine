@@ -34,7 +34,7 @@ export const PoolCardBody = memo(
 
 const PoolTokenIcons = memo(({ pool }: { pool: Token }) => {
   return (
-    <div className="grid grid-cols-2">
+    <div className="grid grid-cols-2 h-10 place-content-center">
       {pool.poolTokens.map((token, i) => (
         <img
           alt={token.symbol}
