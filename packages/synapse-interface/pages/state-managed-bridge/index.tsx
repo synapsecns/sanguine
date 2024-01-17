@@ -25,15 +25,14 @@ import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
+import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -232,36 +231,15 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
-      // TODO: do this properly (RFQ needs no slippage, others do)
-      let originMinWithSlippage, destMinWithSlippage
-      if (bridgeModuleName === 'SynapseRFQ') {
-        // Relayer should take the request with slippage of 5% feeAmount
-        const maxOriginSlippage = (BigInt(feeAmount) * BigInt(5)) / BigInt(100)
-        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
-          originMinWithSlippage =
-            BigInt(originQuery.minAmountOut) - maxOriginSlippage
-        } else {
-          originMinWithSlippage = 0n
-        }
-        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
-      } else {
-        originMinWithSlippage = subtractSlippage(
-          originQuery?.minAmountOut ?? 0n,
-          'ONE_TENTH',
-          null
-        )
-        destMinWithSlippage = subtractSlippage(
-          destQuery?.minAmountOut ?? 0n,
-          'ONE_TENTH',
-          null
-        )
-      }
+      const {
+        originQuery: originQueryWithSlippage,
+        destQuery: destQueryWithSlippage,
+      } = synapseSDK.applyBridgeSlippage(
+        bridgeModuleName,
+        originQuery,
+        destQuery
+      )
 
-      let newOriginQuery = { ...originQuery }
-      newOriginQuery.minAmountOut = originMinWithSlippage
-
-      let newDestQuery = { ...destQuery }
-      newDestQuery.minAmountOut = destMinWithSlippage
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
@@ -287,8 +265,8 @@ const StateManagedBridge = () => {
             feeAmount,
             delta: BigInt(maxAmountOut.toString()),
             quotes: {
-              originQuery: newOriginQuery,
-              destQuery: newDestQuery,
+              originQuery: originQueryWithSlippage,
+              destQuery: destQueryWithSlippage,
             },
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,

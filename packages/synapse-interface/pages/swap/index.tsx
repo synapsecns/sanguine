@@ -10,7 +10,6 @@ import { setIsLoading } from '@/slices/swap/reducer'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
@@ -18,7 +17,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -159,14 +158,7 @@ const StateManagedSwap = () => {
               spender: routerAddress,
             })
 
-      const minWithSlippage = subtractSlippage(
-        query?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-
-      let newOriginQuery = { ...query }
-      newOriginQuery.minAmountOut = minWithSlippage
+      const originQueryWithSlippage = synapseSDK.applySwapSlippage(query)
 
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
@@ -191,7 +183,7 @@ const StateManagedSwap = () => {
               swapToToken.decimals[swapChainId]
             ),
             delta: toValueBigInt,
-            quote: newOriginQuery,
+            quote: originQueryWithSlippage,
           })
         )
 
