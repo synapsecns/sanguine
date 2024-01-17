@@ -1,11 +1,6 @@
 import { Address } from 'viem'
 import { BridgeQuote, Token } from '@/utils/types'
-import {
-  stringToBigInt,
-  powBigInt,
-  formatBigIntToString,
-} from '../bigint/format'
-import { subtractSlippage } from '../slippage'
+import { formatBigIntToString } from '../bigint/format'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'
 
