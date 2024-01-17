@@ -159,14 +159,8 @@ const StateManagedSwap = () => {
               spender: routerAddress,
             })
 
-      const minWithSlippage = subtractSlippage(
-        query?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-
-      let newOriginQuery = { ...query }
-      newOriginQuery.minAmountOut = minWithSlippage
+      const { originQuery: originQueryWithSlippage } =
+        synapseSDK.applySwapSlippage(query)
 
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
@@ -191,7 +185,7 @@ const StateManagedSwap = () => {
               swapToToken.decimals[swapChainId]
             ),
             delta: toValueBigInt,
-            quote: newOriginQuery,
+            quote: originQueryWithSlippage,
           })
         )
 
