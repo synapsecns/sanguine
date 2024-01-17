@@ -75,6 +75,7 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
+  const quoteToastRef = useRef({ id: '' })
   const router = useRouter()
   const { query, pathname } = router
 
@@ -95,9 +96,6 @@ const StateManagedBridge = () => {
     showFromTokenListOverlay,
     showToTokenListOverlay,
   } = useSelector((state: RootState) => state.bridgeDisplay)
-
-  let pendingPopup
-  let successPopup
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -143,8 +141,6 @@ const StateManagedBridge = () => {
       }
     }
   }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
-
-  let quoteToast
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -273,18 +269,19 @@ const StateManagedBridge = () => {
           })
         )
 
-        if (quoteToast) {
-          toast.dismiss(quoteToast)
-        }
+        toast.dismiss(quoteToastRef.current.id)
+
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
+
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToast)
-        let message
+        toast.dismiss(quoteToastRef.current.id)
+
+        let message: string
         if (!fromChainId) {
           message = 'Please select an origin chain'
         } else if (!toChainId) {
@@ -297,9 +294,10 @@ const StateManagedBridge = () => {
           message = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         }
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
 
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+
         return
       }
     } finally {
@@ -314,7 +312,8 @@ const StateManagedBridge = () => {
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromToken?.addresses[fromChainId]
+        fromToken?.addresses[fromChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
       await tx
       /** Re-fetch bridge quote to re-check approval state */
@@ -325,6 +324,7 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    let pendingPopup: any
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
@@ -429,7 +429,7 @@ const StateManagedBridge = () => {
         </div>
       )
 
-      successPopup = toast.success(successToastContent, {
+      toast.success(successToastContent, {
         id: 'bridge-success-popup',
         duration: 10000,
       })

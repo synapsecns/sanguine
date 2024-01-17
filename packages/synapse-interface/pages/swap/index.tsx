@@ -49,6 +49,7 @@ const StateManagedSwap = () => {
   const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const swapDisplayRef = useRef(null)
+  const quoteToastRef = useRef({ id: '' })
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
@@ -66,9 +67,6 @@ const StateManagedSwap = () => {
     showSwapChainListOverlay,
     showSwapToTokenListOverlay,
   } = useSelector((state: RootState) => state.swapDisplay)
-
-  let pendingPopup
-  let successPopup
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -187,19 +185,19 @@ const StateManagedSwap = () => {
           })
         )
 
-        dispatch(setIsLoading(false))
-        if (quoteToast) {
-          toast.dismiss(quoteToast)
-        }
+        toast.dismiss(quoteToastRef.current.id)
+
         const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
+
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToast)
-        let message
+        toast.dismiss(quoteToastRef.current.id)
+
+        let message: string
         if (!swapChainId) {
           message = 'Please select an origin chain'
         } else if (!swapFromToken) {
@@ -210,9 +208,10 @@ const StateManagedSwap = () => {
           message = `No route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         }
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
 
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
         dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
+
         return
       }
     } finally {
@@ -227,7 +226,8 @@ const StateManagedSwap = () => {
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
-        swapFromToken?.addresses[swapChainId]
+        swapFromToken?.addresses[swapChainId],
+        stringToBigInt(swapFromValue, swapFromToken?.decimals[swapChainId])
       )
       await tx
       /** Re-fetch swap quote to re-check approval state */
@@ -240,6 +240,7 @@ const StateManagedSwap = () => {
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
 
+    let pendingPopup: any
     pendingPopup = toast(
       `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
       { id: 'swap-in-progress-popup', duration: Infinity }
@@ -318,7 +319,7 @@ const StateManagedSwap = () => {
           </div>
         )
 
-        successPopup = toast.success(successToastContent, {
+        toast.success(successToastContent, {
           id: 'swap-successful-popup',
           duration: 10000,
         })
