@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Address } from 'viem'
+import _ from 'lodash'
 
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -8,12 +9,12 @@ import {
 } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetFetchedBridgeQuotes } from '@/slices/bridge/actions'
-import { useSynapseContext } from '../providers/SynapseProvider'
-import { hasOnlyZeroes } from '../hasOnlyZeroes'
-import { isEmptyString } from '../isEmptyString'
-import { BridgeQuoteRequest } from '../actions/fetchBridgeQuotes'
-import { Token } from '../types'
-import { stringToBigInt } from '../bigint/format'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { isEmptyString } from '@/utils/isEmptyString'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { Token } from '@/utils/types'
 
 /**
  * Hook to trigger fetching alternative bridge quotes
