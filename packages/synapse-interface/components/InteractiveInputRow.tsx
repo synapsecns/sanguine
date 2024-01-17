@@ -23,7 +23,7 @@ const InteractiveInputRow = ({
   icon: string
 }) => {
   return (
-    <div className="flex items-center gap-3 px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-700">
+    <div className="flex items-center gap-3 px-2 py-1 rounded-md bg-zinc-50 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700">
       <div className="flex items-center gap-2 pl-2 pr-4 py-2 rounded bg-zinc-200 dark:bg-zinc-600 cursor-default min-w-[7rem]">
         <img className="w-8 h-8" src={icon} />
         <h4 className="text-lg">{title}</h4>
