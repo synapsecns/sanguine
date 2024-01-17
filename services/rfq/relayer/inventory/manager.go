@@ -44,6 +44,8 @@ type Manager interface {
 type inventoryManagerImpl struct {
 	// map chainID->address->tokenMetadata
 	tokens map[int]map[common.Address]*tokenMetadata
+	// map chainID->balance
+	gasBalances map[int]*big.Int
 	// mux contains the mutex
 	mux sync.RWMutex
 	// handler is the metrics handler
@@ -218,17 +220,25 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
 	i.tokens = make(map[int]map[common.Address]*tokenMetadata)
+	i.gasBalances = make(map[int]*big.Int)
 
 	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
 	var deferredRegisters []registerCall
 	deferredCalls := make(map[int][]w3types.Caller)
-	// ethBalanceCalls := make(map[int]w3types.CallerFactory[*big.Int])
 
 	// iterate through all tokens to get the metadata
 	for chainID, chainCfg := range cfg.GetChains() {
 		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
+
+		// set up balance fetching for this chain's gas token
+		i.gasBalances[chainID] = new(big.Int)
+		deferredCalls[chainID] = append(deferredCalls[chainID],
+			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
+		)
+
+		// assign metadata for each configured token
 		for tokenName, tokenCfg := range chainCfg.Tokens {
 			rtoken := &tokenMetadata{
 				isGasToken: tokenName == chainCfg.NativeToken,
@@ -249,10 +259,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			if rtoken.isGasToken {
 				rtoken.decimals = 18
 				rtoken.name = tokenName
+				rtoken.balance = i.gasBalances[chainID]
 				// TODO: start allowance?
-				deferredCalls[chainID] = append(deferredCalls[chainID],
-					eth.Balance(i.relayerAddress, nil).Returns(rtoken.balance),
-				)
 			} else {
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
@@ -324,16 +332,16 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		var deferredCalls []w3types.Caller
 
+		// queue gas token balance fetch
+		deferredCalls := []w3types.Caller{
+			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
+		}
+
+		// queue token balance fetches
 		for tokenAddress, token := range tokenMap {
-			// update the balance
 			// TODO: make sure Returns does nothing on error
-			if token.isGasToken {
-				deferredCalls = append(deferredCalls,
-					eth.Balance(i.relayerAddress, nil).Returns(token.balance),
-				)
-			} else {
+			if !token.isGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
 			}
 		}
