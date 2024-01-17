@@ -31,27 +31,31 @@ func NewClient(apiKey, url string) (Client, error) {
 	}, nil
 }
 
+// ScreenResponse is the response from the screening endpoint.
 type ScreenResponse struct {
-	AccountExternalID        string `json:"accountExternalId"`
-	Address                  string `json:"address"`
-	AddressIncomingVolumeUsd string `json:"addressIncomingVolumeUsd"`
-	AddressOutgoingVolumeUsd string `json:"addressOutgoingVolumeUsd"`
-	AddressRiskIndicators    []struct {
-		Category                    string `json:"category"`
-		CategoryID                  string `json:"categoryId"`
-		CategoryRiskScoreLevel      int    `json:"categoryRiskScoreLevel"`
-		CategoryRiskScoreLevelLabel string `json:"categoryRiskScoreLevelLabel"`
-		IncomingVolumeUsd           string `json:"incomingVolumeUsd"`
-		OutgoingVolumeUsd           string `json:"outgoingVolumeUsd"`
-		RiskType                    string `json:"riskType"`
-		TotalVolumeUsd              string `json:"totalVolumeUsd"`
-	} `json:"addressRiskIndicators"`
-	AddressSubmitted      string        `json:"addressSubmitted"`
-	AddressTotalVolumeUsd string        `json:"addressTotalVolumeUsd"`
-	Chain                 string        `json:"chain"`
-	Entities              []interface{} `json:"entities"`
-	ExternalID            string        `json:"externalId"`
-	TrmAppURL             string        `json:"trmAppUrl"`
+	AccountExternalID        string                 `json:"accountExternalId"`
+	Address                  string                 `json:"address"`
+	AddressIncomingVolumeUsd string                 `json:"addressIncomingVolumeUsd"`
+	AddressOutgoingVolumeUsd string                 `json:"addressOutgoingVolumeUsd"`
+	AddressRiskIndicators    []AddressRiskIndicator `json:"addressRiskIndicators"`
+	AddressSubmitted         string                 `json:"addressSubmitted"`
+	AddressTotalVolumeUsd    string                 `json:"addressTotalVolumeUsd"`
+	Chain                    string                 `json:"chain"`
+	Entities                 []interface{}          `json:"entities"`
+	ExternalID               string                 `json:"externalId"`
+	TrmAppURL                string                 `json:"trmAppUrl"`
+}
+
+// AddressRiskIndicator is a risk indicator for an address.
+type AddressRiskIndicator struct {
+	Category                    string `json:"category"`
+	CategoryID                  string `json:"categoryId"`
+	CategoryRiskScoreLevel      int    `json:"categoryRiskScoreLevel"`
+	CategoryRiskScoreLevelLabel string `json:"categoryRiskScoreLevelLabel"`
+	IncomingVolumeUsd           string `json:"incomingVolumeUsd"`
+	OutgoingVolumeUsd           string `json:"outgoingVolumeUsd"`
+	RiskType                    string `json:"riskType"`
+	TotalVolumeUsd              string `json:"totalVolumeUsd"`
 }
 
 type screenRequest struct {
