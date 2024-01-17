@@ -31,13 +31,14 @@ export default function HeroSection() {
           target="_blank"
           className={`
             h-12 mr-2 px-4 py-3 flex items-center
-            text-base border border-white hover:opacity-75
-            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-md
-            text-center transform-gpu transition-all duration-75
+            border hover:opacity-70 active:opacity-40
+            bg-zinc-100 border-zinc-400
+            dark:bg-zinc-900 dark:border-zinc-500
+            rounded-md
+            text-center transition-all duration-75
           `}
         >
           <Button
-            className="flex items-center justify-center font-medium"
             onClick={() => null}
           >
             Build on Synapse
@@ -47,16 +48,16 @@ export default function HeroSection() {
           href={BRIDGE_PATH}
           className={`
             h-12 border-[#AC8FFF] flex items-center border
-            text-base px-4 py-3 hover:opacity-75 rounded-md
-            text-center transform-gpu transition-all duration-75
+            text-base px-4 py-3 hover:opacity-70 active:opacity-40
+            rounded-md
+            transition-all duration-75
           `}
           style={{
             background:
               'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
-            borderRadius: '10px',
           }}
         >
-          <Button className="font-medium text-inherit" onClick={() => null}>
+          <Button onClick={() => null}>
             Enter Bridge
           </Button>
         </Link>
