@@ -69,20 +69,17 @@ const StakeCardTitle = ({
   }, [prices, poolApyData])
 
   return (
-    <div className="flex items-center justify-between mb-5">
-      <div className="inline-flex items-center mt-2">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <StakingPoolTokens poolTokens={poolTokens} />
-        <h3 className="mr-2 text-xl font-medium text-white">{poolLabel}</h3>
+        <h3 className="text-xl font-medium">{poolLabel}</h3>
       </div>
-
-      <div className="text-lg font-normal text-white text-opacity-70">
-        <div>
-          {displayPoolApyData ? (
-            <span className="text-white ">{displayPoolApyData}</span>
-          ) : (
-            <LoaderIcon />
-          )}
-        </div>
+      <div className="text-lg text-opacity-70">
+        {displayPoolApyData ? (
+          <>{displayPoolApyData}</>
+        ) : (
+          <LoaderIcon />
+        )}
         <div className="flex">
           <div className="text-sm">APY</div>
           <ApyTooltip

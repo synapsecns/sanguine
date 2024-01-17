@@ -19,25 +19,17 @@ export const InteractiveInputRowButton = ({
 }) => {
   return (
     <Button
-      style={
-        disabled
-          ? {}
-          : {
-              background:
-                'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-            }
-      }
       className={`
-              w-full self-center
-              rounded-sm my-2 px-4 py-3
-              text-white text-opacity-100
-              border border-purple-500
-              disabled:border-[#4A434C]
-              hover:opacity-80  disabled:text-[#88818C]
-              bg-gradient-to-r disabled:from-bgBase disabled:to-bgBase
-              mt-5
-              ${isPending && 'from-[#622e71] to-[#564071]'}
-            `}
+        w-full
+        rounded py-3
+        hover:opacity-80
+        disabled:opacity-40
+        border border-fuchsia-500 disabled:border-zinc-500
+        disabled:cursor-not-allowed
+        bg-fuchsia-100 disabled:bg-transparent
+        mt-5
+        ${isPending && 'from-[#622e71] to-[#564071]'}
+      `}
       disabled={disabled}
       onClick={(e) => {
         onClickEnter(e)

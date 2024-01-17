@@ -52,18 +52,13 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
     content = ''
   } else {
     content = (
-      <div className="text-center cursor-pointer sm:text-right">
-        <p className=" text-sm font-medium opacity-70 pb-0.5 text-gray-300">
+      <div className="text-right py-2">
+        <div className="text-sm">
           {labelText}
-        </p>
-        <span
-          className={`
-          pl-2 text-md font-medium ml-auto
-          ${colorClassName}
-        `}
-        >
+        </div>
+        <div className={`font-medium ${colorClassName}`}>
           {priceImpactDisplayValue}%
-        </span>
+        </div>
       </div>
     )
   }

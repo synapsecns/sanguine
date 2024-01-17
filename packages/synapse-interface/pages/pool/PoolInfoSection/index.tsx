@@ -82,8 +82,8 @@ const InfoListItem = ({
 }) => {
   return (
     <li className="flex w-full py-2">
-      <div className="text-white">{labelText} </div>
-      <div className="self-center ml-auto text-white">{content}</div>
+      {labelText}
+      <span className="ml-auto">{content}</span>
     </li>
   )
 }

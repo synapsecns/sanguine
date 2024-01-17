@@ -13,28 +13,28 @@ const TokenLabels = ({ tokens }) => {
               className="relative flex items-center justify-between h-10"
               key={token.token.symbol}
             >
-              <div className="absolute inset-0 w-full h-full bg-bgDark">
+              <div className="absolute inset-0 w-full h-full">
                 <div
-                  className="h-full rounded-sm bg-bgLight"
+                  className="h-full rounded-sm bg-fuchsia-500 bg-opacity-30"
                   style={{ width: token.percent }}
-                ></div>
+                />
               </div>
 
-              <div className="relative z-10 flex items-center h-full ml-2 space-x-2">
+              <div className="relative z-10 flex items-center gap-2 p-2">
                 <img
                   alt={`Icon for ${token.token.symbol}`}
-                  className="w-[24px] h-[24px] rounded-full"
+                  className="w-6 h-6 rounded-full"
                   src={token.token.icon.src}
                 />
-                <div className="text-white text-md">
+                <div>
                   {numeral(token.balanceStr).format('0,0.00a')}
                 </div>
-                <div className="text-sm text-secondaryTextColor">
+                <span className="text-sm mt-px">
                   {token.token.symbol}
-                </div>
+                </span>
               </div>
 
-              <div className="relative z-10 flex items-center h-full text-white text-md">
+              <div className="relative z-10 flex items-center h-full">
                 {numeral(token.percent).format('0,0%')}
               </div>
             </div>

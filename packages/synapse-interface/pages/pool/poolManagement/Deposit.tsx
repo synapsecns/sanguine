@@ -202,7 +202,7 @@ const Deposit = ({
               <div
                 className={
                   i < poolUserData.tokens.length - 1
-                    ? 'border-b border-[#564f58]'
+                    ? 'border-b border-zinc-300 dark:border-zinc-700'
                     : ''
                 }
               >

@@ -121,8 +121,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       />
       <InfoSectionCard title="Your balances">
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">Unstaked</div>
-          <div className="text-white ">
+          Unstaked
+          <div>
             {lpTokenBalance === 0n
               ? '\u2212'
               : formatBigIntToString(
@@ -130,42 +130,33 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   tokenInfo.decimals,
                   18
                 )}{' '}
-            <span className="text-base text-[#A9A5AD]">
-              {pool ? pool.symbol : ''}
-            </span>
+            {pool ? pool.symbol : ''}
           </div>
         </div>
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">Staked</div>
-          <div className="text-white ">
+          Staked
+          <div>
             {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 18)}{' '}
-            <span className="text-base text-[#A9A5AD]">
-              {pool ? pool.symbol : ''}
-            </span>
+            {pool ? pool.symbol : ''}
           </div>
         </div>
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">
-            {pool?.customRewardToken ?? 'SYN'} Earned
-          </div>
-          <div className="text-white ">
+          {pool?.customRewardToken ?? 'SYN'} Earned
+          <div>
             {userStakeData.reward === 0n
               ? '\u2212'
               : formatBigIntToString(userStakeData.reward, 18, 18)}{' '}
-            <span className="text-base text-[#A9A5AD]">
-              {pool?.customRewardToken ?? 'SYN'}
-            </span>
+            {pool?.customRewardToken ?? 'SYN'}
           </div>
         </div>
         {userStakeData.reward === 0n ? null : (
           <Button
             disabled={userStakeData.reward === 0n}
             className={`
-             bg-[#564f58]
-              w-full my-2 px-4 py-3 tracking-wide
-              rounded-sm
-              border border-transparent 
-              hover:border-[#AC8FFF] 
+              bg-zinc-200 dark:bg-zinc-700
+              w-full py-3
+              border border-transparent
+              hover:border-[#AC8FFF]
               disabled:opacity-100
               disabled:from-bgLight disabled:to-bgLight
             `}
@@ -188,30 +179,22 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </Button>
         )}
       </InfoSectionCard>
-      <div className="p-0 rounded-md bg-bgBase">
-        <div className="mb-3">
-          <Tabs>
-            <TabItem
-              isActive={showStake}
-              onClick={() => {
-                setShowStake(true)
-              }}
-              className="rounded-tl-sm"
-            >
-              Stake
-            </TabItem>
-            <TabItem
-              isActive={!showStake}
-              onClick={() => {
-                setShowStake(false)
-              }}
-              className="rounded-tr-sm"
-            >
-              Unstake
-            </TabItem>
-          </Tabs>
-        </div>
-        <div className="p-lg">
+      <div className="rounded-md overflow-hidden bg-zinc-100 border border-zinc-200 dark:bg-zinc-800 dark:border-transparent">
+        <Tabs>
+          <TabItem
+            isActive={showStake}
+            onClick={() => { setShowStake(true) }}
+          >
+            Stake
+          </TabItem>
+          <TabItem
+            isActive={!showStake}
+            onClick={() => { setShowStake(false) }}
+          >
+            Unstake
+          </TabItem>
+        </Tabs>
+        <div className="p-4">
           {showStake ? (
             <InteractiveInputRow
               title={pool?.symbol}

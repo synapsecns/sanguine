@@ -3,11 +3,10 @@ import { twMerge } from 'tailwind-merge'
 const baseClassname = `
   group
   cursor-pointer
-  text-white
   rounded-md
   outline-none focus:outline-none active:outline-none ring-none
   transition-all duration-100 transform-gpu
-  `
+`
 
 export default function Button({
   className,

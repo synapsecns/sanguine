@@ -77,24 +77,23 @@ const StakePage = () => {
     <LandingPageWrapper>
       <main
         data-test-id="stake-page"
-        className={`
-          flex flex-col justify-between
-          px-4 py-16
-          md:px-20 md:py-3 md:m-14
-        `}
+        className="flex flex-col my-8 px-4"
       >
-        <div className="flex flex-col justify-center max-w-[1300px] m-auto">
-          <div>
-            <Link href={POOLS_PATH}>
-              <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
-                <ChevronLeftIcon className="w-4 h-4" />
-                Back to Pools
-              </div>
-            </Link>
-          </div>
-          <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
-
-          <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
+        <div className="flex flex-col gap-3 m-auto">
+          <Link
+            href={POOLS_PATH}
+            className="w-max"
+          >
+            <div className="inline-flex items-center opacity-60 hover:opacity-100">
+              <ChevronLeftIcon className="w-4 h-4" />
+              Back to Pools
+            </div>
+          </Link>
+          <PageHeader
+            title="Stake"
+            subtitle="Stake your LP Tokens."
+          />
+          <Grid cols={{ sm: 1, md: columns }} gap={6}>
             {isClient &&
               availableStakingTokens.map((token, key) => {
                 if (token.notStake) {

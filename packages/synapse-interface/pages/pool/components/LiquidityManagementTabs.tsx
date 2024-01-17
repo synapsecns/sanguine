@@ -9,7 +9,7 @@ const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
         onClick={() => {
           setCardNav('addLiquidity')
         }}
-        className="rounded-tl-sm"
+        className="rounded-tl-md"
       >
         Add Liquidity
       </TabItem>
@@ -18,7 +18,7 @@ const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
         onClick={() => {
           setCardNav('removeLiquidity')
         }}
-        className="rounded-tr-sm"
+        className="rounded-tr-md"
       >
         Remove Liquidity
       </TabItem>

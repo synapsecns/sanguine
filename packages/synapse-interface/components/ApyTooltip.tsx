@@ -72,7 +72,7 @@ export default function ApyTooltip({
         )
       }
     >
-      <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
+      <InformationCircleIcon className="w-4 h-4 cursor-pointer stroke-zinc-400" />
     </Tooltip>
   )
 }
@@ -90,7 +90,7 @@ const PercentageRow = ({
 
   return (
     <div>
-      <div className="text-sm font-normal text-gray-100 ">
+      <div>
         {title}{' '}
         <span className="inline-block float-right pl-4 font-medium">
           {totalApr.toFixed(2)} %

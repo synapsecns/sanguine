@@ -44,22 +44,20 @@ const PoolManagement = ({
   }
 
   return (
-    <div className="">
+    <>
       <LiquidityManagementTabs
         cardNav={cardNav}
         setCardNav={(val) => {
           setCardNav(val)
         }}
       />
-      <div className="pb-3 pl-4 pr-4">
-        <div className="mt-8">
-          {cardNav === 'addLiquidity' && poolUserData.tokens && (
-            <Deposit address={address} chainId={chainId} />
-          )}
-          {cardNav === 'removeLiquidity' && <Withdraw address={address} />}
-        </div>
+      <div className="p-3">
+        {cardNav === 'addLiquidity' && poolUserData.tokens && (
+          <Deposit address={address} chainId={chainId} />
+        )}
+        {cardNav === 'removeLiquidity' && <Withdraw address={address} />}
       </div>
-    </div>
+    </>
   )
 }
 

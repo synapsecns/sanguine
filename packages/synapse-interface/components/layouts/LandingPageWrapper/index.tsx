@@ -30,6 +30,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
     <div className={`
       bg-zinc-50 text-zinc-950
       dark:bg-zinc-900 dark:text-zinc-300
+      max-w-screen-2xl mx-auto
     `}>
       <LandingNav />
       {children}

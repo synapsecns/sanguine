@@ -88,11 +88,11 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   return (
     <div
       className={`
-          border border-zinc-300 dark:border-zinc-700
+          border
           rounded-md h-max
           ${pool && pool.incentivized
-            ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-transparent'
-            : 'bg-transparent'
+            ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent'
+            : 'bg-transparent border-zinc-300 dark:border-zinc-700'
           }
         `}
     >

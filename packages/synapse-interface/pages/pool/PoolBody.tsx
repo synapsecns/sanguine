@@ -75,7 +75,7 @@ const PoolBody = ({
     <>
       <div className="">
         <Link href={POOLS_PATH}>
-          <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
+          <div className="inline-flex items-center mb-3 text-sm hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
             Back to Pools
           </div>
@@ -97,14 +97,14 @@ const PoolBody = ({
             />
             <div className="flex space-x-4">
               <div className="text-right">
-                <div className="text-xl font-medium text-white">
+                <div className="text-xl font-medium">
                   {poolAPYData && Object.keys(poolAPYData).length > 0
                     ? `${numeral(poolAPYData.fullCompoundedAPY / 100).format(
                         '0.0%'
                       )}`
                     : '-'}
                 </div>
-                <div className="text-sm text-white text-opacity-60">APY</div>
+                <div className="text-sm">APY</div>
               </div>
             </div>
           </div>
@@ -113,18 +113,12 @@ const PoolBody = ({
       <div className="">
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card
-            className="!pt-0 pb-0 pl-0 pr-0 rounded-md bg-bgBase"
+            className="rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-transparent p-0"
             divider={false}
           >
             {!isConnected && (
               <div className="flex flex-col justify-center h-full p-10">
                 <TransactionButton
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                    border: '1px solid #9B6DD7',
-                    borderRadius: '4px',
-                  }}
                   label="Connect wallet"
                   pendingLabel="Connecting"
                   onClick={() =>
@@ -141,14 +135,8 @@ const PoolBody = ({
               </div>
             )}
             {isConnected && connectedChainId !== pool.chainId && (
-              <div className="flex flex-col justify-center h-full p-10">
+              <div className="flex flex-col justify-center h-full">
                 <TransactionButton
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                    border: '1px solid #9B6DD7',
-                    borderRadius: '4px',
-                  }}
                   label={`Switch to ${
                     chains.find((c) => c.id === pool.chainId).name
                   }`}
@@ -173,9 +161,7 @@ const PoolBody = ({
               />
             )}
           </Card>
-          <div>
-            <PoolInfoSection />
-          </div>
+          <PoolInfoSection />
         </Grid>
       </div>
     </>
