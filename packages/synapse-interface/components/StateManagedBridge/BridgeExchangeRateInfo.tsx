@@ -1,15 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { Token } from '@/utils/types'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
+import * as CHAINS from '@constants/chains/master'
+import { CHAINS_BY_ID } from '@constants/chains'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
 
 const BridgeExchangeRateInfo = ({ showGasDrop }: { showGasDrop: boolean }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
