@@ -1,13 +1,11 @@
 //@ts-ignore
 import { SynapseSDK } from '@synapsecns/sdk-router'
-import { Provider } from '@ethersproject/abstract-provider'
 import { createContext, useContext, memo, useMemo } from 'react'
 import {
   StaticJsonRpcProvider,
   FallbackProvider,
   FallbackProviderConfig,
 } from '@ethersproject/providers'
-import { Provider as EthersProvider } from '@ethersproject/abstract-provider'
 
 export const SynapseContext = createContext(null)
 
