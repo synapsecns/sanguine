@@ -88,15 +88,12 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   return (
     <div
       className={`
-          border
-          ${
-            pool && pool.incentivized
-              ? 'bg-bgBase border-transparent'
-              : 'bg-bgDark border-gray-700'
+          border border-zinc-300 dark:border-zinc-700
+          rounded-md h-max
+          ${pool && pool.incentivized
+            ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-transparent'
+            : 'bg-transparent'
           }
-          rounded-md items-center
-          space-y-2
-          whitespace-wrap
         `}
     >
       <div>
@@ -159,22 +156,12 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
   }
 
   return (
-    <div className="border-t-2 border-[#302C33] pt-2 pb-2 ">
-      <div className="flex items-center justify-between pt-2 pl-3 pr-3">
-        <DisplayBalances
-          pool={pool}
-          address={address}
-          stakedBalance={stakedBalance}
-          showIcon={true}
-        />
-        <div className="flex items-center text-xs">
-          <PoolActionOptions
-            pool={pool}
-            options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
-          />
-        </div>
-      </div>
-    </div>
+    <DisplayBalances
+      pool={pool}
+      address={address}
+      stakedBalance={stakedBalance}
+      showIcon={true}
+    />
   )
 }
 
@@ -211,34 +198,33 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
   }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center py-2 px-3 border-t border-zinc-200 dark:border-zinc-700 gap-2 w-full">
       {showIcon && (
-        <img src={pool.icon.src} className="w-[20px] h-[20px] rounded-full" />
+        <img src={pool.icon.src} className="w-5 h-5" />
       )}
-      <div className="">
-        <div className="flex items-center space-x-1">
-          <div className="text-white text-md">
-            <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
+      <div className="flex-grow w-0">
+        <div className="overflow-hidden">
+          <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
+            <span className="hover:underline">
+              {formatBigIntToString(amount, pool.decimals[pool.chainId], 5)}
+            </span>
+          </Link>
+          <span className="text-zinc-400 text-sm">
+            &nbsp;/&nbsp;
+            <Link href={getPoolUrl(pool)}>
               <span className="hover:underline">
-                {formatBigIntToString(amount, pool.decimals[pool.chainId], 5)}
+                {formatBigIntToString(sum, pool.decimals[pool.chainId], 5)}
               </span>
             </Link>
-            <span className="text-[#BFBCC2] text-sm">
-              {' '}
-              /{' '}
-              <Link href={getPoolUrl(pool)}>
-                <span className="hover:underline">
-                  {formatBigIntToString(sum, pool.decimals[pool.chainId], 5)}
-                </span>
-              </Link>
+            &nbsp;
+            <span className="overflow-ellipsis">
+              {pool.symbol}
             </span>
-          </div>
-          <div className="text-sm text-[#BFBCC2]">{pool.symbol}</div>
+          </span>
         </div>
         {reward > 0n && (
           <div className="text-sm">
-            <span className="text-white">Earned: </span>
-            <span className="text-green-400 hover:underline">
+            Earned: <span className="text-green-500 hover:underline">
               <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
                 {formatBigIntToString(reward, 18, 5)}{' '}
                 {pool?.customRewardToken ?? 'SYN'}
@@ -247,6 +233,10 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
           </div>
         )}
       </div>
+      <PoolActionOptions
+        pool={pool}
+        options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
+      />
     </div>
   )
 }

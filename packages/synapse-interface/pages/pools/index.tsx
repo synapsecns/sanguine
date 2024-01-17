@@ -71,30 +71,27 @@ const PoolsPage = () => {
         connectedChainId={connectedChainId}
         address={address}
       >
-        <div className="flex-wrap justify-between mb-4 md:flex">
-          <PageHeader
-            title="Incentivized Pools"
-            subtitle="Contributors are rewarded for balancing asset pools."
-          />
-        </div>
+        <PageHeader
+          title="Incentivized Pools"
+          subtitle="Contributors are rewarded for balancing asset pools."
+          className="-mt-8 mb-6"
+        />
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
           <PoolCards address={address} pools={incentivizedPools} />
         </Grid>
-        <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
           <PageHeader
             title="Unincentivized Pools"
             subtitle="Pools without contributor rewards."
+            className="mt-8 mb-6"
           />
-        </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
           <PoolCards address={address} pools={unIncentivizedPools} />
         </Grid>
-        <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
-          <PageHeader
-            title="Migrated Pools"
-            subtitle="Pools migrated to new reward contracts."
-          />
-        </div>
+        <PageHeader
+          title="Migrated Pools"
+          subtitle="Pools migrated to new reward contracts."
+          className="mt-8 mb-6"
+        />
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
           <PoolCards address={address} pools={migratedPools} />
         </Grid>

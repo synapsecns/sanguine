@@ -39,33 +39,22 @@ export const PoolActionOptions = ({
   }
 
   return (
-    <Popover className="relative inline-block">
+    <Popover className="relative inline-block flex-shrink-0">
       {({ open }) => (
         <>
           <Popover.Button
             as="div"
             onMouseEnter={() => {}}
             className={`
-              group rounded-md inline-flex items-center
-              hover:text-gray-900 focus:outline-none
-              ${open ? 'text-gray-900' : 'text-purple-800'}
+              rounded-md inline-flex items-center gap-2
+              px-2 py-1 text-sm rounded-sm cursor-pointer
+              border border-zinc-400 dark:border-zinc-500
+              hover:bg-zinc-50 hover:dark:bg-zinc-700
+              focus:outline-none
             `}
           >
-            <div
-              className={`
-                flex items-center 
-                text-sm
-                rounded-sm
-                border border-[#565058] 
-                pl-2 pr-2 pt-1 pb-1 space-x-2 
-                hover:cursor-pointer
-                hover:bg-[#101018] ${open ? 'bg-[#101018]' : ''}`}
-            >
-              <div className="text-md text-[#BFBCC2]">Actions</div>
-              <div className="mt-1">
-                <DownArrow />
-              </div>
-            </div>
+            Actions
+            <DownArrow />
           </Popover.Button>
           <TransactionPopoverContainer>
             {options.includes('Deposit') && (

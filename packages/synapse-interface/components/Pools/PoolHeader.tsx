@@ -6,7 +6,7 @@ import { Address, useNetwork } from 'wagmi'
 import { getPoolUrl } from '@urls'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { RightArrow } from '@/components/icons/RightArrow'
+// import { RightArrow } from '@/components/icons/RightArrow'
 import { Token } from '@/utils/types'
 
 export const PoolHeader = memo(
@@ -40,30 +40,27 @@ export const PoolHeader = memo(
       })
     }, [pool, balances, address])
     return (
-      <div className="flex items-center justify-between p-3 pt-2 pb-2 pl-3 border border-transparent ">
-        <div className="flex items-center">
+      <div className="flex items-center gap-1 px-3 py-2 justify-between">
+        <div className="flex items-center gap-1">
           <img
             src={chain.chainImg.src}
-            className="w-[16px] h-[16px] rounded-full mr-2"
+            className="w-4 h-4"
           />
-          <div className="mr-2 text-white text-md">{chain.name}</div>
-          <div className="text-sm text-[#BFBCC2] mr-4">{pool.symbol}</div>
+          {chain.name}
+          <span className="text-sm text-zinc-400 mt-0.5 mr-1.5">{pool.symbol}</span>
           {mounted && connectedChain && connectedChain.id === pool.chainId && (
             <ConnectedIndicator />
           )}
         </div>
-
         {canDeposit && pool.incentivized ? (
           <Link href={getPoolUrl(pool)}>
-            <div className="text-sm text-[#99E6FF] flex items-center space-x-1">
+            <div className="text-sm text-sky-500 flex items-center space-x-1">
               <div className="hover:underline">Deposit</div>
-              <RightArrow color="#99E6FF" />
+              <RightArrow className="stroke-sky-500" />
             </div>
           </Link>
         ) : (
-          <div className="">
-            <RightArrow color="#565058" />
-          </div>
+          <RightArrow />
         )}
       </div>
     )
@@ -72,9 +69,29 @@ export const PoolHeader = memo(
 
 const ConnectedIndicator = () => {
   return (
-    <div className="flex flex-row space-x-1 text-sm">
-      <div className="w-2 h-2 my-auto ml-auto bg-green-500 rounded-full " />
-      <div className="text-xs text-secondaryTextColor">Connected</div>
+    <div className="flex items-center gap-[5px] text-sm text-zinc-400">
+      <span className="w-1.5 h-1.5 bg-green-500 rounded-full " />
+      Connected
     </div>
+  )
+}
+
+const RightArrow = ({className = 'stroke-zinc-400'}) => {
+  return (
+    <svg
+      width="7"
+      height="9"
+      viewBox="0 0 7 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`justify-self-end ${className}`}
+    >
+      <path
+        d="M1 1L6 6L1 11"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
