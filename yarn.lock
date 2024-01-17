@@ -891,10 +891,10 @@
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.27.8.tgz"
   integrity sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==
 
-"@synapsecns/sdk-router@^0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.8.tgz#a125993b580825c9b3d962ebc68301926ccf74e1"
-  integrity sha512-klg1Bu90ORa7LEnab5MFklYQIdyvfS6vGVx+3ZF7W3d+axdaMGsRf8pXbvnmKDGG2Bd53w4nJd2FZxFiNKsthA==
+"@synapsecns/sdk-router@^0.3.19":
+  version "0.3.19"
+  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.19.tgz#880f101c134341c3ffd491605f51eb18c806c8ac"
+  integrity sha512-jE5rkm4GaBKetn7u/CVs8ZHQyh0aC1tnAwzgkxaCQfeEb/18iakuiNo9/9TmjYsFsfavdFNwytWkrcS8GV9qUg==
   dependencies:
     "@babel/core" "^7.20.12"
     "@ethersproject/abi" "^5.7.0"

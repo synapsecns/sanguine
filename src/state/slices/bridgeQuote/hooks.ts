@@ -64,17 +64,10 @@ export const fetchBridgeQuote = createAsyncThunk(
         ? BigInt(feeAmount)
         : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
-    const { minAmountOut: originMinWithSlippage } =
-      await synapseSDK.applySlippageInBips(originQuery, 10) // 10 bips = 0.1%
-
-    const { minAmountOut: destMinWithSlippage } =
-      await synapseSDK.applySlippageInBips(destQuery, 10) // 10 bips = 0.1%
-
-    let newOriginQuery = { ...originQuery }
-    newOriginQuery.minAmountOut = originMinWithSlippage
-
-    let newDestQuery = { ...destQuery }
-    newDestQuery.minAmountOut = destMinWithSlippage
+    const {
+      originQuery: originQueryWithSlippage,
+      destQuery: destQueryWithSlippage,
+    } = synapseSDK.applyBridgeSlippage(bridgeModuleName, originQuery, destQuery)
 
     return {
       outputAmount: toValueBigInt,
@@ -98,8 +91,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       feeAmount: feeAmount,
       delta: BigInt(maxAmountOut.toString()),
       quotes: {
-        originQuery: newOriginQuery,
-        destQuery: newDestQuery,
+        originQuery: originQueryWithSlippage,
+        destQuery: destQueryWithSlippage,
       },
       estimatedTime: estimatedTime,
       bridgeModuleName: bridgeModuleName,
