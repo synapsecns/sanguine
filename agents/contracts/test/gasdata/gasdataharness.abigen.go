@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // GasDataHarnessMetaData contains all meta data concerning the GasDataHarness contract.
@@ -175,11 +176,11 @@ func NewGasDataHarnessFilterer(address common.Address, filterer bind.ContractFil
 
 // bindGasDataHarness binds a generic wrapper to an already deployed contract.
 func bindGasDataHarness(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(GasDataHarnessABI))
+	parsed, err := GasDataHarnessMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -751,11 +752,11 @@ func NewGasDataLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindGasDataLib binds a generic wrapper to an already deployed contract.
 func bindGasDataLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(GasDataLibABI))
+	parsed, err := GasDataLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -924,11 +925,11 @@ func NewNumberLibFilterer(address common.Address, filterer bind.ContractFilterer
 
 // bindNumberLib binds a generic wrapper to an already deployed contract.
 func bindNumberLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(NumberLibABI))
+	parsed, err := NumberLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and

@@ -68,6 +68,8 @@ import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListO
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
+import { waitForTransaction } from '@wagmi/core'
+
 const StateManagedBridge = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
@@ -152,6 +154,32 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
+      const allQuotes = await synapseSDK.allBridgeQuotes(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+      )
+
+      if (allQuotes.length === 0) {
+        const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        throw new Error(msg)
+      }
+
+      const rfqQuote = allQuotes.find(
+        (quote) => quote.bridgeModuleName === 'SynapseRFQ'
+      )
+
+      let quote
+
+      if (rfqQuote) {
+        quote = rfqQuote
+      } else {
+        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
+        quote = allQuotes[0]
+      }
+
       const {
         feeAmount,
         routerAddress,
@@ -160,13 +188,7 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
-      } = await synapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
-      )
+      } = quote
 
       // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
       // console.log(`[getAndSetQuote] toChainId`, toChainId)
@@ -214,9 +236,10 @@ const StateManagedBridge = () => {
       let originMinWithSlippage, destMinWithSlippage
       if (bridgeModuleName === 'SynapseRFQ') {
         // Relayer should take the request with slippage of 5% feeAmount
-        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
+        const maxOriginSlippage = (BigInt(feeAmount) * BigInt(5)) / BigInt(100)
         if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
-          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
+          originMinWithSlippage =
+            BigInt(originQuery.minAmountOut) - maxOriginSlippage
         } else {
           originMinWithSlippage = 0n
         }
@@ -394,66 +417,63 @@ const StateManagedBridge = () => {
         `Bridging from ${fromToken?.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
-
-      try {
-        segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-          address,
-          originChainId: fromChainId,
-          destinationChainId: toChainId,
-          inputAmount: debouncedFromValue,
-          expectedReceivedAmount: bridgeQuote.outputAmountString,
-          slippage: bridgeQuote.exchangeRate,
+      segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+        address,
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: debouncedFromValue,
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      })
+      dispatch(
+        updatePendingBridgeTransaction({
+          id: currentTimestamp,
+          timestamp: undefined,
+          transactionHash: tx,
+          isSubmitted: false,
         })
-        dispatch(
-          updatePendingBridgeTransaction({
-            id: currentTimestamp,
-            timestamp: undefined,
-            transactionHash: tx,
-            isSubmitted: false,
-          })
-        )
-        /** Update Origin Chain token balances after valid txHash  */
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address,
-            chainId: fromChainId,
-          })
-        )
-        dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-        dispatch(setDestinationAddress(null))
-        dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(''))
+      )
+      dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+      dispatch(setDestinationAddress(null))
+      dispatch(setShowDestinationAddress(false))
+      dispatch(updateFromValue(''))
 
-        const successToastContent = (
+      const successToastContent = (
+        <div>
           <div>
-            <div>
-              Successfully initiated bridge from {fromToken?.symbol} on{' '}
-              {originChainName} to {toToken.symbol} on {destinationChainName}
-            </div>
-            <ExplorerToastLink
-              transactionHash={tx ?? zeroAddress}
-              chainId={fromChainId}
-            />
+            Successfully initiated bridge from {fromToken?.symbol} on{' '}
+            {originChainName} to {toToken.symbol} on {destinationChainName}
           </div>
-        )
+          <ExplorerToastLink
+            transactionHash={tx ?? zeroAddress}
+            chainId={fromChainId}
+          />
+        </div>
+      )
 
-        successPopup = toast.success(successToastContent, {
-          id: 'bridge-success-popup',
-          duration: 10000,
-        })
+      successPopup = toast.success(successToastContent, {
+        id: 'bridge-success-popup',
+        duration: 10000,
+      })
 
-        toast.dismiss(pendingPopup)
+      toast.dismiss(pendingPopup)
 
-        return tx
-      } catch (error) {
-        segmentAnalyticsEvent(`[Bridge] error bridging`, {
+      const transactionReceipt = await waitForTransaction({
+        hash: tx as Address,
+        timeout: 30_000,
+      })
+      console.log('Transaction Receipt: ', transactionReceipt)
+
+      /** Update Origin Chain token balances after resolved tx or timeout reached */
+      /** Assume tx has been actually resolved if above times out */
+      dispatch(
+        fetchAndStoreSingleNetworkPortfolioBalances({
           address,
-          errorCode: error.code,
+          chainId: fromChainId,
         })
-        dispatch(removePendingBridgeTransaction(currentTimestamp))
-        console.log(`Transaction failed with error: ${error}`)
-        toast.dismiss(pendingPopup)
-      }
+      )
+
+      return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
         address,

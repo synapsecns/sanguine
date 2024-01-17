@@ -27,8 +27,6 @@ type AuthType struct {
 //
 //go:generate go run github.com/vektra/mockery/v2 --name SimulatedTestBackend --output ./mocks --case=underscore
 type SimulatedTestBackend interface {
-	// EnableTenderly attempts to enable tenderly for the TestBackend. Returns false if it cannot be done
-	EnableTenderly() (enabled bool)
 	// BackendName gets the name of the backend
 	BackendName() string
 	// T is the testing.T

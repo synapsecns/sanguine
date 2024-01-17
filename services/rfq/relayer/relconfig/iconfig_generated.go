@@ -3,6 +3,10 @@
 package relconfig
 
 import (
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
@@ -34,4 +38,17 @@ type IConfig interface {
 	GetTokenName(chain uint32, addr string) (string, error)
 	// GetFixedFeeMultiplier returns the fixed fee multiplier.
 	GetFixedFeeMultiplier() float64
+	// GetOriginGasEstimate returns the origin gas estimate for the given chain.
+	GetOriginGasEstimate(chainID uint32) int
+	// GetDestGasEstimate returns the destination gas estimate for the given chain.
+	GetDestGasEstimate(chainID uint32) int
+	// GetL1FeeParams returns the L1 fee params for the given chain.
+	GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool)
+	// GetQuotePct returns the quote percentage.
+	GetQuotePct() float64
+	// GetMinQuoteAmount returns the quote amount for the given chain and address.
+	// Note that this getter returns the value in native token decimals.
+	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
+	// GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
+	GetDeadlineBuffer(chainID int) time.Duration
 }
