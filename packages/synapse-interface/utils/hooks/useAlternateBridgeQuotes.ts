@@ -33,17 +33,18 @@ export const useAlternateBridgeQuotes = () => {
   }: BridgeState = useBridgeState()
 
   useEffect(() => {
-    const isValueInvalid =
+    const isValueInvalid: boolean =
       hasOnlyZeroes(debouncedToTokensFromValue) ||
       isEmptyString(debouncedToTokensFromValue)
 
-    const isSelectionsInvalid = [
+    const isSelectionsInvalid: boolean = [
       fromChainId,
       toChainId,
       fromToken,
       toToken,
     ].some(_.isNull)
 
+    /** Conditions required for fetching bridge quotes */
     if (!isValueInvalid && !isSelectionsInvalid && synapseSDK) {
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
         (token: Token) => ({
@@ -66,6 +67,7 @@ export const useAlternateBridgeQuotes = () => {
       )
     }
 
+    /** Reset bridge quotes state when value is invalid */
     if (isValueInvalid) {
       dispatch(resetFetchedBridgeQuotes())
     }
