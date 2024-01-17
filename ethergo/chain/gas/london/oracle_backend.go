@@ -64,7 +64,7 @@ func (h HeightOracleBackend) GetReceipts(ctx context.Context, hash common.Hash) 
 
 	var receipts types.Receipts
 
-	err = receipts.DeriveFields(h.ChainConfig(), hash, block.NumberU64(), block.Transactions())
+	err = receipts.DeriveFields(h.ChainConfig(), hash, block.NumberU64(), block.BaseFee(), block.Transactions())
 	if err != nil {
 		return nil, fmt.Errorf("could not derive receipts from block: %w", err)
 	}

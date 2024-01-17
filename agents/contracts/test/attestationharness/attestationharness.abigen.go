@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // AttestationHarnessMetaData contains all meta data concerning the AttestationHarness contract.
@@ -173,11 +174,11 @@ func NewAttestationHarnessFilterer(address common.Address, filterer bind.Contrac
 
 // bindAttestationHarness binds a generic wrapper to an already deployed contract.
 func bindAttestationHarness(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AttestationHarnessABI))
+	parsed, err := AttestationHarnessMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -687,11 +688,11 @@ func NewAttestationLibFilterer(address common.Address, filterer bind.ContractFil
 
 // bindAttestationLib binds a generic wrapper to an already deployed contract.
 func bindAttestationLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AttestationLibABI))
+	parsed, err := AttestationLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -860,11 +861,11 @@ func NewMemViewLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindMemViewLib binds a generic wrapper to an already deployed contract.
 func bindMemViewLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MemViewLibABI))
+	parsed, err := MemViewLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and

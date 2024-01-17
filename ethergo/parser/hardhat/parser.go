@@ -9,18 +9,16 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/hardhat"
-	"github.com/tenderly/tenderly-cli/providers"
 )
 
 // copied from hardhat provider because it's unexported.
 type hardhatMetadata struct {
-	Compiler providers.ContractCompiler           `json:"compiler"`
-	Sources  map[string]providers.ContractSources `json:"sources"`
+	Compiler ContractCompiler           `json:"compiler"`
+	Sources  map[string]ContractSources `json:"sources"`
 }
 
 // getMetadata gets the metadata for a hardhat contract.
-func getMetadata(contract hardhat.HardhatContract, filePath string) (hardhatMeta hardhatMetadata, err error) {
+func getMetadata(contract HardhatContract, filePath string) (hardhatMeta hardhatMetadata, err error) {
 	if contract.Metadata != "" {
 		err := json.Unmarshal([]byte(contract.Metadata), &hardhatMeta)
 		if err != nil {
@@ -31,9 +29,9 @@ func getMetadata(contract hardhat.HardhatContract, filePath string) (hardhatMeta
 }
 
 // updateNetworks updates the networks for a contract.
-func getNetworks(contract hardhat.HardhatContract, filePath string) (map[string]providers.ContractNetwork, error) {
+func getNetworks(contract HardhatContract, filePath string) (map[string]ContractNetwork, error) {
 	if contract.Networks == nil {
-		contract.Networks = make(map[string]providers.ContractNetwork)
+		contract.Networks = make(map[string]ContractNetwork)
 	}
 
 	chainIDPath := filepath.Join(filePath, ".chainId")
@@ -50,7 +48,7 @@ func getNetworks(contract hardhat.HardhatContract, filePath string) (map[string]
 		return contract.Networks, fmt.Errorf("could not parse chainid at %s: %w", filePath, err)
 	}
 
-	contract.Networks[strconv.Itoa(chainID)] = providers.ContractNetwork{
+	contract.Networks[strconv.Itoa(chainID)] = ContractNetwork{
 		Address:         contract.Address,
 		TransactionHash: contract.Receipt.TransactionHash,
 	}
@@ -61,7 +59,7 @@ func getNetworks(contract hardhat.HardhatContract, filePath string) (map[string]
 // GetDeployments parses all contract deployments from a directory.
 //
 //nolint:gocognit,cyclop
-func GetDeployments(deploymentDir string) (contracts []providers.Contract, err error) {
+func GetDeployments(deploymentDir string) (contracts []Contract, err error) {
 	var files []os.DirEntry
 
 	files, err = os.ReadDir(deploymentDir)
@@ -91,7 +89,7 @@ func GetDeployments(deploymentDir string) (contracts []providers.Contract, err e
 				break
 			}
 
-			var hardhatContract hardhat.HardhatContract
+			var hardhatContract HardhatContract
 			err = json.Unmarshal(data, &hardhatContract)
 			if err != nil {
 				logger.Debug(fmt.Sprintf("Failed parsing build file at %s with error: %s", contractFilePath, err))
@@ -104,13 +102,13 @@ func GetDeployments(deploymentDir string) (contracts []providers.Contract, err e
 				break
 			}
 
-			contract := providers.Contract{
+			contract := Contract{
 				Name:             strings.Split(contractFile.Name(), ".")[0],
 				Abi:              hardhatContract.Abi,
 				Bytecode:         hardhatContract.Bytecode,
 				DeployedBytecode: hardhatContract.DeployedBytecode,
 				SourcePath:       filePath,
-				Compiler: providers.ContractCompiler{
+				Compiler: ContractCompiler{
 					Name:    "",
 					Version: metadata.Compiler.Version,
 				},

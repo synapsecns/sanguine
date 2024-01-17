@@ -154,6 +154,32 @@ const StateManagedBridge = () => {
     try {
       dispatch(setIsLoading(true))
 
+      const allQuotes = await synapseSDK.allBridgeQuotes(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+      )
+
+      if (allQuotes.length === 0) {
+        const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        throw new Error(msg)
+      }
+
+      const rfqQuote = allQuotes.find(
+        (quote) => quote.bridgeModuleName === 'SynapseRFQ'
+      )
+
+      let quote
+
+      if (rfqQuote) {
+        quote = rfqQuote
+      } else {
+        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
+        quote = allQuotes[0]
+      }
+
       const {
         feeAmount,
         routerAddress,
