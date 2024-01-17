@@ -114,25 +114,15 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false
 	}
 
-	// if sending a gas token, make sure we do not exceed min_gas_token
-	if chain.IsGasToken(quote.Transaction.DestToken) {
-		balance, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), quote.Transaction.DestToken)
-		if err != nil {
-			span.RecordError(fmt.Errorf("error getting committable balance: %w", err))
-			return false
-		}
-		minGasToken, err := m.config.GetMinGasToken()
-		if err != nil {
-			span.RecordError(fmt.Errorf("error getting min gas token: %w", err))
-			return false
-		}
-		if balance.Cmp(minGasToken) < 0 {
-			span.AddEvent("minGasToken exceeds committable balance", trace.WithAttributes(
-				attribute.String("minGasToken", minGasToken.String()),
-				attribute.String("committableBalance", balance.String()),
-			))
-			return false
-		}
+	// check to make sure we have sufficient gas to execute this transaction
+	// TODO: handle in-flight gas; for now we can set a high min_gas_token
+	sufficentGas, err := m.hasSufficientGas(ctx, quote)
+	if err != nil {
+		span.RecordError(fmt.Errorf("error checking sufficient gas: %w", err))
+		return false
+	}
+	if !sufficentGas {
+		return false
 	}
 
 	// then check if we'll make money on it
@@ -141,7 +131,12 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
 		return false
 	}
-	return isProfitable
+	if !isProfitable {
+		return false
+	}
+
+	// all checks have passed
+	return true
 }
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
@@ -171,6 +166,35 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 
 	// NOTE: this logic assumes that the origin and destination tokens have the same price.
 	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
+}
+
+func (m *Manager) hasSufficientGas(parentCtx context.Context, quote reldb.QuoteRequest) (sufficient bool, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "hasSufficientGas")
+	defer func() {
+		span.SetAttributes(attribute.Bool("sufficient", sufficient))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	gasThresh, err := m.config.GetMinGasToken()
+	if err != nil {
+		return false, fmt.Errorf("error getting min gas token: %w", err)
+	}
+	gasOrigin, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.OriginChainId), chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
+	}
+	gasDest, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
+	}
+	span.SetAttributes(
+		attribute.String("gas_thresh", gasThresh.String()),
+		attribute.String("gas_origin", gasOrigin.String()),
+		attribute.String("gas_dest", gasDest.String()),
+	)
+
+	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	return sufficient, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
