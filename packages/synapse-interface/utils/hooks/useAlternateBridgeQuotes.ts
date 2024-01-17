@@ -33,32 +33,30 @@ export const useAlternateBridgeQuotes = () => {
   }: BridgeState = useBridgeState()
 
   useEffect(() => {
-    const isInputInvalid =
+    const isValueInvalid =
       hasOnlyZeroes(debouncedToTokensFromValue) ||
       isEmptyString(debouncedToTokensFromValue)
 
-    if (
-      !isInputInvalid &&
-      fromChainId &&
-      toChainId &&
-      fromToken &&
-      toToken &&
-      synapseSDK
-    ) {
+    const isSelectionsInvalid = [
+      fromChainId,
+      toChainId,
+      fromToken,
+      toToken,
+    ].some(_.isNull)
+
+    if (!isValueInvalid && !isSelectionsInvalid && synapseSDK) {
       const bridgeQuoteRequests: BridgeQuoteRequest[] = toTokens.map(
-        (token: Token) => {
-          return {
-            originChainId: fromChainId,
-            originToken: fromToken as Token,
-            destinationChainId: toChainId,
-            destinationTokenAddress: token?.addresses[toChainId] as Address,
-            destinationToken: token as Token,
-            amount: stringToBigInt(
-              debouncedToTokensFromValue,
-              fromToken?.decimals[fromChainId]
-            ),
-          }
-        }
+        (token: Token) => ({
+          originChainId: fromChainId,
+          originToken: fromToken,
+          destinationChainId: toChainId,
+          destinationTokenAddress: token.addresses[toChainId] as Address,
+          destinationToken: token,
+          amount: stringToBigInt(
+            debouncedToTokensFromValue,
+            fromToken?.decimals[fromChainId]
+          ),
+        })
       )
       dispatch(
         fetchAndStoreBridgeQuotes({
@@ -68,7 +66,7 @@ export const useAlternateBridgeQuotes = () => {
       )
     }
 
-    if (isInputInvalid) {
+    if (isValueInvalid) {
       dispatch(resetFetchedBridgeQuotes())
     }
   }, [debouncedToTokensFromValue])

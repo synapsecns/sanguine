@@ -48,7 +48,7 @@ export const ToTokenListOverlay = () => {
 
   /** Fetch Alternative Bridge Quotes when component renders */
   /** Temporarily pausing feature */
-  // useAlternateBridgeQuotes()
+  useAlternateBridgeQuotes()
 
   let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
