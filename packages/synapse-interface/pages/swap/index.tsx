@@ -158,8 +158,7 @@ const StateManagedSwap = () => {
               spender: routerAddress,
             })
 
-      const { originQuery: originQueryWithSlippage } =
-        synapseSDK.applySwapSlippage(query)
+      const originQueryWithSlippage = synapseSDK.applySwapSlippage(query)
 
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
