@@ -39,6 +39,8 @@ type Manager interface {
 	GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
+	// HasSufficientGas checks if there is sufficient gas for a given route.
+	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
 }
 
 type inventoryManagerImpl struct {
@@ -206,6 +208,25 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 		}
 	}
 	return nil
+}
+
+// HasSufficientGas checks if there is sufficient gas for a given route.
+func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
+	gasThresh, err := i.cfg.GetMinGasToken()
+	if err != nil {
+		return false, fmt.Errorf("error getting min gas token: %w", err)
+	}
+	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
+	}
+	gasDest, err := i.GetCommittableBalance(ctx, dest, chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
+	}
+
+	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	return sufficient, nil
 }
 
 // initializes tokens converts the configuration into a data structure we can use to determine inventory

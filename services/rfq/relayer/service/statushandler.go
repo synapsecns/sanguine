@@ -107,7 +107,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 // gasMiddleware checks that we have sufficient gas to process a request on origin and destination.
 func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
-		sufficientGas, err := quoter.HasSufficientGas(ctx, req, r.inventory, r.cfg)
+		sufficientGas, err := r.inventory.HasSufficientGas(ctx, int(req.Transaction.OriginChainId), int(req.Transaction.DestChainId))
 		if err != nil {
 			return fmt.Errorf("could not check gas: %w", err)
 		}

@@ -114,17 +114,6 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false
 	}
 
-	// check to make sure we have sufficient gas to execute this transaction
-	// TODO: handle in-flight gas; for now we can set a high min_gas_token
-	sufficentGas, err := HasSufficientGas(ctx, quote, m.inventoryManager, m.config)
-	if err != nil {
-		span.RecordError(fmt.Errorf("error checking sufficient gas: %w", err))
-		return false
-	}
-	if !sufficentGas {
-		return false
-	}
-
 	// then check if we'll make money on it
 	isProfitable, err := m.isProfitableQuote(ctx, quote)
 	if err != nil {
@@ -166,25 +155,6 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 
 	// NOTE: this logic assumes that the origin and destination tokens have the same price.
 	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
-}
-
-// HasSufficientGas determines if the relayer has sufficient gas to relay a given quote on origin and dest.
-func HasSufficientGas(ctx context.Context, quote reldb.QuoteRequest, im inventory.Manager, config relconfig.Config) (sufficient bool, err error) {
-	gasThresh, err := config.GetMinGasToken()
-	if err != nil {
-		return false, fmt.Errorf("error getting min gas token: %w", err)
-	}
-	gasOrigin, err := im.GetCommittableBalance(ctx, int(quote.Transaction.OriginChainId), chain.EthAddress)
-	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
-	}
-	gasDest, err := im.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), chain.EthAddress)
-	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
-	}
-
-	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
-	return sufficient, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
@@ -231,10 +201,6 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
-	quoteAmount, err := m.getQuoteAmount(ctx, chainID, address, balance)
-	if err != nil {
-		return nil, err
-	}
 
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
@@ -253,6 +219,14 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
+
+				// Calculate the quote amount for this route
+				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
+				if err != nil {
+					return nil, err
+				}
+
+				// Calculate the fee for this route
 				destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
@@ -265,6 +239,8 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if !ok {
 					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
 				}
+
+				// Build the quote
 				quote := model.PutQuoteRequest{
 					OriginChainID:           origin,
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
@@ -283,10 +259,11 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-// submitQuote submits a quote to the RFQ API.
-func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
-	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
-		attribute.String(metrics.ChainID, strconv.Itoa(chainID)),
+// getQuoteAmount calculates the quote amount for a given route.
+func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
+		attribute.String(metrics.Origin, strconv.Itoa(origin)),
+		attribute.String(metrics.Destination, strconv.Itoa(dest)),
 		attribute.String("address", address.String()),
 		attribute.String("balance", balance.String()),
 	))
@@ -296,12 +273,23 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// First, check if we have enough gas to complete the a bridge for this route
+	// If not, set the quote amount to zero to make sure a stale quote won't be used
+	// TODO: handle in-flight gas; for now we can set a high min_gas_token
+	sufficentGas, err := m.inventoryManager.HasSufficientGas(ctx, origin, dest)
+	if err != nil {
+		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
+	}
+	if !sufficentGas {
+		return big.NewInt(0), nil
+	}
+
 	// Apply the quotePct
 	balanceFlt := new(big.Float).SetInt(balance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
 
 	// Clip the quoteAmount by the minQuoteAmount
-	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
+	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
