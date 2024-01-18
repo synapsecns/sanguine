@@ -137,48 +137,49 @@ func (s *QuoterSuite) TestShouldProcess() {
 }
 
 func (s *QuoterSuite) TestGetQuoteAmount() {
-	chainID := int(s.origin)
-	address := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+	origin := int(s.origin)
+	dest := int(s.destination)
+	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
 	setQuoteParams := func(quotePct float64, minQuoteAmount string) {
 		s.config.QuotePct = quotePct
-		tokenCfg := s.config.Chains[chainID].Tokens["USDC"]
+		tokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		tokenCfg.MinQuoteAmount = minQuoteAmount
-		s.config.Chains[chainID].Tokens["USDC"] = tokenCfg
+		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
 	// Set default quote params; should return the balance.
-	quoteAmount, err := s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err := s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
 	setQuoteParams(50, "0")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(50, "500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(25, "500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
 	setQuoteParams(25, "1500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
