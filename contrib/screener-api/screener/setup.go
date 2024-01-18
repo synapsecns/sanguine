@@ -3,15 +3,17 @@ package screener
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"io"
 	"os"
 	"strings"
 )
 
-func setupScreener(csvs map[string]string) (internal.RulesetManager, error) {
+func setupScreener(rulesets map[string]config.RulesetConfig) (internal.RulesetManager, error) {
 	mgr := internal.NewRulesetManager(map[string]map[string]bool{})
-	for csvName, csvPath := range csvs {
+	for csvName, cfg := range rulesets {
+		csvPath := cfg.Filename
 		parsedCsv, err := parseCsv(csvPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse csv %s: %w", csvName, err)

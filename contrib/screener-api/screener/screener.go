@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
+	baseServer "github.com/synapsecns/sanguine/core/server"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
@@ -65,6 +66,15 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	return &screener, nil
 }
 
+func (s *screenerImpl) Start(ctx context.Context) error {
+	connection := baseServer.Server{}
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
+	if err != nil {
+		return fmt.Errorf("could not start gqlServer: %w", err)
+	}
+	return nil
+}
+
 func (s *screenerImpl) screenAddress(c *gin.Context) {
 	var err error
 
@@ -88,12 +98,19 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	currentRules := s.rulesManager.GetRuleset(ruleset)
 
 	goodUntil := time.Now().Add(-1 * s.cfg.GetCacheTime(ruleset))
+	var indicators []trmlabs.AddressRiskIndicator
+	if indicators, err = s.getIndicators(ctx, address, goodUntil); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-	//if currentRules.HasAddressIndicators(riskIndicators...) {
-	//	c.JSON(http.StatusOK, gin.H{"risk": true})
-	//	return
-	//}
+	hasIndicator := false
+	if hasIndicator, err = currentRules.HasAddressIndicators(indicators...); err != nil {
+		c.JSON(http.StatusOK, gin.H{"risk": true})
+		return
+	}
 
+	c.JSON(http.StatusOK, gin.H{"risk": hasIndicator})
 }
 
 func (s *screenerImpl) getIndicators(ctx context.Context, address string, goodUntil time.Time) ([]trmlabs.AddressRiskIndicator, error) {
@@ -111,4 +128,14 @@ func (s *screenerImpl) getIndicators(ctx context.Context, address string, goodUn
 		return nil, fmt.Errorf("could not screen address: %w", err)
 	}
 
+	for _, ri := range response {
+		riskIndicators = append(riskIndicators, ri.AddressRiskIndicators...)
+	}
+
+	err = s.db.PutAddressIndicators(ctx, address, riskIndicators)
+	if err != nil {
+		return nil, fmt.Errorf("could not put address indicators: %w", err)
+	}
+
+	return riskIndicators, nil
 }
