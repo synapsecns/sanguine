@@ -17,6 +17,7 @@ type clientImpl struct {
 	url    string
 }
 
+// NewClient creates a new TRM Labs API client.
 func NewClient(apiKey, url string) (Client, error) {
 	client := resty.New().
 		SetBaseURL(url).

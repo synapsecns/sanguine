@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
-	"github.com/synapsecns/sanguine/contrib/screener-api/db/base"
+	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/base"
 	"time"
 
 	"github.com/ipfs/go-log"

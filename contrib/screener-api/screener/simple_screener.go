@@ -133,5 +133,4 @@ func (s *SimpleScreener) ScreenAddress(parentCtx context.Context, address common
 	s.cache.Set(address.String(), false, cache.DefaultExpiration)
 
 	return false, nil
-
 }
