@@ -12,8 +12,8 @@ import (
 
 	"github.com/synapsecns/sanguine/core/metrics"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/stip_relayer/db"
+	"github.com/synapsecns/sanguine/services/stip_relayer/stipconfig"
 )
 
 // Check Dune Query
@@ -68,14 +68,14 @@ func main() {
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type STIPRelayer struct {
-	cfg           config.Config
+	cfg           stipconfig.Config
 	db            db.STIPDB
 	omnirpcClient omniClient.RPCClient
 	handler       metrics.Handler
 }
 
 func NewSTIPRelayer(ctx context.Context,
-	cfg config.Config,
+	cfg stipconfig.Config,
 	handler metrics.Handler,
 	omniRPCClient omniClient.RPCClient,
 	store db.STIPDB,
@@ -89,7 +89,7 @@ func NewSTIPRelayer(ctx context.Context,
 }
 
 func (s STIPRelayer) Run() error {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	errChan := make(chan error)

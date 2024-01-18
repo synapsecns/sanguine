@@ -70,3 +70,7 @@ func TestGetExecutionResults(t *testing.T) {
 	fmt.Println(string(getResultsBody))
 
 }
+
+func (c *STIPRelayerSuite) TestStartRelayer() {
+	c.stipRelayer.Run()
+}
