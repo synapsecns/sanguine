@@ -5,6 +5,8 @@ import Head from 'next/head'
 import '@/patch'
 import { Analytics } from '@vercel/analytics/react'
 import { PersistGate } from 'redux-persist/integration/react'
+import LogRocket from 'logrocket'
+import setupLogRocketReact from 'logrocket-react'
 
 import {
   boba,
@@ -76,6 +78,18 @@ const rawChains = [
   dogechain,
   boba,
 ]
+
+
+// only initialize when in the browser
+if (typeof window !== 'undefined' && !location.hostname.match("synapseprotocol.com")) {
+  LogRocket.init('npdhrc/synapse-staging');
+  // plugins should also only be initialized when in the browser
+  setupLogRocketReact(LogRocket);
+
+  LogRocket.getSessionURL(sessionURL => {
+    console.log("session url for debugging " + sessionURL);
+  });
+}
 
 // Add custom icons
 const chainsMatured = []
