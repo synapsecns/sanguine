@@ -116,7 +116,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 
 	// check to make sure we have sufficient gas to execute this transaction
 	// TODO: handle in-flight gas; for now we can set a high min_gas_token
-	sufficentGas, err := m.hasSufficientGas(ctx, quote)
+	sufficentGas, err := HasSufficientGas(ctx, quote, m.inventoryManager, m.config)
 	if err != nil {
 		span.RecordError(fmt.Errorf("error checking sufficient gas: %w", err))
 		return false
@@ -168,30 +168,20 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
 }
 
-func (m *Manager) hasSufficientGas(parentCtx context.Context, quote reldb.QuoteRequest) (sufficient bool, err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "hasSufficientGas")
-	defer func() {
-		span.SetAttributes(attribute.Bool("sufficient", sufficient))
-		metrics.EndSpanWithErr(span, err)
-	}()
-
-	gasThresh, err := m.config.GetMinGasToken()
+// HasSufficientGas determines if the relayer has sufficient gas to relay a given quote on origin and dest.
+func HasSufficientGas(ctx context.Context, quote reldb.QuoteRequest, im inventory.Manager, config relconfig.Config) (sufficient bool, err error) {
+	gasThresh, err := config.GetMinGasToken()
 	if err != nil {
 		return false, fmt.Errorf("error getting min gas token: %w", err)
 	}
-	gasOrigin, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.OriginChainId), chain.EthAddress)
+	gasOrigin, err := im.GetCommittableBalance(ctx, int(quote.Transaction.OriginChainId), chain.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
-	gasDest, err := m.inventoryManager.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), chain.EthAddress)
+	gasDest, err := im.GetCommittableBalance(ctx, int(quote.Transaction.DestChainId), chain.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
 	}
-	span.SetAttributes(
-		attribute.String("gas_thresh", gasThresh.String()),
-		attribute.String("gas_origin", gasOrigin.String()),
-		attribute.String("gas_dest", gasDest.String()),
-	)
 
 	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
 	return sufficient, nil
