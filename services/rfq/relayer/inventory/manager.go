@@ -18,7 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -57,7 +56,7 @@ type inventoryManagerImpl struct {
 	// relayerAddress contains the relayer address
 	relayerAddress common.Address
 	// chainClient is an omnirpc client
-	chainClient omnirpcClient.RPCClient
+	chainClient submitter.ClientFetcher
 	db          reldb.Service
 }
 
@@ -134,12 +133,12 @@ var (
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
+func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
 		cfg:            cfg,
-		chainClient:    client,
+		chainClient:    clientFetcher,
 		db:             db,
 	}
 
@@ -177,7 +176,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 	defer i.mux.RUnlock()
 
 	for chainID, tokenMap := range i.tokens {
-		backendClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		backendClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
@@ -310,7 +309,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	for chainID := range deferredCalls {
 		chainID := chainID // capture func literal
 
-		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("can't initialize tokens, no chain client available for chain %d: %w", chainID, err)
 		}
@@ -355,7 +354,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	wg.Add(len(i.tokens))
 
 	for chainID, tokenMap := range i.tokens {
-		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
