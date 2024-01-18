@@ -6,11 +6,9 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -146,13 +144,7 @@ func (s *QuoterSuite) TestShouldProcess() {
 
 	// Toggle insufficient gas; should not process.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
-	client := new(clientMocks.EVM)
-	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
-	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
-	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
-	go func() { feePricer.Start(s.GetTestContext()) }()
-
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
 	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
