@@ -143,16 +143,7 @@ func (s *QuoterSuite) TestShouldProcess() {
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 
 	// Toggle insufficient gas; should not process.
-	clientFetcher := new(fetcherMocks.ClientFetcher)
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
-	inventoryManager := new(inventoryMocks.Manager)
-	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
-	s.NoError(err)
-
-	var ok bool
-	s.manager, ok = mgr.(*quoter.Manager)
-	s.True(ok)
+	s.setGasSufficiency(false)
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 }
 
@@ -203,4 +194,24 @@ func (s *QuoterSuite) TestGetQuoteAmount() {
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
+
+	// Toggle insufficient gas; should be 0.
+	s.setGasSufficiency(false)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+}
+
+func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	inventoryManager := new(inventoryMocks.Manager)
+	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(sufficient, nil)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
+	s.NoError(err)
+
+	var ok bool
+	s.manager, ok = mgr.(*quoter.Manager)
+	s.True(ok)
 }
