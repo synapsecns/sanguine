@@ -29,6 +29,8 @@ import (
 )
 
 // Manager is the interface for the inventory manager.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Manager --output ./mocks --case=underscore
 type Manager interface {
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be
