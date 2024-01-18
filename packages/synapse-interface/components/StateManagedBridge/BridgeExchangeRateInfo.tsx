@@ -19,9 +19,9 @@ import { useAppSelector } from '@/store/hooks'
 
 const BridgeExchangeRateInfo = () => {
   return (
-    <div className="py-3.5 px-1 space-y-3 text-sm md:px-6">
+    <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       <RouteEligibility />
-      <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary">
+      <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
         <Fee />
@@ -59,14 +59,13 @@ const Router = () => {
   return (
     <div className="flex justify-between">
       <div>Router</div>
-      <div>{bridgeModuleName}</div>
+      <div className="text-primaryTextColor">{bridgeModuleName}</div>
     </div>
   )
 }
 
 const RouteEligibility = () => {
-  const { isRouteEligible, isActiveRouteEligible, rebate } =
-    useStipEligibility()
+  const { isRouteEligible, isActiveRouteEligible } = useStipEligibility()
 
   if (!isRouteEligible) {
     return (
@@ -86,10 +85,8 @@ const RouteEligibility = () => {
           className="w-4 h-4 mr-2 rounded-full"
         />
 
-        <span className="text-greenText">
-          {isActiveRouteEligible
-            ? `Rebate: +${numeral(rebate).format('0,0.000000')} ARB`
-            : ELIGIBILITY_DEFAULT_TEXT}
+        <span className="">
+          {isActiveRouteEligible ? <RebateText /> : ELIGIBILITY_DEFAULT_TEXT}
         </span>
       </div>
       <TimeEstimate />
@@ -97,23 +94,35 @@ const RouteEligibility = () => {
   )
 }
 
-const Rebate = () => {
-  const { isRouteEligible, rebate } = useStipEligibility()
-
+const RebateText = () => {
+  const { rebate } = useStipEligibility()
   const { arbPrice } = useAppSelector((state) => state.priceData)
   const arbInDollars = rebate * arbPrice
+
+  return (
+    <div className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+      <span className="text-green-300">
+        +{numeral(rebate).format('0,0.000')} ARB
+      </span>
+      <span className="text-secondary"> / </span>
+      <span className="text-green-300">
+        {numeral(arbInDollars).format('$0,0.00')}
+      </span>
+    </div>
+  )
+}
+
+const Rebate = () => {
+  const { isRouteEligible } = useStipEligibility()
 
   if (!isRouteEligible) {
     return null
   }
 
   return (
-    <div className="flex items-center justify-between text-greenText">
-      <div>Rebate</div>
-      <div>
-        +{numeral(rebate).format('0,0.000000')} ARB (
-        {numeral(arbInDollars).format('$0,0.00')})
-      </div>
+    <div className="flex items-center justify-between">
+      <div className="text-green-300">Rebate</div>
+      <RebateText />
     </div>
   )
 }
@@ -149,11 +158,9 @@ const Fee = () => {
   return (
     <div className="flex items-center justify-between">
       <div>Fee</div>
-      <div>
-        <div>
-          {isLoading ? '-' : feeString}{' '}
-          <span className="text-white">{fromToken?.symbol}</span>
-        </div>
+      <div className="text-primaryTextColor">
+        {isLoading ? '-' : feeString}{' '}
+        <span className="e">{fromToken?.symbol}</span>
       </div>
     </div>
   )
@@ -189,7 +196,7 @@ const TimeEstimate = () => {
     showText = `Select origin token`
   }
 
-  return <div className="text-secondary">{showText}</div>
+  return <div className="text-right text-secondary">{showText}</div>
 }
 
 const GasDropLabel = () => {
@@ -247,7 +254,7 @@ const useExchangeRateInfo = (fromValue, exchangeRate) => {
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
-      return 'text-green-500'
+      return 'text-green-300'
     } else if (numExchangeRate > 0.975) {
       return 'text-amber-500'
     } else {
