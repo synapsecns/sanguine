@@ -82,7 +82,9 @@ const rawChains = [
 
 // only initialize when in the browser
 if (typeof window !== 'undefined' && !location.hostname.match("synapseprotocol.com")) {
-  LogRocket.init('npdhrc/synapse-staging');
+  LogRocket.init('npdhrc/synapse-staging', {
+    mergeIframes: true,
+  })
   // plugins should also only be initialized when in the browser
   setupLogRocketReact(LogRocket);
 
