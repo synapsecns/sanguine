@@ -61,11 +61,11 @@ export const PortfolioTokenAsset = ({
 
   const isDisabled: boolean = false
 
-  const handleTotalBalanceInputCallback = useCallback(async () => {
-    await dispatch(setFromChainId(portfolioChainId as number))
-    await dispatch(setFromToken(token as Token))
-    await dispatch(
-      await updateFromValue(
+  const handleFromSelectionCallback = useCallback(() => {
+    dispatch(setFromChainId(portfolioChainId as number))
+    dispatch(setFromToken(token as Token))
+    dispatch(
+      updateFromValue(
         formatBigIntToString(
           balance,
           token.decimals[portfolioChainId]
@@ -73,13 +73,7 @@ export const PortfolioTokenAsset = ({
       )
     )
     handleFocusOnInput()
-  }, [isDisabled, token, balance, portfolioChainId])
-
-  const handleSelectFromTokenCallback = useCallback(() => {
-    dispatch(setFromChainId(portfolioChainId as number))
-    dispatch(setFromToken(token as Token))
-    handleFocusOnInput()
-  }, [token, isDisabled, portfolioChainId])
+  }, [token, balance, portfolioChainId])
 
   return (
     <div
@@ -90,7 +84,7 @@ export const PortfolioTokenAsset = ({
       `}
     >
       <div
-        onClick={handleTotalBalanceInputCallback}
+        onClick={handleFromSelectionCallback}
         className={`
           flex items-center gap-2
           pl-2 pr-4 py-2 cursor-pointer rounded
@@ -107,7 +101,7 @@ export const PortfolioTokenAsset = ({
         {parsedBalance} {symbol}
       </div>
       <PortfolioAssetActionButton
-        selectCallback={handleSelectFromTokenCallback}
+        selectCallback={handleFromSelectionCallback}
         isDisabled={isDisabled || isTokenSelected}
         isSelected={isTokenSelected}
       />
