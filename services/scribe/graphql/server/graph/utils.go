@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"math/big"
 	"time"
@@ -81,8 +82,8 @@ func (r Resolver) ethTxsToModelTransactions(ctx context.Context, ethTxs []db.TxW
 		modelTxs[i] = r.ethTxToModelTransaction(ethTx.Tx, chainID)
 
 		// Return empty sender if that this operation errors (will only occur in tests or invalid txs).
-		msgFrom, _ := ethTx.Tx.AsMessage(types.LatestSignerForChainID(ethTx.Tx.ChainId()), big.NewInt(1))
-		modelTxs[i].Sender = msgFrom.From().String()
+		msgFrom, _ := ethCore.TransactionToMessage(&ethTx.Tx, types.LatestSignerForChainID(ethTx.Tx.ChainId()), big.NewInt(1))
+		modelTxs[i].Sender = msgFrom.From.String()
 
 		timestamp, err := r.DB.RetrieveBlockTime(ctx, chainID, ethTx.BlockNumber)
 		if err != nil || timestamp == 0 {
