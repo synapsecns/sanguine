@@ -1,4 +1,5 @@
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
+import _ from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import {
   setFromChainId,
@@ -11,8 +12,9 @@ import { inputRef } from '../../StateManagedBridge/InputContainer'
 import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 
-const handleFocusOnInput = () => {
+const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
 }
 
@@ -31,53 +33,29 @@ export const PortfolioTokenAsset = ({
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
-  const { icon, symbol, decimals } = token as Token
+  const { icon, symbol, decimals } = token
 
-  const parsedBalance: string = useMemo(() => {
-    const formattedBalance = formatBigIntToString(
-      balance,
-      decimals[portfolioChainId],
-      3
-    )
-    return balance > 0n && hasOnlyZeroes(formattedBalance)
-      ? '< 0.001'
-      : formattedBalance
-  }, [balance, portfolioChainId])
+  const tokenDecimals = _.isNumber(decimals)
+    ? decimals
+    : decimals[portfolioChainId]
 
-  const parsedBalanceLong: string = useMemo(() => {
-    const formattedBalance = formatBigIntToString(
-      balance,
-      decimals[portfolioChainId],
-      8
-    )
-    return balance > 0n && hasOnlyZeroes(formattedBalance)
-      ? '< 0.001'
-      : formattedBalance
-  }, [balance, portfolioChainId])
+  const parsedBalance = getParsedBalance(balance, tokenDecimals, 3)
+  const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
 
-  const isTokenSelected: boolean = useMemo(() => {
-    return fromToken === token && fromChainId === portfolioChainId
-  }, [fromChainId, fromToken, token, portfolioChainId])
-
-  const isDisabled: boolean = false
+  const isDisabled = false
+  const isTokenSelected =
+    fromToken === token && fromChainId === portfolioChainId
 
   const handleFromSelectionCallback = useCallback(() => {
-    dispatch(setFromChainId(portfolioChainId as number))
-    dispatch(setFromToken(token as Token))
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(
-          balance,
-          token.decimals[portfolioChainId]
-        ) as string
-      )
-    )
-    handleFocusOnInput()
+    dispatch(setFromChainId(portfolioChainId))
+    dispatch(setFromToken(token))
+    handleFocusOnBridgeInput()
+    dispatch(updateFromValue(getParsedBalance(balance, tokenDecimals)))
   }, [token, balance, portfolioChainId])
 
   return (
     <div
-      data-test-id="portfolio-token-asset"
+      id="portfolio-token-asset"
       className={`
         p-2 flex items-center border-y text-white justify-between last:rounded-b-md
         ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
@@ -109,61 +87,13 @@ export const PortfolioTokenAsset = ({
   )
 }
 
-export const HoverClickableText = ({
-  defaultText,
-  hoverText,
-  callback,
-}: {
-  defaultText: string
-  hoverText: string
-  callback: () => void
-}) => {
-  const [isHovered, setIsHovered] = useState<boolean>(false)
-  return (
-    <div
-      data-test-id="hover-clickable-text"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={callback}
-      className={`
-        group px-2
-        text-[#A3A3C2]
-        hover:text-[#75E6F0]
-        hover:underline
-        hover:cursor-pointer
-        active:opacity-70
-      `}
-    >
-      <div className="text-sm">{isHovered ? hoverText : defaultText}</div>
-    </div>
-  )
-}
+const getParsedBalance = (
+  balance: bigint,
+  decimals: number,
+  places?: number
+) => {
+  const formattedBalance = formatBigIntToString(balance, decimals, places)
+  const verySmallBalance = balance > 0n && hasOnlyZeroes(formattedBalance)
 
-type PortfolioAssetActionButtonProps = {
-  selectCallback: () => void
-  isDisabled: boolean
-  isSelected: boolean
-}
-
-const PortfolioAssetActionButton = ({
-  selectCallback,
-  isDisabled,
-  isSelected,
-}: PortfolioAssetActionButtonProps) => {
-  return (
-    <React.Fragment>
-      <button
-        data-test-id="portfolio-asset-action-button"
-        className={`
-          py-1 px-6 rounded-sm
-          border border-synapsePurple
-          ${!isDisabled && 'cursor-pointer hover:bg-surface active:opacity-70'}
-        `}
-        onClick={selectCallback}
-        disabled={isDisabled}
-      >
-        Select{isSelected && 'ed'}
-      </button>
-    </React.Fragment>
-  )
+  return verySmallBalance ? '< 0.001' : formattedBalance
 }

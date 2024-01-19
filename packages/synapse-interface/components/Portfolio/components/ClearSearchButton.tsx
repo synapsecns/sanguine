@@ -9,7 +9,7 @@ export const ClearSearchButton = ({
 }) => {
   return (
     <button
-      data-test-id="clear-search-button"
+      id="clear-search-button"
       className={`
         ${show ? 'visible' : 'invisible'}
         flex w-6 h-6 mr-2

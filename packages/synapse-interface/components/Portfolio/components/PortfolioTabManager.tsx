@@ -53,7 +53,7 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
   const isCurrentlyActive: boolean = activeTab === tabType
   return (
     <button
-      data-test-id="tab"
+      id="tab"
       onClick={() => handleTabChange(tabType)}
       className={`
         font-medium text-2xl text-gray-500

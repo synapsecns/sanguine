@@ -10,7 +10,7 @@ import {
 import { Chain } from '@/utils/types'
 import { PortfolioAccordion } from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
-import { EmptyPortfolioContent } from './PortfolioContent'
+import { EmptyPortfolioContent } from './EmptyPortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
@@ -59,7 +59,7 @@ export const SingleNetworkPortfolio = ({
 
   return (
     <div
-      data-test-id="single-network-portfolio"
+      id="single-network-portfolio"
       className="flex flex-col mb-4 border rounded-md border-surface"
     >
       <PortfolioAccordion
@@ -139,7 +139,7 @@ const PortfolioNetwork = ({
 }: PortfolioNetworkProps) => {
   return (
     <div
-      data-test-id="portfolio-network"
+      id="portfolio-network"
       className="flex flex-row justify-between flex-1 py-4 cursor-pointer"
     >
       <div className="flex flex-row items-center px-4">
@@ -183,7 +183,7 @@ export const PortfolioTokenVisualizer = ({
   if (hasNoTokens) {
     return (
       <div
-        data-test-id="portfolio-token-visualizer"
+        id="portfolio-token-visualizer"
         className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
       >
         -
@@ -192,7 +192,7 @@ export const PortfolioTokenVisualizer = ({
   }
   return (
     <div
-      data-test-id="portfolio-token-visualizer"
+      id="portfolio-token-visualizer"
       className="flex flex-row items-center space-x-2 cursor-pointer hover-trigger"
     >
       {hasOneToken && (

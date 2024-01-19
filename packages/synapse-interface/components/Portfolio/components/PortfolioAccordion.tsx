@@ -41,13 +41,13 @@ export const PortfolioAccordion = ({
 
   return (
     <div
-      data-test-id="portfolio-accordion"
+      id="portfolio-accordion"
       className={
         isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
       }
     >
       <div
-        data-test-id="portfolio-accordion-header"
+        id="portfolio-accordion-header"
         className={`
           flex items-center justify-between border border-transparent pr-2 select-none
           hover:border-[#3D3D5C] hover:bg-[#272731]
@@ -66,7 +66,7 @@ export const PortfolioAccordion = ({
           className="flex-1"
         >
           <div
-            data-test-id="portfolio-accordion-clickable"
+            id="portfolio-accordion-clickable"
             className="flex flex-row justify-between"
           >
             {header}
@@ -80,17 +80,14 @@ export const PortfolioAccordion = ({
           isHovered={isHovered}
         />
       </div>
-      <div
-        data-test-id="portfolio-accordion-contents"
-        className="flex flex-col"
-      >
+      <div id="portfolio-accordion-contents" className="flex flex-col">
         {isExpanded && <React.Fragment>{children}</React.Fragment>}
       </div>
     </div>
   )
 }
 
-export const AccordionIcon = ({
+const AccordionIcon = ({
   isExpanded,
   onClick,
   isHovered,
@@ -101,7 +98,7 @@ export const AccordionIcon = ({
 }) => {
   return (
     <div
-      data-test-id="accordion-icon"
+      id="accordion-icon"
       onClick={onClick}
       className={`
         p-1 mx-2 border border-surface rounded-full

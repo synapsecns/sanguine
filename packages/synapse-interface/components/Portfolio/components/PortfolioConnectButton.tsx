@@ -17,7 +17,7 @@ export const PortfolioConnectButton = ({
   }, [portfolioChainId, connectedChainId])
 
   return (
-    <div data-test-id="portfolio-connect-button">
+    <div id="portfolio-connect-button">
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
@@ -30,7 +30,7 @@ export const PortfolioConnectButton = ({
 const ConnectedButton = () => {
   return (
     <button
-      data-test-id="connected-button"
+      id="connected-button"
       className={`
         flex items-center justify-center
         text-base text-white px-3 py-1 rounded-lg
@@ -74,7 +74,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
 
   return (
     <button
-      data-test-id="connect-button"
+      id="connect-button"
       className={`
         flex items-right justify-center
         text-base text-white px-3 py-1 rounded-lg

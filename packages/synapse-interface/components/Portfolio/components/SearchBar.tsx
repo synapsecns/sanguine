@@ -57,7 +57,7 @@ export const SearchBar = () => {
 
   return (
     <div
-      data-test-id="portfolio-search-bar"
+      id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
         border rounded-xl
@@ -99,7 +99,7 @@ const FilterInput = ({
       disabled={disabled}
       ref={inputRef}
       tabIndex={0}
-      data-test-id="filter-input"
+      id="filter-input"
       className={`
         flex-grow py-2.5 pl-4 pr-1
         font-normal text-sm text-primaryTextColor

@@ -12,7 +12,7 @@ export const ViewSearchAddressBanner = ({
   const shortened: string = shortenAddress(viewingAddress, 4)
   return (
     <div
-      data-test-id="view-search-address-banner"
+      id="view-search-address-banner"
       className={`
         flex justify-between p-3 mb-3
         border border-synapsePurple rounded-sm
