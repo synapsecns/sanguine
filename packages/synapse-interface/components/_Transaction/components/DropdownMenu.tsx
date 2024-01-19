@@ -13,11 +13,10 @@ export const DropdownMenu = ({ children }) => {
       <div
         onClick={handleClick}
         className={`
-          rounded w-5 h-[21px] flex place-items-center justify-center
-          bg-surface
+          flex place-items-center justify-center
+          w-5 h-[21px] bg-surface rounded
           border border-solid border-[--synapse-border]
-          hover:border-[--synapse-focus]
-          cursor-pointer
+          cursor-pointer hover:border-[--synapse-focus]
         `}
       >
         <DownArrow />
@@ -26,7 +25,9 @@ export const DropdownMenu = ({ children }) => {
       {open && (
         <ul
           className={`
-            absolute z-50 mt-1 p-0 bg-surface border border-solid border-tint rounded shadow popover -right-1 list-none text-left text-sm
+            absolute z-50 mt-1 p-0 -right-1 bg-surface
+            border border-solid border-tint rounded shadow
+            popover list-none text-left text-sm
           `}
         >
           {children}
