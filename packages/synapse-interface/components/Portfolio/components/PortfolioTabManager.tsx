@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import { MostRecentTransaction } from '../Transaction/MostRecentTransaction'
-import { SearchBar } from '../SearchBar'
+import { SearchBar } from './SearchBar'
 import { _Transactions } from '../../_Transaction/_Transactions'
 
 export const PortfolioTabManager = () => {

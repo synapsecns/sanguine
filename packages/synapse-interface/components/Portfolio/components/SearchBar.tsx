@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Address } from 'viem'
-import { XIcon } from '@heroicons/react/outline'
-
 import { useAppDispatch } from '@/store/hooks'
 import {
   usePortfolioActionHandlers,
@@ -13,10 +11,10 @@ import {
   initialState as portfolioInitialState,
   PortfolioState,
 } from '@/slices/portfolio/reducer'
-import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
-import { shortenAddress } from '@/utils/shortenAddress'
+import { getValidAddress } from '@/utils/isValidAddress'
 import { isTransactionHash } from '@/utils/validators'
-import { getTransactionHashExplorerLink } from './Transaction/components/TransactionExplorerLink'
+import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
+import { ClearSearchButton } from './ClearSearchButton'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -118,7 +116,7 @@ export const SearchBar = () => {
   )
 }
 
-export default function FilterInput({
+const FilterInput = ({
   searchStr,
   onSearch,
   placeholder,
@@ -128,7 +126,7 @@ export default function FilterInput({
   onSearch: (str: string) => void
   placeholder: string
   disabled: boolean
-}) {
+}) => {
   return (
     <input
       disabled={disabled}
@@ -148,57 +146,5 @@ export default function FilterInput({
       onChange={(e) => onSearch(e.target.value)}
       value={searchStr}
     />
-  )
-}
-
-export const ClearSearchButton = ({
-  show,
-  onClick,
-}: {
-  show: boolean
-  onClick: () => void
-}) => {
-  return (
-    <button
-      data-test-id="clear-search-button"
-      className={`
-        ${show ? 'visible' : 'invisible'}
-        flex w-6 h-6 mr-2
-        items-center justify-center
-        border border-separator rounded-full
-        hover:cursor-pointer hover:border-secondary
-      `}
-      onClick={onClick}
-    >
-      <XIcon strokeWidth={3} className="inline w-4 text-secondary" />
-    </button>
-  )
-}
-
-export const ViewSearchAddressBanner = ({
-  viewingAddress,
-}: {
-  viewingAddress: Address
-}) => {
-  const { clearSearchResults } = usePortfolioActionHandlers()
-  const shortened: string = shortenAddress(viewingAddress, 4)
-  return (
-    <div
-      data-test-id="view-search-address-banner"
-      className={`
-        flex justify-between p-3 mb-3
-        border border-synapsePurple rounded-sm
-      `}
-      style={{
-        background:
-          'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
-      }}
-    >
-      <div className="flex space-x-1">
-        <div className="text-secondary ">Viewing</div>
-        <div className="font-bold text-primary">{shortened}</div>
-      </div>
-      <ClearSearchButton onClick={clearSearchResults} show={true} />
-    </div>
   )
 }

@@ -23,7 +23,7 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
-import { ViewSearchAddressBanner } from './SearchBar'
+import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
 import { Activity } from './Activity'
 import { useSearchInputState } from './helpers/useSearchInputStatus'
 
