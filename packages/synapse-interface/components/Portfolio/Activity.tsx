@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import _ from 'lodash'
 import Fuse from 'fuse.js'
 import { useAccount, Address } from 'wagmi'
 import { useTransactionsState } from '@/slices/transactions/hooks'
@@ -22,21 +23,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   }: TransactionsState = useTransactionsState()
   const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
-  const hasHistoricalTransactions: boolean = useMemo(
-    () => checkTransactionsExist(userHistoricalTransactions),
-    [userHistoricalTransactions]
-  )
-
-  const hasNoTransactions: boolean = useMemo(() => {
-    return !hasHistoricalTransactions
-  }, [hasHistoricalTransactions, address])
-
   const isLoading: boolean = isUserHistoricalTransactionsLoading
-
   const isSearchInputActive = Boolean(searchInput.length > 0)
-
   const isMasqueradeActive = Object.keys(searchedBalances).length > 0
-
   const masqueradeAddress = Object.keys(searchedBalances)[0] as Address
 
   const filteredHistoricalTransactions = filterTransactionsBySearch(
@@ -47,13 +36,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     masqueradeAddress
   )
 
-  const hasFilteredSearchResults: boolean = useMemo(() => {
-    if (filteredHistoricalTransactions) {
-      return filteredHistoricalTransactions.length > 0
-    } else {
-      return false
-    }
-  }, [filteredHistoricalTransactions])
+  const hasHistoricalTransactions = !_.isEmpty(userHistoricalTransactions)
+  const hasFilteredSearchResults = !_.isEmpty(filteredHistoricalTransactions)
 
   const viewingAddress: string | null = useMemo(() => {
     if (isMasqueradeActive) {
@@ -78,7 +62,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         <div className="text-secondary">Loading activity...</div>
       )}
 
-      {viewingAddress && !isLoading && hasNoTransactions && (
+      {viewingAddress && !isLoading && !hasHistoricalTransactions && (
         <div className="text-secondary">
           No transactions in last 30 days.
           <UserExplorerLink connectedAddress={viewingAddress} />
@@ -90,41 +74,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)
-              .map((transaction: BridgeTransaction) => (
-                <Transaction
-                  key={transaction?.kappa}
-                  connectedAddress={viewingAddress as Address}
-                  destinationAddress={transaction?.fromInfo?.address as Address}
-                  startedTimestamp={transaction?.fromInfo?.time}
-                  completedTimestamp={transaction?.toInfo?.time}
-                  transactionHash={transaction?.fromInfo?.txnHash}
-                  kappa={transaction?.kappa}
-                  isCompleted={true}
-                  transactionType={TransactionType.HISTORICAL}
-                  originValue={transaction?.fromInfo?.value}
-                  destinationValue={transaction?.toInfo?.value}
-                  originChain={
-                    CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain
-                  }
-                  originToken={
-                    tokenAddressToToken(
-                      transaction?.fromInfo?.chainID,
-                      transaction?.fromInfo?.tokenAddress
-                    ) as Token
-                  }
-                  destinationChain={
-                    CHAINS_BY_ID[
-                      transaction?.fromInfo?.destinationChainID
-                    ] as Chain
-                  }
-                  destinationToken={
-                    tokenAddressToToken(
-                      transaction?.toInfo?.chainID,
-                      transaction?.toInfo?.tokenAddress
-                    ) as Token
-                  }
-                />
-              ))}
+              .map((transaction: BridgeTransaction) =>
+                renderTransaction(transaction, address)
+              )}
           {isSearchInputActive && !hasFilteredSearchResults && (
             <NoSearchResultsContent searchStr={searchInput} />
           )}
@@ -132,6 +84,37 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </ActivitySection>
       )}
     </div>
+  )
+}
+
+const renderTransaction = (
+  transaction: BridgeTransaction,
+  viewingAddress: Address
+) => {
+  return (
+    <Transaction
+      key={transaction?.kappa}
+      connectedAddress={viewingAddress}
+      destinationAddress={transaction?.fromInfo?.address as Address}
+      startedTimestamp={transaction?.fromInfo?.time}
+      completedTimestamp={transaction?.toInfo?.time}
+      transactionHash={transaction?.fromInfo?.txnHash}
+      kappa={transaction?.kappa}
+      isCompleted={true}
+      transactionType={TransactionType.HISTORICAL}
+      originValue={transaction?.fromInfo?.value}
+      destinationValue={transaction?.toInfo?.value}
+      originChain={CHAINS_BY_ID[transaction?.fromInfo?.chainID]}
+      originToken={tokenAddressToToken(
+        transaction?.fromInfo?.chainID,
+        transaction?.fromInfo?.tokenAddress
+      )}
+      destinationChain={CHAINS_BY_ID[transaction?.toInfo?.chainID]}
+      destinationToken={tokenAddressToToken(
+        transaction?.toInfo?.chainID,
+        transaction?.toInfo?.tokenAddress
+      )}
+    />
   )
 }
 
