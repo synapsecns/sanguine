@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 interface UseBridgeTxStatusProps {
@@ -29,7 +30,7 @@ export const useBridgeTxStatus = ({
     if (isComplete) return
     ;(async () => {
       if (fetchedKappa === null) {
-        let _kappa = await getKappa(
+        const _kappa = await getKappa(
           synapseSDK,
           originChainId,
           bridgeModuleName,

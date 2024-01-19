@@ -17,6 +17,7 @@ import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
 import { TransactionStatus } from './components/TransactionStatus'
+import { useEstimatedTimeStatus } from './helpers/useEstimatedTimeStatus'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -62,6 +63,12 @@ export const _Transaction = ({
     connectedAddress
   )
 
+  const {
+    elapsedTime: estimatedElapsedTime,
+    startCheckingTimeReached,
+    remainingTimeInMinutes: EstimatedRemainingTimeInMinutes,
+  } = useEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+
   const elapsedTime: number = currentTime - timestamp // in seconds
   const remainingTime: number = estimatedTime - elapsedTime
   const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
@@ -80,6 +87,17 @@ export const _Transaction = ({
     // if (!currentTime || !estimatedTime || !timestamp) return false
     // return currentTime - timestamp > estimatedTime
   }, [estimatedTime, currentTime, timestamp])
+
+  console.log('estimatedElapsedTime: ', estimatedElapsedTime)
+  console.log('startCheckingTimeReached: ', startCheckingTimeReached)
+  console.log(
+    'EstimatedRemainingTimeInMinutes:',
+    EstimatedRemainingTimeInMinutes
+  )
+
+  console.log('isEstimatedTimeReached:', isEstimatedTimeReached)
+  console.log('elapsedTime:', elapsedTime)
+  console.log('remainingTimeInMinutes: ', remainingTimeInMinutes)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
