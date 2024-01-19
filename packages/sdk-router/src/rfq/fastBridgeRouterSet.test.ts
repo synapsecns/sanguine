@@ -101,4 +101,20 @@ describe('FastBridgeRouterSet', () => {
       )
     })
   })
+
+  describe('applyProtocolFeeRate', () => {
+    const amount = BigNumber.from(1_000_001)
+
+    it('Applies 0 bps fee rate', () => {
+      const protocolFeeRate = BigNumber.from(0)
+      const result = routerSet.applyProtocolFeeRate(amount, protocolFeeRate)
+      expect(result).toEqual(amount)
+    })
+
+    it('Applies 10 bps fee rate', () => {
+      const protocolFeeRate = BigNumber.from(1_000)
+      const result = routerSet.applyProtocolFeeRate(amount, protocolFeeRate)
+      expect(result).toEqual(BigNumber.from(999_001))
+    })
+  })
 })

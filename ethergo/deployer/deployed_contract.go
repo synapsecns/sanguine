@@ -3,6 +3,7 @@ package deployer
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/synapsecns/sanguine/core"
@@ -29,7 +30,7 @@ type DeployedContract struct {
 // namely, that tx sender is owner.
 func NewDeployedContract(handle vm.ContractRef, deployTx *types.Transaction) (DeployedContract, error) {
 	// TODO: eip-2930 signer?
-	msg, err := deployTx.AsMessage(types.LatestSignerForChainID(deployTx.ChainId()), nil)
+	msg, err := ethCore.TransactionToMessage(deployTx, types.LatestSignerForChainID(deployTx.ChainId()), nil)
 	if err != nil {
 		return DeployedContract{}, fmt.Errorf("failed to get message from deployTx: %w", err)
 	}
@@ -37,7 +38,7 @@ func NewDeployedContract(handle vm.ContractRef, deployTx *types.Transaction) (De
 	return DeployedContract{
 		address:        handle.Address(),
 		contractHandle: handle,
-		owner:          msg.From(),
+		owner:          msg.From,
 		deployTx:       deployTx,
 		chainID:        deployTx.ChainId(),
 	}, nil

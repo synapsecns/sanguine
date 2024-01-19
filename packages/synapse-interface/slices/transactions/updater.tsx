@@ -16,7 +16,7 @@ import { getValidAddress } from '@/utils/isValidAddress'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 
-const POLLING_INTERVAL: number = 30000 // in ms
+const POLLING_INTERVAL: number = 300000 // 5 minutes in ms
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
