@@ -53,19 +53,20 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const { isSearchInputActive, isSearchInputAddress, isMasqueradeActive } =
-    useSearchInputState()
+  const {
+    isSearchInputActive,
+    isSearchInputAddress,
+    isMasqueradeActive,
+    masqueradeAddress,
+  } = useSearchInputState()
 
   const filteredSearchedPortfolioDataForBalances = useMemo(() => {
     if (isMasqueradeActive) {
-      const queriedAddress: Address = Object.keys(
-        searchedBalances
-      )[0] as Address
       return {
         balances: filterPortfolioBalancesWithBalances(
-          searchedBalances[queriedAddress]
+          searchedBalances[masqueradeAddress]
         ),
-        address: queriedAddress,
+        address: masqueradeAddress,
       }
     }
     return {
@@ -74,22 +75,7 @@ export const Portfolio = () => {
     }
   }, [searchedBalances, isMasqueradeActive, searchInput])
 
-  const flattenedPortfolioData: TokenAndBalance[] = useMemo(() => {
-    const flattened: TokenAndBalance[] = []
-    const portfolio: NetworkTokenBalances = isMasqueradeActive
-      ? filteredSearchedPortfolioDataForBalances.balances
-      : filteredPortfolioDataForBalances
-    Object.entries(portfolio).forEach(([chainId, tokens]) => {
-      tokens.forEach((token: TokenAndBalance) => {
-        flattened.push({ ...token })
-      })
-    })
-    return flattened
-  }, [
-    isMasqueradeActive,
-    filteredPortfolioDataForBalances,
-    filteredSearchedPortfolioDataForBalances,
-  ])
+  const flattenedPortfolioData = flattenData(portfolioData)
 
   const filteredBySearchInput = filterBySearchInput(
     flattenedPortfolioData,
@@ -173,6 +159,16 @@ export const Portfolio = () => {
       </div>
     </div>
   )
+}
+
+function flattenData(portfolioData: NetworkTokenBalances): TokenAndBalance[] {
+  const flattened: TokenAndBalance[] = []
+  Object.entries(portfolioData).forEach(([chainId, tokens]) => {
+    tokens.forEach((token: TokenAndBalance) => {
+      flattened.push({ ...token })
+    })
+  })
+  return flattened
 }
 
 function filterBySearchInput(
