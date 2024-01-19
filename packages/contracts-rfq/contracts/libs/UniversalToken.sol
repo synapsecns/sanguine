@@ -16,6 +16,8 @@ library UniversalTokenLib {
     function universalTransfer(address token, address to, uint256 value) internal {
         // Don't do anything, if need to send tokens to this address
         if (to == address(this)) return;
+        // Don't do anything, if trying to send zero value
+        if (value == 0) return;
         if (token == ETH_ADDRESS) {
             /// @dev Note: this can potentially lead to executing code in `to`.
             // solhint-disable-next-line avoid-low-level-calls
