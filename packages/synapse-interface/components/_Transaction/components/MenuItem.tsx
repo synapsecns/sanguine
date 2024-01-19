@@ -11,11 +11,10 @@ export const MenuItem = ({
     <li
       id="menu-item"
       className={`
-      rounded cursor-pointer
-      border border-solid border-transparent
-      hover:border-[--synapse-focus]
-      active:opacity-40
-    `}
+        rounded cursor-pointer
+        border border-solid border-transparent
+        hover:border-[--synapse-focus] active:opacity-40
+      `}
     >
       {onClick ? (
         <div
