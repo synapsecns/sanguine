@@ -12,13 +12,18 @@ export const getErc20TokenAllowance = async ({
   tokenAddress: Address
   spender: Address
 }): Promise<bigint> => {
-  const allowance = await readContract({
-    chainId,
-    address: tokenAddress,
-    abi: erc20ABI,
-    functionName: 'allowance',
-    args: [address, spender],
-  })
+  try {
+    const allowance = await readContract({
+      chainId,
+      address: tokenAddress,
+      abi: erc20ABI,
+      functionName: 'allowance',
+      args: [address, spender],
+    })
 
-  return allowance
+    return allowance
+  } catch (error) {
+    console.log(error)
+    return 0n
+  }
 }
