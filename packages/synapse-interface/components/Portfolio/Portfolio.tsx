@@ -99,29 +99,10 @@ export const Portfolio = () => {
     filteredSearchedPortfolioDataForBalances,
   ])
 
-  const filteredBySearchInput: NetworkTokenBalances = useMemo(() => {
-    const searchFiltered: NetworkTokenBalances = {}
-    const fuseOptions = {
-      includeScore: true,
-      threshold: 0.33,
-      distance: 20,
-      keys: ['queriedChain.name', 'token.name', 'token.symbol'],
-    }
-    const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
-
-    if (searchInput.length > 0) {
-      const results = fuse
-        .search(searchInput)
-        .map((i: Fuse.FuseResult<TokenAndBalance>) => i.item)
-        .forEach((item: TokenAndBalance) => {
-          const chainId: number = item.queriedChain.id
-          searchFiltered[chainId] = searchFiltered[chainId]
-            ? [...searchFiltered[chainId], item]
-            : [item]
-        })
-    }
-    return searchFiltered
-  }, [searchInput, flattenedPortfolioData])
+  const filteredBySearchInput = filterBySearchInput(
+    flattenedPortfolioData,
+    searchInput
+  )
 
   useEffect(() => {
     if (address && chain?.id) {
@@ -200,6 +181,35 @@ export const Portfolio = () => {
       </div>
     </div>
   )
+}
+
+function filterBySearchInput(
+  portfolioData: TokenAndBalance[],
+  searchInput: string
+) {
+  const searchFiltered: NetworkTokenBalances = {}
+  const fuseOptions = {
+    includeScore: true,
+    threshold: 0.33,
+    distance: 20,
+    keys: ['queriedChain.name', 'token.name', 'token.symbol'],
+  }
+  const fuse = new Fuse(portfolioData, fuseOptions)
+
+  if (searchInput.length > 0) {
+    fuse
+      .search(searchInput)
+      .map((i: Fuse.FuseResult<TokenAndBalance>) => i.item)
+      .forEach((item) => {
+        const chainId = item.queriedChain.id
+        if (!searchFiltered[chainId]) {
+          searchFiltered[chainId] = []
+        }
+        searchFiltered[chainId].push(item)
+      })
+  }
+
+  return searchFiltered
 }
 
 export function filterPortfolioBalancesWithBalances(
