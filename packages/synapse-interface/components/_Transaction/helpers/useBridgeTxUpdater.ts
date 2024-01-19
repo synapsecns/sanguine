@@ -9,7 +9,7 @@ import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { Chain } from '@/utils/types'
 
-export const useTxUpdater = (
+export const useBridgeTxUpdater = (
   connectedAddress: string,
   destinationChain: Chain,
   kappa: string,

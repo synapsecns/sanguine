@@ -65,40 +65,10 @@ export const _Transaction = ({
   )
 
   const {
-    elapsedTime: estimatedElapsedTime,
-    startCheckingTimeReached,
-    remainingTimeInMinutes: EstimatedRemainingTimeInMinutes,
+    isStartCheckingTimeReached,
+    isEstimatedTimeReached,
+    remainingTimeInMinutes,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
-
-  const elapsedTime: number = currentTime - timestamp // in seconds
-  const remainingTime: number = estimatedTime - elapsedTime
-  const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
-
-  const isEstimatedTimeReached: boolean = useMemo(() => {
-    // Define the interval in minutes before the estimated completion when we should start checking
-    const intervalBeforeCompletion = 1 // X minutes before completion
-    // Calculate the time in seconds when we should start checking
-    const startCheckingTime =
-      currentTime + estimatedTime - intervalBeforeCompletion * 60
-
-    // if current time is above startCheckingTime, return true to begin calling the SDK
-    return currentTime >= startCheckingTime
-
-    // TODO: OLD CODE BELOW:
-    // if (!currentTime || !estimatedTime || !timestamp) return false
-    // return currentTime - timestamp > estimatedTime
-  }, [estimatedTime, currentTime, timestamp])
-
-  console.log('estimatedElapsedTime: ', estimatedElapsedTime)
-  console.log('startCheckingTimeReached: ', startCheckingTimeReached)
-  console.log(
-    'EstimatedRemainingTimeInMinutes:',
-    EstimatedRemainingTimeInMinutes
-  )
-
-  console.log('isEstimatedTimeReached:', isEstimatedTimeReached)
-  console.log('elapsedTime:', elapsedTime)
-  console.log('remainingTimeInMinutes: ', remainingTimeInMinutes)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -106,7 +76,7 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: !isStoredComplete || isEstimatedTimeReached,
+    checkStatus: !isStoredComplete || isStartCheckingTimeReached,
     currentTime: currentTime,
   })
 

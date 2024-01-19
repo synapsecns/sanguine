@@ -5,17 +5,14 @@ export const getEstimatedTimeStatus = (
   initialTime: number,
   estimatedTime: number
 ) => {
-  const elapsedTime = currentTime - initialTime // in seconds
+  const elapsedTime = currentTime - initialTime
   const remainingTime = estimatedTime - elapsedTime
-  const endTime = currentTime + estimatedTime
 
-  const remainingTimeInMinutes = Math.ceil(remainingTime / oneMinuteInSeconds) // add additional min for buffer
+  const remainingTimeInMinutes = Math.ceil(remainingTime / oneMinuteInSeconds)
   const elapsedTimeInMinutes = Math.ceil(elapsedTime / oneMinuteInSeconds)
 
-  const isEstimatedTimeReached = currentTime > endTime
-
-  const startCheckingTimeReached =
-    currentTime > currentTime + estimatedTime - oneMinuteInSeconds
+  const isEstimatedTimeReached = remainingTime < 0
+  const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
 
   return {
     elapsedTime,
@@ -23,6 +20,6 @@ export const getEstimatedTimeStatus = (
     remainingTime,
     remainingTimeInMinutes,
     isEstimatedTimeReached,
-    startCheckingTimeReached,
+    isStartCheckingTimeReached,
   }
 }
