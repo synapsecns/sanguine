@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -7,76 +7,53 @@ import {
   fetchAndStoreSearchInputPortfolioBalances,
 } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
-import {
-  initialState as portfolioInitialState,
-  PortfolioState,
-} from '@/slices/portfolio/reducer'
+import { PortfolioState } from '@/slices/portfolio/reducer'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
 import { useIsFocused } from '../helpers/useIsFocused'
+import { useIsMounted } from '../helpers/useIsMounted'
+import { useSearchInputState } from '../helpers/useSearchInputStatus'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
-  const { onSearchInput, clearSearchInput, clearSearchResults } =
-    usePortfolioActionHandlers()
+  const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()
   const { activeTab, searchInput, searchedBalances }: PortfolioState =
     usePortfolioState()
+  const { isSearchInputActive, isMasqueradeActive } = useSearchInputState()
 
-  const [mounted, setMounted] = useState<boolean>(false)
-  const isActive: boolean = searchInput !== portfolioInitialState.searchInput
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
+  const isMounted = useIsMounted()
   const isFocused = useIsFocused(inputRef)
 
-  const placeholder: string = useMemo(() => {
-    switch (activeTab) {
-      case PortfolioTabs.PORTFOLIO:
-        return 'Tokens, chains...'
-      case PortfolioTabs.ACTIVITY:
-        return 'Bridge txs...'
-      default:
-        return 'Search...'
-    }
-  }, [activeTab])
+  const placeholder = getFilterPlaceholder(activeTab)
 
-  const searchInputIsTransactionHash: boolean = useMemo(() => {
-    return isTransactionHash(searchInput)
-  }, [searchInput])
-
-  const checksumValidAddress: Address | null = useMemo(() => {
-    return getValidAddress(searchInput)
-  }, [searchInput])
+  const checksumValidAddress = getValidAddress(searchInput)
+  const isSearchInputTransactionHash = isTransactionHash(searchInput)
 
   useEffect(() => {
-    const masqueradeActive: boolean = Object.keys(searchedBalances).length > 0
-    if (checksumValidAddress && !masqueradeActive) {
-      dispatch(
-        fetchAndStoreSearchInputPortfolioBalances(
-          checksumValidAddress as Address
-        )
-      )
-    }
-
-    if (masqueradeActive && checksumValidAddress) {
-      clearSearchInput()
+    if (checksumValidAddress) {
+      isMasqueradeActive
+        ? clearSearchInput()
+        : dispatch(
+            fetchAndStoreSearchInputPortfolioBalances(
+              checksumValidAddress as Address
+            )
+          )
     }
   }, [checksumValidAddress, searchedBalances])
 
+  /** Trigger opening new browser window for tx on block explorer */
   useEffect(() => {
-    if (searchInputIsTransactionHash) {
+    if (isSearchInputTransactionHash) {
       const explorerLink: string = getTransactionHashExplorerLink({
         transactionHash: searchInput,
       })
       window.open(explorerLink, '_blank', 'noopener,noreferrer')
     }
-  }, [searchInputIsTransactionHash])
+  }, [isSearchInputTransactionHash])
 
   return (
     <div
@@ -84,9 +61,9 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border rounded-xl
-        ${!mounted && 'border-opacity-30'}
+        ${!isMounted && 'border-opacity-30'}
         ${
-          isFocused || isActive
+          isFocused || isSearchInputActive
             ? 'border-synapsePurple bg-tint'
             : 'border-separator bg-transparent'
         }
@@ -96,9 +73,12 @@ export const SearchBar = () => {
         placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
-        disabled={mounted ? false : true}
+        disabled={isMounted ? false : true}
       />
-      <ClearSearchButton show={isActive} onClick={clearSearchInput} />
+      <ClearSearchButton
+        show={isSearchInputActive}
+        onClick={clearSearchInput}
+      />
     </div>
   )
 }
@@ -134,4 +114,15 @@ const FilterInput = ({
       value={searchStr}
     />
   )
+}
+
+function getFilterPlaceholder(activeTab: PortfolioTabs | undefined) {
+  switch (activeTab) {
+    case PortfolioTabs.PORTFOLIO:
+      return 'Tokens, chains...'
+    case PortfolioTabs.ACTIVITY:
+      return 'Bridge txs...'
+    default:
+      return 'Search...'
+  }
 }
