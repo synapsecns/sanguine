@@ -46,9 +46,11 @@ const synapseSDK = new SynapseSDK(chainIds, providers)
 
 ## Bridging
 
-Below is the high level overview of the bridging workflow.
+### Full bridging workflow
 
 ![Bridging Workflow](./puml/BridgingWorkflow.png)
+
+### Simplified bridging workflow
 
 Following concepts are abstracted away from the SDK consumer:
 
