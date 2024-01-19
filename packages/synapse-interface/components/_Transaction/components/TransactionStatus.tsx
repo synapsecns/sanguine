@@ -1,4 +1,4 @@
-const TransactionStatus = ({
+export const TransactionStatus = ({
   string,
   className,
 }: {
