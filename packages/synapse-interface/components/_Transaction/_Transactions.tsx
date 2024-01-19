@@ -11,14 +11,13 @@ export const _Transactions = ({
 }: {
   connectedAddress: string
 }) => {
+  const currentTime = useIntervalTimer(5000)
   const { transactions } = use_TransactionsState()
 
+  const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
-  const currentTime = useIntervalTimer(5000)
-
   if (hasTransactions) {
-    const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
     return (
       <div className="flex flex-col mt-3">
         {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
