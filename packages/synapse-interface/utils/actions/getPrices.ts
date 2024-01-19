@@ -149,48 +149,61 @@ interface EthStablecoinPrices {
 
 export const getAllEthStablecoinPrices =
   async (): Promise<EthStablecoinPrices> => {
-    const multicallInputs = [
-      {
-        address: CHAINLINK_USDT_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
-        abi: CHAINLINK_AGGREGATOR_ABI,
-        functionName: 'latestAnswer',
-      },
-      {
-        address: CHAINLINK_USDC_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
-        abi: CHAINLINK_AGGREGATOR_ABI,
-        functionName: 'latestAnswer',
-      },
-      {
-        address: CHAINLINK_DAI_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
-        abi: CHAINLINK_AGGREGATOR_ABI,
-        functionName: 'latestAnswer',
-      },
-      {
-        address: CHAINLINK_CRVUSD_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
-        abi: CHAINLINK_AGGREGATOR_ABI,
-        functionName: 'latestAnswer',
-      },
-      {
-        address: CHAINLINK_FRAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
-        abi: CHAINLINK_AGGREGATOR_ABI,
-        functionName: 'latestAnswer',
-      },
-    ]
+    try {
+      const multicallInputs = [
+        {
+          address: CHAINLINK_USDT_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
+          abi: CHAINLINK_AGGREGATOR_ABI,
+          functionName: 'latestAnswer',
+        },
+        {
+          address: CHAINLINK_USDC_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
+          abi: CHAINLINK_AGGREGATOR_ABI,
+          functionName: 'latestAnswer',
+        },
+        {
+          address: CHAINLINK_DAI_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
+          abi: CHAINLINK_AGGREGATOR_ABI,
+          functionName: 'latestAnswer',
+        },
+        {
+          address: CHAINLINK_CRVUSD_PRICE_ADDRESSES[
+            ALL_CHAINS.ETH.id
+          ] as Address,
+          abi: CHAINLINK_AGGREGATOR_ABI,
+          functionName: 'latestAnswer',
+        },
+        {
+          address: CHAINLINK_FRAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
+          abi: CHAINLINK_AGGREGATOR_ABI,
+          functionName: 'latestAnswer',
+        },
+      ]
 
-    const response = await multicall({
-      contracts: multicallInputs as any,
-      chainId: ALL_CHAINS.ETH.id,
-    })
+      const response = await multicall({
+        contracts: multicallInputs as any,
+        chainId: ALL_CHAINS.ETH.id,
+      })
 
-    const prices = {
-      usdcPrice: convertPrice(response[0].result as bigint),
-      usdtPrice: convertPrice(response[1].result as bigint),
-      daiPrice: convertPrice(response[2].result as bigint),
-      crvUsdPrice: convertPrice(response[3].result as bigint),
-      fraxPrice: convertPrice(response[4].result as bigint),
+      const prices = {
+        usdcPrice: convertPrice(response[0].result as bigint),
+        usdtPrice: convertPrice(response[1].result as bigint),
+        daiPrice: convertPrice(response[2].result as bigint),
+        crvUsdPrice: convertPrice(response[3].result as bigint),
+        fraxPrice: convertPrice(response[4].result as bigint),
+      }
+
+      return prices
+    } catch (error) {
+      console.error('Failed to fetch Ethereum stablecoin price:', error)
+      return {
+        usdcPrice: 1,
+        usdtPrice: 1,
+        daiPrice: 1,
+        crvUsdPrice: 1,
+        fraxPrice: 1,
+      }
     }
-
-    return prices
   }
 
 interface CoingeckoPrices {
@@ -233,7 +246,14 @@ export const getCoingeckoPrices = async (): Promise<CoingeckoPrices> => {
     return prices
   } catch (error) {
     console.error('Failed to fetch Coingecko prices:', error)
-    throw error
+    return {
+      lusdPrice: 1,
+      notePrice: 1,
+      susdPrice: 1,
+      usdbcPrice: 1,
+      usdcePrice: 1,
+      usdtePrice: 1,
+    }
   }
 }
 
@@ -255,10 +275,10 @@ export const getMusdcPrice = async (): Promise<number> => {
       json['data']['attributes']['token_prices']
     )[0] as number
 
-    return price
+    return Number(price)
   } catch (error) {
     console.error('Failed to fetch musdc price:', error)
-    throw error
+    return 1
   }
 }
 
@@ -281,10 +301,10 @@ export const getDaiePrice = async (): Promise<number> => {
       json['data']['attributes']['token_prices']
     )[0] as number
 
-    return price
+    return Number(price)
   } catch (error) {
     console.error('Failed to fetch daie price:', error)
-    throw error
+    return 1
   }
 }
 
