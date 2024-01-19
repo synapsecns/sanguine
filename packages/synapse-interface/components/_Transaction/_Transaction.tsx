@@ -16,8 +16,18 @@ import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/Tr
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
 
-const TransactionStatus = ({ string }) => {
-  return <>{string}</>
+const TransactionStatus = ({
+  string,
+  className,
+}: {
+  string: string
+  className?: string
+}) => {
+  return (
+    <div id="transaction-status" className={className}>
+      {string}
+    </div>
+  )
 }
 
 const TimeRemaining = ({
@@ -188,7 +198,7 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" />
+            <TransactionStatus string="Complete" className="text-green-300" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
