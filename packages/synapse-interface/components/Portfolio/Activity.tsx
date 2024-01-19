@@ -9,7 +9,6 @@ import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
@@ -20,7 +19,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
   const {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
-    pendingBridgeTransactions,
   }: TransactionsState = useTransactionsState()
   const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
@@ -35,102 +33,35 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
   const isLoading: boolean = isUserHistoricalTransactionsLoading
 
-  const searchInputActive: boolean = searchInput.length > 0
+  const isSearchInputActive = Boolean(searchInput.length > 0)
 
-  const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalances).length > 0
-  }, [searchedBalances])
+  const isMasqueradeActive = Object.keys(searchedBalances).length > 0
 
-  const masqueradeAddress: Address = useMemo(() => {
-    return Object.keys(searchedBalances)[0] as Address
-  }, [searchedBalances])
+  const masqueradeAddress = Object.keys(searchedBalances)[0] as Address
 
-  const filteredHistoricalTransactionsBySearchInput: BridgeTransaction[] =
-    useMemo(() => {
-      let searchFiltered: BridgeTransaction[] = []
-      const fuseOptions = {
-        includeScore: true,
-        threshold: 0.33,
-        distance: 20,
-        keys: [
-          'originChain.name',
-          'originToken.symbol',
-          'destinationChain.name',
-          'destinationToken.symbol',
-          'originTokenAddresses',
-          'destinationTokenAddresses',
-          'fromInfo.txnHash',
-          'toInfo.txnHash',
-        ],
-      }
-
-      if (
-        !isUserHistoricalTransactionsLoading &&
-        checkTransactionsExist(userHistoricalTransactions)
-      ) {
-        const formatted: BridgeTransaction[] = userHistoricalTransactions.map(
-          (transaction: BridgeTransaction) => {
-            const originToken: Token = tokenAddressToToken(
-              transaction?.fromInfo?.chainID,
-              transaction?.fromInfo?.tokenAddress
-            )
-            const destinationToken: Token = tokenAddressToToken(
-              transaction?.toInfo?.chainID,
-              transaction?.toInfo?.tokenAddress
-            )
-            return {
-              ...transaction,
-              originChain: CHAINS_BY_ID[
-                transaction?.fromInfo?.chainID
-              ] as Chain,
-              originToken: originToken,
-              originTokenAddresses:
-                originToken && Object.values(originToken?.addresses),
-              destinationChain: CHAINS_BY_ID[
-                transaction?.toInfo?.chainID
-              ] as Chain,
-              destinationToken: destinationToken,
-              destinationTokenAddresses:
-                destinationToken && Object.values(destinationToken?.addresses),
-            }
-          }
-        )
-        const fuse = new Fuse(formatted, fuseOptions)
-        if (searchInputActive) {
-          searchFiltered = fuse
-            .search(searchInput)
-            .map((i: Fuse.FuseResult<BridgeTransaction>) => i.item)
-        }
-        const inputIsMasqueradeAddress: boolean =
-          searchInput === masqueradeAddress
-
-        return searchInputActive && !inputIsMasqueradeAddress
-          ? searchFiltered
-          : userHistoricalTransactions
-      }
-    }, [
-      searchInput,
-      masqueradeAddress,
-      searchInputActive,
-      userHistoricalTransactions,
-      isUserHistoricalTransactionsLoading,
-    ])
+  const filteredHistoricalTransactions = filterTransactionsBySearch(
+    userHistoricalTransactions,
+    isLoading,
+    searchInput,
+    isSearchInputActive,
+    masqueradeAddress
+  )
 
   const hasFilteredSearchResults: boolean = useMemo(() => {
-    if (filteredHistoricalTransactionsBySearchInput) {
-      return filteredHistoricalTransactionsBySearchInput.length > 0
+    if (filteredHistoricalTransactions) {
+      return filteredHistoricalTransactions.length > 0
     } else {
       return false
     }
-  }, [filteredHistoricalTransactionsBySearchInput])
+  }, [filteredHistoricalTransactions])
 
   const viewingAddress: string | null = useMemo(() => {
-    if (masqueradeActive) {
+    if (isMasqueradeActive) {
       return masqueradeAddress
     } else if (address) {
       return address
     } else return null
-  }, [masqueradeActive, masqueradeAddress, address])
+  }, [isMasqueradeActive, masqueradeAddress, address])
 
   return (
     <div
@@ -157,8 +88,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
-            filteredHistoricalTransactionsBySearchInput
-              .slice(0, searchInputActive ? 100 : 6)
+            filteredHistoricalTransactions
+              .slice(0, isSearchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) => (
                 <Transaction
                   key={transaction?.kappa}
@@ -194,7 +125,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
                   }
                 />
               ))}
-          {searchInputActive && !hasFilteredSearchResults && (
+          {isSearchInputActive && !hasFilteredSearchResults && (
             <NoSearchResultsContent searchStr={searchInput} />
           )}
           <UserExplorerLink connectedAddress={viewingAddress} />
@@ -202,6 +133,68 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
       )}
     </div>
   )
+}
+
+const filterTransactionsBySearch = (
+  transactions: BridgeTransaction[],
+  isLoading: boolean,
+  searchInput: string,
+  isSearchActive: boolean,
+  masqueradeAddress: string
+) => {
+  let searchFiltered = []
+
+  const fuseOptions = {
+    includeScore: true,
+    threshold: 0.33,
+    distance: 20,
+    keys: [
+      'originChain.name',
+      'originToken.symbol',
+      'destinationChain.name',
+      'destinationToken.symbol',
+      'originTokenAddresses',
+      'destinationTokenAddresses',
+      'fromInfo.txnHash',
+      'toInfo.txnHash',
+    ],
+  }
+
+  if (!isLoading && checkTransactionsExist(transactions)) {
+    const formatted = transactions.map((transaction) => {
+      const originToken = tokenAddressToToken(
+        transaction?.fromInfo?.chainID,
+        transaction?.fromInfo?.tokenAddress
+      )
+      const destinationToken = tokenAddressToToken(
+        transaction?.toInfo?.chainID,
+        transaction?.toInfo?.tokenAddress
+      )
+      return {
+        ...transaction,
+        originChain: CHAINS_BY_ID[transaction?.fromInfo?.chainID] as Chain,
+        originToken: originToken,
+        originTokenAddresses:
+          originToken && Object.values(originToken?.addresses),
+        destinationChain: CHAINS_BY_ID[transaction?.toInfo?.chainID] as Chain,
+        destinationToken: destinationToken,
+        destinationTokenAddresses:
+          destinationToken && Object.values(destinationToken?.addresses),
+      }
+    })
+
+    const fuse = new Fuse(formatted, fuseOptions)
+    if (isSearchActive) {
+      searchFiltered = fuse.search(searchInput).map((i) => i.item)
+    }
+
+    const inputIsMasqueradeAddress = searchInput === masqueradeAddress
+    return isSearchActive && !inputIsMasqueradeAddress
+      ? searchFiltered
+      : transactions
+  }
+
+  return searchFiltered
 }
 
 export const ActivitySection = ({
