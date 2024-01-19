@@ -2,9 +2,9 @@ import { useAppDispatch } from '@/store/hooks'
 import { useAccount } from 'wagmi'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
-import { MostRecentTransaction } from './Transaction/MostRecentTransaction'
-import { SearchBar } from './SearchBar'
-import { _Transactions } from '../_Transaction/_Transactions'
+import { MostRecentTransaction } from '../Transaction/MostRecentTransaction'
+import { SearchBar } from '../SearchBar'
+import { _Transactions } from '../../_Transaction/_Transactions'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()

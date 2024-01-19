@@ -13,7 +13,7 @@ import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { PendingTransaction } from './Transaction/PendingTransaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
-import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
+import { NoSearchResultsContent } from './components/PortfolioContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {

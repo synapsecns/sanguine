@@ -7,7 +7,7 @@ import {
 } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { inputRef } from '../../../StateManagedBridge/InputContainer'
+import { inputRef } from '../../StateManagedBridge/InputContainer'
 import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'

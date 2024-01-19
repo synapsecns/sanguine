@@ -3,15 +3,14 @@ import Fuse from 'fuse.js'
 import { Address, useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { PortfolioTabManager } from './PortfolioTabManager'
+import { PortfolioTabManager } from './components/PortfolioTabManager'
 import {
   NetworkTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { PortfolioContent } from './PortfolioContent/PortfolioContent'
+import { PortfolioContent } from './components/PortfolioContent'
 import {
   useFetchPortfolioBalances,
-  fetchAndStorePortfolioBalances,
   usePortfolioState,
 } from '@/slices/portfolio/hooks'
 import {
@@ -24,7 +23,6 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
-import { isValidAddress } from '@/utils/isValidAddress'
 import { ViewSearchAddressBanner } from './SearchBar'
 import { Activity } from './Activity'
 import { useSearchInputState } from './helpers/useSearchInputStatus'
@@ -112,7 +110,7 @@ export const Portfolio = () => {
                 />
                 <PortfolioContent
                   connectedAddress={
-                    filteredSearchedPortfolioDataForBalances.address as Address
+                    filteredSearchedPortfolioDataForBalances.address
                   }
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}

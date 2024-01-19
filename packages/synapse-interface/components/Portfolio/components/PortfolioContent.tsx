@@ -7,7 +7,7 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { SingleNetworkPortfolio } from './SingleNetworkPortfolio'
 import { FetchState } from '@/slices/portfolio/actions'
-import { ConnectWalletButton } from './components/ConnectWalletButton'
+import { ConnectWalletButton } from './ConnectWalletButton'
 import { Chain } from '@/utils/types'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 import { shortenAddress } from '@/utils/shortenAddress'
