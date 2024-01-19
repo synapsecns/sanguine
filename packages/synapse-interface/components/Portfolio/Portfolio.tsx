@@ -27,6 +27,7 @@ import { resetBridgeInputs } from '@/slices/bridge/actions'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { ViewSearchAddressBanner } from './SearchBar'
 import { Activity } from './Activity'
+import { useSearchInputState } from './helpers/useSearchInputStatus'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
@@ -52,20 +53,11 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const searchInputActive: boolean = useMemo(() => {
-    return searchInput.length > 0
-  }, [searchInput])
-
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
-  const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalances).length > 0
-  }, [searchedBalances])
+  const { isSearchInputActive, isSearchInputAddress, isMasqueradeActive } =
+    useSearchInputState()
 
   const filteredSearchedPortfolioDataForBalances = useMemo(() => {
-    if (masqueradeActive) {
+    if (isMasqueradeActive) {
       const queriedAddress: Address = Object.keys(
         searchedBalances
       )[0] as Address
@@ -80,11 +72,11 @@ export const Portfolio = () => {
       balances: {},
       address: '',
     }
-  }, [searchedBalances, masqueradeActive, searchInput])
+  }, [searchedBalances, isMasqueradeActive, searchInput])
 
   const flattenedPortfolioData: TokenAndBalance[] = useMemo(() => {
     const flattened: TokenAndBalance[] = []
-    const portfolio: NetworkTokenBalances = masqueradeActive
+    const portfolio: NetworkTokenBalances = isMasqueradeActive
       ? filteredSearchedPortfolioDataForBalances.balances
       : filteredPortfolioDataForBalances
     Object.entries(portfolio).forEach(([chainId, tokens]) => {
@@ -94,7 +86,7 @@ export const Portfolio = () => {
     })
     return flattened
   }, [
-    masqueradeActive,
+    isMasqueradeActive,
     filteredPortfolioDataForBalances,
     filteredSearchedPortfolioDataForBalances,
   ])
@@ -125,7 +117,7 @@ export const Portfolio = () => {
             {searchStatus === FetchState.LOADING && (
               <div className="pb-3 text-secondary">Loading new address...</div>
             )}
-            {masqueradeActive ? (
+            {isMasqueradeActive ? (
               <>
                 <ViewSearchAddressBanner
                   viewingAddress={
@@ -139,13 +131,13 @@ export const Portfolio = () => {
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
                   networkPortfolioWithBalances={
-                    searchInputActive && !searchInputIsAddress
+                    isSearchInputActive && !isSearchInputAddress
                       ? filteredBySearchInput
                       : filteredSearchedPortfolioDataForBalances.balances
                   }
                   fetchState={searchStatus}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
-                  searchInputActive={searchInputActive}
+                  searchInputActive={isSearchInputActive}
                   searchStatus={searchStatus}
                   searchInput={searchInput}
                 />
@@ -163,13 +155,13 @@ export const Portfolio = () => {
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
                   networkPortfolioWithBalances={
-                    searchInputActive
+                    isSearchInputActive
                       ? filteredBySearchInput
                       : filteredPortfolioDataForBalances
                   }
                   fetchState={fetchState}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
-                  searchInputActive={searchInputActive}
+                  searchInputActive={isSearchInputActive}
                   searchStatus={searchStatus}
                   searchInput={searchInput}
                 />
