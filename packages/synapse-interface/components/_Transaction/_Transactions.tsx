@@ -41,4 +41,6 @@ export const _Transactions = ({
       </div>
     )
   }
+
+  return null
 }
