@@ -163,6 +163,7 @@ At this stage, we assume that following steps have been performed:
 Use the `bridge` method to form the payload for the bridge transaction:
 
 ```ts
+// Populate the transaction data using the SDK
 const { data, to, value } = await synapseSDK.bridge(
   // User address on the destination chain that will receive the tokens
   addressTo,
@@ -179,6 +180,15 @@ const { data, to, value } = await synapseSDK.bridge(
 ```
 
 `data` and `to` fields should be then used to initiate the bridge transaction on the origin chain, with `value` being the amount of native gas tokens to be sent along with the transaction.
+
+```ts
+// Initiate the populated transaction, e.g. using ethers.js Signer
+const tx = await signer.sendTransaction({
+  to,
+  data,
+  value,
+})
+```
 
 > **Note**: the `bridge` method will not initiate the transaction, but will only return the payload for the transaction. The transaction should be initiated by the user using their preferred method (e.g. MetaMask, WalletConnect, etc.).
 
