@@ -1,28 +1,31 @@
+/* eslint-disable */
 import { useEffect, useMemo } from 'react'
-import { useAppDispatch } from '@/store/hooks'
 import { useAccount, Address } from 'wagmi'
-import { useLazyGetUserHistoricalActivityQuery } from '../api/generated'
-import { useTransactionsState } from './hooks'
-import { TransactionsState } from './reducer'
-import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
+
 import {
   resetTransactionsState,
   updateIsUserHistoricalTransactionsLoading,
   updateUserHistoricalTransactions,
-} from './actions'
-import { PortfolioState } from '../portfolio/reducer'
-import { usePortfolioState } from '../portfolio/hooks'
+} from '@slices/transactions/actions'
+import { PortfolioState } from '@/slices/portfolio/reducer'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getValidAddress } from '@/utils/isValidAddress'
+import { useLazyGetUserHistoricalActivityQuery } from '@/slices/api/generated'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+import { TransactionsState } from '@/slices/transactions/reducer'
+import { useAppDispatch } from '@/store/hooks'
+import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
 
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+// const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 const POLLING_INTERVAL: number = 300000 // 5 minutes in ms
 
-export default function Updater(): null {
+export const useTransactionListener = () => {
   const dispatch = useAppDispatch()
   const { isUserHistoricalTransactionsLoading }: TransactionsState =
     useTransactionsState()
-  const { searchedBalances }: PortfolioState = usePortfolioState()
+  const { activeTab, searchedBalances }: PortfolioState = usePortfolioState()
 
   const [fetchUserHistoricalActivity, fetchedHistoricalActivity] =
     useLazyGetUserHistoricalActivityQuery({
@@ -47,7 +50,7 @@ export default function Updater(): null {
   useEffect(() => {
     if (address && !masqueradeActive) {
       fetchUserHistoricalActivity({
-        address: address,
+        address,
         startTime: queryHistoricalTime,
       })
     } else if (masqueradeActive && searchedBalances) {
