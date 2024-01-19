@@ -15,6 +15,7 @@ import { getValidAddress } from '@/utils/isValidAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
+import { useIsFocused } from '../helpers/useIsFocused'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -26,27 +27,13 @@ export const SearchBar = () => {
     usePortfolioState()
 
   const [mounted, setMounted] = useState<boolean>(false)
-  const [isFocused, setIsFocused] = useState<boolean>(false)
   const isActive: boolean = searchInput !== portfolioInitialState.searchInput
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    const handleFocus = () => setIsFocused(true)
-    const handleBlur = () => setIsFocused(false)
-    const input = inputRef.current
-
-    if (input) {
-      input.addEventListener('focus', handleFocus)
-      input.addEventListener('blur', handleBlur)
-      return () => {
-        input.removeEventListener('focus', handleFocus)
-        input.removeEventListener('blur', handleBlur)
-      }
-    }
-  }, [inputRef])
+  const isFocused = useIsFocused(inputRef)
 
   const placeholder: string = useMemo(() => {
     switch (activeTab) {
