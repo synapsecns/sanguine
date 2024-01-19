@@ -1,3 +1,10 @@
+/**
+ * Provide additional data around elapsed time from an initial start time
+ *
+ * @param currentTime in s, unix
+ * @param initialTime in s, unix
+ * @param estimatedTime in s, unix
+ */
 const oneMinuteInSeconds = 60
 
 export const getEstimatedTimeStatus = (

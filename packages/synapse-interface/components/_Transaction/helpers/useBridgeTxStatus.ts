@@ -9,9 +9,13 @@ interface UseBridgeTxStatusProps {
   bridgeModuleName?: string
   kappa?: string
   checkStatus: boolean
-  currentTime: number // used as trigger to refetch status
+  currentTime: number
 }
 
+/**
+ * Hook will return bridge Tx status via Synapse SDK
+ * returns bridge Tx completion status and fetched kappa
+ */
 export const useBridgeTxStatus = ({
   originChainId,
   destinationChainId,
