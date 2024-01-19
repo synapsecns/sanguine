@@ -1,10 +1,9 @@
 import _ from 'lodash'
-import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { _Transaction } from './_Transaction'
-import { getTimeMinutesFromNow } from '@/utils/time'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { useIntervalTimer } from './helpers/useIntervalTimer'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -16,21 +15,7 @@ export const _Transactions = ({
 
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
-  const [currentTime, setCurrentTime] = useState<number>(
-    getTimeMinutesFromNow(0)
-  )
-
-  /** Update time to trigger transactions to recheck tx status */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      let newCurrentTime = getTimeMinutesFromNow(0)
-      setCurrentTime(newCurrentTime)
-    }, 5000) // 5000 milliseconds = 5 seconds
-
-    return () => {
-      clearInterval(interval) // Clear the interval when the component unmounts
-    }
-  }, [])
+  const currentTime = useIntervalTimer(5000)
 
   if (hasTransactions) {
     const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
