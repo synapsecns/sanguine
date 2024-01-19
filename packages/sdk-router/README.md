@@ -19,26 +19,32 @@ The Synapse SDK allows you to interact with [Synapse Protocol](https://synapsepr
   - Initiating swap transactions
 - Utilities for getting miscellaneous data related to protocol, fees, and chains
 
-## Installation
+## SDK Installation
 
 ```bash
-npm install @synapsecs/sdk-router
+npm install @synapsecns/sdk-router
 ```
 
-## Usage
+## SDK Initialization
 
 To use the SDK, first instantiate it with chain IDs and Ethereum providers:
 
 ```ts
-import { SynapseSDK } from '@synapsecs/sdk-router'
+import { SynapseSDK } from '@synapsecns/sdk-router'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-const chainIds = [1, 42161, 10]
-// Replace with JSON providers
-const providers = [ethereumProvider, arbitrumProvider, optimismProvider]
+// Create providers for Ethereum, Arbitrum and Optimism
+// Any Ethers.js provider can be used
+const arbitrumProvider = new JsonRpcProvider('<arbitrum-provider-url>')
+const ethereumProvider = new JsonRpcProvider('<ethereum-provider-url>')
+const optimismProvider = new JsonRpcProvider('<optimism-provider-url>')
+// Create lists of chain IDs and their matching providers
+const chainIds = [1, 10, 42161]
+const providers = [ethereumProvider, optimismProvider, arbitrumProvider]
 const synapseSDK = new SynapseSDK(chainIds, providers)
 ```
 
-### Bridging
+## Bridging
 
 `BridgeQuote` objects are returned by the `bridgeQuote` and `allBridgeQuotes` methods. They contain the following fields:
 
@@ -67,7 +73,7 @@ export type BridgeQuote = {
 > **Note:** `Query` objects contain information about the optional swaps to be performed on behalf of the user on origin and destination chains. The exact composition of the `Query` object, as well as the concept of the optional swaps, is abstracted away from the SDK consumer.
 > A collection of methods to modify the `Query` object is provided in the `SynapseSDK` class, allowing the consumer to be unaware of the underlying object structure.
 
-#### Getting a bridge quote
+### Getting a bridge quote
 
 Below is the example of how to get the list of quotes for sending 1000 USDC from Ethereum and receiving USDT on Arbitrum:
 
@@ -94,7 +100,7 @@ If either of the input/output tokens is a native gas token (e.g. ETH on Ethereum
 
 > **Note:** The `bridgeQuote` method is a wrapper around the `allBridgeQuotes` method. `bridgeQuote` returns only the first quote from the list, while `allBridgeQuotes` returns the entire list.
 
-#### Applying slippage
+### Applying slippage
 
 Some of the returned quotes may contain information about the optional swaps on origin and destination chains. As the liquidity composition may change over time, it is recommended to apply slippage to the quotes to account for the possible price changes. If no slippage is applied, the user transaction might be reverted due to insufficient funds. The default value for the slippage is 10 basis points (0.1%).
 
@@ -113,7 +119,7 @@ const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
 
 > **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the applied slippage without having to re-fetch the quotes.
 
-#### Modifying deadline
+### Modifying deadline
 
 Bridge quotes returned by the `allBridgeQuotes` method come with the deadlines set in `Query` objects. It is possible to further modify the deadlines before initiating the bridge transaction.
 
@@ -134,7 +140,7 @@ We recommend to not modify the destination deadline, as the behavior of the brid
 
 > **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the deadlines without having to re-fetch the quotes.
 
-#### Performing a bridge transaction
+### Performing a bridge transaction
 
 At this stage, we assume that following steps have been performed:
 
@@ -164,7 +170,7 @@ const { data, to, value } = await synapseSDK.bridge(
 
 > **Note**: the `bridge` method will not initiate the transaction, but will only return the payload for the transaction. The transaction should be initiated by the user using their preferred method (e.g. MetaMask, WalletConnect, etc.).
 
-#### Tracking the status of the bridge transaction
+### Tracking the status of the bridge transaction
 
 In order to track the status of the bridge transaction, the consumer first needs to fetch its unique "Synapse Tx ID" using the `getSynapseTxId` method:
 
