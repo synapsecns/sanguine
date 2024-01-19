@@ -22,6 +22,7 @@ const TO_FROM_FEES_AND_REBATE_BPS = {
     anyFromChain: {
       SynapseBridge: {
         nETH: { fee: 4, rebate: 6 },
+        WETH: { fee: 4, rebate: 6 },
         nUSD: { fee: 4, rebate: 6 },
         GMX: { fee: 5, rebate: 6 },
       },
@@ -37,6 +38,7 @@ const TO_FROM_FEES_AND_REBATE_BPS = {
     42161: {
       SynapseBridge: {
         nETH: { fee: 10, rebate: 12 },
+        WETH: { fee: 4, rebate: 6 },
         nUSD: { fee: 12, rebate: 14 },
       },
       SynapseCCTP: {
@@ -94,6 +96,7 @@ export const useStipEligibility = () => {
   const prices = {
     ETH: ethPrice,
     nETH: ethPrice,
+    WETH: ethPrice,
     'WETH.e': ethPrice,
     USDC: usdcPrice,
     USDT: usdtPrice,

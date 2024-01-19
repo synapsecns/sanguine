@@ -8,10 +8,8 @@ export const getExplorerAddressLink = (chainId: number, address: string) => {
 
   const chain: Chain = CHAINS_BY_ID[chainId]
 
-  if (chain && address) {
-    const addressExplorerUrl = `${chain.explorerUrl}/address/${address}`
-    const explorerName = chain.explorerName
+  const addressExplorerUrl = `${chain.explorerUrl}/address/${address}`
+  const explorerName = chain.explorerName
 
-    return [addressExplorerUrl, explorerName]
-  }
+  return [addressExplorerUrl, explorerName]
 }

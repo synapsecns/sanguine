@@ -65,9 +65,10 @@ const Router = () => {
 }
 
 const RouteEligibility = () => {
-  const { isRouteEligible, isActiveRouteEligible } = useStipEligibility()
+  const { isRouteEligible, isActiveRouteEligible, rebate } =
+    useStipEligibility()
 
-  if (!isRouteEligible) {
+  if (!isRouteEligible || !rebate) {
     return (
       <div className="flex justify-between">
         <div className="flex-grow" />
@@ -85,8 +86,12 @@ const RouteEligibility = () => {
           className="w-4 h-4 mr-2 rounded-full"
         />
 
-        <span className="">
-          {isActiveRouteEligible ? <RebateText /> : ELIGIBILITY_DEFAULT_TEXT}
+        <span className="text-green-300">
+          {isActiveRouteEligible && rebate ? (
+            <RebateText />
+          ) : (
+            ELIGIBILITY_DEFAULT_TEXT
+          )}
         </span>
       </div>
       <TimeEstimate />
@@ -113,9 +118,9 @@ const RebateText = () => {
 }
 
 const Rebate = () => {
-  const { isRouteEligible } = useStipEligibility()
+  const { isRouteEligible, rebate } = useStipEligibility()
 
-  if (!isRouteEligible) {
+  if (!isRouteEligible || !rebate) {
     return null
   }
 
