@@ -11,15 +11,15 @@ export const _Transactions = ({
 }: {
   connectedAddress: string
 }) => {
-  const currentTime = useIntervalTimer(5000)
   const { transactions } = use_TransactionsState()
-
   const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
+  const currentTime = useIntervalTimer(5000)
+
   if (hasTransactions) {
     return (
-      <div className="flex flex-col mt-3">
+      <TransactionsContainer>
         {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
@@ -38,9 +38,17 @@ export const _Transactions = ({
             isStoredComplete={tx.isComplete}
           />
         ))}
-      </div>
+      </TransactionsContainer>
     )
   }
 
   return null
+}
+
+const TransactionsContainer = (children) => {
+  return (
+    <div id="transaction-container" className="flex flex-col mt-3">
+      {children}
+    </div>
+  )
 }
