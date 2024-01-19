@@ -9,6 +9,10 @@ import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { Chain } from '@/utils/types'
 
+/**
+ * Hook that updates bridge Tx in store for kappa + isComplete
+ * Tx matched in store using originTxHash
+ */
 export const useBridgeTxUpdater = (
   connectedAddress: string,
   destinationChain: Chain,
@@ -16,8 +20,8 @@ export const useBridgeTxUpdater = (
   originTxHash: string,
   isTxComplete: boolean
 ) => {
-  const { transactions } = use_TransactionsState()
   const dispatch = useAppDispatch()
+  const { transactions } = use_TransactionsState()
 
   /** Update tx kappa in store when available */
   if (kappa && originTxHash) {

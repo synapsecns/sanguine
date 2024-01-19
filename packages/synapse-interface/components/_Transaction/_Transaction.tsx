@@ -1,16 +1,10 @@
-import { useMemo, useEffect, useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
-import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
 import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
 import { isNull } from 'lodash'
-import {
-  updateTransactionKappa,
-  completeTransaction,
-  removeTransaction,
-} from '@/slices/_transactions/reducer'
+import { removeTransaction } from '@/slices/_transactions/reducer'
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
@@ -19,6 +13,7 @@ import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/DropdownMenu'
+import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -53,7 +48,10 @@ export const _Transaction = ({
   isStoredComplete,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
-  const { transactions } = use_TransactionsState()
+
+  const handleClearTransaction = useCallback(() => {
+    dispatch(removeTransaction({ originTxHash }))
+  }, [dispatch])
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChain.id,
@@ -83,40 +81,13 @@ export const _Transaction = ({
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
-  /** Update tx kappa when available */
-  useEffect(() => {
-    if (_kappa && originTxHash) {
-      dispatch(
-        updateTransactionKappa({ originTxHash, kappa: _kappa as string })
-      )
-    }
-  }, [_kappa, dispatch])
-
-  /** Update tx for completion */
-  /** Check that we have not already marked tx as complete */
-  useEffect(() => {
-    const txKappa = _kappa
-
-    if (isTxComplete && originTxHash && txKappa) {
-      const txn = transactions.find((tx) => tx.originTxHash === originTxHash)
-      if (!txn.isComplete) {
-        dispatch(
-          completeTransaction({ originTxHash, kappa: txKappa as string })
-        )
-        /** Update Destination Chain token balances after tx is marked complete  */
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address: connectedAddress,
-            chainId: destinationChain.id,
-          })
-        )
-      }
-    }
-  }, [isTxComplete, dispatch, transactions, _kappa])
-
-  const handleClearTransaction = useCallback(() => {
-    dispatch(removeTransaction({ originTxHash }))
-  }, [dispatch])
+  useBridgeTxUpdater(
+    connectedAddress,
+    destinationChain,
+    kappa,
+    originTxHash,
+    isTxComplete
+  )
 
   return (
     <div
