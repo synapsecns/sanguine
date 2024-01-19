@@ -128,7 +128,7 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" />
+            <TransactionStatus string="Complete" className="text-green-300" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
