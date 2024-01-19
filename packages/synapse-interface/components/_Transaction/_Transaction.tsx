@@ -15,28 +15,8 @@ import {
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
-
-const TransactionStatus = ({ string }) => {
-  return <>{string}</>
-}
-
-const TimeRemaining = ({
-  isComplete,
-  remainingTime,
-  isDelayed,
-}: {
-  isComplete: boolean
-  remainingTime: number
-  isDelayed: boolean
-}) => {
-  if (isComplete) return
-
-  if (isDelayed) {
-    return <div>Waiting...</div>
-  }
-
-  return <div>{remainingTime} min</div>
-}
+import { TimeRemaining } from './components/TimeRemaining'
+import { TransactionStatus } from './components/TransactionStatus'
 
 interface _TransactionProps {
   connectedAddress: string
