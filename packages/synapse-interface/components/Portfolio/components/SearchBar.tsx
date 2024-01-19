@@ -96,10 +96,13 @@ const FilterInput = ({
 }) => {
   return (
     <input
-      disabled={disabled}
-      ref={inputRef}
-      tabIndex={0}
       id="filter-input"
+      ref={inputRef}
+      placeholder={placeholder}
+      onChange={(e) => onSearch(e.target.value)}
+      value={searchStr}
+      disabled={disabled}
+      tabIndex={0}
       className={`
         flex-grow py-2.5 pl-4 pr-1
         font-normal text-sm text-primaryTextColor
@@ -109,9 +112,6 @@ const FilterInput = ({
         focus:outline-none focus:ring-0 focus:border-transparent
         ${disabled && 'opacity-30'}
       `}
-      placeholder={placeholder}
-      onChange={(e) => onSearch(e.target.value)}
-      value={searchStr}
     />
   )
 }
