@@ -12,7 +12,7 @@ import { TimeRemaining } from './components/TimeRemaining'
 import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
-import { MenuItem } from './components/DropdownMenu'
+import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 
 interface _TransactionProps {
