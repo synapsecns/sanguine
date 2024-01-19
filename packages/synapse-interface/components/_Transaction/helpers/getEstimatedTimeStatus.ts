@@ -1,6 +1,6 @@
 const oneMinuteInSeconds = 60
 
-export const useEstimatedTimeStatus = (
+export const getEstimatedTimeStatus = (
   currentTime: number,
   initialTime: number,
   estimatedTime: number
