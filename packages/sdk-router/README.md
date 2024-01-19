@@ -46,14 +46,18 @@ const synapseSDK = new SynapseSDK(chainIds, providers)
 
 ## Bridging
 
-Below is the high level overview of the bridging workflow. Following concepts are abstracted away from the SDK consumer:
+Below is the high level overview of the bridging workflow.
+
+![Bridging Workflow](./puml/BridgingWorkflow.png)
+
+Following concepts are abstracted away from the SDK consumer:
 
 - Optional swaps on origin and destination chains.
 - Bridge modules and their supported tokens.
 
 The SDK consumer simply operates by getting quotes for sending `tokenIn` on the origin chain and receiving `tokenOut` on the destination chain. The SDK then finds the bridge modules that can fulfill this bridging intent.
 
-![Bridging Workflow](./puml/BridgingWorkflow.png)
+![Bridging Workflow(simplified)](./puml/BridgingWorkflowSimplified.png)
 
 ### Getting a bridge quote
 

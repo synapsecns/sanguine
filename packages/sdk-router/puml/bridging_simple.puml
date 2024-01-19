@@ -1,0 +1,29 @@
+@startuml BridgingWorkflowSimplified
+skinparam BoxPadding 10
+skinparam NoteTextAlignment center
+skinparam SequenceMessageAlign reverseDirection
+title Bridging Workflow (simlplified with SDK)
+
+box "Origin Chain" #White
+actor "User" as OU
+participant "Synapse\nRouter" as OSR
+end box
+
+box "   Synapse   " #bb77ff
+database " " as SYN
+end box
+
+box "Destination Chain" #White
+participant "BridgeModule\nContract" as DBM
+actor "User" as DU
+end box
+
+OU -> OSR: **tokenIn**
+OSR ---> SYN
+note over SYN #White
+    Magic
+    happens
+end note
+SYN --> DBM
+DBM -> DU: **tokenOut**
+@enduml
