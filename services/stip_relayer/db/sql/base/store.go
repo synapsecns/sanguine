@@ -30,9 +30,20 @@ func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string) e
 
 // InsertNewStipTransactions inserts new transactions into the database
 func (s *Store) InsertNewStipTransactions(ctx context.Context, stipTransactions []db.STIPTransactions) error {
-	result := s.db.WithContext(ctx).Create(&stipTransactions)
-	if result.Error != nil {
-		return result.Error
+	for _, transaction := range stipTransactions {
+		// Using FirstOrCreate
+		tx := s.db.WithContext(ctx).Where(db.STIPTransactions{Hash: transaction.Hash}).FirstOrCreate(&transaction)
+		if tx.Error != nil {
+			return tx.Error
+		}
+
+		// Or using Clauses with ON CONFLICT for upsert behavior (PostgreSQL example)
+		// tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
+		//     UpdateAll: true,
+		// }).Create(&transaction)
+		// if tx.Error != nil {
+		//     return tx.Error
+		// }
 	}
 	return nil
 }
