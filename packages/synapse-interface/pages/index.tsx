@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Banner } from '@/components/Banner'
 import StateManagedBridge from './state-managed-bridge'
 import { Portfolio } from '@/components/Portfolio/Portfolio'
@@ -12,13 +13,21 @@ import { hotjar } from 'react-hotjar'
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
 
-if (typeof window !== 'undefined') {
-  const HOTJAR_ID = 3835898
-  hotjar.initialize(HOTJAR_ID, 6)
-}
+// if (typeof window !== 'undefined') {
+//   const HOTJAR_ID = 3835898
+//   hotjar.initialize(HOTJAR_ID, 6)
+// }
 
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const HOTJAR_ID = 3835898
+      console.log('hotjar initialized')
+      hotjar.initialize(HOTJAR_ID, 6)
+    }
+  }, [window])
 
   return (
     <LandingPageWrapper>
