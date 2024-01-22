@@ -57,8 +57,6 @@ import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
 import _TransactionsUpdater from '@/slices/_transactions/updater'
 
-import HotJar from '@/components/HotJar/HotJar'
-
 const rawChains = [
   mainnet,
   arbitrum,
@@ -170,7 +168,6 @@ const App = ({ Component, pageProps }: AppProps) => {
       <Head>
         <title>Synapse Protocol</title>
       </Head>
-      <HotJar />
       <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <SynapseProvider chains={chains}>
