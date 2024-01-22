@@ -172,167 +172,220 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 
 	// Start the submitter goroutine
 	g.Go(func() error {
-		err := s.submittter.Start(ctx)
-		if err != nil {
-			fmt.Printf("could not start submitter: %v", err)
-			return nil // return nil to keep other goroutines running
-		}
-		return nil
+		return s.startSubmitter(ctx)
 	})
 
-	// Start the ticker goroutine
+	// Start the ticker goroutine for requesting and storing execution results
 	g.Go(func() error {
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err() // exit if context is cancelled
-			case <-ticker.C:
-				resp, err := ExecuteDuneQuery()
-				if err != nil {
-					fmt.Errorf("Failed to execute Dune query: %v", err)
-				}
-
-				body, err := ioutil.ReadAll(resp.Body)
-
-				if err != nil {
-					fmt.Errorf("Failed to read response body: %v", err)
-				}
-
-				var result map[string]string
-				err = json.Unmarshal(body, &result)
-				if err != nil {
-					fmt.Errorf("Failed to unmarshal response body: %v", err)
-				}
-
-				execution_id, ok := result["execution_id"]
-				if !ok {
-					fmt.Errorf("No execution_id found in response")
-				}
-
-				time.Sleep(20 * time.Second)
-
-				executionResults, err := GetExecutionResults(execution_id)
-				if err != nil {
-					fmt.Errorf("Failed to get execution results: %v", err)
-
-				}
-				// fmt.Println(executionResults)
-
-				if err != nil {
-					fmt.Errorf("Failed to get execution results: %v", err)
-				}
-
-				if resp.StatusCode != 200 {
-					fmt.Errorf("Expected status code 200, got %d", resp.StatusCode)
-				}
-
-				getResultsBody, err := ioutil.ReadAll(executionResults.Body)
-				var jsonResult QueryResult
-				err = json.Unmarshal(getResultsBody, &jsonResult)
-				if err != nil {
-					// handle error, e.g., print it or log it
-					fmt.Errorf("Error unmarshalling JSON: %d", err)
-				}
-				fmt.Println(jsonResult.Result.Rows)
-				fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
-
-				// Store executionResults in DB
-				// This part is left as a comment because it depends on the specific implementation of your DB
-
-				// Convert each Row to a STIPTransactions
-				stipTransactions := make([]db.STIPTransactions, len(jsonResult.Result.Rows))
-				for i, row := range jsonResult.Result.Rows {
-					stipTransactions[i] = db.STIPTransactions{
-						Address:     row.Address,
-						Amount:      row.Amount,
-						AmountUSD:   row.AmountUsd,
-						ArbPrice:    row.ArbPrice,
-						BlockTime:   row.BlockTime.Time,
-						Direction:   row.Direction,
-						ExecutionID: jsonResult.ExecutionID,
-						Hash:        row.Hash,
-						Module:      "Module",
-						Token:       row.Token,
-						TokenPrice:  row.TokenPrice,
-						Rebated:     false,
-					}
-				}
-
-				// Now you can pass stipTransactions to InsertNewStipTransactions
-				if len(stipTransactions) > 0 {
-					err = s.db.InsertNewStipTransactions(context.Background(), stipTransactions)
-				}
-				if err != nil {
-					fmt.Errorf("Error inserting new STIP transactions: %d", err)
-				}
-
-				// Confirm that the insert occurred
-				stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(context.Background())
-				if err != nil {
-					fmt.Errorf("Error getting STIP transactions not rebated: %d", err)
-				}
-				if len(stipTransactionsNotRebated) == 0 {
-					fmt.Println("No STIP transactions found that have not been rebated.")
-				} else {
-					fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
-				}
-
-			}
-		}
+		return s.requestAndStoreResults(ctx)
 	})
 
-	go func() {
-		// Query DB to get all STIPs that need to be relayed
-		for {
-			time.Sleep(5 * time.Second)
-			fmt.Println("Relayer submitter event loop")
-			stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(context.Background())
-			if err != nil {
-				fmt.Println("Error getting STIP transactions not rebated:", err)
-				continue
-			}
-			if len(stipTransactionsNotRebated) == 0 {
-				fmt.Println("No STIP transactions found that have not been rebated.")
-			} else {
-				fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
-			}
-
-			chainId := s.cfg.ArbChainID
-			arbAddress := s.cfg.ArbAddress
-			backendClient, err := s.omnirpcClient.GetClient(context.Background(), big.NewInt(int64(chainId)))
-
-			_, err = s.submittter.SubmitTransaction(context.Background(), big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				erc20, err := ierc20.NewIERC20(common.HexToAddress(arbAddress), backendClient)
-				if err != nil {
-					return nil, fmt.Errorf("could not get erc20: %w", err)
-				}
-
-				transferTx, err := erc20.Transfer(transactor, s.signer.Address(), big.NewInt(0))
-				if err != nil {
-					return nil, fmt.Errorf("could not transfer: %w", err)
-				}
-
-				return transferTx, nil
-			})
-
-			if err != nil {
-				fmt.Println("could not submit transfer:", err)
-			}
-		}
-	}()
+	// Start the goroutine for querying, rebating/relaying, and updating results
+	g.Go(func() error {
+		return s.queryRebateAndUpdate(ctx)
+	})
 
 	// Wait for all goroutines to finish
 	if err := g.Wait(); err != nil {
 		return err // handle the error from goroutines
 	}
 
-	// Relayer event loop will live here
+	return nil
+}
+
+// startSubmitter handles the initialization of the submitter
+func (s *STIPRelayer) startSubmitter(ctx context.Context) error {
+	err := s.submittter.Start(ctx)
+	if err != nil {
+		fmt.Printf("could not start submitter: %v", err)
+		return nil // return nil to keep other goroutines running
+	}
+	return nil
+}
+
+// requestAndStoreResults handles the continuous request of new execution results and storing them in the database
+func (s *STIPRelayer) requestAndStoreResults(ctx context.Context) error {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err() // exit if context is cancelled
+		case <-ticker.C:
+			if err := s.processExecutionResults(ctx); err != nil {
+				// Log the error and decide whether to continue based on the error
+				fmt.Printf("Error processing execution results: %v", err)
+				// Optionally, you can return the error to stop the goroutine
+				// return err
+			}
+		}
+	}
+}
+
+// processExecutionResults encapsulates the logic for requesting and storing execution results
+func (s *STIPRelayer) processExecutionResults(ctx context.Context) error {
+	resp, err := ExecuteDuneQuery()
+	if err != nil {
+		return fmt.Errorf("failed to execute Dune query: %v", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	var result map[string]string
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response body: %v", err)
+	}
+
+	executionID, ok := result["execution_id"]
+	if !ok {
+		return fmt.Errorf("no execution_id found in response")
+	}
+
+	time.Sleep(20 * time.Second) // Consider replacing this with a more robust solution
+
+	executionResults, err := GetExecutionResults(executionID)
+	if err != nil {
+		return fmt.Errorf("failed to get execution results: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("expected status code 200, got %d", resp.StatusCode)
+	}
+
+	getResultsBody, err := ioutil.ReadAll(executionResults.Body)
+	var jsonResult QueryResult
+	err = json.Unmarshal(getResultsBody, &jsonResult)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling JSON: %v", err)
+	}
+	fmt.Println(jsonResult.Result.Rows)
+	fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
+
+	// Convert each Row to a STIPTransactions and store them in the database
+	return s.storeResultsInDatabase(ctx, jsonResult.Result.Rows, jsonResult.ExecutionID)
+}
+
+// storeResultsInDatabase handles the storage of results in the database
+func (s *STIPRelayer) storeResultsInDatabase(ctx context.Context, rows []Row, executionID string) error {
+	stipTransactions := make([]db.STIPTransactions, len(rows))
+	for i, row := range rows {
+		stipTransactions[i] = db.STIPTransactions{
+			Address:     row.Address,
+			Amount:      row.Amount,
+			AmountUSD:   row.AmountUsd,
+			ArbPrice:    row.ArbPrice,
+			BlockTime:   row.BlockTime.Time,
+			Direction:   row.Direction,
+			ExecutionID: executionID,
+			Hash:        row.Hash,
+			Module:      "Module",
+			Token:       row.Token,
+			TokenPrice:  row.TokenPrice,
+			Rebated:     false,
+		}
+	}
+
+	if len(stipTransactions) > 0 {
+		if err := s.db.InsertNewStipTransactions(ctx, stipTransactions); err != nil {
+			return fmt.Errorf("error inserting new STIP transactions: %v", err)
+		}
+	}
+
+	// Optionally, confirm that the insert occurred
+	stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting STIP transactions not rebated: %v", err)
+	}
+	if len(stipTransactionsNotRebated) == 0 {
+		fmt.Println("No STIP transactions found that have not been rebated.")
+	} else {
+		fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
+	}
 
 	return nil
-	// Submit transactions for corresponding rebate
-	// Once in submitter, assume we do not need to submit again
-	// Update DB to reflect that STIP rebate has been submitted
+}
+
+// queryRebateAndUpdate handles the querying for new, non-relayed/rebated results, rebates/relays them, and updates the result row
+func (s *STIPRelayer) queryRebateAndUpdate(ctx context.Context) error {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err() // exit if context is cancelled
+		case <-ticker.C:
+			if err := s.relayAndRebateTransactions(ctx); err != nil {
+				// Log the error and decide whether to continue based on the error
+				fmt.Printf("Error relaying and rebating transactions: %v", err)
+				// Optionally, you can return the error to stop the goroutine
+				// return err
+			}
+		}
+	}
+}
+
+// relayAndRebateTransactions encapsulates the logic for querying, rebating/relaying, and updating results
+func (s *STIPRelayer) relayAndRebateTransactions(ctx context.Context) error {
+	// Query DB to get all STIPs that need to be relayed
+	stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting STIP transactions not rebated: %v", err)
+	}
+	if len(stipTransactionsNotRebated) == 0 {
+		fmt.Println("No STIP transactions found that have not been rebated.")
+		return nil
+	} else {
+		fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
+	}
+
+	// Relay and rebate transactions
+	for _, transaction := range stipTransactionsNotRebated {
+		if err := s.submitAndRebateTransaction(ctx, transaction); err != nil {
+			// Log the error and continue processing the rest of the transactions
+			fmt.Printf("Error relaying and rebating transaction: %v", err)
+			// Optionally, you can return the error to stop processing further transactions
+			// return err
+		}
+	}
+
+	return nil
+}
+
+// relayAndRebateTransaction handles the relaying and rebating of a single transaction
+func (s *STIPRelayer) submitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
+	chainId := s.cfg.ArbChainID
+	arbAddress := s.cfg.ArbAddress
+	backendClient, err := s.omnirpcClient.GetClient(ctx, big.NewInt(int64(chainId)))
+	if err != nil {
+		return fmt.Errorf("could not get client: %w", err)
+	}
+
+	_, err = s.submittter.SubmitTransaction(ctx, big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		erc20, err := ierc20.NewIERC20(common.HexToAddress(arbAddress), backendClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not get erc20: %w", err)
+		}
+
+		transferTx, err := erc20.Transfer(transactor, s.signer.Address(), big.NewInt(0))
+		if err != nil {
+			return nil, fmt.Errorf("could not transfer: %w", err)
+		}
+
+		return transferTx, nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("could not submit transfer: %w", err)
+	}
+
+	// Update the database to mark the transaction as rebated
+	// ...
+
+	return nil
 }
