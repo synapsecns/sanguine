@@ -8,7 +8,7 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
@@ -293,7 +293,7 @@ export function Home() {
             dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
-                dailyStatisticType === 'ADDRESSES'
+              dailyStatisticType === 'ADDRESSES'
                 ? false
                 : true
             }

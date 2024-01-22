@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "downlevelIteration": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -19,85 +15,34 @@
     "isolatedModules": true,
     "incremental": true,
     "paths": {
-      "@assets/": [
-        "./assets"
-      ],
-      // "@synapse-constants/dist": [
-      //   "./node_modules/synapse-constants/dist/dist"
+      "@assets/": ["./assets"],
+      // "@synapse-constants": [
+      //   "./node_modules/synapse-constants/dist"
       // ],
-      "@assets/icons/": [
-        "./assets/icons"
-      ],
-      "@assets/*": [
-        "./assets/*"
-      ],
-      "@constants/": [
-        "./constants"
-      ],
-      "@constants/chains/": [
-        "./constants/chains"
-      ],
-      "@constants/*": [
-        "./constants/*"
-      ],
-      "@components": [
-        "./components"
-      ],
-      "@components/*": [
-        "./components/*"
-      ],
-      "@tw": [
-        "./components/tailwind"
-      ],
-      "@tw/*": [
-        "./components/tailwind/*"
-      ],
-      "@layouts": [
-        "./components/layouts"
-      ],
-      "@layouts/*": [
-        "./components/layouts/*"
-      ],
-      "@icons": [
-        "./components/icons"
-      ],
-      "@icons/*": [
-        "./components/icons/*"
-      ],
-      "@urls": [
-        "./utils/urls"
-      ],
-      "@urls/*": [
-        "./utils/urls/*"
-      ],
-      "@utils": [
-        "./utils"
-      ],
-      "@utils/*": [
-        "./utils/*"
-      ],
-      "@graphql": [
-        "./graphql"
-      ],
-      "@graphql/*": [
-        "./graphql/*"
-      ],
-      "@styles": [
-        "./utils/styles"
-      ],
-      "@styles/*": [
-        "./utils/styles/*"
-      ]
+      "@assets/icons/": ["./assets/icons"],
+      "@assets/*": ["./assets/*"],
+      "@constants/": ["./constants"],
+      "@constants/chains/": ["./constants/chains"],
+      "@constants/*": ["./constants/*"],
+      "@components": ["./components"],
+      "@components/*": ["./components/*"],
+      "@tw": ["./components/tailwind"],
+      "@tw/*": ["./components/tailwind/*"],
+      "@layouts": ["./components/layouts"],
+      "@layouts/*": ["./components/layouts/*"],
+      "@icons": ["./components/icons"],
+      "@icons/*": ["./components/icons/*"],
+      "@urls": ["./utils/urls"],
+      "@urls/*": ["./utils/urls/*"],
+      "@utils": ["./utils"],
+      "@utils/*": ["./utils/*"],
+      "@graphql": ["./graphql"],
+      "@graphql/*": ["./graphql/*"],
+      "@styles": ["./utils/styles"],
+      "@styles/*": ["./utils/styles/*"]
     },
     "jsx": "preserve"
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"],
+  "exclude": ["node_modules"]
 }

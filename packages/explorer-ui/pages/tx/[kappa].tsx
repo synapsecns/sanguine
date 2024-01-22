@@ -5,7 +5,7 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -26,7 +26,7 @@ const link = new HttpLink({
 
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
 })
 
 export default function BridgeTransaction({ queryResult }) {
@@ -45,9 +45,17 @@ export default function BridgeTransaction({ queryResult }) {
   }
   const generateBridgeAddress = (chainID, eventType) => {
     if (eventType == 10 || eventType == 11) {
-      return CHAINS_BY_ID[chainID].explorerUrl + '/address/' + CCTP_CONTRACTS[chainID]
+      return (
+        CHAINS_BY_ID[chainID].explorerUrl +
+        '/address/' +
+        CCTP_CONTRACTS[chainID]
+      )
     }
-    return CHAINS_BY_ID[chainID].explorerUrl + '/address/' + BRIDGE_CONTRACTS[chainID]
+    return (
+      CHAINS_BY_ID[chainID].explorerUrl +
+      '/address/' +
+      BRIDGE_CONTRACTS[chainID]
+    )
   }
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
@@ -117,7 +125,7 @@ export default function BridgeTransaction({ queryResult }) {
             </p>
           </div>
 
-          < br />
+          <br />
 
           <div className="flex gap-y-2 flex-col">
             <HorizontalDivider />
@@ -165,7 +173,10 @@ export default function BridgeTransaction({ queryResult }) {
                     target="_blank"
                     rel="noreferrer"
                     className="text-white break-all text-sm underline"
-                    href={generateBridgeAddress(fromInfo.chainID, fromInfo.eventType)}
+                    href={generateBridgeAddress(
+                      fromInfo.chainID,
+                      fromInfo.eventType
+                    )}
                   >
                     Origin Bridge Contract
                   </a>
@@ -243,7 +254,12 @@ export default function BridgeTransaction({ queryResult }) {
                     target="_blank"
                     rel="noreferrer"
                     className="text-white break-all text-sm underline"
-                    href={generateBridgeAddress(toInfo?.chainID ? toInfo.chainID : fromInfo.destinationChainID, fromInfo.eventType)}
+                    href={generateBridgeAddress(
+                      toInfo?.chainID
+                        ? toInfo.chainID
+                        : fromInfo.destinationChainID,
+                      fromInfo.eventType
+                    )}
                   >
                     Destination Bridge Contract
                   </a>
@@ -270,7 +286,7 @@ export default function BridgeTransaction({ queryResult }) {
           </div>
           <br />
           <HorizontalDivider />
-        </div >
+        </div>
       </>
     )
   } else {

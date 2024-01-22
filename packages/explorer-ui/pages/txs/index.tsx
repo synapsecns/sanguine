@@ -10,9 +10,9 @@ import { Pagination } from '@components/Pagination'
 import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { checksumAddress, checkAddressChecksum } from '@utils/checksum'
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 
-const CHAIN_ID_NAMES_REVERSE = CHAINS. CHAIN_ID_NAMES_REVERSE
+const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 
 export default function Txs() {
   const search = useSearchParams()

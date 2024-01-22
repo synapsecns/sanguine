@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { TOKEN_HASH_MAP, CHAINS } from 'synapse-constants/dist'
+import { TOKEN_HASH_MAP, CHAINS } from 'synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'
