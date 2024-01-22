@@ -4,12 +4,18 @@ import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
+import { hotjar } from 'react-hotjar'
 
 // TODO: someone should add this to the .env, disable if blank, etc.
 // this is being added as a hotfix to assess user load on the synapse explorer api
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
+
+if (typeof window !== 'undefined') {
+  const HOTJAR_ID = 3835898
+  hotjar.initialize(HOTJAR_ID, 6)
+}
 
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
