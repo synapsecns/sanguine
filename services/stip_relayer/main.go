@@ -133,6 +133,7 @@ type Row struct {
 	BlockTime  CustomTime `json:"block_time"`
 	Direction  string     `json:"direction"`
 	Hash       string     `json:"hash"`
+	Module     string     `json:"module"`
 	Token      string     `json:"token"`
 	TokenPrice float64    `json:"token_price"`
 }
@@ -285,11 +286,10 @@ func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, ex
 			Direction:   row.Direction,
 			ExecutionID: executionID,
 			Hash:        row.Hash,
-			// TODO: Why is module not in Row.Module?
-			Module:     "Module",
-			Token:      row.Token,
-			TokenPrice: row.TokenPrice,
-			Rebated:    false,
+			Module:      row.Module,
+			Token:       row.Token,
+			TokenPrice:  row.TokenPrice,
+			Rebated:     false,
 		}
 	}
 
