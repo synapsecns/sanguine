@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { useAppDispatch } from '@/state/hooks'
-import { useBridgeTransactionState } from '../bridgeTransaction/hooks'
-import { useTransactionsState } from './hooks'
-import { addTransaction } from './reducer'
+import { useBridgeTransactionState } from '@/state/slices/bridgeTransaction/hooks'
+import { useTransactionsState } from '@/state/slices/transactions/hooks'
+import { addTransaction } from '@/state/slices/transactions/reducer'
 import { isNull } from '@/utils/isNull'
 
-export default function Updater() {
+export function useTransactionListener() {
   const dispatch = useAppDispatch()
   const {
     txHash,

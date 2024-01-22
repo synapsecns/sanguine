@@ -8,9 +8,9 @@ import { store } from '@/state/store'
 
 import * as BRIDGEABLE from '@/constants/bridgeable'
 
-import TransactionsUpdater from '@/state/slices/transactions/updater'
 import { SynapseProvider } from 'providers/SynapseProvider'
 import { CHAINS_ARRAY } from './constants/chains'
+import { BackgroundListenerProvider } from './providers/BackgroundListenerProvider'
 
 // TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
 
@@ -27,14 +27,15 @@ export const Bridge = ({
     <Web3Provider config={web3Provider}>
       <SynapseProvider chains={CHAINS_ARRAY} customRpcs={customRpcs}>
         <Provider store={store}>
-          <TransactionsUpdater />
-          <Widget
-            theme={theme}
-            customTheme={customTheme}
-            container={container}
-            targetChainIds={targetChainIds}
-            targetTokens={targetTokens}
-          />
+          <BackgroundListenerProvider>
+            <Widget
+              theme={theme}
+              customTheme={customTheme}
+              container={container}
+              targetChainIds={targetChainIds}
+              targetTokens={targetTokens}
+            />
+          </BackgroundListenerProvider>
         </Provider>
       </SynapseProvider>
     </Web3Provider>

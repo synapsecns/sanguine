@@ -4,19 +4,14 @@ import { TransactionDetails } from '@/state/slices/transactions/reducer'
 import { Transaction } from './Transaction'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
-/** TODO: Pull synapseSDK from context vs passing in */
 export const Transactions = ({
-  synapseSDK,
   connectedAddress,
 }: {
-  synapseSDK: any
   connectedAddress: string
 }) => {
-  const transactions = useTransactionsState()
+  const { transactions } = useTransactionsState()
 
-  const transactionsArray: TransactionDetails[] = Object.values(transactions)
-
-  const hasTransactions: boolean = transactionsArray.length > 0
+  const hasTransactions: boolean = transactions.length > 0
 
   const [currentTime, setCurrentTime] = useState<number>(
     getTimeMinutesFromNow(0)
@@ -26,7 +21,7 @@ export const Transactions = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(getTimeMinutesFromNow(0))
-    }, 30000) // 30000 milliseconds = 30 seconds
+    }, 5000) // 5000 milliseconds = 5 seconds
 
     return () => {
       clearInterval(interval) // Clear the interval when the component unmounts
@@ -34,9 +29,8 @@ export const Transactions = ({
   }, [])
 
   if (hasTransactions) {
-    return transactionsArray.map((transaction: TransactionDetails) => (
+    return transactions.map((transaction: TransactionDetails) => (
       <Transaction
-        synapseSDK={synapseSDK}
         connectedAddress={connectedAddress}
         originChainId={transaction.originChainId}
         destinationChainId={transaction.destinationChainId}
@@ -46,7 +40,7 @@ export const Transactions = ({
         kappa={transaction?.kappa}
         timestamp={transaction.timestamp}
         currentTime={currentTime}
-        isComplete={transaction.isComplete}
+        isStoredComplete={transaction.isComplete}
       />
     ))
   }

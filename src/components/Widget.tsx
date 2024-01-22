@@ -89,8 +89,7 @@ export const Widget = ({
   const { synapseSDK, synapseProviders } = useSynapseContext()
 
   const web3Context = useContext(Web3Context)
-  const { connectedAddress, signer, provider, networkId } =
-    web3Context.web3Provider
+  const { connectedAddress, signer, provider } = web3Context.web3Provider
 
   const [inputAmount, setInputAmount] = useState('')
 
@@ -368,10 +367,7 @@ export const Widget = ({
         bg-[--synapse-root] grid gap-2 text-[--synapse-text] w-full ${containerStyle}
         `}
       >
-        <Transactions
-          synapseSDK={synapseSDK}
-          connectedAddress={connectedAddress}
-        />
+        <Transactions connectedAddress={connectedAddress} />
         <section className={cardStyle}>
           <ChainSelect
             label="From"

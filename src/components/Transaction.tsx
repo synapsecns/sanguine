@@ -12,6 +12,7 @@ import {
   removeTransaction,
 } from '@/state/slices/transactions/reducer'
 import { useTransactionsState } from '@/state/slices/transactions/hooks'
+import { useSynapseContext } from '@/providers/SynapseProvider'
 
 const TransactionStatus = ({ string }) => {
   return <>{string}</>
@@ -32,11 +33,18 @@ const TimeRemaining = ({
     return <div>Waiting...</div>
   }
 
-  return <div>{remainingTime} min</div>
+  const estTime = useMemo(() => {
+    if (remainingTime > 60) {
+      return Math.ceil(remainingTime / 60) + ' minutes'
+    } else {
+      return remainingTime + ' seconds'
+    }
+  }, [remainingTime])
+
+  return <div>{estTime} min</div>
 }
 
 export const Transaction = ({
-  synapseSDK,
   connectedAddress,
   originChainId,
   destinationChainId,
@@ -46,9 +54,8 @@ export const Transaction = ({
   kappa,
   timestamp,
   currentTime,
-  isComplete,
+  isStoredComplete,
 }: {
-  synapseSDK: any
   connectedAddress: string
   originChainId: number
   destinationChainId: number
@@ -58,10 +65,12 @@ export const Transaction = ({
   kappa?: string
   timestamp: number
   currentTime: number
-  isComplete: boolean
+  isStoredComplete: boolean
 }) => {
   const dispatch = useAppDispatch()
   const transactions = useTransactionsState()
+
+  const { synapseSDK } = useSynapseContext()
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChainId,
@@ -80,7 +89,6 @@ export const Transaction = ({
 
   const elapsedTime: number = currentTime - timestamp // in seconds
   const remainingTime: number = estimatedTime - elapsedTime
-  const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
 
   const isEstimatedTimeReached: boolean = useMemo(() => {
     if (!currentTime || !estimatedTime || !timestamp) return false
@@ -94,14 +102,19 @@ export const Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa,
-    checkStatus: isEstimatedTimeReached,
+    checkStatus: !isStoredComplete || isEstimatedTimeReached,
     currentTime: currentTime,
   })
+
+  /** Check if store already marked tx as complete, otherwise check hook status */
+  const isTxFinalized = isStoredComplete ?? isTxComplete
 
   /** Update tx kappa when available */
   useEffect(() => {
     if (_kappa && originTxHash) {
-      dispatch(updateTransactionKappa({ originTxHash, kappa: _kappa }))
+      dispatch(
+        updateTransactionKappa({ originTxHash, kappa: _kappa as string })
+      )
     }
   }, [_kappa, dispatch])
 
@@ -111,8 +124,10 @@ export const Transaction = ({
     const txKappa = kappa ?? _kappa
 
     if (isTxComplete && originTxHash && txKappa) {
-      if (transactions[originTxHash].isComplete === false) {
-        dispatch(completeTransaction({ originTxHash, kappa: txKappa }))
+      if (transactions[originTxHash]?.isComplete === false) {
+        dispatch(
+          completeTransaction({ originTxHash, kappa: txKappa as string })
+        )
       }
     }
   }, [isTxComplete, dispatch, transactions])
@@ -130,15 +145,15 @@ export const Transaction = ({
         border border-solid border-[--synapse-border] rounded-md
       `}
     >
-      {isComplete ? (
+      {isTxFinalized ? (
         <TransactionStatus string="Complete" />
       ) : (
         <TransactionStatus string="Pending" />
       )}
-      <div className="flex gap-2 items-center grow justify-end">
+      <div className="flex items-center justify-end gap-2 grow">
         <TimeRemaining
-          isComplete={isComplete}
-          remainingTime={remainingTimeInMinutes}
+          isComplete={isTxFinalized as boolean}
+          remainingTime={remainingTime}
           isDelayed={isEstimatedTimeReached}
         />
 
@@ -156,7 +171,7 @@ export const Transaction = ({
             text="Contact Support"
             link="https://discord.gg/synapseprotocol"
           />
-          {isComplete && (
+          {isTxFinalized && (
             <MenuItem
               text="Clear Transaction"
               link={null}

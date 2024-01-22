@@ -7,74 +7,63 @@ export interface TransactionDetails {
   bridgeModuleName: string
   estimatedTime: number
   timestamp: number
-  kappa: string
-  isComplete: boolean
+  kappa?: string
+  isComplete?: boolean
 }
 
 export interface TransactionState {
-  [transactionHash: string]: TransactionDetails
+  transactions: TransactionDetails[]
 }
 
-export const initialState: TransactionState = {}
+export const initialState: TransactionState = {
+  transactions: [],
+}
 
 export const transactionsSlice = createSlice({
   name: 'transactions',
   initialState,
   reducers: {
-    addTransaction: (
-      transactions: TransactionState,
-      {
-        payload: {
-          originTxHash,
-          bridgeModuleName,
-          originChainId,
-          destinationChainId,
-          estimatedTime,
-          timestamp,
-        },
-      }
-    ) => {
-      if (!originTxHash) return
-
-      transactions[originTxHash] = {
-        originChainId,
-        destinationChainId,
-        originTxHash,
-        bridgeModuleName,
-        estimatedTime,
-        timestamp,
-        kappa: null,
-        isComplete: false,
-      }
+    addTransaction: (state, action: PayloadAction<TransactionDetails>) => {
+      state.transactions.push(action.payload)
     },
     removeTransaction: (
-      transactions: TransactionState,
-      { payload: { originTxHash } }
+      state,
+      action: PayloadAction<{ originTxHash: string }>
     ) => {
-      if (transactions[originTxHash]) {
-        delete transactions[originTxHash]
-      }
+      const { originTxHash } = action.payload
+      state.transactions = state.transactions.filter(
+        (tx) => tx.originTxHash !== originTxHash
+      )
     },
     updateTransactionKappa: (
-      transactions: TransactionState,
-      { payload: { originTxHash, kappa } }
+      state,
+      action: PayloadAction<{ originTxHash: string; kappa: string }>
     ) => {
-      const tx = transactions[originTxHash]
-      if (!tx) return
+      const { originTxHash, kappa } = action.payload
 
-      tx.kappa = kappa
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+
+      if (txIndex !== -1) {
+        state.transactions[txIndex].kappa = kappa
+      }
     },
     completeTransaction: (
-      transactions: TransactionState,
-      { payload: { originTxHash, kappa } }
+      state,
+      action: PayloadAction<{ originTxHash: string; kappa: string }>
     ) => {
-      const tx = transactions[originTxHash]
-      if (!tx) return
+      const { originTxHash } = action.payload
 
-      tx.isComplete = true
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+      if (txIndex !== -1) {
+        state.transactions[txIndex].isComplete = true
+      }
     },
-    clearTransactions: (transactions: TransactionState) => {
-      transactions = {}
+    clearTransactions: (state) => {
+      state.transactions = []
     },
   },
 })
