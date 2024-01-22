@@ -13,14 +13,10 @@ import { hotjar } from 'react-hotjar'
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
 
-// if (typeof window !== 'undefined') {
-//   const HOTJAR_ID = 3835898
-//   hotjar.initialize(HOTJAR_ID, 6)
-// }
-
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
 
+  // Hotjar tracking requires window to be defined
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const HOTJAR_ID = 3835898
