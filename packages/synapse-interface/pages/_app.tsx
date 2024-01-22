@@ -57,6 +57,8 @@ import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
 import _TransactionsUpdater from '@/slices/_transactions/updater'
 
+import HotJar from '@/components/HotJar/HotJar'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -79,18 +81,20 @@ const rawChains = [
   boba,
 ]
 
-
 // only initialize when in the browser
-if (typeof window !== 'undefined' && !location.hostname.match("synapseprotocol.com")) {
+if (
+  typeof window !== 'undefined' &&
+  !location.hostname.match('synapseprotocol.com')
+) {
   LogRocket.init('npdhrc/synapse-staging', {
     mergeIframes: true,
   })
   // plugins should also only be initialized when in the browser
-  setupLogRocketReact(LogRocket);
+  setupLogRocketReact(LogRocket)
 
-  LogRocket.getSessionURL(sessionURL => {
-    console.log("session url for debugging " + sessionURL);
-  });
+  LogRocket.getSessionURL((sessionURL) => {
+    console.log('session url for debugging ' + sessionURL)
+  })
 }
 
 // Add custom icons
@@ -166,6 +170,7 @@ const App = ({ Component, pageProps }: AppProps) => {
       <Head>
         <title>Synapse Protocol</title>
       </Head>
+      <HotJar />
       <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <SynapseProvider chains={chains}>

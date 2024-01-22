@@ -16,15 +16,6 @@ ReactGA.initialize(TRACKING_ID)
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
 
-  // Hotjar tracking requires window to be defined
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const HOTJAR_ID = 3835898
-      console.log('hotjar initialized')
-      hotjar.initialize(HOTJAR_ID, 6)
-    }
-  }, [window])
-
   return (
     <LandingPageWrapper>
       <main
