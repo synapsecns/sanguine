@@ -49,8 +49,9 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary: 'https://ethereum.blockpi.network/v1/rpc/public',
-    fallback: 'https://rpc.ankr.com/eth',
+    primary:
+      'https://eth-mainnet.g.alchemy.com/v2/rJ3f0IWjZbpgEwnzrRS6yYO3WNH0jGle',
+    fallback: 'https://eth.llamarpc.com',
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
@@ -74,7 +75,8 @@ export const ARBITRUM: Chain = {
   codeName: 'arbitrum',
   blockTime: 300,
   rpcUrls: {
-    primary: 'https://arbitrum.blockpi.network/v1/rpc/public',
+    primary:
+      'https://arb-mainnet.g.alchemy.com/v2/7kjdkqKTh1zQ1mRYGi4nJJbxbyJXHkef',
     fallback: 'https://arb1.arbitrum.io/rpc',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
@@ -155,8 +157,9 @@ export const OPTIMISM: Chain = {
   codeName: 'optimism',
   blockTime: 2000,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/optimism',
-    fallback: 'https://1rpc.io/op',
+    primary:
+      'https://opt-mainnet.g.alchemy.com/v2/x1--EvECmiLCc4IRpo1granp1S7xxbxQ',
+    fallback: 'https://gateway.tenderly.co/public/optimism',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
@@ -175,7 +178,8 @@ export const POLYGON: Chain = {
   codeName: 'polygon',
   blockTime: 2000,
   rpcUrls: {
-    primary: 'https://polygon-bor.publicnode.com',
+    primary:
+      'https://polygon-mainnet.g.alchemy.com/v2/mN1t8Oc6E912QF28iPHaRvVEmv6EpYSs',
     fallback: 'https://polygon.llamarpc.com',
   },
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
@@ -414,7 +418,8 @@ export const BASE: Chain = {
   chainImg: baseImg,
   layer: 2,
   rpcUrls: {
-    primary: 'https://base.blockpi.network/v1/rpc/public',
+    primary:
+      'https://base-mainnet.g.alchemy.com/v2/_YKy-Vm3LsknT8JKSa2ZTSmKu9Qp01Vd',
     fallback: 'https://developer-access-mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',

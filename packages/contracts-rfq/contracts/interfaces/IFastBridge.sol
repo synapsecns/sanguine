@@ -13,7 +13,7 @@ interface IFastBridge {
         uint256 destAmount;
         uint256 originFeeAmount;
         bool sendChainGas;
-        uint256 deadline;
+        uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
     }
 
