@@ -1,12 +1,13 @@
 {
   "name": "synapse-constants",
-  "version": "1.1.12",
+  "version": "1.1.195",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/bundle.js",
-  "module": "dist/bundle.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
   "files": [
-    "dist",
-    "abi"
+    "dist"
   ],
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",

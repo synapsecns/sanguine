@@ -12,13 +12,13 @@ This package contains the Synapse Protocol Token and Chain Constants
 ## Installation
 
 ```bash
-npm install synapse-constants
+npm install synapse-constants/dist
 ```
 
 With Yarn:
 
 ```bash
-yarn add synapse-constants
+yarn add synapse-constants/dist
 ```
 
 ## Usage

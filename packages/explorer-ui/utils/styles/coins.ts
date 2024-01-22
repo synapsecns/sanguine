@@ -36,8 +36,8 @@ import {
   PLS,
   AGEUR,
   NOTE,
-  // MIM,
-  // AVWETH,
+  MIM,
+  AVWETH,
 } from 'synapse-constants/dist'
 
 const COLOR_COIN_MAP = {
@@ -49,10 +49,9 @@ const COLOR_COIN_MAP = {
   blue: [USDC, LINK],
   orange: [DAI, SOLAR],
   purple: [NUSD, NETH, SYN, WMOVR, MOVR],
-  // need to figure out imports for the following
-  // indigo: [MIM],
-  // cyan: [HIGH, JUMP, AVWETH, H2O, L2DAO],
-  cyan: [HIGH, JUMP, H2O, L2DAO],
+  // Added custom IFS for AVWETH bc TOKEN_HASH_MAP doesnt consider tokens in auxillary. If further tokens are added that arent in bridgeable this should be revisited.
+  indigo: [MIM],
+  cyan: [HIGH, JUMP, H2O, L2DAO, AVWETH],
   red: [AVAX, WAVAX, SFI],
 }
 
