@@ -10,7 +10,9 @@ function HotJar() {
       console.log('hotjar initialized')
       hotjar.initialize(HOTJAR_ID, 6)
     }
-  }, [])
+  })
+
   return <></>
 }
+
 export default HotJar

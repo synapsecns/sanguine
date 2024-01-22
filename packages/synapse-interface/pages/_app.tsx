@@ -57,6 +57,9 @@ import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
 import _TransactionsUpdater from '@/slices/_transactions/updater'
 
+import { hotjar } from 'react-hotjar'
+import HotJar from '@/components/HotJar/HotJar'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -162,12 +165,21 @@ function Updaters() {
   )
 }
 
+const HOTJAR_ID = 3835898
+
+// Hotjar tracking requires window to be defined
+if (typeof window !== 'undefined') {
+  console.log('hotjar initialized')
+  hotjar.initialize(HOTJAR_ID, 6)
+}
+
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <Head>
         <title>Synapse Protocol</title>
       </Head>
+      {/* <HotJar /> */}
       <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <SynapseProvider chains={chains}>
