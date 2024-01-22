@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -24,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/services/stip_relayer/db"
 	"github.com/synapsecns/sanguine/services/stip_relayer/stipconfig"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/time/rate"
 )
 
 // Check Dune Query
@@ -172,17 +174,17 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 
 	// Start the submitter goroutine
 	g.Go(func() error {
-		return s.startSubmitter(ctx)
+		return s.StartSubmitter(ctx)
 	})
 
 	// Start the ticker goroutine for requesting and storing execution results
 	g.Go(func() error {
-		return s.requestAndStoreResults(ctx)
+		return s.RequestAndStoreResults(ctx)
 	})
 
 	// Start the goroutine for querying, rebating/relaying, and updating results
 	g.Go(func() error {
-		return s.queryRebateAndUpdate(ctx)
+		return s.QueryRebateAndUpdate(ctx)
 	})
 
 	// Wait for all goroutines to finish
@@ -194,7 +196,7 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 }
 
 // startSubmitter handles the initialization of the submitter
-func (s *STIPRelayer) startSubmitter(ctx context.Context) error {
+func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 	err := s.submittter.Start(ctx)
 	if err != nil {
 		fmt.Printf("could not start submitter: %v", err)
@@ -204,7 +206,7 @@ func (s *STIPRelayer) startSubmitter(ctx context.Context) error {
 }
 
 // requestAndStoreResults handles the continuous request of new execution results and storing them in the database
-func (s *STIPRelayer) requestAndStoreResults(ctx context.Context) error {
+func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -213,7 +215,7 @@ func (s *STIPRelayer) requestAndStoreResults(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err() // exit if context is cancelled
 		case <-ticker.C:
-			if err := s.processExecutionResults(ctx); err != nil {
+			if err := s.ProcessExecutionResults(ctx); err != nil {
 				// Log the error and decide whether to continue based on the error
 				fmt.Printf("Error processing execution results: %v", err)
 				// Optionally, you can return the error to stop the goroutine
@@ -224,7 +226,7 @@ func (s *STIPRelayer) requestAndStoreResults(ctx context.Context) error {
 }
 
 // processExecutionResults encapsulates the logic for requesting and storing execution results
-func (s *STIPRelayer) processExecutionResults(ctx context.Context) error {
+func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	resp, err := ExecuteDuneQuery()
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %v", err)
@@ -267,11 +269,11 @@ func (s *STIPRelayer) processExecutionResults(ctx context.Context) error {
 	fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
 
 	// Convert each Row to a STIPTransactions and store them in the database
-	return s.storeResultsInDatabase(ctx, jsonResult.Result.Rows, jsonResult.ExecutionID)
+	return s.StoreResultsInDatabase(ctx, jsonResult.Result.Rows, jsonResult.ExecutionID)
 }
 
 // storeResultsInDatabase handles the storage of results in the database
-func (s *STIPRelayer) storeResultsInDatabase(ctx context.Context, rows []Row, executionID string) error {
+func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, executionID string) error {
 	stipTransactions := make([]db.STIPTransactions, len(rows))
 	for i, row := range rows {
 		stipTransactions[i] = db.STIPTransactions{
@@ -283,10 +285,11 @@ func (s *STIPRelayer) storeResultsInDatabase(ctx context.Context, rows []Row, ex
 			Direction:   row.Direction,
 			ExecutionID: executionID,
 			Hash:        row.Hash,
-			Module:      "Module",
-			Token:       row.Token,
-			TokenPrice:  row.TokenPrice,
-			Rebated:     false,
+			// TODO: Why is module not in Row.Module?
+			Module:     "Module",
+			Token:      row.Token,
+			TokenPrice: row.TokenPrice,
+			Rebated:    false,
 		}
 	}
 
@@ -311,7 +314,7 @@ func (s *STIPRelayer) storeResultsInDatabase(ctx context.Context, rows []Row, ex
 }
 
 // queryRebateAndUpdate handles the querying for new, non-relayed/rebated results, rebates/relays them, and updates the result row
-func (s *STIPRelayer) queryRebateAndUpdate(ctx context.Context) error {
+func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -320,7 +323,7 @@ func (s *STIPRelayer) queryRebateAndUpdate(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err() // exit if context is cancelled
 		case <-ticker.C:
-			if err := s.relayAndRebateTransactions(ctx); err != nil {
+			if err := s.RelayAndRebateTransactions(ctx); err != nil {
 				// Log the error and decide whether to continue based on the error
 				fmt.Printf("Error relaying and rebating transactions: %v", err)
 				// Optionally, you can return the error to stop the goroutine
@@ -331,7 +334,13 @@ func (s *STIPRelayer) queryRebateAndUpdate(ctx context.Context) error {
 }
 
 // relayAndRebateTransactions encapsulates the logic for querying, rebating/relaying, and updating results
-func (s *STIPRelayer) relayAndRebateTransactions(ctx context.Context) error {
+func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
+	// Define the rate limit (e.g., 5 transactions per second)
+	// You can adjust r (rate per second) and b (burst size) according to your specific requirements
+	r := rate.Limit(5)
+	b := 1
+	limiter := rate.NewLimiter(r, b)
+
 	// Query DB to get all STIPs that need to be relayed
 	stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(ctx)
 	if err != nil {
@@ -344,9 +353,17 @@ func (s *STIPRelayer) relayAndRebateTransactions(ctx context.Context) error {
 		fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
 	}
 
-	// Relay and rebate transactions
+	// Relay and rebate transactions with rate limiting
 	for _, transaction := range stipTransactionsNotRebated {
-		if err := s.submitAndRebateTransaction(ctx, transaction); err != nil {
+		// Wait for the limiter to allow another event
+		if err := limiter.Wait(ctx); err != nil {
+			fmt.Printf("Error waiting for rate limiter: %v", err)
+			// Handle the error (e.g., break the loop or return the error)
+			return err
+		}
+
+		// Submit and rebate the transaction
+		if err := s.SubmitAndRebateTransaction(ctx, transaction); err != nil {
 			// Log the error and continue processing the rest of the transactions
 			fmt.Printf("Error relaying and rebating transaction: %v", err)
 			// Optionally, you can return the error to stop processing further transactions
@@ -357,8 +374,17 @@ func (s *STIPRelayer) relayAndRebateTransactions(ctx context.Context) error {
 	return nil
 }
 
-// relayAndRebateTransaction handles the relaying and rebating of a single transaction
-func (s *STIPRelayer) submitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
+// submitAndRebateTransaction handles the relaying and rebating of a single transaction
+func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
+	// Calculate the transfer amount based on transaction details
+	// This function encapsulates the logic for determining the transfer amount
+	// You can define it elsewhere and call it here
+	transferAmount, err := s.CalculateTransferAmount(transaction)
+	if err != nil {
+		return fmt.Errorf("could not calculate transfer amount: %w", err)
+	}
+
+	// Setup for submitting the transaction
 	chainId := s.cfg.ArbChainID
 	arbAddress := s.cfg.ArbAddress
 	backendClient, err := s.omnirpcClient.GetClient(ctx, big.NewInt(int64(chainId)))
@@ -366,13 +392,15 @@ func (s *STIPRelayer) submitAndRebateTransaction(ctx context.Context, transactio
 		return fmt.Errorf("could not get client: %w", err)
 	}
 
-	_, err = s.submittter.SubmitTransaction(ctx, big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	// Submit the transaction
+	nonceSubmitted, err := s.submittter.SubmitTransaction(ctx, big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		erc20, err := ierc20.NewIERC20(common.HexToAddress(arbAddress), backendClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get erc20: %w", err)
 		}
 
-		transferTx, err := erc20.Transfer(transactor, s.signer.Address(), big.NewInt(0))
+		// Use the calculated transfer amount in the actual transfer
+		transferTx, err := erc20.Transfer(transactor, common.HexToAddress(transaction.Address), transferAmount)
 		if err != nil {
 			return nil, fmt.Errorf("could not transfer: %w", err)
 		}
@@ -385,7 +413,22 @@ func (s *STIPRelayer) submitAndRebateTransaction(ctx context.Context, transactio
 	}
 
 	// Update the database to mark the transaction as rebated
-	// ...
+	err = s.db.UpdateSTIPTransactionRebated(ctx, transaction.Hash, nonceSubmitted)
+	if err != nil {
+		return fmt.Errorf("could not update STIP transaction as rebated: %w", err)
+	}
 
 	return nil
+}
+
+// calculateTransferAmount determines the amount to transfer based on the transaction
+// This is a placeholder function. Implement the actual calculation logic based on your requirements.
+func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) (*big.Int, error) {
+	// Pseudocode:
+	// 1. Retrieve the necessary fields from the transaction.
+	// 2. Apply any calculations as defined in the config.
+	// 3. Return the result as a *big.Int representing the amount to transfer.
+
+	// Example calculation (replace with actual logic):
+	return big.NewInt(params.Ether), nil
 }

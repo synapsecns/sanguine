@@ -20,8 +20,8 @@ func (s *Store) GetSTIPTransactionsNotRebated(ctx context.Context) ([]*db.STIPTr
 }
 
 // UpdateSTIPTransactionRebated updates the rebated status of a transaction
-func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string) error {
-	result := s.db.WithContext(ctx).Model(&db.STIPTransactions{}).Where("hash = ?", hash).Update("rebated", true)
+func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string, nonce uint64) error {
+	result := s.db.WithContext(ctx).Model(&db.STIPTransactions{}).Where("hash = ?", hash).Update("rebated", true).Update("nonce", nonce)
 	if result.Error != nil {
 		return result.Error
 	}

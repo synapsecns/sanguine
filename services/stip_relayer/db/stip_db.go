@@ -28,7 +28,7 @@ type STIPTransactions struct {
 	Token       string    `gorm:"column:token"`
 	TokenPrice  float64   `gorm:"column:token_price"`
 	Rebated     bool      `gorm:"column:rebated"`
-	Nonce       uint64    `gorm:"column:rebated_nonce"`
+	Nonce       uint64    `gorm:"column:nonce"`
 }
 
 // STIPDBReader is the interface for reading from the database.
@@ -38,7 +38,7 @@ type STIPDBReader interface {
 
 // STIPDBWriter is the interface for writing to the database.
 type STIPDBWriter interface {
-	UpdateSTIPTransactionRebated(ctx context.Context, hash string) error
+	UpdateSTIPTransactionRebated(ctx context.Context, hash string, nonce uint64) error
 	InsertNewStipTransactions(ctx context.Context, stipTransactions []STIPTransactions) error
 }
 

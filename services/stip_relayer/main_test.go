@@ -1,5 +1,14 @@
 package stip_relayer_test
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+)
+
 // func TestExecuteDuneQuery(t *testing.T) {
 // 	resp, err := stip_relayer.ExecuteDuneQuery()
 // 	if err != nil {
@@ -62,5 +71,15 @@ package stip_relayer_test
 // }
 
 func (c *STIPRelayerSuite) TestStartRelayer() {
-	c.stipRelayer.Run(c.GetTestContext())
+	go c.stipRelayer.Run(c.GetTestContext())
+
+	time.Sleep(60000 * time.Millisecond)
+
+	arbERC20Instance, err := mockerc20.NewMockERC20(c.arbERC20Address, c.arbitrumSimulatedBackend)
+	c.Require().NoError(err)
+	balance, err := arbERC20Instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress("0x119bde4540d7703c2f12d37aba39a24cc49d74e8"))
+	c.Require().NoError(err)
+	c.Require().Equal(balance.String(), "1000000000000000000")
+	fmt.Println("BALANCE: " + balance.String())
+
 }

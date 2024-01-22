@@ -93,7 +93,7 @@ func (c *STIPRelayerSuite) SetupSuite() {
 	c.Require().NoError(err)
 	//  Mint 1e18
 	ether := big.NewInt(params.Ether)
-	tx, err = arbERC20Instance.Mint(auth, c.testWallet.Address(), ether)
+	tx, err = arbERC20Instance.Mint(auth, c.testWallet.Address(), ether.Mul(ether, big.NewInt(10000)))
 	c.Require().NoError(err)
 	backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
