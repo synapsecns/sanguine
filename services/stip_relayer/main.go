@@ -6,15 +6,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/stip_relayer/db"
 	"github.com/synapsecns/sanguine/services/stip_relayer/stipconfig"
+	"golang.org/x/sync/errgroup"
 )
 
 // Check Dune Query
@@ -41,7 +50,7 @@ func ExecuteDuneQuery() (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("EXECUTING DUNE QUERY")
 	return resp, nil
 }
 
@@ -58,6 +67,7 @@ func GetExecutionResults(execution_id string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("GETTING EXECUTION RESULTS")
 
 	return resp, nil
 }
@@ -73,6 +83,8 @@ type STIPRelayer struct {
 	db            db.STIPDB
 	omnirpcClient omniClient.RPCClient
 	handler       metrics.Handler
+	submittter    submitter.TransactionSubmitter
+	signer        signer.Signer
 }
 
 func NewSTIPRelayer(ctx context.Context,
@@ -81,11 +93,18 @@ func NewSTIPRelayer(ctx context.Context,
 	omniRPCClient omniClient.RPCClient,
 	store db.STIPDB,
 ) (*STIPRelayer, error) {
+	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not get signer: %w", err)
+	}
+	sm := submitter.NewTransactionSubmitter(handler, sg, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 	return &STIPRelayer{
 		cfg:           cfg,
 		db:            store,
 		handler:       handler,
 		omnirpcClient: omniRPCClient,
+		submittter:    sm,
+		signer:        sg,
 	}, nil
 }
 
@@ -144,7 +163,17 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (s STIPRelayer) Run() error {
+func (s *STIPRelayer) Run(ctx context.Context) error {
+	// TODO: Context fix
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		err := s.submittter.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start submitter: %w", err)
+		}
+		return nil
+	})
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -257,6 +286,46 @@ func (s STIPRelayer) Run() error {
 		}
 	}()
 
+	go func() {
+		// Query DB to get all STIPs that need to be relayed
+		for {
+			time.Sleep(5 * time.Second)
+			fmt.Println("Relayer submitter event loop")
+			stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(context.Background())
+			if err != nil {
+				fmt.Println("Error getting STIP transactions not rebated:", err)
+				continue
+			}
+			if len(stipTransactionsNotRebated) == 0 {
+				fmt.Println("No STIP transactions found that have not been rebated.")
+			} else {
+				fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
+			}
+
+			chainId := s.cfg.ArbChainID
+			arbAddress := s.cfg.ArbAddress
+			backendClient, err := s.omnirpcClient.GetClient(context.Background(), big.NewInt(int64(chainId)))
+
+			_, err = s.submittter.SubmitTransaction(context.Background(), big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				erc20, err := ierc20.NewIERC20(common.HexToAddress(arbAddress), backendClient)
+				if err != nil {
+					return nil, fmt.Errorf("could not get erc20: %w", err)
+				}
+
+				transferTx, err := erc20.Transfer(transactor, s.signer.Address(), big.NewInt(0))
+				if err != nil {
+					return nil, fmt.Errorf("could not transfer: %w", err)
+				}
+
+				return transferTx, nil
+			})
+
+			if err != nil {
+				fmt.Println("could not submit transfer:", err)
+			}
+		}
+	}()
+
 	err := <-errChan
 	if err != nil {
 		return err
@@ -265,12 +334,6 @@ func (s STIPRelayer) Run() error {
 	// Relayer event loop will live here
 
 	return nil
-
-	// Call ExecuteDuneQuery, wait 20 seconds
-	// Call GetExecutionResults
-	// Store Execution Results in DB
-
-	// Query DB to get all STIPs that need to be relayed
 	// Submit transactions for corresponding rebate
 	// Once in submitter, assume we do not need to submit again
 	// Update DB to reflect that STIP rebate has been submitted

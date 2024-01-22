@@ -4,6 +4,8 @@ package db
 import (
 	"context"
 	"time"
+
+	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 )
 
 // ApiResponse is the model that saves Dune query API execution IDs with their results.
@@ -44,4 +46,6 @@ type STIPDBWriter interface {
 type STIPDB interface {
 	STIPDBReader
 	STIPDBWriter
+	// SubmitterDB returns the submitter database service.
+	SubmitterDB() submitterDB.Service
 }

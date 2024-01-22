@@ -16,6 +16,7 @@ type Config struct {
 	// Submitter is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	ArbAddress      string                 `yaml:"arb_address"`
+	ArbChainID      uint64                 `yaml:"arb_chain_id"`
 }
 
 // LoadConfig loads the config from the given path.

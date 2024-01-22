@@ -1,6 +1,7 @@
 package stip_relayer_test
 
 import (
+	"fmt"
 	"testing"
 
 	"math/big"
@@ -19,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"github.com/synapsecns/sanguine/services/stip_relayer"
 	"github.com/synapsecns/sanguine/services/stip_relayer/db"
@@ -29,6 +31,7 @@ import (
 type STIPRelayerSuite struct {
 	*testsuite.TestSuite
 	omniRPCClient            omniClient.RPCClient
+	omniRPCTestBackends      []backends.SimulatedTestBackend
 	arbitrumSimulatedBackend backends.SimulatedTestBackend
 	database                 db.STIPDB
 	cfg                      stipconfig.Config
@@ -48,6 +51,10 @@ func NewSTIPRelayerSuite(tb testing.TB) *STIPRelayerSuite {
 func (c *STIPRelayerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
+	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
+	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
+	c.omniRPCClient = omniRPCClient
+
 	stipRelayerInstance, err := stip_relayer.NewSTIPRelayer(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
 	c.Require().NoError(err)
 	c.stipRelayer = stipRelayerInstance
@@ -66,10 +73,10 @@ func (c *STIPRelayerSuite) SetupSuite() {
 	backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
 
 	c.arbitrumSimulatedBackend = backend
-
+	c.omniRPCTestBackends = append(c.omniRPCTestBackends, c.arbitrumSimulatedBackend)
+	fmt.Println(c.arbitrumSimulatedBackend.RPCAddress())
+	fmt.Println(c.omniRPCTestBackends[0].RPCAddress())
 	c.handler = metrics.NewNullHandler()
-
-	c.omniRPCClient = omniClient.NewOmnirpcClient(c.arbitrumSimulatedBackend.RPCAddress(), c.handler, omniClient.WithCaptureReqRes())
 
 	// Create an auth to interact with the blockchain
 	arbChainIDBigInt := big.NewInt(int64(arbChainID))
@@ -106,6 +113,7 @@ func (c *STIPRelayerSuite) SetupSuite() {
 		Signer:          signerConfig,
 		SubmitterConfig: submitterConfig.Config{},
 		ArbAddress:      c.arbERC20Address.Hex(),
+		ArbChainID:      arbChainID,
 	}
 
 }

@@ -2,19 +2,22 @@ package base
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/services/stip_relayer/db"
 	"gorm.io/gorm"
 )
 
 // Store is a store that implements an underlying gorm db.
 type Store struct {
-	db      *gorm.DB
-	metrics metrics.Handler
+	db             *gorm.DB
+	submitterStore submitterDB.Service
 }
 
 // NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
-	return &Store{db: db, metrics: metrics}
+	txDB := txdb.NewTXStore(db, metrics)
+	return &Store{db: db, submitterStore: txDB}
 }
 
 // DB gets the database object for mutation outside of the lib.
@@ -22,10 +25,15 @@ func (s Store) DB() *gorm.DB {
 	return s.db
 }
 
+// SubmitterDB gets the submitter database object for mutation outside of the lib.
+func (s Store) SubmitterDB() submitterDB.Service {
+	return s.submitterStore
+}
+
 // GetAllModels gets all models to migrate.
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels, &db.ApiResponse{}, &db.STIPTransactions{})
+	allModels = append(txdb.GetAllModels(), &db.ApiResponse{}, &db.STIPTransactions{})
 	return allModels
 }
 
