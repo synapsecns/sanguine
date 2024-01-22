@@ -109,12 +109,6 @@ type ChainFeeParams struct {
 	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
 }
 
-// tokenID is used to represent a chain and token pairing.
-type tokenID struct {
-	chainID uint32
-	addr    common.Address
-}
-
 const tokenIDDelimiter = "-"
 
 // SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
