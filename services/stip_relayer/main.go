@@ -164,57 +164,60 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 }
 
 func (s *STIPRelayer) Run(ctx context.Context) error {
-	// TODO: Context fix
+	// Create a cancellable context
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel() // ensure cancel is called to clean up resources
+
 	g, ctx := errgroup.WithContext(ctx)
+
+	// Start the submitter goroutine
 	g.Go(func() error {
 		err := s.submittter.Start(ctx)
 		if err != nil {
-			return fmt.Errorf("could not start submitter: %w", err)
+			fmt.Printf("could not start submitter: %v", err)
+			return nil // return nil to keep other goroutines running
 		}
 		return nil
 	})
 
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
+	// Start the ticker goroutine
+	g.Go(func() error {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
 
-	errChan := make(chan error)
-
-	go func() {
 		for {
 			select {
+			case <-ctx.Done():
+				return ctx.Err() // exit if context is cancelled
 			case <-ticker.C:
 				resp, err := ExecuteDuneQuery()
 				if err != nil {
-					errChan <- fmt.Errorf("Failed to execute Dune query: %v", err)
-					return
+					fmt.Errorf("Failed to execute Dune query: %v", err)
 				}
 
 				body, err := ioutil.ReadAll(resp.Body)
 
 				if err != nil {
-					errChan <- fmt.Errorf("Failed to read response body: %v", err)
-					return
+					fmt.Errorf("Failed to read response body: %v", err)
 				}
 
 				var result map[string]string
 				err = json.Unmarshal(body, &result)
 				if err != nil {
-					errChan <- fmt.Errorf("Failed to unmarshal response body: %v", err)
-					return
+					fmt.Errorf("Failed to unmarshal response body: %v", err)
 				}
 
 				execution_id, ok := result["execution_id"]
 				if !ok {
-					errChan <- fmt.Errorf("No execution_id found in response")
-					return
+					fmt.Errorf("No execution_id found in response")
 				}
 
 				time.Sleep(20 * time.Second)
 
 				executionResults, err := GetExecutionResults(execution_id)
 				if err != nil {
-					errChan <- err
-					return
+					fmt.Errorf("Failed to get execution results: %v", err)
+
 				}
 				// fmt.Println(executionResults)
 
@@ -231,8 +234,7 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 				err = json.Unmarshal(getResultsBody, &jsonResult)
 				if err != nil {
 					// handle error, e.g., print it or log it
-					fmt.Println("Error unmarshalling JSON:", err)
-					return
+					fmt.Errorf("Error unmarshalling JSON: %d", err)
 				}
 				fmt.Println(jsonResult.Result.Rows)
 				fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
@@ -264,17 +266,13 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 					err = s.db.InsertNewStipTransactions(context.Background(), stipTransactions)
 				}
 				if err != nil {
-					errChan <- err
-					fmt.Println("Error inserting new STIP transactions:", err)
-					return
+					fmt.Errorf("Error inserting new STIP transactions: %d", err)
 				}
 
 				// Confirm that the insert occurred
 				stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(context.Background())
 				if err != nil {
-					errChan <- err
-					fmt.Println("Error getting STIP transactions not rebated:", err)
-					return
+					fmt.Errorf("Error getting STIP transactions not rebated: %d", err)
 				}
 				if len(stipTransactionsNotRebated) == 0 {
 					fmt.Println("No STIP transactions found that have not been rebated.")
@@ -284,7 +282,7 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 
 			}
 		}
-	}()
+	})
 
 	go func() {
 		// Query DB to get all STIPs that need to be relayed
@@ -326,9 +324,9 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		}
 	}()
 
-	err := <-errChan
-	if err != nil {
-		return err
+	// Wait for all goroutines to finish
+	if err := g.Wait(); err != nil {
+		return err // handle the error from goroutines
 	}
 
 	// Relayer event loop will live here
