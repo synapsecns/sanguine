@@ -48,7 +48,7 @@ export const Portfolio = () => {
   const { balances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
-  const filteredPortfolioDataForBalances: NetworkTokenBalances =
+  const filteredPortfolioData: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
   const {
@@ -73,7 +73,7 @@ export const Portfolio = () => {
     }
   }, [searchedBalances, isMasqueradeActive, searchInput])
 
-  const flattenedPortfolioData = flattenData(portfolioData)
+  const flattenedPortfolioData = flattenData(filteredPortfolioData)
 
   const filteredBySearchInput = filterBySearchInput(
     flattenedPortfolioData,
@@ -141,7 +141,7 @@ export const Portfolio = () => {
                   networkPortfolioWithBalances={
                     isSearchInputActive
                       ? filteredBySearchInput
-                      : filteredPortfolioDataForBalances
+                      : filteredPortfolioData
                   }
                   fetchState={fetchState}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
