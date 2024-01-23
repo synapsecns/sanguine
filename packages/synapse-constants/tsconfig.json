@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
+    "allowJs": true,
     "rootDir": "./",
     "target": "es2019",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "declaration": true,
+    "declaration": false,
     "jsx": "react",
     "skipLibCheck": true
   },
@@ -16,8 +17,5 @@
     "./index.ts",
     "./index.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
