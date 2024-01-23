@@ -334,6 +334,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       },
       true
     )
@@ -402,6 +406,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       })
       dispatch(
         updatePendingBridgeTransaction({
