@@ -117,7 +117,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
 		if err != nil {
 			span.RecordError(fmt.Errorf("error screening address: %w", err))
-			return false, err
+			return false, fmt.Errorf("error screening address: %w", err)
 		}
 		if blocked {
 			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.OriginSender))
@@ -127,7 +127,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		blocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.DestRecipient.String())
 		if err != nil {
 			span.RecordError(fmt.Errorf("error screening address: %w", err))
-			return false, err
+			return false, fmt.Errorf("error screening address: %w", err)
 		}
 		if blocked {
 			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.DestRecipient))

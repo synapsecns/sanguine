@@ -189,7 +189,7 @@ func (i *IntegrationSuite) setupRelayer() {
 	wg.Wait()
 
 	// construct the config
-	relayerApiPort, err := freeport.GetFreePort()
+	relayerAPIPort, err := freeport.GetFreePort()
 	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
 	cfg := relconfig.Config{
@@ -231,7 +231,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
-		RelayerAPIPort: strconv.Itoa(relayerApiPort),
+		RelayerAPIPort: strconv.Itoa(relayerAPIPort),
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
