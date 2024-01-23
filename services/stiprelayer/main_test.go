@@ -2,6 +2,7 @@ package stiprelayer_test
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -73,7 +74,13 @@ import (
 func (c *STIPRelayerSuite) TestStartRelayer() {
 	go c.stipRelayer.Run(c.GetTestContext())
 
-	time.Sleep(60000 * time.Millisecond)
+	time.Sleep(30000 * time.Millisecond)
+	results, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
+	c.Require().NoError(err)
+
+	fmt.Println("LENGTH: " + strconv.Itoa(len(results)))
+
+	time.Sleep(30000 * time.Millisecond)
 
 	arbERC20Instance, err := mockerc20.NewMockERC20(c.arbERC20Address, c.arbitrumSimulatedBackend)
 	c.Require().NoError(err)
@@ -81,4 +88,21 @@ func (c *STIPRelayerSuite) TestStartRelayer() {
 	c.Require().NoError(err)
 	c.Require().Equal(balance.String(), "1000000000000000000")
 	fmt.Println("BALANCE: " + balance.String())
+
 }
+
+// func (c *STIPRelayerSuite) TestQueryAndStore() {
+// 	c.stipRelayer.RequestAndStoreResults(c.GetTestContext())
+// 	resultsFirst, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
+// 	c.Require().NoError(err)
+
+// 	fmt.Println("LENGTH: " + strconv.Itoa(len(resultsFirst)))
+
+// 	c.stipRelayer.RequestAndStoreResults(c.GetTestContext())
+
+// 	resultsSecond, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
+// 	c.Require().NoError(err)
+
+// 	fmt.Println("LENGTH: " + strconv.Itoa(len(resultsSecond)))
+// 	c.Require().Equal(len(resultsFirst), len(resultsSecond))
+// }

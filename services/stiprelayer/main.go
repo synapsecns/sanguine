@@ -52,7 +52,6 @@ func ExecuteDuneQuery() (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	fmt.Println("EXECUTING DUNE QUERY")
 	return resp, nil
 }
@@ -239,7 +238,6 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
-	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -264,10 +262,9 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get execution results: %v", err)
 	}
-	defer executionResults.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("expected status code 200, got %d", resp.StatusCode)
+	if executionResults.StatusCode != http.StatusOK {
+		return fmt.Errorf("expected status code 200, got %d", executionResults.StatusCode)
 	}
 
 	getResultsBody, err := ioutil.ReadAll(executionResults.Body)
@@ -279,7 +276,6 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %v", err)
 	}
-	fmt.Println(jsonResult.Result.Rows)
 	fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
 
 	// Convert each Row to a STIPTransactions and store them in the database
@@ -312,17 +308,6 @@ func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, ex
 		}
 	}
 
-	// Optionally, confirm that the insert occurred
-	stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(ctx)
-	if err != nil {
-		return fmt.Errorf("error getting STIP transactions not rebated: %v", err)
-	}
-	if len(stipTransactionsNotRebated) == 0 {
-		fmt.Println("No STIP transactions found that have not been rebated.")
-	} else {
-		fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
-	}
-
 	return nil
 }
 
@@ -351,7 +336,7 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	// Define the rate limit (e.g., 5 transactions per second)
 	// You can adjust r (rate per second) and b (burst size) according to your specific requirements
 	// TODO: Consider making these values configurable.
-	r := rate.Limit(5)
+	r := rate.Limit(2)
 	b := 1
 	limiter := rate.NewLimiter(r, b)
 

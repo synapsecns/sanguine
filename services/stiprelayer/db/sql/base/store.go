@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/synapsecns/sanguine/services/stiprelayer/db"
+	"gorm.io/gorm/clause"
 )
 
 // Write some queries here
@@ -30,21 +31,25 @@ func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string, n
 
 // InsertNewStipTransactions inserts new transactions into the database.
 func (s *Store) InsertNewStipTransactions(ctx context.Context, stipTransactions []db.STIPTransactions) error {
-	for _, transaction := range stipTransactions {
-		// Using FirstOrCreate
-		tempTransaction := transaction
-		tx := s.db.WithContext(ctx).Where(db.STIPTransactions{Hash: tempTransaction.Hash}).FirstOrCreate(&tempTransaction)
+	batchSize := 50 // Adjust batch size based on your DB's performance and limitations
+
+	for i := 0; i < len(stipTransactions); i += batchSize {
+		end := i + batchSize
+		if end > len(stipTransactions) {
+			end = len(stipTransactions)
+		}
+		batch := stipTransactions[i:end]
+
+		// Using CreateInBatches with ON CONFLICT clause to ignore duplicates based on the hash
+		tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "hash"}}, // Conflict detection based on the hash column
+			DoNothing: true,                            // In case of conflict, do nothing
+		}).CreateInBatches(batch, len(batch))
+
 		if tx.Error != nil {
 			return tx.Error
 		}
-
-		// Or using Clauses with ON CONFLICT for upsert behavior (PostgreSQL example)
-		// tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		//     UpdateAll: true,
-		// }).Create(&transaction)
-		// if tx.Error != nil {
-		//     return tx.Error
-		// }
 	}
+
 	return nil
 }
