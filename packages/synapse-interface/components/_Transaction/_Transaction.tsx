@@ -62,11 +62,8 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const {
-    isStartCheckingTimeReached,
-    isEstimatedTimeReached,
-    remainingTimeInSeconds,
-  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
+    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -137,7 +134,7 @@ export const _Transaction = ({
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
               isComplete={isTxFinalized as boolean}
-              remainingTime={remainingTimeInSeconds}
+              remainingTime={remainingTime}
               isDelayed={isEstimatedTimeReached}
             />
 

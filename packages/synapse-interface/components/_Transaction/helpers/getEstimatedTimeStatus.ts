@@ -4,32 +4,24 @@
  * @param currentTime in seconds, unix
  * @param initialTime in seconds, unix
  * @param estimatedTime in seconds, unix
+ * @returns elapsedTime and remainingTime (in seconds)
  */
 export const getEstimatedTimeStatus = (
   currentTime: number,
   initialTime: number,
   estimatedTime: number
 ) => {
+  const elapsedTime = currentTime - initialTime
+  const remainingTime = estimatedTime - elapsedTime
+
   const oneMinuteInSeconds = 60
 
-  const elapsedTimeInSeconds = currentTime - initialTime
-  const remainingTimeInSeconds = estimatedTime - elapsedTimeInSeconds
-
-  const remainingTimeInMinutes = Math.ceil(
-    remainingTimeInSeconds / oneMinuteInSeconds
-  )
-  const elapsedTimeInMinutes = Math.ceil(
-    remainingTimeInSeconds / oneMinuteInSeconds
-  )
-
-  const isEstimatedTimeReached = remainingTimeInSeconds < 0
-  const isStartCheckingTimeReached = remainingTimeInSeconds < oneMinuteInSeconds
+  const isEstimatedTimeReached = remainingTime < 0
+  const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
 
   return {
-    elapsedTimeInSeconds,
-    elapsedTimeInMinutes,
-    remainingTimeInSeconds,
-    remainingTimeInMinutes,
+    elapsedTime,
+    remainingTime,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,
   }
