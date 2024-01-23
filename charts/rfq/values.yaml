@@ -142,37 +142,4 @@ signers:
 rfqConfig:
   rfqApi: {}
   rfqRelayer: {}
-    # database:
-    #   type: "mysql" # Use "mysql" for production
-    #   dsn: 'root:MysqlPassword@tcp({{ .Release.Name }}-mysql:3306)/agents?parseTime=true' # Or the appropriate MySQL DSN for production
-
-    # chains:
-    #   42:
-    #     chainId: 42
-    #     rpcUrl: "http://localhost:8042"
-    #     fastBridgeContract: "0x6438CB36cb18520774EfC7A172410D8BBBe9a428"
-    #     fastBridgeBlockDeployed: 0
-    #   43:
-    #     chainId: 43
-    #     rpcUrl: "http://localhost:8043"
-    #     fastBridgeContract: "0x6438CB36cb18520774EfC7A172410D8BBBe9a428"
-    #     fastBridgeBlockDeployed: 0
-
-    # relayer_address: "0xa01474A3b29535A90Cbd05912af81a4fcc5276Ef"
-
-    # omnirpc_url: "{{ $.Values.config.omnirpcUrl }}"
-
-    # # do not send real internet money here
-    # unbonded_signer:
-    #   type: File
-    #   file: ./unbonded_signer.txt
-
-    # submitter_config:
-    #   chains:
-    #     42:
-    #       supports_eip_1559: true
-    #       gas_estimate: 7500000
-    #     43:
-    #       supports_eip_1559: true
-    #       gas_bump_percentage: 100
 
