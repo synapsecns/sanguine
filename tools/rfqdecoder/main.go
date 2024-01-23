@@ -1,3 +1,4 @@
+// Package main contains a tool for decoding raw data from the RFQ contract.
 package main
 
 import (
