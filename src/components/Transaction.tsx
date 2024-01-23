@@ -41,7 +41,7 @@ const TimeRemaining = ({
     }
   }, [remainingTime])
 
-  return <div>{estTime} min</div>
+  return <div>{estTime}</div>
 }
 
 export const Transaction = ({
