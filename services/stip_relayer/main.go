@@ -34,8 +34,6 @@ import (
 // Call database
 // Submit transactions for corresponding rebate
 
-// Dune API key dmcGJqYYuq36viagnjoBMTMuwM4wjzqf
-
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
 func ExecuteDuneQuery() (*http.Response, error) {
@@ -52,6 +50,7 @@ func ExecuteDuneQuery() (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	fmt.Println("EXECUTING DUNE QUERY")
 	return resp, nil
 }
@@ -72,10 +71,6 @@ func GetExecutionResults(execution_id string) (*http.Response, error) {
 	fmt.Println("GETTING EXECUTION RESULTS")
 
 	return resp, nil
-}
-
-func main() {
-	ExecuteDuneQuery()
 }
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -201,7 +196,8 @@ func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 	err := s.submittter.Start(ctx)
 	if err != nil {
 		fmt.Printf("could not start submitter: %v", err)
-		return nil // return nil to keep other goroutines running
+		// TODO: Will this force a panic in the Run() function?
+		return err // panic in case submitter cannot start
 	}
 	return nil
 }
@@ -249,6 +245,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 		return fmt.Errorf("no execution_id found in response")
 	}
 
+	// Implement a more robust solution for waiting, such as polling with a timeout.
 	time.Sleep(20 * time.Second) // Consider replacing this with a more robust solution
 
 	executionResults, err := GetExecutionResults(executionID)
