@@ -258,10 +258,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 		return fmt.Errorf("no execution_id found in response")
 	}
 
-	// Implement a more robust solution for waiting, such as polling with a timeout.
-	time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
-
-	// Implement a more robust solution for waiting, such as polling with a timeout.
+	// TODO: remove if exponentialBackoff.InitialInterval waits 30 seconds?
 	// time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
 	var getResultsJsonResult QueryResult
 	operation := func() error {
