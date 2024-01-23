@@ -10,8 +10,13 @@ import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { Chain } from '@/utils/types'
 
 /**
- * Hook that updates bridge Tx in store for kappa + isComplete
- * Tx matched in store using originTxHash
+ * Hook to update Tx store state based on returned SDK method calls
+ *
+ * @param connectedAddress address that executed tx
+ * @param destinationChain dest. chain of executed tx
+ * @param kappa fetched kappa from useBridgeTxStatus
+ * @param originTxHash executed tx origin hash
+ * @param isTxComplete fetched status from useBridgeTxStatus
  */
 export const useBridgeTxUpdater = (
   connectedAddress: string,
