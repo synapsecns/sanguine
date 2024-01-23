@@ -1,4 +1,4 @@
-package stip-relayer
+package stiprelayer
 
 import (
 	"bytes"
@@ -22,8 +22,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/stip-relayer/db"
-	"github.com/synapsecns/sanguine/services/stip-relayer/stipconfig"
+	"github.com/synapsecns/sanguine/services/stiprelayer/db"
+	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 )
@@ -58,7 +58,7 @@ func ExecuteDuneQuery() (*http.Response, error) {
 }
 
 // GetExecutionResults fetches the results of a Dune query execution using the provided execution ID.
-func GetExecutionResults(executionID string) (*http.Response, error) {
+func GetExecutionResults(ctx context.Context, executionID string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.dune.com/api/v1/execution/"+executionID+"/results", nil)
 	if err != nil {
@@ -260,7 +260,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	// Implement a more robust solution for waiting, such as polling with a timeout.
 	time.Sleep(20 * time.Second) // Consider replacing this with a more robust solution
 
-	executionResults, err := GetExecutionResults(executionID)
+	executionResults, err := GetExecutionResults(ctx, executionID)
 	if err != nil {
 		return fmt.Errorf("failed to get execution results: %v", err)
 	}

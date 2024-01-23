@@ -4,7 +4,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-	"github.com/synapsecns/sanguine/services/stip-relayer/db"
+	"github.com/synapsecns/sanguine/services/stiprelayer/db"
 	"gorm.io/gorm"
 )
 

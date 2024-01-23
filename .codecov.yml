@@ -77,9 +77,9 @@ flags:
     paths:
       - services/sinner/
     carryforward: true
-  stip-relayer:
+  stiprelayer:
     paths:
-      - services/stip-relayer/
+      - services/stiprelayer/
     carryforward: true
   solidity:
     paths:

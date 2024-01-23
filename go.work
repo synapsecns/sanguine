@@ -18,6 +18,6 @@ use (
 	./services/rfq
 	./services/scribe
 	./services/sinner
-	./services/stip-relayer
+	./services/stiprelayer
 	./tools
 )

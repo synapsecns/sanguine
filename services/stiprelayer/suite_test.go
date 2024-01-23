@@ -1,4 +1,4 @@
-package stip-relayer_test
+package stiprelayer_test
 
 import (
 	"fmt"
@@ -22,10 +22,10 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
-	"github.com/synapsecns/sanguine/services/stip-relayer"
-	"github.com/synapsecns/sanguine/services/stip-relayer/db"
-	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql"
-	"github.com/synapsecns/sanguine/services/stip-relayer/stipconfig"
+	"github.com/synapsecns/sanguine/services/stiprelayer"
+	"github.com/synapsecns/sanguine/services/stiprelayer/db"
+	"github.com/synapsecns/sanguine/services/stiprelayer/db/sql"
+	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
 )
 
 type STIPRelayerSuite struct {
@@ -38,7 +38,7 @@ type STIPRelayerSuite struct {
 	testWallet               wallet.Wallet
 	handler                  metrics.Handler
 	arbERC20Address          common.Address
-	stipRelayer              *stip-relayer.STIPRelayer
+	stipRelayer              *stiprelayer.STIPRelayer
 }
 
 func NewSTIPRelayerSuite(tb testing.TB) *STIPRelayerSuite {
@@ -55,7 +55,7 @@ func (c *STIPRelayerSuite) SetupTest() {
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
 
-	stipRelayerInstance, err := stip-relayer.NewSTIPRelayer(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
+	stipRelayerInstance, err := stiprelayer.NewSTIPRelayer(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database)
 	c.Require().NoError(err)
 	c.stipRelayer = stipRelayerInstance
 }

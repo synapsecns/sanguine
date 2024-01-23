@@ -3,7 +3,7 @@ package base
 import (
 	"context"
 
-	"github.com/synapsecns/sanguine/services/stip-relayer/db"
+	"github.com/synapsecns/sanguine/services/stiprelayer/db"
 )
 
 // Write some queries here
