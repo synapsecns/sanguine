@@ -110,7 +110,7 @@ func (s *Status) Scan(src interface{}) error {
 	newStatus := Status(res)
 	*s = newStatus
 
-	if !slices.Contains[Status](allStatusTypes, *s) {
+	if !slices.Contains[[]Status](allStatusTypes, *s) {
 		return fmt.Errorf("invalid status: %d", res)
 	}
 
