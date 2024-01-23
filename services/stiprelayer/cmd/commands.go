@@ -48,7 +48,7 @@ var runCommand = &cli.Command{
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricsProvider, omniClient.WithCaptureReqRes())
 		stipRelayer, err := relayer.NewSTIPRelayer(c.Context, cfg, metricsProvider, omnirpcClient, store)
 		if err != nil {
-			return fmt.Errorf("could not create api server: %w", err)
+			return fmt.Errorf("could not create STIP relayer instance: %w", err)
 		}
 
 		err = stipRelayer.Run(c.Context)
