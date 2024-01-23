@@ -53,7 +53,7 @@ var runCommand = &cli.Command{
 
 		err = stipRelayer.Run(c.Context)
 		if err != nil {
-			return fmt.Errorf("could not run cctp relayer: %w", err)
+			return fmt.Errorf("could not run STIP relayer: %w", err)
 		}
 		return nil
 	},
