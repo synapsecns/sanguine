@@ -1,4 +1,4 @@
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 

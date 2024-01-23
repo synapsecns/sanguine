@@ -1,18 +1,18 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { getChainUrl, getExplorerTxUrl } from '@urls'
 import Image from 'next/image'
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 
-const CHAINS_BY_ID = CHAINS. CHAINS_BY_ID
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 interface ChainInfoProps {
-  chainId?: any;
-  imgClassName?: string;
-  linkClassName?: string;
-  textClassName?: string;
-  txHash?: string;
-  useExplorerLink?: boolean;
-  noLink?: boolean;
+  chainId?: any
+  imgClassName?: string
+  linkClassName?: string
+  textClassName?: string
+  txHash?: string
+  useExplorerLink?: boolean
+  noLink?: boolean
 }
 
 export function ChainInfo({
@@ -25,14 +25,14 @@ export function ChainInfo({
   noLink = false,
 }: ChainInfoProps) {
   const chain = CHAINS_BY_ID[chainId]
-  let link = '';
+  let link = ''
 
   if (txHash) {
-    link = getExplorerTxUrl({ hash: txHash, chainId });
+    link = getExplorerTxUrl({ hash: txHash, chainId })
   }
 
   if (useExplorerLink) {
-    link = getChainUrl({ chainId });
+    link = getChainUrl({ chainId })
   }
 
   if (chain) {
@@ -61,7 +61,7 @@ export function ChainInfo({
           )}
         </div>
       </div>
-    );
+    )
   } else {
     return (
       <div className="flex items-center">
@@ -71,6 +71,6 @@ export function ChainInfo({
         />
         <span>--</span>
       </div>
-    );
+    )
   }
 }

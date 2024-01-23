@@ -38,7 +38,7 @@ import {
   NOTE,
   MIM,
   AVWETH,
-} from 'synapse-constants/dist'
+} from 'synapse-constants'
 
 const COLOR_COIN_MAP = {
   gray: [FRAX, GOHM, SDT, VSTA],

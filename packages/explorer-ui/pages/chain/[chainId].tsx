@@ -7,7 +7,7 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAINS } from 'synapse-constants/dist'
+import { CHAINS } from 'synapse-constants'
 import { useRouter } from 'next/router'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -34,9 +34,9 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 })
 
 interface variablesType {
-  chainIDFrom?: any,
-  chainIDTo?: any,
-  useMv?: boolean,
+  chainIDFrom?: any
+  chainIDTo?: any
+  useMv?: boolean
 }
 
 export default function chainId() {
@@ -150,7 +150,6 @@ export default function chainId() {
       stopPolling()
     }
   }, [stopPolling, startPolling, completed])
-
 
   return (
     <StandardPageContainer title={''}>
