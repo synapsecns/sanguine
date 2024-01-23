@@ -38,9 +38,15 @@ import (
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
-func ExecuteDuneQuery() (*http.Response, error) {
+func ExecuteDuneQuery(queryType string) (*http.Response, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPost, "https://api.dune.com/api/v1/query/3345214/execute", bytes.NewBufferString(`{"performance": "large"}`))
+	var queryID string
+	if queryType == "bridge" {
+		queryID = "3345214"
+	} else if queryType == "rfq" {
+		queryID = "3348161"
+	}
+	req, err := http.NewRequest(http.MethodPost, "https://api.dune.com/api/v1/query/"+queryID+"/execute", bytes.NewBufferString(`{"performance": "large"}`))
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +189,8 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		return s.StartSubmitter(ctx)
 	})
 
-	s.ProcessExecutionResults(ctx)
+	s.ProcessExecutionResults(ctx, "bridge")
+	s.ProcessExecutionResults(ctx, "rfq")
 
 	// Start the ticker goroutine for requesting and storing execution results
 	g.Go(func() error {
@@ -224,9 +231,15 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
-			if err := s.ProcessExecutionResults(ctx); err != nil {
+			if err := s.ProcessExecutionResults(ctx, "bridge"); err != nil {
 				// Log the error and decide whether to continue based on the error
-				fmt.Printf("Error processing execution results: %v", err)
+				fmt.Printf("Error processing execution results for bridge: %v", err)
+				// Optionally, you can return the error to stop the goroutine
+				// return err
+			}
+			if err := s.ProcessExecutionResults(ctx, "rfq"); err != nil {
+				// Log the error and decide whether to continue based on the error
+				fmt.Printf("Error processing execution results for rfq: %v", err)
 				// Optionally, you can return the error to stop the goroutine
 				// return err
 			}
@@ -235,9 +248,9 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 }
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
-func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
+func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context, queryType string) error {
 	fmt.Println("Starting excecution logic")
-	resp, err := ExecuteDuneQuery()
+	resp, err := ExecuteDuneQuery(queryType)
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
