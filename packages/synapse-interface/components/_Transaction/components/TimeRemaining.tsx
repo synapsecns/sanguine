@@ -24,9 +24,9 @@ export const TimeRemaining = ({
 
   const estTime = useMemo(() => {
     if (remainingTime > 60) {
-      return Math.ceil(remainingTime / 60) + ' minutes'
+      return Math.ceil(remainingTime / 60) + ' min'
     } else {
-      return remainingTime + ' seconds'
+      return remainingTime + ' sec'
     }
   }, [remainingTime])
 
