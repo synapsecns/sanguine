@@ -1,3 +1,4 @@
+// Package db provides the database interface for the screener-api.
 package db
 
 import (

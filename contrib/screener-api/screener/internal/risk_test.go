@@ -2,6 +2,7 @@ package internal_test
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"testing"
@@ -13,6 +14,7 @@ func TestNewRulesetManager(t *testing.T) {
 
 	rm := internal.NewTestRulesetManager(rulesets)
 	assert.NotNil(t, rm)
+	//nolint: testifylint
 	assert.Equal(t, 1, len(rm.Rulesets()))
 }
 
@@ -21,11 +23,11 @@ func TestAddRuleset(t *testing.T) {
 
 	// Add a new ruleset
 	err := rm.AddRuleset("newRuleset", map[string]bool{"risk1": true})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// Try to add a ruleset that already exists
 	err = rm.AddRuleset("newRuleset", map[string]bool{"risk2": true})
-	assert.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestGetRuleset(t *testing.T) {
@@ -55,7 +57,7 @@ func TestHasAddressIndicators(t *testing.T) {
 		{IncomingVolumeUsd: "1000", OutgoingVolumeUsd: "500", Category: "Category1", RiskType: "RiskType1"},
 	}
 	result, err := cr.HasAddressIndicators(indicators...)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.True(t, result)
 
 	// Test case where the indicator does not meet risk rules
@@ -63,7 +65,7 @@ func TestHasAddressIndicators(t *testing.T) {
 		{IncomingVolumeUsd: "100", OutgoingVolumeUsd: "50", Category: "Category2", RiskType: "RiskType2"},
 	}
 	result, err = cr.HasAddressIndicators(indicators...)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.False(t, result)
 
 	// Test case with invalid incoming volume
@@ -71,12 +73,12 @@ func TestHasAddressIndicators(t *testing.T) {
 		{IncomingVolumeUsd: "invalid", OutgoingVolumeUsd: "500", Category: "Category1", RiskType: "RiskType1"},
 	}
 	_, err = cr.HasAddressIndicators(indicators...)
-	assert.NotNil(t, err)
+	require.Error(t, err)
 
 	// Test case with invalid outgoing volume
 	indicators = []trmlabs.AddressRiskIndicator{
 		{IncomingVolumeUsd: "1000", OutgoingVolumeUsd: "invalid", Category: "Category1", RiskType: "RiskType1"},
 	}
 	_, err = cr.HasAddressIndicators(indicators...)
-	assert.NotNil(t, err)
+	require.Error(t, err)
 }

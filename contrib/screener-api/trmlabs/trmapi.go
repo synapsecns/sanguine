@@ -2,6 +2,7 @@ package trmlabs
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -84,7 +85,7 @@ func (c *clientImpl) ScreenAddress(ctx context.Context, address string) ([]Scree
 		SetResult(&result).
 		Post("/public/v2/screening/addresses")
 	if err != nil {
-		return []ScreenResponse{}, err
+		return []ScreenResponse{}, fmt.Errorf("could not screen address: %w", err)
 	}
 
 	return result, nil

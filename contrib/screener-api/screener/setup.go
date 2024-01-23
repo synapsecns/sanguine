@@ -1,11 +1,10 @@
 package screener
 
 import (
-	"encoding/csv"
 	"fmt"
+	"github.com/gocarina/gocsv"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
-	"io"
 	"os"
 	"strings"
 )
@@ -27,7 +26,18 @@ func setupScreener(rulesets map[string]config.RulesetConfig) (internal.RulesetMa
 	return mgr, nil
 }
 
+// Set is a struct for the screener set.
+type Set struct {
+	Enabled    string `csv:"Enabled"`
+	ID         int    `csv:"ID"`
+	Category   string `csv:"Category"`
+	Name       string `csv:"Name"`
+	TypeOfRisk string `csv:"Type of risk"`
+	Severity   string `csv:"Severity"`
+}
+
 func parseCsv(file string) (risks map[string]bool, err error) {
+	//nolint: gosec
 	fileHandle, err := os.Open(file)
 	if err != nil {
 		return nil, fmt.Errorf("could not open blacklist file: %w", err)
@@ -37,31 +47,14 @@ func parseCsv(file string) (risks map[string]bool, err error) {
 		_ = fileHandle.Close()
 	}()
 
-	r := csv.NewReader(fileHandle)
+	var screeners []Set
+	if err := gocsv.UnmarshalFile(fileHandle, &screeners); err != nil { // Load clients from file
+		return nil, fmt.Errorf("could not unmarshal blacklist file: %w", err)
+	}
+
 	risks = make(map[string]bool)
-	i := 0
-	for {
-		// skip first row
-		if i == 0 {
-			i++
-			continue
-		}
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("could not read blacklist file: %w", err)
-		}
-
-		shoudBlock := false
-		if record[7] != "" {
-			shoudBlock = true
-		}
-
-		i++
-		// assumes record[2] and record[4] are uniform.
-		risks[strings.ToLower(fmt.Sprintf("%s_%s", record[2], record[4]))] = shoudBlock
+	for _, screener := range screeners {
+		risks[strings.ToLower(fmt.Sprintf("%s_%s", screener.Category, screener.TypeOfRisk))] = screener.Enabled == "true"
 	}
 
 	return risks, nil

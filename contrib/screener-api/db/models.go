@@ -1,3 +1,4 @@
+// Package db provides the database interface for the screener-api.
 package db
 
 import (
@@ -62,6 +63,7 @@ func (a *addressRiskIndicators) Scan(val interface{}) error {
 	decoder.UseNumber()
 	err := decoder.Decode(&t)
 	*a = t
+	//nolint: wrapcheck
 	return err
 }
 
@@ -72,18 +74,15 @@ func (a addressRiskIndicators) ToTRMLabs() (res []trmlabs.AddressRiskIndicator) 
 	}
 
 	res = make([]trmlabs.AddressRiskIndicator, len(a))
-	for i := range a {
-		res[i] = a[i]
-	}
+	copy(res, a)
+
 	return res
 }
 
 // MakeRecord creates a new address indicators record.
 func MakeRecord(address string, records []trmlabs.AddressRiskIndicator) *AddressIndicators {
 	indicators := make(addressRiskIndicators, len(records))
-	for i := range records {
-		indicators[i] = records[i]
-	}
+	copy(indicators, records)
 
 	return &AddressIndicators{
 		Address:    strings.ToLower(address),

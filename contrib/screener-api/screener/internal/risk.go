@@ -1,3 +1,4 @@
+// Package internal provides internal functionality for the screener-api.
 package internal
 
 import (
@@ -73,12 +74,12 @@ func (cr *CallerRuler) HasRisk(riskType string) bool {
 // HasAddressIndicators returns a list of addressRiskIndicator.
 func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error) {
 	for _, ri := range riskIndicators {
-		incoming, err := strconv.ParseFloat(ri.IncomingVolumeUsd, 10)
+		incoming, err := strconv.ParseFloat(ri.IncomingVolumeUsd, 32)
 		if err != nil {
 			return false, fmt.Errorf("could not parse incoming volume: %w", err)
 		}
 
-		outgoing, err := strconv.ParseFloat(ri.OutgoingVolumeUsd, 10)
+		outgoing, err := strconv.ParseFloat(ri.OutgoingVolumeUsd, 32)
 		if err != nil {
 			return false, fmt.Errorf("could not parse outgoing volume: %w", err)
 		}

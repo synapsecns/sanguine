@@ -1,3 +1,4 @@
+// Package sql provides a sql store for the screener-api.
 package sql
 
 import (

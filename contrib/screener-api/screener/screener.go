@@ -1,3 +1,4 @@
+// Package screener provides the screener api.
 package screener
 
 import (
@@ -11,9 +12,9 @@ import (
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/ginhelper"
-	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"go.opentelemetry.io/otel/attribute"
@@ -25,6 +26,7 @@ import (
 
 // Screener is the interface for the screener.
 type Screener interface {
+	Start(ctx context.Context) error
 }
 
 type screenerImpl struct {
@@ -34,7 +36,6 @@ type screenerImpl struct {
 	metrics      metrics.Handler
 	cfg          config.Config
 	client       trmlabs.Client
-	mapMux       *mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("screener")
@@ -43,6 +44,12 @@ var logger = log.Logger("screener")
 func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.Handler) (_ Screener, err error) {
 	screener := screenerImpl{
 		metrics: metricHandler,
+		cfg:     cfg,
+	}
+
+	screener.client, err = trmlabs.NewClient(cfg.TRMKey, core.GetEnv("TRM_URL", "https://api.trmlabs.com"))
+	if err != nil {
+		return nil, fmt.Errorf("could not create trm client: %w", err)
 	}
 
 	screener.rulesManager, err = setupScreener(cfg.Rulesets)
@@ -96,6 +103,10 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	}()
 
 	currentRules := s.rulesManager.GetRuleset(ruleset)
+	if currentRules == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ruleset not found"})
+		return
+	}
 
 	goodUntil := time.Now().Add(-1 * s.cfg.GetCacheTime(ruleset))
 	var indicators []trmlabs.AddressRiskIndicator
@@ -104,7 +115,7 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		return
 	}
 
-	hasIndicator := false
+	var hasIndicator bool
 	if hasIndicator, err = currentRules.HasAddressIndicators(indicators...); err != nil {
 		c.JSON(http.StatusOK, gin.H{"risk": true})
 		return
@@ -119,7 +130,7 @@ func (s *screenerImpl) getIndicators(ctx context.Context, address string, goodUn
 		return riskIndicators, nil
 	}
 
-	if errors.Is(err, db.ErrNoAddressNotCached) {
+	if !errors.Is(err, db.ErrNoAddressNotCached) {
 		return nil, fmt.Errorf("could not get address indicators: %w", err)
 	}
 

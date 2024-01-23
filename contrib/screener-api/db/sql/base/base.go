@@ -54,6 +54,7 @@ func (s *Store) GetAddressIndicators(ctx context.Context, address string, since 
 	return addressIndicators.Indicators.ToTRMLabs(), nil
 }
 
+// PutAddressIndicators puts the address indicators for the given address.
 func (s *Store) PutAddressIndicators(ctx context.Context, address string, riskIndicator []trmlabs.AddressRiskIndicator) error {
 	dbTx := s.db.WithContext(ctx).Model(&db.AddressIndicators{}).
 		Clauses(clause.OnConflict{

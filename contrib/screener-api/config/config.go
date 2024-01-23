@@ -20,7 +20,7 @@ type Config struct {
 	Database DatabaseConfig `yaml:"database"`
 }
 
-// GetCacheTime gets how long to use the cache for a given ruleset
+// GetCacheTime gets how long to use the cache for a given ruleset.
 func (c Config) GetCacheTime(rulset string) time.Duration {
 	ruleset, hasRuleset := c.Rulesets[rulset]
 	if !hasRuleset {
@@ -34,6 +34,7 @@ func (c Config) GetCacheTime(rulset string) time.Duration {
 	return time.Duration(c.CacheTime) * time.Second
 }
 
+// RulesetConfig is the config for each given ruleset.
 type RulesetConfig struct {
 	// Filename is the filename of the ruleset
 	Filename string `json:"filename"`

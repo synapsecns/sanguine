@@ -6,6 +6,7 @@ type TestRulesetManager interface {
 }
 
 func NewTestRulesetManager(rulesets map[string]map[string]bool) TestRulesetManager {
+	//nolint: forcetypeassert
 	return NewRulesetManager(rulesets).(TestRulesetManager)
 }
 
