@@ -59,6 +59,7 @@ import _TransactionsUpdater from '@/slices/_transactions/updater'
 
 import { hotjar } from 'react-hotjar'
 import HotJar from '@/components/HotJar/HotJar'
+import { useEffect } from 'react'
 
 const rawChains = [
   mainnet,
@@ -167,13 +168,15 @@ function Updaters() {
 
 const HOTJAR_ID = 3835898
 
-// Hotjar tracking requires window to be defined
-if (typeof window !== 'undefined') {
-  console.log('hotjar initialized')
-  hotjar.initialize(HOTJAR_ID, 6)
-}
-
 const App = ({ Component, pageProps }: AppProps) => {
+  useEffect(() => {
+    // Hotjar tracking requires window to be defined
+    if (typeof window !== 'undefined') {
+      console.log('hotjar initialized')
+      hotjar.initialize(HOTJAR_ID, 6)
+    }
+  }, [])
+
   return (
     <>
       <Head>
