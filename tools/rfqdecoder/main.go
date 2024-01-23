@@ -12,16 +12,16 @@ import (
 )
 
 func main() {
-	var rawRequest string
-	flag.StringVar(&rawRequest, "r", "", "raw request")
+	var rawData string
+	flag.StringVar(&rawData, "d", "", "raw data")
 	flag.Parse()
-	if rawRequest == "" {
-		panic("must provide raw request (use -r)")
+	if rawData == "" {
+		panic("must provide raw data (use -d)")
 	}
-	if rawRequest[:2] == "0x" {
-		rawRequest = rawRequest[2:]
+	if rawData[:2] == "0x" {
+		rawData = rawData[2:]
 	}
-	requestBytes, err := hex.DecodeString(rawRequest)
+	dataBytes, err := hex.DecodeString(rawData)
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 			common.HexToHash("0xb7439e36b5527ac6298c2fd035a286d9df33c5352d96f08c48d4bf06f9df4afd"),
 			common.HexToHash("0x0000000000000000000000005cf2cc2c71231c23cd5c5a008b9339da33f0fa57"),
 		},
-		Data: requestBytes,
+		Data: dataBytes,
 	}
 	_, parsedEvent, ok := parser.ParseEvent(log)
 	if !ok {
