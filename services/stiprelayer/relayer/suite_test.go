@@ -68,6 +68,7 @@ func (c *STIPRelayerSuite) SetupSuite() {
 	backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(arbChainID))
 
 	testWallet, err := wallet.FromRandom()
+	c.Require().NoError(err)
 	c.testWallet = testWallet
 	c.Require().NoError(err)
 	// Fund with relayer gas to deploy arb address for testing
