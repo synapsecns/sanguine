@@ -334,6 +334,7 @@ func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	// Define the rate limit (e.g., 5 transactions per second)
 	// You can adjust r (rate per second) and b (burst size) according to your specific requirements
+	// TODO: Consider making these values configurable.
 	r := rate.Limit(5)
 	b := 1
 	limiter := rate.NewLimiter(r, b)
