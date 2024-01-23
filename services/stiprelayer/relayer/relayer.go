@@ -463,7 +463,7 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 		toChainID = 43114
 	}
 
-	moduleConfig, ok := feesAndRebates[toChainID][transaction.Module]
+	moduleConfig, ok := s.cfg.FeesAndRebates[toChainID][transaction.Module]
 	if !ok {
 		return nil, fmt.Errorf("module configuration not found for module %s", transaction.Module)
 	}
@@ -500,58 +500,4 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 	// transferAmountFloat.Int(transferAmount) // Round to the nearest integer
 
 	return transferAmount, nil
-}
-
-// FeeRebate holds the fee and rebate data.
-type FeeRebate struct {
-	Fee    int `json:"fee"`
-	Rebate int `json:"rebate"`
-}
-
-// TokenFeeRebate holds a map of tokens to their fee and rebate configuration.
-type TokenFeeRebate map[string]FeeRebate
-
-// ModuleFeeRebate holds a map where the key is a chain ID and the value is a ModuleFeeRebate.
-type ModuleFeeRebate map[string]TokenFeeRebate
-
-// TO_FROM_FEES_AND_REBATE_BPS holds the entire configuration where the key is the chain ID and the value is ChainModuleFeeRebate.
-type TO_FROM_FEES_AND_REBATE_BPS map[int]ModuleFeeRebate
-
-// TODO: Convert to a miserable config object
-// Here is the data populated in the Go structure.
-var feesAndRebates = TO_FROM_FEES_AND_REBATE_BPS{
-	42161: {
-		"SynapseBridge": {
-			"nETH": {Fee: 4, Rebate: 6},
-			"ETH":  {Fee: 4, Rebate: 6},
-			"nUSD": {Fee: 4, Rebate: 6},
-			"GMX":  {Fee: 5, Rebate: 6},
-		},
-		"SynapseCCTP": {
-			"USDC": {Fee: 4, Rebate: 5},
-		},
-		"SynapseRFQ": {
-			"USDC": {Fee: 4, Rebate: 5},
-		},
-	},
-	1: {
-		"SynapseBridge": {
-			"nETH": {Fee: 10, Rebate: 12},
-			"ETH":  {Fee: 4, Rebate: 6},
-			"nUSD": {Fee: 12, Rebate: 14},
-		},
-		"SynapseCCTP": {
-			"USDC": {Fee: 4, Rebate: 5},
-		},
-		"SynapseRFQ": {
-			"USDC": {Fee: 4, Rebate: 5},
-		},
-	},
-	43114: {
-		"SynapseBridge": {
-			"GMX": {Fee: 5, Rebate: 6},
-		},
-		"SynapseCCTP": {},
-		"SynapseRFQ":  {},
-	},
 }

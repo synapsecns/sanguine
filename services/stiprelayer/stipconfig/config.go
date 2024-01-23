@@ -19,6 +19,17 @@ type DatabaseConfig struct {
 	DSN  string `yaml:"dsn"` // Data Source Name
 }
 
+type FeeRebate struct {
+	Fee    int `yaml:"fee"`
+	Rebate int `yaml:"rebate"`
+}
+
+type TokenFeeRebate map[string]FeeRebate
+
+type ModuleFeeRebate map[string]TokenFeeRebate
+
+type FeesAndRebates map[int]ModuleFeeRebate
+
 // Config holds the configuration for the STIP relayer service.
 type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
@@ -29,6 +40,7 @@ type Config struct {
 	StartDate       time.Time              `yaml:"start_date"`
 	Database        DatabaseConfig         `yaml:"database"`
 	OmniRPCURL      string                 `yaml:"omnirpc_url"`
+	FeesAndRebates  FeesAndRebates         `yaml:"fees_and_rebates"`
 }
 
 // LoadConfig loads the config from the given path.
