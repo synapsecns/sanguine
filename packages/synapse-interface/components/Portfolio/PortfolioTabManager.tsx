@@ -37,7 +37,7 @@ export const PortfolioTabManager = () => {
       >
         <MostRecentTransaction />
       </div> */}
-      <_Transactions connectedAddress={address} />
+      {address && <_Transactions connectedAddress={address} />}
     </div>
   )
 }
