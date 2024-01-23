@@ -81,7 +81,7 @@ export const _Transaction = ({
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
-    kappa,
+    _kappa,
     originTxHash,
     isTxComplete
   )
