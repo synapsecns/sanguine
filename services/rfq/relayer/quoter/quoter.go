@@ -4,7 +4,7 @@ package quoter
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
 	"strconv"
 	"strings"
@@ -59,7 +59,7 @@ type Manager struct {
 	// should be removed in config overhaul
 	quotableTokens map[string][]string
 	// simpleScreener is used to screen addresses.
-	simpleScreener *screener.SimpleScreener
+	screener client.ScreenerClient
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -80,11 +80,11 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		qt[strings.ToLower(token)] = processedDestTokens
 	}
 
-	var ss *screener.SimpleScreener
-	if config.TRMConfigFile != "" && config.TRMApiKey != "" {
-		ss, err = screener.NewSimpleScreener(config.TRMApiKey, config.TRMConfigFile, metricsHandler)
+	var ss client.ScreenerClient
+	if config.ScreenerAPIUrl != "" {
+		ss, err = client.NewClient(metricsHandler, config.ScreenerAPIUrl)
 		if err != nil {
-			return nil, fmt.Errorf("error creating simple screener: %w", err)
+			return nil, fmt.Errorf("error creating screener client: %w", err)
 		}
 	}
 
@@ -96,9 +96,11 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		relayerSigner:    relayerSigner,
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
-		simpleScreener:   ss,
+		screener:         ss,
 	}, nil
 }
+
+const screenerRuleset = "rfq"
 
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool, err error) {
@@ -111,8 +113,8 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if m.simpleScreener != nil {
-		blocked, err := m.simpleScreener.ScreenAddress(ctx, quote.Transaction.OriginSender)
+	if m.screener != nil {
+		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
 		if err != nil {
 			span.RecordError(fmt.Errorf("error screening address: %w", err))
 			return false, err
@@ -122,7 +124,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 			return false, nil
 		}
 
-		blocked, err = m.simpleScreener.ScreenAddress(ctx, quote.Transaction.DestRecipient)
+		blocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.DestRecipient.String())
 		if err != nil {
 			span.RecordError(fmt.Errorf("error screening address: %w", err))
 			return false, err

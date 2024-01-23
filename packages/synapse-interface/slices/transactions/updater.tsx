@@ -39,7 +39,7 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
 const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
-const POLLING_INTERVAL: number = 30000 // in ms
+const POLLING_INTERVAL: number = 300000 // 5 minutes in ms
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
@@ -88,10 +88,10 @@ export default function Updater(): null {
         address: address,
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: address,
-        startTime: queryPendingTime,
-      })
+      // fetchUserPendingActivity({
+      //   address: address,
+      //   startTime: queryPendingTime,
+      // })
     } else if (masqueradeActive && searchedBalances) {
       const queriedAddress: Address = Object.keys(
         searchedBalances
@@ -100,20 +100,20 @@ export default function Updater(): null {
         address: getValidAddress(queriedAddress),
         startTime: queryHistoricalTime,
       })
-      fetchUserPendingActivity({
-        address: getValidAddress(queriedAddress),
-        startTime: queryPendingTime,
-      })
+      // fetchUserPendingActivity({
+      //   address: getValidAddress(queriedAddress),
+      //   startTime: queryPendingTime,
+      // })
     } else {
       fetchUserHistoricalActivity({
         address: null,
         startTime: null,
       }).unsubscribe()
 
-      fetchUserPendingActivity({
-        address: null,
-        startTime: null,
-      }).unsubscribe()
+      // fetchUserPendingActivity({
+      //   address: null,
+      //   startTime: null,
+      // }).unsubscribe()
     }
   }, [address, masqueradeActive, searchedBalances])
 

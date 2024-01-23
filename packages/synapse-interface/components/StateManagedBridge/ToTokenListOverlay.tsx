@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
@@ -21,6 +20,8 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
+import { useAppDispatch } from '@/store/hooks'
+import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -36,12 +37,18 @@ export const ToTokenListOverlay = () => {
     toToken,
     toTokensBridgeQuotes,
     toTokensBridgeQuotesStatus,
+    debouncedToTokensFromValue,
+    bridgeQuote,
   }: BridgeState = useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const overlayRef = useRef(null)
+
+  /** Fetch Alternative Bridge Quotes when component renders */
+  /** Temporarily pausing feature */
+  // useAlternateBridgeQuotes()
 
   let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
@@ -172,7 +179,6 @@ export const ToTokenListOverlay = () => {
       fromChainId && toChainId && fromToken && toToken
     )
     const isFetchLoading: boolean =
-      toTokensBridgeQuotesStatus === FetchState.IDLE ||
       toTokensBridgeQuotesStatus === FetchState.LOADING
 
     return hasRequiredUserInput && isFetchLoading
@@ -226,8 +232,6 @@ export const ToTokenListOverlay = () => {
   const totalPossibleTokens: number = useMemo(() => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
-
-  console.log('orderedPossibleTokens:', orderedPossibleTokens)
 
   return (
     <div

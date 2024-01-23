@@ -133,7 +133,6 @@ var (
 		DAOForkBlock:        big.NewInt(0),
 		DAOForkSupport:      true,
 		EIP150Block:         big.NewInt(0),
-		EIP150Hash:          ethCommon.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:         big.NewInt(0),
 		EIP158Block:         big.NewInt(0),
 		ByzantiumBlock:      big.NewInt(0),
@@ -151,7 +150,6 @@ var (
 		DAOForkBlock:        big.NewInt(0),
 		DAOForkSupport:      true,
 		EIP150Block:         big.NewInt(0),
-		EIP150Hash:          ethCommon.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:         big.NewInt(0),
 		EIP158Block:         big.NewInt(0),
 		ByzantiumBlock:      big.NewInt(0),
@@ -336,7 +334,7 @@ var (
 
 // chainConfigs is a list of chain configs.
 var chainConfigs = []*params.ChainConfig{
-	params.MainnetChainConfig, params.RopstenChainConfig,
+	params.MainnetChainConfig, params.SepoliaChainConfig,
 	params.RinkebyChainConfig, params.RinkebyChainConfig, params.GoerliChainConfig,
 	params.AllEthashProtocolChanges, BSCChainConfig, ChapelChainConfig, RialtoChainConfig,
 	SimulatedConfig, MaticMumbaiConfig, MaticMainnetConfig, AvalancheMainnetChainConfig, AvalancheLocalChainConfig,
