@@ -13,6 +13,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// DatabaseConfig represents the configuration for the database.
+type DatabaseConfig struct {
+	Type string `yaml:"type"`
+	DSN  string `yaml:"dsn"` // Data Source Name
+}
+
 // Config holds the configuration for the STIP relayer service.
 type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
@@ -21,6 +27,8 @@ type Config struct {
 	ArbAddress      string                 `yaml:"arb_address"`
 	ArbChainID      uint64                 `yaml:"arb_chain_id"`
 	StartDate       time.Time              `yaml:"start_date"`
+	Database        DatabaseConfig         `yaml:"database"`
+	OmniRPCURL      string                 `yaml:"omnirpc_url"`
 }
 
 // LoadConfig loads the config from the given path.

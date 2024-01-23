@@ -1,4 +1,4 @@
-package stiprelayer_test
+package relayer_test
 
 import (
 	"fmt"
