@@ -276,10 +276,16 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %v", err)
 	}
-	fmt.Println("Number of rows:", len(jsonResult.Result.Rows))
+	var rowsAfterStartDate []Row
+	for _, row := range jsonResult.Result.Rows {
+		if row.BlockTime.After(s.cfg.StartDate) {
+			rowsAfterStartDate = append(rowsAfterStartDate, row)
+		}
+	}
+	fmt.Println("Number of rows after start date:", len(rowsAfterStartDate))
 
 	// Convert each Row to a STIPTransactions and store them in the database
-	return s.StoreResultsInDatabase(ctx, jsonResult.Result.Rows, jsonResult.ExecutionID)
+	return s.StoreResultsInDatabase(ctx, rowsAfterStartDate, jsonResult.ExecutionID)
 }
 
 // StoreResultsInDatabase handles the storage of results in the database.

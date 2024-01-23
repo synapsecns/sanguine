@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -19,6 +20,7 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	ArbAddress      string                 `yaml:"arb_address"`
 	ArbChainID      uint64                 `yaml:"arb_chain_id"`
+	StartDate       time.Time              `yaml:"start_date"`
 }
 
 // LoadConfig loads the config from the given path.

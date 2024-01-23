@@ -3,6 +3,7 @@ package stiprelayer_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"math/big"
 
@@ -114,6 +115,7 @@ func (c *STIPRelayerSuite) SetupSuite() {
 		SubmitterConfig: submitterConfig.Config{},
 		ArbAddress:      c.arbERC20Address.Hex(),
 		ArbChainID:      arbChainID,
+		StartDate:       time.Date(2024, time.January, 23, 0, 0, 0, 0, time.UTC),
 	}
 }
 

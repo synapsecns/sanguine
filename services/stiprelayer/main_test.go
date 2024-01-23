@@ -92,13 +92,13 @@ func (c *STIPRelayerSuite) TestStartRelayer() {
 }
 
 // func (c *STIPRelayerSuite) TestQueryAndStore() {
-// 	c.stipRelayer.RequestAndStoreResults(c.GetTestContext())
+// 	c.stipRelayer.ProcessExecutionResults(c.GetTestContext())
 // 	resultsFirst, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
 // 	c.Require().NoError(err)
 
 // 	fmt.Println("LENGTH: " + strconv.Itoa(len(resultsFirst)))
 
-// 	c.stipRelayer.RequestAndStoreResults(c.GetTestContext())
+// 	c.stipRelayer.ProcessExecutionResults(c.GetTestContext())
 
 // 	resultsSecond, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
 // 	c.Require().NoError(err)
