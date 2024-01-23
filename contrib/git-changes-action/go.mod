@@ -11,7 +11,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/brianvoe/gofakeit/v6 v6.27.0
-	github.com/ethereum/go-ethereum v1.13.10
+	github.com/ethereum/go-ethereum v1.11.6
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/google/go-github/v41 v41.0.0
 	github.com/kendru/darwin/go/depgraph v0.0.0-20221105232959-877d6a81060c

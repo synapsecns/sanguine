@@ -1,0 +1,178 @@
+# Default values for rfq.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/synapsecns/sanguine/rfq-relayer
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "05930ccbc1d33267feaab27f57c43fc9b014cc39"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+
+definitions:
+  - env: &default_env
+    - name: GOLOG_LOG_FMT
+      value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "debug"
+    - name: GOMEMLIMIT
+      value: "2GiB"
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: METRICS_HANDLER
+      value: otlp
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: http://signoz-otel-collector.monitoring:4317
+    # - name: MYSQL_HOST
+    #   value: "{{ .Release.Name }}-mysql"
+    # - name: MYSQL_DATABASE
+    #   value: "{{ .Values.mysql.auth.database }}"
+    # - name: MYSQL_USER
+    #   value: "root"
+    # - name: MYSQL_PASSWORD
+    #   value: "{{ .Values.mysql.auth.password }}"
+    # - name: MYSQL_PORT
+    #   value: "3306"
+    - name: PORT
+      value: "8081"
+
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  ingressPort: 80
+  port: 80
+  containerPort: 80
+
+initialDelaySeconds: 20
+
+storage:
+  size: 10Gi
+
+ingress:
+  enabled: false
+
+
+args:
+- run
+- --config=/config/config.yaml
+
+ports:
+- name: http
+  containerPort: 8081
+  protocol: TCP
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+podSecurityContext: {}
+
+affinity: {}
+
+env: *default_env
+
+tolerations: {}
+
+extraInitContainers:
+  - name: wait-for-mysql
+    image: busybox:latest
+    imagePullPolicy: IfNotPresent
+    command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+    env:
+      - name: POD_NAME
+        value: "{{ .Release.Name }}-mysql"
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+
+mysql:
+  enabled: true
+  architecture: standalone
+  networkPolicy:
+    enabled: true
+  metrics:
+    enabled: false
+  auth:
+    createDatabase: true
+    database: rfq
+    # Note: this should be used in production instead of auth.password
+    # existingSecret: mysql-password
+    password: MysqlPassword
+    rootPassword: MysqlPassword
+
+config:
+  omnirpcUrl: http://omnirpc.omnirpc.svc.cluster.local
+
+files: []
+  # signer.txt: |-
+  #   {{ $.Values.signers.rfqRelayer }}
+  # config.yaml: |-
+  #   ## This is a sample config file for rfq
+  #   {{ tpl (toYaml $.Values.rfqConfig.rfqRelayer) .  | nindent 2 | replace "\"" "" }}
+
+signers:
+  rfqRelayer: "0x00000000000000000"
+
+rfqConfig:
+  rfqApi: {}
+  rfqRelayer: {}
+    # database:
+    #   type: "mysql" # Use "mysql" for production
+    #   dsn: 'root:MysqlPassword@tcp({{ .Release.Name }}-mysql:3306)/agents?parseTime=true' # Or the appropriate MySQL DSN for production
+
+    # chains:
+    #   42:
+    #     chainId: 42
+    #     rpcUrl: "http://localhost:8042"
+    #     fastBridgeContract: "0x6438CB36cb18520774EfC7A172410D8BBBe9a428"
+    #     fastBridgeBlockDeployed: 0
+    #   43:
+    #     chainId: 43
+    #     rpcUrl: "http://localhost:8043"
+    #     fastBridgeContract: "0x6438CB36cb18520774EfC7A172410D8BBBe9a428"
+    #     fastBridgeBlockDeployed: 0
+
+    # relayer_address: "0xa01474A3b29535A90Cbd05912af81a4fcc5276Ef"
+
+    # omnirpc_url: "{{ $.Values.config.omnirpcUrl }}"
+
+    # # do not send real internet money here
+    # unbonded_signer:
+    #   type: File
+    #   file: ./unbonded_signer.txt
+
+    # submitter_config:
+    #   chains:
+    #     42:
+    #       supports_eip_1559: true
+    #       gas_estimate: 7500000
+    #     43:
+    #       supports_eip_1559: true
+    #       gas_bump_percentage: 100
+
