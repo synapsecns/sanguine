@@ -22,22 +22,22 @@ export const useBridgeTxUpdater = (
 ) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
+  const storedTx = transactions.find((tx) => tx.originTxHash === originTxHash)
+
+  /** Update stored tx kappa if not updated with fetched kappa */
+  useEffect(() => {
+    if (!storedTx.kappa && kappa) {
+      dispatch(updateTransactionKappa({ originTxHash, kappa }))
+    }
+  }, [kappa, storedTx])
 
   /** Update tx status in store */
   useEffect(() => {
-    if (!isTxComplete && originTxHash && kappa) {
-      const txn = transactions.find((tx) => tx.originTxHash === originTxHash)
-
-      /** Update tx kappa in store when available */
-      if (!txn.kappa) {
-        dispatch(updateTransactionKappa({ originTxHash, kappa }))
-      }
-
+    if (isTxComplete && originTxHash && kappa) {
       /** Check that we have not already marked tx as complete */
-      if (!txn.isComplete) {
-        console.log('fire off complete txn for: ', txn?.kappa)
-
+      if (!storedTx.isComplete) {
         dispatch(completeTransaction({ originTxHash, kappa }))
+
         /** Update Destination Chain token balances after tx is marked complete  */
         dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
@@ -47,5 +47,5 @@ export const useBridgeTxUpdater = (
         )
       }
     }
-  }, [isTxComplete, dispatch, transactions, kappa, originTxHash])
+  }, [isTxComplete, dispatch, transactions, originTxHash, kappa])
 }
