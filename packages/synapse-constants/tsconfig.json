@@ -3,8 +3,8 @@
     "outDir": "./dist",
     "allowJs": true,
     "rootDir": "./",
-    "target": "es2019",
-    "module": "ESNext",
+    "target": "es5",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "declaration": false,
@@ -17,5 +17,8 @@
     "./index.ts",
     "./index.d.ts"
   ],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }

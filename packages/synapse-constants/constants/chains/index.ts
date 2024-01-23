@@ -3,8 +3,6 @@ import * as all from './master'
 
 export * from './master'
 
-export const hello = 2
-
 export type ChainsByChainID = {
   [cID: number]: Chain
 }

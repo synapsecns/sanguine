@@ -1,5 +1,7 @@
 const path = require('path')
 
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin')
+
 module.exports = {
   mode: 'production',
 
@@ -32,8 +34,41 @@ module.exports = {
       },
     ],
   },
-
   optimization: {
-    minimize: true,
+    minimizer: [
+      '...',
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminMinify,
+          options: {
+            // Lossless optimization with custom option
+            // Feel free to experiment with options for better result for you
+            plugins: [
+              ['optipng', { optimizationLevel: 5 }],
+              // Svgo configuration here https://github.com/svg/svgo#configuration
+              [
+                'svgo',
+                {
+                  plugins: [
+                    {
+                      name: 'preset-default',
+                      params: {
+                        overrides: {
+                          removeViewBox: false,
+                          inlineStyles: {
+                            onlyMatchedOnce: false,
+                          },
+                        },
+                      },
+                    },
+                  ],
+                  multipass: true,
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
   },
 }
