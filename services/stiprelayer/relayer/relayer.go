@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -182,6 +183,8 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		return s.StartSubmitter(ctx)
 	})
 
+	s.ProcessExecutionResults(ctx)
+
 	// Start the ticker goroutine for requesting and storing execution results
 	g.Go(func() error {
 		return s.RequestAndStoreResults(ctx)
@@ -213,7 +216,7 @@ func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 
 // RequestAndStoreResults handles the continuous request of new execution results and storing them in the database.
 func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -233,6 +236,7 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
 func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
+	fmt.Println("Starting excecution logic")
 	resp, err := ExecuteDuneQuery()
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
@@ -257,26 +261,51 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	// Implement a more robust solution for waiting, such as polling with a timeout.
 	time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
 
-	executionResults, err := GetExecutionResults(ctx, executionID)
-	if err != nil {
-		return fmt.Errorf("failed to get execution results: %v", err)
+	// Implement a more robust solution for waiting, such as polling with a timeout.
+	// time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
+	var getResultsJsonResult QueryResult
+	operation := func() error {
+		executionResults, err := GetExecutionResults(ctx, executionID)
+		if err != nil {
+			return fmt.Errorf("failed to get execution results: %v", err)
+		}
+
+		if executionResults.StatusCode != http.StatusOK {
+			return fmt.Errorf("expected status code 200, got %d", executionResults.StatusCode)
+		}
+
+		getResultsBody, err := ioutil.ReadAll(executionResults.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read execution results body: %w", err)
+		}
+
+		var jsonResult QueryResult
+		err = json.Unmarshal(getResultsBody, &jsonResult)
+		if err != nil {
+			return fmt.Errorf("error unmarshalling JSON: %v", err)
+		}
+
+		if jsonResult.State != "QUERY_STATE_COMPLETED" {
+			// query state is not completed, so return an error to retry
+			return fmt.Errorf("query state is not completed")
+		}
+		getResultsJsonResult = jsonResult
+		return nil
 	}
 
-	if executionResults.StatusCode != http.StatusOK {
-		return fmt.Errorf("expected status code 200, got %d", executionResults.StatusCode)
+	// Create a new exponential backoff policy
+	expBackOff := backoff.NewExponentialBackOff()
+	expBackOff.InitialInterval = 30 * time.Second
+	expBackOff.MaxElapsedTime = 300 * time.Second
+
+	// Retry the operation with the backoff policy
+	err = backoff.Retry(operation, expBackOff)
+	if err != nil {
+		return fmt.Errorf("failed to get execution results after retries: %v", err)
 	}
 
-	getResultsBody, err := ioutil.ReadAll(executionResults.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read execution results body: %w", err)
-	}
-	var jsonResult QueryResult
-	err = json.Unmarshal(getResultsBody, &jsonResult)
-	if err != nil {
-		return fmt.Errorf("error unmarshalling JSON: %v", err)
-	}
 	var rowsAfterStartDate []Row
-	for _, row := range jsonResult.Result.Rows {
+	for _, row := range getResultsJsonResult.Result.Rows {
 		// TODO: Will this panic if StartDate not set?
 		if row.BlockTime.After(s.cfg.StartDate) {
 			rowsAfterStartDate = append(rowsAfterStartDate, row)
@@ -285,7 +314,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	fmt.Println("Number of rows after start date:", len(rowsAfterStartDate))
 
 	// Convert each Row to a STIPTransactions and store them in the database
-	return s.StoreResultsInDatabase(ctx, rowsAfterStartDate, jsonResult.ExecutionID)
+	return s.StoreResultsInDatabase(ctx, rowsAfterStartDate, getResultsJsonResult.ExecutionID)
 }
 
 // StoreResultsInDatabase handles the storage of results in the database.
