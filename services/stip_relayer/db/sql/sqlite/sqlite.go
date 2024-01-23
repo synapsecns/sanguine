@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/synapsecns/sanguine/services/stip_relayer/db/sql/base"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql/base"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

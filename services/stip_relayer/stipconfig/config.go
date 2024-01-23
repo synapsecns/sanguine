@@ -1,3 +1,4 @@
+// Package stipconfig contains the configuration structures and logic for the STIP relayer service.
 package stipconfig
 
 import (
@@ -11,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Config holds the configuration for the STIP relayer service.
 type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// Submitter is the submitter config.

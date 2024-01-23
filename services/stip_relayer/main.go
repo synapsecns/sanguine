@@ -1,4 +1,4 @@
-package stip_relayer
+package stip-relayer
 
 import (
 	"bytes"
@@ -22,8 +22,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
-	"github.com/synapsecns/sanguine/services/stip_relayer/stipconfig"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/stipconfig"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 )
@@ -34,11 +34,13 @@ import (
 // Call database
 // Submit transactions for corresponding rebate
 
+// DuneAPIKey is the API key for Dune, fetched from the environment variables.
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
+// ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
 func ExecuteDuneQuery() (*http.Response, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", "https://api.dune.com/api/v1/query/3345214/execute", bytes.NewBuffer([]byte(`{"performance": "medium"}`)))
+	req, err := http.NewRequest(http.MethodPost, "https://api.dune.com/api/v1/query/3345214/execute", bytes.NewBufferString(`{"performance": "medium"}`))
 	if err != nil {
 		return nil, err
 	}
@@ -55,9 +57,10 @@ func ExecuteDuneQuery() (*http.Response, error) {
 	return resp, nil
 }
 
-func GetExecutionResults(execution_id string) (*http.Response, error) {
+// GetExecutionResults fetches the results of a Dune query execution using the provided execution ID.
+func GetExecutionResults(executionID string) (*http.Response, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.dune.com/api/v1/execution/"+execution_id+"/results", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.dune.com/api/v1/execution/"+executionID+"/results", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +76,7 @@ func GetExecutionResults(execution_id string) (*http.Response, error) {
 	return resp, nil
 }
 
-// QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
-// It is used to initialize and run the API server.
+// STIPRelayer is the main struct for the STIP relayer service.
 type STIPRelayer struct {
 	cfg           stipconfig.Config
 	db            db.STIPDB
@@ -84,6 +86,7 @@ type STIPRelayer struct {
 	signer        signer.Signer
 }
 
+// NewSTIPRelayer creates a new STIPRelayer with the provided context and configuration.
 func NewSTIPRelayer(ctx context.Context,
 	cfg stipconfig.Config,
 	handler metrics.Handler,
@@ -105,6 +108,7 @@ func NewSTIPRelayer(ctx context.Context,
 	}, nil
 }
 
+// QueryResult represents the result of a Dune query.
 type QueryResult struct {
 	ExecutionID        string    `json:"execution_id"`
 	QueryID            int       `json:"query_id"`
@@ -116,10 +120,13 @@ type QueryResult struct {
 	Result             Result    `json:"result"`
 }
 
+// Result represents the data structure for the result of a query execution.
 type Result struct {
 	Rows     []Row    `json:"rows"`
 	Metadata Metadata `json:"metadata"`
 }
+
+// Row represents a single row of the result of a query execution.
 type Row struct {
 	Address    string     `json:"address"`
 	Amount     float64    `json:"amount"`
@@ -133,6 +140,7 @@ type Row struct {
 	TokenPrice float64    `json:"token_price"`
 }
 
+// Metadata represents the metadata of a query execution result.
 type Metadata struct {
 	ColumnNames         []string `json:"column_names"`
 	ResultSetBytes      int      `json:"result_set_bytes"`
@@ -142,12 +150,14 @@ type Metadata struct {
 	ExecutionTimeMillis int      `json:"execution_time_millis"`
 }
 
+// CustomTime is a custom time type for handling specific time format in JSON unmarshalling.
 type CustomTime struct {
 	time.Time
 }
 
 const ctLayout = "2006-01-02 15:04:05.000 MST"
 
+// UnmarshalJSON overrides the default JSON unmarshaling for CustomTime to handle specific time format.
 func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 	if s == "null" {
@@ -161,6 +171,7 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Run starts the STIPRelayer service by initiating various goroutines.
 func (s *STIPRelayer) Run(ctx context.Context) error {
 	// Create a cancellable context
 	ctx, cancel := context.WithCancel(ctx)
@@ -191,7 +202,7 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 	return nil
 }
 
-// startSubmitter handles the initialization of the submitter
+// StartSubmitter handles the initialization of the submitter.
 func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 	err := s.submittter.Start(ctx)
 	if err != nil {
@@ -202,7 +213,7 @@ func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 	return nil
 }
 
-// requestAndStoreResults handles the continuous request of new execution results and storing them in the database
+// RequestAndStoreResults handles the continuous request of new execution results and storing them in the database.
 func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -210,7 +221,7 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err() // exit if context is cancelled
+			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
 			if err := s.ProcessExecutionResults(ctx); err != nil {
 				// Log the error and decide whether to continue based on the error
@@ -222,22 +233,23 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 	}
 }
 
-// processExecutionResults encapsulates the logic for requesting and storing execution results
+// ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
 func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	resp, err := ExecuteDuneQuery()
 	if err != nil {
-		return fmt.Errorf("failed to execute Dune query: %v", err)
+		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v", err)
+		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var result map[string]string
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal response body: %v", err)
+		return fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
 	executionID, ok := result["execution_id"]
@@ -252,12 +264,16 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get execution results: %v", err)
 	}
+	defer executionResults.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("expected status code 200, got %d", resp.StatusCode)
 	}
 
 	getResultsBody, err := ioutil.ReadAll(executionResults.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read execution results body: %w", err)
+	}
 	var jsonResult QueryResult
 	err = json.Unmarshal(getResultsBody, &jsonResult)
 	if err != nil {
@@ -270,7 +286,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context) error {
 	return s.StoreResultsInDatabase(ctx, jsonResult.Result.Rows, jsonResult.ExecutionID)
 }
 
-// storeResultsInDatabase handles the storage of results in the database
+// StoreResultsInDatabase handles the storage of results in the database.
 func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, executionID string) error {
 	stipTransactions := make([]db.STIPTransactions, len(rows))
 	for i, row := range rows {
@@ -310,7 +326,7 @@ func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, ex
 	return nil
 }
 
-// queryRebateAndUpdate handles the querying for new, non-relayed/rebated results, rebates/relays them, and updates the result row
+// QueryRebateAndUpdate handles the querying for new, non-relayed/rebated results, rebates/relays them, and updates the result row.
 func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -318,7 +334,7 @@ func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err() // exit if context is cancelled
+			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
 			if err := s.RelayAndRebateTransactions(ctx); err != nil {
 				// Log the error and decide whether to continue based on the error
@@ -330,7 +346,7 @@ func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 	}
 }
 
-// relayAndRebateTransactions encapsulates the logic for querying, rebating/relaying, and updating results
+// RelayAndRebateTransactions encapsulates the logic for querying, rebating/relaying, and updating results.
 func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	// Define the rate limit (e.g., 5 transactions per second)
 	// You can adjust r (rate per second) and b (burst size) according to your specific requirements
@@ -347,9 +363,8 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	if len(stipTransactionsNotRebated) == 0 {
 		fmt.Println("No STIP transactions found that have not been rebated.")
 		return nil
-	} else {
-		fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
 	}
+	fmt.Println("Found", len(stipTransactionsNotRebated), "STIP transactions that have not been rebated.")
 
 	// Relay and rebate transactions with rate limiting
 	for _, transaction := range stipTransactionsNotRebated {
@@ -372,7 +387,7 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	return nil
 }
 
-// submitAndRebateTransaction handles the relaying and rebating of a single transaction
+// SubmitAndRebateTransaction handles the relaying and rebating of a single transaction.
 func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
 	// Calculate the transfer amount based on transaction details
 	// This function encapsulates the logic for determining the transfer amount
@@ -383,15 +398,15 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 	}
 
 	// Setup for submitting the transaction
-	chainId := s.cfg.ArbChainID
+	chainID := s.cfg.ArbChainID
 	arbAddress := s.cfg.ArbAddress
-	backendClient, err := s.omnirpcClient.GetClient(ctx, big.NewInt(int64(chainId)))
+	backendClient, err := s.omnirpcClient.GetClient(ctx, big.NewInt(int64(chainID)))
 	if err != nil {
 		return fmt.Errorf("could not get client: %w", err)
 	}
 
 	// Submit the transaction
-	nonceSubmitted, err := s.submittter.SubmitTransaction(ctx, big.NewInt(int64(chainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	nonceSubmitted, err := s.submittter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		erc20, err := ierc20.NewIERC20(common.HexToAddress(arbAddress), backendClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get erc20: %w", err)
@@ -419,8 +434,7 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 	return nil
 }
 
-// calculateTransferAmount determines the amount to transfer based on the transaction
-// This is a placeholder function. Implement the actual calculation logic based on your requirements.
+// CalculateTransferAmount determines the amount to transfer based on the transaction.
 func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) (*big.Int, error) {
 	// Pseudocode:
 	// 1. Retrieve the necessary fields from the transaction.

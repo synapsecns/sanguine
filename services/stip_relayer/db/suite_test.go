@@ -15,10 +15,10 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db/sql"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db/sql/mysql"
-	"github.com/synapsecns/sanguine/services/stip_relayer/metadata"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql/mysql"
+	"github.com/synapsecns/sanguine/services/stip-relayer/metadata"
 	"gorm.io/gorm/schema"
 )
 

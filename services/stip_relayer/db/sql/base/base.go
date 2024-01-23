@@ -4,7 +4,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
 	"gorm.io/gorm"
 )
 
@@ -33,7 +33,7 @@ func (s Store) SubmitterDB() submitterDB.Service {
 // GetAllModels gets all models to migrate.
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
-	allModels = append(txdb.GetAllModels(), &db.ApiResponse{}, &db.STIPTransactions{})
+	allModels = append(txdb.GetAllModels(), &db.APIResponse{}, &db.STIPTransactions{})
 	return allModels
 }
 

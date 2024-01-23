@@ -1,4 +1,4 @@
-package stip_relayer_test
+package stip-relayer_test
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 // func TestExecuteDuneQuery(t *testing.T) {
-// 	resp, err := stip_relayer.ExecuteDuneQuery()
+// 	resp, err := stip-relayer.ExecuteDuneQuery()
 // 	if err != nil {
 // 		t.Fatalf("Failed to execute Dune query: %v", err)
 // 	}
@@ -32,7 +32,7 @@ import (
 // }
 
 // func TestGetExecutionResults(t *testing.T) {
-// 	resp, err := stip_relayer.ExecuteDuneQuery()
+// 	resp, err := stip-relayer.ExecuteDuneQuery()
 // 	if err != nil {
 // 		t.Fatalf("Failed to execute Dune query: %v", err)
 // 	}
@@ -55,7 +55,7 @@ import (
 
 // 	time.Sleep(20000 * time.Millisecond)
 
-// 	resp, err = stip_relayer.GetExecutionResults(execution_id)
+// 	resp, err = stip-relayer.GetExecutionResults(execution_id)
 // 	if err != nil {
 // 		t.Fatalf("Failed to get execution results: %v", err)
 // 	}
@@ -81,5 +81,4 @@ func (c *STIPRelayerSuite) TestStartRelayer() {
 	c.Require().NoError(err)
 	c.Require().Equal(balance.String(), "1000000000000000000")
 	fmt.Println("BALANCE: " + balance.String())
-
 }

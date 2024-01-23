@@ -8,13 +8,13 @@ import (
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 )
 
-// ApiResponse is the model that saves Dune query API execution IDs with their results.
-type ApiResponse struct {
+// APIResponse is the model that saves Dune query API execution IDs with their results.
+type APIResponse struct {
 	ExecutionID      string             `gorm:"column:execution_id;index;primaryKey"`
 	STIPTransactions []STIPTransactions `gorm:"foreignKey:ExecutionID"`
 }
 
-// Row is the model that saves raw Dune response data
+// STIPTransactions is the model that saves raw Dune response data.
 type STIPTransactions struct {
 	ExecutionID string    `gorm:"column:execution_id;index"`
 	Address     string    `gorm:"column:address"`

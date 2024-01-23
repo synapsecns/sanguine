@@ -7,9 +7,9 @@ import (
 
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db/sql/mysql"
-	"github.com/synapsecns/sanguine/services/stip_relayer/db/sql/sqlite"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql/mysql"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db/sql/sqlite"
 )
 
 // Connect connects to the database.

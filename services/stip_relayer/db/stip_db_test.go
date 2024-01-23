@@ -3,7 +3,7 @@ package db_test
 import (
 	"time"
 
-	"github.com/synapsecns/sanguine/services/stip_relayer/db"
+	"github.com/synapsecns/sanguine/services/stip-relayer/db"
 )
 
 func (d *DBSuite) TestGetSTIPTransactionsNotRebated() {
