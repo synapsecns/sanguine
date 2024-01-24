@@ -6,7 +6,7 @@ export const publicClient = createPublicClient({
   transport: http(),
 })
 
-export const getErc20TokenTransferData = async (
+export const getErc20TokenTransfers = async (
   tokenAddress: Address,
   fromAddress: Address,
   toAddress: Address,
