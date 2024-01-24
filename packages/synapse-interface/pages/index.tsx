@@ -8,7 +8,7 @@ import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsW
 import { useState, useEffect } from 'react'
 import { useContractEvent, erc20ABI } from 'wagmi'
 
-import { createPublicClient, http, parseAbiItem, Address } from 'viem'
+import { createPublicClient, http, parseAbiItem, Address, Log } from 'viem'
 import { arbitrum } from 'viem/chains'
 
 export const publicClient = createPublicClient({
@@ -22,10 +22,10 @@ const getErc20TokenTransferLogs = async (
   toAddress: Address,
   startBlock: bigint
 ) => {
-  const logs = await publicClient.getLogs({
+  const logs: Log[] = await publicClient.getLogs({
     address: tokenAddress,
     event: {
-      type: 'event', // Added 'type' property
+      type: 'event',
       name: 'Transfer',
       inputs: [
         { type: 'address', indexed: true, name: 'from' },
@@ -40,7 +40,20 @@ const getErc20TokenTransferLogs = async (
     fromBlock: startBlock,
   })
 
-  console.log('logs: ', logs)
+  return logs
+}
+
+const transformTransferLogsToData = (logs: any[]) => {
+  return logs.map((log) => {
+    return {
+      tokenAddress: log.address,
+      fromAddress: log?.args?.from,
+      toAddress: log?.args?.to,
+      transferValue: log?.args?.value,
+      blockNumber: log.blockNumber,
+      transactionHash: log.transactionHash,
+    }
+  })
 }
 
 // TODO: someone should add this to the .env, disable if blank, etc.
@@ -54,12 +67,16 @@ const Home = () => {
 
   useEffect(() => {
     ;(async () => {
-      await getErc20TokenTransferLogs(
+      const logs = await getErc20TokenTransferLogs(
         '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
         '0xF080B794AbF6BB905F2330d25DF545914e6027F8',
         '0x81EF4608B796265F1e3695cE00FdCfC8aA5933Dd',
         173545720n
       )
+
+      const parsedLogs = transformTransferLogsToData(logs)
+
+      console.log('parsedLogs:', parsedLogs)
     })()
   }, [])
 
