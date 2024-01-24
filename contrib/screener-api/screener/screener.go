@@ -3,6 +3,7 @@ package screener
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -124,7 +125,14 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"risk": hasIndicator})
 }
 
-func (s *screenerImpl) getIndicators(ctx context.Context, address string, goodUntil time.Time) ([]trmlabs.AddressRiskIndicator, error) {
+func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, goodUntil time.Time) (indicators []trmlabs.AddressRiskIndicator, err error) {
+	ctx, span := s.metrics.Tracer().Start(parentCtx, "get-indicators")
+	defer func() {
+		marshalledIndicators, _ := json.Marshal(indicators)
+		span.AddEvent("indicators", trace.WithAttributes(attribute.String("indicators", string(marshalledIndicators))))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	riskIndicators, err := s.db.GetAddressIndicators(ctx, address, goodUntil)
 	if err == nil {
 		return riskIndicators, nil

@@ -85,11 +85,13 @@ func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRis
 		}
 
 		riskParam := makeParam(ri.Category, ri.RiskType)
+		fmt.Println("param is", riskParam)
 		isBlocked, found := cr.riskRules[riskParam]
 		if isBlocked && found && (incoming > 0 || outgoing > 0) {
 			return true, nil
 		}
 	}
+	fmt.Println("risk rules are", cr.riskRules)
 
 	return false, nil
 }
