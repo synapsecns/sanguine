@@ -17,7 +17,8 @@ export const ProgressBar = ({
 
   useEffect(() => {
     if (isComplete) {
-      setProgress(100)
+      /** Set Progress to 200% to speed up animation */
+      setProgress(200)
     } else {
       setProgress(percentageReachedOfTotal)
     }
