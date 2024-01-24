@@ -88,7 +88,6 @@ func (c *STIPRelayerSuite) TestStartRelayer() {
 	c.Require().NoError(err)
 	c.Require().Equal(balance.String(), "1000000000000000000")
 	fmt.Println("BALANCE: " + balance.String())
-
 }
 
 // func (c *STIPRelayerSuite) TestQueryAndStore() {

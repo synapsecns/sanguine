@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/stiprelayer/metadata"
 )
 
-// main is the entry point for the RFQ API Server
+// main is the entry point for the RFQ API Server.
 func main() {
 	cmd.Start(os.Args, metadata.BuildInfo())
 }

@@ -249,7 +249,7 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
 func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context, queryType string) error {
-	fmt.Println("Starting excecution logic")
+	fmt.Println("Starting execution logic")
 	resp, err := ExecuteDuneQuery(queryType)
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
