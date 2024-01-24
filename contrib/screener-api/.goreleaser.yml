@@ -1,8 +1,8 @@
 project_name: screener-api
 
 monorepo:
-  tag_prefix: contrib/screener-api
-  dir: contrib/screener-api
+  tag_prefix: contrib/screener-api/
+  dir: contrib/screener-api/
 
 builds:
   # Linux AMD64
