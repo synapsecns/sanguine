@@ -17,7 +17,7 @@ export const CHAINS_ARR = Object.values(all)
 
 const getChainEnumById = () => {
   const outObj: Record<number, string> = {}
-  CHAINS_ARR.map((chain: any) => {
+  CHAINS_ARR.map((chain: Chain) => {
     outObj[chain.id] = chain.codeName
   })
   return outObj
@@ -32,7 +32,7 @@ const getids = () => {
 }
 const getChainsByID = (): ChainsByChainID => {
   const outObj: ChainsByChainID = {}
-  CHAINS_ARR.map((chain: any) => {
+  CHAINS_ARR.map((chain: Chain) => {
     outObj[chain.id] = chain
   })
   return outObj

@@ -265,19 +265,19 @@ export const STAKABLE_TOKENS: StakableTokens = {
 }
 
 const getStakingMap = () => {
-  const STAKING_MAP_TOKENS: { [key: string]: any } = {}
+  const stakingMap: { [key: string]: any } = {}
   Object.keys(POOLS_BY_CHAIN).map((chainId) => {
-    if (!STAKING_MAP_TOKENS[chainId]) {
-      STAKING_MAP_TOKENS[chainId] = {}
+    if (!stakingMap[chainId]) {
+      stakingMap[chainId] = {}
     }
 
-    STAKING_MAP_TOKENS[chainId] = {}
+    stakingMap[chainId] = {}
     for (const token of STAKABLE_TOKENS[chainId]) {
       if (token.poolName) {
-        STAKING_MAP_TOKENS[chainId][token.poolName] = token
+        stakingMap[chainId][token.poolName] = token
       }
     }
   })
-  return STAKING_MAP_TOKENS
+  return stakingMap
 }
 export const STAKING_MAP_TOKENS = getStakingMap()
