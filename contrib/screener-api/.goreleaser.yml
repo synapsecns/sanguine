@@ -1,4 +1,4 @@
-project_name: your-module-name
+project_name: screener-api
 
 monorepo:
   tag_prefix: contrib/screener-api
