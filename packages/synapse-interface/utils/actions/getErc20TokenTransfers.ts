@@ -1,11 +1,23 @@
 import { createPublicClient, http, Address, Log, Chain } from 'viem'
 
+/**
+ * Wrapper function around getErc20TokenTransferLogs() and transformTransferLogsToData()
+ *
+ * @param tokenAddress token to query transfer logs
+ * @param fromAddress transfer from address
+ * @param toAddress transfer to address
+ * @param startBlock block to start query logs
+ * @param toBlock block to stop query logs
+ * @param chain viem Chain where token resides
+ * @returns Will return raw logs and parsed logs
+ */
 export const getErc20TokenTransfers = async (
   tokenAddress: Address,
   fromAddress: Address,
   toAddress: Address,
+  chain: Chain,
   startBlock: bigint,
-  chain: Chain
+  toBlock?: bigint
 ) => {
   if (!tokenAddress || !fromAddress || !toAddress) {
     console.error('Invalid address')
@@ -24,8 +36,9 @@ export const getErc20TokenTransfers = async (
     tokenAddress,
     fromAddress,
     toAddress,
+    chain,
     startBlock,
-    chain
+    toBlock
   )
   const data = transformTransferLogsToData(logs)
 
@@ -39,11 +52,11 @@ const getErc20TokenTransferLogs = async (
   tokenAddress: Address,
   fromAddress: Address,
   toAddress: Address,
+  chain: Chain,
   startBlock: bigint,
-  chain: Chain
+  toBlock?: bigint
 ) => {
-  // const publicClient = getPublicClient(wagmiConfig[chainId])
-
+  /** Create public client to access logs while connected to any chain */
   const publicClient = createPublicClient({
     chain,
     transport: http(),
@@ -65,6 +78,7 @@ const getErc20TokenTransferLogs = async (
       to: toAddress,
     },
     fromBlock: startBlock,
+    toBlock: toBlock ?? null,
   })
 
   return logs
