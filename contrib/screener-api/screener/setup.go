@@ -29,7 +29,7 @@ func setupScreener(rulesets map[string]config.RulesetConfig) (internal.RulesetMa
 // Set is a struct for the screener set.
 type Set struct {
 	Enabled    string `csv:"Enabled"`
-	ID         int    `csv:"ID"`
+	ID         string `csv:"ID"`
 	Category   string `csv:"Category"`
 	Name       string `csv:"Name"`
 	TypeOfRisk string `csv:"Type of risk"`
@@ -54,7 +54,7 @@ func parseCsv(file string) (risks map[string]bool, err error) {
 
 	risks = make(map[string]bool)
 	for _, screener := range screeners {
-		risks[strings.ToLower(fmt.Sprintf("%s_%s", screener.Category, screener.TypeOfRisk))] = screener.Enabled == "true"
+		risks[strings.ToLower(fmt.Sprintf("%s_%s", screener.Category, screener.TypeOfRisk))] = strings.EqualFold(screener.Enabled, "true")
 	}
 
 	return risks, nil

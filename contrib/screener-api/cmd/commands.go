@@ -11,8 +11,8 @@ import (
 )
 
 var fileFlag = &cli.StringFlag{
-	Name:  "file",
-	Usage: "--file /Users/synapsecns/config.yaml",
+	Name:  "config",
+	Usage: "--config /Users/synapsecns/config.yaml",
 }
 
 var screenerCommand = &cli.Command{

@@ -14,7 +14,7 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-args: ["server", "--port=5080", "--config=/config/config.yml"]
+args: ["screener", "--config=/config/config.yml"]
 
 serviceAccount:
   # Specifies whether a service account should be created
