@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -84,7 +85,7 @@ func (s *ScreenerSuite) TestScreener() {
 				Filename: s.makeTestCSV([]screener.Set{
 					{
 						Enabled:    "true",
-						ID:         1,
+						ID:         strconv.Itoa(1),
 						Category:   "test_category",
 						Name:       "name",
 						Severity:   "severity",
