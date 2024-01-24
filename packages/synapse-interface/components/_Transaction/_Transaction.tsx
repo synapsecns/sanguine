@@ -16,8 +16,18 @@ import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/Tr
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
 
-const TransactionStatus = ({ string }) => {
-  return <>{string}</>
+const TransactionStatus = ({
+  string,
+  className,
+}: {
+  string: string
+  className?: string
+}) => {
+  return (
+    <div id="transaction-status" className={className}>
+      {string}
+    </div>
+  )
 }
 
 const TimeRemaining = ({
@@ -156,6 +166,7 @@ export const _Transaction = ({
         flex flex-col gap-1 justify-end items-center my-2
         bg-tint fill-surface text-primary
         border border-solid border-surface rounded-md
+        text-xs md:text-base
       `}
     >
       <div className="flex items-center w-full">
@@ -168,7 +179,7 @@ export const _Transaction = ({
           />
           <TransactionArrow className="bg-tint fill-surface" />
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
           <TransactionPayloadDetail
             chain={destinationChain}
             token={destinationToken}
@@ -177,9 +188,10 @@ export const _Transaction = ({
           />
           <div className="mt-1 text-xs">
             {new Date(timestamp * 1000).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
               hour: '2-digit',
               minute: '2-digit',
-              second: '2-digit',
               hour12: true,
             })}
             {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
@@ -188,7 +200,7 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" />
+            <TransactionStatus string="Complete" className="text-green-300" />
           ) : (
             <TransactionStatus string="Pending" />
           )}

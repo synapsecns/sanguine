@@ -16,6 +16,9 @@ contract FastBridge is IFastBridge, Admin {
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
+    /// @notice Prove period added to deadline period for proven transactions
+    uint256 public constant PROVE_PERIOD = 60 minutes;
+
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
@@ -126,6 +129,9 @@ contract FastBridge is IFastBridge, Admin {
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
 
+        // check haven't exceeded deadline for relay to happen
+        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
+
         // mark bridge transaction as relayed
         if (bridgeRelays[transactionId]) revert TransactionRelayed();
         bridgeRelays[transactionId] = true;
@@ -167,8 +173,8 @@ contract FastBridge is IFastBridge, Admin {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
-        // check haven't exceeded deadline for relay to happen
-        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
+        // check haven't exceeded deadline for prove to happen
+        if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert DeadlineExceeded();
 
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
@@ -239,7 +245,9 @@ contract FastBridge is IFastBridge, Admin {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
-        if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
+
+        // check exceeded deadline for prove to happen
+        if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert DeadlineNotExceeded();
 
         // set status to refunded if still in requested state
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
