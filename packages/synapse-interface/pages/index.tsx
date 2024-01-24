@@ -5,6 +5,39 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
 
+import { useState, useEffect } from 'react'
+import { useContractEvent, erc20ABI } from 'wagmi'
+
+import { createPublicClient, http, parseAbiItem, Address } from 'viem'
+import { arbitrum } from 'viem/chains'
+
+export const publicClient = createPublicClient({
+  chain: arbitrum,
+  transport: http(),
+})
+
+const getErc20TokenTransferLogs = async () => {
+  const logs = await publicClient.getLogs({
+    address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    event: {
+      type: 'event', // Added 'type' property
+      name: 'Transfer',
+      inputs: [
+        { type: 'address', indexed: true, name: 'from' },
+        { type: 'address', indexed: true, name: 'to' },
+        { type: 'uint256', indexed: false, name: 'value' },
+      ],
+    },
+    args: {
+      from: '0xF080B794AbF6BB905F2330d25DF545914e6027F8',
+      to: '0x81EF4608B796265F1e3695cE00FdCfC8aA5933Dd',
+    },
+    fromBlock: 173545730n,
+  })
+
+  console.log('logs: ', logs)
+}
+
 // TODO: someone should add this to the .env, disable if blank, etc.
 // this is being added as a hotfix to assess user load on the synapse explorer api
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
@@ -13,6 +46,12 @@ ReactGA.initialize(TRACKING_ID)
 
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
+
+  useEffect(() => {
+    ;(async () => {
+      await getErc20TokenTransferLogs()
+    })()
+  }, [])
 
   return (
     <LandingPageWrapper>
