@@ -42,6 +42,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// ScreenerAPIUrl is the TRM API key.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
 	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
 }
