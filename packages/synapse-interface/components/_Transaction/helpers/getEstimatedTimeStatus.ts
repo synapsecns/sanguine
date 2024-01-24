@@ -12,7 +12,8 @@ export const getEstimatedTimeStatus = (
   estimatedTime: number
 ) => {
   const elapsedTime = currentTime - initialTime
-  const remainingTime = estimatedTime - elapsedTime
+  const nonNegativeElapsedTime = 0 > elapsedTime ? 0 : elapsedTime
+  const remainingTime = estimatedTime - nonNegativeElapsedTime
 
   const oneMinuteInSeconds = 60
 
@@ -20,7 +21,7 @@ export const getEstimatedTimeStatus = (
   const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
 
   return {
-    elapsedTime,
+    elapsedTime: nonNegativeElapsedTime,
     remainingTime,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,

@@ -11,23 +11,31 @@ export const ProgressBar = ({
   totalTime,
   isComplete,
 }: ProgressBarProps) => {
-  const [progress, setProgress] = useState(0)
+  const currentProgress = (elapsedTime / totalTime) * 100
+  const [progress, setProgress] = useState(currentProgress)
 
-  const percentageReachedOfTotal = (elapsedTime / totalTime) * 100
+  console.log('elapsedTime:', elapsedTime)
+  console.log('totalTime:', totalTime)
 
   useEffect(() => {
     if (isComplete) {
-      /** Set Progress to 200% to speed up animation */
       setProgress(200)
     } else {
-      setProgress(percentageReachedOfTotal)
+      const interval = setInterval(() => {
+        setProgress((prevProgress) => prevProgress + 1)
+      }, 1000)
+
+      return () => clearInterval(interval)
+      // setProgress(currentProgress)
     }
-  }, [percentageReachedOfTotal, isComplete])
+  }, [currentProgress, isComplete])
+
+  console.log('progress: ', progress)
 
   return (
-    <div id="progress-bar" className="w-full h-2 overflow-hidden bg-gray-200">
+    <div id="progress-bar" className="w-full h-1 overflow-hidden bg-gray-200">
       <div
-        style={{ width: `${progress}%`, transition: 'width 1s ease-in-out' }}
+        style={{ width: `${progress}%`, transition: 'width 1s linear' }}
         className="h-full bg-green-300"
       ></div>
     </div>
