@@ -8,8 +8,6 @@ import { Chain, CustomRpcs } from 'types'
 
 export const SynapseContext = createContext(null)
 
-const STALL_TIMEOUT = 1000 // 1s or 1000ms
-
 export const SynapseProvider = memo(
   ({
     children,
@@ -22,60 +20,7 @@ export const SynapseProvider = memo(
   }) => {
     const synapseProviders = useMemo(() => {
       return chains.map((chain) => {
-        let providers
-        let fallbackProvider
-
-        /** Include Consumer custom rpc if provided */
-        /** Consumer provided rpc will have highest priority */
-        if (customRpcs && customRpcs[chain.id]) {
-          providers = [
-            new StaticJsonRpcProvider(customRpcs[chain.id], chain.id),
-            new StaticJsonRpcProvider(chain.rpcUrls.primary, chain.id),
-            new StaticJsonRpcProvider(chain.rpcUrls.fallback, chain.id),
-          ]
-
-          fallbackProvider = new FallbackProvider(
-            [
-              {
-                provider: providers[0],
-                priority: 1,
-                stallTimeout: STALL_TIMEOUT,
-              },
-              {
-                provider: providers[1],
-                priority: 2,
-                stallTimeout: STALL_TIMEOUT,
-              },
-              {
-                provider: providers[2],
-                priority: 2,
-                stallTimeout: STALL_TIMEOUT,
-              },
-            ],
-            1
-          )
-        } else {
-          providers = [
-            new StaticJsonRpcProvider(chain.rpcUrls.primary, chain.id),
-            new StaticJsonRpcProvider(chain.rpcUrls.fallback, chain.id),
-          ]
-
-          fallbackProvider = new FallbackProvider(
-            [
-              {
-                provider: providers[0],
-                stallTimeout: STALL_TIMEOUT,
-              },
-              {
-                provider: providers[1],
-                stallTimeout: STALL_TIMEOUT,
-              },
-            ],
-            1
-          )
-        }
-
-        return fallbackProvider
+        return configureFallbackProvider(chain, customRpcs)
       })
     }, [chains])
 
@@ -105,3 +50,41 @@ export const SynapseProvider = memo(
 )
 
 export const useSynapseContext = () => useContext(SynapseContext)
+
+/**
+ * Configure providers based on custom RPCs and chain data.
+ *
+ * Set available rpcs to equivalent priorities to ensure
+ * highest level of resilience in FallbackProvider if one fails
+ */
+const configureFallbackProvider = (chain: Chain, customRpcs?: CustomRpcs) => {
+  const stallTime = 750 // in ms
+  let providerConfigs
+
+  if (customRpcs && customRpcs[chain.id]) {
+    // Custom RPC available
+    providerConfigs = [
+      { url: customRpcs[chain.id], priority: 1 },
+      { url: chain.rpcUrls.primary, priority: 1 },
+      { url: chain.rpcUrls.fallback, priority: 1 },
+    ]
+  } else {
+    // Default RPCs provided
+    providerConfigs = [
+      { url: chain.rpcUrls.primary, priority: 1 },
+      { url: chain.rpcUrls.fallback, priority: 1 },
+    ]
+  }
+
+  const providers = providerConfigs.map(
+    (config) => new StaticJsonRpcProvider(config.url, chain.id)
+  )
+
+  const fallbackProviderConfig = providerConfigs.map((config, index) => ({
+    provider: providers[index],
+    priority: config.priority,
+    stallTimeout: stallTime,
+  }))
+
+  return new FallbackProvider(fallbackProviderConfig, 1)
+}
