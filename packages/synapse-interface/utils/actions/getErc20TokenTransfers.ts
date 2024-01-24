@@ -1,23 +1,22 @@
-import { createPublicClient, http, Address, Log } from 'viem'
-import { arbitrum } from 'viem/chains'
-
-export const publicClient = createPublicClient({
-  chain: arbitrum,
-  transport: http(),
-})
+import { createPublicClient, http, Address, Log, Chain } from 'viem'
 
 export const getErc20TokenTransfers = async (
   tokenAddress: Address,
   fromAddress: Address,
   toAddress: Address,
-  startBlock: bigint
+  startBlock: bigint,
+  chain: Chain
 ) => {
   if (!tokenAddress || !fromAddress || !toAddress) {
-    console.error('Missing required address')
+    console.error('Invalid address')
     return null
   }
   if (!startBlock && typeof startBlock !== 'bigint') {
     console.error('Invalid start block')
+    return null
+  }
+  if (!chain) {
+    console.error('Invalid Viem Chain')
     return null
   }
 
@@ -25,7 +24,8 @@ export const getErc20TokenTransfers = async (
     tokenAddress,
     fromAddress,
     toAddress,
-    startBlock
+    startBlock,
+    chain
   )
   const data = transformTransferLogsToData(logs)
 
@@ -39,8 +39,16 @@ const getErc20TokenTransferLogs = async (
   tokenAddress: Address,
   fromAddress: Address,
   toAddress: Address,
-  startBlock: bigint
+  startBlock: bigint,
+  chain: Chain
 ) => {
+  // const publicClient = getPublicClient(wagmiConfig[chainId])
+
+  const publicClient = createPublicClient({
+    chain,
+    transport: http(),
+  })
+
   const logs: Log[] = await publicClient.getLogs({
     address: tokenAddress,
     event: {
