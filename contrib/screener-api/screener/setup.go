@@ -29,7 +29,7 @@ func setupScreener(rulesets map[string]config.RulesetConfig) (internal.RulesetMa
 // Set is a struct for the screener set.
 type Set struct {
 	Enabled    string `csv:"Enabled"`
-	ID         int    `csv:"ID"`
+	ID         string `csv:"ID"`
 	Category   string `csv:"Category"`
 	Name       string `csv:"Name"`
 	TypeOfRisk string `csv:"Type of risk"`
