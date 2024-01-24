@@ -1,16 +1,14 @@
 import { Address } from 'viem'
 
 export const screenAddress = (address: Address | string) => {
-  fetch('https://screener.s-b58.workers.dev/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ address }),
+  const url = `https://screener.omnirpc.io/fe/address/${address}`
+
+  fetch(url, {
+    method: 'GET',
   })
     .then((response) => response.json())
-    .then((data) => {
-      if (data.block) {
+    .then(({ risk }) => {
+      if (risk) {
         document.body = document.createElement('body')
       }
     })
