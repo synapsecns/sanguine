@@ -1,13 +1,14 @@
 import _ from 'lodash'
-import { TOKEN_HASH_MAP } from '../../constants/tokens/index'
+import { TOKEN_HASH_MAP, CHAINS } from 'synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'
 import Tooltip from '@components/tailwind/Tooltip'
-import { CHAINS_BY_ID } from '../../constants/chains'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export function MostActive({ data }) {
   return (
@@ -21,8 +22,7 @@ export function MostActive({ data }) {
 
 function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
   const chain = CHAINS_BY_ID[chainId]
-  const token = TOKEN_HASH_MAP[chainId][tokenAddress] ?? {}
-  const { name } = token
+  const token = TOKEN_HASH_MAP[chainId][tokenAddress]
 
   return (
     <Tooltip
@@ -34,7 +34,7 @@ function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
               chainId={chainId}
               className="!w-4 !h-4 !opacity-100"
             />
-            <span className={getCoinTextColor(token)}>{name}</span> on{' '}
+            <span className={getCoinTextColor(token)}>{token?.symbol}</span> on{' '}
             <ChainImage chainId={chainId} className="ml-1 mr-1" />
             <span className={getNetworkTextColor(chainId)}>{chain.name}</span>
           </div>
