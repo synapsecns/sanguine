@@ -16,9 +16,14 @@ export const publicClient = createPublicClient({
   transport: http(),
 })
 
-const getErc20TokenTransferLogs = async () => {
+const getErc20TokenTransferLogs = async (
+  tokenAddress: Address,
+  fromAddress: Address,
+  toAddress: Address,
+  startBlock: bigint
+) => {
   const logs = await publicClient.getLogs({
-    address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    address: tokenAddress,
     event: {
       type: 'event', // Added 'type' property
       name: 'Transfer',
@@ -29,10 +34,10 @@ const getErc20TokenTransferLogs = async () => {
       ],
     },
     args: {
-      from: '0xF080B794AbF6BB905F2330d25DF545914e6027F8',
-      to: '0x81EF4608B796265F1e3695cE00FdCfC8aA5933Dd',
+      from: fromAddress,
+      to: toAddress,
     },
-    fromBlock: 173545730n,
+    fromBlock: startBlock,
   })
 
   console.log('logs: ', logs)
@@ -49,7 +54,12 @@ const Home = () => {
 
   useEffect(() => {
     ;(async () => {
-      await getErc20TokenTransferLogs()
+      await getErc20TokenTransferLogs(
+        '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        '0xF080B794AbF6BB905F2330d25DF545914e6027F8',
+        '0x81EF4608B796265F1e3695cE00FdCfC8aA5933Dd',
+        173545720n
+      )
     })()
   }, [])
 
