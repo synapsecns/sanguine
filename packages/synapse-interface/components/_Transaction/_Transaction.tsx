@@ -14,6 +14,7 @@ import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
+import { ProgressBar } from './components/ProgressBar'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -62,8 +63,12 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
-    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  const {
+    isStartCheckingTimeReached,
+    isEstimatedTimeReached,
+    remainingTime,
+    elapsedTime,
+  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -166,6 +171,11 @@ export const _Transaction = ({
           </div>
         </div>
       </div>
+      <ProgressBar
+        elapsedTime={elapsedTime}
+        totalTime={estimatedTime}
+        isComplete={isTxFinalized}
+      />
     </div>
   )
 }
