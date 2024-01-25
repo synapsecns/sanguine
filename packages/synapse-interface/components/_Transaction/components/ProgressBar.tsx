@@ -26,8 +26,8 @@ export const ProgressBar = ({
     <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
       <div
         style={{
-          width: `${isComplete ? 150 : currentProgressInPercent}%`,
-          transition: `width 1s ${isComplete ? 'ease-in' : 'linear'}`,
+          width: `${isComplete ? 100 : currentProgressInPercent}%`,
+          transition: `${isComplete ? 'width 1s ease-in' : 'width 1s linear'}`,
         }}
         className="h-full bg-green-500"
       ></div>
