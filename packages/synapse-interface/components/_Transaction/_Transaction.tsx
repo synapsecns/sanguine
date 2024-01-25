@@ -70,6 +70,7 @@ export const _Transaction = ({
     isStartCheckingTimeReached,
     isEstimatedTimeReached,
     remainingTime,
+    targetTime,
     elapsedTime,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
@@ -175,8 +176,9 @@ export const _Transaction = ({
         </div>
       </div>
       <ProgressBar
-        elapsedTime={elapsedTime}
-        totalTime={estimatedTime} // Double time for visual buffer
+        initialTime={timestamp}
+        targetTime={targetTime}
+        estimatedDurationTime={estimatedTime} // Double time for visual buffer
         isComplete={isTxFinalized}
       />
     </div>
