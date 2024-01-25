@@ -16,27 +16,21 @@ export const ProgressBar = ({
 
   console.log('elapsedTime:', elapsedTime)
   console.log('totalTime:', totalTime)
+  console.log('progress: ', progress)
 
   useEffect(() => {
     if (isComplete) {
       setProgress(200)
     } else {
-      const interval = setInterval(() => {
-        setProgress((prevProgress) => prevProgress + 1)
-      }, 1000)
-
-      return () => clearInterval(interval)
-      // setProgress(currentProgress)
+      setProgress(currentProgress)
     }
   }, [currentProgress, isComplete])
 
-  console.log('progress: ', progress)
-
   return (
-    <div id="progress-bar" className="w-full h-1 overflow-hidden bg-gray-200">
+    <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
       <div
         style={{ width: `${progress}%`, transition: 'width 1s linear' }}
-        className="h-full bg-green-300"
+        className="h-full bg-green-500"
       ></div>
     </div>
   )

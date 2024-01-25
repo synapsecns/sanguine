@@ -63,6 +63,9 @@ export const _Transaction = ({
     connectedAddress
   )
 
+  console.log('currentTime:', currentTime)
+  console.log('timestamp: ', timestamp)
+
   const {
     isStartCheckingTimeReached,
     isEstimatedTimeReached,
