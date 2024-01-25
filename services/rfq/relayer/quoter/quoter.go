@@ -4,10 +4,11 @@ package quoter
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.opentelemetry.io/otel/attribute"
@@ -265,7 +266,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              quoteAmount.String(),
+					DestAmount:              m.getDestAmount(quoteAmount).String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
@@ -314,6 +315,13 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 		quoteAmount = balance
 	}
 	return quoteAmount
+}
+
+func (m *Manager) getDestAmount(quoteAmount *big.Int) *big.Int {
+	quoteOffsetBps := m.config.GetQuoteOffsetBps()
+	quoteOffsetFactor := 1 - (float64(quoteOffsetBps) / 10000)
+	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), new(big.Float).SetFloat64(quoteOffsetFactor)).Int(nil)
+	return destAmount
 }
 
 // Submits a single quote.
