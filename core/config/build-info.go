@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/integralist/go-findroot/find"
+	"os"
 	"time"
 )
 
@@ -42,6 +43,10 @@ type BuildInfo struct {
 func NewBuildInfo(version, commit, name, date string) BuildInfo {
 	if commit == DefaultCommit {
 		commit = getCurrentCommit()
+	}
+
+	if os.Getenv("NAME_PREFIX") != "" {
+		name = os.Getenv("NAME_PREFIX") + "-" + name
 	}
 
 	return BuildInfo{
