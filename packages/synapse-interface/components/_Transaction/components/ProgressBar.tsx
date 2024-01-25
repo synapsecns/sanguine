@@ -22,14 +22,11 @@ export const ProgressBar = ({
 
   const currentProgressInPercent = currentProgressInFraction * 100
 
-  // console.log('initialTime:', initialTime)
-  // console.log('targetTime:', targetTime)
-
   return (
     <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
       <div
         style={{
-          width: `${isComplete ? 200 : currentProgressInPercent}%`,
+          width: `${isComplete ? 300 : currentProgressInPercent}%`,
           transition: 'width 1s linear',
         }}
         className="h-full bg-green-500"
