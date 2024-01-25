@@ -53,6 +53,7 @@ func NewSTIPRelayer(ctx context.Context,
 	if err != nil {
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
+	fmt.Println("Signer address is: %s", sg.Address)
 	sm := submitter.NewTransactionSubmitter(handler, sg, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 	return &STIPRelayer{
 		cfg:           cfg,
