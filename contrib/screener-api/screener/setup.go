@@ -54,7 +54,7 @@ func parseCsv(file string) (risks map[string]bool, err error) {
 
 	risks = make(map[string]bool)
 	for _, screener := range screeners {
-		risks[strings.ToLower(fmt.Sprintf("%s_%s", screener.Category, screener.TypeOfRisk))] = strings.EqualFold(screener.Enabled, "true")
+		risks[internal.MakeParam(screener.Category, screener.TypeOfRisk)] = strings.EqualFold(screener.Enabled, "true")
 	}
 
 	return risks, nil

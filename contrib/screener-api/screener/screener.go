@@ -3,6 +3,7 @@ package screener
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -19,8 +20,10 @@ import (
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/exp/slices"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -36,6 +39,8 @@ type screenerImpl struct {
 	metrics      metrics.Handler
 	cfg          config.Config
 	client       trmlabs.Client
+	blacklist    []string
+	blacklistMux sync.RWMutex
 }
 
 var logger = log.Logger("screener")
@@ -73,7 +78,49 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	return &screener, nil
 }
 
+func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.cfg.BlacklistURL, nil)
+	if err != nil {
+		logger.Errorf("could not create blacklist request: %s", err)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.Errorf("could not fetch blacklist: %s", err)
+		return
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	var blacklist []string
+	err = json.NewDecoder(resp.Body).Decode(&blacklist)
+	if err != nil {
+		logger.Errorf("could not decode blacklist: %s", err)
+		return
+	}
+
+	s.blacklistMux.Lock()
+	defer s.blacklistMux.Unlock()
+
+	for _, item := range blacklist {
+		s.blacklist = append(s.blacklist, strings.ToLower(item))
+	}
+}
+
 func (s *screenerImpl) Start(ctx context.Context) error {
+	// TODO: potential race condition here, if the blacklist is not fetched before the first request
+	// in practice trm will catch
+	go func() {
+		for {
+			if s.cfg.BlacklistURL != "" {
+				s.fetchBlacklist(ctx)
+				time.Sleep(1 * time.Second * 15)
+			}
+		}
+	}()
 	connection := baseServer.Server{}
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
 	if err != nil {
@@ -96,6 +143,14 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "address is required"})
 		return
 	}
+
+	s.blacklistMux.RLock()
+	if slices.Contains(s.blacklist, address) {
+		c.JSON(http.StatusOK, gin.H{"risk": true})
+		s.blacklistMux.RUnlock()
+		return
+	}
+	s.blacklistMux.RUnlock()
 
 	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "screenAddress", trace.WithAttributes(attribute.String("address", address)))
 	defer func() {
@@ -124,7 +179,15 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"risk": hasIndicator})
 }
 
-func (s *screenerImpl) getIndicators(ctx context.Context, address string, goodUntil time.Time) ([]trmlabs.AddressRiskIndicator, error) {
+func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, goodUntil time.Time) (indicators []trmlabs.AddressRiskIndicator, err error) {
+	ctx, span := s.metrics.Tracer().Start(parentCtx, "get-indicators")
+	defer func() {
+		// nolint: errchkjson
+		marshalledIndicators, _ := json.Marshal(indicators)
+		span.AddEvent("indicators", trace.WithAttributes(attribute.String("indicators", string(marshalledIndicators))))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	riskIndicators, err := s.db.GetAddressIndicators(ctx, address, goodUntil)
 	if err == nil {
 		return riskIndicators, nil
