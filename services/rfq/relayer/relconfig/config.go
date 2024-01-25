@@ -301,7 +301,7 @@ func (c Config) GetQuotePct() float64 {
 
 const defaultQuoteOffsetBps = 0
 
-// GetQuoteOffsetBps returns the quote offset bps.
+// GetQuoteOffsetBps returns the quote offset in basis points.
 func (c Config) GetQuoteOffsetBps() int {
 	if c.QuoteOffsetBps <= 0 {
 		return defaultQuoteOffsetBps
