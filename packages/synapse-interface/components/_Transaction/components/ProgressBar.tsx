@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useIntervalTimer } from '../helpers/useIntervalTimer'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 type ProgressBarProps = {
@@ -14,24 +15,17 @@ export const ProgressBar = ({
   estimatedDurationTime,
   isComplete,
 }: ProgressBarProps) => {
-  const [currentTime, setCurrentTime] = useState(getTimeMinutesBeforeNow(0))
+  const currentTime = useIntervalTimer(1000)
 
   const currentProgressInFraction =
     (currentTime - initialTime) / estimatedDurationTime
+
   const currentProgressInPercent = currentProgressInFraction * 100
 
   console.log('currentTime: ', currentTime)
   console.log('targetTime:', targetTime)
   console.log('initialTime:', initialTime)
   console.log('currentProgressInPercent:', currentProgressInPercent)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(getTimeMinutesBeforeNow(0))
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   return (
     <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
