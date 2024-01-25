@@ -241,6 +241,16 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	))
 
 	defer func(err error) {
+		for chainID, tokenMap := range i.tokens {
+			for tokenAddress, token := range tokenMap {
+				span.AddEvent(fmt.Sprintf("got metadata for %s on chain %d", token.name, chainID), trace.WithAttributes(
+					attribute.String("token_address", tokenAddress.String()),
+					attribute.String("balance", token.balance.String()),
+					attribute.String("start_allowance", token.startAllowance.String()),
+					attribute.Bool("is_gas_token", token.isGasToken),
+				))
+			}
+		}
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
