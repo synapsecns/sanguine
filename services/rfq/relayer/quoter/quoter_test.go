@@ -116,3 +116,35 @@ func (s *QuoterSuite) TestGetQuoteAmount() {
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 }
+
+func (s *QuoterSuite) TestGetDestAmount() {
+	balance := big.NewInt(1000_000_000) // 1000 USDC
+
+	setQuoteParams := func(quoteOffsetBps int) {
+		s.config.QuoteOffsetBps = quoteOffsetBps
+		s.manager.SetConfig(s.config)
+	}
+
+	// Set default quote params; should return the balance.
+	destAmount := s.manager.GetDestAmount(balance)
+	expectedAmount := balance
+	s.Equal(expectedAmount, destAmount)
+
+	// Set QuoteOffsetBps to 100, should return 99% of balance.
+	setQuoteParams(100)
+	destAmount = s.manager.GetDestAmount(balance)
+	expectedAmount = big.NewInt(990_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set QuoteOffsetBps to 500, should return 95% of balance.
+	setQuoteParams(500)
+	destAmount = s.manager.GetDestAmount(balance)
+	expectedAmount = big.NewInt(950_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set QuoteOffsetBps to -100, should default to balance.
+	setQuoteParams(-100)
+	destAmount = s.manager.GetDestAmount(balance)
+	expectedAmount = balance
+	s.Equal(expectedAmount, expectedAmount)
+}

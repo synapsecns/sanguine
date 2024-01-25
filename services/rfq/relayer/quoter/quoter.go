@@ -319,8 +319,9 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 
 func (m *Manager) getDestAmount(quoteAmount *big.Int) *big.Int {
 	quoteOffsetBps := m.config.GetQuoteOffsetBps()
-	quoteOffsetFactor := 1 - (float64(quoteOffsetBps) / 10000)
-	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), new(big.Float).SetFloat64(quoteOffsetFactor)).Int(nil)
+	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
+	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
+	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), quoteOffsetFactor).Int(nil)
 	return destAmount
 }
 
