@@ -266,7 +266,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              m.getDestAmount(quoteAmount).String(),
+					DestAmount:              m.getDestAmount(ctx, quoteAmount).String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
@@ -317,11 +317,25 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 	return quoteAmount
 }
 
-func (m *Manager) getDestAmount(quoteAmount *big.Int) *big.Int {
+func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int) *big.Int {
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
+		attribute.String("quote_amount", quoteAmount.String()),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	quoteOffsetBps := m.config.GetQuoteOffsetBps()
 	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
 	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
 	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), quoteOffsetFactor).Int(nil)
+
+	span.SetAttributes(
+		attribute.Int("quote_offset_bps", quoteOffsetBps),
+		attribute.String("quote_offset_fraction", quoteOffsetFraction.String()),
+		attribute.String("quote_offset_factor", quoteOffsetFactor.String()),
+		attribute.String("dest_amount", destAmount.String()),
+	)
 	return destAmount
 }
 
