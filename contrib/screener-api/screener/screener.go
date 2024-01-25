@@ -22,6 +22,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -37,6 +38,8 @@ type screenerImpl struct {
 	metrics      metrics.Handler
 	cfg          config.Config
 	client       trmlabs.Client
+	blacklist    []string
+	blacklistMux sync.RWMutex
 }
 
 var logger = log.Logger("screener")
@@ -74,7 +77,49 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	return &screener, nil
 }
 
+func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.cfg.BlacklistURL, nil)
+	if err != nil {
+		logger.Errorf("could not create blacklist request: %s", err)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.Errorf("could not fetch blacklist: %s", err)
+		return
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	var blacklist []string
+	err = json.NewDecoder(resp.Body).Decode(&blacklist)
+	if err != nil {
+		logger.Errorf("could not decode blacklist: %s", err)
+		return
+	}
+
+	s.blacklistMux.Lock()
+	defer s.blacklistMux.Unlock()
+
+	for _, item := range blacklist {
+		s.blacklist = append(s.blacklist, strings.ToLower(item))
+	}
+}
+
 func (s *screenerImpl) Start(ctx context.Context) error {
+	// TODO: potential race condition here, if the blacklist is not fetched before the first request
+	// in practice trm will catch
+	go func() {
+		for {
+			if s.cfg.BlacklistURL != "" {
+				s.fetchBlacklist(ctx)
+				time.Sleep(1 * time.Minute)
+			}
+		}
+	}()
 	connection := baseServer.Server{}
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
 	if err != nil {
