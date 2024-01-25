@@ -48,7 +48,7 @@ func NewBuildInfo(version, commit, name, date string) BuildInfo {
 
 	prefix := os.Getenv("NAME_PREFIX")
 	if prefix != "" {
-		name = prefix + "-" + name
+		name = fmt.Sprintf("%s-%s", prefix, name)
 	}
 
 	return BuildInfo{
