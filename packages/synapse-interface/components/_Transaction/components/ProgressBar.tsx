@@ -18,9 +18,12 @@ export const ProgressBar = ({
   const currentTime = useIntervalTimer(1000)
 
   const currentProgressInFraction =
-    (currentTime - initialTime) / estimatedDurationTime
+    (currentTime - initialTime) / (targetTime - initialTime)
 
   const currentProgressInPercent = currentProgressInFraction * 100
+
+  // console.log('initialTime:', initialTime)
+  // console.log('targetTime:', targetTime)
 
   return (
     <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
