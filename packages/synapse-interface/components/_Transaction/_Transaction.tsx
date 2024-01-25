@@ -63,15 +63,12 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  console.log('currentTime:', currentTime)
-  console.log('timestamp: ', timestamp)
-
   const {
-    isStartCheckingTimeReached,
-    isEstimatedTimeReached,
-    remainingTime,
     targetTime,
     elapsedTime,
+    remainingTime,
+    isEstimatedTimeReached,
+    isStartCheckingTimeReached,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
