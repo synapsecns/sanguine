@@ -146,5 +146,5 @@ func (s *QuoterSuite) TestGetDestAmount() {
 	setQuoteParams(-100)
 	destAmount = s.manager.GetDestAmount(s.GetTestContext(), balance)
 	expectedAmount = balance
-	s.Equal(expectedAmount, expectedAmount)
+	s.Equal(expectedAmount, destAmount)
 }
