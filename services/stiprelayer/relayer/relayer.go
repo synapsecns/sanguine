@@ -1,14 +1,11 @@
 package relayer
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"math/big"
-	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -33,53 +30,6 @@ import (
 
 // Call database
 // Submit transactions for corresponding rebate
-
-// DuneAPIKey is the API key for Dune, fetched from the environment variables.
-var DuneAPIKey = os.Getenv("DUNE_API_KEY")
-
-// ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
-func ExecuteDuneQuery(queryType string) (*http.Response, error) {
-	client := &http.Client{}
-	var queryID string
-	if queryType == "bridge" {
-		queryID = "3345214"
-	} else if queryType == "rfq" {
-		queryID = "3348161"
-	}
-	req, err := http.NewRequest(http.MethodPost, "https://api.dune.com/api/v1/query/"+queryID+"/execute", bytes.NewBufferString(`{"performance": "large"}`))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-Dune-API-Key", DuneAPIKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("EXECUTING DUNE QUERY")
-	return resp, nil
-}
-
-// GetExecutionResults fetches the results of a Dune query execution using the provided execution ID.
-func GetExecutionResults(ctx context.Context, executionID string) (*http.Response, error) {
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.dune.com/api/v1/execution/"+executionID+"/results", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-Dune-API-Key", DuneAPIKey)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("GETTING EXECUTION RESULTS")
-
-	return resp, nil
-}
 
 // STIPRelayer is the main struct for the STIP relayer service.
 type STIPRelayer struct {
@@ -170,7 +120,7 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 	}
 	t, err := time.Parse(ctLayout, s)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse time: %w", err)
 	}
 	ct.Time = t
 	return nil
@@ -178,10 +128,6 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 
 // Run starts the STIPRelayer service by initiating various goroutines.
 func (s *STIPRelayer) Run(ctx context.Context) error {
-	// Create a cancellable context
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel() // ensure cancel is called to clean up resources
-
 	g, ctx := errgroup.WithContext(ctx)
 
 	// Start the submitter goroutine
@@ -189,8 +135,14 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		return s.StartSubmitter(ctx)
 	})
 
-	s.ProcessExecutionResults(ctx, "bridge")
-	s.ProcessExecutionResults(ctx, "rfq")
+	err := s.ProcessExecutionResults(ctx, "bridge")
+	if err != nil {
+		return fmt.Errorf("error processing execution results for bridge: %w", err)
+	}
+	err = s.ProcessExecutionResults(ctx, "rfq")
+	if err != nil {
+		return fmt.Errorf("error processing execution results for rfq: %w", err)
+	}
 
 	// Start the ticker goroutine for requesting and storing execution results
 	g.Go(func() error {
@@ -204,7 +156,7 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 
 	// Wait for all goroutines to finish
 	if err := g.Wait(); err != nil {
-		return err // handle the error from goroutines
+		return fmt.Errorf("could not run: %w", err) // handle the error from goroutines
 	}
 
 	return nil
@@ -216,7 +168,7 @@ func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 	if err != nil {
 		fmt.Printf("could not start submitter: %v", err)
 		// TODO: Will this force a panic in the Run() function?
-		return err // panic in case submitter cannot start
+		return fmt.Errorf("could not start submitter: %w", err) // panic in case submitter cannot start
 	}
 	return nil
 }
@@ -229,6 +181,7 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			//nolint: wrapcheck
 			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
 			if err := s.ProcessExecutionResults(ctx, "bridge"); err != nil {
@@ -248,58 +201,33 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 }
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
-func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context, queryType string) error {
+func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context, queryType string) (err error) {
 	fmt.Println("Starting execution logic")
-	resp, err := ExecuteDuneQuery(queryType)
+
+	ctx, span := s.handler.Tracer().Start(parentCtx, "ProcessExecutionResults", trace.WithAttributes(attribute.String("queryType", queryType)))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	executionID, err := s.ExecuteDuneQuery(ctx, queryType)
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	var result map[string]string
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal response body: %w", err)
-	}
-
-	executionID, ok := result["execution_id"]
-	if !ok {
-		return fmt.Errorf("no execution_id found in response")
-	}
-
 	// TODO: remove if exponentialBackoff.InitialInterval waits 30 seconds?
 	// time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
-	var getResultsJsonResult QueryResult
+	var getResultsJSONResult QueryResult
 	operation := func() error {
-		executionResults, err := GetExecutionResults(ctx, executionID)
+		jsonResult, err := s.GetExecutionResults(ctx, executionID)
 		if err != nil {
-			return fmt.Errorf("failed to get execution results: %v", err)
-		}
-
-		if executionResults.StatusCode != http.StatusOK {
-			return fmt.Errorf("expected status code 200, got %d", executionResults.StatusCode)
-		}
-
-		getResultsBody, err := ioutil.ReadAll(executionResults.Body)
-		if err != nil {
-			return fmt.Errorf("failed to read execution results body: %w", err)
-		}
-
-		var jsonResult QueryResult
-		err = json.Unmarshal(getResultsBody, &jsonResult)
-		if err != nil {
-			return fmt.Errorf("error unmarshalling JSON: %v", err)
+			return fmt.Errorf("failed to get execution results: %w", err)
 		}
 
 		if jsonResult.State != "QUERY_STATE_COMPLETED" {
 			// query state is not completed, so return an error to retry
 			return fmt.Errorf("query state is not completed")
 		}
-		getResultsJsonResult = jsonResult
+		getResultsJSONResult = *jsonResult
 		return nil
 	}
 
@@ -311,11 +239,11 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context, queryType str
 	// Retry the operation with the backoff policy
 	err = backoff.Retry(operation, expBackOff)
 	if err != nil {
-		return fmt.Errorf("failed to get execution results after retries: %v", err)
+		return fmt.Errorf("failed to get execution results after retries: %w", err)
 	}
 
 	var rowsAfterStartDate []Row
-	for _, row := range getResultsJsonResult.Result.Rows {
+	for _, row := range getResultsJSONResult.Result.Rows {
 		// TODO: Will this panic if StartDate not set?
 		if row.BlockTime.After(s.cfg.StartDate) {
 			rowsAfterStartDate = append(rowsAfterStartDate, row)
@@ -324,7 +252,7 @@ func (s *STIPRelayer) ProcessExecutionResults(ctx context.Context, queryType str
 	fmt.Println("Number of rows after start date:", len(rowsAfterStartDate))
 
 	// Convert each Row to a STIPTransactions and store them in the database
-	return s.StoreResultsInDatabase(ctx, rowsAfterStartDate, getResultsJsonResult.ExecutionID)
+	return s.StoreResultsInDatabase(ctx, rowsAfterStartDate, getResultsJSONResult.ExecutionID)
 }
 
 // StoreResultsInDatabase handles the storage of results in the database.
@@ -349,7 +277,7 @@ func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, ex
 
 	if len(stipTransactions) > 0 {
 		if err := s.db.InsertNewStipTransactions(ctx, stipTransactions); err != nil {
-			return fmt.Errorf("error inserting new STIP transactions: %v", err)
+			return fmt.Errorf("error inserting new STIP transactions: %w", err)
 		}
 	}
 
@@ -364,6 +292,7 @@ func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			//nolint: wrapcheck
 			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
 			if err := s.RelayAndRebateTransactions(ctx); err != nil {
@@ -388,7 +317,7 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	// Query DB to get all STIPs that need to be relayed
 	stipTransactionsNotRebated, err := s.db.GetSTIPTransactionsNotRebated(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting STIP transactions not rebated: %v", err)
+		return fmt.Errorf("error getting STIP transactions not rebated: %w", err)
 	}
 	if len(stipTransactionsNotRebated) == 0 {
 		fmt.Println("No STIP transactions found that have not been rebated.")
@@ -402,7 +331,7 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 		if err := limiter.Wait(ctx); err != nil {
 			fmt.Printf("Error waiting for rate limiter: %v", err)
 			// Handle the error (e.g., break the loop or return the error)
-			return err
+			return fmt.Errorf("error waiting for rate limiter: %w", err)
 		}
 
 		// Submit and rebate the transaction

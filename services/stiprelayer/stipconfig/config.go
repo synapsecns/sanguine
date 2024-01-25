@@ -19,15 +19,22 @@ type DatabaseConfig struct {
 	DSN  string `yaml:"dsn"` // Data Source Name
 }
 
+// FeeRebate represents the fee and rebate values.
 type FeeRebate struct {
-	Fee    int `yaml:"fee"`
-	Rebate int `yaml:"rebate"`
+	Fee    int `yaml:"fee"`    // Fee is the cost that will be charged.
+	Rebate int `yaml:"rebate"` // Rebate is the amount that will be returned.
 }
 
+// TokenFeeRebate is a map where the key is a string representing a token,
+// and the value is a FeeRebate struct representing the fee and rebate for that token.
 type TokenFeeRebate map[string]FeeRebate
 
+// ModuleFeeRebate is a map where the key is a string representing a module,
+// and the value is a TokenFeeRebate map representing the fee and rebate for each token in that module.
 type ModuleFeeRebate map[string]TokenFeeRebate
 
+// FeesAndRebates is a map where the key is an integer representing a specific category or group,
+// and the value is a ModuleFeeRebate map representing the fee and rebate for each module in that category or group.
 type FeesAndRebates map[int]ModuleFeeRebate
 
 // Config holds the configuration for the STIP relayer service.

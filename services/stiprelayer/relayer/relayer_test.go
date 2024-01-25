@@ -72,7 +72,9 @@ import (
 // }
 
 func (c *STIPRelayerSuite) TestStartRelayer() {
-	go c.stipRelayer.Run(c.GetTestContext())
+	go func() {
+		_ = c.stipRelayer.Run(c.GetTestContext())
+	}()
 
 	time.Sleep(30000 * time.Millisecond)
 	results, err := c.database.GetSTIPTransactionsNotRebated(c.GetTestContext())
