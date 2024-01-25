@@ -176,7 +176,7 @@ func (s *STIPRelayer) StartSubmitter(ctx context.Context) error {
 
 // RequestAndStoreResults handles the continuous request of new execution results and storing them in the database.
 func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(s.cfg.DuneInterval)
 	defer ticker.Stop()
 
 	for {
@@ -287,7 +287,7 @@ func (s *STIPRelayer) StoreResultsInDatabase(ctx context.Context, rows []Row, ex
 
 // QueryRebateAndUpdate handles the querying for new, non-relayed/rebated results, rebates/relays them, and updates the result row.
 func (s *STIPRelayer) QueryRebateAndUpdate(ctx context.Context) error {
-	ticker := time.NewTicker(15 * time.Second)
+	ticker := time.NewTicker(s.cfg.RebateInterval)
 	defer ticker.Stop()
 
 	for {

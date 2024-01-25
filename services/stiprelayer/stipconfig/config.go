@@ -48,6 +48,8 @@ type Config struct {
 	Database        DatabaseConfig         `yaml:"database"`
 	OmniRPCURL      string                 `yaml:"omnirpc_url"`
 	FeesAndRebates  FeesAndRebates         `yaml:"fees_and_rebates"`
+	DuneInterval    time.Duration          `yaml:"dune_interval"`
+	RebateInterval  time.Duration          `yaml:"rebate_interval"`
 }
 
 // LoadConfig loads the config from the given path.
