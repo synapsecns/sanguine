@@ -27,14 +27,13 @@ type IntegrationSuite struct {
 	originBackend backends.SimulatedTestBackend
 	destBackend   backends.SimulatedTestBackend
 	//omniserver is the omnirpc server address
-	omniServer       string
-	omniClient       omnirpcClient.RPCClient
-	metrics          metrics.Handler
-	apiServer        string
-	relayerApiServer string
-	relayer          *service.Relayer
-	relayerWallet    wallet.Wallet
-	userWallet       wallet.Wallet
+	omniServer    string
+	omniClient    omnirpcClient.RPCClient
+	metrics       metrics.Handler
+	apiServer     string
+	relayer       *service.Relayer
+	relayerWallet wallet.Wallet
+	userWallet    wallet.Wallet
 }
 
 func NewIntegrationSuite(tb testing.TB) *IntegrationSuite {

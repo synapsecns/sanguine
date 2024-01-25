@@ -15,6 +15,7 @@ export const EMPTY_BRIDGE_QUOTE = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
@@ -28,6 +29,7 @@ export const EMPTY_BRIDGE_QUOTE_ZERO = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 /**
  * ETH Only Bridge Config used to calculate swap fees

@@ -68,6 +68,11 @@ import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenL
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 import { waitForTransaction } from '@wagmi/core'
+import {
+  fetchArbPrice,
+  fetchEthPrice,
+  fetchGmxPrice,
+} from '@/slices/priceDataSlice'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -183,15 +188,8 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
+        gasDropAmount,
       } = quote
-
-      // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
-      // console.log(`[getAndSetQuote] toChainId`, toChainId)
-      // console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
-      // console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
-      // console.log(`[getAndSetQuote] fromValue`, fromValue)
-      // console.log('feeAmount', feeAmount)
-      // console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -266,10 +264,15 @@ const StateManagedBridge = () => {
             },
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
+            gasDropAmount: BigInt(gasDropAmount.toString()),
           })
         )
 
         toast.dismiss(quoteToastRef.current.id)
+
+        dispatch(fetchEthPrice())
+        dispatch(fetchArbPrice())
+        dispatch(fetchGmxPrice())
 
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
@@ -334,6 +337,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       },
       true
     )
@@ -402,6 +409,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       })
       dispatch(
         updatePendingBridgeTransaction({
@@ -540,7 +551,7 @@ const StateManagedBridge = () => {
               show={true}
               {...SECTION_TRANSITION_PROPS}
             >
-              <BridgeExchangeRateInfo showGasDrop={true} />
+              <BridgeExchangeRateInfo />
             </Transition>
             {showDestinationAddress && (
               <DestinationAddressInput
