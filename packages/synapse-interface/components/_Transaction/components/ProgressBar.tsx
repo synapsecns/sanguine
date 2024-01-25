@@ -5,14 +5,14 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
 type ProgressBarProps = {
   initialTime: number
   targetTime: number
-  estimatedDurationTime: number
+  // estimatedDurationTime: number
   isComplete: boolean
 }
 
 export const ProgressBar = ({
   initialTime,
   targetTime,
-  estimatedDurationTime,
+  // estimatedDurationTime,
   isComplete,
 }: ProgressBarProps) => {
   const currentTime = useIntervalTimer(500)
@@ -26,8 +26,8 @@ export const ProgressBar = ({
     <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
       <div
         style={{
-          width: `${isComplete ? 300 : currentProgressInPercent}%`,
-          transition: 'width 1s linear',
+          width: `${isComplete ? 150 : currentProgressInPercent}%`,
+          transition: `width 1s ${isComplete ? 'ease-in' : 'linear'}`,
         }}
         className="h-full bg-green-500"
       ></div>

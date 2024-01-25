@@ -174,8 +174,8 @@ export const _Transaction = ({
       </div>
       <ProgressBar
         initialTime={timestamp}
-        targetTime={targetTime}
-        estimatedDurationTime={estimatedTime * 2} // Double time for visual buffer
+        targetTime={timestamp + estimatedTime * 2} // Double estimated time for visual buffer
+        // estimatedDurationTime={estimatedTime * 2} // Double time for visual buffer
         isComplete={isTxFinalized}
       />
     </div>
