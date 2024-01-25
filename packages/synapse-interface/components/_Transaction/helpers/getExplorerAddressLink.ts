@@ -1,15 +1,17 @@
-import { ExplorerLinks, ExplorerNames } from './constants'
+import { Chain } from '@/utils/types'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const getExplorerAddressLink = (chainId: number, address: string) => {
-  const blockExplorer = ExplorerLinks[chainId]
+  const chain: Chain = CHAINS_BY_ID[chainId]
 
-  if (blockExplorer && address) {
-    const explorerUrl = `${blockExplorer}/address/${address}`
-    const explorerName = ExplorerNames[chainId]
+  if (chain && address) {
+    const addressExplorerUrl = `${chain.explorerUrl}/address/${address}`
+    const explorerName = chain.explorerName
 
-    return [explorerUrl, explorerName]
+    return [addressExplorerUrl, explorerName]
   }
 
-  console.error('getExplorerAddressLink: ChainId or Address missing')
+  console.error('getExplorerAddressLink: Chain or Address missing')
+
   return [null, null]
 }

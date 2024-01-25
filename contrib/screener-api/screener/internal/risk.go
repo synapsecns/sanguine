@@ -84,7 +84,7 @@ func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRis
 			return false, fmt.Errorf("could not parse outgoing volume: %w", err)
 		}
 
-		riskParam := makeParam(ri.Category, ri.RiskType)
+		riskParam := MakeParam(ri.Category, ri.RiskType)
 		isBlocked, found := cr.riskRules[riskParam]
 		if isBlocked && found && (incoming > 0 || outgoing > 0) {
 			return true, nil
@@ -94,6 +94,7 @@ func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRis
 	return false, nil
 }
 
-func makeParam(category string, riskType string) string {
-	return strings.ToLower(fmt.Sprintf("%s.%s", category, riskType))
+// MakeParam creates a risk param from the given category and risk type in a standardized format.
+func MakeParam(category string, riskType string) string {
+	return strings.ToLower(fmt.Sprintf("%s_%s", category, riskType))
 }
