@@ -117,7 +117,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 		for {
 			if s.cfg.BlacklistURL != "" {
 				s.fetchBlacklist(ctx)
-				time.Sleep(1 * time.Minute)
+				time.Sleep(1 * time.Second * 15)
 			}
 		}
 	}()
