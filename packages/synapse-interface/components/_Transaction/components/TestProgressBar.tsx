@@ -37,7 +37,10 @@ export const TestProgressBar = () => {
   return (
     <div className="bg-white border border-purple-500 max-w-[600px] mx-auto my-5">
       <div className="flex items-center justify-between">
-        <div>estimated time (in seconds)</div>
+        <div>
+          <div>Estimated time (in seconds) </div>
+          <div className="text-xs">Represents max timer duration </div>
+        </div>
         <input
           type="number"
           onChange={handleEstimatedTime}
@@ -45,7 +48,12 @@ export const TestProgressBar = () => {
         />
       </div>
       <div className="flex items-center justify-between">
-        <div>completed time (in seconds)</div>
+        <div>
+          <div>Completed time (in seconds) </div>
+          <div className="text-xs">
+            Time took to complete from clicking "Start"
+          </div>
+        </div>
         <input
           type="number"
           onChange={handleCompletedTime}

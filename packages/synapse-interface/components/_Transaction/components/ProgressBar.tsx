@@ -15,7 +15,7 @@ export const ProgressBar = ({
   estimatedDurationTime,
   isComplete,
 }: ProgressBarProps) => {
-  const currentTime = useIntervalTimer(1000)
+  const currentTime = useIntervalTimer(500)
 
   const currentProgressInFraction =
     (currentTime - initialTime) / (targetTime - initialTime)
@@ -30,7 +30,7 @@ export const ProgressBar = ({
       <div
         style={{
           width: `${isComplete ? 200 : currentProgressInPercent}%`,
-          transition: 'width 1s ease-in-out',
+          transition: 'width 1s linear',
         }}
         className="h-full bg-green-500"
       ></div>
