@@ -182,6 +182,7 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, goodUntil time.Time) (indicators []trmlabs.AddressRiskIndicator, err error) {
 	ctx, span := s.metrics.Tracer().Start(parentCtx, "get-indicators")
 	defer func() {
+		// nolint: errchkjson
 		marshalledIndicators, _ := json.Marshal(indicators)
 		span.AddEvent("indicators", trace.WithAttributes(attribute.String("indicators", string(marshalledIndicators))))
 		metrics.EndSpanWithErr(span, err)

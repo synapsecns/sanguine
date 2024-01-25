@@ -94,6 +94,7 @@ func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRis
 	return false, nil
 }
 
+// MakeParam creates a risk param from the given category and risk type in a standardized format.
 func MakeParam(category string, riskType string) string {
 	return strings.ToLower(fmt.Sprintf("%s_%s", category, riskType))
 }

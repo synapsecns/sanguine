@@ -47,7 +47,7 @@ func TestGetRuleset(t *testing.T) {
 
 func TestHasAddressIndicators(t *testing.T) {
 	riskRules := map[string]bool{
-		"category1.risktype1": true,
+		"category1_risktype1": true,
 	}
 
 	cr := internal.NewRuleset(riskRules)
