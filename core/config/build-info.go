@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/integralist/go-findroot/find"
 	"os"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/integralist/go-findroot/find"
 )
 
 // AppName is the application name.
@@ -45,8 +46,9 @@ func NewBuildInfo(version, commit, name, date string) BuildInfo {
 		commit = getCurrentCommit()
 	}
 
-	if os.Getenv("NAME_PREFIX") != "" {
-		name = os.Getenv("NAME_PREFIX") + "-" + name
+	prefix := os.Getenv("NAME_PREFIX")
+	if prefix != "" {
+		name = prefix + "-" + name
 	}
 
 	return BuildInfo{
