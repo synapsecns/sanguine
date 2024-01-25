@@ -20,6 +20,7 @@ import (
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/exp/slices"
 	"net/http"
 	"strings"
 	"sync"
@@ -142,6 +143,14 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "address is required"})
 		return
 	}
+
+	s.blacklistMux.RLock()
+	if slices.Contains(s.blacklist, address) {
+		c.JSON(http.StatusOK, gin.H{"risk": true})
+		s.blacklistMux.RUnlock()
+		return
+	}
+	s.blacklistMux.RUnlock()
 
 	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "screenAddress", trace.WithAttributes(attribute.String("address", address)))
 	defer func() {
