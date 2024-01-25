@@ -13,7 +13,7 @@ import (
 func (s *Store) GetSTIPTransactionsNotRebated(ctx context.Context) ([]*db.STIPTransactions, error) {
 	var stipTransactions []*db.STIPTransactions
 
-	result := s.db.WithContext(ctx).Where("rebated = ?", false).Find(&stipTransactions)
+	result := s.db.WithContext(ctx).Where("rebated = ?", false).Where("do_not_process = ?", false).Find(&stipTransactions)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -21,8 +21,17 @@ func (s *Store) GetSTIPTransactionsNotRebated(ctx context.Context) ([]*db.STIPTr
 }
 
 // UpdateSTIPTransactionRebated updates the rebated status of a transaction.
-func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string, nonce uint64) error {
-	result := s.db.WithContext(ctx).Model(&db.STIPTransactions{}).Where("hash = ?", hash).Update("rebated", true).Update("nonce", nonce)
+func (s *Store) UpdateSTIPTransactionRebated(ctx context.Context, hash string, nonce uint64, arbTransferAmount string) error {
+	result := s.db.WithContext(ctx).Model(&db.STIPTransactions{}).Where("hash = ?", hash).Update("rebated", true).Update("nonce", nonce).Update("arb_amount_rebated", arbTransferAmount)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// UpdateSTIPTransactionDoNotProcess updates the rebated status of a transaction.
+func (s *Store) UpdateSTIPTransactionDoNotProcess(ctx context.Context, hash string) error {
+	result := s.db.WithContext(ctx).Model(&db.STIPTransactions{}).Where("hash = ?", hash).Update("do_not_process", true)
 	if result.Error != nil {
 		return result.Error
 	}

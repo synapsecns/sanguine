@@ -3,11 +3,12 @@ package relayer
 import (
 	"context"
 	"fmt"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -353,6 +354,10 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 	// You can define it elsewhere and call it here
 	transferAmount, err := s.CalculateTransferAmount(transaction)
 	if err != nil {
+		err := s.db.UpdateSTIPTransactionDoNotProcess(ctx, transaction.Hash)
+		if err != nil {
+			return fmt.Errorf("could not update STIP transaction as do not process: %w", err)
+		}
 		return fmt.Errorf("could not calculate transfer amount: %w", err)
 	}
 
@@ -385,7 +390,7 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 	}
 
 	// Update the database to mark the transaction as rebated
-	err = s.db.UpdateSTIPTransactionRebated(ctx, transaction.Hash, nonceSubmitted)
+	err = s.db.UpdateSTIPTransactionRebated(ctx, transaction.Hash, nonceSubmitted, transferAmount.String())
 	if err != nil {
 		return fmt.Errorf("could not update STIP transaction as rebated: %w", err)
 	}
@@ -437,6 +442,13 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 	// Multiply by 10^18 to get the value in wei (like params.Ether does)
 	transferAmountFloatWei := new(big.Float).Mul(transferAmountFloat, big.NewFloat(1e18))
 	transferAmount, _ := transferAmountFloatWei.Int(nil) // Truncate fractional part
+	// Check if transferAmount is greater than 750 ARB (750 * 10^18 wei)
+	// TODO: Change hard-coded safety limit
+	limit := big.NewInt(750)
+	limit = limit.Mul(limit, big.NewInt(1e18)) // Convert to wei
+	if transferAmount.Cmp(limit) > 0 {
+		return nil, fmt.Errorf("transfer amount exceeds the limit of 750 ARB")
+	}
 	// If you need to round to the nearest integer instead of truncating, use the following:
 	// transferAmount := new(big.Int)
 	// transferAmountFloat.Int(transferAmount) // Round to the nearest integer
