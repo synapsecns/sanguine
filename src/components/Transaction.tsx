@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { useAppDispatch } from '@/state/hooks'
-import { DownArrow } from './icons/DownArrow'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
 import { getExplorerAddressUrl } from '@/utils/getExplorerAddressLink'
 import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
@@ -13,36 +12,9 @@ import {
 } from '@/state/slices/transactions/reducer'
 import { useTransactionsState } from '@/state/slices/transactions/hooks'
 import { useSynapseContext } from '@/providers/SynapseProvider'
-
-const TransactionStatus = ({ string }) => {
-  return <>{string}</>
-}
-
-const TimeRemaining = ({
-  isComplete,
-  remainingTime,
-  isDelayed,
-}: {
-  isComplete: boolean
-  remainingTime: number
-  isDelayed: boolean
-}) => {
-  if (isComplete) return
-
-  if (isDelayed) {
-    return <div>Waiting...</div>
-  }
-
-  const estTime = useMemo(() => {
-    if (remainingTime > 60) {
-      return Math.ceil(remainingTime / 60) + ' minutes'
-    } else {
-      return remainingTime + ' seconds'
-    }
-  }, [remainingTime])
-
-  return <div>{estTime}</div>
-}
+import { TimeRemaining } from '@/components/TimeRemaining'
+import { DropdownMenu } from '@/components/ui/DropdownMenu'
+import { MenuItem } from '@/components/ui/MenuItem'
 
 export const Transaction = ({
   connectedAddress,
@@ -145,11 +117,7 @@ export const Transaction = ({
         border border-solid border-[--synapse-border] rounded-md
       `}
     >
-      {isTxFinalized ? (
-        <TransactionStatus string="Complete" />
-      ) : (
-        <TransactionStatus string="Pending" />
-      )}
+      {isTxFinalized ? 'Complete' : 'Pending'}
       <div className="flex items-center justify-end gap-2 grow">
         <TimeRemaining
           isComplete={isTxFinalized as boolean}
@@ -181,84 +149,5 @@ export const Transaction = ({
         </DropdownMenu>
       </div>
     </div>
-  )
-}
-
-export const DropdownMenu = ({ children }) => {
-  const [open, setOpen] = useState<boolean>(false)
-
-  const handleClick = () => {
-    setOpen(!open)
-  }
-
-  return (
-    <div className="relative">
-      <div
-        onClick={handleClick}
-        className={`
-          rounded w-5 h-[21px] flex place-items-center justify-center
-          bg-[--synapse-select-bg]
-          border border-solid border-[--synapse-border]
-          hover:border-[--synapse-focus]
-          cursor-pointer
-        `}
-      >
-        <DownArrow />
-      </div>
-
-      {open && (
-        <ul
-          className={`
-            absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover -right-1 list-none text-left text-sm
-          `}
-        >
-          {children}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-export const MenuItem = ({
-  text,
-  link,
-  onClick,
-}: {
-  text: string
-  link: string
-  onClick?: () => any
-}) => {
-  return (
-    <li
-      className={`
-      rounded cursor-pointer
-      border border-solid border-transparent
-      hover:border-[--synapse-focus]
-      active:opacity-40
-    `}
-    >
-      {onClick ? (
-        <div
-          onClick={onClick}
-          className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-          `}
-        >
-          {text}
-        </div>
-      ) : (
-        <a
-          href={link ?? ''}
-          onClick={onClick}
-          target="_blank"
-          rel="noreferrer"
-          className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-          `}
-        >
-          {text}
-        </a>
-      )}
-    </li>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTransactionsState } from '@/state/slices/transactions/hooks'
 import { TransactionDetails } from '@/state/slices/transactions/reducer'
-import { Transaction } from './Transaction'
+import { Transaction } from '@/components/Transaction'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 export const Transactions = ({

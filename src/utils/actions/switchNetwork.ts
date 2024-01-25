@@ -1,4 +1,4 @@
-import { toHexStr } from '../toHexStr'
+import { toHexStr } from '@/utils/toHexStr'
 
 export const switchNetwork = async (chainId: number, provider: any) => {
   try {

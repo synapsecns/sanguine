@@ -1,4 +1,4 @@
-import { ExplorerLinks, ExplorerNames } from './../constants/explorer'
+import { ExplorerLinks, ExplorerNames } from '@/constants/explorer'
 
 export const getExplorerAddressUrl = (chainId: number, address: string) => {
   const blockExplorer = ExplorerLinks[chainId]

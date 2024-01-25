@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Chain } from 'types'
-import { ChainPopoverSelect } from './ChainPopoverSelect'
+import { ChainPopoverSelect } from '@/components/ui/ChainPopoverSelect'
 import { CHAINS_ARRAY, CHAINS_BY_ID } from '@/constants/chains'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 

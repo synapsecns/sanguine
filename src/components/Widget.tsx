@@ -32,9 +32,9 @@ import {
   fetchAndStoreAllowance,
   fetchAndStoreTokenBalances,
 } from '@/state/slices/wallet/hooks'
-import { BridgeButton } from './BridgeButton'
+import { BridgeButton } from '@/components/BridgeButton'
 
-import { AvailableBalance } from './AvailableBalance'
+import { AvailableBalance } from '@/components/AvailableBalance'
 import { ZeroAddress } from 'ethers'
 import { useValidations } from '@/hooks/useValidations'
 
@@ -60,7 +60,7 @@ import {
 import { ApproveTransactionStatus } from '@/state/slices/approveTransaction/reducer'
 import { useThemeVariables } from '@/hooks/useThemeVariables'
 
-import { Transactions } from './Transactions'
+import { Transactions } from '@/components/Transactions'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSynapseContext } from '@/providers/SynapseProvider'

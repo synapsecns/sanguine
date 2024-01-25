@@ -18,7 +18,7 @@ export const Receipt = ({ quote, send, receive }) => {
         {estTime ? (
           <>
             {' '}
-            {estTime} via Synapse <DoubleDownArrow />{' '}
+            {estTime} via {quote?.bridgeModuleName} <DoubleDownArrow />{' '}
           </>
         ) : null}
       </summary>

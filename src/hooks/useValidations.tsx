@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { checkExists } from '@/utils/checkExists'
-import { useCurrentTokenBalance } from './useCurrentTokenBalance'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { Web3Context } from 'providers/Web3Provider'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'

@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
-import { DownArrow } from '../icons/DownArrow'
+import { DownArrow } from '@/components/icons/DownArrow'
 import { BridgeableToken } from 'types'
 
 type PopoverSelectProps = {

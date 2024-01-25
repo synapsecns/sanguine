@@ -1,5 +1,5 @@
 import { Chain } from 'types'
-import { Tooltip } from './Tooltip'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { Web3Context } from 'providers/Web3Provider'
 import { useCallback, useContext } from 'react'
 import { useBridgeState } from '@/state/slices/bridge/hooks'

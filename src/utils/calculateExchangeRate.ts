@@ -1,4 +1,4 @@
-import { powBigInt } from './powBigInt'
+import { powBigInt } from '@/utils/powBigInt'
 
 export const calculateExchangeRate = (
   amountFrom: bigint,

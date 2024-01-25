@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { BridgeState } from '@/state/slices/bridge/reducer'
 import { BridgeableToken } from 'types'
-import { TokenPopoverSelect } from './TokenPopoverSelect'
+import { TokenPopoverSelect } from '@/components/ui/TokenPopoverSelect'
 import { useWalletState } from '@/state/slices/wallet/hooks'
 
 type Props = {
