@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import _ from 'lodash'
 import { useState, useEffect } from 'react'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
@@ -131,15 +132,23 @@ const RewardsDialog = ({
   setOpen: (value: React.SetStateAction<boolean>) => void
 }) => {
   return (
-    <dialog open={open} className="absolute bg-background">
-      {transactions.map((transaction) => (
-        <AirdropTransaction
-          transactionHash={transaction.transactionHash}
-          value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
-          blockNumber={transaction.blockNumber.toString()}
-          explorerUrl={ARB.explorerUrl}
-        />
-      ))}
+    <dialog
+      open={open}
+      className="absolute p-3 text-white border rounded-lg bg-background w-96 border-separator"
+    >
+      <div className="text-lg">Rewards</div>
+      {_.isEmpty(transactions) ? (
+        <div>No rewards found.</div>
+      ) : (
+        transactions.map((transaction) => (
+          <AirdropTransaction
+            transactionHash={transaction.transactionHash}
+            value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
+            blockNumber={transaction.blockNumber.toString()}
+            explorerUrl={ARB.explorerUrl}
+          />
+        ))
+      )}
     </dialog>
   )
 }
