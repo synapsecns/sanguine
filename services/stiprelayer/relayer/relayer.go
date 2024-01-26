@@ -41,7 +41,7 @@ type STIPRelayer struct {
 	handler       metrics.Handler
 	submittter    submitter.TransactionSubmitter
 	signer        signer.Signer
-	apiServer     *stipapi.StipAPIServer
+	apiServer     *stipapi.Server
 }
 
 // NewSTIPRelayer creates a new STIPRelayer with the provided context and configuration.

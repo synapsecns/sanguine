@@ -1,3 +1,4 @@
+// Package stipapi provides RESTful API services for the STIP relayer
 package stipapi
 
 import (
@@ -13,17 +14,19 @@ import (
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
 )
 
-type StipAPIServer struct {
+// Server struct holds the configuration, gin engine, and metrics handler.
+type Server struct {
 	cfg     stipconfig.Config
 	engine  *gin.Engine
 	handler metrics.Handler
 }
 
+// NewStipAPI creates a new instance of Server with the provided configuration and metrics handler.
 func NewStipAPI(
 	ctx context.Context,
 	cfg stipconfig.Config,
 	handler metrics.Handler,
-) (*StipAPIServer, error) {
+) (*Server, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is nil")
 	}
@@ -31,15 +34,15 @@ func NewStipAPI(
 		return nil, fmt.Errorf("handler is nil")
 	}
 
-	return &StipAPIServer{
+	return &Server{
 		cfg:     cfg,
 		handler: handler,
 	}, nil
-
 }
 
 var logger = log.Logger("stip-api")
 
+// Handler is the REST API handler.
 type Handler struct {
 	cfg stipconfig.Config
 }
@@ -56,6 +59,7 @@ func (h *Handler) GetHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// GetFeeAndRebateInfo returns the current STIP Relayer's rebate configuration.
 func (h *Handler) GetFeeAndRebateInfo(c *gin.Context) {
 	feesAndRebates := ConvertFeesAndRebatesToJSON(h.cfg.FeesAndRebates)
 	c.JSON(http.StatusOK, feesAndRebates)
@@ -63,18 +67,18 @@ func (h *Handler) GetFeeAndRebateInfo(c *gin.Context) {
 
 const (
 	getHealthRoute      = "/health"
-	GetFeeAndRebateInfo = "/fee-rebate-bps"
+	getFeeAndRebateInfo = "/fee-rebate-bps"
 )
 
 // Run runs the rest api server.
-func (r *StipAPIServer) Run(ctx context.Context) error {
+func (r *Server) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.cfg)
 
 	// Assign GET routes
 	engine.GET(getHealthRoute, h.GetHealth)
-	engine.GET(GetFeeAndRebateInfo, h.GetFeeAndRebateInfo)
+	engine.GET(getFeeAndRebateInfo, h.GetFeeAndRebateInfo)
 
 	r.engine = engine
 
@@ -88,6 +92,7 @@ func (r *StipAPIServer) Run(ctx context.Context) error {
 	return nil
 }
 
+// ConvertFeesAndRebatesToJSON converts the configured fees and rebates to a JSON that is more consumable.
 func ConvertFeesAndRebatesToJSON(feesAndRebates stipconfig.FeesAndRebates) map[int]interface{} {
 	jsonOutput := make(map[int]interface{})
 
