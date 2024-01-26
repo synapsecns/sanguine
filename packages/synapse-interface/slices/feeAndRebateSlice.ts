@@ -13,43 +13,48 @@ const initialState: FeeAndRebateState = {
 export const fetchFeeAndRebate = createAsyncThunk(
   'feeAndRebate/fetchFeeAndRebate',
   async (_, { rejectWithValue }) => {
-    const url = `https://stip-api.omnirpc.io/fee-rebate-bps`;
+    const url = `https://stip-api.omnirpc.io/fee-rebate-bps`
 
     // Configurable parameters
-    const maxRetries = 10; // maximum number of retries
-    const initialDelay = 1000; // initial delay in milliseconds
+    const maxRetries = 5 // maximum number of retries
+    const initialDelay = 1000 // initial delay in milliseconds
 
     // Helper function to delay for a given amount of time
-    const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+    const delay = (duration) =>
+      new Promise((resolve) => setTimeout(resolve, duration))
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(url, { method: 'GET' })
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        const data = await response.json();
-        return data;
+        const data = await response.json()
+        return data
       } catch (error) {
-        console.error(`Attempt ${attempt + 1}: Error fetching fee and rebate data`, error);
+        console.error(
+          `Attempt ${attempt + 1}: Error fetching fee and rebate data`,
+          error
+        )
 
         // If it's the last attempt, reject the promise
         if (attempt === maxRetries - 1) {
           return rejectWithValue(
             error.message || 'Failed to fetch fee and rebate data'
-          );
+          )
         }
 
         // Exponential backoff
-        const delayDuration = initialDelay * 2 ** attempt;
-        console.log(`Retrying in ${delayDuration}ms...`);
-        await delay(delayDuration);
+        const delayDuration = initialDelay * 2 ** attempt
+        console.log(`Retrying in ${delayDuration}ms...`)
+        await delay(delayDuration)
       }
     }
   }
-);
+)
+
 
 
 export const feeAndRebateSlice = createSlice({
