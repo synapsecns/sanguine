@@ -103,13 +103,26 @@ func ConvertFeesAndRebatesToJSON(feesAndRebates stipconfig.FeesAndRebates) map[i
 		if _, exists := jsonOutput[toChain]; !exists {
 			jsonOutput[toChain] = make(map[string]interface{})
 		}
-		toChainMap := jsonOutput[toChain].(map[string]interface{})
+		toChainMap, ok := jsonOutput[toChain].(map[string]interface{})
+		if !ok {
+			// Instead of logging fatally, we should handle the error gracefully
+			// Log the error and continue with an empty map for toChainMap
+			fmt.Printf("Type assertion failed: expected map[string]interface{}, got %T\n", jsonOutput[toChain])
+			toChainMap = make(map[string]interface{})
+		}
 
 		// Initialize the fromChainMap if necessary
-		fromChainMap := make(map[string]interface{})
-		if existingFromChainMap, exists := toChainMap[fromChain]; exists {
-			fromChainMap = existingFromChainMap.(map[string]interface{})
+		var fromChainMap map[string]interface{}
+		existingFromChainMap, exists := toChainMap[fromChain]
+		if exists {
+			var ok bool
+			fromChainMap, ok = existingFromChainMap.(map[string]interface{})
+			if !ok {
+				fmt.Printf("Type assertion failed: expected map[string]interface{}, got %T\n", existingFromChainMap)
+				fromChainMap = make(map[string]interface{})
+			}
 		} else {
+			fromChainMap = make(map[string]interface{})
 			toChainMap[fromChain] = fromChainMap
 		}
 
@@ -118,7 +131,11 @@ func ConvertFeesAndRebatesToJSON(feesAndRebates stipconfig.FeesAndRebates) map[i
 			if _, exists := fromChainMap[moduleName]; !exists {
 				fromChainMap[moduleName] = make(map[string]interface{})
 			}
-			moduleMap := fromChainMap[moduleName].(map[string]interface{})
+			moduleMap, ok := fromChainMap[moduleName].(map[string]interface{})
+			if !ok {
+				fmt.Printf("Type assertion failed: expected map[string]interface{}, got %T\n", fromChainMap[moduleName])
+				moduleMap = make(map[string]interface{})
+			}
 
 			for token, feeRebate := range tokenFeeRebate {
 				// Convert each FeeRebate into a map with "fee" and "rebate" as keys
