@@ -81,6 +81,10 @@ flags:
     paths:
       - services/sinner/
     carryforward: true
+  stiprelayer:
+    paths:
+      - services/stiprelayer/
+    carryforward: true
   solidity:
     paths:
       - packages/contracts-core/

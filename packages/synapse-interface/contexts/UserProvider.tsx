@@ -23,6 +23,7 @@ import {
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 import { getCoingeckoPrices } from '@/utils/actions/getPrices'
+import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -68,6 +69,7 @@ export const UserProvider = ({ children }) => {
       dispatch(fetchCoingeckoPrices())
       dispatch(fetchMusdcPrice())
       dispatch(fetchDaiePrice())
+      dispatch(fetchFeeAndRebate())
     }
   }, [isClient])
 

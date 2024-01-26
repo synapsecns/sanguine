@@ -8,41 +8,8 @@ import { PersistGate } from 'redux-persist/integration/react'
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
 
-import {
-  boba,
-  cronos,
-  dfk,
-  dogechain,
-  klaytn,
-  metis,
-  aurora,
-  canto,
-  base,
-} from '@constants/extraWagmiChains'
-import { WagmiConfig, configureChains, createConfig } from 'wagmi'
-import {
-  arbitrum,
-  avalanche,
-  bsc,
-  fantom,
-  harmonyOne,
-  mainnet,
-  moonbeam,
-  moonriver,
-  optimism,
-  polygon,
-} from 'wagmi/chains'
-import {
-  RainbowKitProvider,
-  darkTheme,
-  getDefaultWallets,
-  connectorsForWallets,
-} from '@rainbow-me/rainbowkit'
-import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { publicProvider } from 'wagmi/providers/public'
-import * as CHAINS from '@constants/chains/master'
+import { WagmiConfig } from 'wagmi'
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
@@ -56,97 +23,23 @@ import BridgeUpdater from '@/slices/bridge/updater'
 import PortfolioUpdater from '@/slices/portfolio/updater'
 import TransactionsUpdater from '@/slices/transactions/updater'
 import _TransactionsUpdater from '@/slices/_transactions/updater'
-
-const rawChains = [
-  mainnet,
-  arbitrum,
-  aurora,
-  avalanche,
-  base,
-  bsc,
-  canto,
-  fantom,
-  harmonyOne,
-  metis,
-  moonbeam,
-  moonriver,
-  optimism,
-  polygon,
-  klaytn,
-  cronos,
-  dfk,
-  dogechain,
-  boba,
-]
-
+import { wagmiChains, wagmiConfig } from '@/wagmiConfig'
 
 // only initialize when in the browser
-if (typeof window !== 'undefined' && !location.hostname.match("synapseprotocol.com")) {
+if (
+  typeof window !== 'undefined' &&
+  !location.hostname.match('synapseprotocol.com')
+) {
   LogRocket.init('npdhrc/synapse-staging', {
     mergeIframes: true,
   })
   // plugins should also only be initialized when in the browser
-  setupLogRocketReact(LogRocket);
+  setupLogRocketReact(LogRocket)
 
-  LogRocket.getSessionURL(sessionURL => {
-    console.log("session url for debugging " + sessionURL);
-  });
-}
-
-// Add custom icons
-const chainsMatured = []
-for (const chain of rawChains) {
-  const configChain = Object.values(CHAINS).filter(
-    (chainObj) => chainObj.id === chain.id
-  )[0]
-
-  chainsMatured.push({
-    ...chain,
-    iconUrl: configChain.chainImg.src,
-    configRpc: configChain.rpcUrls.primary,
-    fallbackRpc: configChain.rpcUrls.fallback,
+  LogRocket.getSessionURL((sessionURL) => {
+    console.log('session url for debugging ' + sessionURL)
   })
 }
-
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  chainsMatured,
-  [
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['configRpc'],
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['fallbackRpc'],
-      }),
-    }),
-    publicProvider(),
-  ]
-)
-
-const projectId = 'ab0a846bc693996606734d788cb6561d'
-
-const { wallets } = getDefaultWallets({
-  appName: 'Synapse',
-  projectId,
-  chains,
-})
-
-const connectors = connectorsForWallets([
-  ...wallets,
-  {
-    groupName: 'Other',
-    wallets: [rabbyWallet({ chains })],
-  },
-])
-
-export const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
-  webSocketPublicClient,
-})
 
 function Updaters() {
   return (
@@ -167,8 +60,8 @@ const App = ({ Component, pageProps }: AppProps) => {
         <title>Synapse Protocol</title>
       </Head>
       <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={chains} theme={darkTheme()}>
-          <SynapseProvider chains={chains}>
+        <RainbowKitProvider chains={wagmiChains} theme={darkTheme()}>
+          <SynapseProvider chains={wagmiChains}>
             <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>
                 <SegmentAnalyticsProvider>
