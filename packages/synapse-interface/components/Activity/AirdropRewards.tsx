@@ -53,6 +53,12 @@ const calculateTotalTransferValue = (data: any[]): bigint => {
   return total
 }
 
+const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
+  return trimTrailingZeroesAfterDecimal(
+    formatBigIntToString(rawValue, tokenDecimals, 3)
+  )
+}
+
 export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<string>(undefined)
   const [transactions, setTransactions] = useState<any[]>([])
@@ -61,8 +67,9 @@ export const AirdropRewards = () => {
   const fetchStipAirdropRewards = async (address: Address) => {
     const { transactions, cumulativeRewards } = await getArbStipRewards(address)
 
-    const parsedCumulativeRewards = trimTrailingZeroesAfterDecimal(
-      formatBigIntToString(cumulativeRewards, ARB.decimals, 3)
+    const parsedCumulativeRewards = parseTokenValue(
+      cumulativeRewards,
+      ARB.decimals
     )
 
     setTransactions(transactions)
