@@ -85,8 +85,9 @@ const CompletedProgress = ({ startingPercentage }) => {
           attributeName="width"
           from={startingPercentage + '%'}
           to="100%"
-          dur="3s"
-          calcMode="linear"
+          dur="2s"
+          calcMode="spline"
+          keySplines=".3 0 1 1"
         />
       </rect>
     </svg>
