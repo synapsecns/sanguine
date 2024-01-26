@@ -31,6 +31,35 @@ export const fetchBridgeQuote = createAsyncThunk(
     debouncedInputAmount: string
     synapseSDK: any
   }) => {
+    const allQuotes = await synapseSDK.allBridgeQuotes(
+      originChainId,
+      destinationChainId,
+      originToken.addresses[originChainId],
+      destinationToken.addresses[destinationChainId],
+      amount
+    )
+
+    /** TODO: Handle when invalid quote returns or no quotes */
+
+    // if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
+    //   // dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+    //   // dispatch(setIsLoading(false))
+    //   return
+    // }
+
+    const rfqQuote = allQuotes.find(
+      (quote) => quote.bridgeModuleName === 'SynapseRFQ'
+    )
+
+    let quote
+
+    if (rfqQuote) {
+      quote = rfqQuote
+    } else {
+      /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
+      quote = allQuotes[0]
+    }
+
     const {
       feeAmount,
       routerAddress,
@@ -39,21 +68,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       destQuery,
       estimatedTime,
       bridgeModuleName,
-    } = await synapseSDK.bridgeQuote(
-      originChainId,
-      destinationChainId,
-      originToken.addresses[originChainId],
-      destinationToken.addresses[destinationChainId],
-      amount
-    )
-
-    /** TODO: Handle when invalid quote returns */
-
-    // if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-    //   // dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-    //   // dispatch(setIsLoading(false))
-    //   return
-    // }
+    } = quote
 
     const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
 
