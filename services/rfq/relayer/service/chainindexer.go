@@ -76,16 +76,31 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeRelayed:
+			// it wasn't me
+			if event.Relayer != r.signer.Address() {
+				return nil
+			}
+
 			err = r.handleRelayLog(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
+			// it wasn't me
+			if event.Relayer != r.signer.Address() {
+				return nil
+			}
+
 			err = r.handleProofProvided(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
+			// it wasn't me
+			if event.Relayer != r.signer.Address() {
+				return nil
+			}
+
 			err = r.handleDepositClaimed(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle deposit claimed: %w", err)

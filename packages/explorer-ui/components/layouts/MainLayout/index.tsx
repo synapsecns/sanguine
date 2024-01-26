@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { DocumentTextIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
-import React from 'react';
+import React from 'react'
 
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import {

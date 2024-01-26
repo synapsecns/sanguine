@@ -86,13 +86,11 @@ export type BridgeTransaction = {
 export enum BridgeTxType {
   Destination = 'DESTINATION',
   Origin = 'ORIGIN',
-  Rfq = 'RFQ',
 }
 
 export enum BridgeType {
   Bridge = 'BRIDGE',
   Cctp = 'CCTP',
-  Rfq = 'RFQ',
 }
 
 /** BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher. */
@@ -106,14 +104,13 @@ export type BridgeWatcherTx = {
 }
 
 export type ContractQuery = {
-  chainID?: InputMaybe<Scalars['Int']['input']>
-  type?: InputMaybe<ContractType>
+  chainID: Scalars['Int']['input']
+  type: ContractType
 }
 
 export enum ContractType {
   Bridge = 'BRIDGE',
   Cctp = 'CCTP',
-  Rfq = 'RFQ',
 }
 
 export enum DailyStatisticType {
@@ -463,86 +460,6 @@ export type VolumeByChainId = {
   total?: Maybe<Scalars['Float']['output']>
 }
 
-export type GetBlockHeightQueryVariables = Exact<{
-  contracts: Array<InputMaybe<ContractQuery>> | InputMaybe<ContractQuery>
-}>
-
-export type GetBlockHeightQuery = {
-  __typename?: 'Query'
-  getBlockHeight?: Array<{
-    __typename?: 'BlockHeight'
-    chainID?: number | null
-    type?: ContractType | null
-    blockNumber?: number | null
-  } | null> | null
-}
-
-export type GetDestinationBridgeTxFallbackQueryVariables = Exact<{
-  chainId: Scalars['Int']['input']
-  kappa: Scalars['String']['input']
-  address: Scalars['String']['input']
-  timestamp: Scalars['Int']['input']
-  bridgeType: BridgeType
-}>
-
-export type GetDestinationBridgeTxFallbackQuery = {
-  __typename?: 'Query'
-  getDestinationBridgeTx?: {
-    __typename?: 'BridgeWatcherTx'
-    kappa?: string | null
-    pending?: boolean | null
-    bridgeTx?: {
-      __typename?: 'PartialInfo'
-      chainID?: number | null
-      destinationChainID?: number | null
-      address?: string | null
-      txnHash?: string | null
-      value?: string | null
-      formattedValue?: number | null
-      USDValue?: number | null
-      tokenAddress?: string | null
-      tokenSymbol?: string | null
-      blockNumber?: number | null
-      time?: number | null
-      formattedTime?: string | null
-      formattedEventType?: string | null
-      eventType?: number | null
-    } | null
-  } | null
-}
-
-export type GetOriginBridgeTxFallbackQueryVariables = Exact<{
-  chainId: Scalars['Int']['input']
-  txnHash: Scalars['String']['input']
-  bridgeType: BridgeType
-}>
-
-export type GetOriginBridgeTxFallbackQuery = {
-  __typename?: 'Query'
-  getOriginBridgeTx?: {
-    __typename?: 'BridgeWatcherTx'
-    kappa?: string | null
-    pending?: boolean | null
-    bridgeTx?: {
-      __typename?: 'PartialInfo'
-      chainID?: number | null
-      destinationChainID?: number | null
-      address?: string | null
-      txnHash?: string | null
-      value?: string | null
-      formattedValue?: number | null
-      USDValue?: number | null
-      tokenAddress?: string | null
-      tokenSymbol?: string | null
-      blockNumber?: number | null
-      time?: number | null
-      formattedTime?: string | null
-      formattedEventType?: string | null
-      eventType?: number | null
-    } | null
-  } | null
-}
-
 export type GetUserHistoricalActivityQueryVariables = Exact<{
   address: Scalars['String']['input']
   startTime: Scalars['Int']['input']
@@ -590,116 +507,6 @@ export type GetUserHistoricalActivityQuery = {
   } | null> | null
 }
 
-export type GetUserPendingTransactionsQueryVariables = Exact<{
-  address: Scalars['String']['input']
-  startTime: Scalars['Int']['input']
-}>
-
-export type GetUserPendingTransactionsQuery = {
-  __typename?: 'Query'
-  bridgeTransactions?: Array<{
-    __typename?: 'BridgeTransaction'
-    kappa?: string | null
-    fromInfo?: {
-      __typename?: 'PartialInfo'
-      chainID?: number | null
-      destinationChainID?: number | null
-      address?: string | null
-      txnHash?: string | null
-      value?: string | null
-      formattedValue?: number | null
-      USDValue?: number | null
-      tokenAddress?: string | null
-      tokenSymbol?: string | null
-      blockNumber?: number | null
-      time?: number | null
-      formattedTime?: string | null
-      formattedEventType?: string | null
-      eventType?: number | null
-    } | null
-    toInfo?: {
-      __typename?: 'PartialInfo'
-      chainID?: number | null
-      destinationChainID?: number | null
-      address?: string | null
-      txnHash?: string | null
-      value?: string | null
-      formattedValue?: number | null
-      USDValue?: number | null
-      tokenAddress?: string | null
-      tokenSymbol?: string | null
-      blockNumber?: number | null
-      time?: number | null
-      formattedTime?: string | null
-      formattedEventType?: string | null
-      eventType?: number | null
-    } | null
-  } | null> | null
-}
-
-export const GetBlockHeightDocument = `
-    query GetBlockHeight($contracts: [ContractQuery]!) {
-  getBlockHeight(contracts: $contracts) {
-    chainID
-    type
-    blockNumber
-  }
-}
-    `
-export const GetDestinationBridgeTxFallbackDocument = `
-    query GetDestinationBridgeTxFallback($chainId: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!) {
-  getDestinationBridgeTx(
-    chainID: $chainId
-    kappa: $kappa
-    address: $address
-    timestamp: $timestamp
-    bridgeType: $bridgeType
-  ) {
-    bridgeTx {
-      chainID
-      destinationChainID
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-      formattedTime
-      formattedEventType
-      eventType
-    }
-    kappa
-    pending
-  }
-}
-    `
-export const GetOriginBridgeTxFallbackDocument = `
-    query GetOriginBridgeTxFallback($chainId: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
-  getOriginBridgeTx(chainID: $chainId, txnHash: $txnHash, bridgeType: $bridgeType) {
-    bridgeTx {
-      chainID
-      destinationChainID
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-      formattedTime
-      formattedEventType
-      eventType
-    }
-    kappa
-    pending
-  }
-}
-    `
 export const GetUserHistoricalActivityDocument = `
     query GetUserHistoricalActivity($address: String!, $startTime: Int!) {
   bridgeTransactions(
@@ -745,78 +552,9 @@ export const GetUserHistoricalActivityDocument = `
   }
 }
     `
-export const GetUserPendingTransactionsDocument = `
-    query GetUserPendingTransactions($address: String!, $startTime: Int!) {
-  bridgeTransactions(
-    pending: true
-    addressFrom: $address
-    startTime: $startTime
-    page: 1
-    useMv: true
-  ) {
-    fromInfo {
-      chainID
-      destinationChainID
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-      formattedTime
-      formattedEventType
-      eventType
-    }
-    toInfo {
-      chainID
-      destinationChainID
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-      formattedTime
-      formattedEventType
-      eventType
-    }
-    kappa
-  }
-}
-    `
 
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
-    GetBlockHeight: build.query<
-      GetBlockHeightQuery,
-      GetBlockHeightQueryVariables
-    >({
-      query: (variables) => ({ document: GetBlockHeightDocument, variables }),
-    }),
-    GetDestinationBridgeTxFallback: build.query<
-      GetDestinationBridgeTxFallbackQuery,
-      GetDestinationBridgeTxFallbackQueryVariables
-    >({
-      query: (variables) => ({
-        document: GetDestinationBridgeTxFallbackDocument,
-        variables,
-      }),
-    }),
-    GetOriginBridgeTxFallback: build.query<
-      GetOriginBridgeTxFallbackQuery,
-      GetOriginBridgeTxFallbackQueryVariables
-    >({
-      query: (variables) => ({
-        document: GetOriginBridgeTxFallbackDocument,
-        variables,
-      }),
-    }),
     GetUserHistoricalActivity: build.query<
       GetUserHistoricalActivityQuery,
       GetUserHistoricalActivityQueryVariables
@@ -826,28 +564,11 @@ const injectedRtkApi = api.injectEndpoints({
         variables,
       }),
     }),
-    GetUserPendingTransactions: build.query<
-      GetUserPendingTransactionsQuery,
-      GetUserPendingTransactionsQueryVariables
-    >({
-      query: (variables) => ({
-        document: GetUserPendingTransactionsDocument,
-        variables,
-      }),
-    }),
   }),
 })
 
 export { injectedRtkApi as api }
 export const {
-  useGetBlockHeightQuery,
-  useLazyGetBlockHeightQuery,
-  useGetDestinationBridgeTxFallbackQuery,
-  useLazyGetDestinationBridgeTxFallbackQuery,
-  useGetOriginBridgeTxFallbackQuery,
-  useLazyGetOriginBridgeTxFallbackQuery,
   useGetUserHistoricalActivityQuery,
   useLazyGetUserHistoricalActivityQuery,
-  useGetUserPendingTransactionsQuery,
-  useLazyGetUserPendingTransactionsQuery,
 } = injectedRtkApi

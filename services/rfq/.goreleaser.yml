@@ -100,17 +100,4 @@ dockers:
     dockerfile: ../../docker/rfq-api.Dockerfile
     ids:
       - api
-# track sizes
-report_sizes: true
-
-# modified timestamps
-metadata:
-  # Set the modified timestamp on the metadata files.
-  #
-  # Templates: allowed.
-  mod_timestamp: '{{ .CommitTimestamp }}'
-
-# produce software bill of lading
-sboms:
-  - artifacts: archive
 

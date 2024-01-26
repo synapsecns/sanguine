@@ -9,11 +9,13 @@ import {
   removePendingBridgeTransaction,
 } from '../transactions/actions'
 import _ from 'lodash'
+import { useAccount } from 'wagmi'
 
 export default function Updater() {
   const dispatch = useAppDispatch()
   const { pendingBridgeTransactions } = useTransactionsState()
   const { transactions } = use_TransactionsState()
+  const { address } = useAccount()
 
   /** Add transaction if not in _transactions store */
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function Updater() {
         if (txnConfirmed && !txnExists) {
           dispatch(
             addTransaction({
+              address: address,
               originTxHash: tx.transactionHash,
               originValue: tx.originValue,
               originChain: tx.originChain,

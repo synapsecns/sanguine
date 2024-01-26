@@ -44,9 +44,13 @@ import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
 // Priority ranks:
-// 100: chain's major stablecoins (native DAI, USDC, USDT)
-// 125: chain's major stablecoins (bridged)
-// 150: ETH (WETH if chain's native asset is ETH)
+// 100-102: Major stablecoins (native USDC, USDT, DAI)
+// 105: ETH
+// 110: nUSD
+// 115: nETH
+// 120: SYN
+// 125: Bridged Stablecoins
+// 150: WETH if chain's native asset is ETH
 // 200: rest of the chain's stablecoins
 // 250: SYN, biggest partner tokens (GMX, JEWEL, etc)
 // 300: chain's native asset (AVAX, FTM, MATIC, KLAY, etc)
@@ -511,7 +515,7 @@ export const USDT = new Token({
     CHAINS.CANTO.id,
   ],
   visibilityRank: 100,
-  priorityRank: 100,
+  priorityRank: 101,
   routeSymbol: 'USDT',
 })
 
@@ -544,7 +548,7 @@ export const DAI = new Token({
   ],
   color: 'yellow',
   visibilityRank: 100,
-  priorityRank: 100,
+  priorityRank: 102,
   routeSymbol: 'DAI',
 })
 
@@ -625,7 +629,7 @@ export const SYN = new Token({
   swapableType: 'SYN',
   color: 'purple',
   visibilityRank: 90,
-  priorityRank: 250,
+  priorityRank: 120,
   routeSymbol: 'SYN',
 })
 
@@ -700,7 +704,7 @@ export const NUSD = new Token({
   ],
   color: 'purple',
   visibilityRank: 50,
-  priorityRank: 500,
+  priorityRank: 110,
   routeSymbol: 'nUSD',
 })
 
@@ -716,7 +720,7 @@ export const NOTE = new Token({
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
   visibilityRank: 90,
-  priorityRank: 100,
+  priorityRank: 200,
   routeSymbol: 'NOTE',
 })
 
@@ -749,7 +753,7 @@ export const NETH = new Token({
   ],
   color: 'purple',
   visibilityRank: 50,
-  priorityRank: 500,
+  priorityRank: 115,
   routeSymbol: 'nETH',
 })
 
@@ -771,7 +775,7 @@ export const ETH = new Token({
   swapableType: 'ETH',
   color: 'sky',
   visibilityRank: 101,
-  priorityRank: 150,
+  priorityRank: 105,
   swapableOn: [
     CHAINS.ARBITRUM.id,
     CHAINS.BASE.id,

@@ -22,6 +22,10 @@ flags:
     paths:
       - agents/
     carryforward: true
+  screener-api:
+    paths:
+      - contrib/screener-api/
+    carryforward: true
   git-changes-action:
     paths:
       - contrib/git-changes-action/
@@ -76,6 +80,10 @@ flags:
   sinner:
     paths:
       - services/sinner/
+    carryforward: true
+  stiprelayer:
+    paths:
+      - services/stiprelayer/
     carryforward: true
   solidity:
     paths:
