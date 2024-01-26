@@ -63,7 +63,7 @@ func (h *Handler) GetFeeAndRebateInfo(c *gin.Context) {
 
 const (
 	getHealthRoute      = "/health"
-	GetFeeAndRebateInfo = "/feesandrebate"
+	GetFeeAndRebateInfo = "/fee-rebate-bps"
 )
 
 // Run runs the rest api server.
