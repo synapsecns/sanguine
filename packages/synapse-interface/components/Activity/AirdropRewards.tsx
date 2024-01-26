@@ -1,21 +1,33 @@
-import TransactionArrow from '../icons/TransactionArrow'
-import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
+import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
+import TransactionArrow from '../icons/TransactionArrow'
+
+const arbTokenAddress = '0x912CE59144191C1204E64559FE8253a0e49E6548' // on Arbitrum
+const rewarderAddress = '0x48fa1ebda1af925898c826c566f5bb015e125ead' // on Arbitrum
+const network = arbitrum
+const startBlock = 174234366n // Start of STIP Rewards on Arbitrum
 
 export const AirdropRewards = () => {
+  const [rewards, setRewards] = useState<any>(undefined)
+  const { address: connectedAddress } = useAccount()
+
   useEffect(() => {
-    ;(async () => {
-      const transfers = await getErc20TokenTransfers(
-        '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-        '0xF080B794AbF6BB905F2330d25DF545914e6027F8',
-        '0x81EF4608B796265F1e3695cE00FdCfC8aA5933Dd',
-        arbitrum,
-        173545720n
-      )
-      console.log('transfers:', transfers)
-    })()
-  }, [])
+    if (connectedAddress) {
+      ;(async () => {
+        const { logs, data } = await getErc20TokenTransfers(
+          arbTokenAddress,
+          rewarderAddress,
+          connectedAddress,
+          network,
+          startBlock
+        )
+
+        setRewards(data)
+      })()
+    }
+  }, [connectedAddress])
 
   return (
     <div
