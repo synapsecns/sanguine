@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/ethergo/debug"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -49,7 +48,7 @@ func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 		Equal(a.T(), value.Info.CompilerVersion, "0.8.20")
 		Equal(a.T(), value.Info.LanguageVersion, "0.8.20")
 
-		var metadata debug.ContractMetadata
+		var metadata ContractMetadata
 		err = json.Unmarshal([]byte(value.Info.Metadata), &metadata)
 		a.Require().NoError(err)
 
@@ -85,4 +84,30 @@ func TestFilePathsAreEqual(t *testing.T) {
 			t.Errorf("filePathsAreEqual(%v, %v) error got %v, want %v", tt.file1, tt.file2, err, tt.err)
 		}
 	}
+}
+
+// ContractSettings outed by solc.
+type ContractSettings struct {
+	CompilationTarget map[string]string `json:"compilationTarget"`
+	EvmVersion        string            `json:"evmVersion"`
+	// TODO implement w/ ast
+	Libraries struct{}          `json:"libraries"`
+	Metadata  map[string]string `json:"metadata"`
+	Optimizer struct {
+		Enabled bool `json:"enabled"`
+		Runs    int  `json:"runs"`
+	} `json:"optimizer"`
+	Remappings []interface{} `json:"remappings"`
+}
+
+// ContractMetadata is metadata produced by solc.
+type ContractMetadata struct {
+	Compiler struct {
+		Version string `json:"version"`
+	} `json:"compiler"`
+	Language string                 `json:"language"`
+	Output   interface{}            `json:"output"`
+	Settings ContractSettings       `json:"settings"`
+	Sources  map[string]interface{} `json:"sources"`
+	Version  int                    `json:"version"`
 }

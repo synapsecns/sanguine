@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // BaseMessageLibMetaData contains all meta data concerning the BaseMessageLib contract.
@@ -156,11 +157,11 @@ func NewBaseMessageLibFilterer(address common.Address, filterer bind.ContractFil
 
 // bindBaseMessageLib binds a generic wrapper to an already deployed contract.
 func bindBaseMessageLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(BaseMessageLibABI))
+	parsed, err := BaseMessageLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -329,11 +330,11 @@ func NewByteStringFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindByteString binds a generic wrapper to an already deployed contract.
 func bindByteString(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(ByteStringABI))
+	parsed, err := ByteStringMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -502,11 +503,11 @@ func NewHeaderLibFilterer(address common.Address, filterer bind.ContractFilterer
 
 // bindHeaderLib binds a generic wrapper to an already deployed contract.
 func bindHeaderLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(HeaderLibABI))
+	parsed, err := HeaderLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -675,11 +676,11 @@ func NewMemViewLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindMemViewLib binds a generic wrapper to an already deployed contract.
 func bindMemViewLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MemViewLibABI))
+	parsed, err := MemViewLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -848,11 +849,11 @@ func NewMerkleMathFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindMerkleMath binds a generic wrapper to an already deployed contract.
 func bindMerkleMath(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MerkleMathABI))
+	parsed, err := MerkleMathMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1033,11 +1034,11 @@ func NewMessageHarnessFilterer(address common.Address, filterer bind.ContractFil
 
 // bindMessageHarness binds a generic wrapper to an already deployed contract.
 func bindMessageHarness(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MessageHarnessABI))
+	parsed, err := MessageHarnessMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1392,11 +1393,11 @@ func NewMessageLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindMessageLib binds a generic wrapper to an already deployed contract.
 func bindMessageLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MessageLibABI))
+	parsed, err := MessageLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1565,11 +1566,11 @@ func NewRequestLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindRequestLib binds a generic wrapper to an already deployed contract.
 func bindRequestLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(RequestLibABI))
+	parsed, err := RequestLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1738,11 +1739,11 @@ func NewSafeCastFilterer(address common.Address, filterer bind.ContractFilterer)
 
 // bindSafeCast binds a generic wrapper to an already deployed contract.
 func bindSafeCast(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SafeCastABI))
+	parsed, err := SafeCastMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -1911,11 +1912,11 @@ func NewTipsLibFilterer(address common.Address, filterer bind.ContractFilterer) 
 
 // bindTipsLib binds a generic wrapper to an already deployed contract.
 func bindTipsLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(TipsLibABI))
+	parsed, err := TipsLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and

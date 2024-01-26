@@ -1,29 +1,24 @@
 package hardhat
 
-import (
-	"github.com/tenderly/tenderly-cli/hardhat"
-	"github.com/tenderly/tenderly-cli/providers"
-)
-
 // Create a test interface so we can check outputs.
 type HardhatMetadataTest interface {
-	GetCompiler() providers.ContractCompiler
-	GetSources() map[string]providers.ContractSources
+	GetCompiler() ContractCompiler
+	GetSources() map[string]ContractSources
 }
 
 // implement the getters.
-func (h hardhatMetadata) GetCompiler() providers.ContractCompiler {
+func (h hardhatMetadata) GetCompiler() ContractCompiler {
 	return h.Compiler
 }
 
-func (h hardhatMetadata) GetSources() map[string]providers.ContractSources {
+func (h hardhatMetadata) GetSources() map[string]ContractSources {
 	return h.Sources
 }
 
-func GetMetadata(contract hardhat.HardhatContract, filePath string) (hardhatMeta HardhatMetadataTest, err error) {
+func GetMetadata(contract HardhatContract, filePath string) (hardhatMeta HardhatMetadataTest, err error) {
 	return getMetadata(contract, filePath)
 }
 
-func GetNetworks(contract hardhat.HardhatContract, filePath string) (map[string]providers.ContractNetwork, error) {
+func GetNetworks(contract HardhatContract, filePath string) (map[string]ContractNetwork, error) {
 	return getNetworks(contract, filePath)
 }

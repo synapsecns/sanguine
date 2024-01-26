@@ -26,6 +26,7 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+	_ = abi.ConvertType
 )
 
 // RequestHarnessMetaData contains all meta data concerning the RequestHarness contract.
@@ -167,11 +168,11 @@ func NewRequestHarnessFilterer(address common.Address, filterer bind.ContractFil
 
 // bindRequestHarness binds a generic wrapper to an already deployed contract.
 func bindRequestHarness(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(RequestHarnessABI))
+	parsed, err := RequestHarnessMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -495,11 +496,11 @@ func NewRequestLibFilterer(address common.Address, filterer bind.ContractFiltere
 
 // bindRequestLib binds a generic wrapper to an already deployed contract.
 func bindRequestLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(RequestLibABI))
+	parsed, err := RequestLibMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and

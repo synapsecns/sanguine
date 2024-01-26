@@ -112,13 +112,19 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       amountIn,
       allQuotes
     )
+    const protocolFeeRate = await this.getFastBridgeRouter(
+      originChainId
+    ).getProtocolFeeRate()
     return filteredQuotes
       .map(({ quote, originQuery }) => ({
         quote,
         originQuery,
-        // Apply quote to the proceeds of the origin swap
+        // Apply quote to the proceeds of the origin swap with protocol fee applied
         // TODO: handle optional gas airdrop pricing
-        destAmountOut: applyQuote(quote, originQuery.minAmountOut),
+        destAmountOut: applyQuote(
+          quote,
+          this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate)
+        ),
       }))
       .filter(({ destAmountOut }) => destAmountOut.gt(0))
       .map(({ quote, originQuery, destAmountOut }) => ({
@@ -226,6 +232,19 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       chainId
     ).getFastBridgeContract()
     return fastBridgeContract.address
+  }
+
+  /**
+   * Applies the protocol fee to the amount.
+   *
+   * @returns The amount after the fee.
+   */
+  public applyProtocolFeeRate(
+    amount: BigNumber,
+    protocolFeeRate: BigNumber
+  ): BigNumber {
+    const protocolFee = amount.mul(protocolFeeRate).div(1_000_000)
+    return amount.sub(protocolFee)
   }
 
   /**
