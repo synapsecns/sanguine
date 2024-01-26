@@ -45,9 +45,9 @@ export const ProgressBar = ({
           ></div>
           <div
             style={{
-              width: `${isComplete ? 100 : 100 - elapsedProgressInPercent}%`,
-              animationName: `${!isComplete && 'fillAnimation'}`,
-              animationDuration: `${!isComplete && `${remainingTime}s`}`,
+              width: `${100 - elapsedProgressInPercent}%`,
+              animationName: 'fillAnimation',
+              animationDuration: `${remainingTime}s`,
               animationTimingFunction: 'ease-in',
             }}
             className="h-full bg-green-500"
