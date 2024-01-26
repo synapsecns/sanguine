@@ -5,17 +5,25 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
 type ProgressBarProps = {
   initialTime: number
   targetTime: number
-  // estimatedDurationTime: number
+  estimatedDurationTime: number
   isComplete: boolean
 }
 
 export const ProgressBar = ({
   initialTime,
   targetTime,
-  // estimatedDurationTime,
+  estimatedDurationTime,
   isComplete,
 }: ProgressBarProps) => {
-  const currentTime = useIntervalTimer(500)
+  // const currentTime = useIntervalTimer(500)
+  const currentTime = getTimeMinutesBeforeNow(0)
+
+  const elapsedTime = currentTime - initialTime
+
+  const elapsedProgressInFraction = elapsedTime / estimatedDurationTime
+  const elapsedProgressInPercent = elapsedProgressInFraction * 100
+
+  const remainingTime = estimatedDurationTime - elapsedTime
 
   const currentProgressInFraction =
     (currentTime - initialTime) / (targetTime - initialTime)
@@ -23,14 +31,54 @@ export const ProgressBar = ({
   const currentProgressInPercent = currentProgressInFraction * 100
 
   return (
-    <div id="progress-bar" className="w-full h-1 overflow-hidden bg-white">
+    <div id="progress-bar" className="flex w-full h-1 overflow-hidden bg-white">
       <div
         style={{
-          width: `${isComplete ? 100 : currentProgressInPercent}%`,
-          transition: `${isComplete ? 'width 1s ease-in' : 'width 1s linear'}`,
+          width: `${elapsedProgressInPercent}%`,
         }}
         className="h-full bg-green-500"
       ></div>
+      {!isComplete ? (
+        <div
+          style={{
+            width: `${isComplete ? 100 : 100 - elapsedProgressInPercent}%`,
+            animationName: `${!isComplete && 'fillAnimation'}`,
+            animationDuration: `${!isComplete && `${remainingTime}s`}`,
+            animationTimingFunction: 'ease-in',
+          }}
+          className="h-full bg-green-500"
+        />
+      ) : (
+        <div
+          style={{
+            width: `${100 - elapsedProgressInPercent}%`,
+          }}
+        >
+          <CompletedProgress />
+        </div>
+      )}
     </div>
+  )
+}
+
+const CompletedProgress = () => {
+  return (
+    <svg
+      height="100%"
+      width="100%"
+      viewBox="0 0 100% 100%"
+      preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="100%" height="100%" fill="green">
+        <animate
+          attributeName="width"
+          from="0"
+          to="100%"
+          dur="3s"
+          calcMode="linear"
+        />
+      </rect>
+    </svg>
   )
 }

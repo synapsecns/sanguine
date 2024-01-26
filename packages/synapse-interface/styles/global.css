@@ -216,3 +216,13 @@ body {
 .mySelect__option .select-hidden {
   display: block;
 }
+
+/* CSS keyframes animation */
+@keyframes fillAnimation {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}

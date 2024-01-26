@@ -72,7 +72,7 @@ export const TestProgressBar = () => {
         <ProgressBar
           initialTime={startTime}
           targetTime={Number(startTime) + Number(estimatedTime)}
-          // estimatedDurationTime={estimatedTime}
+          estimatedDurationTime={estimatedTime}
           isComplete={isComplete}
         />
       ) : null}
