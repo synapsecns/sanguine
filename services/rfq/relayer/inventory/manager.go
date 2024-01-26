@@ -185,7 +185,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 
 		for address, token := range tokenMap {
 			// if startAllowance is 0
-			if token.startAllowance.Cmp(big.NewInt(0)) == 0 {
+			if address != chain.EthAddress && token.startAllowance.Cmp(big.NewInt(0)) == 0 {
 				chainID := chainID // capture func literal
 				address := address // capture func literal
 				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
