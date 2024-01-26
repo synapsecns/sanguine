@@ -5,10 +5,6 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
 
-import { useEffect } from 'react'
-import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
-import { arbitrum } from 'viem/chains'
-
 // TODO: someone should add this to the .env, disable if blank, etc.
 // this is being added as a hotfix to assess user load on the synapse explorer api
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
