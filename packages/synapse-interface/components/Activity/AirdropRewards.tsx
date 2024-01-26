@@ -7,6 +7,7 @@ import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 /** ARB Token */
 const ARB = {
@@ -107,13 +108,34 @@ const RewardsDialog = ({ transactions }: { transactions: any[] }) => {
   return (
     <dialog open={open} className="absolute bg-background">
       {transactions.map((transaction) => (
-        <div className="flex space-x-3 text-white">
-          <div>{transaction?.transactionHash}</div>
-          <div>{transaction?.transferValue.toString()}</div>
-          <div>{transaction?.blockNumber.toString()}</div>
-        </div>
+        <AirdropTransaction
+          transactionHash={transaction.transactionHash}
+          value={transaction.transferValue}
+          blockNumber={transaction.blockNumber}
+        />
       ))}
     </dialog>
+  )
+}
+
+const AirdropTransaction = ({
+  transactionHash,
+  value,
+  blockNumber,
+}: {
+  transactionHash: string
+  value: string
+  blockNumber: string
+}) => {
+  return (
+    <div className="flex justify-between text-white">
+      <div>{shortenAddress(transactionHash)}</div>
+
+      <div className="flex">
+        <div className="text-green-500">+ {value} ARB</div>
+        <div>{blockNumber}</div>
+      </div>
+    </div>
   )
 }
 
