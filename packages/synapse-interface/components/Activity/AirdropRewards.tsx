@@ -1,13 +1,37 @@
 import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
 import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import TransactionArrow from '../icons/TransactionArrow'
+import arbitrumImg from '@assets/chains/arbitrum.svg'
 
-const arbTokenAddress = '0x912CE59144191C1204E64559FE8253a0e49E6548' // on Arbitrum
-const rewarderAddress = '0x48fa1ebda1af925898c826c566f5bb015e125ead' // on Arbitrum
-const network = arbitrum
-const startBlock = 174234366n // Start of STIP Rewards on Arbitrum
+/** Temp constant as we do not currently store this */
+const ARB = {
+  name: 'Arbitrum',
+  symbol: 'ARB',
+  decimals: 18,
+  tokenAddress: '0x912CE59144191C1204E64559FE8253a0e49E6548' as Address,
+  icon: arbitrumImg,
+  network: arbitrum,
+}
+
+/** ARB STIP Rewarder */
+const Rewarder = {
+  address: '0x48fa1ebda1af925898c826c566f5bb015e125ead' as Address,
+  startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
+}
+
+const getStipRewards = async (connectedAddress: Address) => {
+  const { logs, data } = await getErc20TokenTransfers(
+    ARB.tokenAddress,
+    Rewarder.address,
+    connectedAddress,
+    ARB.network,
+    Rewarder.startBlock
+  )
+
+  return [logs, data]
+}
 
 export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<any>(undefined)
@@ -16,18 +40,12 @@ export const AirdropRewards = () => {
   useEffect(() => {
     if (connectedAddress) {
       ;(async () => {
-        const { logs, data } = await getErc20TokenTransfers(
-          arbTokenAddress,
-          rewarderAddress,
-          connectedAddress,
-          network,
-          startBlock
-        )
-
-        setRewards(data)
+        // setRewards(data)
       })()
     }
   }, [connectedAddress])
+
+  console.log('rewards:', rewards)
 
   return (
     <div
