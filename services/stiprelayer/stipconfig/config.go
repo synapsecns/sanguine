@@ -50,6 +50,7 @@ type Config struct {
 	FeesAndRebates  FeesAndRebates         `yaml:"fees_and_rebates"`
 	DuneInterval    time.Duration          `yaml:"dune_interval"`
 	RebateInterval  time.Duration          `yaml:"rebate_interval"`
+	StipAPIPort     string                 `yaml:"stip_api_port"`
 }
 
 // LoadConfig loads the config from the given path.

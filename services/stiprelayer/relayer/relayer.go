@@ -21,6 +21,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/stiprelayer/db"
+	"github.com/synapsecns/sanguine/services/stiprelayer/stipapi"
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
@@ -40,6 +41,7 @@ type STIPRelayer struct {
 	handler       metrics.Handler
 	submittter    submitter.TransactionSubmitter
 	signer        signer.Signer
+	apiServer     *stipapi.StipAPIServer
 }
 
 // NewSTIPRelayer creates a new STIPRelayer with the provided context and configuration.
@@ -54,6 +56,12 @@ func NewSTIPRelayer(ctx context.Context,
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 	sm := submitter.NewTransactionSubmitter(handler, sg, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
+	apiServer, err := stipapi.NewStipAPI(ctx, cfg, handler)
+	if err != nil {
+		return nil, fmt.Errorf("could not get api server: %w", err)
+	}
+
 	return &STIPRelayer{
 		cfg:           cfg,
 		db:            store,
@@ -61,6 +69,7 @@ func NewSTIPRelayer(ctx context.Context,
 		omnirpcClient: omniRPCClient,
 		submittter:    sm,
 		signer:        sg,
+		apiServer:     apiServer,
 	}, nil
 }
 
@@ -134,6 +143,14 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 	// Start the submitter goroutine
 	g.Go(func() error {
 		return s.StartSubmitter(ctx)
+	})
+
+	g.Go(func() error {
+		err := s.apiServer.Run(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start api server: %w", err)
+		}
+		return nil
 	})
 
 	err := s.ProcessExecutionResults(ctx, "bridge")
