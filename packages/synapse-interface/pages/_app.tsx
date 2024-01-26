@@ -18,12 +18,8 @@ import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
 
-import ApplicationUpdater from '@/slices/application/updater'
-import BridgeUpdater from '@/slices/bridge/updater'
-import PortfolioUpdater from '@/slices/portfolio/updater'
-import TransactionsUpdater from '@/slices/transactions/updater'
-import _TransactionsUpdater from '@/slices/_transactions/updater'
 import { wagmiChains, wagmiConfig } from '@/wagmiConfig'
+import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 
 // only initialize when in the browser
 if (
@@ -41,18 +37,6 @@ if (
   })
 }
 
-function Updaters() {
-  return (
-    <>
-      <ApplicationUpdater />
-      <PortfolioUpdater />
-      <TransactionsUpdater />
-      <_TransactionsUpdater />
-      <BridgeUpdater />
-    </>
-  )
-}
-
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
@@ -66,8 +50,9 @@ const App = ({ Component, pageProps }: AppProps) => {
               <PersistGate loading={null} persistor={persistor}>
                 <SegmentAnalyticsProvider>
                   <UserProvider>
-                    <Updaters />
-                    <Component {...pageProps} />
+                    <BackgroundListenerProvider>
+                      <Component {...pageProps} />
+                    </BackgroundListenerProvider>
                     <Analytics />
                     <CustomToaster />
                   </UserProvider>
