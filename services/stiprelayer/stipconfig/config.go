@@ -51,6 +51,7 @@ type Config struct {
 	DuneInterval    time.Duration          `yaml:"dune_interval"`
 	RebateInterval  time.Duration          `yaml:"rebate_interval"`
 	StipAPIPort     string                 `yaml:"stip_api_port"`
+	ARBMaxTransfer  int64                  `yaml:"ARB_max_transfer"`
 }
 
 // LoadConfig loads the config from the given path.
