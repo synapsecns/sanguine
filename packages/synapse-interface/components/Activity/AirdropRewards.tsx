@@ -36,7 +36,7 @@ const getArbStipRewards = async (connectedAddress: Address) => {
   const cumulativeRewards = calculateTotalTransferValue(data)
 
   return {
-    logs,
+    logs: logs ?? [],
     transactions: data,
     cumulativeRewards,
   }
@@ -54,7 +54,7 @@ const calculateTotalTransferValue = (data: any[]): bigint => {
 
 export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<string>(undefined)
-  const [transactions, setTransactions] = useState<any[]>(undefined)
+  const [transactions, setTransactions] = useState<any[]>([])
   const { address: connectedAddress } = useAccount()
 
   const fetchStipAirdropRewards = async (address: Address) => {
@@ -94,7 +94,26 @@ export const AirdropRewards = () => {
           amount={`+ ${rewards}`}
         />
       </div>
+      <RewardsDialog transactions={transactions} />
     </div>
+  )
+}
+
+const RewardsDialog = ({ transactions }: { transactions: any[] }) => {
+  const [open, setOpen] = useState<boolean>(true)
+
+  console.log('transactions:', transactions)
+
+  return (
+    <dialog open={open} className="absolute bg-background">
+      {transactions.map((transaction) => (
+        <div className="flex space-x-3 text-white">
+          <div>{transaction?.transactionHash}</div>
+          <div>{transaction?.transferValue.toString()}</div>
+          <div>{transaction?.blockNumber.toString()}</div>
+        </div>
+      ))}
+    </dialog>
   )
 }
 
