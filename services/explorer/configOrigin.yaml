@@ -17,6 +17,9 @@ chains:
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: 17559791
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 18770640
   - chain_id: 42161
     fetch_block_increment: 200
     max_goroutines: 2
@@ -33,6 +36,9 @@ chains:
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: 104920110
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 159404485
   - chain_id: 1313161554
     fetch_block_increment: 200
     max_goroutines: 2
@@ -65,6 +71,9 @@ chains:
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: 31804348
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 38954743
   - chain_id: 288
     fetch_block_increment: 200
     max_goroutines: 2
@@ -130,6 +139,9 @@ chains:
       - contract_type: metaswap
         address: '0x96cf323E477Ec1E17A4197Bdcc6f72Bb2502756a'
         start_block: 18030407
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 51047501
   - chain_id: 10
     fetch_block_increment: 200
     max_goroutines: 2
@@ -143,6 +155,12 @@ chains:
       - contract_type: swap #ETH Pool
         address: '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
         start_block: 30819
+      - contract_type: cctp
+        address: '0x5e69c336661dde70404e3345ba61f9c01ddb4c36'
+        start_block: 108940944
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 113396118
   - chain_id: 1284
     fetch_block_increment: 200
     max_goroutines: 2
@@ -220,3 +238,9 @@ chains:
       - contract_type: swap
         address: '0x6223bD82010E2fB69F329933De20897e7a4C225f'
         start_block: 1001141
+      - contract_type: cctp
+        address: '0xfb2bfc368a7edfd51aa2cbec513ad50edea74e84'
+        start_block: 5474536
+      - contract_type: cctp
+        address: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+        start_block: 7800510

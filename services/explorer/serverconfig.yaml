@@ -17,6 +17,7 @@ chains:
     contracts:
       bridge: '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
       cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
   42161:
     chain_id: 42161
     avg_block_time: 1
@@ -28,6 +29,7 @@ chains:
     contracts:
       bridge: '0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9'
       cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
   1313161554:
     chain_id: 1313161554
     avg_block_time: 1
@@ -48,6 +50,7 @@ chains:
     contracts:
       bridge: '0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE'
       cctp: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
   288:
     chain_id: 288
     avg_block_time: 40
@@ -94,6 +97,7 @@ chains:
       - '0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5'
     contracts:
       bridge: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
   10:
     chain_id: 10
     avg_block_time: 2
@@ -104,6 +108,8 @@ chains:
       - '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
     contracts:
       bridge: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
+      cctp: '0x5e69c336661dde70404e3345ba61f9c01ddb4c36'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
   1284:
     chain_id: 1284
     avg_block_time: 12
@@ -176,3 +182,5 @@ chains:
       - '0x6223bD82010E2fB69F329933De20897e7a4C225f'
     contracts:
       bridge: '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089'
+      cctp: '0xfb2bfc368a7edfd51aa2cbec513ad50edea74e84'
+      cctp: '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
