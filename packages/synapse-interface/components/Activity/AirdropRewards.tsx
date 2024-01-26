@@ -70,9 +70,31 @@ export const AirdropRewards = () => {
 
 const NetworkDisplay = ({ name, icon }: { name: string; icon: string }) => {
   return (
-    <div className="flex items-center space-x-1.5">
+    <div id="network-display" className="flex items-center space-x-1.5">
       <Image src={icon} alt={`${name} icon`} className="w-4 h-4 rounded-full" />
       <div>{name}</div>
+    </div>
+  )
+}
+
+const TokenAmountDisplay = ({
+  symbol,
+  icon,
+  amount,
+}: {
+  symbol: string
+  icon: string
+  amount: string
+}) => {
+  return (
+    <div id="token-amount-display" className="flex items-center space-x-1.5">
+      <Image
+        src={icon}
+        alt={`${symbol} icon`}
+        className="w-4 h-4 rounded-full"
+      />
+      <div>{amount}</div>
+      <div>{symbol}</div>
     </div>
   )
 }
