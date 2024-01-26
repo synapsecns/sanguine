@@ -1,15 +1,16 @@
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { Address } from '@wagmi/core'
+
 import { useAppDispatch } from '@/store/hooks'
-import { useTransactionsState } from '../transactions/hooks'
-import { TransactionsState } from '../transactions/reducer'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from './hooks'
-import { PendingBridgeTransaction } from '../transactions/actions'
-import { BridgeTransaction } from '../api/generated'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+import { TransactionsState } from '@/slices/transactions/reducer'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import { PendingBridgeTransaction } from '@/slices/transactions/actions'
+import { BridgeTransaction } from '@/slices/api/generated'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 
-export default function Updater(): null {
+export const usePortfolioListener = () => {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
   const {
