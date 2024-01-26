@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { shortenAddress } from '@/utils/shortenAddress'
+import { ARBITRUM } from '@/constants/chains/master'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 /** ARB Token */
 const ARB = {
@@ -17,6 +19,7 @@ const ARB = {
   tokenAddress: '0x912CE59144191C1204E64559FE8253a0e49E6548' as Address,
   icon: arbitrumImg,
   network: arbitrum,
+  explorerUrl: ARBITRUM.explorerUrl,
 }
 
 /** ARB STIP Rewarder */
@@ -84,8 +87,8 @@ export const AirdropRewards = () => {
     }
   }, [connectedAddress])
 
-  console.log('rewards:', rewards)
-  console.log('transactions:', transactions)
+  // console.log('rewards:', rewards)
+  // console.log('transactions:', transactions)
 
   return (
     <div
@@ -117,8 +120,9 @@ const RewardsDialog = ({ transactions }: { transactions: any[] }) => {
       {transactions.map((transaction) => (
         <AirdropTransaction
           transactionHash={transaction.transactionHash}
-          value={transaction.transferValue}
-          blockNumber={transaction.blockNumber}
+          value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
+          blockNumber={transaction.blockNumber.toString()}
+          explorerUrl={ARB.explorerUrl}
         />
       ))}
     </dialog>
@@ -129,21 +133,40 @@ const AirdropTransaction = ({
   transactionHash,
   value,
   blockNumber,
+  explorerUrl,
 }: {
   transactionHash: string
   value: string
   blockNumber: string
+  explorerUrl: string
 }) => {
   return (
     <div className="flex justify-between text-white">
-      <div>{shortenAddress(transactionHash)}</div>
+      <Link
+        href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
+        referrerPolicy="no-referrer"
+        target="_blank"
+      >
+        {shortenAddress(transactionHash)}
+      </Link>
 
-      <div className="flex">
+      <div className="flex space-x-2">
         <div className="text-green-500">+ {value} ARB</div>
         <div>{blockNumber}</div>
       </div>
     </div>
   )
+}
+
+// TODO: Check if pattern works with other explorers, can move to utils
+export const getBlockExplorerTransactionLink = ({
+  explorerUrl,
+  transactionHash,
+}: {
+  explorerUrl: string
+  transactionHash: string
+}) => {
+  return `${explorerUrl}/tx/${transactionHash}`
 }
 
 const NetworkDisplay = ({ name, icon }: { name: string; icon: string }) => {
