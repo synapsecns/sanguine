@@ -5,8 +5,10 @@ import { arbitrum } from 'viem/chains'
 import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
-/** Temp constant as we do not currently store this */
+/** ARB Token */
 const ARB = {
   name: 'Arbitrum',
   symbol: 'ARB',
@@ -30,21 +32,43 @@ const getArbStipRewards = async (connectedAddress: Address) => {
     ARB.network,
     Rewarder.startBlock
   )
-  return [logs, data]
+
+  const cumulativeRewards = calculateTotalTransferValue(data)
+
+  return {
+    logs,
+    transactions: data,
+    cumulativeRewards,
+  }
+}
+
+const calculateTotalTransferValue = (data: any[]): bigint => {
+  let total: bigint = 0n
+  for (const item of data) {
+    if (item.transferValue) {
+      total += item.transferValue
+    }
+  }
+  return total
 }
 
 export const AirdropRewards = () => {
-  const [rewards, setRewards] = useState<any>(undefined)
+  const [rewards, setRewards] = useState<string>(undefined)
+  const [transactions, setTransactions] = useState<any[]>(undefined)
   const { address: connectedAddress } = useAccount()
 
   useEffect(() => {
     if (connectedAddress) {
       ;(async () => {
-        const [logs, data] = await getArbStipRewards(connectedAddress)
+        const { logs, transactions, cumulativeRewards } =
+          await getArbStipRewards(connectedAddress)
 
-        console.log('Raw Rewards Transfer logs: ', logs)
+        const parsedCumulativeRewards = trimTrailingZeroesAfterDecimal(
+          formatBigIntToString(cumulativeRewards, ARB.decimals, 3)
+        )
 
-        setRewards(data)
+        setTransactions(transactions)
+        setRewards(parsedCumulativeRewards)
       })()
     } else {
       setRewards(undefined)
