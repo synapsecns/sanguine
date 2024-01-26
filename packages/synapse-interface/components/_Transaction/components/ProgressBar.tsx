@@ -31,37 +31,47 @@ export const ProgressBar = ({
   const currentProgressInPercent = currentProgressInFraction * 100
 
   return (
-    <div id="progress-bar" className="flex w-full h-1 overflow-hidden bg-white">
-      <div
-        style={{
-          width: `${elapsedProgressInPercent}%`,
-        }}
-        className="h-full bg-green-500"
-      ></div>
+    <>
       {!isComplete ? (
         <div
-          style={{
-            width: `${isComplete ? 100 : 100 - elapsedProgressInPercent}%`,
-            animationName: `${!isComplete && 'fillAnimation'}`,
-            animationDuration: `${!isComplete && `${remainingTime}s`}`,
-            animationTimingFunction: 'ease-in',
-          }}
-          className="h-full bg-green-500"
-        />
+          id="progress-bar"
+          className="flex w-full h-1 overflow-hidden bg-white"
+        >
+          <div
+            style={{
+              width: `${elapsedProgressInPercent}%`,
+            }}
+            className="h-full bg-green-500"
+          ></div>
+          <div
+            style={{
+              width: `${isComplete ? 100 : 100 - elapsedProgressInPercent}%`,
+              animationName: `${!isComplete && 'fillAnimation'}`,
+              animationDuration: `${!isComplete && `${remainingTime}s`}`,
+              animationTimingFunction: 'ease-in',
+            }}
+            className="h-full bg-green-500"
+          />
+        </div>
       ) : (
         <div
-          style={{
-            width: `${100 - elapsedProgressInPercent}%`,
-          }}
+          id="progress-bar"
+          className="flex w-full h-1 overflow-hidden bg-white"
         >
-          <CompletedProgress />
+          <div
+            style={{
+              width: `100%`,
+            }}
+          >
+            <CompletedProgress startingPercentage={elapsedProgressInPercent} />
+          </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
-const CompletedProgress = () => {
+const CompletedProgress = ({ startingPercentage }) => {
   return (
     <svg
       height="100%"
@@ -73,7 +83,7 @@ const CompletedProgress = () => {
       <rect width="100%" height="100%" fill="green">
         <animate
           attributeName="width"
-          from="0"
+          from={startingPercentage + '%'}
           to="100%"
           dur="3s"
           calcMode="linear"
