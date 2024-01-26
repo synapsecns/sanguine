@@ -47,10 +47,13 @@ export const Banner = () => {
         <div className="m-1 font-thin">
           <div className="container mx-auto">
             <p className="text-md">
-              Get fee rebates on transactions to Arbitrum now until March 29th.
+              Arbitrum rebates are live! Distributing 2M $ARB until March 29th -
               <a
                 className="underline text-[#99e6ff] ml-2"
-                href={'https://twitter.com/SynapseProtocol/'}
+                href={
+                  'https://synapse.mirror.xyz/NpzSkXDUlistuxNQaMwP6HQ9k2gVJsI-G1Y7-gaLxfQ'
+                }
+                rel="noopener noreferrer"
                 target={'_blank'}
               >
                 Full details
