@@ -1,7 +1,0 @@
-query GetBlockHeight($contracts: [ContractQuery]!) {
-  getBlockHeight(contracts: $contracts) {
-    chainID
-    type
-    blockNumber
-  }
-}
