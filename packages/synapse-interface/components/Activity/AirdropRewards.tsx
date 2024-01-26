@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
 import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
@@ -29,7 +30,6 @@ const getArbStipRewards = async (connectedAddress: Address) => {
     ARB.network,
     Rewarder.startBlock
   )
-
   return [logs, data]
 }
 
@@ -61,9 +61,18 @@ export const AirdropRewards = () => {
       <div className="text-green-500">Rebate</div>
       <TransactionArrow />
       <div>
-        <div>Token Img, Token Name</div>
+        <NetworkDisplay name={ARB.name} icon={ARB.icon} />
         <div>Token Img, Airdropped Total</div>
       </div>
+    </div>
+  )
+}
+
+const NetworkDisplay = ({ name, icon }: { name: string; icon: string }) => {
+  return (
+    <div className="flex items-center space-x-1.5">
+      <Image src={icon} alt={`${name} icon`} className="w-4 h-4 rounded-full" />
+      <div>{name}</div>
     </div>
   )
 }
