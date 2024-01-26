@@ -90,10 +90,17 @@ export const AirdropRewards = () => {
   // console.log('rewards:', rewards)
   // console.log('transactions:', transactions)
 
+  const [open, setOpen] = useState<boolean>(false)
+
+  const handleToggle = () => {
+    setOpen(!open)
+  }
+
   return (
     <div
       id="airdrop-rewards"
-      className="flex border rounded-lg text-secondary border-surface bg-background"
+      className="flex border rounded-lg cursor-pointer text-secondary border-surface bg-background"
+      onClick={handleToggle}
     >
       <div className="text-green-500">Rebate</div>
       <TransactionArrow />
@@ -105,16 +112,24 @@ export const AirdropRewards = () => {
           amount={`+ ${rewards}`}
         />
       </div>
-      <RewardsDialog transactions={transactions} />
+      <RewardsDialog
+        open={open}
+        setOpen={setOpen}
+        transactions={transactions}
+      />
     </div>
   )
 }
 
-const RewardsDialog = ({ transactions }: { transactions: any[] }) => {
-  const [open, setOpen] = useState<boolean>(true)
-
-  console.log('transactions:', transactions)
-
+const RewardsDialog = ({
+  open,
+  setOpen,
+  transactions,
+}: {
+  transactions: any[]
+  open: boolean
+  setOpen: (value: React.SetStateAction<boolean>) => void
+}) => {
   return (
     <dialog open={open} className="absolute bg-background">
       {transactions.map((transaction) => (
