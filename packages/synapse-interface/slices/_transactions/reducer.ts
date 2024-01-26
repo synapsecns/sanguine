@@ -4,6 +4,7 @@ import { Chain, Token } from '@/utils/types'
 
 /** TODO: Rename entire slice once done refactoring prior Activity flow */
 export interface _TransactionDetails {
+  address: string
   originChain: Chain
   originToken: Token
   destinationChain: Chain
