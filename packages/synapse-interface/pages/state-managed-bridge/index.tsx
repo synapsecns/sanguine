@@ -121,7 +121,7 @@ const StateManagedBridge = () => {
       fromToken?.decimals[fromChainId] &&
       stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]) > 0n
     ) {
-      console.log('trying to set bridge quote')
+      console.log('trying to set bridge quote.')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
