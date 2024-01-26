@@ -21,7 +21,7 @@ const Rewarder = {
   startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
 }
 
-const getStipRewards = async (connectedAddress: Address) => {
+const getArbStipRewards = async (connectedAddress: Address) => {
   const { logs, data } = await getErc20TokenTransfers(
     ARB.tokenAddress,
     Rewarder.address,
@@ -40,8 +40,14 @@ export const AirdropRewards = () => {
   useEffect(() => {
     if (connectedAddress) {
       ;(async () => {
-        // setRewards(data)
+        const [logs, data] = await getArbStipRewards(connectedAddress)
+
+        console.log('Raw Rewards Transfer logs: ', logs)
+
+        setRewards(data)
       })()
+    } else {
+      setRewards(undefined)
     }
   }, [connectedAddress])
 
