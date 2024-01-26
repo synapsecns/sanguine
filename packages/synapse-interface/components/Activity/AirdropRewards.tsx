@@ -57,19 +57,20 @@ export const AirdropRewards = () => {
   const [transactions, setTransactions] = useState<any[]>(undefined)
   const { address: connectedAddress } = useAccount()
 
+  const fetchStipAirdropRewards = async (address: Address) => {
+    const { transactions, cumulativeRewards } = await getArbStipRewards(address)
+
+    const parsedCumulativeRewards = trimTrailingZeroesAfterDecimal(
+      formatBigIntToString(cumulativeRewards, ARB.decimals, 3)
+    )
+
+    setTransactions(transactions)
+    setRewards(parsedCumulativeRewards)
+  }
+
   useEffect(() => {
     if (connectedAddress) {
-      ;(async () => {
-        const { logs, transactions, cumulativeRewards } =
-          await getArbStipRewards(connectedAddress)
-
-        const parsedCumulativeRewards = trimTrailingZeroesAfterDecimal(
-          formatBigIntToString(cumulativeRewards, ARB.decimals, 3)
-        )
-
-        setTransactions(transactions)
-        setRewards(parsedCumulativeRewards)
-      })()
+      fetchStipAirdropRewards(connectedAddress)
     } else {
       setRewards(undefined)
     }
