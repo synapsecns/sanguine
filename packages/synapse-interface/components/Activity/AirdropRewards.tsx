@@ -76,6 +76,7 @@ export const AirdropRewards = () => {
   }, [connectedAddress])
 
   console.log('rewards:', rewards)
+  console.log('transactions:', transactions)
 
   return (
     <div
@@ -89,7 +90,7 @@ export const AirdropRewards = () => {
         <TokenAmountDisplay
           symbol={ARB.symbol}
           icon={ARB.icon}
-          amount={'+0.00'}
+          amount={`+ ${rewards}`}
         />
       </div>
     </div>
