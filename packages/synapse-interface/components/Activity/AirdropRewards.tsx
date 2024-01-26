@@ -62,7 +62,11 @@ export const AirdropRewards = () => {
       <TransactionArrow />
       <div>
         <NetworkDisplay name={ARB.name} icon={ARB.icon} />
-        <div>Token Img, Airdropped Total</div>
+        <TokenAmountDisplay
+          symbol={ARB.symbol}
+          icon={ARB.icon}
+          amount={'+0.00'}
+        />
       </div>
     </div>
   )
@@ -72,7 +76,7 @@ const NetworkDisplay = ({ name, icon }: { name: string; icon: string }) => {
   return (
     <div id="network-display" className="flex items-center space-x-1.5">
       <Image src={icon} alt={`${name} icon`} className="w-4 h-4 rounded-full" />
-      <div>{name}</div>
+      <div className="text-md">{name}</div>
     </div>
   )
 }
@@ -87,14 +91,17 @@ const TokenAmountDisplay = ({
   amount: string
 }) => {
   return (
-    <div id="token-amount-display" className="flex items-center space-x-1.5">
+    <div
+      id="token-amount-display"
+      className="flex items-center space-x-1.5 leading-none"
+    >
       <Image
         src={icon}
         alt={`${symbol} icon`}
-        className="w-4 h-4 rounded-full"
+        className="w-5 h-5 rounded-full"
       />
-      <div>{amount}</div>
-      <div>{symbol}</div>
+      <div className="text-white text-md">{amount}</div>
+      <div className="text-sm">{symbol}</div>
     </div>
   )
 }
