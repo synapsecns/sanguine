@@ -55,7 +55,6 @@ export const fetchFeeAndRebate = createAsyncThunk(
   }
 )
 
-
 export const feeAndRebateSlice = createSlice({
   name: 'feeAndRebate',
   initialState,
