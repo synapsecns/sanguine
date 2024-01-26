@@ -59,7 +59,7 @@ store.subscribe(() => {
   ) {
     const { outputAmountString, routerAddress, exchangeRate } =
       bridgeState.bridgeQuote
-    const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    const { fromChainId, toChainId, fromToken, toToken, debouncedFromValue } =
       bridgeState
 
     eventTitle = `[Bridge System Action] Generate bridge quote`
@@ -69,7 +69,7 @@ store.subscribe(() => {
       toChainId,
       fromToken: fromToken?.symbol,
       toToken: toToken?.symbol,
-      inputAmountString: fromValue,
+      inputAmountString: debouncedFromValue,
       outputAmountString,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),

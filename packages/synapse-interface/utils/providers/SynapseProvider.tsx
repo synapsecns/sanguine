@@ -20,7 +20,7 @@ export const SynapseProvider = memo(
           (url, index) => ({
             provider: new StaticJsonRpcProvider(url, chain.id),
             priority: index,
-            stallTimeout: 2000,
+            stallTimeout: 750,
           })
         )
 
