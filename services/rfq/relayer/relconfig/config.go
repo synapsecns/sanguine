@@ -42,6 +42,10 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
+	QuoteOffsetBps int `yaml:"quote_offset_bps"`
+	// ScreenerAPIUrl is the TRM API key.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
 	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
 }
@@ -293,6 +297,16 @@ func (c Config) GetQuotePct() float64 {
 		return defaultQuotePct
 	}
 	return c.QuotePct
+}
+
+const defaultQuoteOffsetBps = 0
+
+// GetQuoteOffsetBps returns the quote offset in basis points.
+func (c Config) GetQuoteOffsetBps() int {
+	if c.QuoteOffsetBps <= 0 {
+		return defaultQuoteOffsetBps
+	}
+	return c.QuoteOffsetBps
 }
 
 const defaultMinQuoteAmount = 0

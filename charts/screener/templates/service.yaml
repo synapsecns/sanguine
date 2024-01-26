@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "screener.fullname" . }}
+  labels:
+    {{- include "screener.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- range .Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .containerPort }}
+    {{- end }}
+  selector:
+    {{- include "screener.selectorLabels" . | nindent 4 }}

@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +38,7 @@ type Quoter interface {
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
-	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) bool
+	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -57,6 +59,8 @@ type Manager struct {
 	// quotableTokens is a map of token -> list of quotable tokens.
 	// should be removed in config overhaul
 	quotableTokens map[string][]string
+	// simpleScreener is used to screen addresses.
+	screener client.ScreenerClient
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -77,6 +81,14 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		qt[strings.ToLower(token)] = processedDestTokens
 	}
 
+	var ss client.ScreenerClient
+	if config.ScreenerAPIUrl != "" {
+		ss, err = client.NewClient(metricsHandler, config.ScreenerAPIUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error creating screener client: %w", err)
+		}
+	}
+
 	return &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
@@ -85,41 +97,66 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		relayerSigner:    relayerSigner,
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
+		screener:         ss,
 	}, nil
 }
 
+const screenerRuleset = "rfq"
+
 // ShouldProcess determines if a quote should be processed.
-func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool) {
+func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "shouldProcess", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(quote.TransactionID[:])),
 	))
 
 	defer func() {
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
-		metrics.EndSpan(span)
+		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if m.screener != nil {
+		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
+		if err != nil {
+			span.RecordError(fmt.Errorf("error screening address: %w", err))
+			return false, fmt.Errorf("error screening address: %w", err)
+		}
+		if blocked {
+			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.OriginSender))
+			return false, nil
+		}
+
+		blocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.DestRecipient.String())
+		if err != nil {
+			span.RecordError(fmt.Errorf("error screening address: %w", err))
+			return false, fmt.Errorf("error screening address: %w", err)
+		}
+		if blocked {
+			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.DestRecipient))
+			return false, nil
+		}
+	}
 
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
 	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
 		span.AddEvent(fmt.Sprintf("%s not in %s or %s not found", quote.GetDestIDPair(), strings.Join(destPairs, ", "), quote.GetOriginIDPair()))
-		return false
+		return false, nil
 	}
 
 	// handle decimals.
 	// this will never get hit if we're operating correctly.
 	if quote.OriginTokenDecimals != quote.DestTokenDecimals {
 		span.AddEvent("Pairing tokens with two different decimals is disabled as a safety feature right now.")
-		return false
+		return false, nil
 	}
 
 	// then check if we'll make money on it
 	isProfitable, err := m.isProfitableQuote(ctx, quote)
 	if err != nil {
 		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
-		return false
+		return false, err
 	}
-	return isProfitable
+	return isProfitable, nil
 }
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
@@ -229,7 +266,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              quoteAmount.String(),
+					DestAmount:              m.getDestAmount(ctx, quoteAmount).String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
@@ -278,6 +315,28 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 		quoteAmount = balance
 	}
 	return quoteAmount
+}
+
+func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int) *big.Int {
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
+		attribute.String("quote_amount", quoteAmount.String()),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	quoteOffsetBps := m.config.GetQuoteOffsetBps()
+	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
+	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
+	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), quoteOffsetFactor).Int(nil)
+
+	span.SetAttributes(
+		attribute.Int("quote_offset_bps", quoteOffsetBps),
+		attribute.String("quote_offset_fraction", quoteOffsetFraction.String()),
+		attribute.String("quote_offset_factor", quoteOffsetFactor.String()),
+		attribute.String("dest_amount", destAmount.String()),
+	)
+	return destAmount
 }
 
 // Submits a single quote.

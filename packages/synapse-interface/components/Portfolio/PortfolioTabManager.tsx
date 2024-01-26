@@ -31,7 +31,7 @@ export const PortfolioTabManager = () => {
         />
         <SearchBar />
       </div>
-      <_Transactions connectedAddress={address} />
+      {address && <_Transactions connectedAddress={address} />}
     </div>
   )
 }
