@@ -17,48 +17,48 @@ export enum BridgeModules {
 
 export const ELIGIBILITY_DEFAULT_TEXT = 'Fee rebate until March 29th'
 
-const TO_FROM_FEES_AND_REBATE_BPS = {
-  42161: {
-    anyFromChain: {
-      SynapseBridge: {
-        nETH: { fee: 4, rebate: 6 },
-        WETH: { fee: 4, rebate: 6 },
-        nUSD: { fee: 4, rebate: 6 },
-        GMX: { fee: 5, rebate: 6 },
-      },
-      SynapseCCTP: {
-        USDC: { fee: 4, rebate: 5 },
-      },
-      SynapseRFQ: {
-        USDC: { fee: 4, rebate: 5 },
-      },
-    },
-  },
-  1: {
-    42161: {
-      SynapseBridge: {
-        nETH: { fee: 10, rebate: 12 },
-        WETH: { fee: 4, rebate: 6 },
-        nUSD: { fee: 12, rebate: 14 },
-      },
-      SynapseCCTP: {
-        USDC: { fee: 4, rebate: 5 },
-      },
-      SynapseRFQ: {
-        USDC: { fee: 4, rebate: 5 },
-      },
-    },
-  },
-  43114: {
-    42161: {
-      SynapseBridge: {
-        GMX: { fee: 5, rebate: 6 },
-      },
-      SynapseCCTP: {},
-      SynapseRFQ: {},
-    },
-  },
-}
+// const TO_FROM_FEES_AND_REBATE_BPS = {
+//   42161: {
+//     anyFromChain: {
+//       SynapseBridge: {
+//         nETH: { fee: 4, rebate: 6 },
+//         WETH: { fee: 4, rebate: 6 },
+//         nUSD: { fee: 4, rebate: 6 },
+//         GMX: { fee: 5, rebate: 6 },
+//       },
+//       SynapseCCTP: {
+//         USDC: { fee: 4, rebate: 5 },
+//       },
+//       SynapseRFQ: {
+//         USDC: { fee: 4, rebate: 5 },
+//       },
+//     },
+//   },
+//   1: {
+//     42161: {
+//       SynapseBridge: {
+//         nETH: { fee: 10, rebate: 12 },
+//         WETH: { fee: 4, rebate: 6 },
+//         nUSD: { fee: 12, rebate: 14 },
+//       },
+//       SynapseCCTP: {
+//         USDC: { fee: 4, rebate: 5 },
+//       },
+//       SynapseRFQ: {
+//         USDC: { fee: 4, rebate: 5 },
+//       },
+//     },
+//   },
+//   43114: {
+//     42161: {
+//       SynapseBridge: {
+//         GMX: { fee: 5, rebate: 6 },
+//       },
+//       SynapseCCTP: {},
+//       SynapseRFQ: {},
+//     },
+//   },
+// }
 
 /*
 const ARB = {
@@ -74,6 +74,9 @@ const ARB = {
 */
 
 export const useStipEligibility = () => {
+  const { toFromFeeAndRebateBps } = useAppSelector(
+    (state) => state.feeAndRebate
+  )
   const {
     ethPrice,
     gmxPrice,
@@ -130,6 +133,7 @@ export const useStipEligibility = () => {
     bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount
 
   const rebate = calculateRebate(
+    toFromFeeAndRebateBps,
     bridgeQuote,
     fromChainId,
     toChainId,
@@ -208,6 +212,7 @@ const fromArbitrumToEthereum = (
 }
 
 const calculateRebate = (
+  toFromFeesAndRebateBps,
   bridgeQuote,
   fromChainId: number,
   toChainId: number,
@@ -221,7 +226,8 @@ const calculateRebate = (
     tokenPriceInDollars === 0 ||
     !tokenPriceInDollars ||
     !arbPrice ||
-    bridgeQuote?.outputAmount === EMPTY_BRIDGE_QUOTE.outputAmount
+    bridgeQuote?.outputAmount === EMPTY_BRIDGE_QUOTE.outputAmount ||
+    Object.keys(toFromFeesAndRebateBps).length === 0
   )
     return
 
@@ -241,12 +247,12 @@ const calculateRebate = (
   let rebateBps
   if (toChainId === ARBITRUM.id) {
     rebateBps =
-      TO_FROM_FEES_AND_REBATE_BPS[toChainId]?.anyFromChain?.[bridgeModuleName][
+      toFromFeesAndRebateBps[toChainId]?.anyFromChain?.[bridgeModuleName][
         bridgeToken?.routeSymbol
       ]?.rebate
   } else {
     rebateBps =
-      TO_FROM_FEES_AND_REBATE_BPS[toChainId]?.[fromChainId]?.[bridgeModuleName][
+      toFromFeesAndRebateBps[toChainId]?.[fromChainId]?.[bridgeModuleName][
         bridgeToken?.routeSymbol
       ]?.rebate
   }
