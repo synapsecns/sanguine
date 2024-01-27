@@ -6,6 +6,7 @@ use (
 	./contrib/git-changes-action
 	./contrib/promexporter
 	./contrib/release-copier-action
+	./contrib/screener-api
 	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
 	./contrib/terraform-provider-kubeproxy
@@ -18,5 +19,6 @@ use (
 	./services/rfq
 	./services/scribe
 	./services/sinner
+	./services/stiprelayer
 	./tools
 )

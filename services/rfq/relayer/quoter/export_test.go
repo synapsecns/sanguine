@@ -18,6 +18,10 @@ func (m *Manager) GetQuoteAmount(ctx context.Context, chainID int, address commo
 	return m.getQuoteAmount(ctx, chainID, address, balance)
 }
 
+func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int) *big.Int {
+	return m.getDestAmount(ctx, quoteAmount)
+}
+
 func (m *Manager) SetConfig(cfg relconfig.Config) {
 	m.config = cfg
 }

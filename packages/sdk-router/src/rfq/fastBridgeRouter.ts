@@ -138,4 +138,12 @@ export class FastBridgeRouter implements SynapseModule {
     )
     return queries.map(reduceToQuery)
   }
+
+  /**
+   * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
+   */
+  public async getProtocolFeeRate(): Promise<BigNumber> {
+    const fastBridgeContract = await this.getFastBridgeContract()
+    return fastBridgeContract.protocolFeeRate()
+  }
 }

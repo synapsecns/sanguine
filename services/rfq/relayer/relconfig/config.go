@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
@@ -43,6 +44,12 @@ type Config struct {
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
+	QuoteOffsetBps int `yaml:"quote_offset_bps"`
+	// ScreenerAPIUrl is the TRM API key.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
+	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
+	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -55,6 +62,8 @@ type ChainConfig struct {
 	Tokens map[string]TokenConfig `yaml:"tokens"`
 	// NativeToken is the native token of the chain (pays gas).
 	NativeToken string `yaml:"native_token"`
+	// DeadlineBufferSeconds is the deadline buffer for relaying a transaction.
+	DeadlineBufferSeconds int `yaml:"deadline_buffer_seconds"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -304,6 +313,16 @@ func (c Config) GetQuotePct() float64 {
 	return c.QuotePct
 }
 
+const defaultQuoteOffsetBps = 0
+
+// GetQuoteOffsetBps returns the quote offset in basis points.
+func (c Config) GetQuoteOffsetBps() int {
+	if c.QuoteOffsetBps <= 0 {
+		return defaultQuoteOffsetBps
+	}
+	return c.QuoteOffsetBps
+}
+
 const defaultMinQuoteAmount = 0
 
 // GetMinQuoteAmount returns the quote amount for the given chain and address.
@@ -337,6 +356,21 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
+}
+
+const defaultDeadlineBufferSeconds = 600
+
+// GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
+func (c Config) GetDeadlineBuffer(chainID int) time.Duration {
+	deadlineBufferSeconds := defaultDeadlineBufferSeconds
+	if c.BaseDeadlineBufferSeconds > 0 {
+		deadlineBufferSeconds = c.BaseDeadlineBufferSeconds
+	}
+	chainCfg, ok := c.Chains[chainID]
+	if ok && chainCfg.DeadlineBufferSeconds > 0 {
+		deadlineBufferSeconds = chainCfg.DeadlineBufferSeconds
+	}
+	return time.Duration(deadlineBufferSeconds) * time.Second
 }
 
 var _ IConfig = &Config{}

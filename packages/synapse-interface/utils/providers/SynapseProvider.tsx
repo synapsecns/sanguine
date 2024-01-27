@@ -1,24 +1,38 @@
 //@ts-ignore
 import { SynapseSDK } from '@synapsecns/sdk-router'
-import { Provider } from '@ethersproject/abstract-provider'
 import { createContext, useContext, memo, useMemo } from 'react'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { Provider as EthersProvider } from '@ethersproject/abstract-provider'
+import {
+  StaticJsonRpcProvider,
+  FallbackProvider,
+  FallbackProviderConfig,
+} from '@ethersproject/providers'
 
 export const SynapseContext = createContext(null)
 
 export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
     const synapseProviders = useMemo(() => {
-      return chains.map(
-        (chain) => new StaticJsonRpcProvider(chain.configRpc, chain.id)
-      )
+      return chains.map((chain) => {
+        const providerUrls = [chain?.configRpc, chain?.fallbackRpc]
+
+        // Set priority based on list order
+        const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
+          (url, index) => ({
+            provider: new StaticJsonRpcProvider(url, chain.id),
+            priority: index,
+            stallTimeout: 750,
+          })
+        )
+
+        // Use quorum of 1
+        return new FallbackProvider(providerConfigs, 1)
+      })
     }, [chains])
 
     const providerMap = useMemo(() => {
       return chains.reduce((map, chain) => {
         map[chain.id] = synapseProviders.find(
-          (provider) => provider.connection.url === chain.configRpc
+          (provider) => provider.network.chainId === chain.id
         )
         return map
       }, {})
