@@ -12,6 +12,7 @@ import (
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -108,8 +109,9 @@ func (s *QuoterSuite) SetupTest() {
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
-	var err error
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), nil, nil, feePricer)
+	inventoryManager := new(inventoryMocks.Manager)
+	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
 	s.NoError(err)
 
 	var ok bool

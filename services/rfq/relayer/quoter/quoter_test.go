@@ -6,9 +6,16 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
@@ -134,54 +141,79 @@ func (s *QuoterSuite) TestShouldProcess() {
 		},
 	}
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
+
+	// Toggle insufficient gas; should not process.
+	s.setGasSufficiency(false)
+	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestGetQuoteAmount() {
-	chainID := int(s.origin)
-	address := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+	origin := int(s.origin)
+	dest := int(s.destination)
+	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
 	setQuoteParams := func(quotePct float64, minQuoteAmount string) {
 		s.config.QuotePct = quotePct
-		tokenCfg := s.config.Chains[chainID].Tokens["USDC"]
+		tokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		tokenCfg.MinQuoteAmount = minQuoteAmount
-		s.config.Chains[chainID].Tokens["USDC"] = tokenCfg
+		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
 	// Set default quote params; should return the balance.
-	quoteAmount, err := s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err := s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
 	setQuoteParams(50, "0")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(50, "500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(25, "500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
 	setQuoteParams(25, "1500")
-	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), chainID, address, balance)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
+
+	// Toggle insufficient gas; should be 0.
+	s.setGasSufficiency(false)
+	quoteAmount, err = s.manager.GetQuoteAmount(s.GetTestContext(), origin, dest, address, balance)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+}
+
+func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	inventoryManager := new(inventoryMocks.Manager)
+	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(sufficient, nil)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
+	s.NoError(err)
+
+	var ok bool
+	s.manager, ok = mgr.(*quoter.Manager)
+	s.True(ok)
 }
 
 func (s *QuoterSuite) TestGetDestAmount() {
