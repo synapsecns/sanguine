@@ -9,13 +9,21 @@ import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
 import {
+  fetchAllEthStablecoinPrices,
+  fetchArbPrice,
   fetchAvaxPrice,
+  fetchCoingeckoPrices,
+  fetchDaiePrice,
   fetchEthPrice,
+  fetchGmxPrice,
   fetchMetisPrice,
+  fetchMusdcPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
+import { getCoingeckoPrices } from '@/utils/actions/getPrices'
+import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -55,6 +63,13 @@ export const UserProvider = ({ children }) => {
       dispatch(fetchEthPrice())
       dispatch(fetchAvaxPrice())
       dispatch(fetchMetisPrice())
+      dispatch(fetchArbPrice())
+      dispatch(fetchGmxPrice())
+      dispatch(fetchAllEthStablecoinPrices())
+      dispatch(fetchCoingeckoPrices())
+      dispatch(fetchMusdcPrice())
+      dispatch(fetchDaiePrice())
+      dispatch(fetchFeeAndRebate())
     }
   }, [isClient])
 

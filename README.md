@@ -52,6 +52,7 @@ root
 ├── <a href="./contrib">contrib</a>: Devops related tools
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
 │   ├── <a href="./contrib/promexporter">promexporter</a>: Multi-service prometheus exporter
+│   ├── <a href="./contrib/screener-api">screener-api</a>: Optional address screening api
 │   ├── <a href="./contrib/release-copier-action">release-copier-action</a>: Github action for copying releases from one repo to another
 │   ├── <a href="./contrib/terraform-provider-iap">terraform-provider-iap</a>: Terraform provider used for bastion proxy tunneling
 │   ├── <a href="./contrib/terraform-provider-helmproxy">terraform-provider-helmproxy</a>: Terraform provider that allows helm to be proxied through an iap bastion proxy
@@ -262,4 +263,4 @@ git push -u origin catchup/date
 <!-- TODO: we need to move this thing into an ops docs package. Given that the docs are still a work in progress, I'm leaving this here for now. -->
 <!-- Actually, it's unclear if this belongs in a contributing.md file, the docs or both. Maybe a symlink? -->
 
-In order to minimize risks coming from extraneous dependencies or supply chain attacks in a production like enviornment, all distributed images are built as [scratch](https://hub.docker.com/_/scratch) or [distroless](https://github.com/GoogleContainerTools/distroless#distroless-container-images) images. Builder containers are also not used to restrict the build enviornment to the [goreleaser container](https://github.com/synapsecns/sanguine/pkgs/container/sanguine-goreleaser). All production images are kept in the `docker/` file as `[dir].Dockerfile`. Local
+In order to minimize risks coming from extraneous dependencies or supply chain attacks in a production like environment, all distributed images are built as [scratch](https://hub.docker.com/_/scratch) or [distroless](https://github.com/GoogleContainerTools/distroless#distroless-container-images) images. Builder containers are also not used to restrict the build environment to the [goreleaser container](https://github.com/synapsecns/sanguine/pkgs/container/sanguine-goreleaser). All production images are kept in the `docker/` file as `[dir].Dockerfile`. Local

@@ -1,42 +1,19 @@
-import { useMemo, useEffect, useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useAppDispatch } from '@/store/hooks'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
-import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
 import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
 import { isNull } from 'lodash'
-import { DownArrow } from '../icons/DownArrow'
-import {
-  updateTransactionKappa,
-  completeTransaction,
-  removeTransaction,
-} from '@/slices/_transactions/reducer'
+import { removeTransaction } from '@/slices/_transactions/reducer'
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
-
-const TransactionStatus = ({ string }) => {
-  return <>{string}</>
-}
-
-const TimeRemaining = ({
-  isComplete,
-  remainingTime,
-  isDelayed,
-}: {
-  isComplete: boolean
-  remainingTime: number
-  isDelayed: boolean
-}) => {
-  if (isComplete) return
-
-  if (isDelayed) {
-    return <div>Waiting...</div>
-  }
-
-  return <div>{remainingTime} min</div>
-}
+import { TimeRemaining } from './components/TimeRemaining'
+import { TransactionStatus } from './components/TransactionStatus'
+import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
+import { DropdownMenu } from './components/DropdownMenu'
+import { MenuItem } from './components/MenuItem'
+import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -71,7 +48,10 @@ export const _Transaction = ({
   isStoredComplete,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
-  const { transactions } = use_TransactionsState()
+
+  const handleClearTransaction = useCallback(() => {
+    dispatch(removeTransaction({ originTxHash }))
+  }, [dispatch])
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChain.id,
@@ -82,24 +62,8 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const elapsedTime: number = currentTime - timestamp // in seconds
-  const remainingTime: number = estimatedTime - elapsedTime
-  const remainingTimeInMinutes: number = Math.ceil(remainingTime / 60) // add additional min for buffer
-
-  const isEstimatedTimeReached: boolean = useMemo(() => {
-    // Define the interval in minutes before the estimated completion when we should start checking
-    const intervalBeforeCompletion = 1 // X minutes before completion
-    // Calculate the time in seconds when we should start checking
-    const startCheckingTime =
-      currentTime + estimatedTime - intervalBeforeCompletion * 60
-
-    // if current time is above startCheckingTime, return true to begin calling the SDK
-    return currentTime >= startCheckingTime
-
-    // TODO: OLD CODE BELOW:
-    // if (!currentTime || !estimatedTime || !timestamp) return false
-    // return currentTime - timestamp > estimatedTime
-  }, [estimatedTime, currentTime, timestamp])
+  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
+    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -107,47 +71,20 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: !isStoredComplete || isEstimatedTimeReached,
+    checkStatus: !isStoredComplete || isStartCheckingTimeReached,
     currentTime: currentTime,
   })
 
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
-  /** Update tx kappa when available */
-  useEffect(() => {
-    if (_kappa && originTxHash) {
-      dispatch(
-        updateTransactionKappa({ originTxHash, kappa: _kappa as string })
-      )
-    }
-  }, [_kappa, dispatch])
-
-  /** Update tx for completion */
-  /** Check that we have not already marked tx as complete */
-  useEffect(() => {
-    const txKappa = _kappa
-
-    if (isTxComplete && originTxHash && txKappa) {
-      const txn = transactions.find((tx) => tx.originTxHash === originTxHash)
-      if (!txn.isComplete) {
-        dispatch(
-          completeTransaction({ originTxHash, kappa: txKappa as string })
-        )
-        /** Update Destination Chain token balances after tx is marked complete  */
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address: connectedAddress,
-            chainId: destinationChain.id,
-          })
-        )
-      }
-    }
-  }, [isTxComplete, dispatch, transactions, _kappa])
-
-  const handleClearTransaction = useCallback(() => {
-    dispatch(removeTransaction({ originTxHash }))
-  }, [dispatch])
+  useBridgeTxUpdater(
+    connectedAddress,
+    destinationChain,
+    _kappa,
+    originTxHash,
+    isTxComplete
+  )
 
   return (
     <div
@@ -156,6 +93,7 @@ export const _Transaction = ({
         flex flex-col gap-1 justify-end items-center my-2
         bg-tint fill-surface text-primary
         border border-solid border-surface rounded-md
+        text-xs md:text-base
       `}
     >
       <div className="flex items-center w-full">
@@ -168,7 +106,7 @@ export const _Transaction = ({
           />
           <TransactionArrow className="bg-tint fill-surface" />
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
           <TransactionPayloadDetail
             chain={destinationChain}
             token={destinationToken}
@@ -177,9 +115,10 @@ export const _Transaction = ({
           />
           <div className="mt-1 text-xs">
             {new Date(timestamp * 1000).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
               hour: '2-digit',
               minute: '2-digit',
-              second: '2-digit',
               hour12: true,
             })}
             {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
@@ -188,14 +127,14 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" />
+            <TransactionStatus string="Complete" className="text-green-300" />
           ) : (
             <TransactionStatus string="Pending" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining
               isComplete={isTxFinalized as boolean}
-              remainingTime={remainingTimeInMinutes}
+              remainingTime={remainingTime}
               isDelayed={isEstimatedTimeReached}
             />
 
@@ -228,84 +167,5 @@ export const _Transaction = ({
         </div>
       </div>
     </div>
-  )
-}
-
-export const DropdownMenu = ({ children }) => {
-  const [open, setOpen] = useState<boolean>(false)
-
-  const handleClick = () => {
-    setOpen(!open)
-  }
-
-  return (
-    <div className="relative">
-      <div
-        onClick={handleClick}
-        className={`
-          rounded w-5 h-[21px] flex place-items-center justify-center
-          bg-surface
-          border border-solid border-[--synapse-border]
-          hover:border-[--synapse-focus]
-          cursor-pointer
-        `}
-      >
-        <DownArrow />
-      </div>
-
-      {open && (
-        <ul
-          className={`
-            absolute z-50 mt-1 p-0 bg-surface border border-solid border-tint rounded shadow popover -right-1 list-none text-left text-sm
-          `}
-        >
-          {children}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-export const MenuItem = ({
-  text,
-  link,
-  onClick,
-}: {
-  text: string
-  link: string
-  onClick?: () => any
-}) => {
-  return (
-    <li
-      className={`
-      rounded cursor-pointer
-      border border-solid border-transparent
-      hover:border-[--synapse-focus]
-      active:opacity-40
-    `}
-    >
-      {onClick ? (
-        <div
-          onClick={onClick}
-          className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-          `}
-        >
-          {text}
-        </div>
-      ) : (
-        <a
-          href={link ?? ''}
-          onClick={onClick}
-          target="_blank"
-          rel="noreferrer"
-          className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-          `}
-        >
-          {text}
-        </a>
-      )}
-    </li>
   )
 }

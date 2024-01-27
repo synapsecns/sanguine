@@ -1,11 +1,6 @@
 import { Address } from 'viem'
 import { BridgeQuote, Token } from '@/utils/types'
-import {
-  stringToBigInt,
-  powBigInt,
-  formatBigIntToString,
-} from '../bigint/format'
-import { subtractSlippage } from '../slippage'
+import { formatBigIntToString } from '../bigint/format'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'
 
@@ -37,6 +32,7 @@ export async function fetchBridgeQuote(
         destinationToken,
         amount,
       }: BridgeQuoteRequest = request
+
       const {
         feeAmount,
         routerAddress,
@@ -45,6 +41,7 @@ export async function fetchBridgeQuote(
         destQuery,
         estimatedTime,
         bridgeModuleName,
+        gasDropAmount,
       } = await synapseSDK.bridgeQuote(
         originChainId,
         destinationChainId,
@@ -61,35 +58,14 @@ export async function fetchBridgeQuote(
       const adjustedFeeAmount =
         (BigInt(feeAmount) * BigInt(amount)) / BigInt(originQuery.minAmountOut)
 
-      // TODO: do this properly (RFQ needs no slippage, others do)
-      let originMinWithSlippage, destMinWithSlippage
-      if (bridgeModuleName === 'SynapseRFQ') {
-        // Relayer should take the request with slippage of 5% feeAmount
-        const maxOriginSlippage = BigInt(feeAmount) * BigInt(5) / BigInt(100)
-        if (originQuery && originQuery.minAmountOut > maxOriginSlippage) {
-          originMinWithSlippage = BigInt(originQuery.minAmountOut) - maxOriginSlippage
-        } else {
-          originMinWithSlippage = 0n
-        }
-        destMinWithSlippage = destQuery?.minAmountOut ?? 0n
-      } else {
-        originMinWithSlippage = subtractSlippage(
-          originQuery?.minAmountOut ?? 0n,
-          'ONE_TENTH',
-          null
-        )
-        destMinWithSlippage = subtractSlippage(
-          destQuery?.minAmountOut ?? 0n,
-          'ONE_TENTH',
-          null
-        )
-      }
-
-      let newOriginQuery = { ...originQuery }
-      newOriginQuery.minAmountOut = originMinWithSlippage
-
-      let newDestQuery = { ...destQuery }
-      newDestQuery.minAmountOut = destMinWithSlippage
+      const {
+        originQuery: originQueryWithSlippage,
+        destQuery: destQueryWithSlippage,
+      } = synapseSDK.applyBridgeSlippage(
+        bridgeModuleName,
+        originQuery,
+        destQuery
+      )
 
       return {
         outputAmount: toValueBigInt,
@@ -111,13 +87,14 @@ export async function fetchBridgeQuote(
         feeAmount,
         delta: BigInt(maxAmountOut.toString()),
         quotes: {
-          originQuery: newOriginQuery,
-          destQuery: newDestQuery,
+          originQuery: originQueryWithSlippage,
+          destQuery: destQueryWithSlippage,
         },
         destinationToken: request.destinationToken,
         destinationChainId: destinationChainId,
         estimatedTime: estimatedTime,
         bridgeModuleName: bridgeModuleName,
+        gasDropAmount: BigInt(gasDropAmount.toString()),
       }
     } catch (error) {
       console.error('Error fetching bridge quote:', error)
@@ -141,15 +118,21 @@ export async function fetchBridgeQuotes(
       const batchRequests = requests.slice(i, i + maxConcurrentRequests)
       const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] =
         batchRequests.map(async (request: BridgeQuoteRequest) => {
-          const results: BridgeQuoteResponse = await fetchBridgeQuote(
-            request,
-            synapseSDK
-          )
-
-          return results
+          try {
+            const results: BridgeQuoteResponse = await fetchBridgeQuote(
+              request,
+              synapseSDK
+            )
+            return results
+          } catch (error) {
+            console.error('Error in individual bridge quote request: ', error)
+            return null
+          }
         })
 
-      const batchBridgeQuotes = await Promise.all(bridgeQuotesPromises)
+      const batchBridgeQuotes = (
+        await Promise.all(bridgeQuotesPromises)
+      ).filter((quote) => quote !== null)
       bridgeQuotes.push(...batchBridgeQuotes)
 
       // Add a delay between batches of requests to avoid overloading the server
